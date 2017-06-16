@@ -1,0 +1,22 @@
+package horse.wtf.nzyme;
+
+import com.beust.jcommander.Parameter;
+
+public class CLIArguments {
+
+    @Parameter(names={"--interface", "-i"}, required = true)
+    private String networkInterface;
+
+    @Parameter(names={"--graylog", "-g"}, required = true, validateValueWith = InternetAddressValidator.class)
+    private String graylogAddress;
+
+    public String getNetworkInterface() {
+        return networkInterface;
+    }
+
+    public GraylogAddress getGraylogAddress() {
+        String[] parts = graylogAddress.split(":");
+        return new GraylogAddress(parts[0], Integer.parseInt(parts[1]));
+    }
+
+}
