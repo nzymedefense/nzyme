@@ -3,8 +3,6 @@ package horse.wtf.nzyme.handlers;
 import horse.wtf.nzyme.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.graylog2.gelfclient.GelfMessage;
-import org.graylog2.gelfclient.transport.GelfTransport;
 import org.pcap4j.packet.Dot11ProbeRequestPacket;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.packet.RadiotapPacket;
@@ -15,8 +13,8 @@ public class ProbeRequestFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
-    public ProbeRequestFrameHandler(Graylog graylog) {
-        super(graylog);
+    public ProbeRequestFrameHandler(Nzyme nzyme) {
+        super(nzyme);
     }
 
     @Override
@@ -63,14 +61,14 @@ public class ProbeRequestFrameHandler extends FrameHandler {
             message = "Probe request: " + requester + " is looking for any network. (null probe request)";
         }
 
-        graylog.notify(
+        nzyme.getGraylogUplink().notify(
                 new Notification(message)
                         .addField(GraylogFieldNames.SSID, ssid)
                         .addField(GraylogFieldNames.TRANSMITTER, requester)
                         .addField(GraylogFieldNames.SUBTYPE, "probe-req")
         );
 
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     @Override

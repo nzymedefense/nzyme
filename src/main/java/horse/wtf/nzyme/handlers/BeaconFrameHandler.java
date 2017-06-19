@@ -1,9 +1,6 @@
 package horse.wtf.nzyme.handlers;
 
-import horse.wtf.nzyme.Graylog;
-import horse.wtf.nzyme.GraylogFieldNames;
-import horse.wtf.nzyme.Notification;
-import horse.wtf.nzyme.Tools;
+import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.Dot11BeaconPacket;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +10,7 @@ import org.pcap4j.util.ByteArrays;
 
 import java.nio.charset.Charset;
 import java.text.Normalizer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BeaconFrameHandler extends FrameHandler {
 
@@ -20,14 +18,26 @@ public class BeaconFrameHandler extends FrameHandler {
     private static final int SSID_LENGTH_POSITION = 37;
     private static final int SSID_POSITION = 38;
 
+    private final AtomicInteger sampleCount;
+
     private static final Logger LOG = LogManager.getLogger(BeaconFrameHandler.class);
 
-    public BeaconFrameHandler(Graylog graylog) {
-        super(graylog);
+    public BeaconFrameHandler(Nzyme nzyme) {
+        super(nzyme);
+
+        this.sampleCount = new AtomicInteger(0);
     }
 
     @Override
     public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException {
+        if(nzyme.getCliArguments().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
+            if (sampleCount.getAndIncrement() == nzyme.getCliArguments().getBeaconSamplingRate()) {
+                sampleCount.set(0);
+            } else {
+                return;
+            }
+        }
+
         // MAC header: 24 byte
         // Fixed parameters: 12 byte
         // Tagged parameters start at: 36 byte
@@ -38,16 +48,21 @@ public class BeaconFrameHandler extends FrameHandler {
         try {
             ByteArrays.validateBounds(payload, 0, SSID_LENGTH_POSITION+1);
         } catch(Exception e) {
-            LOG.trace("Beacon payload out of bounds. (2) Ignoring.");
+            LOG.trace("Beacon payload out of bounds. (1) Ignoring.");
             return;
         }
 
         // SSID length.
         byte ssidLength = payload[SSID_LENGTH_POSITION];
 
+        if(ssidLength < 0) {
+            LOG.trace("Negative SSID length. Ignoring.");
+            return;
+        }
+
         // Check bounds for SSID field.
         try {
-            ByteArrays.validateBounds(payload, 0, SSID_POSITION+1);
+            ByteArrays.validateBounds(payload, SSID_POSITION, ssidLength);
         } catch(Exception e) {
             LOG.trace("Beacon payload out of bounds. (2) Ignoring.");
             return;
@@ -80,14 +95,14 @@ public class BeaconFrameHandler extends FrameHandler {
             message = "Received broadcast beacon from " + transmitter;
         }
 
-        graylog.notify(
+        nzyme.getGraylogUplink().notify(
                 new Notification(message)
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.SSID, ssid)
                         .addField(GraylogFieldNames.SUBTYPE, "beacon")
         );
 
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     // TODO?

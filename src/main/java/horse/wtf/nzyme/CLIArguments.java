@@ -10,6 +10,9 @@ public class CLIArguments {
     @Parameter(names={"--graylog", "-g"}, required = true, validateValueWith = InternetAddressValidator.class)
     private String graylogAddress;
 
+    @Parameter(names={"--beacon-sampling", "-s"})
+    private int beaconSamplingRate = 0;
+
     public String getNetworkInterface() {
         return networkInterface;
     }
@@ -17,6 +20,10 @@ public class CLIArguments {
     public GraylogAddress getGraylogAddress() {
         String[] parts = graylogAddress.split(":");
         return new GraylogAddress(parts[0], Integer.parseInt(parts[1]));
+    }
+
+    public int getBeaconSamplingRate() {
+        return beaconSamplingRate;
     }
 
 }

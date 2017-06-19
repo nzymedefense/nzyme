@@ -1,15 +1,15 @@
 package horse.wtf.nzyme.handlers;
 
-import horse.wtf.nzyme.Graylog;
+import horse.wtf.nzyme.Nzyme;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.packet.RadiotapPacket;
 
 public abstract class FrameHandler {
 
-    protected final Graylog graylog;
+    protected final Nzyme nzyme;
 
-    protected FrameHandler(Graylog graylog) {
-        this.graylog = graylog;
+    protected FrameHandler(Nzyme nzyme) {
+        this.nzyme = nzyme;
     }
 
     public abstract void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException;

@@ -4,14 +4,28 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
+
+        <RollingFile name="Logfile" fileName="logs/${name}.log" filePattern="logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+
     </Appenders>
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console" />
+            <AppenderRef ref="Logfile" />
         </Root>
 
         <Logger name="org.pcap4j" level="error">
             <AppenderRef ref="Console" />
+            <AppenderRef ref="Logfile" />
         </Logger>
     </Loggers>
 </Configuration>

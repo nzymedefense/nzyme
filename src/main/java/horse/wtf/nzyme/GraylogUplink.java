@@ -7,7 +7,7 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 
 import java.net.InetSocketAddress;
 
-public class Graylog {
+public class GraylogUplink {
 
     private static final String SOURCE = "nzyme";
 
@@ -15,7 +15,7 @@ public class Graylog {
 
     private final GelfTransport gelfTransport;
 
-    public Graylog(String hostname, int port, String nzymeId) {
+    public GraylogUplink(String hostname, int port, String nzymeId) {
         this.nzymeId = nzymeId;
 
         this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
