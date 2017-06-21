@@ -12,6 +12,14 @@ public abstract class FrameHandler {
         this.nzyme = nzyme;
     }
 
+    protected void tick() {
+        nzyme.getStatistics().tickType(getName());
+    }
+
+    protected void malformed() {
+        nzyme.getStatistics().tickMalformedCount();
+    }
+
     public abstract void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException;
     public abstract String getName();
 

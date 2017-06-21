@@ -1,6 +1,7 @@
 package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.handlers.BeaconFrameHandler;
 import horse.wtf.nzyme.handlers.DeauthenticationFrameHandler;
 import horse.wtf.nzyme.handlers.ProbeRequestFrameHandler;
@@ -42,14 +43,14 @@ public class Nzyme {
 
         // Set up statistics printer.
         this.statistics = new Statistics();
-        LOG.info("Printing statistics every 60 seconds. Logs are in [logs/] and automatically rotated.");
-        // Statistics printer. TODO set a thread name for better LOG output
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                LOG.info("===== stats ...");
-            }
-        }, 5, 60, TimeUnit.SECONDS);
+        final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(this.statistics);
+        LOG.info("Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.");
+        // Statistics printer.
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("statistics-%d")
+                .build()
+        ).scheduleAtFixedRate(() -> LOG.info(statisticsPrinter.print()), 5, 60, TimeUnit.SECONDS);
 
         // Graylog GELF sender.
         this.graylogUplink = new GraylogUplink(
@@ -119,7 +120,6 @@ public class Nzyme {
             if (packet != null) {
                 try {
                     if (packet instanceof RadiotapPacket) {
-
                         getStatistics().tickFrameCount();
 
                         RadiotapPacket r = (RadiotapPacket) packet;
@@ -146,6 +146,7 @@ public class Nzyme {
                         }
                     }
                 } catch(IllegalArgumentException | IllegalRawDataException e) {
+                    this.getStatistics().tickMalformedCount();
                     LOG.trace("Illegal data received.", e);
                 } catch(Exception e) {
                     LOG.error("Could not process packet.", e);

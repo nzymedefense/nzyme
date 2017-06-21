@@ -17,17 +17,21 @@ public class Main {
     // TODO test deauth handler on other platform. might have same header offset issue
     // TODO proper return codes
     // TODO channel usage. cycle through them? how?
+    // TODO mention in README that the selected device will lose network connection
+
+    // TODO print number of last 60s probing SSIDs (do APs probe, too? - number of decies in environment)
+    // TOOO print number of last 60s beaconingering SSIDs (networks in environment)
 
     /* unencrypted mgt frames:
     Authentication
-    De-authentication
+    - De-authentication
     Association request
     Association response
     Re-association request
     Re-association response
-    Probe request
+    - Probe request
     Probe response
-    Beacon
+    - Beacon
      */
 
     public static void main(String[] argv) {

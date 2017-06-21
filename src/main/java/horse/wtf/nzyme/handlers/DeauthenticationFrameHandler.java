@@ -22,9 +22,14 @@ public class DeauthenticationFrameHandler extends FrameHandler {
 
     @Override
     public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException {
+        tick();
+
         try {
             ByteArrays.validateBounds(payload, 0, DEAUTH_REASON_POSITION+DEAUTH_REASON_LENGTH+1);
-        } catch(Exception e) { return; }
+        } catch(Exception e) {
+            malformed();
+            return;
+        }
 
         Dot11DeauthPacket deauth = Dot11DeauthPacket.newPacket(payload, 0, payload.length);
 

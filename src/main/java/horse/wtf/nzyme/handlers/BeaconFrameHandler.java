@@ -30,6 +30,7 @@ public class BeaconFrameHandler extends FrameHandler {
 
     @Override
     public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException {
+        tick();
         if(nzyme.getCliArguments().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
             if (sampleCount.getAndIncrement() == nzyme.getCliArguments().getBeaconSamplingRate()) {
                 sampleCount.set(0);
@@ -48,6 +49,7 @@ public class BeaconFrameHandler extends FrameHandler {
         try {
             ByteArrays.validateBounds(payload, 0, SSID_LENGTH_POSITION+1);
         } catch(Exception e) {
+            malformed();
             LOG.trace("Beacon payload out of bounds. (1) Ignoring.");
             return;
         }
@@ -56,6 +58,7 @@ public class BeaconFrameHandler extends FrameHandler {
         byte ssidLength = payload[SSID_LENGTH_POSITION];
 
         if(ssidLength < 0) {
+            malformed();
             LOG.trace("Negative SSID length. Ignoring.");
             return;
         }
@@ -64,6 +67,7 @@ public class BeaconFrameHandler extends FrameHandler {
         try {
             ByteArrays.validateBounds(payload, SSID_POSITION, ssidLength);
         } catch(Exception e) {
+            malformed();
             LOG.trace("Beacon payload out of bounds. (2) Ignoring.");
             return;
         }
@@ -73,6 +77,7 @@ public class BeaconFrameHandler extends FrameHandler {
 
         // Check if the SSID is valid UTF-8 (might me malformed frame)
         if(!Tools.isValidUTF8(ssidBytes)) {
+            malformed();
             LOG.trace("Beacon SSID not valid UTF8. Ignoring.");
             return;
         }
