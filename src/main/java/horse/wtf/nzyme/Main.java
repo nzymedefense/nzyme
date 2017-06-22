@@ -5,8 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 public class Main {
 
-    // sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport --channel=2
-
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
     // TODO fix broken strings
@@ -16,8 +14,17 @@ public class Main {
     // TODO signal strength
     // TODO test deauth handler on other platform. might have same header offset issue
     // TODO proper return codes
-    // TODO channel usage. cycle through them? how?
-    // TODO mention in README that the selected device will lose network connection
+    // TODO list channels with activity
+    // TODO make channel hop command configurable
+
+    /*
+     * README:
+     *  - explain that you'll need a second interface because you'll lose network connection. link to ALFA on Amazon
+     *  - it only works if network interface not connected to a wifi. channel will not change otherwise.
+     *  - explain sudo
+     *  - explain config file. reference example config
+     *  - startup, CLI parameters
+     */
 
     /* unencrypted mgt frames:
     Authentication

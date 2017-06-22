@@ -1,0 +1,21 @@
+# The wifi interface to listen on. Find the name by running `ifconfig`.
+interface = wlan0
+
+# 802.11 channels to use. Nzyme will cycle your network adapter through these one after another, infinitely.
+# Consider local legal requirements and regulations. Default is US 2.4GHz band.
+# See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
+channels = 1,2,3,4,5,6,7,8,9,10,11
+
+# There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
+# configure the adapter. Examples for Linux and OSX are in the README.
+channel_hop_command = sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport {interface} channel {channel}
+
+# Channel hop interval in seconds. Leave at default if you don't know what this is.
+channel_hop_interval = 4
+
+# Hostname/IP and port of a Graylog server GELF TCP input
+graylog_address = graylog.example.org:13999
+
+# There are a lot of beacon frames in the air. A sampling rate of, for example, 20, will ignore 19 beacons
+# and only send every 20th to Graylog. Use this to avoid traffic. Set to 0 to disable sampling.
+beacon_frame_sampling_rate = 20

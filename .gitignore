@@ -1,5 +1,6 @@
 .idea
 *.iml
+nzyme.conf
 
 logs/
 target/

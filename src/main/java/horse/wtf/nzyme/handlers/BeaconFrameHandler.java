@@ -33,8 +33,8 @@ public class BeaconFrameHandler extends FrameHandler {
     @Override
     public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException {
         tick();
-        if(nzyme.getCliArguments().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
-            if (sampleCount.getAndIncrement() == nzyme.getCliArguments().getBeaconSamplingRate()) {
+        if(nzyme.getConfiguration().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
+            if (sampleCount.getAndIncrement() == nzyme.getConfiguration().getBeaconSamplingRate()) {
                 sampleCount.set(0);
             } else {
                 return;

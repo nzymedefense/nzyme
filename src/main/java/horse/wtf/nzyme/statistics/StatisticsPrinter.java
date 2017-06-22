@@ -32,13 +32,13 @@ public class StatisticsPrinter {
 
         sb.append("\n");
         sb.append("Probing devices:         ").append(df.format(statistics.getProbingDevices().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append(")");
+                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
         sb.append("\n");
         sb.append("Access points:           ").append(df.format(statistics.getAccessPoints().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append(")");
+                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
         sb.append("\n");
         sb.append("Beaconing networks:      ").append(df.format(statistics.getBeaconedNetworks().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append(")");
+                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
 
         return sb.toString();
     }

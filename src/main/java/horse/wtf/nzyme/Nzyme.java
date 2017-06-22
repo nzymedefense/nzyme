@@ -1,8 +1,15 @@
 package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
+import com.github.joschi.jadconfig.JadConfig;
+import com.github.joschi.jadconfig.RepositoryException;
+import com.github.joschi.jadconfig.ValidationException;
+import com.github.joschi.jadconfig.repositories.PropertiesRepository;
+import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.CLIArguments;
+import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.graylog.GraylogUplink;
 import horse.wtf.nzyme.handlers.BeaconFrameHandler;
 import horse.wtf.nzyme.handlers.DeauthenticationFrameHandler;
@@ -29,8 +36,10 @@ public class Nzyme {
     public static final int STATS_INTERVAL = 60;
 
     private final CLIArguments cliArguments;
+    private final Configuration configuration;
     private final Statistics statistics;
     private final GraylogUplink graylogUplink;
+    private final ChannelHopper channelHopper;
 
     private final PcapHandle pcap;
 
@@ -39,6 +48,8 @@ public class Nzyme {
     private final DeauthenticationFrameHandler deauthFrameHandler;
     private final BeaconFrameHandler beaconFrameHandler;
 
+    private boolean inLoop = false;
+
     public Nzyme(String[] argv, String nzymeName) throws InitializationException {
         // Parse CLI arguments.
         this.cliArguments = new CLIArguments();
@@ -46,6 +57,18 @@ public class Nzyme {
                 .addObject(cliArguments)
                 .build()
                 .parse(argv);
+
+        // Parse configuration.
+        this.configuration = new Configuration();
+        try {
+            new JadConfig(new PropertiesRepository(this.cliArguments.getConfigFilePath()), configuration).process();
+        } catch (RepositoryException | ValidationException e) {
+            throw new InitializationException("Could not read config.", e);
+        }
+
+        // Initialize channel hopper.
+        this.channelHopper = new ChannelHopper(this, this.configuration.getChannels());
+        this.channelHopper.initialize();
 
         // Set up statistics printer.
         this.statistics = new Statistics();
@@ -63,24 +86,24 @@ public class Nzyme {
 
         // Graylog GELF sender.
         this.graylogUplink = new GraylogUplink(
-                cliArguments.getGraylogAddress().getHost(),
-                cliArguments.getGraylogAddress().getPort(),
+                this.configuration.getGraylogAddress().getHost(),
+                this.configuration.getGraylogAddress().getPort(),
                 nzymeName
         );
 
         // Get network interface for PCAP.
         PcapNetworkInterface networkInterface;
         try {
-            networkInterface = Pcaps.getDevByName(cliArguments.getNetworkInterface());
+            networkInterface = Pcaps.getDevByName(this.configuration.getNetworkInterface());
         } catch (PcapNativeException e) {
-            throw new InitializationException("Could not get network interface [" + cliArguments.getNetworkInterface() + "].", e);
+            throw new InitializationException("Could not get network interface [" + this.configuration.getNetworkInterface() + "].", e);
         }
 
         if (networkInterface == null) {
-            throw new InitializationException("Could not get network interface [" + cliArguments.getNetworkInterface() + "]. Does it exist and could it be that you have to be root?");
+            throw new InitializationException("Could not get network interface [" + this.configuration.getNetworkInterface() + "]. Does it exist and could it be that you have to be root?");
         }
 
-        LOG.info("Building PCAP handle on interface [{}]", cliArguments.getNetworkInterface());
+        LOG.info("Building PCAP handle on interface [{}]", this.configuration.getNetworkInterface());
 
         PcapHandle.Builder phb = new PcapHandle.Builder(networkInterface.getName())
                 .rfmon(true)
@@ -101,7 +124,7 @@ public class Nzyme {
         }
 
         // TODO make channels configurable
-        LOG.info("PCAP handle acquired. Cycling through channels <1, 11, ...>");
+        LOG.info("PCAP handle acquired. Cycling through channels <{}>.", Joiner.on(",").join(this.configuration.getChannels()));
 
         this.probeRequestHandler = new ProbeRequestFrameHandler(this);
         this.deauthFrameHandler = new DeauthenticationFrameHandler(this);
@@ -111,6 +134,7 @@ public class Nzyme {
     public void loop() {
         LOG.info("Commencing 802.11 frame processing ... (⌐■_■)–︻╦╤─ – – pew pew");
 
+        this.inLoop = true;
         while (true) {
             Packet packet;
 
@@ -166,8 +190,8 @@ public class Nzyme {
         }
     }
 
-    public CLIArguments getCliArguments() {
-        return cliArguments;
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     public Statistics getStatistics() {
@@ -176,6 +200,14 @@ public class Nzyme {
 
     public GraylogUplink getGraylogUplink() {
         return graylogUplink;
+    }
+
+    public ChannelHopper getChannelHopper() {
+        return channelHopper;
+    }
+
+    public boolean isInLoop() {
+        return inLoop;
     }
 
     class InitializationException extends Exception {
