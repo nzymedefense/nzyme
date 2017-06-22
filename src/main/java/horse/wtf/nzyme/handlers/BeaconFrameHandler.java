@@ -2,6 +2,8 @@ package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.Dot11BeaconPacket;
+import horse.wtf.nzyme.graylog.GraylogFieldNames;
+import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
@@ -95,10 +97,13 @@ public class BeaconFrameHandler extends FrameHandler {
         String message;
         if (ssid != null) {
             message = "Received beacon from " + transmitter + " for SSID " + ssid;
+            nzyme.getStatistics().tickBeaconedNetwork(ssid);
         } else {
             // Broadcast beacon.
             message = "Received broadcast beacon from " + transmitter;
         }
+
+        nzyme.getStatistics().tickAccessPoint(transmitter);
 
         nzyme.getGraylogUplink().notify(
                 new Notification(message)

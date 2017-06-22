@@ -2,6 +2,8 @@ package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.Dot11DeauthPacket;
+import horse.wtf.nzyme.graylog.GraylogFieldNames;
+import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;

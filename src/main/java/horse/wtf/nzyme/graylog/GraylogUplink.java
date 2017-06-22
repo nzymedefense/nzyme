@@ -1,4 +1,4 @@
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.graylog;
 
 import org.graylog2.gelfclient.GelfConfiguration;
 import org.graylog2.gelfclient.GelfMessage;

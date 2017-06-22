@@ -1,6 +1,8 @@
 package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
+import horse.wtf.nzyme.graylog.GraylogFieldNames;
+import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.Dot11ProbeRequestPacket;
@@ -66,6 +68,8 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         } else {
             message = "Probe request: " + requester + " is looking for any network. (null probe request)";
         }
+
+        nzyme.getStatistics().tickProbingDevice(requester);
 
         nzyme.getGraylogUplink().notify(
                 new Notification(message)

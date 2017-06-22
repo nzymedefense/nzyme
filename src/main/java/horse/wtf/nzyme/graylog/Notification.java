@@ -1,4 +1,4 @@
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.graylog;
 
 import com.google.common.collect.ImmutableMap;
 

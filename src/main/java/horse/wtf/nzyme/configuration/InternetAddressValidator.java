@@ -1,4 +1,4 @@
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.IValueValidator;
 import com.beust.jcommander.ParameterException;

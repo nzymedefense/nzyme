@@ -2,9 +2,13 @@ package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.configuration.CLIArguments;
+import horse.wtf.nzyme.graylog.GraylogUplink;
 import horse.wtf.nzyme.handlers.BeaconFrameHandler;
 import horse.wtf.nzyme.handlers.DeauthenticationFrameHandler;
 import horse.wtf.nzyme.handlers.ProbeRequestFrameHandler;
+import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -21,6 +25,8 @@ import java.util.concurrent.TimeoutException;
 public class Nzyme {
 
     private static final Logger LOG = LogManager.getLogger(Nzyme.class);
+
+    public static final int STATS_INTERVAL = 60;
 
     private final CLIArguments cliArguments;
     private final Statistics statistics;
@@ -44,13 +50,16 @@ public class Nzyme {
         // Set up statistics printer.
         this.statistics = new Statistics();
         final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(this.statistics);
-        LOG.info("Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.");
+        LOG.info("Printing statistics every {} seconds. Logs are in [logs/] and will be automatically rotated.", STATS_INTERVAL);
         // Statistics printer.
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("statistics-%d")
                 .build()
-        ).scheduleAtFixedRate(() -> LOG.info(statisticsPrinter.print()), 5, 60, TimeUnit.SECONDS);
+        ).scheduleAtFixedRate(() -> {
+            LOG.info(statisticsPrinter.print());
+            statistics.resetAccumulativeTicks();
+        }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
 
         // Graylog GELF sender.
         this.graylogUplink = new GraylogUplink(
@@ -100,6 +109,8 @@ public class Nzyme {
     }
 
     public void loop() {
+        LOG.info("Commencing 802.11 frame processing ... (⌐■_■)–︻╦╤─ – – pew pew");
+
         while (true) {
             Packet packet;
 

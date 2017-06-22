@@ -1,6 +1,7 @@
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.Parameter;
+import horse.wtf.nzyme.graylog.GraylogAddress;
 
 public class CLIArguments {
 

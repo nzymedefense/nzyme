@@ -19,9 +19,6 @@ public class Main {
     // TODO channel usage. cycle through them? how?
     // TODO mention in README that the selected device will lose network connection
 
-    // TODO print number of last 60s probing SSIDs (do APs probe, too? - number of decies in environment)
-    // TOOO print number of last 60s beaconingering SSIDs (networks in environment)
-
     /* unencrypted mgt frames:
     Authentication
     - De-authentication
@@ -35,8 +32,6 @@ public class Main {
      */
 
     public static void main(String[] argv) {
-        LOG.info("Starting up. | (⌐■_■)–︻╦╤─ – – pew pew");
-
         try {
             Nzyme nzyme = new Nzyme(argv, "nzyme-lab-1");
             nzyme.loop();
