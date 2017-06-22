@@ -72,7 +72,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         nzyme.getStatistics().tickProbingDevice(requester);
 
         nzyme.getGraylogUplink().notify(
-                new Notification(message)
+                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.SSID, ssid)
                         .addField(GraylogFieldNames.TRANSMITTER, requester)
                         .addField(GraylogFieldNames.SUBTYPE, "probe-req")

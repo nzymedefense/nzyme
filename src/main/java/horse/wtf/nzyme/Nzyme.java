@@ -50,7 +50,7 @@ public class Nzyme {
 
     private boolean inLoop = false;
 
-    public Nzyme(String[] argv, String nzymeName) throws InitializationException {
+    public Nzyme(String[] argv, String nzymeId) throws InitializationException {
         // Parse CLI arguments.
         this.cliArguments = new CLIArguments();
         JCommander.newBuilder()
@@ -88,7 +88,7 @@ public class Nzyme {
         this.graylogUplink = new GraylogUplink(
                 this.configuration.getGraylogAddress().getHost(),
                 this.configuration.getGraylogAddress().getPort(),
-                nzymeName
+                nzymeId
         );
 
         // Get network interface for PCAP.
@@ -155,7 +155,7 @@ public class Nzyme {
             if (packet != null) {
                 try {
                     if (packet instanceof RadiotapPacket) {
-                        getStatistics().tickFrameCount();
+                        getStatistics().tickFrameCount(this.getChannelHopper().getCurrentChannel());
 
                         RadiotapPacket r = (RadiotapPacket) packet;
                         byte[] payload = r.getPayload().getRawData();
@@ -181,7 +181,7 @@ public class Nzyme {
                         }
                     }
                 } catch(IllegalArgumentException | IllegalRawDataException e) {
-                    this.getStatistics().tickMalformedCount();
+                    this.getStatistics().tickMalformedCount(this.getChannelHopper().getCurrentChannel());
                     LOG.trace("Illegal data received.", e);
                 } catch(Exception e) {
                     LOG.error("Could not process packet.", e);

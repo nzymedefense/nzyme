@@ -11,6 +11,9 @@ public class Statistics {
     private final AtomicLong malformedCount;
     private final Map<String, AtomicLong> frameTypes;
 
+    private final Map<Integer, AtomicLong> channelCounts;
+    private final Map<Integer, AtomicLong> channelMalformedCounts;
+
     // Remember to reset these in resetStats()
     private final Map<String, AtomicLong> probingDevices;
     private final Map<String, AtomicLong> accessPoints;
@@ -19,6 +22,9 @@ public class Statistics {
     public Statistics() {
         this.frameCount = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
+
+        this.channelCounts = Maps.newHashMap();
+        this.channelMalformedCounts = Maps.newHashMap();
 
         this.frameTypes = Maps.newHashMap();
         this.probingDevices = Maps.newHashMap();
@@ -32,11 +38,15 @@ public class Statistics {
         beaconedNetworks.clear();
     }
 
-    public void tickFrameCount() {
+    public void tickFrameCount(int channel) {
         frameCount.incrementAndGet();
+        tickInMap(channel, channelCounts);
     }
 
-    public void tickMalformedCount() { malformedCount.incrementAndGet(); }
+    public void tickMalformedCount(int channel) {
+        malformedCount.incrementAndGet();
+        tickInMap(channel, channelMalformedCounts);
+    }
 
     public void tickType(String type) {
         tickInMap(type, frameTypes);
@@ -78,7 +88,23 @@ public class Statistics {
         return frameTypes;
     }
 
+    public Map<Integer, AtomicLong> getChannelCounts() {
+        return channelCounts;
+    }
+
+    public Map<Integer, AtomicLong> getChannelMalformedCounts() {
+        return channelMalformedCounts;
+    }
+
     private void tickInMap(String key, Map<String, AtomicLong> map) {
+        if(map.containsKey(key)) {
+            map.get(key).incrementAndGet();
+        } else {
+            map.put(key, new AtomicLong(1));
+        }
+    }
+
+    private void tickInMap(int key, Map<Integer, AtomicLong> map) {
         if(map.containsKey(key)) {
             map.get(key).incrementAndGet();
         } else {

@@ -15,7 +15,7 @@ public class Main {
     // TODO test deauth handler on other platform. might have same header offset issue
     // TODO proper return codes
     // TODO list channels with activity
-    // TODO make channel hop command configurable
+    // TODO send GELF for malformed packet
 
     /*
      * README:
@@ -24,6 +24,8 @@ public class Main {
      *  - explain sudo
      *  - explain config file. reference example config
      *  - startup, CLI parameters
+     *  - examples of what to do with the data in graylog and how to set up input
+     *  - examples for high-traffic environment and required graylog hardware
      */
 
     /* unencrypted mgt frames:

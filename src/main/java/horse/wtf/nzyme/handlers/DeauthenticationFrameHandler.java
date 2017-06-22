@@ -54,7 +54,7 @@ public class DeauthenticationFrameHandler extends FrameHandler {
                 + " from BSSID " + bssid;
 
         nzyme.getGraylogUplink().notify(
-                new Notification(message)
+                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.RECEIVER, receiver)
                         .addField(GraylogFieldNames.BSSID, bssid)

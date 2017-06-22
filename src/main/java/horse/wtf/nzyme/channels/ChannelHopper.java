@@ -42,12 +42,13 @@ public class ChannelHopper {
                 }
 
                 // Check if we reached end of channel list and recycle to 0 in that case.
-                if(this.currentChannelIndex >= this.channels.size()) {
+                if(this.currentChannelIndex >= this.channels.size()-1) {
                     this.currentChannelIndex = 0;
+                } else {
+                    this.currentChannelIndex++;
                 }
 
                 int channel = this.channels.get(this.currentChannelIndex);
-                this.currentChannelIndex++;
 
                 LOG.debug("Configuring [{}] to use channel <{}>", nzyme.getConfiguration().getNetworkInterface(), channel);
 
@@ -56,6 +57,10 @@ public class ChannelHopper {
                 LOG.error("Could not hop channel.", e);
             }
         }, 0, nzyme.getConfiguration().getChannelHopInterval(), TimeUnit.SECONDS);
+    }
+
+    public int getCurrentChannel() {
+        return this.channels.get(this.currentChannelIndex);
     }
 
     private void changeToChannel(Integer channel) throws IOException, InterruptedException {

@@ -106,7 +106,7 @@ public class BeaconFrameHandler extends FrameHandler {
         nzyme.getStatistics().tickAccessPoint(transmitter);
 
         nzyme.getGraylogUplink().notify(
-                new Notification(message)
+                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.SSID, ssid)
                         .addField(GraylogFieldNames.SUBTYPE, "beacon")
