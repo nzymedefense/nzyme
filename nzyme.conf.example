@@ -11,7 +11,7 @@ channels = 1,2,3,4,5,6,7,8,9,10,11
 
 # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
 # configure the adapter. Examples for Linux and OSX are in the README.
-channel_hop_command = sudo /System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport {interface} channel {channel}
+channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
 
 # Channel hop interval in seconds. Leave at default if you don't know what this is.
 channel_hop_interval = 4
