@@ -8,6 +8,9 @@ import horse.wtf.nzyme.graylog.GraylogAddress;
 
 public class Configuration {
 
+    @Parameter(value = "nzyme_id", required = true)
+    private String nzymeId;
+
     @Parameter(value = "interface", required = true)
     private String networkInterface;
 
@@ -25,6 +28,10 @@ public class Configuration {
 
     @Parameter(value = "beacon_frame_sampling_rate", validator = PositiveIntegerValidator.class, required = true)
     private int beaconSamplingRate;
+
+    public String getNzymeId() {
+        return nzymeId;
+    }
 
     public GraylogAddress getGraylogAddress() {
         String[] parts = graylogAddress.split(":");

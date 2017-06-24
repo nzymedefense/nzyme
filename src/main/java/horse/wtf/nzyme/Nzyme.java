@@ -35,6 +35,8 @@ public class Nzyme {
 
     public static final int STATS_INTERVAL = 60;
 
+    private final String nzymeId;
+
     private final CLIArguments cliArguments;
     private final Configuration configuration;
     private final Statistics statistics;
@@ -50,7 +52,7 @@ public class Nzyme {
 
     private boolean inLoop = false;
 
-    public Nzyme(String[] argv, String nzymeId) throws InitializationException {
+    public Nzyme(String[] argv) throws InitializationException {
         // Parse CLI arguments.
         this.cliArguments = new CLIArguments();
         JCommander.newBuilder()
@@ -65,6 +67,8 @@ public class Nzyme {
         } catch (RepositoryException | ValidationException e) {
             throw new InitializationException("Could not read config.", e);
         }
+
+        this.nzymeId = getConfiguration().getNzymeId();
 
         // Initialize channel hopper.
         this.channelHopper = new ChannelHopper(this, this.configuration.getChannels());
@@ -88,7 +92,7 @@ public class Nzyme {
         this.graylogUplink = new GraylogUplink(
                 this.configuration.getGraylogAddress().getHost(),
                 this.configuration.getGraylogAddress().getPort(),
-                nzymeId
+                this.nzymeId
         );
 
         // Get network interface for PCAP.
@@ -123,7 +127,6 @@ public class Nzyme {
             throw new InitializationException("Could not build PCAP handle.", e);
         }
 
-        // TODO make channels configurable
         LOG.info("PCAP handle acquired. Cycling through channels <{}>.", Joiner.on(",").join(this.configuration.getChannels()));
 
         this.probeRequestHandler = new ProbeRequestFrameHandler(this);
@@ -188,6 +191,10 @@ public class Nzyme {
                 }
             }
         }
+    }
+
+    public String getNzymeId() {
+        return nzymeId;
     }
 
     public Configuration getConfiguration() {

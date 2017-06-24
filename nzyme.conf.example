@@ -1,4 +1,7 @@
-# The wifi interface to listen on. Find the name by running `ifconfig`.
+# A name for this nzyme-instance.
+nzyme_id = nzyme-sensor-1
+
+# The wifi interface to listen on. Find the name by running `ifconfig`. Must support monitor mode.
 interface = wlan0
 
 # 802.11 channels to use. Nzyme will cycle your network adapter through these one after another, infinitely.

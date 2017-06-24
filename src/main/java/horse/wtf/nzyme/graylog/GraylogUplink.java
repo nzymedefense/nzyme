@@ -30,7 +30,7 @@ public class GraylogUplink {
     public void notify(Notification notification) {
         GelfMessage gelf = new GelfMessage(notification.getMessage(), SOURCE);
         gelf.addAdditionalFields(notification.getAdditionalFields());
-        gelf.addAdditionalField("nzyme_id", nzymeId);
+        gelf.addAdditionalField("nzyme_sensor_id", nzymeId);
 
         this.gelfTransport.trySend(gelf);
     }

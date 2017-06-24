@@ -13,9 +13,10 @@ public class Main {
     // TODO implement assoc and disassoc
     // TODO signal strength
     // TODO test deauth handler on other platform. might have same header offset issue
-    // TODO proper return codes
-    // TODO list channels with activity
     // TODO send GELF for malformed packet
+    // TODO Lock during channel switch? Avoid getCurrentChannel() race condition
+
+    // TODO RUN AT STATION
 
     /*
      * README:
@@ -26,6 +27,8 @@ public class Main {
      *  - startup, CLI parameters
      *  - examples of what to do with the data in graylog and how to set up input
      *  - examples for high-traffic environment and required graylog hardware
+     *  - explain that there is a chance you miss important indicators when cycling over too many channels
+     *      set low cycle time and split up channels over multiple sensors
      */
 
     /* unencrypted mgt frames:
@@ -41,11 +44,17 @@ public class Main {
      */
 
     public static void main(String[] argv) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Thread.currentThread().setName("shutdown-hook");
+            LOG.info("Shutting down.");
+        }));
+
         try {
-            Nzyme nzyme = new Nzyme(argv, "nzyme-lab-1");
+            Nzyme nzyme = new Nzyme(argv);
             nzyme.loop();
         } catch (Nzyme.InitializationException e) {
             LOG.error("Boot error.", e);
+            Runtime.getRuntime().exit(1);
         }
     }
 
