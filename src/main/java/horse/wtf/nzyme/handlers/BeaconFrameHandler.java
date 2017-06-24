@@ -95,7 +95,7 @@ public class BeaconFrameHandler extends FrameHandler {
         }
 
         String message;
-        if (ssid != null) {
+        if (ssid != null && ssid.trim().isEmpty()) {
             message = "Received beacon from " + transmitter + " for SSID " + ssid;
             nzyme.getStatistics().tickBeaconedNetwork(ssid);
         } else {
@@ -114,9 +114,6 @@ public class BeaconFrameHandler extends FrameHandler {
 
         LOG.debug(message);
     }
-
-    // TODO?
-    // RECEIVED x BEACON FRAMES FOR x SSIDS FROM x BSSIDS (x BROADCAST BEACONS)
 
     @Override
     public String getName() {
