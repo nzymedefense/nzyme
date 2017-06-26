@@ -10,19 +10,19 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.graylog.GraylogUplink;
-import horse.wtf.nzyme.handlers.BeaconFrameHandler;
-import horse.wtf.nzyme.handlers.DeauthenticationFrameHandler;
-import horse.wtf.nzyme.handlers.ProbeRequestFrameHandler;
+import horse.wtf.nzyme.handlers.*;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
-import org.pcap4j.packet.IllegalRawDataException;
-import org.pcap4j.packet.Packet;
-import org.pcap4j.packet.RadiotapPacket;
+import org.pcap4j.packet.*;
+import org.pcap4j.packet.factory.StaticRadiotapDataFieldFactory;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
+import org.pcap4j.packet.namednumber.RadiotapPresentBitNumber;
+import org.pcap4j.util.ByteArrays;
 
 import java.io.EOFException;
 import java.util.concurrent.Executors;
@@ -47,8 +47,11 @@ public class Nzyme {
 
     // Frame handlers.
     private final ProbeRequestFrameHandler probeRequestHandler;
+    private final ProbeResponseFrameHandler probeResponseHandler;
     private final DeauthenticationFrameHandler deauthFrameHandler;
     private final BeaconFrameHandler beaconFrameHandler;
+    private final AssociationRequestFrameHandler associationRequestFrameHandler;
+    private final AssociationResponseFrameHandler associationResponseFrameHandler;
 
     private boolean inLoop = false;
 
@@ -120,7 +123,7 @@ public class Nzyme {
         try {
             this.pcap = phb.build();
             this.pcap.setFilter(
-                    "type mgt and (subtype deauth or subtype probe-req or subtype beacon)",
+                    "type mgt and (subtype deauth or subtype probe-req or subtype probe-resp or subtype beacon or subtype assoc-req or subtype assoc-resp or subtype disassoc)",
                     BpfProgram.BpfCompileMode.OPTIMIZE
             );
         } catch (Exception e) {
@@ -130,8 +133,11 @@ public class Nzyme {
         LOG.info("PCAP handle acquired. Cycling through channels <{}>.", Joiner.on(",").join(this.configuration.getChannels()));
 
         this.probeRequestHandler = new ProbeRequestFrameHandler(this);
+        this.probeResponseHandler = new ProbeResponseFrameHandler(this);
         this.deauthFrameHandler = new DeauthenticationFrameHandler(this);
         this.beaconFrameHandler = new BeaconFrameHandler(this);
+        this.associationRequestFrameHandler = new AssociationRequestFrameHandler(this);
+        this.associationResponseFrameHandler = new AssociationResponseFrameHandler(this);
     }
 
     public void loop() {
@@ -150,7 +156,7 @@ public class Nzyme {
                 // This happens all the time when waiting for packets.
                 continue;
             } catch (IllegalArgumentException e) {
-                // This is a sympton of malformed data.
+                // This is a symptom of malformed data.
                 LOG.trace(e);
                 continue;
             }
@@ -163,29 +169,47 @@ public class Nzyme {
                         RadiotapPacket r = (RadiotapPacket) packet;
                         byte[] payload = r.getPayload().getRawData();
 
+                        Dot11MetaInformation meta = Dot11MetaInformation.parse(r.getHeader().getDataFields());
+
+                        if (meta.isMalformed()) {
+                            LOG.trace("Bad checksum. Skipping malformed packet.");
+                            this.getStatistics().tickMalformedCount(this.getChannelHopper().getCurrentChannel());
+                            continue;
+                        }
+
                         Dot11FrameType type = Dot11FrameType.getInstance(
                                 (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
                         );
 
                         // Determine type and handler.
                         switch (type.value()) {
+                            case 0: // assoc-req
+                                associationRequestFrameHandler.handle(payload, meta);
+                                break;
+                            case 1: // assoc-resp
+                                associationResponseFrameHandler.handle(payload, meta);
+                                break;
                             case 4: // probe-req
-                                probeRequestHandler.handle(payload, r.getHeader());
+                                probeRequestHandler.handle(payload, meta);
+                                break;
+                            case 5: // probe-resp
+                                probeResponseHandler.handle(payload, meta);
                                 break;
                             case 8: // beacon
-                                beaconFrameHandler.handle(payload, r.getHeader());
+                                beaconFrameHandler.handle(payload, meta);
                                 break;
+                            case 10: // disaasoc
+                                LOG.info("disassoc");
                             case 12: // deauth
-                                deauthFrameHandler.handle(payload, r.getHeader());
+                                deauthFrameHandler.handle(payload, meta);
                                 break;
-                            // association, disassociation
                             default:
                                 LOG.warn("Not handling frame type [{}].", type.value());
                         }
                     }
-                } catch(IllegalArgumentException | IllegalRawDataException e) {
+                } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
                     this.getStatistics().tickMalformedCount(this.getChannelHopper().getCurrentChannel());
-                    LOG.trace("Illegal data received.", e);
+                    LOG.error("Illegal data received.", e);
                 } catch(Exception e) {
                     LOG.error("Could not process packet.", e);
                 }

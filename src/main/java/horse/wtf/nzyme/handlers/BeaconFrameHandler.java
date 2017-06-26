@@ -1,22 +1,21 @@
 package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
-import horse.wtf.nzyme.dot11.Dot11BeaconPacket;
+import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.graylog.GraylogFieldNames;
 import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
-import org.pcap4j.packet.RadiotapPacket;
 import org.pcap4j.util.ByteArrays;
 
 import java.nio.charset.Charset;
-import java.text.Normalizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BeaconFrameHandler extends FrameHandler {
 
-    // kek this should really be handled in the Dot11BeaconPacket at some point
+    // TODO kek this should really be handled in the Dot11BeaconPacket at some point
     private static final int SSID_LENGTH_POSITION = 37;
     private static final int SSID_POSITION = 38;
 
@@ -31,7 +30,7 @@ public class BeaconFrameHandler extends FrameHandler {
     }
 
     @Override
-    public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException {
+    public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException {
         tick();
         if(nzyme.getConfiguration().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
             if (sampleCount.getAndIncrement() == nzyme.getConfiguration().getBeaconSamplingRate()) {
@@ -45,7 +44,7 @@ public class BeaconFrameHandler extends FrameHandler {
         // Fixed parameters: 12 byte
         // Tagged parameters start at: 36 byte
 
-        Dot11BeaconPacket beacon = Dot11BeaconPacket.newPacket(payload, 0, payload.length);
+        Dot11ManagementFrame beacon = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         // Check bounds for SSID length field.
         try {
@@ -86,16 +85,16 @@ public class BeaconFrameHandler extends FrameHandler {
 
         String ssid = null;
         if(ssidLength >= 0) {
-            ssid = Normalizer.normalize(new String(ssidBytes, Charset.forName("UTF-8")), Normalizer.Form.NFD);
+            ssid = new String(ssidBytes, Charset.forName("UTF-8"));
         }
 
         String transmitter = "";
         if(beacon.getHeader().getAddress2() != null) {
-            transmitter = Normalizer.normalize(beacon.getHeader().getAddress3().toString(), Normalizer.Form.NFD);
+            transmitter = beacon.getHeader().getAddress2().toString();
         }
 
         String message;
-        if (ssid != null && ssid.trim().isEmpty()) {
+        if (ssid != null && !ssid.trim().isEmpty()) {
             message = "Received beacon from " + transmitter + " for SSID " + ssid;
             nzyme.getStatistics().tickBeaconedNetwork(ssid);
         } else {
@@ -109,7 +108,8 @@ public class BeaconFrameHandler extends FrameHandler {
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.SSID, ssid)
-                        .addField(GraylogFieldNames.SUBTYPE, "beacon")
+                        .addField(GraylogFieldNames.SUBTYPE, "beacon"),
+                meta
         );
 
         LOG.debug(message);

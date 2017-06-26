@@ -1,13 +1,13 @@
 package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.graylog.GraylogFieldNames;
 import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.Dot11ProbeRequestPacket;
 import org.pcap4j.packet.IllegalRawDataException;
-import org.pcap4j.packet.RadiotapPacket;
 
 import java.text.Normalizer;
 
@@ -20,7 +20,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
     }
 
     @Override
-    public void handle(byte[] payload, RadiotapPacket.RadiotapHeader header) throws IllegalRawDataException  {
+    public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException  {
         tick();
 
         Dot11ProbeRequestPacket probeRequest = Dot11ProbeRequestPacket.newPacket(payload, 0, payload.length);
@@ -75,7 +75,8 @@ public class ProbeRequestFrameHandler extends FrameHandler {
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.SSID, ssid)
                         .addField(GraylogFieldNames.TRANSMITTER, requester)
-                        .addField(GraylogFieldNames.SUBTYPE, "probe-req")
+                        .addField(GraylogFieldNames.SUBTYPE, "probe-req"),
+                meta
         );
 
         LOG.debug(message);

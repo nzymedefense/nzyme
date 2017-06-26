@@ -5,17 +5,14 @@
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
 
-        <RollingFile name="Logfile" fileName="logs/${name}.log" filePattern="logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout>
-                <pattern>${pattern}</pattern>
-            </PatternLayout>
+        <RollingFile name="Logfile" fileName="logs/nzyme.log" filePattern="logs/$${date:yyyy-MM}/nzyme-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="20"/>
         </RollingFile>
-
     </Appenders>
     <Loggers>
         <Root level="info">

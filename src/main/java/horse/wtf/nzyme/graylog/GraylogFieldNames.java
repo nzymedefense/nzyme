@@ -6,10 +6,9 @@ public class GraylogFieldNames {
 
     public static final String SSID = "ssid";
     public static final String TRANSMITTER = "transmitter";
-    public static final String RECEIVER = "receiver";
+    public static final String DESTINATION = "destination";
     public static final String BSSID = "bssid";
-
-    public static final String DEAUTH_REASON = "deauth_reason";
-    public static final String DEAUTH_REASON_NUMBER = "deauth_reason_number";
+    public static final String RESPONSE_CODE = "response_code";
+    public static final String RESPONSE_STRING = "response_string";
 
 }

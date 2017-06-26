@@ -9,11 +9,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
 
-public class DeauthenticationFrameHandler extends FrameHandler {
 
-    private static final Logger LOG = LogManager.getLogger(DeauthenticationFrameHandler.class);
+public class AssociationRequestFrameHandler extends FrameHandler {
 
-    public DeauthenticationFrameHandler(Nzyme nzyme) {
+    private static final Logger LOG = LogManager.getLogger(AssociationRequestFrameHandler.class);
+
+    public AssociationRequestFrameHandler(Nzyme nzyme) {
         super(nzyme);
     }
 
@@ -21,42 +22,34 @@ public class DeauthenticationFrameHandler extends FrameHandler {
     public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException {
         tick();
 
-        Dot11ManagementFrame deauth = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
+        Dot11ManagementFrame associationRequest = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         String destination = "";
-        if (deauth.getHeader().getAddress1() != null) {
-            destination = deauth.getHeader().getAddress1().toString();
+        if(associationRequest.getHeader().getAddress1() != null) {
+            destination = associationRequest.getHeader().getAddress1().toString();
         }
 
         String transmitter = "";
-        if (deauth.getHeader().getAddress2() != null) {
-            transmitter = deauth.getHeader().getAddress2().toString();
+        if(associationRequest.getHeader().getAddress2() != null) {
+            transmitter = associationRequest.getHeader().getAddress2().toString();
         }
 
-        String bssid = "";
-        if (deauth.getHeader().getAddress3() != null) {
-            bssid = deauth.getHeader().getAddress3().toString();
-        }
-
-        String message = "Deauth: Transmitter " + transmitter + " is deauthenticating " + destination
-                + " from BSSID " + bssid;
+        String message = transmitter + " is requesting to associate with " + destination;
 
         nzyme.getGraylogUplink().notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)
-                        .addField(GraylogFieldNames.BSSID, bssid)
-                        .addField(GraylogFieldNames.SUBTYPE, "deauth"),
+                        .addField(GraylogFieldNames.SUBTYPE, "assoc-req"),
                 meta
         );
-
 
         LOG.debug(message);
     }
 
     @Override
     public String getName() {
-        return "deauth";
+        return "assoc-req";
     }
 
 }
