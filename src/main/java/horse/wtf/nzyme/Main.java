@@ -7,17 +7,16 @@ public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
-    // TODO fix broken strings
-    // TODO aggregate beacons?
     // TODO send timestamp of frame not when we processed it
     // TODO implement assoc and disassoc
-    // TODO signal strength
-    // TODO send GELF for malformed packet
     // TODO Lock during channel switch? Avoid getCurrentChannel() race condition
     // TODO tests
-    // TODO log4j is fucked
     // TODO test deauth handler on other platform. might have same header offset issue
-    // TODO check frame integrity
+    // TODO why does this not run on ARM / raspberry
+    // TODO allow running without root on Linux
+    // TODO mvn release plugin
+    // TODO mvn deb/rpm packaging
+    // TODO auto-enrich SSID where possible
 
     /*
      * README:
@@ -31,6 +30,7 @@ public class Main {
      *      set low cycle time and split up channels over multiple sensors. or use multiple interfaces!
      *  - channel hopping conf on osx and linux, with sudo
      *  - beacon sampling
+     *  - Raspberry Pi / ARM issues
      */
 
     /* unencrypted mgt frames:

@@ -84,7 +84,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
             transmitter = probeReponse.getHeader().getAddress2().toString();
         }
 
-        String message = transmitter + " responded to beacon request from " + destination + " for " + ssid;
+        String message = transmitter + " responded to probe request from " + destination + " for " + ssid;
 
         nzyme.getGraylogUplink().notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())

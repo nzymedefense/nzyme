@@ -19,10 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
-import org.pcap4j.packet.factory.StaticRadiotapDataFieldFactory;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
-import org.pcap4j.packet.namednumber.RadiotapPresentBitNumber;
-import org.pcap4j.util.ByteArrays;
 
 import java.io.EOFException;
 import java.util.concurrent.Executors;

@@ -14,7 +14,7 @@ channels = 1,2,3,4,5,6,7,8,9,10,11
 channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
 
 # Channel hop interval in seconds. Leave at default if you don't know what this is.
-channel_hop_interval = 4
+channel_hop_interval = 1
 
 # Hostname/IP and port of a Graylog server GELF TCP input
 graylog_address = graylog.example.org:13999

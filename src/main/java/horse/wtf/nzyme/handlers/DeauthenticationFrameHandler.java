@@ -50,7 +50,6 @@ public class DeauthenticationFrameHandler extends FrameHandler {
                 meta
         );
 
-
         LOG.debug(message);
     }
 
