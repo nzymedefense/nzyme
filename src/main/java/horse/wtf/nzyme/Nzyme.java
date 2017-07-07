@@ -49,6 +49,7 @@ public class Nzyme {
     private final BeaconFrameHandler beaconFrameHandler;
     private final AssociationRequestFrameHandler associationRequestFrameHandler;
     private final AssociationResponseFrameHandler associationResponseFrameHandler;
+    private final DisassociationFrameHandler disassociationFrameHandler;
 
     private boolean inLoop = false;
 
@@ -74,8 +75,15 @@ public class Nzyme {
         this.channelHopper = new ChannelHopper(this, this.configuration.getChannels());
         this.channelHopper.initialize();
 
+        // Graylog GELF sender.
+        this.graylogUplink = new GraylogUplink(
+                this.configuration.getGraylogAddress().getHost(),
+                this.configuration.getGraylogAddress().getPort(),
+                this.nzymeId
+        );
+
         // Set up statistics printer.
-        this.statistics = new Statistics();
+        this.statistics = new Statistics(this);
         final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(this.statistics);
         LOG.info("Printing statistics every {} seconds. Logs are in [logs/] and will be automatically rotated.", STATS_INTERVAL);
         // Statistics printer.
@@ -87,13 +95,6 @@ public class Nzyme {
             LOG.info(statisticsPrinter.print());
             statistics.resetAccumulativeTicks();
         }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
-
-        // Graylog GELF sender.
-        this.graylogUplink = new GraylogUplink(
-                this.configuration.getGraylogAddress().getHost(),
-                this.configuration.getGraylogAddress().getPort(),
-                this.nzymeId
-        );
 
         // Get network interface for PCAP.
         PcapNetworkInterface networkInterface;
@@ -135,6 +136,7 @@ public class Nzyme {
         this.beaconFrameHandler = new BeaconFrameHandler(this);
         this.associationRequestFrameHandler = new AssociationRequestFrameHandler(this);
         this.associationResponseFrameHandler = new AssociationResponseFrameHandler(this);
+        this.disassociationFrameHandler = new DisassociationFrameHandler(this);
     }
 
     public void loop() {
@@ -170,7 +172,7 @@ public class Nzyme {
 
                         if (meta.isMalformed()) {
                             LOG.trace("Bad checksum. Skipping malformed packet.");
-                            this.getStatistics().tickMalformedCount(this.getChannelHopper().getCurrentChannel());
+                            this.getStatistics().tickMalformedCountAndNotify(this.getChannelHopper().getCurrentChannel());
                             continue;
                         }
 
@@ -181,32 +183,33 @@ public class Nzyme {
                         // Determine type and handler.
                         switch (type.value()) {
                             case 0: // assoc-req
-                                associationRequestFrameHandler.handle(payload, meta);
+                                associationRequestFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 1: // assoc-resp
-                                associationResponseFrameHandler.handle(payload, meta);
+                                associationResponseFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 4: // probe-req
-                                probeRequestHandler.handle(payload, meta);
+                                probeRequestHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 5: // probe-resp
-                                probeResponseHandler.handle(payload, meta);
+                                probeResponseHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 8: // beacon
-                                beaconFrameHandler.handle(payload, meta);
+                                beaconFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 10: // disaasoc
-                                LOG.info("disassoc");
+                                disassociationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                break;
                             case 12: // deauth
-                                deauthFrameHandler.handle(payload, meta);
+                                deauthFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             default:
                                 LOG.warn("Not handling frame type [{}].", type.value());
                         }
                     }
                 } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
-                    this.getStatistics().tickMalformedCount(this.getChannelHopper().getCurrentChannel());
-                    LOG.error("Illegal data received.", e);
+                    this.getStatistics().tickMalformedCountAndNotify(this.getChannelHopper().getCurrentChannel());
+                    LOG.debug("Illegal data received.", e);
                 } catch(Exception e) {
                     LOG.error("Could not process packet.", e);
                 }

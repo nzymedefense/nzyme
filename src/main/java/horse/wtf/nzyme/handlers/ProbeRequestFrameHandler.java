@@ -20,7 +20,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
     }
 
     @Override
-    public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException  {
+    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException  {
         tick();
 
         Dot11ProbeRequestPacket probeRequest = Dot11ProbeRequestPacket.newPacket(payload, 0, payload.length);

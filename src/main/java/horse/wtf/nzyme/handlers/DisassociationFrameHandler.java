@@ -10,11 +10,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
 
-public class DeauthenticationFrameHandler extends FrameHandler {
+public class DisassociationFrameHandler extends FrameHandler {
 
-    private static final Logger LOG = LogManager.getLogger(DeauthenticationFrameHandler.class);
+    private static final Logger LOG = LogManager.getLogger(DisassociationFrameHandler.class);
 
-    public DeauthenticationFrameHandler(Nzyme nzyme) {
+    public DisassociationFrameHandler(Nzyme nzyme) {
         super(nzyme);
     }
 
@@ -22,47 +22,41 @@ public class DeauthenticationFrameHandler extends FrameHandler {
     public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
         tick();
 
-        Dot11ManagementFrame deauth = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
+        Dot11ManagementFrame disassociationRequest = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         String destination = "";
-        if (deauth.getHeader().getAddress1() != null) {
-            destination = deauth.getHeader().getAddress1().toString();
+        if(disassociationRequest.getHeader().getAddress1() != null) {
+            destination = disassociationRequest.getHeader().getAddress1().toString();
         }
 
         String transmitter = "";
-        if (deauth.getHeader().getAddress2() != null) {
-            transmitter = deauth.getHeader().getAddress2().toString();
-        }
-
-        String bssid = "";
-        if (deauth.getHeader().getAddress3() != null) {
-            bssid = deauth.getHeader().getAddress3().toString();
+        if(disassociationRequest.getHeader().getAddress2() != null) {
+            transmitter = disassociationRequest.getHeader().getAddress2().toString();
         }
 
         // Reason.
         short reasonCode = Dot11LeavingReason.extract(payload, header);
         String reasonString = Dot11LeavingReason.lookup(reasonCode);
 
-        String message = "Deauth: Transmitter " + transmitter + " is deauthenticating " + destination
-                + " from BSSID " + bssid + " (" + reasonString + ")";
+        String message = transmitter + " is disassociating from " + destination + " (" + reasonString + ")";
 
         nzyme.getGraylogUplink().notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)
-                        .addField(GraylogFieldNames.BSSID, bssid)
                         .addField(GraylogFieldNames.REASON_CODE, reasonCode)
                         .addField(GraylogFieldNames.REASON_STRING, reasonString)
-                        .addField(GraylogFieldNames.SUBTYPE, "deauth"),
+                        .addField(GraylogFieldNames.SUBTYPE, "disassoc"),
                 meta
         );
 
         LOG.debug(message);
+
     }
 
     @Override
     public String getName() {
-        return "deauth";
+        return "disassoc";
     }
 
 }

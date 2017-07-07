@@ -3,7 +3,6 @@ package horse.wtf.nzyme.handlers;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import org.pcap4j.packet.IllegalRawDataException;
-import org.pcap4j.packet.RadiotapPacket;
 
 public abstract class FrameHandler {
 
@@ -19,10 +18,10 @@ public abstract class FrameHandler {
     }
 
     protected void malformed() {
-        nzyme.getStatistics().tickMalformedCount(nzyme.getChannelHopper().getCurrentChannel());
+        nzyme.getStatistics().tickMalformedCountAndNotify(nzyme.getChannelHopper().getCurrentChannel());
     }
 
-    public abstract void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException;
+    public abstract void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException;
     public abstract String getName();
 
 }

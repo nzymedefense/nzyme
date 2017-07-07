@@ -22,7 +22,7 @@ public class AssociationResponseFrameHandler extends FrameHandler {
     }
 
     @Override
-    public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException {
+    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
         tick();
 
         Dot11ManagementFrame associationResponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);

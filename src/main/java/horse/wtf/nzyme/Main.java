@@ -8,18 +8,20 @@ public class Main {
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
     // TODO send timestamp of frame not when we processed it
-    // TODO implement assoc and disassoc
     // TODO Lock during channel switch? Avoid getCurrentChannel() race condition
     // TODO tests
-    // TODO test deauth handler on other platform. might have same header offset issue
     // TODO why does this not run on ARM / raspberry
     // TODO allow running without root on Linux
     // TODO mvn release plugin
     // TODO mvn deb/rpm packaging
-    // TODO auto-enrich SSID where possible
+    // TODO deauth reason -- CHECK IF IT WORKS
+    // TODO SSID for assoc-req   -- HAS IT! - DOES IT ALWAYS HAVE IT? | wlan.fc.type_subtype == 0x0000
+    // TODO SSID for assoc-resp -- CHECK IF IT HAS IT. SH_OFFICE DOES NOT HAVE IT. | wlan.fc.type_subtype == 0x0001
 
     /*
      * README:
+     *  - what is thing thing even doing. link to blog post?
+     *  - list supported frame types
      *  - explain that you'll need a second interface because you'll lose network connection. link to ALFA on Amazon
      *  - it only works if network interface not connected to a wifi. channel will not change otherwise.
      *  - explain config file. reference example config
@@ -31,15 +33,18 @@ public class Main {
      *  - channel hopping conf on osx and linux, with sudo
      *  - beacon sampling
      *  - Raspberry Pi / ARM issues
+     *  - Lookup Tables / Pipeline Rules
+     *  - 5GHz range. (i.e. channel 153)
      */
 
     /* unencrypted mgt frames:
     Authentication
+    - Disassociation
     - De-authentication
     - Association request
-    Association response
-    x Re-association request
-    x Re-association response
+    - Association response
+    Re-association request
+    Re-association response
     - Probe request
     - Probe response
     - Beacon

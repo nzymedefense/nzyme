@@ -1,11 +1,16 @@
 package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.graylog.GraylogFieldNames;
+import horse.wtf.nzyme.graylog.Notification;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
+
+    private final Nzyme nzyme;
 
     private final AtomicLong frameCount;
     private final AtomicLong malformedCount;
@@ -19,7 +24,9 @@ public class Statistics {
     private final Map<String, AtomicLong> accessPoints;
     private final Map<String, AtomicLong> beaconedNetworks;
 
-    public Statistics() {
+    public Statistics(Nzyme nzyme) {
+        this.nzyme = nzyme;
+
         this.frameCount = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
 
@@ -43,7 +50,11 @@ public class Statistics {
         tickInMap(channel, channelCounts);
     }
 
-    public void tickMalformedCount(int channel) {
+    public void tickMalformedCountAndNotify(int channel) {
+        this.nzyme.getGraylogUplink().notify(
+                new Notification("Malformed frame received.", nzyme.getChannelHopper().getCurrentChannel())
+                        .addField(GraylogFieldNames.SUBTYPE, "malformed"), null);
+
         malformedCount.incrementAndGet();
         tickInMap(channel, channelMalformedCounts);
     }

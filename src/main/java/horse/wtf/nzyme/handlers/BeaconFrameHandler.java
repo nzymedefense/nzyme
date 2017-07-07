@@ -30,7 +30,7 @@ public class BeaconFrameHandler extends FrameHandler {
     }
 
     @Override
-    public void handle(byte[] payload, Dot11MetaInformation meta) throws IllegalRawDataException {
+    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
         tick();
         if(nzyme.getConfiguration().getBeaconSamplingRate() != 0) { // skip this completely if sampling is disabled
             if (sampleCount.getAndIncrement() == nzyme.getConfiguration().getBeaconSamplingRate()) {
