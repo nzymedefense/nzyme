@@ -54,7 +54,7 @@ public class AssociationRequestFrameHandler extends FrameHandler {
                 meta
         );
 
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     @Override
