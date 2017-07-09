@@ -17,7 +17,7 @@ public abstract class FrameHandler {
 
     }
 
-    protected void malformed() {
+    public void malformed() {
         nzyme.getStatistics().tickMalformedCountAndNotify(nzyme.getChannelHopper().getCurrentChannel());
     }
 

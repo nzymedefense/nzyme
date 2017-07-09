@@ -4,6 +4,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Tools;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.Dot11SSID;
 import horse.wtf.nzyme.graylog.GraylogFieldNames;
 import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +18,6 @@ public class ProbeResponseFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(ProbeResponseFrameHandler.class);
 
-    // TODO kek this should really be handled in the Dot11ProbeResponsePacket at some point
     private static final int SSID_LENGTH_POSITION = 37;
     private static final int SSID_POSITION = 38;
 
@@ -33,46 +33,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
 
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
-        // Check bounds for SSID length field.
-        try {
-            ByteArrays.validateBounds(payload, 0, SSID_LENGTH_POSITION + 1);
-        } catch (Exception e) {
-            malformed();
-            LOG.trace("Payload out of bounds. (1) Ignoring.");
-            return;
-        }
-
-        byte ssidLength = payload[SSID_LENGTH_POSITION];
-
-        if (ssidLength < 0) {
-            malformed();
-            LOG.trace("Negative SSID length. Ignoring.");
-            return;
-        }
-
-        // Check bounds for SSID field.
-        try {
-            ByteArrays.validateBounds(payload, SSID_POSITION, ssidLength);
-        } catch (Exception e) {
-            malformed();
-            LOG.trace("Payload out of bounds. (2) Ignoring.");
-            return;
-        }
-
-        // Extract SSID
-        byte[] ssidBytes = ByteArrays.getSubArray(payload, SSID_POSITION, ssidLength);
-
-        // Check if the SSID is valid UTF-8 (might me malformed frame)
-        if (!Tools.isValidUTF8(ssidBytes)) {
-            malformed();
-            LOG.trace("SSID not valid UTF8. Ignoring.");
-            return;
-        }
-
-        String ssid = null;
-        if (ssidLength >= 0) {
-            ssid = new String(ssidBytes, Charset.forName("UTF-8"));
-        }
+        String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
 
         String destination = "";
         if (probeReponse.getHeader().getAddress1() != null) {

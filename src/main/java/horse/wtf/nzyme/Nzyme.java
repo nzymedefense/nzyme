@@ -50,6 +50,7 @@ public class Nzyme {
     private final AssociationRequestFrameHandler associationRequestFrameHandler;
     private final AssociationResponseFrameHandler associationResponseFrameHandler;
     private final DisassociationFrameHandler disassociationFrameHandler;
+    private final AuthenticationFrameHandler authenticationFrameHandler;
 
     private boolean inLoop = false;
 
@@ -121,7 +122,7 @@ public class Nzyme {
         try {
             this.pcap = phb.build();
             this.pcap.setFilter(
-                    "type mgt and (subtype deauth or subtype probe-req or subtype probe-resp or subtype beacon or subtype assoc-req or subtype assoc-resp or subtype disassoc)",
+                    "type mgt and (subtype deauth or subtype probe-req or subtype probe-resp or subtype beacon or subtype assoc-req or subtype assoc-resp or subtype disassoc or subtype auth)",
                     BpfProgram.BpfCompileMode.OPTIMIZE
             );
         } catch (Exception e) {
@@ -137,6 +138,7 @@ public class Nzyme {
         this.associationRequestFrameHandler = new AssociationRequestFrameHandler(this);
         this.associationResponseFrameHandler = new AssociationResponseFrameHandler(this);
         this.disassociationFrameHandler = new DisassociationFrameHandler(this);
+        this.authenticationFrameHandler = new AuthenticationFrameHandler(this);
     }
 
     public void loop() {
@@ -199,6 +201,9 @@ public class Nzyme {
                                 break;
                             case 10: // disaasoc
                                 disassociationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                break;
+                            case 11: // auth
+                                authenticationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
                                 break;
                             case 12: // deauth
                                 deauthFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
