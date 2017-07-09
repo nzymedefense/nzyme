@@ -1,10 +1,5 @@
 package horse.wtf.nzyme;
 
-import com.beust.jcommander.JCommander;
-import com.github.joschi.jadconfig.JadConfig;
-import com.github.joschi.jadconfig.RepositoryException;
-import com.github.joschi.jadconfig.ValidationException;
-import com.github.joschi.jadconfig.repositories.PropertiesRepository;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.channels.ChannelHopper;
@@ -54,21 +49,9 @@ public class Nzyme {
 
     private boolean inLoop = false;
 
-    public Nzyme(String[] argv) throws InitializationException {
-        // Parse CLI arguments.
-        this.cliArguments = new CLIArguments();
-        JCommander.newBuilder()
-                .addObject(cliArguments)
-                .build()
-                .parse(argv);
-
-        // Parse configuration.
-        this.configuration = new Configuration();
-        try {
-            new JadConfig(new PropertiesRepository(this.cliArguments.getConfigFilePath()), configuration).process();
-        } catch (RepositoryException | ValidationException e) {
-            throw new InitializationException("Could not read config.", e);
-        }
+    public Nzyme(CLIArguments cliArguments, Configuration configuration) throws InitializationException {
+        this.cliArguments = cliArguments;
+        this.configuration = configuration;
 
         this.nzymeId = getConfiguration().getNzymeId();
 
