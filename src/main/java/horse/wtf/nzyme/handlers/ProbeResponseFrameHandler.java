@@ -35,6 +35,10 @@ public class ProbeResponseFrameHandler extends FrameHandler {
 
         String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
 
+        if (ssid == null) {
+            ssid = "[no SSID]";
+        }
+
         String destination = "";
         if (probeReponse.getHeader().getAddress1() != null) {
             destination = probeReponse.getHeader().getAddress1().toString();
