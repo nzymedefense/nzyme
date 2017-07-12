@@ -17,6 +17,10 @@ public class Notification {
     }
 
     public Notification addField(String key, Object value) {
+        if(value == null) {
+            return this;
+        }
+
         fields.put("_" + key, value);
 
         return this;
