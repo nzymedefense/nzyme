@@ -14,4 +14,9 @@ public class GraylogFieldNames {
     public static final String REASON_CODE = "reason_code";
     public static final String REASON_STRING = "reason_string";
 
+    public static final String IS_WEP = "is_wep";
+    public static final String TRANSACTION_SEQUENCE_NUMBER = "transaction_sequence_number";
+
+    public static final String AUTH_ALGORITHM = "authentication_algorithm";
+
 }

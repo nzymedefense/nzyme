@@ -51,7 +51,6 @@ public class DisassociationFrameHandler extends FrameHandler {
         );
 
         LOG.debug(message);
-
     }
 
     @Override

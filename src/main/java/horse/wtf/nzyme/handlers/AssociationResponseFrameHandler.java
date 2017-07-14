@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.util.ByteArrays;
 
+import java.nio.ByteOrder;
+
 public class AssociationResponseFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(AssociationResponseFrameHandler.class);
@@ -37,7 +39,7 @@ public class AssociationResponseFrameHandler extends FrameHandler {
         }
 
         // Parse the response code. 0 means success any other value means failure.
-        short responseCode = ByteArrays.getShort(new byte[]{payload[26], payload[27]}, 0);
+        short responseCode = ByteArrays.getShort(new byte[]{payload[26], payload[27]}, 0, ByteOrder.LITTLE_ENDIAN);
 
         if(responseCode < 0) {
             LOG.trace("Invalid response code <{}>.", responseCode);
