@@ -51,7 +51,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
 
         String message = transmitter + " responded to probe request from " + destination + " for " + ssid;
 
-        nzyme.getGraylogUplink().notify(
+        nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.DESTINATION, destination)
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)

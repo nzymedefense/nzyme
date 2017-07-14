@@ -62,7 +62,7 @@ public class AssociationResponseFrameHandler extends FrameHandler {
         String message = transmitter + " answered association request from " + destination
                 + ". Response: " + response.toUpperCase() + " (" + responseCode + ")";
 
-        nzyme.getGraylogUplink().notify(
+        nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)

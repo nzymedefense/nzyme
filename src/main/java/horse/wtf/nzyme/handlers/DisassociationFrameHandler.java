@@ -40,7 +40,7 @@ public class DisassociationFrameHandler extends FrameHandler {
 
         String message = transmitter + " is disassociating from " + destination + " (" + reasonString + ")";
 
-        nzyme.getGraylogUplink().notify(
+        nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)

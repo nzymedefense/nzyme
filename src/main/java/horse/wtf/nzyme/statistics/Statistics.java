@@ -51,7 +51,7 @@ public class Statistics {
     }
 
     public void tickMalformedCountAndNotify(int channel) {
-        this.nzyme.getGraylogUplink().notify(
+        this.nzyme.notify(
                 new Notification("Malformed frame received.", nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.SUBTYPE, "malformed"), null);
 

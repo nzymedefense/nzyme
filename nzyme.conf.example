@@ -16,8 +16,8 @@ channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
 # Channel hop interval in seconds. Leave at default if you don't know what this is.
 channel_hop_interval = 1
 
-# Hostname/IP and port of a Graylog server GELF TCP input
-graylog_address = graylog.example.org:13999
+# List of Graylog GELF TCP inputs. You can send to multiple, comma separated, Graylog servers if you want.
+graylog_addresses = grataylog.example.org:13999
 
 # There are a lot of beacon frames in the air. A sampling rate of, for example, 20, will ignore 19 beacons
 # and only send every 20th to Graylog. Use this to avoid traffic. Set to 0 to disable sampling.

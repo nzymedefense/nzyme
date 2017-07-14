@@ -1,6 +1,7 @@
 .idea
 *.iml
 nzyme.conf
+dependency-reduced-pom.xml
 
 logs/
 target/

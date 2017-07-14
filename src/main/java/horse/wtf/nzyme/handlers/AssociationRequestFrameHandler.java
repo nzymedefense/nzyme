@@ -45,7 +45,7 @@ public class AssociationRequestFrameHandler extends FrameHandler {
 
         String message = transmitter + " is requesting to associate with " + ssid + " at " + destination;
 
-        nzyme.getGraylogUplink().notify(
+        nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)

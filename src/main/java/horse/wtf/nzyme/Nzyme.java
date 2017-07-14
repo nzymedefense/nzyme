@@ -1,12 +1,15 @@
 package horse.wtf.nzyme;
 
+import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.graylog.GraylogAddress;
 import horse.wtf.nzyme.graylog.GraylogUplink;
+import horse.wtf.nzyme.graylog.Notification;
 import horse.wtf.nzyme.handlers.*;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
@@ -17,6 +20,7 @@ import org.pcap4j.packet.*;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
 
 import java.io.EOFException;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -32,7 +36,7 @@ public class Nzyme {
     private final CLIArguments cliArguments;
     private final Configuration configuration;
     private final Statistics statistics;
-    private final GraylogUplink graylogUplink;
+    private final List<GraylogUplink> graylogUplinks;
     private final ChannelHopper channelHopper;
 
     private final PcapHandle pcap;
@@ -60,11 +64,10 @@ public class Nzyme {
         this.channelHopper.initialize();
 
         // Graylog GELF sender.
-        this.graylogUplink = new GraylogUplink(
-                this.configuration.getGraylogAddress().getHost(),
-                this.configuration.getGraylogAddress().getPort(),
-                this.nzymeId
-        );
+        this.graylogUplinks = Lists.newArrayList();
+        for (GraylogAddress address : this.configuration.getGraylogAddresses()) {
+            this.graylogUplinks.add(new GraylogUplink(address.getHost(), address.getPort(), this.nzymeId));
+        }
 
         // Set up statistics printer.
         this.statistics = new Statistics(this);
@@ -205,6 +208,12 @@ public class Nzyme {
         }
     }
 
+    public void notify(Notification notification, Dot11MetaInformation meta) {
+        for (GraylogUplink uplink : getGraylogUplinks()) {
+            uplink.notify(notification, meta);
+        }
+    }
+
     public String getNzymeId() {
         return nzymeId;
     }
@@ -217,8 +226,8 @@ public class Nzyme {
         return statistics;
     }
 
-    public GraylogUplink getGraylogUplink() {
-        return graylogUplink;
+    public List<GraylogUplink> getGraylogUplinks() {
+        return graylogUplinks;
     }
 
     public ChannelHopper getChannelHopper() {

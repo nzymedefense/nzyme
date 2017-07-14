@@ -46,7 +46,7 @@ public class DeauthenticationFrameHandler extends FrameHandler {
         String message = "Deauth: Transmitter " + transmitter + " is deauthenticating " + destination
                 + " from BSSID " + bssid + " (" + reasonString + ")";
 
-        nzyme.getGraylogUplink().notify(
+        nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
                         .addField(GraylogFieldNames.TRANSMITTER, transmitter)
                         .addField(GraylogFieldNames.DESTINATION, destination)
