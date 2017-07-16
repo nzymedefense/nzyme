@@ -97,9 +97,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
         if (auth.getHeader().getAddress2() != null) {
             transmitter = auth.getHeader().getAddress2().toString();
         }
-
-        Map<String, Object> flexibleGELFFields = Maps.newHashMap();
-
+        
         String message = "";
         switch(algorithm) {
             case OPEN_SYSTEM:
