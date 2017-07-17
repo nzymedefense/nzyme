@@ -4,6 +4,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11SSID;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.graylog.GraylogFieldNames;
 import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
@@ -37,7 +38,13 @@ public class AssociationRequestFrameHandler extends FrameHandler {
             transmitter = associationRequest.getHeader().getAddress2().toString();
         }
 
-        String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
+        String ssid = null;
+        try {
+            ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
+        } catch (MalformedFrameException e) {
+            malformed();
+            LOG.trace("Skipping malformed assoc-req frame.");
+        }
 
         if (ssid == null) {
             ssid = "[no SSID]";

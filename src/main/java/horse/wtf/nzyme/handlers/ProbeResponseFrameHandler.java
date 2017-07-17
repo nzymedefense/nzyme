@@ -1,19 +1,15 @@
 package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.Nzyme;
-import horse.wtf.nzyme.Tools;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11SSID;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.graylog.GraylogFieldNames;
 import horse.wtf.nzyme.graylog.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
-import org.pcap4j.util.ByteArrays;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
 
 public class ProbeResponseFrameHandler extends FrameHandler {
 
@@ -32,7 +28,13 @@ public class ProbeResponseFrameHandler extends FrameHandler {
 
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
-        String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
+        String ssid = null;
+        try {
+            ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
+        } catch (MalformedFrameException e) {
+            malformed();
+            LOG.trace("Skipping malformed probe-resp frame.");
+        }
 
         if (ssid == null) {
             ssid = "[no SSID]";

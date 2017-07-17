@@ -1,6 +1,5 @@
 package horse.wtf.nzyme.dot11;
 
-import horse.wtf.nzyme.handlers.MockFrameHandler;
 import horse.wtf.nzyme.handlers.ProbeResponseFrameHandler;
 import org.testng.annotations.Test;
 
@@ -21,11 +20,16 @@ public class Dot11SSIDTest {
 
     @Test
     public void testExtractSSID() throws Exception {
-        String ssid = Dot11SSID.extractSSID(new MockFrameHandler(null),
-                ProbeResponseFrameHandler.SSID_LENGTH_POSITION,
-                ProbeResponseFrameHandler.SSID_POSITION,
-                PROBE_RESP
-        );
+        String ssid = null;
+        try {
+            ssid = Dot11SSID.extractSSID(
+                    ProbeResponseFrameHandler.SSID_LENGTH_POSITION,
+                    ProbeResponseFrameHandler.SSID_POSITION,
+                    PROBE_RESP
+            );
+        } catch (MalformedFrameException e) {
+            fail("malformed frame");
+        }
 
         assertEquals(ssid, "United_Wi-Fi");
     }

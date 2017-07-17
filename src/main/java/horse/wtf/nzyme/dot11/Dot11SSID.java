@@ -13,31 +13,28 @@ public class Dot11SSID {
 
     private static final Logger LOG = LogManager.getLogger(Dot11SSID.class);
 
-    public static String extractSSID(FrameHandler handler, int lengthPos, int ssidPos, byte[] payload) {
+    public static String extractSSID(int lengthPos, int ssidPos, byte[] payload) throws MalformedFrameException {
         // Check bounds for SSID length field.
         try {
             ByteArrays.validateBounds(payload, 0, lengthPos + 1);
         } catch (Exception e) {
-            handler.malformed();
-            LOG.trace("Payload out of bounds. (1) Ignoring.");
-            return null;
+            LOG.trace("Payload out of bounds. (1)");
+            throw new MalformedFrameException();
         }
 
         byte ssidLength = payload[lengthPos];
 
         if (ssidLength < 0) {
-            handler.malformed();
-            LOG.trace("Negative SSID length. Ignoring.");
-            return null;
+            LOG.trace("Negative SSID length.");
+            throw new MalformedFrameException();
         }
 
         // Check bounds for SSID field.
         try {
             ByteArrays.validateBounds(payload, ssidPos, ssidLength);
         } catch (Exception e) {
-            handler.malformed();
-            LOG.trace("Payload out of bounds. (2) Ignoring.");
-            return null;
+            LOG.trace("Payload out of bounds. (2)");
+            throw new MalformedFrameException();
         }
 
         // Extract SSID
@@ -45,9 +42,8 @@ public class Dot11SSID {
 
         // Check if the SSID is valid UTF-8 (might me malformed frame)
         if (!Tools.isValidUTF8(ssidBytes)) {
-            handler.malformed();
-            LOG.trace("SSID not valid UTF8. Ignoring.");
-            return null;
+            LOG.trace("SSID not valid UTF8.");
+            throw new MalformedFrameException();
         }
 
         if (ssidLength >= 0) {
