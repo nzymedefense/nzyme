@@ -11,9 +11,11 @@ public class StatisticsPrinter {
     private final DecimalFormat df;
 
     private final Statistics statistics;
+    private final Nzyme nzyme;
 
-    public StatisticsPrinter(Statistics statistics) {
-        this.statistics = statistics;
+    public StatisticsPrinter(Nzyme nzyme) {
+        this.statistics = nzyme.getStatistics();
+        this.nzyme = nzyme;
 
         this.df = new DecimalFormat();
     }
@@ -40,13 +42,13 @@ public class StatisticsPrinter {
 
         sb.append("\n");
         sb.append("Probing devices:                   ").append(df.format(statistics.getProbingDevices().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
+                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
         sb.append("\n");
         sb.append("Access points:                     ").append(df.format(statistics.getAccessPoints().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
+                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
         sb.append("\n");
         sb.append("Beaconing networks:                ").append(df.format(statistics.getBeaconedNetworks().size()))
-                .append(" (last ").append(Nzyme.STATS_INTERVAL).append("s)");
+                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
 
 
 

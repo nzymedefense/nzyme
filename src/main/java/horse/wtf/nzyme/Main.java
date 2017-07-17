@@ -50,9 +50,9 @@ public class Main {
         }
 
         try {
-            Nzyme nzyme = new Nzyme(cliArguments, configuration);
+            Nzyme nzyme = new NzymeImpl(cliArguments, configuration);
             nzyme.loop();
-        } catch (Nzyme.InitializationException e) {
+        } catch (NzymeInitializationException e) {
             LOG.error("Boot error.", e);
             Runtime.getRuntime().exit(FAILURE);
         }
