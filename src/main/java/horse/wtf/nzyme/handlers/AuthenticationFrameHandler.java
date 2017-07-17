@@ -97,7 +97,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
         if (auth.getHeader().getAddress2() != null) {
             transmitter = auth.getHeader().getAddress2().toString();
         }
-        
+
         String message = "";
         switch(algorithm) {
             case OPEN_SYSTEM:

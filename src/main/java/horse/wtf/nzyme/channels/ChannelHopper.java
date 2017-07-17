@@ -7,7 +7,6 @@ import horse.wtf.nzyme.Nzyme;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,12 +18,16 @@ public class ChannelHopper {
     private final ImmutableList<Integer> channels;
     private final Nzyme nzyme;
 
+    private final Lock lock;
+
     private int currentChannelIndex = 0;
 
     public ChannelHopper(Nzyme nzyme, ImmutableList<Integer> channels) {
         if(channels == null || channels.isEmpty()) {
             throw new RuntimeException("Channels empty or NULL. You need to configure at least one channel.");
         }
+
+        this.lock = new Lock();
 
         this.channels = channels;
         this.nzyme = nzyme;
@@ -35,7 +38,7 @@ public class ChannelHopper {
                 .setDaemon(true)
                 .setNameFormat("channel-hopper-%d")
                 .build()
-        ).scheduleAtFixedRate(() -> {
+        ).scheduleWithFixedDelay(() -> {
             try {
                 if (!this.nzyme.isInLoop()) {
                     return;
@@ -63,27 +66,39 @@ public class ChannelHopper {
         return this.channels.get(this.currentChannelIndex);
     }
 
-    private void changeToChannel(Integer channel) throws IOException, InterruptedException {
-        String networkInterface = this.nzyme.getConfiguration().getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
+    private void changeToChannel(Integer channel) {
+        this.lock.lock();
 
-        String command = this.nzyme.getConfiguration().getChannelHopCommand()
-                .replace("{channel}",channel.toString()).replace("{interface}", networkInterface);
-        LOG.debug("Executing: [{}]", command);
+        try {
+            String networkInterface = this.nzyme.getConfiguration().getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
 
-        Process exec = Runtime.getRuntime().exec(command);
-        int returnCode = exec.waitFor();
+            String command = this.nzyme.getConfiguration().getChannelHopCommand()
+                    .replace("{channel}", channel.toString()).replace("{interface}", networkInterface);
+            LOG.debug("Executing: [{}]", command);
 
-        String stderr = CharStreams.toString(new InputStreamReader(exec.getErrorStream())).replace("\n", "").replace("\r", "");
+            Process exec = Runtime.getRuntime().exec(command);
+            int returnCode = exec.waitFor();
 
-        if (returnCode != 0 || !stderr.trim().isEmpty()) {
-            if(stderr.contains("no tty present and no askpass program specified")) {
-                stderr = stderr + " (are you running with sudo? It must succeed without STDIN/user input. See README for instructions.)";
+            String stderr = CharStreams.toString(new InputStreamReader(exec.getErrorStream())).replace("\n", "").replace("\r", "");
+
+            if (returnCode != 0 || !stderr.trim().isEmpty()) {
+                if (stderr.contains("no tty present and no askpass program specified")) {
+                    stderr = stderr + " (are you running with sudo? It must succeed without STDIN/user input. See README for instructions.)";
+                }
+
+                LOG.fatal("Could not configure interface [{}] to use channel <{}>. Return code <{}>, STDERR: [{}]", networkInterface, channel, returnCode, stderr);
+            } else {
+                LOG.debug("Channel change successful.");
             }
-
-            LOG.fatal("Could not configure interface [{}] to use channel <{}>. Return code <{}>, STDERR: [{}]", networkInterface, channel, returnCode, stderr);
-        } else {
-            LOG.debug("Channel change successful.");
+        } catch(Exception e) {
+            LOG.error("Could not hop to channel <{}>.", channel);
+        } finally {
+            this.lock.unlock();
         }
+    }
+
+    public Lock getLock() {
+        return this.lock;
     }
 
 }

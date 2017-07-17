@@ -132,6 +132,14 @@ public class Nzyme {
 
         this.inLoop = true;
         while (true) {
+            // Park in case there is a channel switch happening.
+            try {
+                this.channelHopper.getLock().await();
+            } catch (InterruptedException e) {
+                LOG.warn("Channel hopper mutex acquisition interrupted. Skipping this frame.");
+                continue;
+            }
+
             Packet packet;
 
             try {
