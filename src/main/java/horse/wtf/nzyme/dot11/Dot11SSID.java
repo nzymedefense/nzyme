@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.pcap4j.util.ByteArrays;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 public class Dot11SSID {
 

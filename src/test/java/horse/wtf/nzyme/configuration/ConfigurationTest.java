@@ -28,10 +28,25 @@ public class ConfigurationTest {
         assertEquals(configuration.getGraylogAddresses().get(1).getPort(), 12500);
     }
 
+    @Test
+    public void testGetChannels() throws Exception {
+        TestableConfiguration configuration = new TestableConfiguration();
+        configuration.setParameterChannels("1,2,3,4,5,6,7,8,9,10,11");
+
+        assertEquals(configuration.getChannels().size(), 11);
+        assertEquals(configuration.getChannels().get(0), new Integer(1));
+        assertEquals(configuration.getChannels().get(4), new Integer(5));
+        assertEquals(configuration.getChannels().get(10), new Integer(11));
+    }
+
     private class TestableConfiguration extends Configuration {
 
         public void setParameterGraylogAddresses(String addresses) {
             this.graylogAddresses = addresses;
+        }
+
+        public void setParameterChannels(String channels) {
+            this.channels = channels;
         }
 
     }

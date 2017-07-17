@@ -13,19 +13,18 @@ import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.util.ByteArrays;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 public class ProbeResponseFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(ProbeResponseFrameHandler.class);
 
-    private static final int SSID_LENGTH_POSITION = 37;
-    private static final int SSID_POSITION = 38;
+    public static final int SSID_LENGTH_POSITION = 37;
+    public static final int SSID_POSITION = 38;
 
     public ProbeResponseFrameHandler(Nzyme nzyme) {
         super(nzyme);
     }
-
-    // TODO extract and share SSID parsing
 
     @Override
     public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
@@ -34,6 +33,8 @@ public class ProbeResponseFrameHandler extends FrameHandler {
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
+        LOG.info(ssid);
+        LOG.info(Arrays.toString(payload));
 
         if (ssid == null) {
             ssid = "[no SSID]";

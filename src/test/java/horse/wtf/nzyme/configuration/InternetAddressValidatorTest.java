@@ -27,4 +27,52 @@ public class InternetAddressValidatorTest {
         }
     }
 
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForEmptyAddress() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForCompletelyMalformedAddress() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "gfdgfdgfd");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithMissingPort() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithMissingPort2() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org:");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithInvalidPort() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org:what");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithTooHighPort() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org:999999999999");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithTooLowPort() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org:-9001");
+    }
+
+    @Test(expectedExceptions = ValidationException.class)
+    public void testValidadtionFailsForAddressWithZeroPort() throws Exception {
+        InternetAddressValidator v = new InternetAddressValidator();
+        v.validate("graylog_addresses", "example.org:0");
+    }
+
 }
