@@ -33,8 +33,6 @@ public class ProbeResponseFrameHandler extends FrameHandler {
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         String ssid = Dot11SSID.extractSSID(this, SSID_LENGTH_POSITION, SSID_POSITION, payload);
-        LOG.info(ssid);
-        LOG.info(Arrays.toString(payload));
 
         if (ssid == null) {
             ssid = "[no SSID]";
