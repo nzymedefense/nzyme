@@ -90,7 +90,7 @@ public class BeaconFrameHandler extends FrameHandler {
                 meta
         );
 
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     @Override
