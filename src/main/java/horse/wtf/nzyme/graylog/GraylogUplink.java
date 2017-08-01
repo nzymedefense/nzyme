@@ -64,8 +64,11 @@ public class GraylogUplink {
         if(meta != null) {
             gelf.addAdditionalField("signal_strength", meta.getAntennaSignal());
             gelf.addAdditionalField("frequency", meta.getFrequency());
-
             gelf.addAdditionalField("signal_quality", calculateSignalQuality(meta.getAntennaSignal()));
+
+            if(meta.getMacTimestamp() >= 0) {
+                gelf.addAdditionalField("mac_timestamp", meta.getMacTimestamp());
+            }
         }
 
         this.gelfTransport.trySend(gelf);

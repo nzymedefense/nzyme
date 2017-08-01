@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11;
 
 import org.pcap4j.packet.*;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class Dot11MetaInformation {
@@ -26,11 +27,13 @@ public class Dot11MetaInformation {
     private final boolean malformed;
     private final int antennaSignal;
     private final int frequency;
+    private final long macTimestamp;
 
-    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency) {
+    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, long macTimestamp) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
         this.frequency = frequency;
+        this.macTimestamp = macTimestamp;
     }
 
     public boolean isMalformed() {
@@ -45,6 +48,10 @@ public class Dot11MetaInformation {
         return frequency;
     }
 
+    public long getMacTimestamp() {
+        return macTimestamp;
+    }
+
     public static Dot11MetaInformation parse(ArrayList<RadiotapPacket.RadiotapData> dataFields) {
         int antennaSignal = 0;
         int frequency = 0;
@@ -52,6 +59,7 @@ public class Dot11MetaInformation {
         boolean delimiterCrcError = false;
         boolean badPlcpCrc = false;
         boolean badFcs = false;
+        long macTimestamp = -1;
 
         int found = 0;
         for (RadiotapPacket.RadiotapData f : dataFields) {
@@ -74,9 +82,11 @@ public class Dot11MetaInformation {
             } else if (f instanceof RadiotapDataFlags) {
                 badFcs = ((RadiotapDataFlags) f).isBadFcs();
                 found++;
+            } else if (f instanceof RadiotapDataTsft) {
+                macTimestamp = ((RadiotapDataTsft) f).getMacTimestamp().longValue();
             }
         }
 
-        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency);
+        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency, macTimestamp);
     }
 }
