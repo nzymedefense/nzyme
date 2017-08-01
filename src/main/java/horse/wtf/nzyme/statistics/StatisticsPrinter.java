@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class StatisticsPrinter {
 
     private final DecimalFormat df;
+    private final DecimalFormat percentDf;
 
     private final Statistics statistics;
     private final Nzyme nzyme;
@@ -35,6 +36,7 @@ public class StatisticsPrinter {
         this.nzyme = nzyme;
 
         this.df = new DecimalFormat();
+        this.percentDf = new DecimalFormat("#,##0.00'%'");
     }
 
     public String print() {
@@ -55,7 +57,7 @@ public class StatisticsPrinter {
 
         sb.append("\n");
         sb.append("Malformed Frames per channel:      ");
-        sb.append(printChannelStatistics(statistics.getChannelMalformedCounts()));
+        sb.append(printMalformedStatistics(statistics.getChannelCounts(), statistics.getChannelMalformedCounts()));
 
         sb.append("\n");
         sb.append("Probing devices:                   ").append(df.format(statistics.getProbingDevices().size()))
@@ -77,7 +79,39 @@ public class StatisticsPrinter {
 
         int i = 0;
         for (Map.Entry<Integer, AtomicLong> channel : channels.entrySet()) {
-            sb.append(channel.getKey()).append(" (").append(df.format(channel.getValue())).append(")");
+            sb.append(channel.getKey()).append(": ").append(df.format(channel.getValue()));
+
+            if(i+1 != channels.size()) {
+                sb.append(", ");
+            }
+
+            i++;
+        }
+
+        return sb.toString();
+    }
+
+    private String printMalformedStatistics(Map<Integer, AtomicLong> channels, Map<Integer, AtomicLong> malformed) {
+        StringBuilder sb = new StringBuilder();
+
+        int i = 0;
+        for (Map.Entry<Integer, AtomicLong> channel : malformed.entrySet()) {
+            double malformedPercentage;
+
+            // Calculate percentage of malformed frames on this channel.
+            if(channels.containsKey(channel.getKey())) {
+                long totalCount = channels.get(channel.getKey()).get();
+                if(totalCount == 0) {
+                    malformedPercentage = -1.0;
+                } else {
+                    malformedPercentage = (channel.getValue().get() / ((double) totalCount)) * 100;
+                }
+            } else {
+                malformedPercentage = -1.0;
+            }
+
+            sb.append(channel.getKey()).append(": ").append(percentDf.format(malformedPercentage))
+                    .append(" (").append(df.format(channel.getValue())).append(")");
 
             if(i+1 != channels.size()) {
                 sb.append(", ");
