@@ -19,7 +19,6 @@ package horse.wtf.nzyme.dot11;
 
 import org.pcap4j.packet.*;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class Dot11MetaInformation {
@@ -28,12 +27,14 @@ public class Dot11MetaInformation {
     private final int antennaSignal;
     private final int frequency;
     private final long macTimestamp;
+    private final boolean isWep;
 
-    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, long macTimestamp) {
+    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, long macTimestamp, boolean isWep) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
         this.frequency = frequency;
         this.macTimestamp = macTimestamp;
+        this.isWep = isWep;
     }
 
     public boolean isMalformed() {
@@ -52,6 +53,10 @@ public class Dot11MetaInformation {
         return macTimestamp;
     }
 
+    public boolean isWep() {
+        return isWep;
+    }
+
     public static Dot11MetaInformation parse(ArrayList<RadiotapPacket.RadiotapData> dataFields) {
         int antennaSignal = 0;
         int frequency = 0;
@@ -59,11 +64,12 @@ public class Dot11MetaInformation {
         boolean delimiterCrcError = false;
         boolean badPlcpCrc = false;
         boolean badFcs = false;
+        boolean isWep = false;
         long macTimestamp = -1;
 
         int found = 0;
         for (RadiotapPacket.RadiotapData f : dataFields) {
-            if(found == 5) {
+            if(found == 6) {
                 break;
             }
 
@@ -81,12 +87,14 @@ public class Dot11MetaInformation {
                 found++;
             } else if (f instanceof RadiotapDataFlags) {
                 badFcs = ((RadiotapDataFlags) f).isBadFcs();
+                isWep = ((RadiotapDataFlags) f).isWepEncrypted();
                 found++;
             } else if (f instanceof RadiotapDataTsft) {
                 macTimestamp = ((RadiotapDataTsft) f).getMacTimestamp().longValue();
+                found++;
             }
         }
 
-        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency, macTimestamp);
+        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency, macTimestamp, isWep);
     }
 }
