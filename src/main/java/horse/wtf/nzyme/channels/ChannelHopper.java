@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ChannelHopper {
 
-    private static final Logger LOG = LogManager.getLogger(Nzyme.class);
+    private static final Logger LOG = LogManager.getLogger(ChannelHopper.class);
 
     private final ImmutableList<Integer> channels;
     private final Nzyme nzyme;
@@ -108,7 +108,7 @@ public class ChannelHopper {
                 LOG.debug("Channel change successful.");
             }
         } catch(Exception e) {
-            LOG.error("Could not hop to channel <{}>.", channel);
+            LOG.error("Could not hop to channel <{}>.", channel, e);
         } finally {
             this.lock.unlock();
         }
