@@ -1,13 +1,11 @@
 # A name for this nzyme-instance.
 nzyme_id = nzyme-sensor-1
 
-# The wifi interface to listen on. Find the name by running `ifconfig`. Must support monitor mode.
-interface = wlan0
-
-# 802.11 channels to use. Nzyme will cycle your network adapter through these one after another, infinitely.
+# WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
 # Consider local legal requirements and regulations. Default is US 2.4GHz band.
+# Configure one or more interfaces here.
 # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
-channels = 1,2,3,4,5,6,7,8,9,10,11
+channels = wlan0:1,2,3,4,5,6,7,8|wlan1:9,10,11,149,151
 
 # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
 # configure the adapter. Examples for Linux and OSX are in the README.

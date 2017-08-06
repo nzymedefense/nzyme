@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
 
-    private final Nzyme nzyme;
-
     private final AtomicLong frameCount;
     private final AtomicLong malformedCount;
     private final Map<String, AtomicLong> frameTypes;
@@ -41,9 +39,7 @@ public class Statistics {
     private final Map<String, AtomicLong> accessPoints;
     private final Map<String, AtomicLong> beaconedNetworks;
 
-    public Statistics(Nzyme nzyme) {
-        this.nzyme = nzyme;
-
+    public Statistics() {
         this.frameCount = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
 
@@ -67,9 +63,9 @@ public class Statistics {
         tickInMap(channel, channelCounts);
     }
 
-    public void tickMalformedCountAndNotify(int channel) {
-        this.nzyme.notify(
-                new Notification("Malformed frame received.", nzyme.getChannelHopper().getCurrentChannel())
+    public void tickMalformedCountAndNotify(Nzyme nzyme, int channel) {
+        nzyme.notify(
+                new Notification("Malformed frame received.", channel)
                         .addField(GraylogFieldNames.SUBTYPE, "malformed"), null);
 
         malformedCount.incrementAndGet();

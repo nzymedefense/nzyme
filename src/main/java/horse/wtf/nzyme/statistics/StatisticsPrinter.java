@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.statistics;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.Main;
 
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -29,11 +29,9 @@ public class StatisticsPrinter {
     private final DecimalFormat percentDf;
 
     private final Statistics statistics;
-    private final Nzyme nzyme;
 
-    public StatisticsPrinter(Nzyme nzyme) {
-        this.statistics = nzyme.getStatistics();
-        this.nzyme = nzyme;
+    public StatisticsPrinter(Statistics statistics) {
+        this.statistics = statistics;
 
         this.df = new DecimalFormat();
         this.percentDf = new DecimalFormat("#,##0.00'%'");
@@ -61,15 +59,13 @@ public class StatisticsPrinter {
 
         sb.append("\n");
         sb.append("Probing devices:                   ").append(df.format(statistics.getProbingDevices().size()))
-                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
+                .append(" (last ").append(Main.STATS_INTERVAL).append("s)");
         sb.append("\n");
         sb.append("Access points:                     ").append(df.format(statistics.getAccessPoints().size()))
-                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
+                .append(" (last ").append(Main.STATS_INTERVAL).append("s)");
         sb.append("\n");
         sb.append("Beaconing networks:                ").append(df.format(statistics.getBeaconedNetworks().size()))
-                .append(" (last ").append(nzyme.getStatsInterval()).append("s)");
-
-
+                .append(" (last ").append(Main.STATS_INTERVAL).append("s)");
 
         return sb.toString();
     }

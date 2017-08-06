@@ -28,8 +28,10 @@ public class MockNzyme implements Nzyme {
     private boolean inLoop = false;
 
     @Override
-    public void loop() throws NzymeInitializationException {
+    public Runnable loop() throws NzymeInitializationException {
         inLoop = true;
+
+        return () -> { /* noop */ };
     }
 
     @Override
@@ -40,11 +42,6 @@ public class MockNzyme implements Nzyme {
     @Override
     public void notify(Notification notification, Dot11MetaInformation meta) {
         // noop
-    }
-
-    @Override
-    public int getStatsInterval() {
-        return Integer.MAX_VALUE;
     }
 
     @Override
@@ -61,4 +58,10 @@ public class MockNzyme implements Nzyme {
     public Configuration getConfiguration() {
         return null;
     }
+
+    @Override
+    public String getNetworkInterface() {
+        return "FOO";
+    }
+
 }

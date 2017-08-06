@@ -19,11 +19,14 @@ package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
 import com.github.joschi.jadconfig.Parameter;
+import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.graylog.GraylogAddress;
 
+import java.util.AbstractMap;
 import java.util.List;
 
 public class Configuration {
@@ -31,13 +34,10 @@ public class Configuration {
     @Parameter(value = "nzyme_id", required = true)
     protected String nzymeId;
 
-    @Parameter(value = "interface", required = true)
-    protected String networkInterface;
-
     @Parameter(value = "graylog_addresses", validator = InternetAddressValidator.class, required = true)
     protected String graylogAddresses;
 
-    @Parameter(value = "channels", validator = SplittableListValidator.class, required = true)
+    @Parameter(value = "channels", validator = InterfacesAndChannelsValidator.class, required = true)
     protected String channels;
 
     @Parameter(value = "channel_hop_command", required = true)
@@ -71,22 +71,40 @@ public class Configuration {
         return result;
     }
 
-    public String getNetworkInterface() {
-        return networkInterface;
-    }
-
     public int getBeaconSamplingRate() {
         return beaconSamplingRate;
     }
 
-    public ImmutableList<Integer> getChannels() {
-        ImmutableList.Builder<Integer> builder = new ImmutableList.Builder<>();
+    public ImmutableMap<String, ImmutableList<Integer>> getChannels() {
+        ImmutableMap.Builder<String, ImmutableList<Integer>> result = new ImmutableMap.Builder<>();
 
-        for (String s : Splitter.on(",").omitEmptyStrings().split(channels)) {
-            builder.add(Integer.valueOf(s));
+        if(!channels.contains("|")) {
+            // Only one interface specified.
+            result.put(parseInterfaceAndChannels(channels));
+        } else {
+            for (String interfaceInfo : Splitter.on("|").split(channels)) {
+                result.put(parseInterfaceAndChannels(interfaceInfo));
+            }
         }
 
-        return builder.build();
+        return result.build();
+    }
+
+    private AbstractMap.SimpleEntry<String, ImmutableList<Integer>> parseInterfaceAndChannels(String interfaceInfo) {
+        List<String> parts = Splitter.on(":").splitToList(interfaceInfo);
+        String interfaceName = parts.get(0);
+
+        ImmutableList.Builder<Integer> channels = new ImmutableList.Builder<>();
+        if(!parts.get(1).contains(",")) {
+            // Only one channel specified.
+            channels.add(Integer.valueOf(parts.get(1)));
+        } else {
+            for (String channel : Splitter.on(",").split(parts.get(1))) {
+                channels.add(Integer.valueOf(channel));
+            }
+        }
+
+        return new AbstractMap.SimpleEntry<>(interfaceName, channels.build());
     }
 
     public String getChannelHopCommand() {

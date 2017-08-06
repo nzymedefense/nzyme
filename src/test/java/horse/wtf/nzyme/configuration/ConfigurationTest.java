@@ -48,12 +48,31 @@ public class ConfigurationTest {
     @Test
     public void testGetChannels() throws Exception {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setParameterChannels("1,2,3,4,5,6,7,8,9,10,11");
+        configuration.setParameterChannels("wlan0:1,2,3,4,5,6|wlan1:7,8,9,10,11");
 
-        assertEquals(configuration.getChannels().size(), 11);
-        assertEquals(configuration.getChannels().get(0), new Integer(1));
-        assertEquals(configuration.getChannels().get(4), new Integer(5));
-        assertEquals(configuration.getChannels().get(10), new Integer(11));
+        assertEquals(configuration.getChannels().size(), 2);
+        assertEquals(configuration.getChannels().get("wlan0").size(), 6);
+        assertEquals(configuration.getChannels().get("wlan1").size(), 5);
+    }
+
+    @Test
+    public void testGetChannelsWithOneInterface() throws Exception {
+        TestableConfiguration configuration = new TestableConfiguration();
+        configuration.setParameterChannels("wlan0:1,2,3,4,5,6");
+
+        assertEquals(configuration.getChannels().size(), 1);
+        assertEquals(configuration.getChannels().get("wlan0").size(), 6);
+    }
+
+    @Test
+    public void testGetChannelsWithTwoInterfaceAndASingleChannel() throws Exception {
+        TestableConfiguration configuration = new TestableConfiguration();
+        configuration.setParameterChannels("wlan0:1,2,3,4,5,6|wlan1:7");
+
+        assertEquals(configuration.getChannels().size(), 2);
+        assertEquals(configuration.getChannels().get("wlan0").size(), 6);
+        assertEquals(configuration.getChannels().get("wlan1").size(), 1);
+        assertEquals(configuration.getChannels().get("wlan1").get(0), new Integer(7));
     }
 
     private class TestableConfiguration extends Configuration {

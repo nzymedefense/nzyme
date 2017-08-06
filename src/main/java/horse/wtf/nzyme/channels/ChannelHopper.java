@@ -70,7 +70,7 @@ public class ChannelHopper {
 
                 int channel = this.channels.get(this.currentChannelIndex);
 
-                LOG.debug("Configuring [{}] to use channel <{}>", nzyme.getConfiguration().getNetworkInterface(), channel);
+                LOG.debug("Configuring [{}] to use channel <{}>", nzyme.getNetworkInterface(), channel);
 
                 changeToChannel(channel);
             }catch(Exception e) {
@@ -87,7 +87,7 @@ public class ChannelHopper {
         this.lock.lock();
 
         try {
-            String networkInterface = this.nzyme.getConfiguration().getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
+            String networkInterface = this.nzyme.getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
 
             String command = this.nzyme.getConfiguration().getChannelHopCommand()
                     .replace("{channel}", channel.toString()).replace("{interface}", networkInterface);

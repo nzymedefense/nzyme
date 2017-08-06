@@ -35,7 +35,7 @@ public abstract class FrameHandler {
     }
 
     public void malformed() {
-        nzyme.getStatistics().tickMalformedCountAndNotify(nzyme.getChannelHopper().getCurrentChannel());
+        nzyme.getStatistics().tickMalformedCountAndNotify(nzyme, nzyme.getChannelHopper().getCurrentChannel());
     }
 
     public abstract void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException;

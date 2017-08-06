@@ -22,16 +22,26 @@ import com.github.joschi.jadconfig.JadConfig;
 import com.github.joschi.jadconfig.RepositoryException;
 import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.repositories.PropertiesRepository;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
+    public static final int STATS_INTERVAL = 60;
     private static final int FAILURE = 1;
 
     public static void main(String[] argv) {
@@ -66,12 +76,41 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
-        try {
-            Nzyme nzyme = new NzymeImpl(cliArguments, configuration);
-            nzyme.loop();
-        } catch (NzymeInitializationException e) {
-            LOG.error("Boot error.", e);
-            Runtime.getRuntime().exit(FAILURE);
+        // Set up statistics printer.
+        final Statistics statistics = new Statistics();
+        final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics);
+        LOG.info("Printing statistics every {} seconds. Logs are in [logs/] and will be automatically rotated.", STATS_INTERVAL);
+        // Statistics printer.
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("statistics-%d")
+                .build()
+        ).scheduleAtFixedRate(() -> {
+            LOG.info(statisticsPrinter.print());
+            statistics.resetAccumulativeTicks();
+        }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
+
+        ExecutorService loopExecutor = Executors.newFixedThreadPool(configuration.getChannels().size(), new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("nzyme-loop-%d")
+                .build());
+
+        for (Map.Entry<String, ImmutableList<Integer>> config : configuration.getChannels().entrySet()) {
+            try {
+                Nzyme nzyme = new NzymeImpl(config.getKey(), config.getValue(), cliArguments, configuration, statistics);
+                loopExecutor.submit(nzyme.loop());
+            } catch (NzymeInitializationException e) {
+                LOG.error("Boot error.", e);
+                Runtime.getRuntime().exit(FAILURE);
+            }
+        }
+
+        while(true) {
+            // https://www.youtube.com/watch?v=Vmb1tqYqyII
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) { break; /* nein */ }
         }
     }
 
