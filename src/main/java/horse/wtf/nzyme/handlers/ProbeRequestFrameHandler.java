@@ -43,7 +43,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         Dot11ProbeRequestPacket probeRequest = Dot11ProbeRequestPacket.newPacket(payload, 0, payload.length);
 
         if (probeRequest.getHeader() == null) {
-            malformed();
+            malformed(meta);
             LOG.trace("Malformed header in probe request packet. Skipping.");
             return;
         }
@@ -53,7 +53,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         if (probeRequest.getHeader().getSsid() != null) {
             // Check if the SSID is valid UTF-8 (might me malformed frame)
             if(!Tools.isValidUTF8(probeRequest.getHeader().getSsid().getRawData())) {
-                malformed();
+                malformed(meta);
                 LOG.trace("Malformed SSID in probe request packet. Skipping.");
                 return;
             }
@@ -65,7 +65,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
                 nullProbe = true;
             }
         } else {
-            malformed();
+            malformed(meta);
             LOG.trace("Malformed SSID in probe request packet. Skipping.");
             return;
         }
@@ -74,7 +74,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         if (probeRequest.getHeader().getAddress2() != null) {
             requester = Normalizer.normalize(probeRequest.getHeader().getAddress2().toString(), Normalizer.Form.NFD);
         } else {
-            malformed();
+            malformed(meta);
             LOG.trace("Malformed SSID in probe request packet. Skipping.");
             return;
         }

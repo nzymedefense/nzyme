@@ -63,7 +63,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
             ByteArrays.validateBounds(payload, TRANSACTION_SEQ_NO_POSITION, TRANSACTION_SEQ_NO_LENGTH);
             ByteArrays.validateBounds(payload, STATUS_CODE_POSITION, STATUS_CODE_LENGTH);
         } catch(Exception e){
-            malformed();
+            malformed(meta);
             LOG.trace("Payload out of bounds. (1) Ignoring.");
             return;
         }
@@ -82,7 +82,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
                 algorithm = ALGORITHM_TYPE.SHARED_KEY;
                 break;
             default:
-                malformed();
+                malformed(meta);
                 LOG.trace("Invalid algorithm type with code [{}]. Skipping.", algorithmCode);
                 return;
         }
@@ -126,7 +126,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
                                 "request from " + destination + ". (" + status + ")";
                         break;
                     default:
-                        malformed();
+                        malformed(meta);
                         LOG.trace("Invalid Open System authentication transaction sequence number [{}]. " +
                                 "Skipping.", transactionSequence);
                         return;
@@ -150,7 +150,7 @@ public class AuthenticationFrameHandler extends FrameHandler {
                                 destination + ". (" + status + ")";
                         break;
                     default:
-                        malformed();
+                        malformed(meta);
                         LOG.trace("Invalid WEP authentication transaction sequence number [{}]. " +
                                 "Skipping.", transactionSequence);
                         return;

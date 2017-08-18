@@ -50,7 +50,7 @@ public class AssociationResponseFrameHandler extends FrameHandler {
         try {
             ByteArrays.validateBounds(payload, 0, STATUS_CODE_POSITION+STATUS_CODE_LENGTH-1);
         } catch(Exception e) {
-            malformed();
+            malformed(meta);
             LOG.trace("Payload out of bounds. (1) Ignoring.");
             return;
         }
