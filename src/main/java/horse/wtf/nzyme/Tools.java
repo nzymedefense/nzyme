@@ -36,4 +36,16 @@ public class Tools {
         }
     }
 
+    public static int calculateSignalQuality(int antennaSignal) {
+        if(antennaSignal >= -50) {
+            return 100;
+        }
+
+        if(antennaSignal <= -100) {
+            return 0;
+        }
+
+        return 2*(antennaSignal+100);
+    }
+
 }

@@ -21,8 +21,8 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11LeavingReason;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.graylog.GraylogFieldNames;
-import horse.wtf.nzyme.graylog.Notification;
+import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
@@ -59,11 +59,11 @@ public class DisassociationFrameHandler extends FrameHandler {
 
         nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
-                        .addField(GraylogFieldNames.TRANSMITTER, transmitter)
-                        .addField(GraylogFieldNames.DESTINATION, destination)
-                        .addField(GraylogFieldNames.REASON_CODE, reasonCode)
-                        .addField(GraylogFieldNames.REASON_STRING, reasonString)
-                        .addField(GraylogFieldNames.SUBTYPE, "disassoc"),
+                        .addField(FieldNames.TRANSMITTER, transmitter)
+                        .addField(FieldNames.DESTINATION, destination)
+                        .addField(FieldNames.REASON_CODE, reasonCode)
+                        .addField(FieldNames.REASON_STRING, reasonString)
+                        .addField(FieldNames.SUBTYPE, "disassoc"),
                 meta
         );
 

@@ -19,8 +19,8 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
-import horse.wtf.nzyme.graylog.GraylogFieldNames;
-import horse.wtf.nzyme.graylog.Notification;
+import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.notifications.Notification;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -66,7 +66,7 @@ public class Statistics {
     public void tickMalformedCountAndNotify(Nzyme nzyme, int channel) {
         nzyme.notify(
                 new Notification("Malformed frame received.", channel)
-                        .addField(GraylogFieldNames.SUBTYPE, "malformed"), null);
+                        .addField(FieldNames.SUBTYPE, "malformed"), null);
 
         malformedCount.incrementAndGet();
         tickInMap(channel, channelMalformedCounts);

@@ -19,8 +19,8 @@ package horse.wtf.nzyme.handlers;
 
 import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.graylog.GraylogFieldNames;
-import horse.wtf.nzyme.graylog.Notification;
+import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.Dot11ProbeRequestPacket;
@@ -90,9 +90,9 @@ public class ProbeRequestFrameHandler extends FrameHandler {
 
         nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
-                        .addField(GraylogFieldNames.SSID, ssid)
-                        .addField(GraylogFieldNames.TRANSMITTER, requester)
-                        .addField(GraylogFieldNames.SUBTYPE, "probe-req"),
+                        .addField(FieldNames.SSID, ssid)
+                        .addField(FieldNames.TRANSMITTER, requester)
+                        .addField(FieldNames.SUBTYPE, "probe-req"),
                 meta
         );
 

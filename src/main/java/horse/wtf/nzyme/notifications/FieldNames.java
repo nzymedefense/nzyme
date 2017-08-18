@@ -15,9 +15,9 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.graylog;
+package horse.wtf.nzyme.notifications;
 
-public class GraylogFieldNames {
+public class FieldNames {
 
     public static final String SUBTYPE = "subtype";
 

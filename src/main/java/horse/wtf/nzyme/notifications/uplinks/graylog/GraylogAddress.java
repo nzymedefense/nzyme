@@ -15,24 +15,24 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.notifications.uplinks.graylog;
 
-import horse.wtf.nzyme.channels.ChannelHopper;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.statistics.Statistics;
+public class GraylogAddress {
 
-public interface Nzyme {
+    private final String host;
+    private final int port;
 
-    Runnable loop() throws NzymeInitializationException;
-    boolean isInLoop();
+    public GraylogAddress(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
 
-    void notify(Notification notification, Dot11MetaInformation meta);
+    public String getHost() {
+        return host;
+    }
 
-    Statistics getStatistics();
-    ChannelHopper getChannelHopper();
-    Configuration getConfiguration();
+    public int getPort() {
+        return port;
+    }
 
-    String getNetworkInterface();
 }

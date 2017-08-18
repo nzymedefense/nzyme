@@ -20,8 +20,8 @@ package horse.wtf.nzyme.handlers;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.graylog.GraylogFieldNames;
-import horse.wtf.nzyme.graylog.Notification;
+import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
@@ -160,14 +160,14 @@ public class AuthenticationFrameHandler extends FrameHandler {
 
         nzyme.notify(
                 new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
-                        .addField(GraylogFieldNames.TRANSMITTER, transmitter)
-                        .addField(GraylogFieldNames.DESTINATION, destination)
-                        .addField(GraylogFieldNames.RESPONSE_CODE, statusCode)
-                        .addField(GraylogFieldNames.RESPONSE_STRING, status)
-                        .addField(GraylogFieldNames.AUTH_ALGORITHM, algorithm.toString().toLowerCase())
-                        .addField(GraylogFieldNames.TRANSACTION_SEQUENCE_NUMBER, transactionSequence)
-                        .addField(GraylogFieldNames.IS_WEP, algorithm.equals(ALGORITHM_TYPE.SHARED_KEY))
-                        .addField(GraylogFieldNames.SUBTYPE, "auth"),
+                        .addField(FieldNames.TRANSMITTER, transmitter)
+                        .addField(FieldNames.DESTINATION, destination)
+                        .addField(FieldNames.RESPONSE_CODE, statusCode)
+                        .addField(FieldNames.RESPONSE_STRING, status)
+                        .addField(FieldNames.AUTH_ALGORITHM, algorithm.toString().toLowerCase())
+                        .addField(FieldNames.TRANSACTION_SEQUENCE_NUMBER, transactionSequence)
+                        .addField(FieldNames.IS_WEP, algorithm.equals(ALGORITHM_TYPE.SHARED_KEY))
+                        .addField(FieldNames.SUBTYPE, "auth"),
                 meta
         );
 

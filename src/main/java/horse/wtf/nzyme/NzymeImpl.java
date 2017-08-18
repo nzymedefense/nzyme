@@ -24,10 +24,12 @@ import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.graylog.GraylogAddress;
-import horse.wtf.nzyme.graylog.GraylogUplink;
-import horse.wtf.nzyme.graylog.Notification;
+import horse.wtf.nzyme.notifications.Uplink;
+import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
+import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.handlers.*;
+import horse.wtf.nzyme.notifications.uplinks.logger.LoggerUplink;
 import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,7 +55,7 @@ public class NzymeImpl implements Nzyme {
     private final String networkInterfaceName;
 
     private final Statistics statistics;
-    private final List<GraylogUplink> graylogUplinks;
+    private final List<Uplink> uplinks;
     private final ChannelHopper channelHopper;
 
     private final PcapHandle pcap;
@@ -84,9 +86,14 @@ public class NzymeImpl implements Nzyme {
         this.channelHopper.initialize();
 
         // Graylog GELF sender.
-        this.graylogUplinks = Lists.newArrayList();
-        for (GraylogAddress address : this.configuration.getGraylogAddresses()) {
-            this.graylogUplinks.add(new GraylogUplink(address.getHost(), address.getPort(), this.nzymeId));
+        this.uplinks = Lists.newArrayList();
+        if (this.configuration.getGraylogAddresses() == null || this.configuration.getGraylogAddresses().isEmpty()) {
+            LOG.warn("No Graylog uplinks configured. Falling back to Log4j output");
+            this.uplinks.add(new LoggerUplink());
+        } else {
+            for (GraylogAddress address : this.configuration.getGraylogAddresses()) {
+                this.uplinks.add(new GraylogUplink(address.getHost(), address.getPort(), this.nzymeId));
+            }
         }
 
         // Get network interface for PCAP.
@@ -230,7 +237,7 @@ public class NzymeImpl implements Nzyme {
     }
 
     public void notify(Notification notification, Dot11MetaInformation meta) {
-        for (GraylogUplink uplink : getGraylogUplinks()) {
+        for (Uplink uplink : getUplinks()) {
             uplink.notify(notification, meta);
         }
     }
@@ -252,8 +259,8 @@ public class NzymeImpl implements Nzyme {
         return statistics;
     }
 
-    public List<GraylogUplink> getGraylogUplinks() {
-        return graylogUplinks;
+    public List<Uplink> getUplinks() {
+        return uplinks;
     }
 
     public ChannelHopper getChannelHopper() {

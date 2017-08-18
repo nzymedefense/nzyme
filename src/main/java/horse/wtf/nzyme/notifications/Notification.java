@@ -15,8 +15,10 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.graylog;
+package horse.wtf.nzyme.notifications;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
@@ -49,6 +51,16 @@ public class Notification {
 
     public String getMessage() {
         return message;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("802.11 frame: ").append(message)
+                .append(" - Details: ")
+                .append(Joiner.on(", ").join(getAdditionalFields().entrySet()));
+
+        return sb.toString();
     }
 
 }

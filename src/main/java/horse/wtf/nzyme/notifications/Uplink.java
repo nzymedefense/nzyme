@@ -15,25 +15,14 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.graylog;
+package horse.wtf.nzyme.notifications;
 
-public class GraylogAddress {
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
-    private final String host;
-    private final int port;
+import javax.annotation.Nullable;
 
-    public GraylogAddress(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
+public interface Uplink {
 
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
+    void notify(Notification notification, @Nullable Dot11MetaInformation meta);
 
 }

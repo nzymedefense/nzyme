@@ -19,13 +19,13 @@ package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
 import com.github.joschi.jadconfig.Parameter;
-import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import horse.wtf.nzyme.graylog.GraylogAddress;
+import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class Configuration {
     @Parameter(value = "nzyme_id", required = true)
     protected String nzymeId;
 
-    @Parameter(value = "graylog_addresses", validator = InternetAddressValidator.class, required = true)
+    @Parameter(value = "graylog_addresses", validator = InternetAddressValidator.class, required = false)
     protected String graylogAddresses;
 
     @Parameter(value = "channels", validator = InterfacesAndChannelsValidator.class, required = true)
@@ -53,7 +53,12 @@ public class Configuration {
         return nzymeId;
     }
 
+    @Nullable
     public List<GraylogAddress> getGraylogAddresses() {
+        if(graylogAddresses == null) {
+            return null;
+        }
+
         String[] addresses;
 
         if (graylogAddresses.contains(",")) {

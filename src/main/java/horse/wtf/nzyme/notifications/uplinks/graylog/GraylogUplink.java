@@ -15,9 +15,11 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.graylog;
+package horse.wtf.nzyme.notifications.uplinks.graylog;
 
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.notifications.Uplink;
 import org.graylog2.gelfclient.GelfConfiguration;
 import org.graylog2.gelfclient.GelfMessage;
 import org.graylog2.gelfclient.GelfTransports;
@@ -26,7 +28,9 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 
-public class GraylogUplink {
+import static horse.wtf.nzyme.Tools.calculateSignalQuality;
+
+public class GraylogUplink implements Uplink {
 
     private static final String SOURCE = "nzyme";
 
@@ -46,6 +50,7 @@ public class GraylogUplink {
                 .sendBufferSize(32768));
     }
 
+    @Override
     public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
         // Add signal strength and frequency to message.
         StringBuilder sb = new StringBuilder(notification.getMessage());
@@ -73,18 +78,6 @@ public class GraylogUplink {
         }
 
         this.gelfTransport.trySend(gelf);
-    }
-
-    private int calculateSignalQuality(int antennaSignal) {
-        if(antennaSignal >= -50) {
-             return 100;
-        }
-
-        if(antennaSignal <= -100) {
-            return 0;
-        }
-
-        return 2*(antennaSignal+100);
     }
 
 }
