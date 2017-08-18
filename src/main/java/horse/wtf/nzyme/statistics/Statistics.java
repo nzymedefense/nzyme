@@ -19,6 +19,7 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 
@@ -58,17 +59,23 @@ public class Statistics {
         beaconedNetworks.clear();
     }
 
-    public void tickFrameCount(int channel) {
+    public void tickFrameCount(Dot11MetaInformation meta) {
         frameCount.incrementAndGet();
-        tickInMap(channel, channelCounts);
+        tickInMap(meta.getChannel(), channelCounts);
     }
 
-    public void tickMalformedCountAndNotify(Nzyme nzyme, int channel) {
+    public void tickMalformedCountAndNotify(Nzyme nzyme, Dot11MetaInformation meta) {
+        int channel = 0;
+        if(meta != null) {
+            channel = meta.getChannel();
+        }
+
         nzyme.notify(
                 new Notification("Malformed frame received.", channel)
-                        .addField(FieldNames.SUBTYPE, "malformed"), null);
+                        .addField(FieldNames.SUBTYPE, "malformed"), meta);
 
         malformedCount.incrementAndGet();
+
         tickInMap(channel, channelMalformedCounts);
     }
 

@@ -143,93 +143,83 @@ public class NzymeImpl implements Nzyme {
     public Runnable loop() {
         final Nzyme nzyme = this;
 
-        return new Runnable() {
-            @Override
-            public void run() {
-                LOG.info("Commencing 802.11 frame processing on [{}] ... (⌐■_■)–︻╦╤─ – – pew pew", getNetworkInterface());
+        return () -> {
+            LOG.info("Commencing 802.11 frame processing on [{}] ... (⌐■_■)–︻╦╤─ – – pew pew", getNetworkInterface());
 
-                inLoop.set(true);
-                while (true) {
-                    // Park in case there is a channel switch happening.
+            inLoop.set(true);
+            while (true) {
+
+                Packet packet;
+
+                try {
+                    packet = pcap.getNextPacketEx();
+                } catch (NotOpenException | PcapNativeException | EOFException e) {
+                    LOG.error(e);
+                    continue;
+                } catch (TimeoutException e) {
+                    // This happens all the time when waiting for packets.
+                    continue;
+                } catch (IllegalArgumentException e) {
+                    // This is a symptom of malformed data.
+                    LOG.trace(e);
+                    continue;
+                }
+
+                if (packet != null) {
                     try {
-                        channelHopper.getLock().await();
-                    } catch (InterruptedException e) {
-                        LOG.warn("Channel hopper mutex acquisition interrupted. Skipping this frame.");
-                        continue;
-                    }
+                        if (packet instanceof RadiotapPacket) {
+                            RadiotapPacket r = (RadiotapPacket) packet;
+                            byte[] payload = r.getPayload().getRawData();
 
-                    Packet packet;
+                            Dot11MetaInformation meta = Dot11MetaInformation.parse(r.getHeader().getDataFields());
 
-                    try {
-                        packet = pcap.getNextPacketEx();
-                    } catch (NotOpenException | PcapNativeException | EOFException e) {
-                        LOG.error(e);
-                        continue;
-                    } catch (TimeoutException e) {
-                        // This happens all the time when waiting for packets.
-                        continue;
-                    } catch (IllegalArgumentException e) {
-                        // This is a symptom of malformed data.
-                        LOG.trace(e);
-                        continue;
-                    }
-
-                    if (packet != null) {
-                        try {
-                            if (packet instanceof RadiotapPacket) {
-                                getStatistics().tickFrameCount(getChannelHopper().getCurrentChannel());
-
-                                RadiotapPacket r = (RadiotapPacket) packet;
-                                byte[] payload = r.getPayload().getRawData();
-
-                                Dot11MetaInformation meta = Dot11MetaInformation.parse(r.getHeader().getDataFields());
-
-                                if (meta.isMalformed()) {
-                                    LOG.trace("Bad checksum. Skipping malformed packet.");
-                                    statistics.tickMalformedCountAndNotify(nzyme, getChannelHopper().getCurrentChannel());
-                                    continue;
-                                }
-
-                                Dot11FrameType type = Dot11FrameType.getInstance(
-                                        (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
-                                );
-
-                                // Determine type and handler.
-                                switch (type.value()) {
-                                    case 0: // assoc-req
-                                        associationRequestFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 1: // assoc-resp
-                                        associationResponseFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 4: // probe-req
-                                        probeRequestHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 5: // probe-resp
-                                        probeResponseHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 8: // beacon
-                                        beaconFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 10: // disaasoc
-                                        disassociationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 11: // auth
-                                        authenticationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    case 12: // deauth
-                                        deauthFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                        break;
-                                    default:
-                                        LOG.warn("Not handling frame type [{}].", type.value());
-                                }
+                            if (meta.isMalformed()) {
+                                LOG.trace("Bad checksum. Skipping malformed packet.");
+                                statistics.tickMalformedCountAndNotify(nzyme, meta);
+                                continue;
                             }
-                        } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
-                            statistics.tickMalformedCountAndNotify(nzyme, getChannelHopper().getCurrentChannel());
-                            LOG.debug("Illegal data received.", e);
-                        } catch(Exception e) {
-                            LOG.error("Could not process packet.", e);
+
+                            getStatistics().tickFrameCount(meta);
+
+                            Dot11FrameType type = Dot11FrameType.getInstance(
+                                    (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
+                            );
+
+                            // Determine type and handler.
+                            switch (type.value()) {
+                                case 0: // assoc-req
+                                    associationRequestFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 1: // assoc-resp
+                                    associationResponseFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 4: // probe-req
+                                    probeRequestHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 5: // probe-resp
+                                    probeResponseHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 8: // beacon
+                                    beaconFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 10: // disaasoc
+                                    disassociationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 11: // auth
+                                    authenticationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                case 12: // deauth
+                                    deauthFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
+                                    break;
+                                default:
+                                    LOG.warn("Not handling frame type [{}].", type.value());
+                            }
                         }
+                    } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
+                        statistics.tickMalformedCountAndNotify(nzyme, null);
+                        LOG.debug("Illegal data received.", e);
+                    } catch(Exception e) {
+                        LOG.error("Could not process packet.", e);
                     }
                 }
             }

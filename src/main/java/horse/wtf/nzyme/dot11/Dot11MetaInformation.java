@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11;
 
+import horse.wtf.nzyme.channels.Frequencies;
 import org.pcap4j.packet.*;
 
 import java.util.ArrayList;
@@ -26,12 +27,14 @@ public class Dot11MetaInformation {
     private final boolean malformed;
     private final int antennaSignal;
     private final int frequency;
+    private final int channel;
     private final long macTimestamp;
     private final boolean isWep;
 
-    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, long macTimestamp, boolean isWep) {
+    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
+        this.channel = channel;
         this.frequency = frequency;
         this.macTimestamp = macTimestamp;
         this.isWep = isWep;
@@ -53,6 +56,10 @@ public class Dot11MetaInformation {
         return macTimestamp;
     }
 
+    public int getChannel() {
+        return channel;
+    }
+
     public boolean isWep() {
         return isWep;
     }
@@ -60,6 +67,7 @@ public class Dot11MetaInformation {
     public static Dot11MetaInformation parse(ArrayList<RadiotapPacket.RadiotapData> dataFields) {
         int antennaSignal = 0;
         int frequency = 0;
+        int channel = -1;
 
         boolean delimiterCrcError = false;
         boolean badPlcpCrc = false;
@@ -67,34 +75,25 @@ public class Dot11MetaInformation {
         boolean isWep = false;
         long macTimestamp = -1;
 
-        int found = 0;
         for (RadiotapPacket.RadiotapData f : dataFields) {
-            if(found == 6) {
-                break;
-            }
-
             if(f instanceof RadiotapDataAntennaSignal) {
                 antennaSignal = ((RadiotapDataAntennaSignal) f).getAntennaSignalAsInt();
-                found++;
             } else if (f instanceof RadiotapDataChannel) {
                 frequency = ((RadiotapDataChannel) f).getFrequencyAsInt();
-                found++;
+                channel =  Frequencies.frequencyToChannel(frequency);
             } else if (f instanceof RadiotapDataAMpduStatus) {
                 delimiterCrcError = ((RadiotapDataAMpduStatus) f).isDelimiterCrcError();
-                found++;
             } else if (f instanceof RadiotapDataRxFlags) {
                 badPlcpCrc = ((RadiotapDataRxFlags) f).isBadPlcpCrc();
-                found++;
             } else if (f instanceof RadiotapDataFlags) {
                 badFcs = ((RadiotapDataFlags) f).isBadFcs();
                 isWep = ((RadiotapDataFlags) f).isWepEncrypted();
-                found++;
             } else if (f instanceof RadiotapDataTsft) {
                 macTimestamp = ((RadiotapDataTsft) f).getMacTimestamp().longValue();
-                found++;
             }
         }
 
-        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency, macTimestamp, isWep);
+        return new Dot11MetaInformation( delimiterCrcError || badPlcpCrc || badFcs, antennaSignal, frequency, channel, macTimestamp, isWep);
     }
+
 }

@@ -35,16 +35,12 @@ public class ChannelHopper {
     private final ImmutableList<Integer> channels;
     private final Nzyme nzyme;
 
-    private final Lock lock;
-
     private int currentChannelIndex = 0;
 
     public ChannelHopper(Nzyme nzyme, ImmutableList<Integer> channels) {
         if(channels == null || channels.isEmpty()) {
             throw new RuntimeException("Channels empty or NULL. You need to configure at least one channel.");
         }
-
-        this.lock = new Lock();
 
         this.channels = channels;
         this.nzyme = nzyme;
@@ -84,8 +80,6 @@ public class ChannelHopper {
     }
 
     private void changeToChannel(Integer channel) {
-        this.lock.lock();
-
         try {
             String networkInterface = this.nzyme.getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
 
@@ -109,13 +103,7 @@ public class ChannelHopper {
             }
         } catch(Exception e) {
             LOG.error("Could not hop to channel <{}>.", channel, e);
-        } finally {
-            this.lock.unlock();
         }
-    }
-
-    public Lock getLock() {
-        return this.lock;
     }
 
 }

@@ -49,7 +49,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
         try {
             ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
         } catch (MalformedFrameException e) {
-            malformed();
+            malformed(meta);
             LOG.trace("Skipping malformed probe-resp frame.");
         }
 
