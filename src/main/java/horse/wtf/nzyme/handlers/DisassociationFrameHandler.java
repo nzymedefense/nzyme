@@ -58,7 +58,7 @@ public class DisassociationFrameHandler extends FrameHandler {
         String message = transmitter + " is disassociating from " + destination + " (" + reasonString + ")";
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.DESTINATION, destination)
                         .addField(FieldNames.REASON_CODE, reasonCode)

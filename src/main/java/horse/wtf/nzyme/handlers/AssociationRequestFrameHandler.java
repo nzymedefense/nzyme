@@ -70,7 +70,7 @@ public class AssociationRequestFrameHandler extends FrameHandler {
         String message = transmitter + " is requesting to associate with " + ssid + " at " + destination;
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.DESTINATION, destination)
                         .addField(FieldNames.SSID, ssid)

@@ -64,7 +64,7 @@ public class DeauthenticationFrameHandler extends FrameHandler {
                 + " from BSSID " + bssid + " (" + reasonString + ")";
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.DESTINATION, destination)
                         .addField(FieldNames.BSSID, bssid)

@@ -75,10 +75,6 @@ public class ChannelHopper {
         }, 0, nzyme.getConfiguration().getChannelHopInterval(), TimeUnit.SECONDS);
     }
 
-    public int getCurrentChannel() {
-        return this.channels.get(this.currentChannelIndex);
-    }
-
     private void changeToChannel(Integer channel) {
         try {
             String networkInterface = this.nzyme.getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");

@@ -82,7 +82,7 @@ public class AssociationResponseFrameHandler extends FrameHandler {
                 + ". Response: " + response.toUpperCase() + " (" + responseCode + ")";
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.DESTINATION, destination)
                         .addField(FieldNames.RESPONSE_CODE, responseCode)

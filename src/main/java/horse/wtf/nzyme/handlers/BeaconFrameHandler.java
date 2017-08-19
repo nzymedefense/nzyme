@@ -83,7 +83,7 @@ public class BeaconFrameHandler extends FrameHandler {
         nzyme.getStatistics().tickAccessPoint(transmitter);
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.SSID, ssid == null ? "[no SSID]" : ssid)
                         .addField(FieldNames.SUBTYPE, "beacon"),

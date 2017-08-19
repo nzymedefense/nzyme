@@ -70,7 +70,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
         String message = transmitter + " responded to probe request from " + destination + " for " + ssid;
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.DESTINATION, destination)
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.SSID, ssid)

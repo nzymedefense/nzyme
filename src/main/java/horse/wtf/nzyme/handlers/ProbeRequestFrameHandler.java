@@ -89,7 +89,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
         nzyme.getStatistics().tickProbingDevice(requester);
 
         nzyme.notify(
-                new Notification(message, nzyme.getChannelHopper().getCurrentChannel())
+                new Notification(message, meta.getChannel())
                         .addField(FieldNames.SSID, ssid)
                         .addField(FieldNames.TRANSMITTER, requester)
                         .addField(FieldNames.SUBTYPE, "probe-req"),
