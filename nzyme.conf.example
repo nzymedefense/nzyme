@@ -19,4 +19,4 @@ graylog_addresses = graylog.example.org:13999
 
 # There are a lot of beacon frames in the air. A sampling rate of, for example, 20, will ignore 19 beacons
 # and only send every 20th to Graylog. Use this to reduce traffic. Set to 0 to disable sampling.
-beacon_frame_sampling_rate = 20
+beacon_frame_sampling_rate = 0
