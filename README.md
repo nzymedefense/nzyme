@@ -126,10 +126,6 @@ Nzyme is now collecting data and writing it into the Graylog input you configure
 
 ## Installation and configuration on a Raspberry Pi 3
 
-## Compatibility matrix
-
-test with the other adapter
-
 ## Known issues
 
 * Some WiFi adapters will not report the MAC timestamp in the radiotap header. The field will simply be missing in Graylog. This is usually an issue with the driver.
