@@ -6,9 +6,11 @@
 
 ## Introduction
 
-Nzyme collects 802.11 management frames directly from the air and sends them to a [Graylog] (Open Source log management) setup for WiFi IDS, monitoring, and incident response. It only needs a JVM and a WiFi adapter that supports monitor mode.
+Nzyme collects 802.11 management frames directly from the air and sends them to a [Graylog](https://www.graylog.org/) (Open Source log management) setup for WiFi IDS, monitoring, and incident response. It only needs a JVM and a WiFi adapter that supports monitor mode.
 
-If you are new to the fascinating space of WiFi security, you might want to read my *[Common WiFi Attacks And How To Detect Them]* blog post.
+Think about this like a long-term (months or years) distributed Wireshark/tcpdump that can be analyzed and filtered in real-time, using a powerful UI.
+
+If you are new to the fascinating space of WiFi security, you might want to read my *[Common WiFi Attacks And How To Detect Them](https://wtf.horse/2017/09/19/common-wifi-attacks-explained/)* blog post.
 
 ## What kind of data does it collect?
 
@@ -48,9 +50,11 @@ In the end, it shoulnd’t really matter what you run it on, but the docs and gu
 
 ### A Graylog setup
 
+You need a Graylog setup with ah GELF TCP input that is reachable by your nzyme sensors.
+
 ## Channel hopping
 
-The 802.11 standard [defines] many frequencies (channels) a network can operate on. This is useful to avoid contention and bandwidth issues, but also means that your wireless adapter has to be tuned to a single channel. During normal operations, your operating system will do this automatically for you.
+The 802.11 standard [defines](https://en.wikipedia.org/wiki/List_of_WLAN_channels) many frequencies (channels) a network can operate on. This is useful to avoid contention and bandwidth issues, but also means that your wireless adapter has to be tuned to a single channel. During normal operations, your operating system will do this automatically for you.
 
 Because we don’t want to listen on only one, but possibly **all** WiFi channels, we either need dozens of adapters, with one adapter for each channel, or we cycle over multiple channels on a single adapter rapidly. Nzyme allows you to configure multiple channels per WiFi adapter.
 
@@ -101,6 +105,8 @@ beacon_frame_sampling_rate = 0
 
 Note  the `graylog_addresses` variable that has to point to a GELF TCP input in your Graylog setup. Adapt it accordingly.
 
+Please refer to the [example config in the repository](https://github.com/lennartkoopmann/nzyme/blob/master/nzyme.conf.example) for a more verbose version with comments.
+ 
 #### Run
 
 After disconnecting from all WiFi networks (you might have to "forget" them in the macOS WiFi settings), you can start nzyme like this:
@@ -116,7 +122,7 @@ $ java -jar nzyme-0.1.jar -c nzyme.conf
 
 Nzyme is now collecting data and writing it into the Graylog input you configured. A message will look like this:
 
-
+![Example message in Graylog](https://github.com/lennartkoopmann/nzyme/blob/master/example_message.png)
 
 ## Installation and configuration on a Raspberry Pi 3
 
