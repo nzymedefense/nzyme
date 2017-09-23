@@ -126,6 +126,134 @@ Nzyme is now collecting data and writing it into the Graylog input you configure
 
 ## Installation and configuration on a Raspberry Pi 3
 
+
+#### Requirements
+
+The onboard WiFi chips of recent Raspberry Pi models can be put into monitor mode with the alternative [nexmon](https://github.com/seemoo-lab/nexmon) driver. The problem is, that the onboard antenna is not very good. If possible, use an external adapter that supports monitor mode instead.
+
+Make sure you have Java 7 or 8 installed:
+
+```
+$ java -version
+openjdk version "1.8.0_40-internal"
+OpenJDK Runtime Environment (build 1.8.0_40-internal-b04)
+OpenJDK Zero VM (build 25.40-b08, interpreted mode)
+```
+
+#### Download and configure
+
+Download the most recent build from the  [Releases] page.
+
+Create a new file called `nzyme.conf` in the same folder as your `nzyme.jar` file:
+
+```
+nzyme_id = nzyme-sensors-1
+channels = wlan0:1,2,3,4,5,6,8,9,10,11,12,13,14|wlan1:36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112
+channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
+channel_hop_interval = 1
+graylog_addresses = graylog.example.org:12000
+beacon_frame_sampling_rate = 0
+```
+
+Note  the `graylog_addresses` variable that has to point to a GELF TCP input in your Graylog setup. Adapt it accordingly.
+
+Please refer to the [example config in the repository](https://github.com/lennartkoopmann/nzyme/blob/master/nzyme.conf.example) for a more verbose version with comments.
+ 
+#### Run
+
+```
+$ java -jar nzyme-0.1.jar -c nzyme.conf
+17:28:45.657 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.
+17:28:51.637 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]
+17:28:53.178 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.
+17:28:53.268 [nzyme-loop-0] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan0] ... (⌐■_■)–︻╦╤─ – – pew pew
+17:28:54.926 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan1]
+17:28:56.238 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan1] acquired. Cycling through channels <36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112>.
+17:28:56.247 [nzyme-loop-1] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew
+```
+
+Collected frames will now start appearing in your Graylog setup.
+
+#### Renaming WiFi interfaces (optional)
+
+The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support moniotr mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
+
+This is what `ifconfig` looks like with no external WiFi adapters plugged in.
+
+```
+pi@parabola:~ $ ifconfig
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:0f:0e:d4  
+          inet addr:172.16.0.136  Bcast:172.16.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::8966:2353:4688:c9a/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1327 errors:0 dropped:22 overruns:0 frame:0
+          TX packets:1118 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:290630 (283.8 KiB)  TX bytes:233228 (227.7 KiB)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:304 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:304 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1 
+          RX bytes:24552 (23.9 KiB)  TX bytes:24552 (23.9 KiB)
+
+wlan0     Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81  
+          inet6 addr: fe80::77be:fb8a:ad75:cca9/64 Scope:Link
+          UP BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+```
+
+In this case `wlan0` is the onboard WiFi chip that we want to rename to `wifiBoard`.
+
+Open the file `/lib/udev/rules.d/75-persistent-net-generator.rules` and add `wlan*` to the device name whitelist:
+
+```
+# device name whitelist
+KERNEL!="wlan*|ath*|msh*|ra*|sta*|ctc*|lcs*|hsi*", \
+                                        GOTO="persistent_net_generator_end"
+```
+
+Reboot the system. After it is back up, open `/etc/udev/rules.d/70-persistent-net.rules` and change the `NAME` variable:
+
+```
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="b8:27:eb:5a:5b:81", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlanBoard"
+```
+
+Reboot the system again and enjoy the consistent naming. Any new WiFi adapter you plug in, will be a classic, numbered `wlan0`, `wlan1` etc that can be safely referenced in the nzyme config without the chance of accidentally selecting the onboard chip, because it's called `wlanBoard` now.
+
+```
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:0f:0e:d4  
+          inet addr:172.16.0.136  Bcast:172.16.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::8966:2353:4688:c9a/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:349 errors:0 dropped:8 overruns:0 frame:0
+          TX packets:378 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:75761 (73.9 KiB)  TX bytes:69865 (68.2 KiB)
+
+lo        Link encap:Local Loopback  
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:228 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:228 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1 
+          RX bytes:18624 (18.1 KiB)  TX bytes:18624 (18.1 KiB)
+
+wlanBoard Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81  
+          UP BROADCAST MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+```
+
 ## Known issues
 
 * Some WiFi adapters will not report the MAC timestamp in the radiotap header. The field will simply be missing in Graylog. This is usually an issue with the driver.
