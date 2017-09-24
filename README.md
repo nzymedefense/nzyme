@@ -214,6 +214,8 @@ $ java -jar nzyme-0.1.jar -c nzyme.conf
 
 Collected frames will now start appearing in your Graylog setup.
 
+Note that DEB and RPM packages are in the making and will be released soon.
+
 #### Renaming WiFi interfaces (optional)
 
 The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support moniotr mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
