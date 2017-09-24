@@ -62,6 +62,46 @@ For example, if you configure nzyme to listen on channel 1,2,3,4,5,6 on `wlan0` 
 
 The best configuration depends on your use-case but usually you will want to tune to all 2.4 Ghz and 5 Ghz WiFi channels.
 
+On Linux, you can get a list of channels your WiFi adapter supports like this:
+
+```
+$ iwlist wlan0 channel
+wlan0     32 channels in total; available frequencies :
+          Channel 01 : 2.412 GHz
+          Channel 02 : 2.417 GHz
+          Channel 03 : 2.422 GHz
+          Channel 04 : 2.427 GHz
+          Channel 05 : 2.432 GHz
+          Channel 06 : 2.437 GHz
+          Channel 07 : 2.442 GHz
+          Channel 08 : 2.447 GHz
+          Channel 09 : 2.452 GHz
+          Channel 10 : 2.457 GHz
+          Channel 11 : 2.462 GHz
+          Channel 12 : 2.467 GHz
+          Channel 13 : 2.472 GHz
+          Channel 14 : 2.484 GHz
+          Channel 36 : 5.18 GHz
+          Channel 38 : 5.19 GHz
+          Channel 40 : 5.2 GHz
+          Channel 44 : 5.22 GHz
+          Channel 46 : 5.23 GHz
+          Channel 48 : 5.24 GHz
+          Channel 52 : 5.26 GHz
+          Channel 54 : 5.27 GHz
+          Channel 56 : 5.28 GHz
+          Channel 60 : 5.3 GHz
+          Channel 62 : 5.31 GHz
+          Channel 64 : 5.32 GHz
+          Channel 100 : 5.5 GHz
+          Channel 102 : 5.51 GHz
+          Channel 104 : 5.52 GHz
+          Channel 108 : 5.54 GHz
+          Channel 110 : 5.55 GHz
+          Channel 112 : 5.56 GHz
+          Current Frequency:2.432 GHz (Channel 5)
+```
+
 ## Things to keep in mind
 
 A few general things to know before you get started:
