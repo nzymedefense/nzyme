@@ -258,3 +258,7 @@ wlanBoard Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81
 
 * Some WiFi adapters will not report the MAC timestamp in the radiotap header. The field will simply be missing in Graylog. This is usually an issue with the driver.
 * The deauthentication and disassociation `reason` field is not reported correctly on some systems. This is known to be an issue on a 2016 MacBook Pro running macOS Sierra.
+
+## Legal notice
+
+Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on unlicensed frequencies.
