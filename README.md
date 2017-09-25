@@ -44,9 +44,9 @@ If you have another one that supports monitor mode, you can use that one. Nzyme 
 
 ### A small computer to run nzyme on.
 
-I recommend to run nzyme on a Raspberry Pi 3 Model B. This is pretty much the reference architecture, because that is what I run it on.
+I recommend to run nzyme on a Raspberry Pi 3 Model B. This is pretty much the reference architecture, because that is what I run it on. A Raspberry Pi 3 Model B running Nzyme with three WiFi adapters in monitor mode has about 25% CPU utilization in the busy frequencies of Downtown Houston, TX.
 
-In the end, it shoulnd’t really matter what you run it on, but the docs and guides will most likely refer to a Raspberry Pi with a Raspbian on in.
+In the end, it shoulnd’t really matter what you run it on, but the docs and guides will most likely refer to a Raspberry Pi with a Raspbian on it.
 
 ### A Graylog setup
 
