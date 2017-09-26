@@ -136,7 +136,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
 
 #### Download and configure
 
-Download the most recent build from the  [Releases] page.
+Download the most recent build from the [Releases](https://github.com/lennartkoopmann/nzyme/releases) page.
 
 Create a new file called `nzyme.conf` in the same folder as your `nzyme.jar` file:
 
@@ -189,7 +189,7 @@ OpenJDK Zero VM (build 25.40-b08, interpreted mode)
 
 #### Download and configure
 
-Download the most recent Debian package (`.DEB`) from the [Releases](/releases) page.
+Download the most recent Debian package (`.DEB`) from the [Releases](https://github.com/lennartkoopmann/nzyme/releases) page.
 
 Install the package:
 
