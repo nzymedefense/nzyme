@@ -206,7 +206,7 @@ Please refer to the [example config in the repository](https://github.com/lennar
 #### Run
 
 ```
-$ java -jar nzyme-0.1.jar -c nzyme.conf
+$ sudo java -jar nzyme-0.1.jar -c nzyme.conf
 17:28:45.657 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.
 17:28:51.637 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]
 17:28:53.178 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.
@@ -216,7 +216,7 @@ $ java -jar nzyme-0.1.jar -c nzyme.conf
 17:28:56.247 [nzyme-loop-1] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew
 ```
 
-Collected frames will now start appearing in your Graylog setup.
+Collected frames will now start appearing in your Graylog setup. The example here uses `sudo` because you need certain permissions to be able to capture frames with. There is ways to give a user permissions for raw packet captures and network interface manipulation but I'll not go that deep in this README. You decide if running as root is OK or not in your scenario.
 
 Note that DEB and RPM packages are in the making and will be released soon.
 
