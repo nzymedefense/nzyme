@@ -301,6 +301,23 @@ wlanBoard Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81
 * Some WiFi adapters will not report the MAC timestamp in the radiotap header. The field will simply be missing in Graylog. This is usually an issue with the driver.
 * The deauthentication and disassociation `reason` field is not reported correctly on some systems. This is known to be an issue on a 2016 MacBook Pro running macOS Sierra.
 
+## Protips
+
+### Use Graylog lookup tables
+
+A simple CSV [lookup table](http://docs.graylog.org/en/latest/pages/lookuptables.html) for Graylog can translate BSSIDs/MAC addresses to real device names for easier browsing and quicker analysis.
+
+```
+$ cat /etc/graylog/station-mac-addresses.csv 
+"mac","station"
+"82:2A:A8:07:4C:8D", "Home Main"
+"2C:30:33:A5:8D:94", "Home Extender"
+```
+
+A message with translated fields could look like this:
+
+![Enriched message](https://github.com/lennartkoopmann/nzyme/blob/master/lookup_tables.png)
+
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on unlicensed frequencies.
