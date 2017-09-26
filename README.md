@@ -304,6 +304,21 @@ wlanBoard Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81
 
 * Some WiFi adapters will not report the MAC timestamp in the radiotap header. The field will simply be missing in Graylog. This is usually an issue with the driver.
 * The deauthentication and disassociation `reason` field is not reported correctly on some systems. This is known to be an issue on a 2016 MacBook Pro running macOS Sierra.
+* Some Linux distributions will try to manage the network adapters for you and interfere with nzyme. For example, on Ubuntu, you have to disable `NetworkManager`. There is plenty of documentation for this available and I will not duplicate it. **I also did not encounter this on any Raspbian based Raspberry Pi yet.** The `airmon-ng` project has a built in way to find and kill processes that might interfere:
+
+```
+~# airmon-ng check
+Found 5 processes that could cause trouble.
+If airodump-ng, aireplay-ng or airtun-ng stops working after
+a short period of time, you may want to kill (some of) them!
+
+  PID Name
+  718 NetworkManager
+  870 dhclient
+ 1104 avahi-daemon
+ 1105 avahi-daemon
+ 1115 wpa_supplicant
+```
 
 ## Protips
 
