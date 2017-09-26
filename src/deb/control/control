@@ -1,0 +1,8 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: low
+Architecture: all
+Description: [[description]]
+Maintainer: Lennart Koopmann <lennart@0x58ed.com>
+Depends: default-jre | java8-runtime

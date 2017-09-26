@@ -146,6 +146,103 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.5</version>
+
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jdeb</goal>
+                        </goals>
+                        <configuration>
+                            <controlDir>${basedir}/src/deb/control</controlDir>
+                            <deb>${project.build.directory}/${project.artifactId}-${project.version}.deb</deb>
+                            <verbose>true</verbose>
+
+                            <dataSet>
+                                <data>
+                                    <src>${project.build.directory}/${project.build.finalName}.jar</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/nzyme/lib</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <type>link</type>
+                                    <symlink>true</symlink>
+                                    <linkName>/usr/share/nzyme/nzyme.jar</linkName>
+                                    <linkTarget>/usr/share/nzyme/lib/${project.build.finalName}.jar</linkTarget>
+                                </data>
+
+                                <data>
+                                    <src>nzyme.conf.example</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/nzyme</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <src>src/main/resources/log4j2-debian.xml</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/nzyme</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <src>src/deb/systemd/nzyme.service</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/lib/systemd/system</prefix>
+                                        <filemode>644</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <src>src/deb/systemd/nzyme</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/nzyme/bin</prefix>
+                                        <filemode>755</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <type>template</type>
+                                    <paths>
+                                        <path>var/log/nzyme</path>
+                                    </paths>
+                                    <mapper>
+                                        <type>perm</type>
+                                    </mapper>
+                                </data>
+                            </dataSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 

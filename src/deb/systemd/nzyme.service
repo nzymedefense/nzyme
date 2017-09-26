@@ -1,0 +1,25 @@
+[Unit]
+Description=Nzyme
+Documentation=https://github.com/lennartkoopmann/nzyme
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=root
+Group=root
+LimitNOFILE=64000
+
+ExecStart=/usr/share/nzyme/bin/nzyme
+
+# When a JVM receives a SIGTERM signal it exits with 143.
+SuccessExitStatus=143
+
+# Make sure stderr/stdout is captured in the systemd journal.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
