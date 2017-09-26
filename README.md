@@ -180,6 +180,7 @@ The onboard WiFi chips of recent Raspberry Pi models can be put into monitor mod
 Make sure you have Java 7 or 8 installed:
 
 ```
+$ sudo apt install openjdk-8-jre
 $ java -version
 openjdk version "1.8.0_40-internal"
 OpenJDK Runtime Environment (build 1.8.0_40-internal-b04)
@@ -188,39 +189,58 @@ OpenJDK Zero VM (build 25.40-b08, interpreted mode)
 
 #### Download and configure
 
-Download the most recent build from the  [Releases] page.
+Download the most recent Debian package (`.DEB`) from the [Releases](/releases) page.
 
-Create a new file called `nzyme.conf` in the same folder as your `nzyme.jar` file:
-
-```
-nzyme_id = nzyme-sensors-1
-channels = wlan0:1,2,3,4,5,6,8,9,10,11,12,13,14|wlan1:36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112
-channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
-channel_hop_interval = 1
-graylog_addresses = graylog.example.org:12000
-beacon_frame_sampling_rate = 0
-```
-
-Note  the `graylog_addresses` variable that has to point to a GELF TCP input in your Graylog setup. Adapt it accordingly.
-
-Please refer to the [example config in the repository](https://github.com/lennartkoopmann/nzyme/blob/master/nzyme.conf.example) for a more verbose version with comments.
- 
-#### Run
+Install the package:
 
 ```
-$ sudo java -jar nzyme-0.1.jar -c nzyme.conf
-17:28:45.657 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.
-17:28:51.637 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]
-17:28:53.178 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.
-17:28:53.268 [nzyme-loop-0] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan0] ... (⌐■_■)–︻╦╤─ – – pew pew
-17:28:54.926 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan1]
-17:28:56.238 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan1] acquired. Cycling through channels <36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112>.
-17:28:56.247 [nzyme-loop-1] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew
+$ sudo dpkg -i [nzyme deb file]
 ```
 
-Collected frames will now start appearing in your Graylog setup. The example here uses `sudo` because you need certain permissions to be able to capture frames with. There is ways to give a user permissions for raw packet captures and network interface manipulation but I'll not go that deep in this README. You decide if running as root is OK or not in your scenario.
+Copy the automatically installed config file:
 
-Note that DEB and RPM packages are in the making and will be released soon.
+```
+$ sudo cp /etc/nzyme/nzyme.conf.example /etc/nzyme/nzyme.conf
+```
+
+Change the parameters in the config file to adapt to your WiFi adapters, Graylog GELF input (See *What do I need to run it? -> A Graylog setup* and use-case. The file should be fairly well documented and self-explanatory.
+
+Now enable the `nzyme` service to make it start on boot of the Raspberry Pi:
+
+```
+$ sudo systemctl enable nzyme
+```
+
+Because we are not rebooting, we have to start the service manually for once:
+
+```
+$ sudo systemctl start nzyme
+$ sudo systemctl status nzyme
+```
+
+![Result of systemctl status](https://github.com/lennartkoopmann/nzyme/blob/master/systemctl-status.png)
+
+That's it! Nzyme should now be logging into your Graylog setup. Logs can be found in `/var/log/nzyme/` and log rotation is enabled by default. You can change logging and log rotation settings in `/etc/nzyme/log4j2-debian.xml`. 
+
+```
+$ tail -f /var/log/nzyme/nzyme.lo
+18:11:43.598 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.                                                                                               
+18:11:49.611 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]                                                                                                                                                 
+18:12:12.908 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.                                                                                              
+18:12:13.009 [nzyme-loop-0] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan0] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
+18:12:14.662 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan1]                                                                                                                                                 
+18:12:15.987 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan1] acquired. Cycling through channels <36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112>.                                                                 
+18:12:15.992 [nzyme-loop-1] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
+18:13:05.422 [statistics-0] INFO  horse.wtf.nzyme.Main -                                                                                                                                                                                    
++++++ Statistics: +++++                                                                                                                                                                                                                     
+Total frames considered:           597 (92 malformed), beacon: 506, probe-resp: 15, probe-req: 76                                                                                                                                           
+Frames per channel:                112: 21, 1: 26, 3: 10, 4: 158, 6: 97, 8: 2, 9: 15, 10: 2, 11: 264, 12: 2                                                                                                                                 
+Malformed Frames per channel:      6: 1.03% (1), 8: 50.00% (1), 9: 13.33% (2), 11: 32.95% (87), 12: 50.00% (1),                                                                                                                             
+Probing devices:                   5 (last 60s)                                                                                                                                                                                             
+Access points:                     26 (last 60s)                                                                                                                                                                                            
+Beaconing networks:                17 (last 60s)                                                                                                                                                                                            
+18:14:05.404 [statistics-0] INFO  horse.wtf.nzyme.Main -  
+```
 
 #### Renaming WiFi interfaces (optional)
 
