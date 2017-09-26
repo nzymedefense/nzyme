@@ -12,6 +12,8 @@ Think about this like a long-term (months or years) distributed Wireshark/tcpdum
 
 If you are new to the fascinating space of WiFi security, you might want to read my *[Common WiFi Attacks And How To Detect Them](https://wtf.horse/2017/09/19/common-wifi-attacks-explained/)* blog post.
 
+![Picture of a nzyme sensor](https://github.com/lennartkoopmann/nzyme/blob/master/sensor.jpg)
+
 ## What kind of data does it collect?
 
 Nzyme collects, parses and forwards all relevant 802.11 management frames. Management frames are unecrypted so anyone close enough to a sending station (an access point, a computer, a phone, a lightbulb, a car, a juice maker, ...) can pick them up with nzyme.
