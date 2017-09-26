@@ -50,7 +50,11 @@ In the end, it shoulnd’t really matter what you run it on, but the docs and gu
 
 ### A Graylog setup
 
-You need a Graylog setup with ah GELF TCP input that is reachable by your nzyme sensors.
+You need a Graylog setup with ah GELF TCP input that is reachable by your nzyme sensors. GELF is a Graylog-specific and structured log format. Because nzyme sends GELF, you don't have to set up any kind of parsing rules in Graylog and still have all fields available as key:value pairs for powerful search and analysis.
+
+You can start a GELF input for nzyme using your Graylog Web Interface. Navigate to *System* -> *Inputs*, select *GELF TCP* in the dropdown menu and hit *Launch new input*. A modal dialog will open and ask you a few questions about, for example, which address to bind on and what port to use. The input will be immediately available for nzyme after pressing *Save*.
+
+![How to start a Graylog input](https://github.com/lennartkoopmann/nzyme/blob/master/launch_input.png)
 
 ## Channel hopping
 
