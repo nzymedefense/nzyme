@@ -24,7 +24,7 @@ import java.nio.ByteOrder;
 
 public class Dot11LeavingReason {
 
-    private static final short LENGTH = 2;
+    private static final short DEAUTH_CONTENT_LENGTH = 24;
 
     private static final ImmutableMap<Integer, String> REASONS = new ImmutableMap.Builder<Integer, String>()
             .put(0, "Reserved")
@@ -100,8 +100,16 @@ public class Dot11LeavingReason {
     }
 
     public static short extract(byte[] payload, byte[] header) {
-        ByteArrays.validateBounds(payload, header.length-1, LENGTH);
-        return ByteArrays.getShort(ByteArrays.getSubArray(payload, header.length - 1, LENGTH), 0, ByteOrder.LITTLE_ENDIAN);
+        if(payload.length < DEAUTH_CONTENT_LENGTH+1) {
+            return -1;
+        }
+
+        byte[] reasonBytes = {
+                payload[DEAUTH_CONTENT_LENGTH],
+                payload[DEAUTH_CONTENT_LENGTH +1]
+        };
+
+        return ByteArrays.getShort(reasonBytes, 0, ByteOrder.LITTLE_ENDIAN);
     }
 
 }
