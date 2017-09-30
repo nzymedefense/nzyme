@@ -30,6 +30,9 @@ public class CLIArguments {
     @Parameter(names={"--trace", "-t"})
     private boolean traceMode;
 
+    @Parameter(names={"--packet-info", "-p"})
+    private boolean packetInfo;
+
     public String getConfigFilePath() {
         return configFilePath;
     }
@@ -40,6 +43,10 @@ public class CLIArguments {
 
     public boolean isTraceMode() {
         return traceMode;
+    }
+
+    public boolean isPacketInfo() {
+        return packetInfo;
     }
 
 }

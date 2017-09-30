@@ -178,7 +178,6 @@ public class NzymeImpl implements Nzyme {
                                 statistics.tickMalformedCountAndNotify(nzyme, meta);
                                 continue;
                             }
-
                             getStatistics().tickFrameCount(meta);
 
                             Dot11FrameType type = Dot11FrameType.getInstance(
@@ -213,6 +212,10 @@ public class NzymeImpl implements Nzyme {
                                     break;
                                 default:
                                     LOG.warn("Not handling frame type [{}].", type.value());
+                            }
+
+                            if(cliArguments.isPacketInfo()) {
+                                LOG.info("Type: {}, Header: {} bytes, Payload: {} bytes", type.value(), r.getHeader().getRawData().length, payload.length);
                             }
                         }
                     } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
