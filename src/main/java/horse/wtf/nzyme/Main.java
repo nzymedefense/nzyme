@@ -79,7 +79,7 @@ public class Main {
         // Set up statistics printer.
         final Statistics statistics = new Statistics();
         final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics);
-        LOG.info("Printing statistics every {} seconds. Logs are in [logs/] and will be automatically rotated.", STATS_INTERVAL);
+        LOG.info("Printing statistics every {} seconds.", STATS_INTERVAL);
         // Statistics printer.
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
