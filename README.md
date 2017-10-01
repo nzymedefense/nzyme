@@ -373,7 +373,7 @@ Nzyme has a few CLI parameters, some of which can be helpful for debugging.
 * `--packet-info`, `-p`
   * Print simple packet size information for every frame that is received.
 
-As an example for CLI parameter usage, here is how to start nzyme in debug mode with packet information printing.
+As an example for CLI parameter usage, here is how to start nzyme in debug mode with packet information printing:
 
 ```
 java -jar nzyme.jar --debug --packet-info 
