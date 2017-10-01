@@ -360,6 +360,25 @@ A message with translated fields could look like this:
 
 ![Enriched message](https://github.com/lennartkoopmann/nzyme/blob/master/lookup_tables.png)
 
+### CLI parameters
+
+Nzyme has a few CLI parameters, some of which can be helpful for debugging.
+
+* `--config-file`, `-c`
+  * Path to config file. This is the only required parametr.
+* `--debug`, `-d`
+  * Override Log4j configuration and start with log level `DEBUG`.
+* `--trace`, `-t`
+  * Override Log4j configuration and start with log level `TRACE`.
+* `--packet-info`, `-p`
+  * Print simple packet size information for every frame that is received.
+
+As an example for CLI parameter usage, here is how to start nzyme in debug mode with packet information printing.
+
+```
+java -jar nzyme.jar --debug --packet-info 
+```
+
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on unlicensed frequencies.
