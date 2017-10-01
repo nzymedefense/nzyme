@@ -35,11 +35,13 @@ public class GraylogUplink implements Uplink {
     private static final String SOURCE = "nzyme";
 
     private final String nzymeId;
+    private final String networkInterfaceName;
 
     private final GelfTransport gelfTransport;
 
-    public GraylogUplink(String hostname, int port, String nzymeId) {
+    public GraylogUplink(String hostname, int port, String nzymeId, String networkInterfaceName) {
         this.nzymeId = nzymeId;
+        this.networkInterfaceName = networkInterfaceName;
 
         this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
                 .transport(GelfTransports.TCP)
@@ -63,7 +65,8 @@ public class GraylogUplink implements Uplink {
 
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
         gelf.addAdditionalFields(notification.getAdditionalFields());
-        gelf.addAdditionalField("nzyme_sensor_id", nzymeId);
+        gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
+        gelf.addAdditionalField("nic_name", this.networkInterfaceName);
 
         // Meta information.
         if(meta != null) {

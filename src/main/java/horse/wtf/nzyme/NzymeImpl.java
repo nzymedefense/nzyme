@@ -92,7 +92,7 @@ public class NzymeImpl implements Nzyme {
             this.uplinks.add(new LoggerUplink());
         } else {
             for (GraylogAddress address : this.configuration.getGraylogAddresses()) {
-                this.uplinks.add(new GraylogUplink(address.getHost(), address.getPort(), this.nzymeId));
+                this.uplinks.add(new GraylogUplink(address.getHost(), address.getPort(), this.nzymeId, this.networkInterfaceName));
             }
         }
 
