@@ -12,6 +12,8 @@ Think about this like a long-term (months or years) distributed Wireshark/tcpdum
 
 If you are new to the fascinating space of WiFi security, you might want to read my *[Common WiFi Attacks And How To Detect Them](https://wtf.horse/2017/09/19/common-wifi-attacks-explained/)* blog post.
 
+**A longer blog post with nzyme examples and use-cases is published on my blog:** [Introducing Nzyme: WiFi Monitoring, Intrusion Detection And Forensics](https://wtf.horse/2017/10/02/introducing-nzyme-wifi-802-11-frame-recording-and-forensics/)
+
 ![Picture of a nzyme sensor](https://github.com/lennartkoopmann/nzyme/blob/master/sensor.jpg)
 
 ## What kind of data does it collect?
