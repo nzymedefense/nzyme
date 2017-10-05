@@ -383,4 +383,4 @@ java -jar nzyme.jar --debug --packet-info
 
 ## Legal notice
 
-Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on unlicensed frequencies.
+Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on license-free frequencies.
