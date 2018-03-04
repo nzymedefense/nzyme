@@ -227,7 +227,7 @@ $ sudo systemctl status nzyme
 That's it! Nzyme should now be logging into your Graylog setup. Logs can be found in `/var/log/nzyme/` and log rotation is enabled by default. You can change logging and log rotation settings in `/etc/nzyme/log4j2-debian.xml`. 
 
 ```
-$ tail -f /var/log/nzyme/nzyme.lo
+$ tail -f /var/log/nzyme/nzyme.log
 18:11:43.598 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.                                                                                               
 18:11:49.611 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]                                                                                                                                                 
 18:12:12.908 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.                                                                                              
