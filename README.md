@@ -250,6 +250,8 @@ Beaconing networks:                17 (last 60s)
 
 The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support moniotr mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
 
+**IMPORTANT NOTE:** Starting with Debian/Raspbian Stretch (late 2017), `udev` started to assign predictable network interface names by default. To enable this on Raspbian, you only have to delete the `/etc/systemd/network/99-default.link` symlink and restart your Raspberry Pi. After this, you'll see a predictable naming scheme that includes the MAC address of the device. For example, my previously named `wlan0` is now always `wlxx00c0ca95683b`. **Do this and skip all following steps for renaming network interfaces if you are on Debian/Raspbian Stretch.** (You can find out your version like this: `cat /etc/os-release`)
+
 This is what `ifconfig` looks like with no external WiFi adapters plugged in.
 
 ```
