@@ -191,6 +191,12 @@ OpenJDK Runtime Environment (build 1.8.0_40-internal-b04)
 OpenJDK Zero VM (build 25.40-b08, interpreted mode)
 ```
 
+Also install `libpcap`:
+
+```
+$ sudo apt install libpcap0.8
+```
+
 #### Download and configure
 
 Download the most recent Debian package (`.DEB`) from the [Releases](https://github.com/lennartkoopmann/nzyme/releases) page.
