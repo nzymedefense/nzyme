@@ -18,7 +18,7 @@ If you are new to the fascinating space of WiFi security, you might want to read
 
 ## What kind of data does it collect?
 
-Nzyme collects, parses and forwards all relevant 802.11 management frames. Management frames are unecrypted so anyone close enough to a sending station (an access point, a computer, a phone, a lightbulb, a car, a juice maker, ...) can pick them up with nzyme.
+Nzyme collects, parses and forwards all relevant 802.11 management frames. Management frames are unencrypted so anyone close enough to a sending station (an access point, a computer, a phone, a lightbulb, a car, a juice maker, ...) can pick them up with nzyme.
 
 * Association request
 * Association response
@@ -52,7 +52,7 @@ If you have another one that supports monitor mode, you can use that one. Nzyme 
 
 I recommend to run nzyme on a Raspberry Pi 3 Model B. This is pretty much the reference architecture, because that is what I run it on. A Raspberry Pi 3 Model B running Nzyme with three WiFi adapters in monitor mode has about 25% CPU utilization in the busy frequencies of Downtown Houston, TX.
 
-In the end, it shoulnd’t really matter what you run it on, but the docs and guides will most likely refer to a Raspberry Pi with a Raspbian on it.
+In the end, it shouldn’t really matter what you run it on, but the docs and guides will most likely refer to a Raspberry Pi with a Raspbian on it.
 
 ### A Graylog setup
 
@@ -254,7 +254,7 @@ Beaconing networks:                17 (last 60s)
 
 #### Renaming WiFi interfaces (optional)
 
-The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support moniotr mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
+The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support monitor mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
 
 **IMPORTANT NOTE:** Starting with Debian/Raspbian Stretch (late 2017), `udev` started to assign predictable network interface names by default. To enable this on Raspbian, you only have to delete the `/etc/systemd/network/99-default.link` symlink and restart your Raspberry Pi. After this, you'll see a predictable naming scheme that includes the MAC address of the device. For example, my previously named `wlan0` is now always `wlxx00c0ca95683b`. **Do this and skip all following steps for renaming network interfaces if you are on Debian/Raspbian Stretch.** (You can find out your version like this: `cat /etc/os-release`)
 
@@ -375,7 +375,7 @@ A message with translated fields could look like this:
 Nzyme has a few CLI parameters, some of which can be helpful for debugging.
 
 * `--config-file`, `-c`
-  * Path to config file. This is the only required parametr.
+  * Path to config file. This is the only required parameter.
 * `--debug`, `-d`
   * Override Log4j configuration and start with log level `DEBUG`.
 * `--trace`, `-t`
