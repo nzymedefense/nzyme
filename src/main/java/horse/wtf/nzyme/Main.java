@@ -34,6 +34,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,6 +83,30 @@ public class Main {
         if(cliArguments.isTraceMode()) {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
+
+        // Try python TODO: make this work from assembled jar
+        try {
+            Process p = Runtime.getRuntime().exec("/usr/bin/env python __main__.py");
+            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            String line;
+            while ((line = in.readLine()) != null) {
+                LOG.info(line);
+            }
+
+            while ((line = err.readLine()) != null) {
+                LOG.info(line);
+            }
+            p.waitFor();
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        /////////////
 
         // Set up statistics printer.
         final Statistics statistics = new Statistics();
