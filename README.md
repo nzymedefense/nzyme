@@ -353,6 +353,19 @@ a short period of time, you may want to kill (some of) them!
  1115 wpa_supplicant
 ```
 
+If you are running or developing nzyme on a Ubuntu machine, you can exclude your WiFi adapters from management by `NetworkManager` by configuring this in `/etc/NetworkManager/NetworkManager.conf`:
+
+```
+[keyfile]
+unmanaged-devices=mac:00:c0:ca:97:12:0e;mac:00:c0:ca:97:12:16;mac:00:c0:ca:97:12:01
+```
+
+Remember to restart `NetworkManager` after the change:
+
+```
+sudo service network-manager restart
+```
+
 ## Protips
 
 ### Use Graylog lookup tables
