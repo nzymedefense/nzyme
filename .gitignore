@@ -3,5 +3,7 @@
 nzyme.conf
 dependency-reduced-pom.xml
 
+.DS_Store
+
 logs/
 target/
