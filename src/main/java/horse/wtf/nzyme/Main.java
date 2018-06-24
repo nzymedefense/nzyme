@@ -27,7 +27,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
-import horse.wtf.nzyme.periodicals.VersioncheckThread;
+import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.Level;
@@ -51,6 +51,9 @@ public class Main {
             Thread.currentThread().setName("shutdown-hook");
             LOG.info("Shutting down.");
         }));
+
+        Version version = new Version();
+        LOG.info("Version: {}.", version.getVersionString());
 
         final CLIArguments cliArguments = new CLIArguments();
         final Configuration configuration = new Configuration();
@@ -101,7 +104,7 @@ public class Main {
         PeriodicalManager periodicalManager = new PeriodicalManager();
 
         if(configuration.areVersionchecksEnabled()) {
-            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(), 0, 60, TimeUnit.MINUTES);
+            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
         }

@@ -37,6 +37,7 @@ public class PeriodicalManager {
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
                         .setNameFormat("periodicals-%d")
+                        .setUncaughtExceptionHandler((thread, throwable) -> LOG.error("Uncaught exception in a periodical!", throwable))
                         .build()
         );
     }

@@ -35,7 +35,11 @@ public abstract class Periodical implements Runnable {
         LOG.info("Running periodical [{}].", getName());
         Stopwatch timer = Stopwatch.createStarted();
 
-        execute();
+        try {
+            execute();
+        } catch(Exception e) {
+            LOG.error("Error during execution of periodical [{}].", getName(), e);
+        }
 
         LOG.info("Periodical [{}] finished in <{} ms>.", getName(), timer.elapsed(TimeUnit.MILLISECONDS));
     }

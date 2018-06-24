@@ -15,18 +15,19 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.periodicals;
+package horse.wtf.nzyme.periodicals.versioncheck;
 
-public class VersioncheckThread extends Periodical {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    @Override
-    protected void execute() {
+public class CurrentVersion {
 
-    }
+    @JsonProperty
+    public int major;
 
-    @Override
-    public String getName() {
-        return "Versionchecks";
-    }
+    @JsonProperty
+    public int minor;
+
+    @JsonProperty
+    public int patch;
 
 }

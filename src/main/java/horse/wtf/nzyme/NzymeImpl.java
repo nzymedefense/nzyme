@@ -105,7 +105,7 @@ public class NzymeImpl implements Nzyme {
         }
 
         if (networkInterface == null) {
-            throw new NzymeInitializationException("Could not get network interface [" + interfaceName + "]. Does it exist and could it be that you have to be root?");
+            throw new NzymeInitializationException("Could not get network interface [" + interfaceName + "]. Does it exist and could it be that you have to be root? Is it up?");
         }
 
         LOG.info("Building PCAP handle on interface [{}]", interfaceName);
