@@ -366,6 +366,14 @@ Remember to restart `NetworkManager` after the change:
 sudo service network-manager restart
 ```
 
+* Running without root rights is possible on many Linux distributions by adding special capabilities to the `java` executable: (Make sure to use the correct path to your specific `java`)
+
+```
+$ sudo setcap cap_net_raw,cap_net_admin=eip /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+$ getcap /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java = cap_net_admin,cap_net_raw+eip
+```
+
 ## Protips
 
 ### Use Graylog lookup tables
