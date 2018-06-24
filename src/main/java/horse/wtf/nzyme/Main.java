@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.periodicals.PeriodicalManager;
+import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.Level;
@@ -52,6 +54,9 @@ public class Main {
             Thread.currentThread().setName("shutdown-hook");
             LOG.info("Shutting down.");
         }));
+
+        Version version = new Version();
+        LOG.info("Version: {}.", version.getVersionString());
 
         final CLIArguments cliArguments = new CLIArguments();
         final Configuration configuration = new Configuration();
@@ -122,6 +127,15 @@ public class Main {
                 .setNameFormat("nzyme-loop-%d")
                 .build());
 
+        // Periodicals.
+        PeriodicalManager periodicalManager = new PeriodicalManager();
+
+        if(configuration.areVersionchecksEnabled()) {
+            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
+        } else {
+            LOG.info("Versionchecks are disabled.");
+        }
+
         for (Map.Entry<String, ImmutableList<Integer>> config : configuration.getChannels().entrySet()) {
             try {
                 Nzyme nzyme = new NzymeImpl(config.getKey(), config.getValue(), cliArguments, configuration, statistics);
@@ -133,7 +147,7 @@ public class Main {
         }
 
         while(true) {
-            // https://www.youtube.com/watch?v=Vmb1tqYqyII
+            // https://www.youtube.com/watch?v=Vmb1tqYqyII#t=47s
 
             try {
                 Thread.sleep(1000);

@@ -21,6 +21,7 @@ import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.statistics.Statistics;
 
 public interface Nzyme {
@@ -32,7 +33,9 @@ public interface Nzyme {
 
     Statistics getStatistics();
     ChannelHopper getChannelHopper();
+
     Configuration getConfiguration();
 
     String getNetworkInterface();
+
 }

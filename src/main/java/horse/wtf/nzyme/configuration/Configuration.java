@@ -49,6 +49,9 @@ public class Configuration {
     @Parameter(value = "beacon_frame_sampling_rate", validator = PositiveIntegerValidator.class, required = true)
     protected int beaconSamplingRate;
 
+    @Parameter(value = "versionchecks_enabled")
+    protected boolean versionchecksEnabled = true;
+
     public String getNzymeId() {
         return nzymeId;
     }
@@ -118,6 +121,10 @@ public class Configuration {
 
     public int getChannelHopInterval() {
         return channelHopInterval;
+    }
+
+    public boolean areVersionchecksEnabled() {
+        return versionchecksEnabled;
     }
 
 }
