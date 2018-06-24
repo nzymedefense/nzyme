@@ -402,6 +402,10 @@ As an example for CLI parameter usage, here is how to start nzyme in debug mode 
 java -jar nzyme.jar --debug --packet-info 
 ```
 
+### Version Checks
+By default, nzyme will check if there is a more recent stable release available by requesting information about the latest
+release from 
+
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on license-free frequencies.
