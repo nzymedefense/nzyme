@@ -7,3 +7,5 @@ dependency-reduced-pom.xml
 
 logs/
 target/
+
+src/main/resources/git.properties
