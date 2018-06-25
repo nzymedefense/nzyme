@@ -17,14 +17,12 @@
 
 package horse.wtf.nzyme.dot11;
 
-import horse.wtf.nzyme.Tools;
-import horse.wtf.nzyme.handlers.FrameHandler;
+import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.util.ByteArrays;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 public class Dot11SSID {
 

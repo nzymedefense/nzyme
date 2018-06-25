@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.deception.bluffs.Bluff;
+import horse.wtf.nzyme.deception.bluffs.ProbeRequest;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -84,29 +86,13 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
-        // Try python TODO: make this work from assembled jar
+        Bluff pr = new ProbeRequest(configuration);
         try {
-            Process p = Runtime.getRuntime().exec("/usr/bin/env python __main__.py");
-            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
-            String line;
-            while ((line = in.readLine()) != null) {
-                LOG.info(line);
-            }
-
-            while ((line = err.readLine()) != null) {
-                LOG.info(line);
-            }
-            p.waitFor();
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            pr.execute();
+        } catch (Bluff.BluffExecutionException e) {
+            LOG.error("Could not send probe request. Debug information follows.", e);
+            pr.debug();
         }
-
-        /////////////
 
         // Set up statistics printer.
         final Statistics statistics = new Statistics();

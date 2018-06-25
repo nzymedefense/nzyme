@@ -24,6 +24,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import horse.wtf.nzyme.util.Tools;
 
 import javax.annotation.Nullable;
 import java.util.AbstractMap;
@@ -51,6 +52,15 @@ public class Configuration {
 
     @Parameter(value = "versionchecks_enabled")
     protected boolean versionchecksEnabled = true;
+
+    @Parameter(value = "python", required = true)
+    protected String python;
+
+    @Parameter(value = "bluff_directory", required = true)
+    protected String bluffDirectory = "/tmp";
+
+    @Parameter(value = "bluff_prefix", required = true)
+    protected String bluffPrefix = "nzyme_";
 
     public String getNzymeId() {
         return nzymeId;
@@ -125,6 +135,37 @@ public class Configuration {
 
     public boolean areVersionchecksEnabled() {
         return versionchecksEnabled;
+    }
+
+    public String getPython() {
+        if(!Tools.isSafeParameter(python)) {
+            throw new RuntimeException("Python path is not safe.");
+        }
+
+        return python.trim();
+    }
+
+    public String getBluffDirectory() {
+        String fixedBluffDirectory;
+
+        if (bluffDirectory.startsWith("/")) {
+            fixedBluffDirectory = bluffDirectory;
+        } else {
+            fixedBluffDirectory = "/" + bluffDirectory;
+        }
+
+        if(!Tools.isSafeParameter(fixedBluffDirectory)) {
+            throw new RuntimeException("Bluff directory path is not safe.");
+        }
+
+        return fixedBluffDirectory.trim();
+    }
+
+    public String getBluffPrefix() {
+        if(!Tools.isSafeParameter(bluffPrefix)) {
+            throw new RuntimeException("Bluff prefix is not safe.");
+        }
+        return bluffPrefix.trim();
     }
 
 }
