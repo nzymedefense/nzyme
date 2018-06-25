@@ -15,7 +15,36 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.deception;
+package horse.wtf.nzyme.deception.bluffs;
 
-public class ShamDispatcher {
+import com.google.common.collect.ImmutableMap;
+import horse.wtf.nzyme.configuration.Configuration;
+
+import java.util.Map;
+
+public class ProbeRequest extends Bluff {
+
+    public ProbeRequest(Configuration configuration) {
+        super(configuration);
+    }
+
+    @Override
+    protected String scriptCategory() {
+        return "dot11";
+    }
+
+    @Override
+    protected String scriptName() {
+        return "probe_request.py";
+    }
+
+    @Override
+    protected Map<String, String> parameters() {
+        ImmutableMap.Builder<String, String> b = new ImmutableMap.Builder<>();
+
+        b.put("-i", )
+
+        return b.build();
+    }
+
 }

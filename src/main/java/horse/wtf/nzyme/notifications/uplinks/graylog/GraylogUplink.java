@@ -28,7 +28,7 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 
-import static horse.wtf.nzyme.Tools.calculateSignalQuality;
+import static horse.wtf.nzyme.util.Tools.calculateSignalQuality;
 
 public class GraylogUplink implements Uplink {
 

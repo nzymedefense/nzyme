@@ -15,7 +15,9 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.util;
+
+import com.google.common.base.CharMatcher;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -23,6 +25,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 public class Tools {
+
+    private static final CharMatcher SAFE_PARAMETER = CharMatcher.javaLetterOrDigit()
+            .or(CharMatcher.whitespace())
+            .or(CharMatcher.anyOf("_.-/"))
+            .precomputed();
 
     public static boolean isValidUTF8( byte[] input ) {
         CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
@@ -46,6 +53,10 @@ public class Tools {
         }
 
         return 2*(antennaSignal+100);
+    }
+
+    public static boolean isSafeParameter(String x) {
+        return SAFE_PARAMETER.matchesAllOf(x);
     }
 
 }
