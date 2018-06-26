@@ -23,10 +23,8 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.util.Tools;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -55,23 +53,9 @@ public abstract class Bluff {
     public Bluff(Configuration configuration) {
         this.configuration = configuration;
         this.stderr = Lists.newArrayList();
-
-        // Check that all parameters and the script information is safe.
-        try {
-            validateParameters();
-        } catch (InsecureParametersException e) {
-            LOG.warn("Insecure parameters passed to bluff [{}]. Refusing to execute.", this.getClass().getCanonicalName());
-            throw new RuntimeException(e);
-        }
     }
 
-    public void execute() throws BluffExecutionException {
-        /*
-         * TODO:
-         *  * secure parameter passing
-         *  * describe /tmp path in README
-         */
-
+    public void execute() throws BluffExecutionException, InsecureParametersException {
         try {
             File script = ensureScript();
 
@@ -79,10 +63,25 @@ public abstract class Bluff {
                     .append(configuration.getPython())
                     .append(" ")
                     .append(script.getCanonicalPath())
-                    .append(" ")
-                    .append("-i wlx00c0ca97120e -s javafooked -m 00:c0:ca:97:12:0e");
+                    .append(" ");
 
-            this.invokedCommand = exec.toString();
+            // Reminder: Parameters are validated and sanitized during construction.
+            for (Map.Entry<String, String> parameter : parameters().entrySet()) {
+                exec.append(parameter.getKey())
+                        .append(" ")
+                        .append(parameter.getValue())
+                        .append(" ");
+            }
+
+            this.invokedCommand = exec.toString().trim();
+
+            // Check that all parameters and the script information is safe.
+            try {
+                validateParameters();
+            } catch (InsecureParametersException e) {
+                LOG.warn("Insecure parameters passed to bluff [{}]. Refusing to execute.", this.getClass().getCanonicalName());
+                throw e;
+            }
 
             Process p = Runtime.getRuntime().exec(invokedCommand);
             BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -105,6 +104,15 @@ public abstract class Bluff {
         }
     }
 
+    public void executeFailFast() {
+        try {
+            execute();
+        } catch (BluffExecutionException | InsecureParametersException e) {
+            LOG.error("Could not execute bluff [{}].", this.getClass().getCanonicalName(), e);
+            LOG.info("Attempted command invocation: [{}]", this.getInvokedCommand());
+        }
+    }
+
     public void debug() {
         LOG.info("Bluff [{}]: Invoked command {{}}.", getClass().getCanonicalName(), getInvokedCommand());
 
@@ -120,12 +128,19 @@ public abstract class Bluff {
     }
 
     private void validateParameters() throws InsecureParametersException {
-        if (!(Tools.isSafeParameter(configuration.getBluffDirectory()) && Tools.isSafeParameter(configuration.getBluffPrefix())
-                && Tools.isSafeParameter(configuration.getPython())
-                && Tools.isSafeParameter(this.getClass().getSimpleName())
-                && Tools.isSafeParameter(scriptCategory()) && Tools.isSafeParameter(scriptName()))) {
+        if (!Tools.isSafeParameter(configuration.getBluffDirectory()) || !Tools.isSafeParameter(configuration.getBluffPrefix())
+                || !Tools.isSafeParameter(configuration.getPython())
+                || !Tools.isSafeParameter(this.getClass().getSimpleName())
+                || !Tools.isSafeParameter(scriptCategory()) || !Tools.isSafeParameter(scriptName())) {
             throw new InsecureParametersException();
         }
+
+        for (Map.Entry<String, String> x : parameters().entrySet()) {
+            if (!Tools.isSafeParameter(x.getKey()) || !Tools.isSafeParameter(x.getValue())) {
+                throw new InsecureParametersException();
+            }
+        }
+
     }
 
     /**
@@ -150,7 +165,7 @@ public abstract class Bluff {
         return invokedCommand;
     }
 
-    private class InsecureParametersException extends Exception {
+    public class InsecureParametersException extends Exception {
     }
 
     public class BluffExecutionException extends Throwable {
