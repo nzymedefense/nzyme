@@ -138,10 +138,6 @@ public class Configuration {
     }
 
     public String getPython() {
-        if(!Tools.isSafeParameter(python)) {
-            throw new RuntimeException("Python path is not safe.");
-        }
-
         return python.trim();
     }
 
@@ -154,17 +150,10 @@ public class Configuration {
             fixedBluffDirectory = "/" + bluffDirectory;
         }
 
-        if(!Tools.isSafeParameter(fixedBluffDirectory)) {
-            throw new RuntimeException("Bluff directory path is not safe.");
-        }
-
         return fixedBluffDirectory.trim();
     }
 
     public String getBluffPrefix() {
-        if(!Tools.isSafeParameter(bluffPrefix)) {
-            throw new RuntimeException("Bluff prefix is not safe.");
-        }
         return bluffPrefix.trim();
     }
 
