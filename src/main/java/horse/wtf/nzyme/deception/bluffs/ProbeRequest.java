@@ -24,8 +24,16 @@ import java.util.Map;
 
 public class ProbeRequest extends Bluff {
 
-    public ProbeRequest(Configuration configuration) {
+    private final String interfaceName;
+    private final String ssid;
+    private final String mac;
+
+    public ProbeRequest(Configuration configuration, String interfaceName, String ssid, String mac) {
         super(configuration);
+
+        this.interfaceName = interfaceName;
+        this.ssid = ssid;
+        this.mac = mac;
     }
 
     @Override
@@ -40,11 +48,13 @@ public class ProbeRequest extends Bluff {
 
     @Override
     protected Map<String, String> parameters() {
-        ImmutableMap.Builder<String, String> b = new ImmutableMap.Builder<>();
+        ImmutableMap.Builder<String, String> params = new ImmutableMap.Builder<>();
 
-        b.put("-i", )
+        params.put("--interface", interfaceName);
+        params.put("--ssid", ssid);
+        params.put("--mac", mac);
 
-        return b.build();
+        return params.build();
     }
 
 }

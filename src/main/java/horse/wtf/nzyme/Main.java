@@ -86,13 +86,8 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
-        Bluff pr = new ProbeRequest(configuration);
-        try {
-            pr.execute();
-        } catch (Bluff.BluffExecutionException e) {
-            LOG.error("Could not send probe request. Debug information follows.", e);
-            pr.debug();
-        }
+        Bluff pr = new ProbeRequest(configuration, "wlx00c0ca97120e", "testingfooked", "00:c0:ca:97:12:0e");
+        pr.executeFailFast();
 
         // Set up statistics printer.
         final Statistics statistics = new Statistics();

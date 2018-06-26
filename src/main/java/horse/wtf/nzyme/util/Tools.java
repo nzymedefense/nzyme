@@ -28,7 +28,7 @@ public class Tools {
 
     private static final CharMatcher SAFE_PARAMETER = CharMatcher.javaLetterOrDigit()
             .or(CharMatcher.whitespace())
-            .or(CharMatcher.anyOf("_.-/"))
+            .or(CharMatcher.anyOf("_.-/:"))
             .precomputed();
 
     public static boolean isValidUTF8( byte[] input ) {
@@ -56,6 +56,10 @@ public class Tools {
     }
 
     public static boolean isSafeParameter(String x) {
+        if (x == null) {
+            return true;
+        }
+
         return SAFE_PARAMETER.matchesAllOf(x);
     }
 
