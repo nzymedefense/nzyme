@@ -164,10 +164,10 @@ After disconnecting from all WiFi networks (you might have to "forget" them in t
 ```
 $ java -jar nzyme-0.1.jar -c nzyme.conf
 18:35:00.261 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.                                                                                                 
-18:35:00.307 [main] WARN  horse.wtf.nzyme.Nzyme - No Graylog uplinks configured. Falling back to Log4j output                                                                                                                                 
-18:35:00.459 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [en0]                                                                                                                                                     
-18:35:00.474 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [en0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11>.                                                                                                           
-18:35:00.483 [nzyme-loop-0] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [en0] ... (⌐■_■)–︻╦╤─ – – pew pew 
+18:35:00.307 [main] WARN  horse.wtf.nzyme.probes.dot11.Dot11Probe - No Graylog uplinks configured. Falling back to Log4j output                                                                                                                                 
+18:35:00.459 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Building PCAP handle on interface [en0]                                                                                                                                                     
+18:35:00.474 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - PCAP handle for [en0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11>.                                                                                                           
+18:35:00.483 [nzyme-loop-0] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Commencing 802.11 frame processing on [en0] ... (⌐■_■)–︻╦╤─ – – pew pew 
 ```
 
 Nzyme is now collecting data and writing it into the Graylog input you configured. A message will look like this:
@@ -235,12 +235,12 @@ That's it! Nzyme should now be logging into your Graylog setup. Logs can be foun
 ```
 $ tail -f /var/log/nzyme/nzyme.log
 18:11:43.598 [main] INFO  horse.wtf.nzyme.Main - Printing statistics every 60 seconds. Logs are in [logs/] and will be automatically rotated.                                                                                               
-18:11:49.611 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan0]                                                                                                                                                 
-18:12:12.908 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.                                                                                              
-18:12:13.009 [nzyme-loop-0] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan0] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
-18:12:14.662 [main] INFO  horse.wtf.nzyme.Nzyme - Building PCAP handle on interface [wlan1]                                                                                                                                                 
-18:12:15.987 [main] INFO  horse.wtf.nzyme.Nzyme - PCAP handle for [wlan1] acquired. Cycling through channels <36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112>.                                                                 
-18:12:15.992 [nzyme-loop-1] INFO  horse.wtf.nzyme.Nzyme - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
+18:11:49.611 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Building PCAP handle on interface [wlan0]                                                                                                                                                 
+18:12:12.908 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - PCAP handle for [wlan0] acquired. Cycling through channels <1,2,3,4,5,6,8,9,10,11,12,13,14>.                                                                                              
+18:12:13.009 [nzyme-loop-0] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Commencing 802.11 frame processing on [wlan0] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
+18:12:14.662 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Building PCAP handle on interface [wlan1]                                                                                                                                                 
+18:12:15.987 [main] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - PCAP handle for [wlan1] acquired. Cycling through channels <36,38,40,44,46,48,52,54,56,60,62,64,100,102,104,108,110,112>.                                                                 
+18:12:15.992 [nzyme-loop-1] INFO  horse.wtf.nzyme.probes.dot11.Dot11Probe - Commencing 802.11 frame processing on [wlan1] ... (⌐■_■)–︻╦╤─ – – pew pew                                                                                                        
 18:13:05.422 [statistics-0] INFO  horse.wtf.nzyme.Main -                                                                                                                                                                                    
 +++++ Statistics: +++++                                                                                                                                                                                                                     
 Total frames considered:           597 (92 malformed), beacon: 506, probe-resp: 15, probe-req: 76                                                                                                                                           
@@ -372,6 +372,15 @@ sudo service network-manager restart
 $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 $ getcap /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java = cap_net_admin,cap_net_raw+eip
+```
+
+* If the channel hopping does not seem to work, but you also see no errors in the nzyme log file, check if you configured the `channel_hop_command` to use `sudo`. If `sudo` asks for a password, the channel hopping will be blocked forever, because nothing enters the password. You can give you user rights to execute the channel hop command without entering a `sudo` password like this:
+
+```
+$ sudo visudo
+
+# Add this line BELOW the "%sudo   ALL=(ALL:ALL) ALL" line:
+your_username   ALL=(ALL:ALL) NOPASSWD: /sbin/iwconfig
 ```
 
 ## Protips

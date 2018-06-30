@@ -1,23 +1,23 @@
 /*
- *  This file is part of Nzyme.
+ *  This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
+ *  nzyme is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Nzyme is distributed in the hope that it will be useful,
+ *  nzyme is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package horse.wtf.nzyme.handlers;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11LeavingReason;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -31,7 +31,7 @@ public class DisassociationFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(DisassociationFrameHandler.class);
 
-    public DisassociationFrameHandler(Nzyme nzyme) {
+    public DisassociationFrameHandler(Dot11Probe nzyme) {
         super(nzyme);
     }
 
@@ -57,7 +57,7 @@ public class DisassociationFrameHandler extends FrameHandler {
 
         String message = transmitter + " is disassociating from " + destination + " (" + reasonString + ")";
 
-        nzyme.notify(
+        probe.notifyUplinks(
                 new Notification(message, meta.getChannel())
                         .addField(FieldNames.TRANSMITTER, transmitter)
                         .addField(FieldNames.DESTINATION, destination)

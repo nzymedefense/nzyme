@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.notifications.uplinks.logger;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 
 public class LoggerUplink implements Uplink {
 
-    private static final Logger LOG = LogManager.getLogger(Nzyme.class);
+    private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
 
     @Override
     public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {

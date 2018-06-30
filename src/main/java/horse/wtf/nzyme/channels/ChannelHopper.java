@@ -1,26 +1,27 @@
 /*
- *  This file is part of Nzyme.
+ *  This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
+ *  nzyme is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Nzyme is distributed in the hope that it will be useful,
+ *  nzyme is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package horse.wtf.nzyme.channels;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.probes.dot11.Dot11Probe;
+import horse.wtf.nzyme.probes.dot11.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,18 +33,18 @@ public class ChannelHopper {
 
     private static final Logger LOG = LogManager.getLogger(ChannelHopper.class);
 
-    private final ImmutableList<Integer> channels;
-    private final Nzyme nzyme;
+    private final Dot11Probe probe;
+    private final Dot11ProbeConfiguration probeConfiguration;
 
     private int currentChannelIndex = 0;
 
-    public ChannelHopper(Nzyme nzyme, ImmutableList<Integer> channels) {
-        if(channels == null || channels.isEmpty()) {
+    public ChannelHopper(Dot11Probe probe, Dot11ProbeConfiguration probeConfiguration) {
+        if(probeConfiguration.channels() == null || probeConfiguration.channels().isEmpty()) {
             throw new RuntimeException("Channels empty or NULL. You need to configure at least one channel.");
         }
 
-        this.channels = channels;
-        this.nzyme = nzyme;
+        this.probe = probe;
+        this.probeConfiguration = probeConfiguration;
     }
 
     public void initialize() {
@@ -53,33 +54,33 @@ public class ChannelHopper {
                 .build()
         ).scheduleWithFixedDelay(() -> {
             try {
-                if (!this.nzyme.isInLoop()) {
+                if (!this.probe.isInLoop()) {
                     return;
                 }
 
                 // Check if we reached end of channel list and recycle to 0 in that case.
-                if(this.currentChannelIndex >= this.channels.size()-1) {
+                if(this.currentChannelIndex >= probeConfiguration.channels().size()-1) {
                     this.currentChannelIndex = 0;
                 } else {
                     this.currentChannelIndex++;
                 }
 
-                int channel = this.channels.get(this.currentChannelIndex);
+                int channel = probeConfiguration.channels().get(this.currentChannelIndex);
 
-                LOG.debug("Configuring [{}] to use channel <{}>", nzyme.getNetworkInterface(), channel);
+                LOG.debug("Configuring [{}] to use channel <{}>", probeConfiguration.networkInterfaceName(), channel);
 
                 changeToChannel(channel);
             }catch(Exception e) {
                 LOG.error("Could not hop channel.", e);
             }
-        }, 0, nzyme.getConfiguration().getChannelHopInterval(), TimeUnit.SECONDS);
+        }, 0, probeConfiguration.channelHopInterval(), TimeUnit.SECONDS);
     }
 
     private void changeToChannel(Integer channel) {
         try {
-            String networkInterface = this.nzyme.getNetworkInterface().replaceAll("[^A-Za-z0-9]", "");
+            String networkInterface = Tools.safeAlphanumericString(probeConfiguration.networkInterfaceName());
 
-            String command = this.nzyme.getConfiguration().getChannelHopCommand()
+            String command = probeConfiguration.channelHopCommand()
                     .replace("{channel}", channel.toString()).replace("{interface}", networkInterface);
             LOG.debug("Executing: [{}]", command);
 
