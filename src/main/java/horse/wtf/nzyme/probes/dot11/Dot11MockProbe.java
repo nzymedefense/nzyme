@@ -15,26 +15,24 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.handlers;
+package horse.wtf.nzyme.probes.dot11;
 
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import org.pcap4j.packet.IllegalRawDataException;
+import horse.wtf.nzyme.statistics.Statistics;
 
-public class MockFrameHandler extends FrameHandler {
+public class Dot11MockProbe extends Dot11Probe {
 
-    public MockFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
+    public Dot11MockProbe(Dot11ProbeConfiguration configuration, Statistics statistics) {
+        super(configuration, statistics);
     }
 
     @Override
-    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-        // noop
+    public Runnable loop() throws Dot11ProbeInitializationException {
+        return () -> { /* noop */ };
     }
 
     @Override
-    public String getName() {
-        return "MockFrameHandler";
+    public boolean isInLoop() {
+        return false;
     }
 
 }

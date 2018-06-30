@@ -53,7 +53,7 @@ public class Version {
             return com.github.zafarkhaja.semver.Version.valueOf(String.valueOf(gitProperties.get("git.build.version")));
         } catch(Exception e) {
             // This is not recoverable and can only happen if something goes sideways during build.
-            throw new RuntimeException("Could not build semantic version from nzyme version.", e);
+            throw new RuntimeException("Could not build semantic version from probe version.", e);
         }
     }
 

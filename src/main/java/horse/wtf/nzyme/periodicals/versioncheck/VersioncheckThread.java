@@ -40,7 +40,7 @@ public class VersioncheckThread extends Periodical {
 
     private static final String VERSIONCHECK_API = "https://versionchecks.nzyme.org/check";
 
-    private static final String USER_AGENT = String.format(Locale.ENGLISH, "nzyme (%s, %s, %s, %s)",
+    private static final String USER_AGENT = String.format(Locale.ENGLISH, "probe (%s, %s, %s, %s)",
             System.getProperty("java.vendor"), System.getProperty("java.version"),
             System.getProperty("os.name"), System.getProperty("os.version"));
 
@@ -77,7 +77,7 @@ public class VersioncheckThread extends Periodical {
             Response response = httpClient.newCall(request).execute();
 
             if (!response.isSuccessful()) {
-               LOG.error("Could not check for newest nzyme version. Expected HTTP <200> but received HTTP <{}>. " +
+               LOG.error("Could not check for newest probe version. Expected HTTP <200> but received HTTP <{}>. " +
                                "Please consult the README.", response.code());
             }
 
@@ -86,17 +86,17 @@ public class VersioncheckThread extends Periodical {
                 VersionResponse versionResponse = om.readValue(responseString, VersionResponse.class);
 
                 if (versionResponse.getVersion().greaterThan(version.getVersion())) {
-                    String text = "You are running an outdated version of nzyme: v"
+                    String text = "You are running an outdated version of probe: v"
                             + version.getVersionString() + ". The currently available stable version is v"
                             + versionResponse.getFullVersionString() + " (released at " +
                             versionResponse.releasedAt + ").";
                     LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
                 }
             } else {
-                LOG.error("Could not check for newest nzyme version. Received empty response. Please consult the README.");
+                LOG.error("Could not check for newest probe version. Received empty response. Please consult the README.");
             }
         } catch(Exception e) {
-            LOG.error("Could not check for newest nzyme version. Please consult the README.", e);
+            LOG.error("Could not check for newest probe version. Please consult the README.", e);
         }
     }
 

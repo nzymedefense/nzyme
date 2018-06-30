@@ -1,18 +1,18 @@
 /*
- *  This file is part of Nzyme.
+ *  This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
+ *  nzyme is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Nzyme is distributed in the hope that it will be useful,
+ *  nzyme is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package horse.wtf.nzyme.handlers;
@@ -21,6 +21,7 @@ import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,7 +34,7 @@ public class ProbeRequestFrameHandler extends FrameHandler {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
-    public ProbeRequestFrameHandler(Nzyme nzyme) {
+    public ProbeRequestFrameHandler(Dot11Probe nzyme) {
         super(nzyme);
     }
 
@@ -87,9 +88,9 @@ public class ProbeRequestFrameHandler extends FrameHandler {
             message = "Probe request: " + requester + " is looking for any network. (null probe request)";
         }
 
-        nzyme.getStatistics().tickProbingDevice(requester);
+        probe.getStatistics().tickProbingDevice(requester);
 
-        nzyme.notify(
+        probe.notifyUplinks(
                 new Notification(message, meta.getChannel())
                         .addField(FieldNames.SSID, ssid)
                         .addField(FieldNames.TRANSMITTER, requester)
