@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.probes.dot11;
 
 import com.beust.jcommander.internal.Lists;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -40,6 +41,9 @@ public abstract class Dot11Probe {
 
     public abstract Runnable loop() throws Dot11ProbeInitializationException;
     public abstract boolean isInLoop();
+
+    public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
+    public abstract void scheduleAction();
 
     public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics) {
         this.uplinks = Lists.newArrayList();
