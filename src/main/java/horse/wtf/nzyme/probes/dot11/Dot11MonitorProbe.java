@@ -17,9 +17,12 @@
 
 package horse.wtf.nzyme.probes.dot11;
 
+import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Joiner;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.channels.ChannelHopper;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
+import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.handlers.*;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +34,7 @@ import org.pcap4j.packet.RadiotapPacket;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
 
 import java.io.EOFException;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,15 +48,8 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final ChannelHopper channelHopper;
     private final PcapHandle pcap;
 
-    // Frame handlers.
-    private final ProbeRequestFrameHandler probeRequestHandler;
-    private final ProbeResponseFrameHandler probeResponseHandler;
-    private final DeauthenticationFrameHandler deauthFrameHandler;
-    private final BeaconFrameHandler beaconFrameHandler;
-    private final AssociationRequestFrameHandler associationRequestFrameHandler;
-    private final AssociationResponseFrameHandler associationResponseFrameHandler;
-    private final DisassociationFrameHandler disassociationFrameHandler;
-    private final AuthenticationFrameHandler authenticationFrameHandler;
+    // Interceptors.
+    private final List<Dot11FrameInterceptor> frameInterceptors;
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
@@ -61,6 +58,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
         this.nzyme = nzyme;
         this.configuration = configuration;
+        this.frameInterceptors = Lists.newArrayList();
 
         // Initialize channel hopper.
         this.channelHopper = new ChannelHopper(this, configuration);
@@ -99,15 +97,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
         }
 
         LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.networkInterfaceName(), Joiner.on(",").join(configuration.channels()));
-
-        this.probeRequestHandler = new ProbeRequestFrameHandler(this);
-        this.probeResponseHandler = new ProbeResponseFrameHandler(this);
-        this.deauthFrameHandler = new DeauthenticationFrameHandler(this);
-        this.beaconFrameHandler = new BeaconFrameHandler(this);
-        this.associationRequestFrameHandler = new AssociationRequestFrameHandler(this);
-        this.associationResponseFrameHandler = new AssociationResponseFrameHandler(this);
-        this.disassociationFrameHandler = new DisassociationFrameHandler(this);
-        this.authenticationFrameHandler = new AuthenticationFrameHandler(this);
     }
 
     @Override
@@ -155,34 +144,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                     (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
                             );
 
-                            // Determine type and handler.
-                            switch (type.value()) {
-                                case 0: // assoc-req
-                                    associationRequestFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 1: // assoc-resp
-                                    associationResponseFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 4: // probe-req
-                                    probeRequestHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 5: // probe-resp
-                                    probeResponseHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 8: // beacon
-                                    beaconFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 10: // disaasoc
-                                    disassociationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 11: // auth
-                                    authenticationFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                case 12: // deauth
-                                    deauthFrameHandler.handle(payload, r.getHeader().getRawData(), meta);
-                                    break;
-                                default:
-                                    LOG.warn("Not handling frame type [{}].", type.value());
+                            // Intercept and handle frame.
+                            for (Dot11FrameInterceptor interceptor : frameInterceptors) {
+                                if (interceptor.forSubtype() == type.value()) {
+                                    interceptor.intercept(payload, r.getHeader().getRawData(), meta);
+                                }
                             }
 
                             if(this.nzyme.getConfiguration().isPrintPacketInfo()) {
@@ -203,6 +169,130 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public boolean isInLoop() {
         return inLoop.get();
+    }
+
+    @Override
+    public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
+        frameInterceptors.add(interceptor);
+    }
+
+    @Override
+    public void scheduleAction() {
+        throw new RuntimeException("Monitor probe cannot schedule actions.");
+    }
+
+    public static void configureAsBroadMonitor(final Dot11MonitorProbe probe) {
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new AssociationRequestFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.ASSOCIATION_REQUEST;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new AssociationResponseFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.ASSOCIATION_RESPONSE;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new ProbeRequestFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.PROBE_REQUEST;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new ProbeResponseFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.PROBE_RESPONSE;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new BeaconFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.BEACON;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new DisassociationFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.DISASSOCIATION;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new AuthenticationFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.AUTHENTICATION;
+            }
+        });
+
+        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
+            private final FrameHandler handler = new DeauthenticationFrameHandler(probe);
+
+            @Override
+            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                handler.handle(payload, header, meta);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.DEAUTHENTICATION;
+            }
+        });
     }
 
 }

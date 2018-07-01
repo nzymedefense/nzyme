@@ -35,8 +35,8 @@ public class AssociationRequestFrameHandler extends FrameHandler {
     private static final int SSID_LENGTH_POSITION = 29;
     private static final int SSID_POSITION = 30;
 
-    public AssociationRequestFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
+    public AssociationRequestFrameHandler(Dot11Probe probe) {
+        super(probe);
     }
 
     @Override

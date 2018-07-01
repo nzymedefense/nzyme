@@ -20,6 +20,9 @@ package horse.wtf.nzyme;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
+import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.probes.dot11.*;
@@ -27,6 +30,7 @@ import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -91,10 +95,25 @@ public class NzymeImpl implements Nzyme {
                     null,
                     "nzyme-test-1",
                     "wlx00c0ca971216",
-                    new ArrayList<Integer>(){{add(8);}},
+                    new ArrayList<Integer>(){{add(1);add(6);add(11);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
             ));
+
+            monitor.addFrameInterceptor(new Dot11FrameInterceptor() {
+                @Override
+                public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
+                    // TODO: extract parsing logic and return a Dot11BeaconFrame
+
+                    //beacon.getSSID().equals(BLUFF_SSID)
+                    // CONTACT at -71db for fsdfsdfsd
+                }
+
+                @Override
+                public byte forSubtype() {
+                    return Dot11FrameSubtype.BEACON;
+                }
+            });
 
             Dot11Probe sender = new Dot11SenderProbe(this, Dot11ProbeConfiguration.create(
                     null,
@@ -104,6 +123,10 @@ public class NzymeImpl implements Nzyme {
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
             ));
+
+            /*sender.scheduleActions(1, TimeUnit.SECONDS, new Dot11SenderAction() {
+                // send bluff
+            });*/
 
             probeExecutor.submit(monitor.loop());
             probeExecutor.submit(sender.loop());
