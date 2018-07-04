@@ -24,7 +24,6 @@ import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
-import horse.wtf.nzyme.notifications.uplinks.logger.LoggerUplink;
 import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,8 +50,7 @@ public abstract class Dot11Probe {
         this.configuration = configuration;
 
         if (configuration.graylogAddresses() == null || configuration.graylogAddresses().isEmpty()) {
-            LOG.warn("No Graylog uplinks configured. Falling back to Log4j output");
-            this.uplinks.add(new LoggerUplink());
+            LOG.warn("No Graylog uplinks configured for probe [{}]. Consider adding a STDOUT uplink for quick local testing.", getName());
         } else {
             for (GraylogAddress address : configuration.graylogAddresses()) {
                 this.uplinks.add(new GraylogUplink(
@@ -77,6 +75,10 @@ public abstract class Dot11Probe {
 
     public Dot11ProbeConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public String getName() {
+        return configuration.probeName();
     }
 
 }

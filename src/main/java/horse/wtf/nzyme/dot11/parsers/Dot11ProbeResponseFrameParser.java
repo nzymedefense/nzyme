@@ -15,42 +15,29 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.handlers;
+package horse.wtf.nzyme.dot11.parsers;
 
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11SSID;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
-import horse.wtf.nzyme.notifications.FieldNames;
-import horse.wtf.nzyme.notifications.Notification;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
-public class ProbeResponseFrameHandler extends FrameHandler {
-
-    private static final Logger LOG = LogManager.getLogger(ProbeResponseFrameHandler.class);
+public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeResponseFrame> {
 
     public static final int SSID_LENGTH_POSITION = 37;
     public static final int SSID_POSITION = 38;
 
-    public ProbeResponseFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
-    }
-
     @Override
-    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-        tick();
-
+    protected Dot11ProbeResponseFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
-        String ssid = null;
+        String ssid;
         try {
             ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
         } catch (MalformedFrameException e) {
-            malformed(meta);
-            LOG.trace("Skipping malformed probe-resp frame.");
+            throw new MalformedFrameException("Skipping malformed probe-resp frame.");
         }
 
         if (ssid == null) {
@@ -67,23 +54,7 @@ public class ProbeResponseFrameHandler extends FrameHandler {
             transmitter = probeReponse.getHeader().getAddress2().toString();
         }
 
-        String message = transmitter + " responded to probe request from " + destination + " for " + ssid;
-
-        probe.notifyUplinks(
-                new Notification(message, meta.getChannel())
-                        .addField(FieldNames.DESTINATION, destination)
-                        .addField(FieldNames.TRANSMITTER, transmitter)
-                        .addField(FieldNames.SSID, ssid)
-                        .addField(FieldNames.SUBTYPE, "probe-resp"),
-                meta
-        );
-
-        LOG.debug(message);
-    }
-
-    @Override
-    public String getName() {
-        return "probe-resp";
+        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, meta);
     }
 
 }

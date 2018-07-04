@@ -24,7 +24,10 @@ import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.handlers.*;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.frames.*;
+import horse.wtf.nzyme.dot11.handlers.*;
+import horse.wtf.nzyme.dot11.parsers.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -45,11 +48,20 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Nzyme nzyme;
     private final Dot11ProbeConfiguration configuration;
 
-    private final ChannelHopper channelHopper;
     private final PcapHandle pcap;
 
     // Interceptors.
     private final List<Dot11FrameInterceptor> frameInterceptors;
+
+    // Parsers.
+    private Dot11BeaconFrameParser beaconParser = new Dot11BeaconFrameParser();
+    private Dot11AssociationRequestFrameParser associationRequestParser = new Dot11AssociationRequestFrameParser();
+    private Dot11AssociationResponseFrameParser associationResponseParser = new Dot11AssociationResponseFrameParser();
+    private Dot11ProbeRequestFrameParser probeRequestParser = new Dot11ProbeRequestFrameParser();
+    private Dot11ProbeResponseFrameParser probeResponseFrameParser = new Dot11ProbeResponseFrameParser();
+    private Dot11DisassociationFrameParser disassociationParser = new Dot11DisassociationFrameParser();
+    private Dot11AuthenticationFrameParser authenticationFrameParser = new Dot11AuthenticationFrameParser();
+    private Dot11DeauthenticationFrameParser deauthenticationFrameParser = new Dot11DeauthenticationFrameParser();
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
@@ -61,8 +73,8 @@ public class Dot11MonitorProbe extends Dot11Probe {
         this.frameInterceptors = Lists.newArrayList();
 
         // Initialize channel hopper.
-        this.channelHopper = new ChannelHopper(this, configuration);
-        this.channelHopper.initialize();
+        ChannelHopper channelHopper = new ChannelHopper(this, configuration);
+        channelHopper.initialize();
 
         // Get network interface for PCAP.
         PcapNetworkInterface networkInterface;
@@ -144,10 +156,42 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                     (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
                             );
 
-                            // Intercept and handle frame.
+                            // Intercept and handle frame. TODO this looks fucked from a logic perspective
                             for (Dot11FrameInterceptor interceptor : frameInterceptors) {
                                 if (interceptor.forSubtype() == type.value()) {
-                                    interceptor.intercept(payload, r.getHeader().getRawData(), meta);
+                                    try {
+                                        switch (type.value()) {
+                                            case Dot11FrameSubtype.ASSOCIATION_REQUEST:
+                                                interceptor.intercept(associationRequestParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.ASSOCIATION_RESPONSE:
+                                                interceptor.intercept(associationResponseParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.PROBE_REQUEST:
+                                                interceptor.intercept(probeRequestParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.PROBE_RESPONSE:
+                                                interceptor.intercept(probeResponseFrameParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.BEACON:
+                                                interceptor.intercept(beaconParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.DISASSOCIATION:
+                                                interceptor.intercept(disassociationParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.AUTHENTICATION:
+                                                interceptor.intercept(authenticationFrameParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            case Dot11FrameSubtype.DEAUTHENTICATION:
+                                                interceptor.intercept(deauthenticationFrameParser.parse(payload, r.getHeader().getRawData(), meta));
+                                                break;
+                                            default:
+                                                LOG.error("Not parsing unsupported management frame subtype [{}].", type.value());
+                                        }
+                                    } catch (MalformedFrameException e) {
+                                        LOG.trace("Skipping malformed frame.");
+                                        getStatistics().tickMalformedCountAndNotify(this, meta);
+                                    }
                                 }
                             }
 
@@ -182,12 +226,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
     }
 
     public static void configureAsBroadMonitor(final Dot11MonitorProbe probe) {
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new AssociationRequestFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationRequestFrame>() {
+            private final Dot11FrameHandler<Dot11AssociationRequestFrame> handler = new Dot11AssociationRequestFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11AssociationRequestFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -196,12 +240,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new AssociationResponseFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationResponseFrame>() {
+            private final Dot11FrameHandler<Dot11AssociationResponseFrame> handler = new Dot11AssociationResponseFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11AssociationResponseFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -210,12 +254,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new ProbeRequestFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11ProbeRequestFrame>() {
+            private final Dot11FrameHandler<Dot11ProbeRequestFrame> handler = new Dot11ProbeRequestFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11ProbeRequestFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -224,12 +268,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new ProbeResponseFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
+            private final Dot11FrameHandler<Dot11ProbeResponseFrame> handler = new Dot11ProbeResponseFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11ProbeResponseFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -238,12 +282,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new BeaconFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
+            private final Dot11FrameHandler<Dot11BeaconFrame> handler = new Dot11BeaconFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11BeaconFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -252,12 +296,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new DisassociationFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DisassociationFrame>() {
+            private final Dot11FrameHandler<Dot11DisassociationFrame> handler = new Dot11DisassociationFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11DisassociationFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -266,12 +310,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new AuthenticationFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AuthenticationFrame>() {
+            private final Dot11FrameHandler<Dot11AuthenticationFrame> handler = new Dot11AuthenticationFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11AuthenticationFrame frame) {
+                handler.handle(frame);
             }
 
             @Override
@@ -280,12 +324,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
             }
         });
 
-        probe.addFrameInterceptor(new Dot11FrameInterceptor() {
-            private final FrameHandler handler = new DeauthenticationFrameHandler(probe);
+        probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
+            private final Dot11FrameHandler<Dot11DeauthenticationFrame> handler = new Dot11DeauthenticationFrameHandler(probe);
 
             @Override
-            public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                handler.handle(payload, header, meta);
+            public void intercept(Dot11DeauthenticationFrame frame) {
+                handler.handle(frame);
             }
 
             @Override

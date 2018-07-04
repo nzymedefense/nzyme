@@ -19,9 +19,9 @@ package horse.wtf.nzyme.dot11;
 
 import org.pcap4j.packet.IllegalRawDataException;
 
-public interface Dot11FrameInterceptor {
+public interface Dot11FrameInterceptor<T> {
 
-    void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException;
+    void intercept(T frame) throws IllegalRawDataException;
     byte forSubtype();
 
 }

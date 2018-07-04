@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11;
 
-import horse.wtf.nzyme.handlers.ProbeResponseFrameHandler;
+import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
@@ -40,8 +40,8 @@ public class Dot11SSIDTest {
         String ssid = null;
         try {
             ssid = Dot11SSID.extractSSID(
-                    ProbeResponseFrameHandler.SSID_LENGTH_POSITION,
-                    ProbeResponseFrameHandler.SSID_POSITION,
+                    Dot11ProbeResponseFrameParser.SSID_LENGTH_POSITION,
+                    Dot11ProbeResponseFrameParser.SSID_POSITION,
                     PROBE_RESP
             );
         } catch (MalformedFrameException e) {
