@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.probes.dot11;
 
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.statistics.Statistics;
 
 public class Dot11MockProbe extends Dot11Probe {
@@ -35,4 +36,13 @@ public class Dot11MockProbe extends Dot11Probe {
         return false;
     }
 
+    @Override
+    public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
+
+    }
+
+    @Override
+    public void scheduleAction() {
+
+    }
 }

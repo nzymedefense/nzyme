@@ -26,6 +26,8 @@ import java.util.List;
 @AutoValue
 public abstract class Dot11ProbeConfiguration {
 
+    public abstract String probeName();
+
     @Nullable
     public abstract List<GraylogAddress> graylogAddresses();
     public abstract String nzymeId();
@@ -35,8 +37,9 @@ public abstract class Dot11ProbeConfiguration {
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
 
-    public static Dot11ProbeConfiguration create(List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand) {
+    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand) {
         return builder()
+                .probeName(probeName)
                 .graylogAddresses(graylogAddresses)
                 .nzymeId(nzymeId)
                 .networkInterfaceName(networkInterfaceName)
@@ -52,6 +55,8 @@ public abstract class Dot11ProbeConfiguration {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder probeName(String probeName);
+
         public abstract Builder graylogAddresses(List<GraylogAddress> graylogAddresses);
 
         public abstract Builder nzymeId(String nzymeId);

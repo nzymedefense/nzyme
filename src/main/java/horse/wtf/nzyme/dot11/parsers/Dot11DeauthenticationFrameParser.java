@@ -15,30 +15,18 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.handlers;
+package horse.wtf.nzyme.dot11.parsers;
 
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11LeavingReason;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.FieldNames;
-import horse.wtf.nzyme.notifications.Notification;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
-public class DeauthenticationFrameHandler extends FrameHandler {
-
-    private static final Logger LOG = LogManager.getLogger(DeauthenticationFrameHandler.class);
-
-    public DeauthenticationFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
-    }
+public class Dot11DeauthenticationFrameParser extends Dot11FrameParser<Dot11DeauthenticationFrame> {
 
     @Override
-    public void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-        tick();
-
+    protected Dot11DeauthenticationFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
         Dot11ManagementFrame deauth = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
 
         String destination = "";
@@ -60,26 +48,7 @@ public class DeauthenticationFrameHandler extends FrameHandler {
         short reasonCode = Dot11LeavingReason.extract(payload, header);
         String reasonString = Dot11LeavingReason.lookup(reasonCode);
 
-        String message = "Deauth: Transmitter " + transmitter + " is deauthenticating " + destination
-                + " from BSSID " + bssid + " (" + reasonString + ")";
-
-        probe.notifyUplinks(
-                new Notification(message, meta.getChannel())
-                        .addField(FieldNames.TRANSMITTER, transmitter)
-                        .addField(FieldNames.DESTINATION, destination)
-                        .addField(FieldNames.BSSID, bssid)
-                        .addField(FieldNames.REASON_CODE, reasonCode)
-                        .addField(FieldNames.REASON_STRING, reasonString)
-                        .addField(FieldNames.SUBTYPE, "deauth"),
-                meta
-        );
-
-        LOG.debug(message);
-    }
-
-    @Override
-    public String getName() {
-        return "deauth";
+        return Dot11DeauthenticationFrame.create(destination, transmitter, bssid, reasonCode, reasonString, meta);
     }
 
 }

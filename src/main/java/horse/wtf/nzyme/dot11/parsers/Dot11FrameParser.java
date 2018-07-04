@@ -15,29 +15,19 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.handlers;
+package horse.wtf.nzyme.dot11.parsers;
 
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
 import org.pcap4j.packet.IllegalRawDataException;
 
-public abstract class FrameHandler {
+public abstract class Dot11FrameParser<T> {
 
-    protected final Dot11Probe probe;
+    protected abstract T doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException;
 
-    protected FrameHandler(Dot11Probe probe) {
-        this.probe = probe;
+    public T parse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
+        // TODO timer metric goes here
+        return doParse(payload, header, meta);
     }
-
-    protected void tick() {
-        probe.getStatistics().tickType(getName());
-    }
-
-    public void malformed(Dot11MetaInformation meta) {
-        probe.getStatistics().tickMalformedCountAndNotify(probe, meta);
-    }
-
-    public abstract void handle(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException;
-    public abstract String getName();
 
 }

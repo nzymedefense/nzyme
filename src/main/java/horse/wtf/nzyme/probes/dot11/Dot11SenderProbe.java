@@ -20,6 +20,7 @@ package horse.wtf.nzyme.probes.dot11;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.deception.bluffs.Bluff;
 import horse.wtf.nzyme.deception.bluffs.ProbeRequest;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,6 +65,16 @@ public class Dot11SenderProbe extends Dot11Probe {
     @Override
     public boolean isInLoop() {
         return inLoop.get();
+    }
+
+    @Override
+    public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
+        throw new RuntimeException("Sender probe cannot intercept frames.");
+    }
+
+    @Override
+    public void scheduleAction() {
+
     }
 
 }

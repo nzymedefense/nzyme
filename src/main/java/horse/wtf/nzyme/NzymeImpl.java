@@ -17,12 +17,11 @@
 
 package horse.wtf.nzyme;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.probes.dot11.*;
@@ -30,7 +29,6 @@ import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -92,6 +90,7 @@ public class NzymeImpl implements Nzyme {
     private void initializeProbes() {
         try {
             Dot11Probe monitor = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
+                    "monitor-main",
                     null,
                     "nzyme-test-1",
                     "wlx00c0ca971216",
@@ -100,12 +99,14 @@ public class NzymeImpl implements Nzyme {
                     "sudo /sbin/iwconfig {interface} channel {channel}"
             ));
 
-            monitor.addFrameInterceptor(new Dot11FrameInterceptor() {
-                @Override
-                public void intercept(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {
-                    // TODO: extract parsing logic and return a Dot11BeaconFrame
+            Dot11MonitorProbe.configureAsBroadMonitor((Dot11MonitorProbe) monitor);
 
-                    //beacon.getSSID().equals(BLUFF_SSID)
+            monitor.addFrameInterceptor(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
+                @Override
+                public void intercept(Dot11BeaconFrame frame) {
+                    if ("FOOKED".equals(frame.ssid())) {
+                        LOG.info("CONTACT for bandit {} at signal strength {}dBm. Trapped by [ROGUE_AP_II].", frame.transmitter(), frame.metaInformation().getAntennaSignal());
+                    }
                     // CONTACT at -71db for fsdfsdfsd
                 }
 
@@ -116,9 +117,10 @@ public class NzymeImpl implements Nzyme {
             });
 
             Dot11Probe sender = new Dot11SenderProbe(this, Dot11ProbeConfiguration.create(
+                    "sender-1",
                     null,
                     "nzyme-test-1",
-                    "wlx00c0ca971216",
+                    "wlx00c0ca971201",
                     new ArrayList<Integer>(){{add(8);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"

@@ -15,16 +15,30 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.dot11;
+package horse.wtf.nzyme.dot11.handlers;
 
-public class MalformedFrameException extends Throwable {
+import horse.wtf.nzyme.probes.dot11.Dot11Probe;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
-    public MalformedFrameException() {
-        super();
+public abstract class Dot11FrameHandler<T> {
+
+    protected final Dot11Probe probe;
+
+    protected Dot11FrameHandler(Dot11Probe probe) {
+        this.probe = probe;
     }
 
-    public MalformedFrameException(String s) {
-        super(s);
+    private void tick() {
+        probe.getStatistics().tickType(getName());
     }
+
+    public void handle(T frame) {
+        tick();
+
+        doHandle(frame);
+    }
+
+    public abstract void doHandle(T frame);
+    public abstract String getName();
 
 }
