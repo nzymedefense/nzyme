@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
@@ -38,6 +39,10 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
 
     private final static int STATUS_CODE_LENGTH = 2;
     private final static int STATUS_CODE_POSITION = MAC_HEADER_LEN + 4;
+
+    public Dot11AuthenticationFrameParser(MetricRegistry metrics) {
+        super(metrics);
+    }
 
     public enum ALGORITHM_TYPE {
         OPEN_SYSTEM, SHARED_KEY

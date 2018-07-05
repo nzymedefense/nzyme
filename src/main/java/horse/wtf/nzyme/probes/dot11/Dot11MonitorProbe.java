@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.probes.dot11;
 
 import com.beust.jcommander.internal.Lists;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Joiner;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.channels.ChannelHopper;
@@ -54,23 +55,33 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final List<Dot11FrameInterceptor> frameInterceptors;
 
     // Parsers.
-    private Dot11BeaconFrameParser beaconParser = new Dot11BeaconFrameParser();
-    private Dot11AssociationRequestFrameParser associationRequestParser = new Dot11AssociationRequestFrameParser();
-    private Dot11AssociationResponseFrameParser associationResponseParser = new Dot11AssociationResponseFrameParser();
-    private Dot11ProbeRequestFrameParser probeRequestParser = new Dot11ProbeRequestFrameParser();
-    private Dot11ProbeResponseFrameParser probeResponseFrameParser = new Dot11ProbeResponseFrameParser();
-    private Dot11DisassociationFrameParser disassociationParser = new Dot11DisassociationFrameParser();
-    private Dot11AuthenticationFrameParser authenticationFrameParser = new Dot11AuthenticationFrameParser();
-    private Dot11DeauthenticationFrameParser deauthenticationFrameParser = new Dot11DeauthenticationFrameParser();
+    private final Dot11BeaconFrameParser beaconParser;
+    private final Dot11AssociationRequestFrameParser associationRequestParser;
+    private final Dot11AssociationResponseFrameParser associationResponseParser;
+    private final Dot11ProbeRequestFrameParser probeRequestParser;
+    private final Dot11ProbeResponseFrameParser probeResponseFrameParser;
+    private final Dot11DisassociationFrameParser disassociationParser;
+    private final Dot11AuthenticationFrameParser authenticationFrameParser;
+    private final Dot11DeauthenticationFrameParser deauthenticationFrameParser;
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration) throws Dot11ProbeInitializationException {
-        super(configuration, nzyme.getStatistics());
+    public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) throws Dot11ProbeInitializationException {
+        super(configuration, nzyme.getStatistics(), metrics);
 
         this.nzyme = nzyme;
         this.configuration = configuration;
         this.frameInterceptors = Lists.newArrayList();
+
+        // Parsers.
+        beaconParser = new Dot11BeaconFrameParser(metrics);
+        associationRequestParser = new Dot11AssociationRequestFrameParser(metrics);
+        associationResponseParser = new Dot11AssociationResponseFrameParser(metrics);
+        probeRequestParser = new Dot11ProbeRequestFrameParser(metrics);
+        probeResponseFrameParser = new Dot11ProbeResponseFrameParser(metrics);
+        disassociationParser = new Dot11DisassociationFrameParser(metrics);
+        authenticationFrameParser = new Dot11AuthenticationFrameParser(metrics);
+        deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics);
 
         // Initialize channel hopper.
         ChannelHopper channelHopper = new ChannelHopper(this, configuration);

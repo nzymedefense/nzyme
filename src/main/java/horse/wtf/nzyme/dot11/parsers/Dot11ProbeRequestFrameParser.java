@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
@@ -27,6 +28,10 @@ import org.pcap4j.packet.IllegalRawDataException;
 import java.text.Normalizer;
 
 public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeRequestFrame> {
+
+    public Dot11ProbeRequestFrameParser(MetricRegistry metrics) {
+        super(metrics);
+    }
 
     @Override
     protected Dot11ProbeRequestFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {

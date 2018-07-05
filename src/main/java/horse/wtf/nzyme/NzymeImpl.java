@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
@@ -44,10 +46,12 @@ public class NzymeImpl implements Nzyme {
     private final Configuration configuration;
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
+    private final MetricRegistry metrics;
 
     public NzymeImpl(Configuration configuration) {
         this.configuration = configuration;
         this.statistics = new Statistics();
+        this.metrics = new MetricRegistry();
 
         // TODO TODO TODO XXX: build pool size based on how many probes are configured.
          probeExecutor = Executors.newFixedThreadPool(10, new ThreadFactoryBuilder()
@@ -75,6 +79,10 @@ public class NzymeImpl implements Nzyme {
             statistics.resetAccumulativeTicks();
         }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
 
+        // Metrics JMX reporter.
+        final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
+        reporter.start();
+
         // Periodicals.
         PeriodicalManager periodicalManager = new PeriodicalManager();
 
@@ -97,7 +105,7 @@ public class NzymeImpl implements Nzyme {
                     new ArrayList<Integer>(){{add(1);add(6);add(11);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
-            ));
+            ), getMetrics());
 
             Dot11MonitorProbe.configureAsBroadMonitor((Dot11MonitorProbe) monitor);
 
@@ -124,7 +132,7 @@ public class NzymeImpl implements Nzyme {
                     new ArrayList<Integer>(){{add(8);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
-            ));
+            ), getMetrics());
 
             /*sender.scheduleActions(1, TimeUnit.SECONDS, new Dot11SenderAction() {
                 // send bluff
@@ -157,6 +165,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public MetricRegistry getMetrics() {
+        return metrics;
     }
 
 }
