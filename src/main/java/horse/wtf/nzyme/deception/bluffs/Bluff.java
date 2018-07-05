@@ -95,6 +95,7 @@ public abstract class Bluff {
             err.close();
 
             if (!stderr.isEmpty()) {
+                debug();
                 throw new BluffExecutionException("STDERR is not empty.");
             }
         } catch (InterruptedException e) {
