@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.probes.dot11;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.deception.bluffs.Bluff;
 import horse.wtf.nzyme.deception.bluffs.ProbeRequest;
@@ -35,8 +36,8 @@ public class Dot11SenderProbe extends Dot11Probe {
     private final Nzyme nzyme;
     private final Dot11ProbeConfiguration configuration;
 
-    public Dot11SenderProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration) {
-        super(configuration, nzyme.getStatistics());
+    public Dot11SenderProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
+        super(configuration, nzyme.getStatistics(), metrics);
 
         this.configuration = configuration;
         this.nzyme = nzyme;

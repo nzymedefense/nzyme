@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11SSID;
@@ -28,6 +29,10 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
 
     public static final int SSID_LENGTH_POSITION = 37;
     public static final int SSID_POSITION = 38;
+
+    public Dot11ProbeResponseFrameParser(MetricRegistry metrics) {
+        super(metrics);
+    }
 
     @Override
     protected Dot11ProbeResponseFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {

@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.probes.dot11;
 
 import com.beust.jcommander.internal.Lists;
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
@@ -38,16 +39,19 @@ public abstract class Dot11Probe {
     private final Statistics statistics;
     private final List<Uplink> uplinks;
 
+    protected final MetricRegistry metrics;
+
     public abstract Runnable loop() throws Dot11ProbeInitializationException;
     public abstract boolean isInLoop();
 
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
     public abstract void scheduleAction();
 
-    public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics) {
+    public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
         this.uplinks = Lists.newArrayList();
         this.statistics = statistics;
         this.configuration = configuration;
+        this.metrics = metrics;
 
         if (configuration.graylogAddresses() == null || configuration.graylogAddresses().isEmpty()) {
             LOG.warn("No Graylog uplinks configured for probe [{}]. Consider adding a STDOUT uplink for quick local testing.", getName());

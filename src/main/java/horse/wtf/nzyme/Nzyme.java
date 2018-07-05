@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.statistics.Statistics;
 
@@ -26,5 +27,7 @@ public interface Nzyme {
 
     Statistics getStatistics();
     Configuration getConfiguration();
+
+    MetricRegistry getMetrics();
 
 }

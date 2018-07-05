@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
@@ -30,6 +31,10 @@ public class Dot11AssociationResponseFrameParser extends Dot11FrameParser<Dot11A
 
     private static final int STATUS_CODE_POSITION = 26;
     private static final int STATUS_CODE_LENGTH = 2;
+
+    public Dot11AssociationResponseFrameParser(MetricRegistry metrics) {
+        super(metrics);
+    }
 
     @Override
     protected Dot11AssociationResponseFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {

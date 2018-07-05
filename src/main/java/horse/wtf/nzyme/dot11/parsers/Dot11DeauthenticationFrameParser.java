@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11LeavingReason;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -24,6 +25,10 @@ import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 public class Dot11DeauthenticationFrameParser extends Dot11FrameParser<Dot11DeauthenticationFrame> {
+
+    public Dot11DeauthenticationFrameParser(MetricRegistry metrics) {
+        super(metrics);
+    }
 
     @Override
     protected Dot11DeauthenticationFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException {

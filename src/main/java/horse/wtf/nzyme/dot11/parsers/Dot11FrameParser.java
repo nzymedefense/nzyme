@@ -17,17 +17,39 @@
 
 package horse.wtf.nzyme.dot11.parsers;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import org.pcap4j.packet.IllegalRawDataException;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 public abstract class Dot11FrameParser<T> {
+
+    private final MetricRegistry metrics;
+
+    private final Timer timer;
+
+    protected Dot11FrameParser(MetricRegistry metrics) {
+        this.metrics = metrics;
+
+        this.timer = metrics.timer(name(this.getClass(), "parseTime"));
+    }
 
     protected abstract T doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException;
 
     public T parse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
-        // TODO timer metric goes here
-        return doParse(payload, header, meta);
+        Timer.Context time = this.timer.time();
+
+        T result;
+        try {
+            result = doParse(payload, header, meta);
+        } finally {
+            time.stop();
+        }
+
+        return result;
     }
 
 }
