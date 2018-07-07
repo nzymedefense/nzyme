@@ -1,0 +1,69 @@
+general {
+  # The role of this nzyme instance. Options are: leader, satellite
+  role: leader
+
+  # The ID or name of this nzyme instance. Must be unique.
+  id: nzyme-master
+
+  # Path to python executable. Not required if you are not configuring any bluffs.
+  python: /usr/bin/env python
+}
+
+# REST API and web interface configuration.
+interface {
+  rest_listen_uri: http://127.0.0.1:22900/
+  web_interface_listen_uri: http://127.0.0.1:8000/
+}
+
+# List of Graylog GELF TCP inputs. (Optional but strongly recommended for real use)
+graylog_uplinks [
+  graylog.example.org:13999
+]
+
+# 802.11/Wifi adapters that are designated to read traffic.
+802_11_monitors [
+  monitor {
+    # The 802.11/WiFi adapter name.
+    device: wlx00c0ca971201
+
+    # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
+    # Consider local legal requirements and regulations. Default is US 2.4GHz band.
+    # Configure one or more interfaces here.
+    # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
+    channels: 1,2,3,4,5,6,7,8,9,10,11
+
+    # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
+    # configure the adapter. Examples for Linux and OSX are in the README.
+    channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
+
+    # Channel hop interval in seconds. Leave at default if you don't know what this is.
+    channel_hop_interval = 1
+  }
+]
+
+802_11_bluffs [
+  bluff {
+    # Bluff type. See README.
+    type: DEAUTH_I
+
+    # The name of the 802.11/WiFi adapter that should be used to send data.
+    device_sender: wlx00c0ca971216
+
+    # The name of the 802.11/WiFi adapter that should be used to monitor for bandit interaction with the bluff.
+    # Note that this is different from the 802_11_monitors section above and devices cannot be re-used for this.
+    device_monitor: wlx00c0ca97120e
+
+    # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
+    # Consider local legal requirements and regulations. Default is US 2.4GHz band.
+    # Configure one or more interfaces here.
+    # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
+    channels: 1,2,3,4,5,6,7,8,9,10,11
+
+    # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
+    # configure the adapter. Examples for Linux and OSX are in the README.
+    channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
+
+    # Channel hop interval in seconds. Leave at default if you don't know what this is.
+    channel_hop_interval = 1
+  }
+]
