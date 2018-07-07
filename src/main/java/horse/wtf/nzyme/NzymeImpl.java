@@ -54,7 +54,7 @@ public class NzymeImpl implements Nzyme {
         this.metrics = new MetricRegistry();
 
         // TODO TODO TODO XXX: build pool size based on how many probes are configured.
-         probeExecutor = Executors.newFixedThreadPool(10, new ThreadFactoryBuilder()
+         probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("probe-loop-%d")
                 .build());
