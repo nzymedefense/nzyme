@@ -27,11 +27,19 @@ import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.probes.dot11.*;
+import horse.wtf.nzyme.rest.InjectionBinder;
+import horse.wtf.nzyme.rest.resources.system.MetricsResource;
+import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +61,6 @@ public class NzymeImpl implements Nzyme {
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
 
-        // TODO TODO TODO XXX: build pool size based on how many probes are configured.
          probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("probe-loop-%d")
@@ -90,6 +97,22 @@ public class NzymeImpl implements Nzyme {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
+        }
+
+        // Spin up REST API.
+        ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(MetricsResource.class);
+        resourceConfig.register(StatisticsResource.class);
+        resourceConfig.register(new InjectionBinder(this));
+
+        final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create("http://127.0.0.1:3001"), resourceConfig); // TODO make configurable
+        Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
+
+        // Start server.
+        try {
+            server.start();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not start REST API.", e);
         }
 
         initializeProbes();

@@ -1,0 +1,9 @@
+body {
+    font-family: 'Inconsolata', monospace;
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+}
