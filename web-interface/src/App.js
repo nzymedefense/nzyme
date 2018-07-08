@@ -1,28 +1,62 @@
-import React, { Component } from 'react';
+import React from 'react';
+import Reflux from 'reflux';
 
-class App extends Component {
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from 'react-router-dom';
+
+import Notifications from 'react-notify-toast';
+
+import PingStore from "./stores/PingStore";
+import PingActions from "./actions/PingActions";
+
+import NavigationBar from './components/layout/NavigationBar';
+import OverviewPage from "./components/overview/OverviewPage";
+import NotConnectedPage from "./components/misc/NotConnectedPage";
+
+class App extends Reflux.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      apiConnected: true
+    };
+
+    this.store = PingStore;
+  }
+
+  componentDidMount() {
+    PingActions.ping();
+  }
+
   render() {
-    return (
-      <div className="nzyme">
-        <header>
-          <div className="navbar box-shadow">
-            <div className="container d-flex justify-content-between">
-              <a href="/" className="navbar-brand d-flex align-items-center">
-                <strong>nzyme - WiFi Defense System</strong>
-              </a>
-            </div>
-          </div>
-        </header>
+    if(this.state.apiConnected) {
+      return (
+        <div className="nzyme">
+          <NavigationBar/>
 
-        <div className="container">
-          <div className="row">
-            <div className="col-md-12">
-              <h1>System Overview</h1>
-            </div>
+          <div className="container">
+            <Notifications/>
+
+            <OverviewPage/>
           </div>
         </div>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div className="nzyme">
+          <NavigationBar/>
+
+          <div className="container">
+            <Notifications />
+            <NotConnectedPage />
+          </div>
+        </div>
+      )
+    }
   }
 }
 

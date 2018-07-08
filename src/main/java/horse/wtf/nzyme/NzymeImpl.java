@@ -27,7 +27,9 @@ import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.probes.dot11.*;
+import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.InjectionBinder;
+import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -101,9 +103,13 @@ public class NzymeImpl implements Nzyme {
 
         // Spin up REST API.
         ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(new CORSFilter());
+        resourceConfig.register(new InjectionBinder(this));
+
+        // Register resources.
+        resourceConfig.register(PingResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
-        resourceConfig.register(new InjectionBinder(this));
 
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create("http://127.0.0.1:3001"), resourceConfig); // TODO make configurable
         Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
@@ -125,7 +131,7 @@ public class NzymeImpl implements Nzyme {
                     null,
                     "nzyme-test-1",
                     "wlx00c0ca971216",
-                    new ArrayList<Integer>(){{add(1);add(6);add(11);}},
+                    new ArrayList<Integer>(){{add(1);add(2);add(3);add(4);add(5);add(6);add(7);add(8);add(9);add(10);add(11);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
             ), getMetrics());

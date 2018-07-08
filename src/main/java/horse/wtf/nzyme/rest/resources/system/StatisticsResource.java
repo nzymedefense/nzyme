@@ -40,8 +40,8 @@ public class StatisticsResource {
     private Nzyme nzyme;
 
     @GET
-
-    public Response all() {
+    @Path("global")
+    public Response global() {
         Map<String, Long> frameTypes = Maps.newHashMap();
         for (Map.Entry<String, AtomicLong> x : nzyme.getStatistics().getFrameTypes().entrySet()) {
             frameTypes.put(x.getKey(), x.getValue().get());
