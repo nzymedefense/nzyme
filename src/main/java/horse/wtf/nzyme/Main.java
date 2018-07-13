@@ -18,15 +18,13 @@
 package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
-import com.github.joschi.jadconfig.JadConfig;
-import com.github.joschi.jadconfig.RepositoryException;
-import com.github.joschi.jadconfig.ValidationException;
-import com.github.joschi.jadconfig.repositories.PropertiesRepository;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 
 public class Main {
 
@@ -41,7 +39,6 @@ public class Main {
         }));
 
         final CLIArguments cliArguments = new CLIArguments();
-        final Configuration configuration = new Configuration();
 
         // Parse CLI arguments.
         JCommander.newBuilder()
@@ -50,12 +47,7 @@ public class Main {
                 .parse(argv);
 
         // Parse configuration.
-        try {
-            new JadConfig(new PropertiesRepository(cliArguments.getConfigFilePath()), configuration).process();
-        } catch (RepositoryException | ValidationException e) {
-            LOG.error("Could not read config.", e);
-            Runtime.getRuntime().exit(FAILURE);
-        }
+        Configuration configuration = new Configuration(new File(cliArguments.getConfigFilePath()));
 
         // Override log level if requested.
         if(cliArguments.isDebugMode()) {

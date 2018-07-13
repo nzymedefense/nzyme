@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.deception.bluffs;
+package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.configuration.Configuration;

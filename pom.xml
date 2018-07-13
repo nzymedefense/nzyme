@@ -24,7 +24,6 @@
         <gelfclient.version>1.4.0</gelfclient.version>
         <guava.version>22.0</guava.version>
         <jcommander.version>1.72</jcommander.version>
-        <jadconfig.version>0.13.0</jadconfig.version>
         <testng.version>6.9.10</testng.version>
         <okhttp.version>3.10.0</okhttp.version>
         <jackson.version>2.9.3</jackson.version>
@@ -33,6 +32,7 @@
         <autovalue.version>1.5.1</autovalue.version>
         <metrics.version>4.0.0</metrics.version>
         <jersey.version>2.27</jersey.version>
+        <typesafeconfig.version>1.3.3</typesafeconfig.version>
     </properties>
 
     <dependencies>
@@ -75,11 +75,6 @@
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
             <version>${jcommander.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.joschi</groupId>
-            <artifactId>jadconfig</artifactId>
-            <version>${jadconfig.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -146,6 +141,11 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${typesafeconfig.version}</version>
         </dependency>
     </dependencies>
 
