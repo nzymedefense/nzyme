@@ -19,8 +19,8 @@ package horse.wtf.nzyme.probes.dot11;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.Nzyme;
-import horse.wtf.nzyme.deception.bluffs.Bluff;
-import horse.wtf.nzyme.deception.bluffs.ProbeRequest;
+import horse.wtf.nzyme.dot11.deception.bluffs.Bluff;
+import horse.wtf.nzyme.dot11.deception.bluffs.ProbeRequest;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

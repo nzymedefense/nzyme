@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.deception.bluffs;
+package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Charsets;
@@ -60,7 +60,7 @@ public abstract class Bluff {
             File script = ensureScript();
 
             StringBuilder exec = new StringBuilder()
-                    .append(configuration.getPython())
+                    .append(configuration.getPythonExecutable())
                     .append(" ")
                     .append(script.getCanonicalPath())
                     .append(" ");
@@ -129,8 +129,8 @@ public abstract class Bluff {
     }
 
     private void validateParameters() throws InsecureParametersException {
-        if (!Tools.isSafeParameter(configuration.getBluffDirectory()) || !Tools.isSafeParameter(configuration.getBluffPrefix())
-                || !Tools.isSafeParameter(configuration.getPython())
+        if (!Tools.isSafeParameter(configuration.getPythonScriptDirectory()) || !Tools.isSafeParameter(configuration.getPythonScriptPrefix())
+                || !Tools.isSafeParameter(configuration.getPythonExecutable())
                 || !Tools.isSafeParameter(this.getClass().getSimpleName())
                 || !Tools.isSafeParameter(scriptCategory()) || !Tools.isSafeParameter(scriptName())) {
             throw new InsecureParametersException();
@@ -154,7 +154,7 @@ public abstract class Bluff {
     private File ensureScript() throws IOException {
         URL url = Resources.getResource("bluffs/" + scriptCategory() + "/" + scriptName());
         String text = Resources.toString(url, Charsets.UTF_8);
-        File target = new File("/" + configuration.getBluffDirectory() + "/" + configuration.getBluffPrefix() + this.getClass().getSimpleName());
+        File target = new File("/" + configuration.getPythonScriptDirectory() + "/" + configuration.getPythonScriptPrefix() + this.getClass().getSimpleName());
 
         Files.asByteSink(target).write(text.getBytes());
 

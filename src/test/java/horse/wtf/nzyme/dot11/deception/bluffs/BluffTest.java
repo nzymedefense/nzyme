@@ -1,8 +1,9 @@
-package horse.wtf.nzyme.deception.bluffs;
+package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import horse.wtf.nzyme.configuration.Configuration;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ public class BluffTest {
     @Test
     public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/env python");
+        configuration.setPythonExecutable("/usr/bin/env python");
 
         Bluff mock = new MockBluff(configuration, "mock");
         mock.execute();
@@ -24,7 +25,7 @@ public class BluffTest {
     @Test
     public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/python");
+        configuration.setPythonExecutable("/usr/bin/python");
 
         Bluff mock = new MockBluff(configuration, "mock");
         mock.execute();
@@ -35,8 +36,8 @@ public class BluffTest {
     @Test
     public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/python");
-        configuration.setBluffDirectory("/var/tmp");
+        configuration.setPythonExecutable("/usr/bin/python");
+        configuration.setPythonScriptDirectory("/var/tmp");
 
         Bluff mock = new MockBluff(configuration, "mock");
         mock.execute();
@@ -47,8 +48,8 @@ public class BluffTest {
     @Test
     public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/python");
-        configuration.setBluffPrefix("nzymeTEST_");
+        configuration.setPythonExecutable("/usr/bin/python");
+        configuration.setPythonScriptPrefix("nzymeTEST_");
 
         Bluff mock = new MockBluff(configuration, "mock");
         mock.execute();
@@ -59,7 +60,7 @@ public class BluffTest {
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
     public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/env python");
+        configuration.setPythonExecutable("/usr/bin/env python");
 
         Bluff mock = new MockBluff(configuration, "param & /usr/bin/FOOKED");
         mock.execute();
@@ -68,7 +69,7 @@ public class BluffTest {
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
     public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException {
         TestableConfiguration configuration = new TestableConfiguration();
-        configuration.setPython("/usr/bin/env python");
+        configuration.setPythonExecutable("/usr/bin/env python");
 
         Bluff mock = new MockBluff(configuration, "mock");
         ((MockBluff) mock).setParameterKey("-i foo & /usr/bin/fooked &");
@@ -112,16 +113,39 @@ public class BluffTest {
 
     private class TestableConfiguration extends Configuration {
 
-        public void setPython(String python) {
-            this.python = python;
+        private String pythonExecutable = "/usr/bin/python";
+        private String pythonScriptDirectory = "/tmp";
+        private String pythonScriptPrefix = "nzyme_";
+
+        public TestableConfiguration() {
+            super(new File("nzyme-leader.conf.example"));
         }
 
-        public void setBluffDirectory(String bluffDirectory) {
-            this.bluffDirectory = bluffDirectory;
+        @Override
+        public String getPythonExecutable() {
+            return pythonExecutable;
         }
 
-        public void setBluffPrefix(String bluffPrefix) {
-            this.bluffPrefix = bluffPrefix;
+        public void setPythonExecutable(String pythonExecutable) {
+            this.pythonExecutable = pythonExecutable;
+        }
+
+        @Override
+        public String getPythonScriptDirectory() {
+            return pythonScriptDirectory;
+        }
+
+        public void setPythonScriptDirectory(String pythonScriptDirectory) {
+            this.pythonScriptDirectory = pythonScriptDirectory;
+        }
+
+        @Override
+        public String getPythonScriptPrefix() {
+            return pythonScriptPrefix;
+        }
+
+        public void setPythonScriptPrefix(String pythonScriptPrefix) {
+            this.pythonScriptPrefix = pythonScriptPrefix;
         }
 
     }

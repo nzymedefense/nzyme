@@ -381,7 +381,7 @@ $ sudo visudo
 
 # Add this line BELOW the "%sudo   ALL=(ALL:ALL) ALL" line:
 your_username   ALL=(ALL:ALL) NOPASSWD: /sbin/iwconfig
-```
+``` 
 
 ## Protips
 

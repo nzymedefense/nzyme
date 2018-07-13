@@ -41,7 +41,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -111,7 +110,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
 
-        final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create("http://127.0.0.1:3001"), resourceConfig); // TODO make configurable
+        final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
         Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
 
         // Start server.
@@ -130,7 +129,7 @@ public class NzymeImpl implements Nzyme {
                     "monitor-main",
                     null,
                     "nzyme-test-1",
-                    "wlx00c0ca971216",
+                    "wlx9cefd5fd7c46",
                     new ArrayList<Integer>(){{add(1);add(2);add(3);add(4);add(5);add(6);add(7);add(8);add(9);add(10);add(11);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
@@ -142,9 +141,10 @@ public class NzymeImpl implements Nzyme {
                 @Override
                 public void intercept(Dot11BeaconFrame frame) {
                     if ("FOOKED".equals(frame.ssid())) {
-                        LOG.info("CONTACT for bandit {} at signal strength {}dBm. Trapped by [ROGUE_AP_II].", frame.transmitter(), frame.metaInformation().getAntennaSignal());
+                        LOG.info("CONTACT for bandit {} at signal strength {}dBm. Trapped by [ROGUE_AP_II].",
+                                frame.transmitter(),
+                                frame.metaInformation().getAntennaSignal());
                     }
-                    // CONTACT at -71db for fsdfsdfsd
                 }
 
                 @Override
@@ -157,7 +157,7 @@ public class NzymeImpl implements Nzyme {
                     "sender-1",
                     null,
                     "nzyme-test-1",
-                    "wlx00c0ca971201",
+                    "wlx9cefd5fd730a",
                     new ArrayList<Integer>(){{add(8);}},
                     1,
                     "sudo /sbin/iwconfig {interface} channel {channel}"
@@ -172,18 +172,6 @@ public class NzymeImpl implements Nzyme {
         } catch (Dot11ProbeInitializationException e) {
             e.printStackTrace();
         }
-
-        //////////////////// SECOND
-        /*
-         * start probes for scenario ROGUE_AP_I
-         *   * monitor
-         *   * pair
-         *     * monitor
-         *     * sender
-         */
-        ////////////////////
-
-        // THIRD: READ PROBE ASSEMBLY FROM NEW CONFIG
     }
 
     @Override

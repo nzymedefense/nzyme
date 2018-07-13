@@ -1,163 +1,82 @@
-/*
- *  This file is part of nzyme.
- *
- *  nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
-import com.github.joschi.jadconfig.Parameter;
-import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
-import horse.wtf.nzyme.util.Tools;
 
 import javax.annotation.Nullable;
-import java.util.AbstractMap;
+import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 public class Configuration {
 
-    @Parameter(value = "nzyme_id", required = true)
-    protected String nzymeId;
+    // TODO XXX YOLO: validation (completeness, correctness), tests (against example.conf)
 
-    @Parameter(value = "graylog_addresses", validator = InternetAddressValidator.class, required = false)
-    protected String graylogAddresses;
+    private final Config root;
+    private final Config general;
+    private final Config interfaces;
+    private final Config python;
 
-    @Parameter(value = "channels", validator = InterfacesAndChannelsValidator.class, required = true)
-    protected String channels;
+    // Manual properties.
+    private boolean printPacketInfo = false;
 
-    @Parameter(value = "channel_hop_command", required = true)
-    protected String channelHopCommand;
+    public Configuration(File configFile) {
+        this.root = ConfigFactory.parseFile(configFile);
 
-    @Parameter(value = "channel_hop_interval", validator = PositiveIntegerValidator.class, required = true)
-    protected int channelHopInterval;
+        this.general = root.getConfig("general");
+        this.python = general.getConfig("python");
+        this.interfaces = root.getConfig("interfaces");
+    }
 
-    @Parameter(value = "beacon_frame_sampling_rate", validator = PositiveIntegerValidator.class, required = true)
-    protected int beaconSamplingRate;
-
-    @Parameter(value = "versionchecks_enabled")
-    protected boolean versionchecksEnabled = true;
-
-    @Parameter(value = "python", required = true)
-    protected String python;
-
-    @Parameter(value = "bluff_directory", required = true)
-    protected String bluffDirectory = "/tmp";
-
-    @Parameter(value = "bluff_prefix", required = true)
-    protected String bluffPrefix = "nzyme_";
-
-    @Parameter(value = "print_packet_info")
-    protected boolean printPacketInfo = false;
+    public Role getRole() {
+        return general.getEnum(Role.class, "role");
+    }
 
     public String getNzymeId() {
-        return nzymeId;
+        return general.getString("id");
+    }
+
+    public String getPythonExecutable() {
+        return python.getString("executable");
+    }
+
+    public String getPythonScriptDirectory() {
+        return python.getString("script_directory");
+    }
+
+    public String getPythonScriptPrefix() {
+        return python.getString("script_prefix");
+    }
+
+    public boolean areVersionchecksEnabled() {
+        return general.getBoolean("versionchecks");
+    }
+
+    public URI getRestListenUri() {
+        return URI.create(interfaces.getString("rest_listen_uri"));
+    }
+
+    public URI getWebInterfaceListenUri() {
+        return URI.create(interfaces.getString("web_interface_listen_uri"));
     }
 
     @Nullable
-    public List<GraylogAddress> getGraylogAddresses() {
+    public List<GraylogAddress> getGraylogUplinks() {
+        List<String> graylogAddresses = root.getStringList("graylog_uplinks");
         if(graylogAddresses == null) {
             return null;
         }
 
-        String[] addresses;
-
-        if (graylogAddresses.contains(",")) {
-            addresses = graylogAddresses.split(",");
-        } else {
-            addresses = new String[]{graylogAddresses};
-        }
-
         List<GraylogAddress> result = Lists.newArrayList();
-        for (String address : addresses) {
+        for (String address : graylogAddresses) {
             String[] parts = address.split(":");
             result.add(new GraylogAddress(parts[0], Integer.parseInt(parts[1])));
         }
 
         return result;
-    }
-
-    public int getBeaconSamplingRate() {
-        return beaconSamplingRate;
-    }
-
-    public ImmutableMap<String, ImmutableList<Integer>> getChannels() {
-        ImmutableMap.Builder<String, ImmutableList<Integer>> result = new ImmutableMap.Builder<>();
-
-        if(!channels.contains("|")) {
-            // Only one interface specified.
-            result.put(parseInterfaceAndChannels(channels));
-        } else {
-            for (String interfaceInfo : Splitter.on("|").split(channels)) {
-                result.put(parseInterfaceAndChannels(interfaceInfo));
-            }
-        }
-
-        return result.build();
-    }
-
-    private AbstractMap.SimpleEntry<String, ImmutableList<Integer>> parseInterfaceAndChannels(String interfaceInfo) {
-        List<String> parts = Splitter.on(":").splitToList(interfaceInfo);
-        String interfaceName = parts.get(0);
-
-        ImmutableList.Builder<Integer> channels = new ImmutableList.Builder<>();
-        if(!parts.get(1).contains(",")) {
-            // Only one channel specified.
-            channels.add(Integer.valueOf(parts.get(1)));
-        } else {
-            for (String channel : Splitter.on(",").split(parts.get(1))) {
-                channels.add(Integer.valueOf(channel));
-            }
-        }
-
-        return new AbstractMap.SimpleEntry<>(interfaceName, channels.build());
-    }
-
-    public String getChannelHopCommand() {
-        return channelHopCommand;
-    }
-
-    public int getChannelHopInterval() {
-        return channelHopInterval;
-    }
-
-    public boolean areVersionchecksEnabled() {
-        return versionchecksEnabled;
-    }
-
-    public String getPython() {
-        return python.trim();
-    }
-
-    public String getBluffDirectory() {
-        String fixedBluffDirectory;
-
-        if (bluffDirectory.startsWith("/")) {
-            fixedBluffDirectory = bluffDirectory;
-        } else {
-            fixedBluffDirectory = "/" + bluffDirectory;
-        }
-
-        return fixedBluffDirectory.trim();
-    }
-
-    public String getBluffPrefix() {
-        return bluffPrefix.trim();
     }
 
     public boolean isPrintPacketInfo() {

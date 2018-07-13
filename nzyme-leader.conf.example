@@ -1,28 +1,43 @@
-general {
+# General nzyme configuration.
+general: {
   # The role of this nzyme instance. Options are: leader, satellite
-  role: leader
+  role: LEADER
 
   # The ID or name of this nzyme instance. Must be unique.
   id: nzyme-master
 
-  # Path to python executable. Not required if you are not configuring any bluffs.
-  python: /usr/bin/env python
+  python {
+    # Path to python executable.
+    path: /usr/bin/python2.7
+
+    # Script directory. This must be an existing and writable directory. We'll store some generated Python scripts here.
+    script_directory: /tmp
+
+    # Script prefix. A prefix for the generate scripts. There is usually no reason to change this setting.
+    script_prefix: nzyme_
+  }
+
+  # Regularly check if this version of nzyme is outdated?
+  versionchecks: true
 }
 
 # REST API and web interface configuration.
-interface {
-  rest_listen_uri: http://127.0.0.1:22900/
-  web_interface_listen_uri: http://127.0.0.1:8000/
+interfaces: {
+  rest_listen_uri: "http://127.0.0.1:22900/"
+  web_interface_listen_uri: "http://127.0.0.1:8000/"
 }
 
-# List of Graylog GELF TCP inputs. (Optional but strongly recommended for real use)
-graylog_uplinks [
-  graylog.example.org:13999
+# List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)
+graylog_uplinks: [
+  "graylog.example.org:13999"
 ]
 
 # 802.11/Wifi adapters that are designated to read traffic.
-802_11_monitors [
-  monitor {
+# Traffic recorded by monitor interfaces will be written to Graylog for analytics/forensics and also used for alerting.
+# The more monitors you have listening on different channels, the more traffic will be picked up and the more
+# traffic will be available as the basis for alerts.
+802_11_monitors: [
+  {
     # The 802.11/WiFi adapter name.
     device: wlx00c0ca971201
 
@@ -30,22 +45,40 @@ graylog_uplinks [
     # Consider local legal requirements and regulations. Default is US 2.4GHz band.
     # Configure one or more interfaces here.
     # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
-    channels: 1,2,3,4,5,6,7,8,9,10,11
+    channels: [1,2,3,4,5,6,7,8,9,10,11]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
     # configure the adapter. Examples for Linux and OSX are in the README.
-    channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
+    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
-    channel_hop_interval = 1
+    channel_hop_interval: 1
   }
 ]
 
-802_11_bluffs [
-  bluff {
-    # Bluff type. See README.
-    type: DEAUTH_I
+# A list of all your 802.11/WiFi networks. This will be used for automatic alerting.
+802_11_networks: [
+  {
+    ssid: getoffmylawn
+    bssids: [foo]
+    channels: [6,11]
+    crypto: foo
+  }
+]
 
+# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it.
+802_11_alerts: [
+  rogue_access_point
+  deauthentication_flood
+  deauthentication_broadcast
+  invalid_reason_code
+  lurker
+  channel_change
+  crypto_change
+]
+
+802_11_trap_pairs: [
+  {
     # The name of the 802.11/WiFi adapter that should be used to send data.
     device_sender: wlx00c0ca971216
 
@@ -57,13 +90,31 @@ graylog_uplinks [
     # Consider local legal requirements and regulations. Default is US 2.4GHz band.
     # Configure one or more interfaces here.
     # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
-    channels: 1,2,3,4,5,6,7,8,9,10,11
+    channels: [1,2,3,4,5,6,7,8,9,10,11]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
     # configure the adapter. Examples for Linux and OSX are in the README.
-    channel_hop_command = sudo /sbin/iwconfig {interface} channel {channel}
+    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
-    channel_hop_interval = 1
+    channel_hop_interval: 1
+
+    # Which traps to set using this trap pair.
+    traps: [
+      {
+        type: DEAUTH_TRAP
+        ssid: getoffmylawn
+      }
+
+      {
+        type: RECORDED_BEACON_TRAP
+        ssid: getoffmylawn
+      }
+
+      {
+        type: PROBE_REQ_TRAP
+        ssid: fooked
+      }
+    ]
   }
 ]
