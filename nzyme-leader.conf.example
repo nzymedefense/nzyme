@@ -1,6 +1,6 @@
 # General nzyme configuration.
 general: {
-  # The role of this nzyme instance. Options are: leader, satellite
+  # The role of this nzyme instance. Options are: LEADER, SATELLITE
   role: LEADER
 
   # The ID or name of this nzyme instance. Must be unique.
@@ -21,10 +21,9 @@ general: {
   versionchecks: true
 }
 
-# REST API and web interface configuration.
+# REST API configuration.
 interfaces: {
   rest_listen_uri: "http://127.0.0.1:22900/"
-  web_interface_listen_uri: "http://127.0.0.1:8000/"
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)

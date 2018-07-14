@@ -1,10 +1,31 @@
+/*
+ *  This file is part of nzyme.
+ *
+ *  nzyme is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  nzyme is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -14,6 +35,8 @@ import java.util.List;
 public class Configuration {
 
     // TODO XXX YOLO: validation (completeness, correctness), tests (against example.conf)
+
+    private static final Logger LOG = LogManager.getLogger(Nzyme.class);
 
     private final Config root;
     private final Config general;
@@ -59,8 +82,24 @@ public class Configuration {
         return URI.create(interfaces.getString("rest_listen_uri"));
     }
 
-    public URI getWebInterfaceListenUri() {
-        return URI.create(interfaces.getString("web_interface_listen_uri"));
+    public List<Dot11MonitorDefinition> getDot11Monitors() {
+        ImmutableList.Builder<Dot11MonitorDefinition> result = new ImmutableList.Builder<>();
+
+        for (Config config : root.getConfigList("802_11_monitors")) {
+            if (!Dot11MonitorDefinition.checkConfig(config)) {
+                LOG.info("Skipping 802.11 monitor with invalid configuration. Invalid monitor: [{}]", config);
+                continue;
+            }
+
+            result.add(Dot11MonitorDefinition.create(
+                    config.getString(Keys.DEVICE),
+                    config.getIntList(Keys.CHANNELS),
+                    config.getString(Keys.HOP_COMMAND),
+                    config.getInt(Keys.HOP_INTERVAL)
+            ));
+        }
+
+        return result.build();
     }
 
     @Nullable
