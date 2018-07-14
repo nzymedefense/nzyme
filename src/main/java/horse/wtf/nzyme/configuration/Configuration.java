@@ -32,7 +32,8 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
-import java.security.Key;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.util.List;
 
 public class Configuration {
@@ -88,7 +89,7 @@ public class Configuration {
     public List<Dot11MonitorDefinition> getDot11Monitors() {
         ImmutableList.Builder<Dot11MonitorDefinition> result = new ImmutableList.Builder<>();
 
-        for (Config config : root.getConfigList("802_11_monitors")) {
+        for (Config config : root.getConfigList(Keys.DOT11_MONITORS)) {
             if (!Dot11MonitorDefinition.checkConfig(config)) {
                 LOG.info("Skipping 802.11 monitor with invalid configuration. Invalid monitor: [{}]", config);
                 continue;
@@ -157,16 +158,62 @@ public class Configuration {
 
         // Logical validity.
         // Python: executable is an executable file.
+        if(!Files.isExecutable(new File(getPythonExecutable()).toPath())) {
+            throw new InvalidConfigurationException("Parameter [general.python." + Keys.PYTHON_PATH + "] does not point to an executable file: " + getPythonExecutable());
+        }
 
-        // Python: script directory is writable.
+        // Python: script directory is a directory and writable.
+        if (!Files.isDirectory(new File(getPythonScriptDirectory()).toPath()) || !Files.isWritable(new File(getPythonScriptDirectory()).toPath())) {
+            throw new InvalidConfigurationException("Parameter [general.python." + Keys.PYTHON_SCRIPT_DIR + "] does not point to a writable directory: " + getPythonScriptDirectory());
+        }
 
         // REST listen URI can be parsed into a URI.
+        try {
+            getRestListenUri();
+        } catch(Exception e) {
+            LOG.error(e);
+            throw new InvalidConfigurationException("Parameter [interfaces." + Keys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
+        }
 
-        // 802_11 monitors: Channels are all positive integers.
+        // 802_11 monitors: Channels are all integers, larger than 1.
+        int x = 0;
+        for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
+            String where = Keys.DOT11_MONITORS + "." + "#" + x;
+            try {
+                for (Integer channel : c.getIntList(Keys.CHANNELS)) {
+                    if (channel < 1) {
+                        throw new InvalidConfigurationException("Invalid channels in list for [" + where + "}. All channels must be integers larger than 0.");
+                    }
+                }
+            } catch(ConfigException e) {
+                LOG.error(e);
+                throw new InvalidConfigurationException("Invalid channels list for [" + where + "}. All channels must be integers larger than 0.");
+            } finally {
+                x++;
+            }
+        }
+
+        // 802_11 monitors should be parsed and safe to use for further logical checks from here on.
 
         // 802_11 monitors: No channel is used in any other monitor.
+        List<Integer> usedChannels = Lists.newArrayList();
+        for (Dot11MonitorDefinition monitor : getDot11Monitors()) {
+            for (Integer channel : monitor.channels()) {
+                if (usedChannels.contains(channel)) {
+                    throw new InvalidConfigurationException("Channel [" + channel + "] is defined for multiple 802.11 monitors. You should not have multiple monitors tuned to the same channel.");
+                }
+            }
+            usedChannels.addAll(monitor.channels());
+        }
 
         // 802_11 monitors: Device is not used in any other configuration.
+        List<String> devices = Lists.newArrayList();
+        for (Dot11MonitorDefinition monitor : getDot11Monitors()) {
+            if (devices.contains(monitor.device())) {
+                throw new InvalidConfigurationException("Device [" + monitor.device() + "] is defined for multiple 802.11 monitors. You should not have multiple monitors using the same device.");
+            }
+            devices.add(monitor.device());
+        }
     }
 
     private void expect(Config c, String key, String where, Class clazz) throws IncompleteConfigurationException, InvalidConfigurationException {
