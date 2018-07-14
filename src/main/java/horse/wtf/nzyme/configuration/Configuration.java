@@ -18,8 +18,10 @@
 package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
@@ -30,11 +32,10 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
+import java.security.Key;
 import java.util.List;
 
 public class Configuration {
-
-    // TODO XXX YOLO: validation (completeness, correctness), tests (against example.conf)
 
     private static final Logger LOG = LogManager.getLogger(Nzyme.class);
 
@@ -46,40 +47,42 @@ public class Configuration {
     // Manual properties.
     private boolean printPacketInfo = false;
 
-    public Configuration(File configFile) {
+    public Configuration(File configFile) throws InvalidConfigurationException, IncompleteConfigurationException {
         this.root = ConfigFactory.parseFile(configFile);
 
         this.general = root.getConfig("general");
         this.python = general.getConfig("python");
         this.interfaces = root.getConfig("interfaces");
+
+        validate();
     }
 
     public Role getRole() {
-        return general.getEnum(Role.class, "role");
+        return general.getEnum(Role.class, Keys.ROLE);
     }
 
     public String getNzymeId() {
-        return general.getString("id");
+        return general.getString(Keys.ID);
     }
 
     public String getPythonExecutable() {
-        return python.getString("executable");
+        return python.getString(Keys.PYTHON_PATH);
     }
 
     public String getPythonScriptDirectory() {
-        return python.getString("script_directory");
+        return python.getString(Keys.PYTHON_SCRIPT_DIR);
     }
 
     public String getPythonScriptPrefix() {
-        return python.getString("script_prefix");
+        return python.getString(Keys.PYTHON_SCRIPT_PREFIX);
     }
 
     public boolean areVersionchecksEnabled() {
-        return general.getBoolean("versionchecks");
+        return general.getBoolean(Keys.VERSIONCHECKS);
     }
 
     public URI getRestListenUri() {
-        return URI.create(interfaces.getString("rest_listen_uri"));
+        return URI.create(interfaces.getString(Keys.REST_LISTEN_URI));
     }
 
     public List<Dot11MonitorDefinition> getDot11Monitors() {
@@ -104,18 +107,23 @@ public class Configuration {
 
     @Nullable
     public List<GraylogAddress> getGraylogUplinks() {
-        List<String> graylogAddresses = root.getStringList("graylog_uplinks");
-        if(graylogAddresses == null) {
+        try {
+            List<String> graylogAddresses = root.getStringList("graylog_uplinks");
+            if (graylogAddresses == null) {
+                return null;
+            }
+
+            List<GraylogAddress> result = Lists.newArrayList();
+            for (String address : graylogAddresses) {
+                String[] parts = address.split(":");
+                result.add(new GraylogAddress(parts[0], Integer.parseInt(parts[1])));
+            }
+
+            return result;
+        } catch (ConfigException e) {
+            LOG.debug(e);
             return null;
         }
-
-        List<GraylogAddress> result = Lists.newArrayList();
-        for (String address : graylogAddresses) {
-            String[] parts = address.split(":");
-            result.add(new GraylogAddress(parts[0], Integer.parseInt(parts[1])));
-        }
-
-        return result;
     }
 
     public boolean isPrintPacketInfo() {
@@ -124,6 +132,111 @@ public class Configuration {
 
     public void setPrintPacketInfo(boolean printPacketInfo) {
         this.printPacketInfo = printPacketInfo;
+    }
+
+    private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
+        // Completeness and type validity.
+        expectEnum(general, Keys.ROLE, "general", Role.class);
+        expect(general, Keys.ID, "general", String.class);
+        expect(general, Keys.VERSIONCHECKS, "general", Boolean.class);
+        expect(python, Keys.PYTHON_PATH, "general.python", String.class);
+        expect(python, Keys.PYTHON_SCRIPT_DIR, "general.python", String.class);
+        expect(python, Keys.PYTHON_SCRIPT_PREFIX, "general.python", String.class);
+        expect(interfaces, Keys.REST_LISTEN_URI, "interfaces", String.class);
+        expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
+
+        int i = 0;
+        for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
+            String where = Keys.DOT11_MONITORS + "." + "#" + i;
+            expect(c, Keys.DEVICE, where, String.class);
+            expect(c, Keys.CHANNELS, where, List.class);
+            expect(c, Keys.HOP_COMMAND, where, String.class);
+            expect(c, Keys.HOP_INTERVAL, where, Integer.class);
+            i++;
+        }
+
+        // Logical validity.
+        // Python: executable is an executable file.
+
+        // Python: script directory is writable.
+
+        // REST listen URI can be parsed into a URI.
+
+        // 802_11 monitors: Channels are all positive integers.
+
+        // 802_11 monitors: No channel is used in any other monitor.
+
+        // 802_11 monitors: Device is not used in any other configuration.
+    }
+
+    private void expect(Config c, String key, String where, Class clazz) throws IncompleteConfigurationException, InvalidConfigurationException {
+        boolean incomplete = false;
+        boolean invalid = false;
+
+        try {
+            // String.
+            if (clazz.equals(String.class)) {
+                incomplete = Strings.isNullOrEmpty(c.getString(key));
+            }
+
+            // Boolean.
+            if (clazz.equals(Boolean.class)) {
+                c.getBoolean(key);
+            }
+
+            // List
+            if (clazz.equals(List.class)) {
+                c.getList(key);
+            }
+
+            if (clazz.equals(Integer.class)) {
+                c.getInt(key);
+            }
+        } catch(ConfigException.Missing e) {
+            LOG.error(e);
+            incomplete = true;
+        } catch(ConfigException.WrongType e) {
+            LOG.error(e);
+            invalid = true;
+        } catch (ConfigException e) {
+            LOG.error(e);
+            throw new InvalidConfigurationException("Parsing error for parameter [" + key + "] in section [" + where + "].");
+        }
+
+        if (incomplete) {
+            throw new IncompleteConfigurationException("Missing parameter [" + key + "] in section [" + where + "].");
+        }
+
+        if (invalid) {
+            throw new InvalidConfigurationException("Invalid value for parameter [" + key + "] in section [" + where + "].");
+        }
+    }
+
+    private void expectEnum(Config c, String key, String where, Class enumClazz) throws InvalidConfigurationException, IncompleteConfigurationException {
+        try {
+            c.getEnum(enumClazz, key);
+        } catch(ConfigException.Missing e) {
+            throw new IncompleteConfigurationException("Missing parameter [" + key + "] in section [" + where + "].");
+        } catch(ConfigException.BadValue e) {
+            LOG.error(e);
+            throw new InvalidConfigurationException("Invalid value for parameter [" + key + "] in section [" + where + "].");
+        }
+    }
+
+    public class InvalidConfigurationException extends Exception {
+
+        public InvalidConfigurationException(String msg) {
+            super(msg);
+        }
+
+    }
+
+    public class IncompleteConfigurationException extends Exception {
+
+        public IncompleteConfigurationException(String msg) {
+            super(msg);
+        }
+
     }
 
 }
