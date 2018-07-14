@@ -12,7 +12,7 @@ import static org.testng.Assert.*;
 public class BluffTest {
 
     @Test
-    public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
+    public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/env python");
 
@@ -23,7 +23,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
+    public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/python");
 
@@ -34,7 +34,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
+    public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/python");
         configuration.setPythonScriptDirectory("/var/tmp");
@@ -46,7 +46,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
+    public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/python");
         configuration.setPythonScriptPrefix("nzymeTEST_");
@@ -58,7 +58,7 @@ public class BluffTest {
     }
 
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
-    public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException {
+    public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/env python");
 
@@ -67,7 +67,7 @@ public class BluffTest {
     }
 
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
-    public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException {
+    public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException, Configuration.InvalidConfigurationException, Configuration.IncompleteConfigurationException {
         TestableConfiguration configuration = new TestableConfiguration();
         configuration.setPythonExecutable("/usr/bin/env python");
 
@@ -117,7 +117,7 @@ public class BluffTest {
         private String pythonScriptDirectory = "/tmp";
         private String pythonScriptPrefix = "nzyme_";
 
-        public TestableConfiguration() {
+        public TestableConfiguration() throws InvalidConfigurationException, IncompleteConfigurationException {
             super(new File("nzyme-leader.conf.example"));
         }
 

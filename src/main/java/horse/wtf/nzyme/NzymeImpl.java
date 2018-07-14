@@ -22,9 +22,6 @@ import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
-import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
-import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
-import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.probes.dot11.*;
@@ -42,7 +39,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -142,7 +138,7 @@ public class NzymeImpl implements Nzyme {
                 Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
                 // Add specific interceptors to collect data required for alerting.
-                probe.addFrameInterceptor();
+                //probe.addFrameInterceptor();
                 probeExecutor.submit(probe.loop());
             } catch(Dot11ProbeInitializationException e) {
                 LOG.error("Couldn't initialize probe on interface [{}].", m.device(), e);

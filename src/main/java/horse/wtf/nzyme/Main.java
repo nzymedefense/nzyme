@@ -18,6 +18,7 @@
 package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
+import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
 import org.apache.logging.log4j.Level;
@@ -47,7 +48,16 @@ public class Main {
                 .parse(argv);
 
         // Parse configuration.
-        Configuration configuration = new Configuration(new File(cliArguments.getConfigFilePath()));
+        Configuration configuration = null;
+        try {
+            configuration = new Configuration(new File(cliArguments.getConfigFilePath()));
+        } catch (Configuration.InvalidConfigurationException | ConfigException e) {
+            LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (Configuration.IncompleteConfigurationException e) {
+            LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        }
 
         // Override log level if requested.
         if(cliArguments.isDebugMode()) {

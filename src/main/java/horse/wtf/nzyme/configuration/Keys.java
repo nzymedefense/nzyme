@@ -23,5 +23,13 @@ public class Keys {
     public static final String CHANNELS = "channels";
     public static final String HOP_COMMAND = "channel_hop_command";
     public static final String HOP_INTERVAL = "channel_hop_interval";
+    public static final String ROLE = "role";
+    public static final String ID = "id";
+    public static final String VERSIONCHECKS = "versionchecks";
+    public static final String PYTHON_PATH = "path";
+    public static final String PYTHON_SCRIPT_DIR = "script_directory";
+    public static final String PYTHON_SCRIPT_PREFIX = "script_prefix";
+    public static final String REST_LISTEN_URI = "rest_listen_uri";
+    public static final String DOT11_MONITORS = "802_11_monitors";
 
 }
