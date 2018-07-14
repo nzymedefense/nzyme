@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
@@ -124,54 +125,31 @@ public class NzymeImpl implements Nzyme {
     }
 
     private void initializeProbes() {
-        try {
-            Dot11Probe monitor = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
-                    "monitor-main",
-                    null,
-                    "nzyme-test-1",
-                    "wlx9cefd5fd7c46",
-                    new ArrayList<Integer>(){{add(1);add(2);add(3);add(4);add(5);add(6);add(7);add(8);add(9);add(10);add(11);}},
-                    1,
-                    "sudo /sbin/iwconfig {interface} channel {channel}"
-            ), getMetrics());
+        // Broad monitor probes.
+        for (Dot11MonitorDefinition m : configuration.getDot11Monitors()) {
+            try {
+                Dot11MonitorProbe probe = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
+                        "broad-monitor-" + m.device(),
+                        configuration.getGraylogUplinks(),
+                        configuration.getNzymeId(),
+                        m.device(),
+                        m.channels(),
+                        m.channelHopInterval(),
+                        m.channelHopCommand()
+                ), getMetrics());
 
-            Dot11MonitorProbe.configureAsBroadMonitor((Dot11MonitorProbe) monitor);
+                // Add standard interceptors for broad channel monitoring.
+                Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
-            monitor.addFrameInterceptor(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
-                @Override
-                public void intercept(Dot11BeaconFrame frame) {
-                    if ("FOOKED".equals(frame.ssid())) {
-                        LOG.info("CONTACT for bandit {} at signal strength {}dBm. Trapped by [ROGUE_AP_II].",
-                                frame.transmitter(),
-                                frame.metaInformation().getAntennaSignal());
-                    }
-                }
-
-                @Override
-                public byte forSubtype() {
-                    return Dot11FrameSubtype.BEACON;
-                }
-            });
-
-            Dot11Probe sender = new Dot11SenderProbe(this, Dot11ProbeConfiguration.create(
-                    "sender-1",
-                    null,
-                    "nzyme-test-1",
-                    "wlx9cefd5fd730a",
-                    new ArrayList<Integer>(){{add(8);}},
-                    1,
-                    "sudo /sbin/iwconfig {interface} channel {channel}"
-            ), getMetrics());
-
-            /*sender.scheduleActions(1, TimeUnit.SECONDS, new Dot11SenderAction() {
-                // send bluff
-            });*/
-
-            probeExecutor.submit(monitor.loop());
-            probeExecutor.submit(sender.loop());
-        } catch (Dot11ProbeInitializationException e) {
-            e.printStackTrace();
+                // Add specific interceptors to collect data required for alerting.
+                probe.addFrameInterceptor();
+                probeExecutor.submit(probe.loop());
+            } catch(Dot11ProbeInitializationException e) {
+                LOG.error("Couldn't initialize probe on interface [{}].", m.device(), e);
+            }
         }
+
+        // Trap pairs.
     }
 
     @Override
