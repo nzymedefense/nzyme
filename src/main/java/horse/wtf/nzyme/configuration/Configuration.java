@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.util.List;
 
 public class Configuration {
@@ -51,9 +50,9 @@ public class Configuration {
     public Configuration(File configFile) throws InvalidConfigurationException, IncompleteConfigurationException {
         this.root = ConfigFactory.parseFile(configFile);
 
-        this.general = root.getConfig("general");
-        this.python = general.getConfig("python");
-        this.interfaces = root.getConfig("interfaces");
+        this.general = root.getConfig(Keys.GENERAL);
+        this.python = general.getConfig(Keys.PYTHON);
+        this.interfaces = root.getConfig(Keys.INTERFACES);
 
         validate();
     }
@@ -106,10 +105,29 @@ public class Configuration {
         return result.build();
     }
 
+    public List<Dot11NetworkDefinition> getDot11Networks() {
+        ImmutableList.Builder<Dot11NetworkDefinition> result = new ImmutableList.Builder<>();
+
+        for (Config config : root.getConfigList(Keys.DOT11_NETWORKS)) {
+            if (!Dot11NetworkDefinition.checkConfig(config)) {
+                LOG.info("Skipping 802.11 network with invalid configuration. Invalid network: [{}]", config);
+                continue;
+            }
+
+            result.add(Dot11NetworkDefinition.create(
+                    config.getString(Keys.SSID),
+                    config.getStringList(Keys.BSSIDS),
+                    config.getIntList(Keys.CHANNELS)
+            ));
+        }
+
+        return result.build();
+    }
+
     @Nullable
     public List<GraylogAddress> getGraylogUplinks() {
         try {
-            List<String> graylogAddresses = root.getStringList("graylog_uplinks");
+            List<String> graylogAddresses = root.getStringList(Keys.GRAYLOG_UPLINKS);
             if (graylogAddresses == null) {
                 return null;
             }
@@ -137,14 +155,15 @@ public class Configuration {
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
-        expectEnum(general, Keys.ROLE, "general", Role.class);
-        expect(general, Keys.ID, "general", String.class);
-        expect(general, Keys.VERSIONCHECKS, "general", Boolean.class);
-        expect(python, Keys.PYTHON_PATH, "general.python", String.class);
-        expect(python, Keys.PYTHON_SCRIPT_DIR, "general.python", String.class);
-        expect(python, Keys.PYTHON_SCRIPT_PREFIX, "general.python", String.class);
-        expect(interfaces, Keys.REST_LISTEN_URI, "interfaces", String.class);
+        expectEnum(general, Keys.ROLE, Keys.GENERAL, Role.class);
+        expect(general, Keys.ID, Keys.GENERAL, String.class);
+        expect(general, Keys.VERSIONCHECKS, Keys.GENERAL, Boolean.class);
+        expect(python, Keys.PYTHON_PATH, Keys.GENERAL + "." + Keys.PYTHON, String.class);
+        expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
+        expect(python, Keys.PYTHON_SCRIPT_PREFIX, Keys.GENERAL + "." + Keys.PYTHON, String.class);
+        expect(interfaces, Keys.REST_LISTEN_URI, Keys.INTERFACES, String.class);
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
+        expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);
 
         int i = 0;
         for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
@@ -175,23 +194,9 @@ public class Configuration {
             throw new InvalidConfigurationException("Parameter [interfaces." + Keys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
 
-        // 802_11 monitors: Channels are all integers, larger than 1.
-        int x = 0;
-        for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
-            String where = Keys.DOT11_MONITORS + "." + "#" + x;
-            try {
-                for (Integer channel : c.getIntList(Keys.CHANNELS)) {
-                    if (channel < 1) {
-                        throw new InvalidConfigurationException("Invalid channels in list for [" + where + "}. All channels must be integers larger than 0.");
-                    }
-                }
-            } catch(ConfigException e) {
-                LOG.error(e);
-                throw new InvalidConfigurationException("Invalid channels list for [" + where + "}. All channels must be integers larger than 0.");
-            } finally {
-                x++;
-            }
-        }
+        // All channels are all integers, larger than 0.
+        validateChannelList(Keys.DOT11_MONITORS);
+        validateChannelList(Keys.DOT11_NETWORKS);
 
         // 802_11 monitors should be parsed and safe to use for further logical checks from here on.
 
@@ -213,6 +218,45 @@ public class Configuration {
                 throw new InvalidConfigurationException("Device [" + monitor.device() + "] is defined for multiple 802.11 monitors. You should not have multiple monitors using the same device.");
             }
             devices.add(monitor.device());
+        }
+
+        // 802_11 networks: SSID is unique.
+        List<String> ssids = Lists.newArrayList();
+        for (Dot11NetworkDefinition net : getDot11Networks()) {
+            if (ssids.contains(net.ssid())) {
+                throw new InvalidConfigurationException("SSID [" + net.ssid() + "] is defined multiple times. You cannot define a network with the same SSID more than once.");
+            }
+            ssids.add(net.ssid());
+        }
+
+        // 802.11 networks: BSSIDs are unique for this network. (note that a BSSID can be used in multiple networks)
+        for (Dot11NetworkDefinition net : getDot11Networks()) {
+            List<String> bssids = Lists.newArrayList();
+            for (String bssid : net.bssids()) {
+                if(bssids.contains(bssid)) {
+                    throw new InvalidConfigurationException("Network [" + net.ssid() + "] has at least one BSSID defined twice. You cannot define a BSSID for the same network more than once.");
+                }
+                bssids.add(bssid);
+            }
+        }
+    }
+
+    private void validateChannelList(String key) throws InvalidConfigurationException {
+        int x = 0;
+        for (Config c : root.getConfigList(key)) {
+            String where = key + "." + "#" + x;
+            try {
+                for (Integer channel : c.getIntList(Keys.CHANNELS)) {
+                    if (channel < 1) {
+                        throw new InvalidConfigurationException("Invalid channels in list for [" + where + "}. All channels must be integers larger than 0.");
+                    }
+                }
+            } catch(ConfigException e) {
+                LOG.error(e);
+                throw new InvalidConfigurationException("Invalid channels list for [" + where + "}. All channels must be integers larger than 0.");
+            } finally {
+                x++;
+            }
         }
     }
 

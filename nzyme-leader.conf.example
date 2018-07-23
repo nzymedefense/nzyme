@@ -67,13 +67,13 @@ graylog_uplinks: [
 
 # List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it.
 802_11_alerts: [
-  rogue_access_point
+  unexpected_bssid
+  unexpected_channel
+  unexpected_crypto
   deauthentication_flood
   deauthentication_broadcast
   invalid_reason_code
   lurker
-  channel_change
-  crypto_change
 ]
 
 802_11_trap_pairs: [

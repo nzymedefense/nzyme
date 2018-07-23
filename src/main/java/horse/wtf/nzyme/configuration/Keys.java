@@ -19,6 +19,13 @@ package horse.wtf.nzyme.configuration;
 
 public class Keys {
 
+    public static final String GENERAL = "general";
+    public static final String PYTHON = "python";
+    public static final String INTERFACES = "interfaces";
+    public static final String DOT11_MONITORS = "802_11_monitors";
+    public static final String DOT11_NETWORKS = "802_11_networks";
+    public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
+
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
     public static final String HOP_COMMAND = "channel_hop_command";
@@ -30,6 +37,7 @@ public class Keys {
     public static final String PYTHON_SCRIPT_DIR = "script_directory";
     public static final String PYTHON_SCRIPT_PREFIX = "script_prefix";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
-    public static final String DOT11_MONITORS = "802_11_monitors";
+    public static final String SSID = "ssid";
+    public static final String BSSIDS = "bssids";
 
 }
