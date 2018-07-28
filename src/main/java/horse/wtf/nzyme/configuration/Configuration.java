@@ -26,6 +26,7 @@ import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -114,9 +115,14 @@ public class Configuration {
                 continue;
             }
 
+            ImmutableList.Builder<String> lowercaseBSSIDs = new ImmutableList.Builder<>();
+            for (String bssid : config.getStringList(Keys.BSSIDS)) {
+                lowercaseBSSIDs.add(bssid.toLowerCase());
+            }
+
             result.add(Dot11NetworkDefinition.create(
                     config.getString(Keys.SSID),
-                    config.getStringList(Keys.BSSIDS),
+                    lowercaseBSSIDs.build(),
                     config.getIntList(Keys.CHANNELS)
             ));
         }
