@@ -26,7 +26,6 @@ import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
