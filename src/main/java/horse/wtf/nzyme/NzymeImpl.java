@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class NzymeImpl implements Nzyme {
 
@@ -107,6 +108,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
 
+        java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
         Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
 
