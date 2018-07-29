@@ -43,6 +43,7 @@ public class Configuration {
     private final Config general;
     private final Config interfaces;
     private final Config python;
+    private final Config alerting;
 
     // Manual properties.
     private boolean printPacketInfo = false;
@@ -52,6 +53,7 @@ public class Configuration {
 
         this.general = root.getConfig(Keys.GENERAL);
         this.python = general.getConfig(Keys.PYTHON);
+        this.alerting = general.getConfig(Keys.ALERTING);
         this.interfaces = root.getConfig(Keys.INTERFACES);
 
         validate();
@@ -83,6 +85,10 @@ public class Configuration {
 
     public URI getRestListenUri() {
         return URI.create(interfaces.getString(Keys.REST_LISTEN_URI));
+    }
+
+    public Integer getAlertingRetentionPeriodMinutes() {
+        return alerting.getInt(Keys.CLEAN_AFTER_MINUTES);
     }
 
     public List<Dot11MonitorDefinition> getDot11Monitors() {
@@ -166,6 +172,7 @@ public class Configuration {
         expect(python, Keys.PYTHON_PATH, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_PREFIX, Keys.GENERAL + "." + Keys.PYTHON, String.class);
+        expect(alerting, Keys.CLEAN_AFTER_MINUTES, Keys.GENERAL + "." + Keys.ALERTING, Integer.class);
         expect(interfaces, Keys.REST_LISTEN_URI, Keys.INTERFACES, String.class);
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
         expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);

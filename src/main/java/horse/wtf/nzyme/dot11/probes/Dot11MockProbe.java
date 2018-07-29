@@ -15,16 +15,17 @@
  *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.statistics.Statistics;
 
 public class Dot11MockProbe extends Dot11Probe {
 
     public Dot11MockProbe(Dot11ProbeConfiguration configuration, Statistics statistics) {
-        super(configuration, statistics, new MetricRegistry());
+        super(configuration, new MockNzyme());
     }
 
     @Override

@@ -31,7 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
-@Path("/system/metrics")
+@Path("/api/system/metrics")
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsResource {
 
@@ -40,6 +40,7 @@ public class MetricsResource {
 
     @GET
     public Response all() {
+        // TODO actually build this kek
         ImmutableList.Builder<MetricResponse> x = new ImmutableList.Builder<>();
 
         // Timers.

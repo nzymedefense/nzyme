@@ -18,6 +18,8 @@
 package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.statistics.Statistics;
 
@@ -29,5 +31,7 @@ public interface Nzyme {
     Configuration getConfiguration();
 
     MetricRegistry getMetrics();
+
+    AlertsService getAlertsService();
 
 }

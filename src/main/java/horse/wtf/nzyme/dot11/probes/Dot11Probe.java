@@ -15,10 +15,12 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme.dot11.probes;
 
 import com.beust.jcommander.internal.Lists;
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
@@ -29,6 +31,7 @@ import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public abstract class Dot11Probe {
@@ -38,6 +41,7 @@ public abstract class Dot11Probe {
     private final Dot11ProbeConfiguration configuration;
     private final Statistics statistics;
     private final List<Uplink> uplinks;
+    private final Nzyme nzyme;
 
     protected final MetricRegistry metrics;
 
@@ -45,13 +49,16 @@ public abstract class Dot11Probe {
     public abstract boolean isInLoop();
 
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
+
     public abstract void scheduleAction();
 
-    public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
+
+    public Dot11Probe(Dot11ProbeConfiguration configuration, Nzyme nzyme) {
+        this.nzyme = nzyme;
         this.uplinks = Lists.newArrayList();
-        this.statistics = statistics;
+        this.statistics = nzyme.getStatistics();
         this.configuration = configuration;
-        this.metrics = metrics;
+        this.metrics = nzyme.getMetrics();
 
         if (configuration.graylogAddresses() == null || configuration.graylogAddresses().isEmpty()) {
             LOG.warn("No Graylog uplinks configured for probe [{}]. Consider adding a STDOUT uplink for quick local testing.", getName());
@@ -73,6 +80,12 @@ public abstract class Dot11Probe {
         }
     }
 
+    public void addFrameInterceptors(@NotNull List<Dot11FrameInterceptor> interceptors) {
+        for (Dot11FrameInterceptor interceptor : interceptors) {
+            addFrameInterceptor(interceptor);
+        }
+    }
+
     public Statistics getStatistics() {
         return statistics;
     }
@@ -83,6 +96,10 @@ public abstract class Dot11Probe {
 
     public String getName() {
         return configuration.probeName();
+    }
+
+    public void raiseAlert(Alert alert) {
+        this.nzyme.getAlertsService().handle(alert);
     }
 
 }

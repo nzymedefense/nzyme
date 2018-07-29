@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.handlers;
 
 import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;

@@ -15,24 +15,38 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.notifications.uplinks.logger;
+package horse.wtf.nzyme;
 
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.notifications.Uplink;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.alerts.AlertsService;
+import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.statistics.Statistics;
 
-import javax.annotation.Nullable;
-
-public class LoggerUplink implements Uplink {
-
-    private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
+public class MockNzyme implements Nzyme {
 
     @Override
-    public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
-        LOG.info(notification);
+    public void initialize() {
+
+    }
+
+    @Override
+    public Statistics getStatistics() {
+        return null;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return null;
+    }
+
+    @Override
+    public MetricRegistry getMetrics() {
+        return null;
+    }
+
+    @Override
+    public AlertsService getAlertsService() {
+        return null;
     }
 
 }

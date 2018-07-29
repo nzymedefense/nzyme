@@ -15,44 +15,40 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.dot11.frames;
+package horse.wtf.nzyme.rest.responses.alerts;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 @AutoValue
-public abstract class Dot11BeaconFrame {
+public abstract class AlertsListResponse {
 
-    @Nullable
-    public abstract String ssid();
+    @JsonProperty("total")
+    public abstract long total();
 
-    public abstract String transmitter();
+    @JsonProperty("alerts")
+    public abstract List<AlertDetailsResponse> alerts();
 
-    public abstract Dot11MetaInformation meta();
-
-    public static Dot11BeaconFrame create(String ssid, String transmitter, Dot11MetaInformation meta) {
+    public static AlertsListResponse create(long total, List<AlertDetailsResponse> alerts) {
         return builder()
-                .ssid(ssid)
-                .transmitter(transmitter)
-                .meta(meta)
+                .total(total)
+                .alerts(alerts)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_Dot11BeaconFrame.Builder();
+        return new AutoValue_AlertsListResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder ssid(String ssid);
+        public abstract Builder total(long total);
 
-        public abstract Builder transmitter(String transmitter);
+        public abstract Builder alerts(List<AlertDetailsResponse> alerts);
 
-        public abstract Builder meta(Dot11MetaInformation meta);
-
-        public abstract Dot11BeaconFrame build();
+        public abstract AlertsListResponse build();
     }
 
 }

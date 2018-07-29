@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;

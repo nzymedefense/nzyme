@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.rest.responses.statistics.ChannelStatisticsResponse;
@@ -32,7 +31,7 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Path("/system/statistics")
+@Path("/api/system/statistics")
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsResource {
 

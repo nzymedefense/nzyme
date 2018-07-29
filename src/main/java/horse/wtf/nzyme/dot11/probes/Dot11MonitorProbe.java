@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme.dot11.probes;
 
 import com.beust.jcommander.internal.Lists;
 import com.codahale.metrics.MetricRegistry;
@@ -67,7 +67,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
     public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) throws Dot11ProbeInitializationException {
-        super(configuration, nzyme.getStatistics(), metrics);
+        super(configuration, nzyme);
 
         this.nzyme = nzyme;
         this.configuration = configuration;

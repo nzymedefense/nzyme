@@ -15,16 +15,10 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme;
 
-public class Dot11ProbeInitializationException extends Exception {
+public enum Subsystem {
 
-    Dot11ProbeInitializationException(String msg) {
-        super(msg);
-    }
-
-    Dot11ProbeInitializationException(String msg, Throwable e) {
-        super(msg, e);
-    }
+    DOT_11
 
 }
