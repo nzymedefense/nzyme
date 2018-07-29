@@ -50,6 +50,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Dot11ProbeConfiguration configuration;
 
     private final PcapHandle pcap;
+    private final ChannelHopper channelHopper;
 
     // Interceptors.
     private final List<Dot11FrameInterceptor> frameInterceptors;
@@ -84,7 +85,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics);
 
         // Initialize channel hopper.
-        ChannelHopper channelHopper = new ChannelHopper(this, configuration);
+        channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
 
         // Get network interface for PCAP.
@@ -224,6 +225,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public boolean isInLoop() {
         return inLoop.get();
+    }
+
+    @Override
+    public Integer getCurrentChannel() {
+        return channelHopper.getCurrentChannel();
     }
 
     @Override

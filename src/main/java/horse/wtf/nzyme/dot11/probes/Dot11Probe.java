@@ -47,11 +47,11 @@ public abstract class Dot11Probe {
 
     public abstract Runnable loop() throws Dot11ProbeInitializationException;
     public abstract boolean isInLoop();
+    public abstract Integer getCurrentChannel();
 
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
 
     public abstract void scheduleAction();
-
 
     public Dot11Probe(Dot11ProbeConfiguration configuration, Nzyme nzyme) {
         this.nzyme = nzyme;

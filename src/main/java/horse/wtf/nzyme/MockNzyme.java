@@ -20,7 +20,11 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.statistics.Statistics;
+
+import java.util.Collections;
+import java.util.List;
 
 public class MockNzyme implements Nzyme {
 
@@ -42,6 +46,11 @@ public class MockNzyme implements Nzyme {
     @Override
     public MetricRegistry getMetrics() {
         return null;
+    }
+
+    @Override
+    public List<Dot11Probe> getProbes() {
+        return Collections.emptyList();
     }
 
     @Override

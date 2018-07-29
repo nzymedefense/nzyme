@@ -69,6 +69,11 @@ public class Dot11SenderProbe extends Dot11Probe {
     }
 
     @Override
+    public Integer getCurrentChannel() {
+        return null;
+    }
+
+    @Override
     public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
         throw new RuntimeException("Sender probe cannot intercept frames.");
     }
