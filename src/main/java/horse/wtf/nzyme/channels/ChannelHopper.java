@@ -36,6 +36,8 @@ public class ChannelHopper {
     private final Dot11Probe probe;
     private final Dot11ProbeConfiguration probeConfiguration;
 
+    private Integer currentChannel = null;
+
     private int currentChannelIndex = 0;
 
     public ChannelHopper(Dot11Probe probe, Dot11ProbeConfiguration probeConfiguration) {
@@ -96,11 +98,16 @@ public class ChannelHopper {
 
                 LOG.fatal("Could not configure interface [{}] to use channel <{}>. Return code <{}>, STDERR: [{}]", networkInterface, channel, returnCode, stderr);
             } else {
+                currentChannel = channel;
                 LOG.debug("Channel change successful.");
             }
         } catch(Exception e) {
             LOG.error("Could not hop to channel <{}>.", channel, e);
         }
+    }
+
+    public Integer getCurrentChannel() {
+        return currentChannel;
     }
 
 }

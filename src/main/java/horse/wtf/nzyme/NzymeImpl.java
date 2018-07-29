@@ -19,11 +19,13 @@ package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
 import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptor;
@@ -34,8 +36,10 @@ import horse.wtf.nzyme.rest.InjectionBinder;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
+import horse.wtf.nzyme.rest.resources.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
+import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +49,7 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -61,12 +66,14 @@ public class NzymeImpl implements Nzyme {
     private final Statistics statistics;
     private final MetricRegistry metrics;
 
+    private final List<Dot11Probe> probes;
     private final AlertsService alerts;
 
     public NzymeImpl(Configuration configuration) {
         this.configuration = configuration;
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
+        this.probes = Lists.newArrayList();
 
         this.alerts = new AlertsService(this);
 
@@ -117,6 +124,7 @@ public class NzymeImpl implements Nzyme {
         // Register resources.
         resourceConfig.register(PingResource.class);
         resourceConfig.register(AlertsResource.class);
+        resourceConfig.register(ProbesResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
 
@@ -157,6 +165,7 @@ public class NzymeImpl implements Nzyme {
                 probe.addFrameInterceptors(new UnexpectedBSSIDInterceptor(probe).getInterceptors());
 
                 probeExecutor.submit(probe.loop());
+                this.probes.add(probe);
             } catch(Dot11ProbeInitializationException e) {
                 LOG.error("Couldn't initialize probe on interface [{}].", m.device(), e);
             }
@@ -183,6 +192,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public MetricRegistry getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public List<Dot11Probe> getProbes() {
+        return probes;
     }
 
 }
