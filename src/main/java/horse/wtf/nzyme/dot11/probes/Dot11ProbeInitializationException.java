@@ -15,24 +15,16 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.notifications.uplinks.logger;
+package horse.wtf.nzyme.dot11.probes;
 
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.notifications.Uplink;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+public class Dot11ProbeInitializationException extends Exception {
 
-import javax.annotation.Nullable;
+    Dot11ProbeInitializationException(String msg) {
+        super(msg);
+    }
 
-public class LoggerUplink implements Uplink {
-
-    private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
-
-    @Override
-    public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
-        LOG.info(notification);
+    Dot11ProbeInitializationException(String msg, Throwable e) {
+        super(msg, e);
     }
 
 }

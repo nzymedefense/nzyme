@@ -14,13 +14,27 @@ class PingStore extends Reflux.Store {
     setInterval(PingActions.ping, 5000);
   }
 
+  static buildUri(uri) {
+    let stableRoot = API_ROOT;
+    if(API_ROOT.slice(-1) !== '/') {
+      stableRoot = API_ROOT + "/";
+    }
+
+    let stableUri = uri;
+    if (uri.charAt(0) === "/") {
+      stableUri = uri.substr(1);
+    }
+
+    return stableRoot + stableUri;
+  }
+
   onPing() {
     // NOT USING RESTClient wrapper here because it's kind of a special call with special error handler etc and we
     // can keep things simple this way.
 
     let self = this;
 
-    axios.get(API_ROOT + '/ping')
+    axios.get(PingStore.buildUri("/ping"))
       .then(function (response) {
         if(response.data === "pong") {
           self.setState({apiConnected: true});

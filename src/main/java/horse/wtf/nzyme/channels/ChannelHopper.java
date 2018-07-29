@@ -19,8 +19,8 @@ package horse.wtf.nzyme.channels;
 
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
-import horse.wtf.nzyme.probes.dot11.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

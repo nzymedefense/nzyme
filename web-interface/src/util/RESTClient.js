@@ -5,8 +5,22 @@ var axios = require('axios');
 
 const RESTClient = {
 
+  buildUri(uri) {
+    let stableRoot = API_ROOT;
+    if(API_ROOT.slice(-1) !== '/') {
+      stableRoot = API_ROOT + "/";
+    }
+
+    let stableUri = uri;
+    if (uri.charAt(0) === "/") {
+      stableUri = uri.substr(1);
+    }
+
+    return stableRoot + stableUri;
+  },
+
   get(uri, params, successCallback) {
-    axios.get(API_ROOT + uri, { params: params })
+    axios.get(this.buildUri(uri), { params: params })
       .then(function (response) {
         successCallback(response);
       })
@@ -21,7 +35,7 @@ const RESTClient = {
   },
 
   post(uri, data, successCallback) {
-    axios.post(API_ROOT + uri, data)
+    axios.post(this.buildUri(uri), data)
       .then(function(response) {
         successCallback(response);
       })
@@ -36,7 +50,7 @@ const RESTClient = {
   },
 
   put(uri, data, successCallback) {
-    axios.put(API_ROOT + uri, data)
+    axios.put(this.buildUri(uri), data)
       .then(function(response) {
         successCallback(response);
       })

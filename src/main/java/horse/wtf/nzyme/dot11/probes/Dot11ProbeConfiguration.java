@@ -15,9 +15,10 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme.dot11.probes;
 
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
@@ -37,7 +38,9 @@ public abstract class Dot11ProbeConfiguration {
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
 
-    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand) {
+    public abstract List<Dot11NetworkDefinition> getDot11Networks();
+
+    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks) {
         return builder()
                 .probeName(probeName)
                 .graylogAddresses(graylogAddresses)
@@ -46,6 +49,7 @@ public abstract class Dot11ProbeConfiguration {
                 .channels(channels)
                 .channelHopInterval(channelHopInterval)
                 .channelHopCommand(channelHopCommand)
+                .getDot11Networks(getDot11Networks)
                 .build();
     }
 
@@ -68,6 +72,8 @@ public abstract class Dot11ProbeConfiguration {
         public abstract Builder channelHopInterval(Integer channelHopInterval);
 
         public abstract Builder channelHopCommand(String channelHopCommand);
+
+        public abstract Builder getDot11Networks(List<Dot11NetworkDefinition> getDot11Networks);
 
         public abstract Dot11ProbeConfiguration build();
     }

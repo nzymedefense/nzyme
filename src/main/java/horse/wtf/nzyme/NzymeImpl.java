@@ -20,13 +20,19 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
+import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
+import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptor;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
-import horse.wtf.nzyme.probes.dot11.*;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.InjectionBinder;
+import horse.wtf.nzyme.rest.ObjectMapperProvider;
+import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
@@ -55,10 +61,14 @@ public class NzymeImpl implements Nzyme {
     private final Statistics statistics;
     private final MetricRegistry metrics;
 
+    private final AlertsService alerts;
+
     public NzymeImpl(Configuration configuration) {
         this.configuration = configuration;
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
+
+        this.alerts = new AlertsService(this);
 
          probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -98,19 +108,22 @@ public class NzymeImpl implements Nzyme {
             LOG.info("Versionchecks are disabled.");
         }
 
-        // Spin up REST API.
+        // Spin up REST API and web interface.
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new InjectionBinder(this));
+        resourceConfig.register(new ObjectMapperProvider());
 
         // Register resources.
         resourceConfig.register(PingResource.class);
+        resourceConfig.register(AlertsResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
 
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
         Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
+        LOG.info("Started web interface and REST API at [{}].", configuration.getRestListenUri());
 
         // Start server.
         try {
@@ -133,14 +146,16 @@ public class NzymeImpl implements Nzyme {
                         m.device(),
                         m.channels(),
                         m.channelHopInterval(),
-                        m.channelHopCommand()
+                        m.channelHopCommand(),
+                        configuration.getDot11Networks()
                 ), getMetrics());
 
                 // Add standard interceptors for broad channel monitoring.
                 Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
-                // Add specific interceptors to collect data required for alerting.
-                //probe.addFrameInterceptor();
+                // Add alerting interceptors. // TODO: load based on which alerts are activated in conf
+                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptor(probe).getInterceptors());
+
                 probeExecutor.submit(probe.loop());
             } catch(Dot11ProbeInitializationException e) {
                 LOG.error("Couldn't initialize probe on interface [{}].", m.device(), e);
@@ -148,6 +163,11 @@ public class NzymeImpl implements Nzyme {
         }
 
         // Trap pairs.
+    }
+
+    @Override
+    public AlertsService getAlertsService() {
+        return alerts;
     }
 
     @Override

@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.probes.dot11;
+package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.Nzyme;
@@ -37,7 +37,7 @@ public class Dot11SenderProbe extends Dot11Probe {
     private final Dot11ProbeConfiguration configuration;
 
     public Dot11SenderProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
-        super(configuration, nzyme.getStatistics(), metrics);
+        super(configuration, nzyme);
 
         this.configuration = configuration;
         this.nzyme = nzyme;

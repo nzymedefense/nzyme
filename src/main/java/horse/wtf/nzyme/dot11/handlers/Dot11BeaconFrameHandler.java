@@ -20,7 +20,7 @@ package horse.wtf.nzyme.dot11.handlers;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,11 +46,11 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
         probe.getStatistics().tickAccessPoint(beacon.transmitter());
 
         probe.notifyUplinks(
-                new Notification(message, beacon.metaInformation().getChannel())
+                new Notification(message, beacon.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
                         .addField(FieldNames.SUBTYPE, "beacon"),
-                beacon.metaInformation()
+                beacon.meta()
         );
 
         LOG.debug(message);

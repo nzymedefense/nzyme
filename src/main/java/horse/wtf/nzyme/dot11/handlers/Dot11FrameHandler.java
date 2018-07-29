@@ -17,8 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.probes.dot11.Dot11Probe;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 
 public abstract class Dot11FrameHandler<T> {
 

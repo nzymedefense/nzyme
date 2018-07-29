@@ -3,27 +3,35 @@ import Reflux from 'reflux';
 
 import StatisticsStore from "../../stores/StatisticsStore";
 import StatisticsActions from "../../actions/StatisticsActions";
+import AlertsStore from "../../stores/AlertsStore";
+import AlertsActions from "../../actions/AlertsActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 
 import numeral from "numeral";
-import PingActions from "../../actions/PingActions";
+import AlertsList from "./AlertsList";
+
 
 class GlobalStatistics extends Reflux.Component {
+
+  static ALERT_LIMIT = 25;
 
   constructor(props) {
     super(props);
 
-    this.store = StatisticsStore;
+    this.stores = [StatisticsStore, AlertsStore];
 
     this.state = {
-      global_statistics: undefined
+      global_statistics: undefined,
+      active_alerts: undefined
     };
   }
 
   componentDidMount() {
     StatisticsActions.findGlobal();
+    AlertsActions.findActive(GlobalStatistics.ALERT_LIMIT);
 
     setInterval(StatisticsActions.findGlobal, 1000);
+    setInterval(AlertsActions.findActive, 1000);
   }
 
   static _buildChannelRow(channel, data) {
@@ -58,8 +66,7 @@ class GlobalStatistics extends Reflux.Component {
     let x = 0;
 
     Object.keys(frames).map(function (key) {
-      console.log(frames[key]);
-      x += frames[key];
+      return x += frames[key];
     });
 
     return x;
@@ -102,94 +109,54 @@ class GlobalStatistics extends Reflux.Component {
           </div>
 
           <div className="row mt-md-4">
-            <div className="col-md-6">
-              <div className="row">
-                <div className="col-md-12">
-                  <h3 style={{display: "block"}} className="text-center">802.11 Channels</h3>
+            <div className="col-md-12">
+              <h3>Alerts <small>(Top {GlobalStatistics.ALERT_LIMIT})</small></h3>
 
-                  <table className="table table-sm table-hover table-striped">
-                    <thead>
-                      <th>Channel</th>
-                      <th>Total frames considered</th>
-                      <th>Malformed</th>
-                      <th>Quality</th>
-                    </thead>
-
-                    <tbody>
-                    {Object.keys(this.state.global_statistics.channels).map(function (key) {
-                      return GlobalStatistics._buildChannelRow(key, self.state.global_statistics.channels[key])
-                    })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="row mt-md-4">
-                <div className="col-md-12">
-                  <h3 style={{display: "block"}} className="text-center">802.11 Frame Types</h3>
-                  <table className="table table-sm table-hover table-striped">
-                    <thead>
-                      <th>Frame Type</th>
-                      <th>Total frames considered</th>
-                      <th>Percentage</th>
-                    </thead>
-
-                    <tbody>
-                    {Object.keys(this.state.global_statistics.frame_types).map(function (key) {
-                      return GlobalStatistics._buildFrameTypeRow(key, self.state.global_statistics.frame_types[key], GlobalStatistics._getTotalFrameCountFromStatistics(self.state.global_statistics.frame_types))
-                    })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <AlertsList alerts={this.state.active_alerts} />
             </div>
-
-            <div className="col-md-6">
-              <div className="row">
-                <div className="col-md-12">
-                  <h3 style={{display: "block"}} className="text-center">Bandits</h3>
-                  <div className="card bg-danger text-center overview-statistic mb-md-2">
-                    <div className="card-body">
-                      Currently tracking 2 Bandits!
-                    </div>
-                  </div>
-
-                  <table className="table table-sm table-hover table-striped">
-                    <thead>
-                      <th>Track ID</th>
-                      <th>Address</th>
-                      <td>Tracks</td>
-                      <td>Reason</td>
-                      <td>Duration</td>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>913eb2f1</td>
-                        <td>e6:2f:d1:f2:71:1e</td>
-                        <td>2</td>
-                        <td>BLUFF_TRAP</td>
-                        <td>3624s</td>
-                      </tr>
-                      <tr>
-                        <td>7cdb596d</td>
-                        <td>b8:e9:37:be:54:d9</td>
-                        <td>3</td>
-                        <td>SUSP_MAC_LIST</td>
-                        <td>12s</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="col-md-12">
-                  <h3 style={{display: "block"}} className="text-center">Alerts</h3>
-                  TBD
-                </div>
-              </div>
-            </div>
-
           </div>
 
+          <div className="row mt-md-4">
+            <div className="col-md-6">
+              <h3 style={{display: "block"}} className="text-center">802.11 Channels</h3>
+
+              <table className="table table-sm table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>Channel</th>
+                    <th>Total frames considered</th>
+                    <th>Malformed</th>
+                    <th>Quality</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                {Object.keys(this.state.global_statistics.channels).map(function (key) {
+                  return GlobalStatistics._buildChannelRow(key, self.state.global_statistics.channels[key])
+                })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="col-md-6">
+              <h3 style={{display: "block"}} className="text-center">802.11 Frame Types</h3>
+              <table className="table table-sm table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th>Frame Type</th>
+                    <th>Total frames considered</th>
+                    <th>Percentage</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                {Object.keys(this.state.global_statistics.frame_types).map(function (key) {
+                  return GlobalStatistics._buildFrameTypeRow(key, self.state.global_statistics.frame_types[key], GlobalStatistics._getTotalFrameCountFromStatistics(self.state.global_statistics.frame_types))
+                })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )
     }
