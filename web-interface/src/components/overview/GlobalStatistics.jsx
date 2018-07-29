@@ -5,11 +5,12 @@ import StatisticsStore from "../../stores/StatisticsStore";
 import StatisticsActions from "../../actions/StatisticsActions";
 import AlertsStore from "../../stores/AlertsStore";
 import AlertsActions from "../../actions/AlertsActions"
+import ProbesStore from "../../stores/ProbesStore";
+import ProbesActions from "../../actions/ProbesActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 
 import numeral from "numeral";
 import AlertsList from "./AlertsList";
-
 
 class GlobalStatistics extends Reflux.Component {
 
@@ -18,11 +19,12 @@ class GlobalStatistics extends Reflux.Component {
   constructor(props) {
     super(props);
 
-    this.stores = [StatisticsStore, AlertsStore];
+    this.stores = [StatisticsStore, AlertsStore, ProbesStore];
 
     this.state = {
       global_statistics: undefined,
-      active_alerts: undefined
+      active_alerts: undefined,
+      current_channels: {}
     };
   }
 
@@ -32,12 +34,25 @@ class GlobalStatistics extends Reflux.Component {
 
     setInterval(StatisticsActions.findGlobal, 1000);
     setInterval(AlertsActions.findActive, 1000);
+    setInterval(ProbesActions.findCurrentChannels, 900);
   }
 
-  static _buildChannelRow(channel, data) {
+  static _buildChannelRow(channel, data, activeChannels) {
+    let is_active = false;
+    Object.keys(activeChannels).map(function (key) {
+      const entry = activeChannels[key];
+      for (const key of Object.keys(entry)) {
+        const activeChannel = entry[key];
+
+        if(parseInt(channel) === activeChannel) {
+          is_active = true;
+        }
+      }
+    });
+
     const quality = ((data.total_frames-data.malformed_frames)*100)/data.total_frames;
     return (
-      <tr key={channel}>
+      <tr key={channel} className={is_active ? "text-info" : ""}>
         <td>{channel}</td>
         <td>{numeral(data.total_frames).format('0,0')}</td>
         <td className={GlobalStatistics.decideFrameQualityColor(quality)}>{numeral(data.malformed_frames).format('0')}</td>
@@ -132,7 +147,7 @@ class GlobalStatistics extends Reflux.Component {
 
                 <tbody>
                 {Object.keys(this.state.global_statistics.channels).map(function (key) {
-                  return GlobalStatistics._buildChannelRow(key, self.state.global_statistics.channels[key])
+                  return GlobalStatistics._buildChannelRow(key, self.state.global_statistics.channels[key], self.state.current_channels)
                 })}
                 </tbody>
               </table>

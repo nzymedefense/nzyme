@@ -5,3 +5,8 @@ div.overview-statistic p {
 div.overview-statistic span {
     font-size: 26px;
 }
+
+a.navbar-brand {
+    color: #fff;
+    border-bottom: 1px dashed #444;
+}
