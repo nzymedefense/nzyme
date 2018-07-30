@@ -30,6 +30,8 @@ public abstract class Alert {
     public enum Type {
         UNEXPECTED_BEACON_BSSID,
         UNEXPECTED_PROBERESP_BSSID,
+        UNEXPECTED_BEACON_SSID,
+        UNEXPECTED_PROBERESP_SSID
     }
 
     private final Subsystem subsystem;
