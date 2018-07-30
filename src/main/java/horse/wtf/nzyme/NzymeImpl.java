@@ -24,6 +24,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptor;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
@@ -163,6 +164,7 @@ public class NzymeImpl implements Nzyme {
 
                 // Add alerting interceptors. // TODO: load based on which alerts are activated in conf
                 probe.addFrameInterceptors(new UnexpectedBSSIDInterceptor(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedSSIDInterceptor(probe).getInterceptors());
 
                 probeExecutor.submit(probe.loop());
                 this.probes.add(probe);
