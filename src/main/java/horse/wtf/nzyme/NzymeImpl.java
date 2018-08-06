@@ -24,12 +24,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
-import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptor;
+import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
-import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptor;
+import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptorSet;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
@@ -40,7 +40,6 @@ import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
-import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import org.apache.logging.log4j.LogManager;
@@ -163,8 +162,8 @@ public class NzymeImpl implements Nzyme {
                 Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
                 // Add alerting interceptors. // TODO: load based on which alerts are activated in conf
-                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptor(probe).getInterceptors());
-                probe.addFrameInterceptors(new UnexpectedSSIDInterceptor(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
 
                 probeExecutor.submit(probe.loop());
                 this.probes.add(probe);
