@@ -39,7 +39,7 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
                 + " at " + associationRequest.destination();
 
         probe.notifyUplinks(
-                new Notification(message, associationRequest.meta().getChannel())
+                new Notification(message, associationRequest.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, associationRequest.transmitter())
                         .addField(FieldNames.DESTINATION, associationRequest.destination())
                         .addField(FieldNames.SSID, associationRequest.ssid())

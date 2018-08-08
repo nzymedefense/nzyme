@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.notifications.uplinks.graylog;
 
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -27,12 +28,13 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 import static horse.wtf.nzyme.util.Tools.calculateSignalQuality;
 
 public class GraylogUplink implements Uplink {
 
-    private static final String SOURCE = "probe";
+    private static final String SOURCE = "nzyme";
 
     private final String nzymeId;
     private final String networkInterfaceName;
@@ -66,7 +68,10 @@ public class GraylogUplink implements Uplink {
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
         gelf.addAdditionalFields(notification.getAdditionalFields());
         gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
-        gelf.addAdditionalField("nic_name", this.networkInterfaceName);
+        gelf.addAdditionalField("nzyme_message_type", "record");
+        gelf.addAdditionalField("nzyme_nic_name", this.networkInterfaceName);
+        gelf.addAdditionalField("nzyme_probe_name", notification.getProbe().getName());
+
 
         // Meta information.
         if(meta != null) {
@@ -78,6 +83,22 @@ public class GraylogUplink implements Uplink {
             if(meta.getMacTimestamp() >= 0) {
                 gelf.addAdditionalField("mac_timestamp", meta.getMacTimestamp());
             }
+        }
+
+        this.gelfTransport.trySend(gelf);
+    }
+
+    @Override
+    public void notifyOfAlert(Alert alert) {
+        GelfMessage gelf = new GelfMessage("ALERT: " + alert.getMessage(), SOURCE);
+        gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
+        gelf.addAdditionalField("nzyme_message_type", "alert");
+        gelf.addAdditionalField("nic_name", this.networkInterfaceName);
+        gelf.addAdditionalField("probe_name", alert.getProbe().getName());
+        gelf.addAdditionalField("alert_type", alert.getType().toString().toLowerCase());
+
+        for (Map.Entry<String, Object> x : alert.getFields().entrySet()) {
+            gelf.addAdditionalField("alert_" + x.getKey(), x.getValue());
         }
 
         this.gelfTransport.trySend(gelf);

@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.notifications;
 
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
 import javax.annotation.Nullable;
@@ -24,5 +25,6 @@ import javax.annotation.Nullable;
 public interface Uplink {
 
     void notify(Notification notification, @Nullable Dot11MetaInformation meta);
+    void notifyOfAlert(Alert alert);
 
 }

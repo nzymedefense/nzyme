@@ -19,9 +19,11 @@ package horse.wtf.nzyme.alerts;
 
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -39,16 +41,20 @@ public abstract class Alert {
     private final DateTime firstSeen;
     private final AtomicReference<DateTime> lastSeen;
     private final AtomicLong frameCount;
+    private final Dot11Probe probe;
 
     public abstract String getMessage();
     public abstract Type getType();
     public abstract boolean sameAs(Alert alert);
 
-    protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields) {
+    protected UUID uuid;
+
+    protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
         this.firstSeen = timestamp;
         this.lastSeen = new AtomicReference<>(timestamp);
         this.subsystem = subsystem;
         this.fields = ImmutableMap.copyOf(fields);
+        this.probe = probe;
 
         this.frameCount = new AtomicLong(1);
     }
@@ -79,6 +85,18 @@ public abstract class Alert {
 
     public Map<String, Object> getFields() {
         return fields;
+    }
+
+    public Dot11Probe getProbe() {
+        return probe;
+    }
+
+    public UUID getUUID() {
+        return uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
     }
 
 }

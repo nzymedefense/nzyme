@@ -73,7 +73,10 @@ public class AlertsService {
         }
 
         UUID uuid = UUID.randomUUID();
-        LOG.warn("ALERT: [{}] {}", uuid, alert.getMessage());
+        alert.setUUID(uuid);
+
+        // Notify uplinks.
+        alert.getProbe().notifyUplinksOfAlert(alert);
 
         activeAlerts.put(uuid, alert);
     }

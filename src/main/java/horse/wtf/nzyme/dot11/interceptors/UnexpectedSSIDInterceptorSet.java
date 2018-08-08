@@ -52,7 +52,8 @@ public class UnexpectedSSIDInterceptorSet {
                         probe.raiseAlert(UnexpectedSSIDProbeRespAlert.create(
                                 frame.ssid(),
                                 frame.transmitter(),
-                                frame.meta()
+                                frame.meta(),
+                                probe
                         ));
                     }
                 }
@@ -73,7 +74,8 @@ public class UnexpectedSSIDInterceptorSet {
                         probe.raiseAlert(UnexpectedSSIDBeaconAlert.create(
                                 frame.ssid(),
                                 frame.transmitter(),
-                                frame.meta()
+                                frame.meta(),
+                                probe
                         ));
                     }
                 }

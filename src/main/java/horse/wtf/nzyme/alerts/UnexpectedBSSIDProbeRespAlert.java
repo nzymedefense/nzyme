@@ -21,14 +21,15 @@ import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.configuration.Keys;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
 import java.util.Map;
 
 public class UnexpectedBSSIDProbeRespAlert extends Alert {
 
-    private UnexpectedBSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields) {
-        super(timestamp, subsystem, fields);
+    private UnexpectedBSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
+        super(timestamp, subsystem, fields, probe);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static UnexpectedBSSIDProbeRespAlert create(String ssid, String bssid, String destination, Dot11MetaInformation meta) {
+    public static UnexpectedBSSIDProbeRespAlert create(String ssid, String bssid, String destination, Dot11MetaInformation meta, Dot11Probe probe) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(Keys.SSID, ssid);
         fields.put(Keys.BSSID, bssid.toLowerCase());
@@ -73,7 +74,7 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
         fields.put(Keys.FREQUENCY, meta.getFrequency());
         fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
 
-        return new UnexpectedBSSIDProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build());
+        return new UnexpectedBSSIDProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }
 
 }

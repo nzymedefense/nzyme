@@ -55,7 +55,8 @@ public class UnexpectedBSSIDInterceptorSet {
                                     frame.ssid(),
                                     frame.transmitter(),
                                     frame.destination(),
-                                    frame.meta()
+                                    frame.meta(),
+                                    probe
                             ));
                         }
                     }
@@ -77,9 +78,10 @@ public class UnexpectedBSSIDInterceptorSet {
                         // Frame advertising our network. Check if it comes from an allowed BSSID.
                         if (!network.bssids().contains(frame.transmitter())) {
                             probe.raiseAlert(UnexpectedBSSIDBeaconAlert.create(
-                                            frame.ssid(),
-                                            frame.transmitter(),
-                                            frame.meta()
+                                    frame.ssid(),
+                                    frame.transmitter(),
+                                    frame.meta(),
+                                    probe
                             ));
                         }
                     }

@@ -46,7 +46,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
         probe.getStatistics().tickAccessPoint(beacon.transmitter());
 
         probe.notifyUplinks(
-                new Notification(message, beacon.meta().getChannel())
+                new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
                         .addField(FieldNames.SUBTYPE, "beacon"),
