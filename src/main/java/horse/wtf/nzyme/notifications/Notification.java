@@ -20,6 +20,7 @@ package horse.wtf.nzyme.notifications;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 
 import java.util.Map;
 
@@ -27,10 +28,12 @@ public class Notification {
 
     private final ImmutableMap.Builder<String, Object> fields;
     private final String message;
+    private final Dot11Probe probe;
 
-    public Notification(String message, int channel) {
+    public Notification(String message, int channel, Dot11Probe probe) {
         this.fields = new ImmutableMap.Builder<>();
         this.message = message;
+        this.probe = probe;
 
         addField("channel", channel);
     }
@@ -61,6 +64,10 @@ public class Notification {
                 .append(Joiner.on(", ").join(getAdditionalFields().entrySet()));
 
         return sb.toString();
+    }
+
+    public Dot11Probe getProbe() {
+        return probe;
     }
 
 }

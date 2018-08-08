@@ -80,6 +80,12 @@ public abstract class Dot11Probe {
         }
     }
 
+    public void notifyUplinksOfAlert(Alert alert) {
+        for (Uplink uplink : this.uplinks) {
+            uplink.notifyOfAlert(alert);
+        }
+    }
+
     public void addFrameInterceptors(@NotNull List<Dot11FrameInterceptor> interceptors) {
         for (Dot11FrameInterceptor interceptor : interceptors) {
             addFrameInterceptor(interceptor);

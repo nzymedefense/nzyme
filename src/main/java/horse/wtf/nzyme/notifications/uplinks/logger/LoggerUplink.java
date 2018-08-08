@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.notifications.uplinks.logger;
 
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
@@ -33,6 +34,11 @@ public class LoggerUplink implements Uplink {
     @Override
     public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
         LOG.info(notification);
+    }
+
+    @Override
+    public void notifyOfAlert(Alert alert) {
+        LOG.warn("ALERT: [{}] - {}", alert.getUUID(), alert.getMessage());
     }
 
 }

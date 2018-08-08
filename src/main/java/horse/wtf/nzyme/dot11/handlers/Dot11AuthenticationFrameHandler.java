@@ -29,8 +29,8 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
 
     private static final Logger LOG = LogManager.getLogger(Dot11AuthenticationFrameHandler.class);
 
-    public Dot11AuthenticationFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
+    public Dot11AuthenticationFrameHandler(Dot11Probe probe) {
+        super(probe);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
         }
 
         probe.notifyUplinks(
-                new Notification(message, frame.meta().getChannel())
+                new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.RESPONSE_CODE, frame.statusCode())

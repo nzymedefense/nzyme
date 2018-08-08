@@ -28,8 +28,8 @@ public class Dot11DisassociationFrameHandler extends Dot11FrameHandler<Dot11Disa
 
     private static final Logger LOG = LogManager.getLogger(Dot11DisassociationFrameHandler.class);
 
-    public Dot11DisassociationFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
+    public Dot11DisassociationFrameHandler(Dot11Probe probe) {
+        super(probe);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class Dot11DisassociationFrameHandler extends Dot11FrameHandler<Dot11Disa
         String message = frame.transmitter() + " is disassociating from " + frame.destination() + " (" + frame.reasonString() + ")";
 
         probe.notifyUplinks(
-                new Notification(message, frame.meta().getChannel())
+                new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.REASON_CODE, frame.reasonCode())

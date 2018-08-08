@@ -28,8 +28,8 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
 
     private static final Logger LOG = LogManager.getLogger(Dot11ProbeResponseFrameHandler.class);
 
-    public Dot11ProbeResponseFrameHandler(Dot11Probe nzyme) {
-        super(nzyme);
+    public Dot11ProbeResponseFrameHandler(Dot11Probe probe) {
+        super(probe);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
                 frame.destination() + " for " + frame.ssid();
 
         probe.notifyUplinks(
-                new Notification(message, frame.meta().getChannel())
+                new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.SSID, frame.ssid())
