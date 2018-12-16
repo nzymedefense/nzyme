@@ -177,6 +177,7 @@ public class Configuration {
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
         expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);
 
+        // 802.11 Monitors.
         int i = 0;
         for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
             String where = Keys.DOT11_MONITORS + "." + "#" + i;
@@ -185,6 +186,18 @@ public class Configuration {
             expect(c, Keys.HOP_COMMAND, where, String.class);
             expect(c, Keys.HOP_INTERVAL, where, Integer.class);
             i++;
+        }
+
+        // 802.11 Trap Pairs
+        i = 0;
+        for (Config c : root.getConfigList(Keys.DOT11_TRAP_PAIRS)) {
+            String where = Keys.DOT11_TRAP_PAIRS + "." + "#" + i;
+            expect(c, Keys.DEVICE_SENDER, where, String.class);
+            expect(c, Keys.DEVICE_MONITOR, where, String.class);
+            expect(c, Keys.CHANNELS, where, List.class);
+            expect(c, Keys.HOP_COMMAND, where, String.class);
+            expect(c, Keys.HOP_INTERVAL, where, Integer.class);
+            expect(c, Keys.TRAPS, where, List.class);
         }
 
         // Logical validity.
@@ -251,6 +264,9 @@ public class Configuration {
                 bssids.add(bssid);
             }
         }
+
+        // TODO: No trap pair device is used multiple times or as a monitor.
+        // TODO: No trap pair device has a trap configured multiple times.
     }
 
     private void validateChannelList(String key) throws InvalidConfigurationException {

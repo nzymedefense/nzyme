@@ -26,6 +26,7 @@ public class Keys {
     public static final String DOT11_MONITORS = "802_11_monitors";
     public static final String DOT11_NETWORKS = "802_11_networks";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
+    public static final String DOT11_TRAP_PAIRS = "802_11_trap_pairs";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -46,5 +47,9 @@ public class Keys {
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
     public static final String DESTINATION = "destination";
+    public static final String DEVICE_SENDER = "device_sender";
+    public static final String DEVICE_MONITOR = "device_monitor";
+    public static final String TRAPS = "traps";
+    public static final String TYPE = "type";
 
 }
