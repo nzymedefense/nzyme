@@ -22,7 +22,7 @@ class AlertsList extends Reflux.Component {
   static _buildAlertRow(key, alert) {
     return (
       <tr key={key} className="text-danger">
-        <td>{alert.uuid}</td>
+        <td>{alert.id}</td>
         <td>{alert.type}</td>
         <td>{moment(alert.first_seen).fromNow()}</td>
         <td>{moment(alert.last_seen).fromNow()}</td>
