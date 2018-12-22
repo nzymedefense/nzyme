@@ -35,8 +35,8 @@ public abstract class AlertDetailsResponse {
     @JsonProperty("type")
     public abstract Alert.Type type();
 
-    @JsonProperty("uuid")
-    public abstract UUID uuid();
+    @JsonProperty("id")
+    public abstract UUID id();
 
     @JsonProperty("message")
     public abstract String message();
@@ -53,11 +53,11 @@ public abstract class AlertDetailsResponse {
     @JsonProperty("frame_count")
     public abstract Long frameCount();
 
-    public static AlertDetailsResponse create(Subsystem subsystem, Alert.Type type, UUID uuid, String message, Map<String, Object> fields, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
+    public static AlertDetailsResponse create(Subsystem subsystem, Alert.Type type, UUID id, String message, Map<String, Object> fields, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
         return builder()
                 .subsystem(subsystem)
                 .type(type)
-                .uuid(uuid)
+                .id(id)
                 .message(message)
                 .fields(fields)
                 .firstSeen(firstSeen)
@@ -76,7 +76,7 @@ public abstract class AlertDetailsResponse {
 
         public abstract Builder type(Alert.Type type);
 
-        public abstract Builder uuid(UUID uuid);
+        public abstract Builder id(UUID id);
 
         public abstract Builder message(String message);
 
