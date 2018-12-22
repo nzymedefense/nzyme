@@ -26,7 +26,7 @@
         <jcommander.version>1.72</jcommander.version>
         <testng.version>6.9.10</testng.version>
         <okhttp.version>3.10.0</okhttp.version>
-        <jackson.version>2.9.3</jackson.version>
+        <jackson.version>2.9.8</jackson.version>
         <jodatime.version>2.10</jodatime.version>
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.5.1</autovalue.version>
