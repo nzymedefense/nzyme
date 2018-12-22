@@ -271,6 +271,7 @@ public class Configuration {
 
     private void validateChannelList(String key) throws InvalidConfigurationException {
         int x = 0;
+        List<Integer> usedChannels = Lists.newArrayList();
         for (Config c : root.getConfigList(key)) {
             String where = key + "." + "#" + x;
             try {
@@ -278,6 +279,12 @@ public class Configuration {
                     if (channel < 1) {
                         throw new InvalidConfigurationException("Invalid channels in list for [" + where + "}. All channels must be integers larger than 0.");
                     }
+
+                    if (usedChannels.contains(channel)) {
+                        throw new InvalidConfigurationException("Duplicate channel <" + channel + "> in list for [ " + where + " ]. Channels cannot be duplicate per monitor or across multiple monitors.");
+                    }
+
+                    usedChannels.add(channel);
                 }
             } catch(ConfigException e) {
                 LOG.error(e);

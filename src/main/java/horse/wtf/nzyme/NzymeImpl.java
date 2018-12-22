@@ -77,7 +77,7 @@ public class NzymeImpl implements Nzyme {
 
         this.alerts = new AlertsService(this);
 
-         probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+        probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("probe-loop-%d")
                 .build());
