@@ -4,6 +4,7 @@ import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
 import numeral from "numeral";
 import moment from "moment";
+import Routes from "../../util/Routes";
 
 class AlertsList extends Reflux.Component {
 
@@ -27,7 +28,7 @@ class AlertsList extends Reflux.Component {
         <td>{moment(alert.first_seen).fromNow()}</td>
         <td>{moment(alert.last_seen).fromNow()}</td>
         <td>{numeral(alert.frame_count).format('0,0')}</td>
-        <td><a href="">Details</a></td>
+        <td><a href={Routes.ALERTS.SHOW(alert.id)}>Details</a></td>
       </tr>
     )
   }

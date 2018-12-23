@@ -23,6 +23,7 @@ import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.Alert;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,16 +54,28 @@ public abstract class AlertDetailsResponse {
     @JsonProperty("frame_count")
     public abstract Long frameCount();
 
-    public static AlertDetailsResponse create(Subsystem subsystem, Alert.Type type, UUID id, String message, Map<String, Object> fields, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
+    @JsonProperty("description")
+    public abstract String description();
+
+    @JsonProperty("documentation_link")
+    public abstract String documentationLink();
+
+    @JsonProperty("false_positives")
+    public abstract List<String> falsePositives();
+
+    public static AlertDetailsResponse fromAlert(Alert alert) {
         return builder()
-                .subsystem(subsystem)
-                .type(type)
-                .id(id)
-                .message(message)
-                .fields(fields)
-                .firstSeen(firstSeen)
-                .lastSeen(lastSeen)
-                .frameCount(frameCount)
+                .subsystem(alert.getSubsystem())
+                .type(alert.getType())
+                .id(alert.getUUID())
+                .message(alert.getMessage())
+                .fields(alert.getFields())
+                .firstSeen(alert.getFirstSeen())
+                .lastSeen(alert.getLastSeen())
+                .description(alert.getDescription())
+                .documentationLink(alert.getDocumentationLink())
+                .falsePositives(alert.getFalsePositives())
+                .frameCount(alert.getFrameCount())
                 .build();
     }
 
@@ -85,6 +98,12 @@ public abstract class AlertDetailsResponse {
         public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder description(String description);
+
+        public abstract Builder documentationLink(String documentationLink);
+
+        public abstract Builder falsePositives(List<String> falsePositives);
 
         public abstract Builder frameCount(Long frameCount);
 

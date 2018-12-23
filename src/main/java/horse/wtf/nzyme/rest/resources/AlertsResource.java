@@ -17,11 +17,14 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -34,6 +37,8 @@ import java.util.UUID;
 @Path("/api/alerts")
 @Produces(MediaType.APPLICATION_JSON)
 public class AlertsResource {
+
+    private static final Logger LOG = LogManager.getLogger(AlertsResource.class);
 
     @Inject
     private Nzyme nzyme;
@@ -56,19 +61,34 @@ public class AlertsResource {
             i++;
 
             Alert alert = entry.getValue();
-            details.add(AlertDetailsResponse.create(
-                    alert.getSubsystem(),
-                    alert.getType(),
-                    entry.getKey(),
-                    alert.getMessage(),
-                    alert.getFields(),
-                    alert.getFirstSeen(),
-                    alert.getLastSeen(),
-                    alert.getFrameCount()
-            ));
+            details.add(AlertDetailsResponse.fromAlert(alert));
         }
 
         return Response.ok(AlertsListResponse.create(alerts.size(), details)).build();
+    }
+
+    @GET
+    @Path("/show/{id}")
+    public Response get(@PathParam("id") String id) {
+        if (Strings.isNullOrEmpty(id)) {
+            LOG.warn("Alert ID was null or empty.");
+            return Response.status(401).build();
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid UUID [{}].", id, e);
+            return Response.status(401).build();
+        }
+
+        Alert alert = nzyme.getAlertsService().getActiveAlerts().get(uuid);
+        if (alert != null) {
+            return Response.ok(AlertDetailsResponse.fromAlert(alert)).build();
+        } else {
+            return Response.status(404).build();
+        }
     }
 
 }

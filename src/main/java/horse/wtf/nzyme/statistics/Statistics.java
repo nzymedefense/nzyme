@@ -68,6 +68,8 @@ public class Statistics {
         int channel = 0;
         if(meta != null) {
             channel = meta.getChannel();
+            frameCount.incrementAndGet();
+            tickInMap(meta.getChannel(), channelCounts);
         }
 
         probe.notifyUplinks(
