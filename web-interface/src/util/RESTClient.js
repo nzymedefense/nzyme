@@ -1,5 +1,6 @@
 import {API_ROOT} from "./API";
 import {notify} from "react-notify-toast";
+import Routes from "./Routes";
 
 var axios = require('axios');
 
@@ -25,7 +26,6 @@ const RESTClient = {
         successCallback(response);
       })
       .catch(function (error) {
-        console.log(error);
         if (error.response) {
           notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
         } else {

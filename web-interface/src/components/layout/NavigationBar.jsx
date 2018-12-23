@@ -11,6 +11,8 @@ class NavigationBar extends Reflux.Component {
             <a href="/" className="navbar-brand d-flex align-items-center">
               <strong>nzyme - WiFi Defense System</strong>
             </a>
+
+            <a href="https://go.nzyme.org/help" target="_blank" className={"btn btn-primary"}>Help</a>
           </div>
         </div>
       </header>

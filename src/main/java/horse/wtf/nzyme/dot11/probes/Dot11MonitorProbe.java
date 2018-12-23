@@ -162,7 +162,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                 this.nzyme.getStatistics().tickMalformedCountAndNotify(probe, meta);
                                 continue;
                             }
-                            this.nzyme.getStatistics().tickFrameCount(meta);
 
                             Dot11FrameType type = Dot11FrameType.getInstance(
                                     (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
@@ -210,9 +209,10 @@ public class Dot11MonitorProbe extends Dot11Probe {
                             if(this.nzyme.getConfiguration().isPrintPacketInfo()) {
                                 LOG.info("Type: {}, Header: {} bytes, Payload: {} bytes", type.value(), r.getHeader().getRawData().length, payload.length);
                             }
+
+                            this.nzyme.getStatistics().tickFrameCount(meta);
                         }
                     } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
-                        this.nzyme.getStatistics().tickMalformedCountAndNotify(probe, null);
                         LOG.debug("Illegal data received.", e);
                     } catch(Exception e) {
                         LOG.error("Could not process packet.", e);

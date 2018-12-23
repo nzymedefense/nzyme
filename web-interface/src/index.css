@@ -1,3 +1,7 @@
+hr {
+    background-color: #444
+}
+
 div.overview-statistic p {
     font-weight: 600;
 }
@@ -9,4 +13,9 @@ div.overview-statistic span {
 a.navbar-brand {
     color: #fff;
     border-bottom: 1px dashed #444;
+}
+
+h2 em {
+    color: #999999;
+    font-style: normal;
 }

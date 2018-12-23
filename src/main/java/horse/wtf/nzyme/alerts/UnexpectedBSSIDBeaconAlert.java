@@ -24,12 +24,23 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class UnexpectedBSSIDBeaconAlert extends Alert {
 
+    private static final String DESCRIPTION = "A station with an unexpected BSSID (hardware address) is advertising a SSID (network name). This could " +
+            "be a rogue access point trying to lure users to connect to it by making it look like a legitimate access point of a wireless network that " +
+            "users trust. Note that sophisticated attackers will likely not cause this kind of alert because they would act like a legitimate access point " +
+            "by sending frames with a spoofed BSSID.";
+    private static final String DOC_LINK = "guidance-UNEXPECTED_PROBERESP_BSSID";
+    private static final List<String> FALSE_POSITIVES = new ArrayList<String>() {{
+        add("A new access point was installed and the nzyme configuration has not been updated yet.");
+    }};
+
     private UnexpectedBSSIDBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, probe);
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
     }
 
     @Override

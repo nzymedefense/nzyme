@@ -24,12 +24,20 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class UnexpectedSSIDBeaconAlert extends Alert  {
 
+    private static final String DESCRIPTION = "";
+    private static final String DOC_LINK = "";
+    private static final List<String> FALSE_POSITIVES = new ArrayList<String>() {{
+        add("");
+    }};
+
     private UnexpectedSSIDBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, probe);
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
     }
 
     @Override
