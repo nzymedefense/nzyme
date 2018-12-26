@@ -19,3 +19,12 @@ h2 em {
     color: #999999;
     font-style: normal;
 }
+
+#footer a {
+    color: #0a4862;
+}
+
+#footer a:hover {
+    text-decoration: none;
+    color: #0b5573;
+}
