@@ -30,10 +30,12 @@ import java.util.Map;
 
 public class UnexpectedSSIDProbeRespAlert extends Alert {
 
-    private static final String DESCRIPTION = "";
-    private static final String DOC_LINK = "";
+    private static final String DESCRIPTION = "One of our stations is replying to devices that are looking for known access points (probing) with an SSID (network name) that we did " +
+            "not expect. An attacker might have gained access to access point configuration and could have created a new wireless network. This alert can also indicate actions " +
+            "of an attacker who is not careful with the spoofing of BSSIDs (hardware addresses) of access points.";
+    private static final String DOC_LINK = "guidance-UNEXPECTED_PROBERESP_SSID";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>() {{
-        add("");
+        add("A new network (for example, a guest network) was created by a legitimate administrator and the nzyme configuration has not been updated yet.");
     }};
 
     private UnexpectedSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
