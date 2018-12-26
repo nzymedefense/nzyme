@@ -18,6 +18,7 @@ import NotConnectedPage from "./components/misc/NotConnectedPage";
 import NotFoundPage from "./components/misc/NotFoundPage";
 import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
 import Routes from "./util/Routes";
+import Footer from "./components/layout/Footer";
 
 class App extends Reflux.Component {
 
@@ -55,6 +56,8 @@ class App extends Reflux.Component {
                                 <Route path={Routes.NOT_FOUND} component={NotFoundPage} />
                                 <Route path="*" component={NotFoundPage} /> { /* Catch-all.  */ }
                             </Switch>
+
+                            <Footer/>
                         </div>
                     </div>
                 </Router>
@@ -67,6 +70,7 @@ class App extends Reflux.Component {
                     <div className="container">
                         <Notifications />
                         <NotConnectedPage />
+                        <Footer/>
                     </div>
                 </div>
             )
