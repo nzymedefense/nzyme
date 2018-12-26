@@ -30,10 +30,13 @@ import java.util.Map;
 
 public class UnexpectedBSSIDProbeRespAlert extends Alert {
 
-    private static final String DESCRIPTION = "";
-    private static final String DOC_LINK = "";
+    private static final String DESCRIPTION = "A station with an unexpected BSSID (hardware address) is replying to devices that are looking for one of our " +
+            "networks (probing). This could be a rogue access point trying to lure users to connect to it by making it look like a legitimate access point of " +
+            "a wireless network that users trust. Note that sophisticated attackers will likely not cause this kind of alert because they would act like a " +
+            "legitimate access point by sending frames with a spoofed BSSID.";
+    private static final String DOC_LINK = "guidance-UNEXPECTED_PROBERESP_BSSID";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>() {{
-        add("");
+        add("A new access point was installed and the nzyme configuration has not been updated yet.");
     }};
 
     private UnexpectedBSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {

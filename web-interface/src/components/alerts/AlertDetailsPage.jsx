@@ -25,6 +25,7 @@ class AlertDetailsPage extends Reflux.Component {
 
     componentDidMount() {
         const alertId = this.alertId;
+        AlertsActions.findOne(alertId);
         setInterval(function() { AlertsActions.findOne(alertId) }, 5000);
     }
 
@@ -111,7 +112,7 @@ class AlertDetailsPage extends Reflux.Component {
 
                                 <p>
                                     <a href={"https://go.nzyme.org/" + this.state.alert.documentation_link} className="btn btn-primary" target="_blank">
-                                        Incident Response
+                                        Learn More
                                     </a>
                                 </p>
                             </div>
