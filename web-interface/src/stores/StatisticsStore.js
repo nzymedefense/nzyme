@@ -13,7 +13,7 @@ class StatisticsStore extends Reflux.Store {
   onFindGlobal() {
     let self = this;
 
-    RESTClient.get("/system/statistics/global", {}, function(response) {
+    RESTClient.get("/system/networks/global", {}, function(response) {
       self.setState({global_statistics: response.data});
     });
   }

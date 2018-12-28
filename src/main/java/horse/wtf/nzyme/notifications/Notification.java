@@ -48,6 +48,16 @@ public class Notification {
         return this;
     }
 
+    public Notification addFields(Map<String, Object> x) {
+        if (x == null) {
+            return this;
+        }
+
+        fields.putAll(x);
+
+        return this;
+    }
+
     public Map<String, Object> getAdditionalFields() {
         return fields.build();
     }

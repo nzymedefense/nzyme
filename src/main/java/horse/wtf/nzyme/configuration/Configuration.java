@@ -91,6 +91,10 @@ public class Configuration {
         return alerting.getInt(Keys.CLEAN_AFTER_MINUTES);
     }
 
+    public Integer getAlertingTrainingPeriodSeconds() {
+        return alerting.getInt(Keys.TRAINING_PERIOD_SECONDS);
+    }
+
     public List<Dot11MonitorDefinition> getDot11Monitors() {
         ImmutableList.Builder<Dot11MonitorDefinition> result = new ImmutableList.Builder<>();
 
@@ -173,6 +177,7 @@ public class Configuration {
         expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_PREFIX, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(alerting, Keys.CLEAN_AFTER_MINUTES, Keys.GENERAL + "." + Keys.ALERTING, Integer.class);
+        expect(alerting, Keys.TRAINING_PERIOD_SECONDS, Keys.GENERAL + "." + Keys.ALERTING, Integer.class);
         expect(interfaces, Keys.REST_LISTEN_URI, Keys.INTERFACES, String.class);
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
         expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);

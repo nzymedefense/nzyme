@@ -30,8 +30,6 @@ import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-import static horse.wtf.nzyme.util.Tools.calculateSignalQuality;
-
 public class GraylogUplink implements Uplink {
 
     private static final String SOURCE = "nzyme";
@@ -77,7 +75,7 @@ public class GraylogUplink implements Uplink {
         if(meta != null) {
             gelf.addAdditionalField("signal_strength", meta.getAntennaSignal());
             gelf.addAdditionalField("frequency", meta.getFrequency());
-            gelf.addAdditionalField("signal_quality", calculateSignalQuality(meta.getAntennaSignal()));
+            gelf.addAdditionalField("signal_quality", meta.getSignalQuality());
             gelf.addAdditionalField("is_wep", meta.isWep());
 
             if(meta.getMacTimestamp() >= 0) {

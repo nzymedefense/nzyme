@@ -24,24 +24,28 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.dot11.interceptors.StatisticsInterceptorSet;
 import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
 import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptorSet;
+import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.InjectionBinder;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
+import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -65,17 +69,34 @@ public class NzymeImpl implements Nzyme {
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
     private final MetricRegistry metrics;
+    private final Networks networks;
+    private final SystemStatus systemStatus;
 
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
+
+    private HttpServer httpServer;
 
     public NzymeImpl(Configuration configuration) {
         this.configuration = configuration;
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
         this.probes = Lists.newArrayList();
+        this.networks = new Networks();
+        this.systemStatus = new SystemStatus();
+
+        // Set up initial system status.
+        this.systemStatus.setStatus(SystemStatus.TYPE.RUNNING);
+        this.systemStatus.setStatus(SystemStatus.TYPE.TRAINING);
 
         this.alerts = new AlertsService(this);
+
+        // Disable TRAINING status when training period is over.
+        LOG.info("Training period ends in <{}> seconds.", configuration.getAlertingTrainingPeriodSeconds());
+        Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+            LOG.info("Training period is over!");
+            systemStatus.unsetStatus(SystemStatus.TYPE.TRAINING);
+        }, configuration.getAlertingTrainingPeriodSeconds(), TimeUnit.SECONDS);
 
         probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -88,14 +109,14 @@ public class NzymeImpl implements Nzyme {
         Version version = new Version();
         LOG.info("Initializing probe version: {}.", version.getVersionString());
 
-        // Set up statistics printer.
+        // Set up networks printer.
         final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics, STATS_INTERVAL);
-        LOG.info("Printing statistics every {} seconds.", STATS_INTERVAL);
+        LOG.info("Printing networks every {} seconds.", STATS_INTERVAL);
 
         // Statistics printer.
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("statistics-%d")
+                .setNameFormat("networks-%d")
                 .build()
         ).scheduleAtFixedRate(() -> {
             LOG.info(statisticsPrinter.print());
@@ -127,20 +148,35 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(ProbesResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
+        resourceConfig.register(NetworksResource.class);
 
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
-        final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
-        Runtime.getRuntime().addShutdownHook(new Thread(server::shutdownNow)); // Properly stop server on shutdown.
+        httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
         LOG.info("Started web interface and REST API at [{}].", configuration.getRestListenUri());
 
         // Start server.
         try {
-            server.start();
+            httpServer.start();
         } catch (IOException e) {
             throw new RuntimeException("Could not start REST API.", e);
         }
 
         initializeProbes();
+    }
+
+    public void shutdown() {
+        LOG.info("Shutting down.");
+
+        this.systemStatus.unsetStatus(SystemStatus.TYPE.RUNNING);
+        this.systemStatus.setStatus(SystemStatus.TYPE.SHUTTING_DOWN);
+
+        // Shutdown REST API.
+        if (httpServer != null) {
+            LOG.info("Stopping REST API.");
+            httpServer.shutdownNow();
+        }
+
+        LOG.info("Shutdown complete.");
     }
 
     private void initializeProbes() {
@@ -164,6 +200,8 @@ public class NzymeImpl implements Nzyme {
                 // Add alerting interceptors. // TODO: load based on which alerts are activated in conf
                 probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
                 probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new StatisticsInterceptorSet(this).getInterceptors());
+
 
                 probeExecutor.submit(probe.loop());
                 this.probes.add(probe);
@@ -178,6 +216,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public AlertsService getAlertsService() {
         return alerts;
+    }
+
+    @Override
+    public SystemStatus getSystemStatus() {
+        return systemStatus;
     }
 
     @Override
@@ -198,6 +241,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public List<Dot11Probe> getProbes() {
         return probes;
+    }
+
+    @Override
+    public Networks getNetworks() {
+        return networks;
     }
 
 }

@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Path("/api/system/statistics")
+@Path("/api/system/networks")
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsResource {
 

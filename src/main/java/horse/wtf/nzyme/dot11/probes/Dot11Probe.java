@@ -23,11 +23,13 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
 import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -106,6 +108,14 @@ public abstract class Dot11Probe {
 
     public void raiseAlert(Alert alert) {
         this.nzyme.getAlertsService().handle(alert);
+    }
+
+    public Networks getNetworks() {
+        return nzyme.getNetworks();
+    }
+
+    public SystemStatus getSystemStatus() {
+        return nzyme.getSystemStatus();
     }
 
 }
