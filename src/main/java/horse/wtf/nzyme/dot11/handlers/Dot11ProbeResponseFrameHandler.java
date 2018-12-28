@@ -24,6 +24,8 @@ import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Map;
+
 public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11ProbeResponseFrame> {
 
     private static final Logger LOG = LogManager.getLogger(Dot11ProbeResponseFrameHandler.class);
@@ -37,12 +39,14 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
         String message = frame.transmitter() + " responded to probe request from " +
                 frame.destination() + " for " + frame.ssid();
 
+        Map<String, Object> deltaFields = buildDeltaInformationFields(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         probe.notifyUplinks(
                 new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.SSID, frame.ssid())
-                        .addField(FieldNames.SUBTYPE, "probe-resp"),
+                        .addField(FieldNames.SUBTYPE, "probe-resp")
+                        .addFields(deltaFields),
                 frame.meta()
         );
 

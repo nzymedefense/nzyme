@@ -17,11 +17,23 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
+import com.google.common.collect.Maps;
+import horse.wtf.nzyme.Main;
+import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.dot11.networks.SignalDelta;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
 
 public abstract class Dot11FrameHandler<T> {
 
-    protected final Dot11Probe probe;
+    private static final Logger LOG = LogManager.getLogger(Dot11FrameHandler.class);
+
+    protected Dot11Probe probe;
 
     protected Dot11FrameHandler(Dot11Probe probe) {
         this.probe = probe;
@@ -39,5 +51,32 @@ public abstract class Dot11FrameHandler<T> {
 
     public abstract void doHandle(T frame);
     public abstract String getName();
+
+    protected Map<String, Object> buildDeltaInformationFields(String transmitter, String ssid, int channel, int signal) {
+        Map<String, Object> x = Maps.newHashMap();
+
+        if (!this.probe.getSystemStatus().isInStatus(SystemStatus.TYPE.TRAINING)) {
+            try {
+                SignalDelta delta = probe.getNetworks().getSignalDelta(transmitter, ssid, channel);
+                x.put(FieldNames.SIGNAL_DELTA_LOWER, delta.lower());
+                x.put(FieldNames.SIGNAL_DELTA_UPPER, delta.upper());
+
+                if (signal > delta.upper()) {
+                    x.put(FieldNames.SIGNAL_IN_DELTA, false);
+                    x.put(FieldNames.SIGNAL_DELTA_DIFF, ((float) signal / (float) delta.upper() * 100.0) - 100);
+                } else if (signal < delta.lower()) {
+                    x.put(FieldNames.SIGNAL_IN_DELTA, false);
+                    x.put(FieldNames.SIGNAL_DELTA_DIFF, ((float) signal / (float) delta.lower() * 100.0) - 100);
+                } else {
+                    x.put(FieldNames.SIGNAL_IN_DELTA, true);
+                }
+            } catch (Networks.NoSuchChannelException | Networks.NoSuchNetworkException e) {
+                // This can happen for newly observed channels.
+                LOG.debug(e);
+            }
+        }
+
+        return x;
+    }
 
 }

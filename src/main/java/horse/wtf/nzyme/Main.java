@@ -34,11 +34,6 @@ public class Main {
     private static final int FAILURE = 1;
 
     public static void main(String[] argv) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Thread.currentThread().setName("shutdown-hook");
-            LOG.info("Shutting down.");
-        }));
-
         final CLIArguments cliArguments = new CLIArguments();
 
         // Parse CLI arguments.
@@ -74,6 +69,11 @@ public class Main {
 
         Nzyme nzyme = new NzymeImpl(configuration);
         nzyme.initialize();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Thread.currentThread().setName("shutdown-hook");
+            nzyme.shutdown();
+        }));
 
         while(true) {
             // https://www.youtube.com/watch?v=Vmb1tqYqyII#t=47s

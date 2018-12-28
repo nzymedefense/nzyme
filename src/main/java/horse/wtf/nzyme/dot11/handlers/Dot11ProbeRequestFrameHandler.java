@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.*;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
@@ -27,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Dot11ProbeRequestFrameHandler extends Dot11FrameHandler<Dot11ProbeRequestFrame> {
 
-    private static final Logger LOG = LogManager.getLogger(Main.class);
+    private static final Logger LOG = LogManager.getLogger(Dot11ProbeRequestFrameHandler.class);
 
     public Dot11ProbeRequestFrameHandler(Dot11Probe probe) {
         super(probe);

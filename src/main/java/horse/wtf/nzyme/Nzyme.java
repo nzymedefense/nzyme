@@ -21,13 +21,18 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import java.util.List;
 
 public interface Nzyme {
 
     void initialize();
+    void shutdown();
+
+    Networks getNetworks();
 
     Statistics getStatistics();
     Configuration getConfiguration();
@@ -36,5 +41,7 @@ public interface Nzyme {
 
     List<Dot11Probe> getProbes();
     AlertsService getAlertsService();
+
+    SystemStatus getSystemStatus();
 
 }

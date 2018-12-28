@@ -40,6 +40,7 @@ public class Keys {
     public static final String PYTHON_SCRIPT_DIR = "script_directory";
     public static final String PYTHON_SCRIPT_PREFIX = "script_prefix";
     public static final String CLEAN_AFTER_MINUTES = "clean_after_minutes";
+    public static final String TRAINING_PERIOD_SECONDS = "training_period_seconds";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String SSID = "ssid";
     public static final String BSSIDS = "bssids";

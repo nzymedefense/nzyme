@@ -22,10 +22,13 @@ import org.pcap4j.packet.*;
 
 import java.util.ArrayList;
 
+import static horse.wtf.nzyme.util.Tools.calculateSignalQuality;
+
 public class Dot11MetaInformation {
 
     private final boolean malformed;
     private final int antennaSignal;
+    private final int signalQuality;
     private final int frequency;
     private final int channel;
     private final long macTimestamp;
@@ -34,6 +37,7 @@ public class Dot11MetaInformation {
     private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
+        this.signalQuality = calculateSignalQuality(antennaSignal);
         this.channel = channel;
         this.frequency = frequency;
         this.macTimestamp = macTimestamp;
@@ -46,6 +50,10 @@ public class Dot11MetaInformation {
 
     public int getAntennaSignal() {
         return antennaSignal;
+    }
+
+    public int getSignalQuality() {
+        return signalQuality;
     }
 
     public int getFrequency() {

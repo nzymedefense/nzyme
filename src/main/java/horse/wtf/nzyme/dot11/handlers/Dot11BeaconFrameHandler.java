@@ -17,12 +17,16 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
+import com.google.common.base.Strings;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
 
 public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame> {
 
@@ -35,7 +39,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
     @Override
     public void doHandle(Dot11BeaconFrame beacon) {
         String message;
-        if (beacon.ssid() != null && !beacon.ssid().trim().isEmpty()) {
+        if (!Strings.isNullOrEmpty(beacon.transmitter())) {
             message = "Received beacon from " + beacon.transmitter() + " for SSID " + beacon.ssid();
             probe.getStatistics().tickBeaconedNetwork(beacon.ssid());
         } else {
@@ -45,12 +49,16 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
 
         probe.getStatistics().tickAccessPoint(beacon.transmitter());
 
+        Dot11MetaInformation meta = beacon.meta();
+
+        Map<String, Object> deltaFields = buildDeltaInformationFields(beacon.transmitter(), beacon.ssid(), meta.getChannel(), meta.getSignalQuality());
         probe.notifyUplinks(
                 new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
-                        .addField(FieldNames.SUBTYPE, "beacon"),
-                beacon.meta()
+                        .addField(FieldNames.SUBTYPE, "beacon")
+                        .addFields(deltaFields),
+                meta
         );
 
         LOG.debug(message);
