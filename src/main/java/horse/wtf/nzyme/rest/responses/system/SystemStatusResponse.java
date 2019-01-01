@@ -15,41 +15,34 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.rest.responses.metrics;
+package horse.wtf.nzyme.rest.responses.system;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @AutoValue
-public abstract class MetricsListResponse {
+public abstract class SystemStatusResponse {
 
     @JsonProperty
-    public abstract List<MetricResponse> metrics();
+    public abstract List<SystemStatusStateResponse> status();
 
-    @JsonProperty
-    public abstract long total();
-
-    public static MetricsListResponse create(@NotNull List<MetricResponse> metrics) {
+    public static SystemStatusResponse create(List<SystemStatusStateResponse> status) {
         return builder()
-                .metrics(metrics)
-                .total(metrics.size())
+                .status(status)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_MetricsListResponse.Builder();
+        return new AutoValue_SystemStatusResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder metrics(List<MetricResponse> metrics);
+        public abstract Builder status(List<SystemStatusStateResponse> status);
 
-        public abstract Builder total(long total);
-
-        public abstract MetricsListResponse build();
+        public abstract SystemStatusResponse build();
     }
 
 }

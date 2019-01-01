@@ -7,12 +7,16 @@ class NavigationBar extends Reflux.Component {
     return (
       <header>
         <div className="navbar box-shadow">
-          <div className="container d-flex justify-content-between">
+          <div className="container d-flex">
             <a href="/" className="navbar-brand d-flex align-items-center">
               <strong>nzyme - WiFi Defense System</strong>
             </a>
 
-            <a href="https://go.nzyme.org/help" target="_blank" className={"btn btn-primary"}>Help</a>
+            <span className="pull-right">
+              <a href="#" className="btn btn-dark">System Status</a>
+              &nbsp;
+              <a href="https://go.nzyme.org/help" target="_blank" className="btn btn-primary">Help</a>
+            </span>
           </div>
         </div>
       </header>

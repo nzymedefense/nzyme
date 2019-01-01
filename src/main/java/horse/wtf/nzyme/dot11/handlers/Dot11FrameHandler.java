@@ -18,7 +18,6 @@
 package horse.wtf.nzyme.dot11.handlers;
 
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Main;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SignalDelta;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;

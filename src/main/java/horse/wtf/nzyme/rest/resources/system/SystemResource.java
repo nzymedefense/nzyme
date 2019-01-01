@@ -17,7 +17,11 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
+import horse.wtf.nzyme.rest.responses.system.SystemStatusStateResponse;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -25,17 +29,31 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
-@Path("/api/system/metrics")
+@Path("/api/system")
 @Produces(MediaType.APPLICATION_JSON)
-public class MetricsResource {
+public class SystemResource {
 
     @Inject
     private Nzyme nzyme;
 
     @GET
-    public Response all() {
-        return Response.status(404).build();
+    @Path("/status")
+    public Response getStatus() {
+        List<SystemStatusStateResponse> states = Lists.newArrayList();
+
+        for (SystemStatus.TYPE type : SystemStatus.TYPE.values()) {
+            states.add(SystemStatusStateResponse.create(
+                    type,
+                    nzyme.getSystemStatus().isInStatus(type)
+            ));
+        }
+
+
+        return Response.ok(SystemStatusResponse.create(states)).build();
     }
+
+
 
 }
