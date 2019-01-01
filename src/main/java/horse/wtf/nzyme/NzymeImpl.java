@@ -43,6 +43,7 @@ import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
+import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
@@ -149,6 +150,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
         resourceConfig.register(NetworksResource.class);
+        resourceConfig.register(SystemResource.class);
 
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);

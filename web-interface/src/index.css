@@ -16,7 +16,7 @@ a.navbar-brand {
 }
 
 h2 em {
-    color: #999999;
+    color: #999;
     font-style: normal;
 }
 
@@ -27,4 +27,9 @@ h2 em {
 #footer a:hover {
     text-decoration: none;
     color: #0b5573;
+}
+
+li.system-status-state-not-active {
+    text-decoration: line-through;
+    color: #999;
 }

@@ -27,6 +27,7 @@ public class SystemStatus {
 
     private static final Logger LOG = LogManager.getLogger(SystemStatus.class);
 
+    // Make sure to document every new status here: https://go.nzyme.org/system-status-explained
     public enum TYPE {
         RUNNING,
         SHUTTING_DOWN,
