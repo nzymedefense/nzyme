@@ -19,6 +19,8 @@ package horse.wtf.nzyme.dot11.networks;
 
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.dot11.frames.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,8 @@ public class Networks {
     /*
      * TODO keep a graph of who usually sends deauths for whom and with what signal strength
      */
+
+    private static final Logger LOG = LogManager.getLogger(Networks.class);
 
     private final Map<String, BSSID> bssids;
 
@@ -49,47 +53,57 @@ public class Networks {
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
             bssid = bssids.get(transmitter);
+
+            // Ensure that the SSID has been recorded for this BSSID.
+            if(!bssid.ssids().containsKey(ssidName)) {
+                bssid.ssids().put(ssidName, SSID.create(ssidName));
+            }
         } else {
+            // First time we are seeing this BSSID.
             SSID ssid = SSID.create(ssidName);
             bssid = BSSID.create(new HashMap<String, SSID>(){{
                 put(ssidName, ssid);
             }});
 
-            // Add to
             bssids.put(transmitter, bssid);
         }
 
         // Find our SSID.
         SSID ssid = bssid.ssids().get(ssidName);
 
-        // Create or update channel.
-        if (ssid.channels().containsKey(channelNumber)) {
-            // Update channel statistics.
-            Channel channel = ssid.channels().get(channelNumber);
-            channel.totalFrames().incrementAndGet();
+        try {
+            // Create or update channel.
+            if (ssid.channels().containsKey(channelNumber)) {
+                // Update channel statistics.
+                Channel channel = ssid.channels().get(channelNumber);
+                channel.totalFrames().incrementAndGet();
 
-            // Add signal quality to history of signal qualities.
-            channel.recentSignalQuality().add(signalQuality);
+                // Add signal quality to history of signal qualities.
+                channel.recentSignalQuality().add(signalQuality);
 
-            // Update max or min quality if required.
-            boolean inDelta = true;
-            if(signalQuality > channel.signalMax().get()) {
-                channel.signalMax().set(signalQuality);
-                inDelta = false;
+                // Update max or min quality if required.
+                boolean inDelta = true;
+                if (signalQuality > channel.signalMax().get()) {
+                    channel.signalMax().set(signalQuality);
+                    inDelta = false;
+                }
+                if (signalQuality < channel.signalMin().get()) {
+                    channel.signalMin().set(signalQuality);
+                    inDelta = false;
+                }
+
+                // Add delta state.
+                channel.recentDeltaStates().add(inDelta);
+
+                ssid.channels().replace(channelNumber, channel);
+            } else {
+                // Create new channel.
+                Channel channel = Channel.create(new AtomicLong(1), signalQuality);
+                ssid.channels().put(channelNumber, channel);
             }
-            if (signalQuality < channel.signalMin().get()) {
-                channel.signalMin().set(signalQuality);
-                inDelta = false;
-            }
-
-            // Add delta state.
-            channel.recentDeltaStates().add(inDelta);
-
-            ssid.channels().replace(channelNumber, channel);
-        } else {
-            // Create new channel.
-            Channel channel = Channel.create(new AtomicLong(1), signalQuality);
-            ssid.channels().put(channelNumber, channel);
+        } catch (NullPointerException e) {
+            LOG.error(ssid);
+            throw e;
         }
 
     }
