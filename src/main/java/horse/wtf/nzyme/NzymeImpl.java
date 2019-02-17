@@ -32,6 +32,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
 import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
@@ -72,6 +73,7 @@ public class NzymeImpl implements Nzyme {
     private final MetricRegistry metrics;
     private final Networks networks;
     private final SystemStatus systemStatus;
+    private final OUIManager ouiManager;
 
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
@@ -83,12 +85,14 @@ public class NzymeImpl implements Nzyme {
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
         this.probes = Lists.newArrayList();
-        this.networks = new Networks();
+        this.networks = new Networks(this);
         this.systemStatus = new SystemStatus();
 
         // Set up initial system status.
         this.systemStatus.setStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.TRAINING);
+
+        this.ouiManager = new OUIManager(this.metrics);
 
         this.alerts = new AlertsService(this);
 
@@ -109,6 +113,25 @@ public class NzymeImpl implements Nzyme {
     public void initialize() {
         Version version = new Version();
         LOG.info("Initializing probe version: {}.", version.getVersionString());
+
+        // Start OUI manager and regularly refresh it.
+        try {
+            this.ouiManager.fetchAndUpdate();
+
+            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setNameFormat("oui-manager-%d")
+                    .build())
+                    .scheduleAtFixedRate(() -> {
+                        try {
+                            ouiManager.fetchAndUpdate();
+                        } catch (IOException e) {
+                            LOG.error("Could not fetch and update OUI list.", e);
+                        }
+                    }, 12, 12, TimeUnit.HOURS);
+        } catch (IOException e) {
+            LOG.error("Could not initialize OUIs.", e);
+        }
 
         // Set up networks printer.
         final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics, STATS_INTERVAL);
@@ -223,6 +246,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
+    }
+
+    @Override
+    public OUIManager getOUIManager() {
+        return ouiManager;
     }
 
     @Override

@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.dot11.networks;
 
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.frames.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,8 +36,10 @@ public class Networks {
     private static final Logger LOG = LogManager.getLogger(Networks.class);
 
     private final Map<String, BSSID> bssids;
+    private final Nzyme nzyme;
 
-    public Networks() {
+    public Networks(Nzyme nzyme) {
+        this.nzyme = nzyme;
         this.bssids = Maps.newHashMap();
     }
 
@@ -60,10 +63,16 @@ public class Networks {
             }
         } else {
             // First time we are seeing this BSSID.
+            String oui = nzyme.getOUIManager().lookupBSSID(transmitter);
+
+            if (oui == null) {
+                oui = "unknown";
+            }
+
             SSID ssid = SSID.create(ssidName);
             bssid = BSSID.create(new HashMap<String, SSID>(){{
                 put(ssidName, ssid);
-            }});
+            }}, oui);
 
             bssids.put(transmitter, bssid);
         }

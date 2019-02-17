@@ -22,6 +22,7 @@ import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
@@ -71,6 +72,11 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public SystemStatus getSystemStatus() {
+        return null;
+    }
+
+    @Override
+    public OUIManager getOUIManager() {
         return null;
     }
 

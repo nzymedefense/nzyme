@@ -28,9 +28,13 @@ public abstract class BSSID {
     @JsonProperty
     public abstract Map<String, SSID> ssids();
 
-    public static BSSID create(Map<String, SSID> ssids) {
+    @JsonProperty
+    public abstract String oui();
+
+    public static BSSID create(Map<String, SSID> ssids, String oui) {
         return builder()
                 .ssids(ssids)
+                .oui(oui)
                 .build();
     }
 
@@ -38,9 +42,12 @@ public abstract class BSSID {
         return new AutoValue_BSSID.Builder();
     }
 
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder ssids(Map<String, SSID> ssids);
+
+        public abstract Builder oui(String oui);
 
         public abstract BSSID build();
     }
