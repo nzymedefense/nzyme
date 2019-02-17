@@ -20,6 +20,7 @@ import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
 import Routes from "./util/Routes";
 import Footer from "./components/layout/Footer";
 import SystemPage from "./components/system/SystemPage";
+import NetworksPage from "./components/networks/NetworksPage";
 
 class App extends Reflux.Component {
 
@@ -50,8 +51,11 @@ class App extends Reflux.Component {
                             <Switch>
                                 <Route exact path={Routes.DASHBOARD} component={OverviewPage} />
 
-                                { /* Alerts. */ }
+                                { /* System Status. */ }
                                 <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage} />
+
+                                { /* Networks. */ }
+                                <Route exact path={Routes.NETWORKS} component={NetworksPage} />
 
                                 { /* Alerts. */ }
                                 <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage} />
