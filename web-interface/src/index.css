@@ -15,6 +15,11 @@ a.navbar-brand {
     border-bottom: 1px dashed #444;
 }
 
+a:hover {
+    text-decoration: none;
+    color: #0b5573;
+}
+
 h2 em {
     color: #999;
     font-style: normal;

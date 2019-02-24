@@ -1,23 +1,19 @@
 import React from 'react';
 import Reflux from 'reflux';
 
-import SSIDTableRow from "./SSIDTable";
+import moment from "moment";
+import SSIDTable from "./SSIDTable";
 
 class BSSIDTableRow extends Reflux.Component {
 
     constructor(props) {
         super(props);
-    }
 
-    _calculateNumberofChannels() {
-        let x = 0;
-        const ssids = this.props.bssid.ssids;
+        this.state = {
+            displayDetails: false
+        }
 
-        Object.keys(ssids).forEach(function (key) {
-            x += Object.keys(ssids[key].channels).length;
-        });
-
-        return x;
+        this._bssidClick = this._bssidClick.bind(this);
     }
 
     _printSSIDs(ssids) {
@@ -42,17 +38,47 @@ class BSSIDTableRow extends Reflux.Component {
         return x;
     }
 
+    _signalQualityColor(quality) {
+        if (quality >= 90) {
+            return "text-success";
+        }
+
+        if (quality >= 50) {
+            return "text-warning";
+        }
+
+        if (quality < 50) {
+            return "text-danger";
+        }
+    }
+
+    _bssidClick(e) {
+        e.preventDefault();
+
+        const oldState = this.state.displayDetails;
+        this.setState({displayDetails: !oldState})
+    }
+
     render() {
         const self = this;
 
         return (
             <React.Fragment>
                 <tr>
-                    <td>{this.props.bssidMac}</td>
-                    <td>{this.props.bssid.oui}</td>
+                    <td><a href="#" onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
+                    <td>
+                        <span className={this._signalQualityColor(this.props.bssid.best_recent_signal_quality)}>
+                            {this.props.bssid.best_recent_signal_quality}
+                        </span>
+                    </td>
                     <td>{this._printSSIDs(this.props.bssid.ssids)}</td>
-                    <td>{this._calculateNumberofChannels()}</td>
+                    <td>{this.props.bssid.oui}</td>
+                    <td><span title={this.props.bssid.last_seen}>{moment(this.props.bssid.last_seen).fromNow()}</span></td>
                 </tr>
+
+                {Object.keys(this.props.bssid.ssids).map(function (key,i) {
+                    return <SSIDTable key={i}  display={self.state.displayDetails} ssid={self.props.bssid.ssids[key]} />;
+                })}
             </React.Fragment>
         )
     }

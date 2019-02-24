@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.alerts;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
@@ -48,13 +49,17 @@ public class AlertsService {
                 .setNameFormat("alerts-cleaner")
                 .build()
         ).scheduleAtFixedRate(() -> {
-            for (Map.Entry<UUID, Alert> entry : activeAlerts.entrySet()) {
-                Alert alert = entry.getValue();
+            try {
+                for (Map.Entry<UUID, Alert> entry : Lists.newArrayList(activeAlerts.entrySet())) {
+                    Alert alert = entry.getValue();
 
-                if(alert.getLastSeen().isBefore(DateTime.now().minusMinutes(nzyme.getConfiguration().getAlertingRetentionPeriodMinutes()))) {
-                    LOG.info("Retention cleaning expired alert [{}/{}]", entry.getValue(), alert.getType());
-                    activeAlerts.remove(entry.getKey());
+                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(nzyme.getConfiguration().getAlertingRetentionPeriodMinutes()))) {
+                        LOG.info("Retention cleaning expired alert [{}/{}]", entry.getValue(), alert.getType());
+                        activeAlerts.remove(entry.getKey());
+                    }
                 }
+            } catch(Exception e){
+                LOG.error("Error when trying to retention clean expired alerts.", e);
             }
         }, 10, 10, TimeUnit.SECONDS);
     }

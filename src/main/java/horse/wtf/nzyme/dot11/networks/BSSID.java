@@ -17,8 +17,10 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import org.joda.time.DateTime;
 
 import java.util.Map;
 
@@ -31,10 +33,39 @@ public abstract class BSSID {
     @JsonProperty
     public abstract String oui();
 
-    public static BSSID create(Map<String, SSID> ssids, String oui) {
+    @JsonProperty
+    public abstract String bssid();
+
+    @JsonProperty("last_seen")
+    public DateTime lastSeen = new DateTime();
+
+    @JsonProperty("best_recent_signal_quality")
+    public int bestRecentSignalQuality() {
+        int best = 0;
+
+        for (SSID ssid : ssids().values()) {
+            for (Channel channel : ssid.channels().values()) {
+                if (channel.signalQualityRecentAverage() > best) {
+                    best = channel.signalQualityRecentAverage();
+                }
+            }
+        }
+
+
+        return best;
+    }
+
+
+    @JsonIgnore
+    public void updateLastSeen() {
+        this.lastSeen = new DateTime();
+    }
+
+    public static BSSID create(Map<String, SSID> ssids, String oui, String bssid) {
         return builder()
                 .ssids(ssids)
                 .oui(oui)
+                .bssid(bssid)
                 .build();
     }
 
@@ -42,14 +73,14 @@ public abstract class BSSID {
         return new AutoValue_BSSID.Builder();
     }
 
-
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder ssids(Map<String, SSID> ssids);
 
         public abstract Builder oui(String oui);
 
+        public abstract Builder bssid(String bssid);
+
         public abstract BSSID build();
     }
-
 }
