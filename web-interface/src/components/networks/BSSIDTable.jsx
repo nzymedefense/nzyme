@@ -25,14 +25,15 @@ class BSSIDTable extends Reflux.Component {
                         <thead>
                         <tr>
                             <th>BSSID</th>
-                            <th>OUI</th>
+                            <th><i className="fas fa-signal" /></th>
                             <th>Advertised Networks</th>
-                            <th>Channel Count</th>
+                            <th>OUI</th>
+                            <th>Last Seen</th>
                         </tr>
                         </thead>
                         <tbody>
                         {Object.keys(this.state.bssids).map(function (key,i) {
-                            return <BSSIDTableRow key={i} bssidMac={key} bssid={self.state.bssids[key]} />;
+                            return <BSSIDTableRow key={i} bssid={self.state.bssids[key]} />;
                         })}
                         </tbody>
                     </table>

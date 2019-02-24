@@ -17,14 +17,19 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.frames.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Networks {
@@ -41,6 +46,27 @@ public class Networks {
     public Networks(Nzyme nzyme) {
         this.nzyme = nzyme;
         this.bssids = Maps.newHashMap();
+
+        // Regularly delete networks that have not been seen for a while.
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("bssids-cleaner")
+                        .build()
+        ).scheduleAtFixedRate(() -> {
+            try {
+                for (Map.Entry<String, BSSID> entry : Lists.newArrayList(bssids.entrySet())) {
+                    BSSID bssid = entry.getValue();
+
+                    if (bssid.lastSeen.isBefore(DateTime.now().minusMinutes(10))) {
+                        LOG.info("Retention cleaning expired BSSID [{}] from internal networks list.", bssid.bssid());
+                        bssids.remove(entry.getKey());
+                    }
+                }
+            } catch(Exception e) {
+                LOG.error("Error when trying to clean expired BSSIDs.", e);
+            }
+        }, 1, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -72,10 +98,13 @@ public class Networks {
             SSID ssid = SSID.create(ssidName);
             bssid = BSSID.create(new HashMap<String, SSID>(){{
                 put(ssidName, ssid);
-            }}, oui);
+            }}, oui, transmitter);
 
             bssids.put(transmitter, bssid);
         }
+
+        // Update 'last seen'.
+        bssid.updateLastSeen();
 
         // Find our SSID.
         SSID ssid = bssid.ssids().get(ssidName);

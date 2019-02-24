@@ -1,6 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
-import ChannelTable from "./ChannelTable";
+import SSIDRow from "./SSIDRow";
 
 class SSIDTableRow extends Reflux.Component {
 
@@ -12,23 +12,27 @@ class SSIDTableRow extends Reflux.Component {
         const self = this;
 
         return (
-            <table className="table table-sm table-hover table-striped">
-                <thead>
-                    <tr>
-                        <th>SSID</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{this.props.ssid.name}</td>
-                    </tr>
-                    <tr>
-                    {Object.keys(this.props.ssid.channels).map(function (key,i) {
-                        return <ChannelTable key={i} channelNumber={key} channel={self.props.ssid.channels[key]} />;
-                    })}
-                    </tr>
-                </tbody>
-            </table>
+            <tr style={{"display": this.props.display ? "" : "none"}} >
+                <td colSpan="5">
+                    <table className="table table-sm table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>SSID</th>
+                                <th>Channel</th>
+                                <th>Total Frames</th>
+                                <th>Quality (min)</th>
+                                <th>Quality (max)</th>
+                                <th>Recent Quality Average</th>
+                                <th>Recent Quality Stddev</th>                    </tr>
+                        </thead>
+                        <tbody>
+                            {Object.keys(this.props.ssid.channels).map(function (key,i) {
+                                return <SSIDRow key={i} ssid={self.props.ssid.name} channelNumber={key} channel={self.props.ssid.channels[key]} />;
+                            })}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
         )
     }
 

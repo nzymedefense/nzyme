@@ -31,7 +31,7 @@ class NetworksList extends Reflux.Component {
         NetworksActions.findAll(self.state.filter);
         setInterval(function () {
             NetworksActions.findAll(self.state.filter)
-        }, 1000);
+        }, 5000);
     }
 
     _applyFilter(e) {

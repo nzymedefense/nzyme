@@ -19,9 +19,10 @@ package horse.wtf.nzyme.rest.responses.networks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 
-import java.util.Map;
+import java.util.*;
 
 @AutoValue
 public abstract class BSSIDsResponse {
@@ -30,12 +31,15 @@ public abstract class BSSIDsResponse {
     public abstract int total();
 
     @JsonProperty
-    public abstract Map<String, BSSID> bssids();
+    public abstract List<BSSID> bssids();
 
     public static BSSIDsResponse create(int total, Map<String, BSSID> bssids) {
+        List<BSSID> sortedBSSIDs = Lists.newArrayList(bssids.values());
+        Collections.sort(sortedBSSIDs, new BSSIDComparator());
+
         return builder()
                 .total(total)
-                .bssids(bssids)
+                .bssids(sortedBSSIDs)
                 .build();
     }
 
@@ -47,9 +51,18 @@ public abstract class BSSIDsResponse {
     public abstract static class Builder {
         public abstract Builder total(int total);
 
-        public abstract Builder bssids(Map<String, BSSID> bssids);
+        public abstract Builder bssids(List<BSSID> bssids);
 
         public abstract BSSIDsResponse build();
+    }
+
+    private static class BSSIDComparator implements Comparator<BSSID> {
+
+        @Override
+        public int compare(BSSID b1, BSSID b2) {
+            return b2.bestRecentSignalQuality() - b1.bestRecentSignalQuality();
+        }
+
     }
 
 }
