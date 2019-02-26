@@ -17,9 +17,11 @@
 
 package horse.wtf.nzyme.dot11.probes;
 
-import com.beust.jcommander.internal.Lists;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
@@ -29,6 +31,7 @@ import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.handlers.*;
 import horse.wtf.nzyme.dot11.parsers.*;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -64,6 +67,10 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Dot11DisassociationFrameParser disassociationParser;
     private final Dot11AuthenticationFrameParser authenticationFrameParser;
     private final Dot11DeauthenticationFrameParser deauthenticationFrameParser;
+
+    // Merics
+    private final Meter frameMeter;
+    private final Timer frameTiming;
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
@@ -120,6 +127,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
             throw new Dot11ProbeInitializationException("Could not build PCAP handle.", e);
         }
 
+        this.frameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
+        this.frameTiming = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
+
         LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.networkInterfaceName(), Joiner.on(",").join(configuration.channels()));
     }
 
@@ -150,8 +160,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
                 }
 
                 if (packet != null) {
+                    this.frameMeter.mark();
+
                     try {
                         if (packet instanceof RadiotapPacket) {
+                            Timer.Context time = this.frameTiming.time();
+
                             RadiotapPacket r = (RadiotapPacket) packet;
                             byte[] payload = r.getPayload().getRawData();
 
@@ -211,6 +225,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                             }
 
                             this.nzyme.getStatistics().tickFrameCount(meta);
+                            time.stop();
                         }
                     } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
                         LOG.debug("Illegal data received.", e);
