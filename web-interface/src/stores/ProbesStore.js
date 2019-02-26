@@ -10,10 +10,17 @@ class ProbesStore extends Reflux.Store {
     this.listenables = ProbesActions;
   }
 
+  onFindAll() {
+    let self = this;
+    RESTClient.get("/system/probes", {}, function(response) {
+      self.setState({probes: response.data.probes});
+    });
+  }
+
   onFindCurrentChannels() {
     let self = this;
 
-    RESTClient.get("/probes/channels", {}, function(response) {
+    RESTClient.get("/system/probes/channels", {}, function(response) {
       self.setState({current_channels: response.data});
     });
   }

@@ -17,7 +17,12 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.rest.responses.metrics.MeterResponse;
+import horse.wtf.nzyme.rest.responses.metrics.MetricsListResponse;
+import horse.wtf.nzyme.rest.responses.metrics.TimerResponse;
+import horse.wtf.nzyme.util.MetricNames;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -25,6 +30,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 @Path("/api/system/metrics")
 @Produces(MediaType.APPLICATION_JSON)
@@ -35,7 +41,19 @@ public class MetricsResource {
 
     @GET
     public Response all() {
-        return Response.status(404).build();
+        Map<String, Object> metrics = Maps.newHashMap();
+
+        metrics.put(
+                "total_frames",
+                MeterResponse.fromMeter(nzyme.getMetrics().meter(MetricNames.FRAME_COUNT))
+        );
+
+        metrics.put(
+                "frame_timing",
+                TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.FRAME_TIMER).getSnapshot())
+        );
+
+        return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
 }

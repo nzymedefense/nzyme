@@ -19,6 +19,7 @@ package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
+import com.codahale.metrics.jvm.*;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.AlertsService;
@@ -41,8 +42,8 @@ import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
-import horse.wtf.nzyme.rest.resources.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
+import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -87,6 +88,14 @@ public class NzymeImpl implements Nzyme {
         this.probes = Lists.newArrayList();
         this.networks = new Networks(this);
         this.systemStatus = new SystemStatus();
+
+        // Register JVM metrics.
+        this.metrics.register("gc", new GarbageCollectorMetricSet());
+        this.metrics.register("classes", new ClassLoadingGaugeSet());
+        this.metrics.register("fds", new FileDescriptorRatioGauge());
+        this.metrics.register("jvm", new JvmAttributeGaugeSet());
+        this.metrics.register("mem", new MemoryUsageGaugeSet());
+        this.metrics.register("threadstates", new ThreadStatesGaugeSet());
 
         // Set up initial system status.
         this.systemStatus.setStatus(SystemStatus.TYPE.RUNNING);

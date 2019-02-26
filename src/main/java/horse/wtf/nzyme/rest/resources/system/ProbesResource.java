@@ -15,12 +15,15 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.rest.resources;
+package horse.wtf.nzyme.rest.resources.system;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
+import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
+import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -28,13 +31,32 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
-@Path("/api/probes")
+@Path("/api/system/probes")
 @Produces(MediaType.APPLICATION_JSON)
 public class ProbesResource {
 
     @Inject
     private Nzyme nzyme;
+
+    @GET
+    @Path("/")
+    public Response all() {
+        List<ProbeResponse> response = Lists.newArrayList();
+        for (Dot11Probe probe : nzyme.getProbes()) {
+            response.add(ProbeResponse.create(
+                    probe.getName(),
+                    probe.getClass().getSimpleName(),
+                    probe.getConfiguration().networkInterfaceName(),
+                    probe.isInLoop(),
+                    probe.getConfiguration().channels(),
+                    probe.getCurrentChannel()
+            ));
+        }
+
+        return Response.ok(ProbesListResponse.create(response.size(), response)).build();
+    }
 
     @GET
     @Path("/channels")

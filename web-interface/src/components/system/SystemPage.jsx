@@ -2,6 +2,8 @@ import React from 'react';
 import Reflux from 'reflux';
 
 import SystemStatus from "./SystemStatus";
+import Metrics from "./Metrics";
+import Probes from "./Probes";
 
 class SystemPage extends Reflux.Component {
 
@@ -16,6 +18,18 @@ class SystemPage extends Reflux.Component {
                         <h2>System Overview</h2>
 
                         <SystemStatus />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <Probes />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <Metrics />
                     </div>
                 </div>
             </div>
