@@ -1,6 +1,8 @@
 import React from 'react';
 import Reflux from 'reflux';
 
+import numeral from "numeral";
+
 class SSIDRow extends Reflux.Component {
 
     constructor(props) {
@@ -14,11 +16,11 @@ class SSIDRow extends Reflux.Component {
             <tr>
                 <td>{this.props.ssid}</td>
                 <td><strong>{this.props.channelNumber}</strong></td>
-                <td>{c.total_frames}</td>
-                <th>{c.signal_quality_min}</th>
-                <th>{c.signal_quality_max}</th>
-                <th>{c.signal_quality_avg_recent}</th>
-                <th>{c.out_of_delta_avg_recent_percent}</th>
+                <td>{numeral(c.total_frames).format('0,0')}</td>
+                <td>{numeral(c.signal_quality_min).format('0')}</td>
+                <td>{numeral(c.signal_quality_max).format('0')}</td>
+                <td>{numeral(c.signal_quality_avg_recent).format('0')}</td>
+                <td>{numeral(c.out_of_delta_avg_recent_percent).format('0.00')}</td>
             </tr>
         )
     }
