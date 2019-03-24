@@ -25,6 +25,7 @@ class ProbesList extends Reflux.Component {
                         <th>Interface</th>
                         <th>Channel</th>
                         <th>Channels</th>
+                        <th>Frames</th>
                     </tr>
                     </thead>
                     <tbody>

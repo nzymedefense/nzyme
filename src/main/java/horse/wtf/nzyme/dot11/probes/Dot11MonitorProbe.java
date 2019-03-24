@@ -69,8 +69,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Dot11DeauthenticationFrameParser deauthenticationFrameParser;
 
     // Merics
-    private final Meter frameMeter;
-    private final Timer frameTiming;
+    private final Meter globalFrameMeter;
+    private final Timer globalFrameTimer;
+    private final Meter localFrameMeter;
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
@@ -127,8 +128,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
             throw new Dot11ProbeInitializationException("Could not build PCAP handle.", e);
         }
 
-        this.frameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
-        this.frameTiming = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
+        this.globalFrameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
+        this.globalFrameTimer = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
+        this.localFrameMeter = nzyme.getMetrics().meter(MetricRegistry.name(this.getClass(), this.getName(), "frameCount"));
 
         LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.networkInterfaceName(), Joiner.on(",").join(configuration.channels()));
     }
@@ -140,7 +142,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
         return () -> {
             LOG.info("Commencing 802.11 frame processing on [{}] ... (⌐■_■)–︻╦╤─ – – pew pew", configuration.networkInterfaceName());
 
-            inLoop.set(true);
             while (true) {
 
                 Packet packet;
@@ -148,6 +149,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                 try {
                     packet = pcap.getNextPacketEx();
                 } catch (NotOpenException | PcapNativeException | EOFException e) {
+                    inLoop.set(false);
                     LOG.error(e);
                     continue;
                 } catch (TimeoutException e) {
@@ -159,12 +161,15 @@ public class Dot11MonitorProbe extends Dot11Probe {
                     continue;
                 }
 
+                inLoop.set(true);
+
                 if (packet != null) {
-                    this.frameMeter.mark();
+                    this.globalFrameMeter.mark();
+                    this.localFrameMeter.mark();
 
                     try {
                         if (packet instanceof RadiotapPacket) {
-                            Timer.Context time = this.frameTiming.time();
+                            Timer.Context time = this.globalFrameTimer.time();
 
                             RadiotapPacket r = (RadiotapPacket) packet;
                             byte[] payload = r.getPayload().getRawData();
@@ -245,6 +250,15 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public Integer getCurrentChannel() {
         return channelHopper.getCurrentChannel();
+    }
+
+    @Override
+    public Long getTotalFrames() {
+        if (localFrameMeter != null) {
+            return localFrameMeter.getCount();
+        } else {
+            return -1L;
+        }
     }
 
     @Override

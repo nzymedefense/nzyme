@@ -50,7 +50,8 @@ public class ProbesResource {
                     probe.getConfiguration().networkInterfaceName(),
                     probe.isInLoop(),
                     probe.getConfiguration().channels(),
-                    probe.getCurrentChannel()
+                    probe.getCurrentChannel(),
+                    probe.getTotalFrames()
             ));
         }
 

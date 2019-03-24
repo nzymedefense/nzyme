@@ -1,5 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
+import numeral from "numeral";
 
 class ProbesTableRow extends Reflux.Component {
 
@@ -30,6 +31,7 @@ class ProbesTableRow extends Reflux.Component {
                 <td>{probe.network_interface}</td>
                 <td>{probe.current_channel}</td>
                 <td>{probe.channels.toString()}</td>
+                <td>{numeral(probe.total_frames).format('0,0')}</td>
             </tr>
         )
     }

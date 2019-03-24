@@ -50,6 +50,7 @@ public abstract class Dot11Probe {
     public abstract Runnable loop() throws Dot11ProbeInitializationException;
     public abstract boolean isInLoop();
     public abstract Integer getCurrentChannel();
+    public abstract Long getTotalFrames();
 
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
 

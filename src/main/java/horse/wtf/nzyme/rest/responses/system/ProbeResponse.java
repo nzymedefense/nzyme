@@ -43,7 +43,10 @@ public abstract class ProbeResponse {
     @JsonProperty("current_channel")
     public abstract int currentChannel();
 
-    public static ProbeResponse create(String name, String className, String networkInterfaceName, boolean isInLoop, List<Integer> channels, int currentChannel) {
+    @JsonProperty("total_frames")
+    public abstract long totalFrames();
+
+    public static ProbeResponse create(String name, String className, String networkInterfaceName, boolean isInLoop, List<Integer> channels, int currentChannel, long totalFrames) {
         return builder()
                 .name(name)
                 .className(className)
@@ -51,6 +54,7 @@ public abstract class ProbeResponse {
                 .isInLoop(isInLoop)
                 .channels(channels)
                 .currentChannel(currentChannel)
+                .totalFrames(totalFrames)
                 .build();
     }
 
@@ -71,6 +75,8 @@ public abstract class ProbeResponse {
         public abstract Builder channels(List<Integer> channels);
 
         public abstract Builder currentChannel(int currentChannel);
+
+        public abstract Builder totalFrames(long totalFrames);
 
         public abstract ProbeResponse build();
     }

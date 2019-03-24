@@ -18,6 +18,14 @@ class SystemStore extends Reflux.Store {
         });
     }
 
+    onGetMetrics() {
+        let self = this;
+
+        RESTClient.get("/system/metrics", {}, function(response) {
+            self.setState({systemMetrics: response.data.metrics});
+        });
+    }
+
 }
 
 export default SystemStore;
