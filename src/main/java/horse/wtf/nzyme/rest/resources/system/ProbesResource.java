@@ -41,7 +41,6 @@ public class ProbesResource {
     private Nzyme nzyme;
 
     @GET
-    @Path("/")
     public Response all() {
         List<ProbeResponse> response = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {
