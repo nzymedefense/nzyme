@@ -43,6 +43,11 @@ public class Dot11MockProbe extends Dot11Probe {
     }
 
     @Override
+    public Long getTotalFrames() {
+        return -1L;
+    }
+
+    @Override
     public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
 
     }

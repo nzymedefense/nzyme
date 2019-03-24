@@ -21,6 +21,8 @@ import com.codahale.metrics.Snapshot;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import java.util.concurrent.TimeUnit;
+
 @AutoValue
 public abstract class TimerResponse {
 
@@ -41,11 +43,11 @@ public abstract class TimerResponse {
 
     public static TimerResponse fromSnapshot(Snapshot s) {
         return builder()
-                .mean(s.getMean())
-                .max(s.getMax())
-                .min(s.getMin())
-                .stddev(s.getStdDev())
-                .percentile99(s.get99thPercentile())
+                .mean(TimeUnit.MICROSECONDS.convert((long) s.getMean(), TimeUnit.NANOSECONDS))
+                .max(TimeUnit.MICROSECONDS.convert(s.getMax(), TimeUnit.NANOSECONDS))
+                .min(TimeUnit.MICROSECONDS.convert(s.getMin(), TimeUnit.NANOSECONDS))
+                .stddev(TimeUnit.MICROSECONDS.convert((long) s.getStdDev(), TimeUnit.NANOSECONDS))
+                .percentile99(TimeUnit.MICROSECONDS.convert((long) s.get99thPercentile(), TimeUnit.NANOSECONDS))
                 .build();
     }
 
