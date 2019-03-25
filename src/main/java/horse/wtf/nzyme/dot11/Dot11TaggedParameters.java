@@ -65,7 +65,6 @@ public class Dot11TaggedParameters {
                 throw new MalformedFrameException("Could not parse 802.11 tagged parameters.", e);
             }
         }
-
     }
 
     public boolean isWPA2() {

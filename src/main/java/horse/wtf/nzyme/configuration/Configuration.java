@@ -227,7 +227,6 @@ public class Configuration {
 
         // All channels are all integers, larger than 0.
         validateChannelList(Keys.DOT11_MONITORS);
-        validateChannelList(Keys.DOT11_NETWORKS);
 
         // 802_11 monitors should be parsed and safe to use for further logical checks from here on.
 
