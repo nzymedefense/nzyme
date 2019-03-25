@@ -18,17 +18,11 @@
 package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
-import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.dot11.Dot11SSID;
-import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.*;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeResponseFrame> {
-
-    public static final int SSID_LENGTH_POSITION = 37;
-    public static final int SSID_POSITION = 38;
 
     public Dot11ProbeResponseFrameParser(MetricRegistry metrics) {
         super(metrics);
@@ -37,16 +31,13 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
     @Override
     protected Dot11ProbeResponseFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
+        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, payload);
 
         String ssid;
         try {
-            ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
-        } catch (MalformedFrameException e) {
-            throw new MalformedFrameException("Skipping malformed probe-resp frame.");
-        }
-
-        if (ssid == null) {
-            ssid = "[no SSID]";
+            ssid = taggedParameters.getSSID();
+        } catch(Dot11TaggedParameters.NoSuchTaggedElementException e) {
+            throw new IllegalRawDataException("No SSID in probe-resp frame. Not even empty SSID. This is a malformed frame.");
         }
 
         String destination = "";

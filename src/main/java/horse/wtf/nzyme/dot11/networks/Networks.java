@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -70,11 +71,15 @@ public class Networks {
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
-        register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+        if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
+            register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+        }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
-        register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+        if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
+            register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+        }
     }
 
     private synchronized void register(String transmitter, String ssidName, int channelNumber, int signalQuality) {

@@ -20,7 +20,7 @@ package horse.wtf.nzyme.dot11.parsers;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.dot11.Dot11SSID;
+import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationRequestFrame;
 import org.pcap4j.packet.IllegalRawDataException;
@@ -37,6 +37,7 @@ public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11As
     @Override
     protected Dot11AssociationRequestFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame associationRequest = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
+        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(Dot11TaggedParameters.ASSOCREQ_TAGGED_PARAMS_POSITION, payload);
 
         String destination = "";
         if(associationRequest.getHeader().getAddress1() != null) {
@@ -48,10 +49,11 @@ public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11As
             transmitter = associationRequest.getHeader().getAddress2().toString();
         }
 
-        String ssid = Dot11SSID.extractSSID(SSID_LENGTH_POSITION, SSID_POSITION, payload);
-
-        if (ssid == null) {
-            ssid = "[no SSID]";
+        String ssid;
+        try {
+            ssid = taggedParameters.getSSID();
+        } catch(Dot11TaggedParameters.NoSuchTaggedElementException e) {
+            throw new IllegalRawDataException("No SSID in assoc-req frame. Not even empty SSID. This is a malformed frame.");
         }
 
         return Dot11AssociationRequestFrame.create(ssid, destination, transmitter, meta);

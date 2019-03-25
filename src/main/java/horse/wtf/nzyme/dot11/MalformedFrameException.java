@@ -27,4 +27,8 @@ public class MalformedFrameException extends Throwable {
         super(s);
     }
 
+    public MalformedFrameException(String s, Throwable e) {
+        super(s,e);
+    }
+
 }
