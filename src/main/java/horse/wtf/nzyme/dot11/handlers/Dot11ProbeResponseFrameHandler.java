@@ -36,15 +36,19 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
 
     @Override
     public void doHandle(Dot11ProbeResponseFrame frame) {
-        String message = frame.transmitter() + " responded to probe request from " +
-                frame.destination() + " for " + frame.ssid();
+        String message;
+        if (frame.ssid() == null) {
+            message = frame.transmitter() + " responded to broadcast probe request from " + frame.destination();
+        } else {
+            message = frame.transmitter() + " responded to probe request from " + frame.destination() + " for " + frame.ssid();
+        }
 
         Map<String, Object> deltaFields = buildDeltaInformationFields(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         probe.notifyUplinks(
                 new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
-                        .addField(FieldNames.SSID, frame.ssid())
+                        .addField(FieldNames.SSID, frame.ssid() == null ? "[no SSID]" : frame.ssid())
                         .addField(FieldNames.SUBTYPE, "probe-resp")
                         .addFields(deltaFields),
                 frame.meta()

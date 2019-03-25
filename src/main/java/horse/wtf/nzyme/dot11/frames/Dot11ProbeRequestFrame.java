@@ -20,11 +20,14 @@ package horse.wtf.nzyme.dot11.frames;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class Dot11ProbeRequestFrame {
 
-    public abstract String requester();
+    @Nullable
     public abstract String ssid();
+    public abstract String requester();
     public abstract Boolean isBroadcastProbe();
     public abstract Dot11MetaInformation meta();
 

@@ -42,7 +42,7 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
                 new Notification(message, associationRequest.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, associationRequest.transmitter())
                         .addField(FieldNames.DESTINATION, associationRequest.destination())
-                        .addField(FieldNames.SSID, associationRequest.ssid())
+                        .addField(FieldNames.SSID, associationRequest.ssid() == null ? "[no SSID]" : associationRequest.ssid())
                         .addField(FieldNames.SUBTYPE, "assoc-req"),
                 associationRequest.meta()
         );

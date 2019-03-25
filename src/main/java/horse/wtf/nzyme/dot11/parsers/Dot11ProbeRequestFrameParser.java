@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Strings;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
@@ -51,8 +52,8 @@ public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeReq
 
             ssid = Normalizer.normalize(probeRequest.getHeader().getSsid().getSsid(), Normalizer.Form.NFD);
 
-            if (ssid.trim().isEmpty()) {
-                ssid = "NULL";
+            if (Strings.isNullOrEmpty(ssid)) {
+                ssid = null;
                 broadcastProbe = true;
             }
         } else {
