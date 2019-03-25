@@ -47,6 +47,11 @@ public class UnexpectedSSIDInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
             public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
+                // Don't consider broadcast frames.
+                if (frame.ssid() == null) {
+                    return;
+                }
+
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.bssids().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDProbeRespAlert.create(
@@ -69,6 +74,11 @@ public class UnexpectedSSIDInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
             public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
+                // Don't consider broadcast frames.
+                if (frame.ssid() == null) {
+                    return;
+                }
+
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.bssids().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDBeaconAlert.create(
