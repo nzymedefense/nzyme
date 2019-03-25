@@ -49,6 +49,7 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.SSID, frame.ssid() == null ? "[no SSID]" : frame.ssid())
+                        .addField(FieldNames.IS_WPA2, frame.taggedParameters().isWPA2())
                         .addField(FieldNames.SUBTYPE, "probe-resp")
                         .addFields(deltaFields),
                 frame.meta()

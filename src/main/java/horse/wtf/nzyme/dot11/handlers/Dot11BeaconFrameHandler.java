@@ -56,6 +56,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                 new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
+                        .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
                         .addField(FieldNames.SUBTYPE, "beacon")
                         .addFields(deltaFields),
                 meta

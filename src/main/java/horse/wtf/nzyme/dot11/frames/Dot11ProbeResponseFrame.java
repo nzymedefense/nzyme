@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11.frames;
 
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 
 import javax.annotation.Nullable;
 
@@ -29,13 +30,15 @@ public abstract class Dot11ProbeResponseFrame {
     public abstract String ssid();
     public abstract String destination();
     public abstract String transmitter();
+    public abstract Dot11TaggedParameters taggedParameters();
     public abstract Dot11MetaInformation meta();
 
-    public static Dot11ProbeResponseFrame create(String ssid, String destination, String transmitter, Dot11MetaInformation meta) {
+    public static Dot11ProbeResponseFrame create(String ssid, String destination, String transmitter, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta) {
         return builder()
                 .ssid(ssid)
                 .destination(destination)
                 .transmitter(transmitter)
+                .taggedParameters(taggedParameters)
                 .meta(meta)
                 .build();
     }
@@ -52,9 +55,11 @@ public abstract class Dot11ProbeResponseFrame {
 
         public abstract Builder transmitter(String transmitter);
 
+        public abstract Builder taggedParameters(Dot11TaggedParameters taggedParameters);
+
         public abstract Builder meta(Dot11MetaInformation meta);
 
         public abstract Dot11ProbeResponseFrame build();
     }
-
+    
 }

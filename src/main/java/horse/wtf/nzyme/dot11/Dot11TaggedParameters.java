@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,8 @@ public class Dot11TaggedParameters {
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
-    private static final Byte ID_SSID = 0;
+    private static final byte ID_SSID = 0;
+    private static final byte ID_WPA_2 = 48;
 
     private final Map<Byte, byte[]> params;
 
@@ -66,8 +68,8 @@ public class Dot11TaggedParameters {
 
     }
 
-    public boolean hasSSID() {
-        return params.containsKey(ID_SSID);
+    public boolean isWPA2() {
+        return params.containsKey(ID_WPA_2);
     }
 
     public String getSSID() throws MalformedFrameException, NoSuchTaggedElementException {

@@ -132,7 +132,8 @@ public class Configuration {
             result.add(Dot11NetworkDefinition.create(
                     config.getString(Keys.SSID),
                     lowercaseBSSIDs.build(),
-                    config.getIntList(Keys.CHANNELS)
+                    config.getIntList(Keys.CHANNELS),
+                    config.getBoolean(Keys.WPA_2)
             ));
         }
 
