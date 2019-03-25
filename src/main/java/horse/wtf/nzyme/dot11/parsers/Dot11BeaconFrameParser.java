@@ -46,7 +46,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
             throw new IllegalRawDataException("No SSID in beacon frame. Not even empty SSID. This is a malformed frame.");
         }
 
-        return Dot11BeaconFrame.create(ssid, transmitter, meta);
+        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters, meta);
     }
 
 }

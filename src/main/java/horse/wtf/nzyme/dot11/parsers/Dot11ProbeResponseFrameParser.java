@@ -50,7 +50,7 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
             transmitter = probeReponse.getHeader().getAddress2().toString();
         }
 
-        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, meta);
+        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters, meta);
     }
 
 }
