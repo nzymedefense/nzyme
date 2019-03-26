@@ -52,7 +52,7 @@ public class CryptoDropInterceptorSet {
                 }
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
-                    if(network.WPA2() && !frame.taggedParameters().isWPA2()) {
+                    if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
                         probe.raiseAlert(CryptoDropAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
                 }
@@ -74,7 +74,7 @@ public class CryptoDropInterceptorSet {
                 }
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
-                    if(network.WPA2() && !frame.taggedParameters().isWPA2()) {
+                    if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
                         probe.raiseAlert(CryptoDropAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
                 }
