@@ -17,11 +17,15 @@
 
 package horse.wtf.nzyme.dot11;
 
+import horse.wtf.nzyme.alerts.Alert;
 import org.pcap4j.packet.IllegalRawDataException;
+
+import java.util.List;
 
 public interface Dot11FrameInterceptor<T> {
 
     void intercept(T frame) throws IllegalRawDataException;
     byte forSubtype();
+    List<Class<? extends Alert>> raisesAlerts();
 
 }

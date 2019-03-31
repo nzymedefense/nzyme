@@ -23,6 +23,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
@@ -41,6 +42,7 @@ import org.pcap4j.packet.RadiotapPacket;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
 
 import java.io.EOFException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -284,6 +286,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             public byte forSubtype() {
                 return Dot11FrameSubtype.ASSOCIATION_REQUEST;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationResponseFrame>() {
@@ -297,6 +304,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.ASSOCIATION_RESPONSE;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
             }
         });
 
@@ -312,6 +324,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_REQUEST;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
@@ -325,6 +342,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_RESPONSE;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
             }
         });
 
@@ -340,6 +362,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             public byte forSubtype() {
                 return Dot11FrameSubtype.BEACON;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DisassociationFrame>() {
@@ -353,6 +380,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.DISASSOCIATION;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
             }
         });
 
@@ -368,6 +400,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             public byte forSubtype() {
                 return Dot11FrameSubtype.AUTHENTICATION;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
@@ -381,6 +418,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.DEAUTHENTICATION;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
             }
         });
     }

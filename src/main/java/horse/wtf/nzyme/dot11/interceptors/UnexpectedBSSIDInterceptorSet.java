@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedBSSIDBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedBSSIDProbeRespAlert;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
@@ -28,6 +29,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.pcap4j.packet.IllegalRawDataException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UnexpectedBSSIDInterceptorSet {
@@ -67,6 +69,13 @@ public class UnexpectedBSSIDInterceptorSet {
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_RESPONSE;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                   add(UnexpectedBSSIDProbeRespAlert.class);
+                }};
+            }
         });
 
         // React on beacon frames with unexpected BSSID.
@@ -91,6 +100,13 @@ public class UnexpectedBSSIDInterceptorSet {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.BEACON;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                    add(UnexpectedBSSIDBeaconAlert.class);
+                }};
             }
         });
 

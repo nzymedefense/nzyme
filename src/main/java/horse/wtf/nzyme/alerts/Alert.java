@@ -35,7 +35,8 @@ public abstract class Alert {
         UNEXPECTED_PROBERESP_BSSID,
         UNEXPECTED_BEACON_SSID,
         UNEXPECTED_PROBERESP_SSID,
-        CRYPTO_DROP
+        CRYPTO_DROP_BEACON,
+        CRYPTO_DROP_PROBERESP
     }
 
     private final Subsystem subsystem;

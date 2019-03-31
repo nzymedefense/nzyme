@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedSSIDBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedSSIDProbeRespAlert;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
@@ -28,6 +29,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.pcap4j.packet.IllegalRawDataException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UnexpectedSSIDInterceptorSet {
@@ -68,6 +70,13 @@ public class UnexpectedSSIDInterceptorSet {
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_RESPONSE;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                    add(UnexpectedSSIDProbeRespAlert.class);
+                }};
+            }
         });
 
         // React on beacon frames from one of our BSSIDs that is advertising a network that is not ours.
@@ -94,6 +103,13 @@ public class UnexpectedSSIDInterceptorSet {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.BEACON;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                    add(UnexpectedSSIDBeaconAlert.class);
+                }};
             }
         });
 
