@@ -25,6 +25,7 @@ public class Keys {
     public static final String INTERFACES = "interfaces";
     public static final String DOT11_MONITORS = "802_11_monitors";
     public static final String DOT11_NETWORKS = "802_11_networks";
+    public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAP_PAIRS = "802_11_trap_pairs";
 

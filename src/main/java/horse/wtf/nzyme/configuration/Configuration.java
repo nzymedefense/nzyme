@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.configuration;
 
 import com.beust.jcommander.internal.Lists;
+import com.google.common.base.Enums;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
@@ -25,6 +26,7 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -140,6 +142,22 @@ public class Configuration {
         return result.build();
     }
 
+    public List<Alert.TYPE_WIDE> getDot11Alerts() {
+        ImmutableList.Builder<Alert.TYPE_WIDE> result = new ImmutableList.Builder<>();
+
+        for (String alert : root.getStringList(Keys.DOT11_ALERTS)) {
+            String name = alert.toUpperCase();
+
+            if (Enums.getIfPresent(Alert.TYPE_WIDE.class, name).isPresent()) {
+                result.add(Alert.TYPE_WIDE.valueOf(name));
+            } else {
+                LOG.warn("Skipping unknown alert type [{}].", name);
+            }
+        }
+
+        return result.build();
+    }
+
     @Nullable
     public List<GraylogAddress> getGraylogUplinks() {
         try {
@@ -182,6 +200,7 @@ public class Configuration {
         expect(interfaces, Keys.REST_LISTEN_URI, Keys.INTERFACES, String.class);
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
         expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);
+        expect(root, Keys.DOT11_ALERTS, "<root>", List.class);
 
         // 802.11 Monitors.
         int i = 0;

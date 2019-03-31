@@ -22,6 +22,7 @@ import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
@@ -80,6 +81,8 @@ public class NzymeImpl implements Nzyme {
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
 
+    private final List<Alert.TYPE_WIDE> configuredAlerts;
+
     private HttpServer httpServer;
 
     public NzymeImpl(Configuration configuration) {
@@ -104,6 +107,7 @@ public class NzymeImpl implements Nzyme {
 
         this.ouiManager = new OUIManager(this.metrics);
 
+        this.configuredAlerts = configuration.getDot11Alerts();
         this.alerts = new AlertsService(this);
 
         // Disable TRAINING status when training period is over.
@@ -232,10 +236,18 @@ public class NzymeImpl implements Nzyme {
                 // Add standard interceptors for broad channel monitoring.
                 Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
-                // Add alerting interceptors. // TODO: load based on which alerts are activated in conf
-                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
-                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
-                probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
+                // Add alerting interceptors.
+                if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
+                    probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
+                }
+                if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
+                    probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
+                }
+                if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
+                    probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
+                }
+
+                // Statistics interceptor.
                 probe.addFrameInterceptors(new StatisticsInterceptorSet(this).getInterceptors());
 
                 probeExecutor.submit(probe.loop());
