@@ -18,7 +18,9 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
-import horse.wtf.nzyme.alerts.CryptoDropAlert;
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.CryptoDropBeaconAlert;
+import horse.wtf.nzyme.alerts.CryptoDropProbeRespAlert;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
@@ -27,6 +29,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.pcap4j.packet.IllegalRawDataException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CryptoDropInterceptorSet {
@@ -53,7 +56,7 @@ public class CryptoDropInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
-                        probe.raiseAlert(CryptoDropAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
+                        probe.raiseAlert(CryptoDropProbeRespAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
                 }
             }
@@ -61,6 +64,13 @@ public class CryptoDropInterceptorSet {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_RESPONSE;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                    add(CryptoDropProbeRespAlert.class);
+                }};
             }
         });
 
@@ -75,7 +85,7 @@ public class CryptoDropInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
-                        probe.raiseAlert(CryptoDropAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
+                        probe.raiseAlert(CryptoDropBeaconAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
                 }
             }
@@ -84,13 +94,16 @@ public class CryptoDropInterceptorSet {
             public byte forSubtype() {
                 return Dot11FrameSubtype.BEACON;
             }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return new ArrayList<Class<? extends Alert>>(){{
+                    add(CryptoDropBeaconAlert.class);
+                }};
+            }
         });
 
         return interceptors.build();
-    }
-
-    private void doIntercept() {
-
     }
 
 }

@@ -44,6 +44,14 @@ public class AlertsResource {
     private Nzyme nzyme;
 
     @GET
+    @Path("/configured")
+    public Response configured() {
+        //nzyme.getConfiguration().
+
+        return Response.ok().build();
+    }
+
+    @GET
     @Path("/active")
     public Response active(@QueryParam("limit") int limit) {
         if(limit == 0) {
