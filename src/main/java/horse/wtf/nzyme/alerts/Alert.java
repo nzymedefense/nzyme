@@ -30,6 +30,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Alert {
 
+    public enum TYPE_WIDE {
+        UNEXPECTED_BSSID,
+        UNEXPECTED_SSID,
+        CRYPTO_DROP
+    }
+
     public enum Type {
         UNEXPECTED_BEACON_BSSID,
         UNEXPECTED_PROBERESP_BSSID,
