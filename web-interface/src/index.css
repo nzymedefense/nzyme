@@ -34,7 +34,7 @@ h2 em {
     color: #0b5573;
 }
 
-li.system-status-state-not-active {
+li.state-not-active {
     text-decoration: line-through;
     color: #999;
 }

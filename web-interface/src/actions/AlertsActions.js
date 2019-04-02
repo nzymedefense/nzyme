@@ -2,7 +2,8 @@ import Reflux from 'reflux';
 
 const AlertsActions = Reflux.createActions([
     "findActive",
-    "findOne"
+    "findOne",
+    "getConfiguration"
 ]);
 
 export default AlertsActions;
