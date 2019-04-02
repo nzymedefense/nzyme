@@ -27,6 +27,14 @@ class AlertsStore extends Reflux.Store {
     });
   }
 
+  onGetConfiguration() {
+    let self = this;
+
+    RESTClient.get("/alerts/configuration", {}, function(response) {
+      self.setState({alert_configuration: response.data});
+    });
+  }
+
 }
 
 export default AlertsStore;

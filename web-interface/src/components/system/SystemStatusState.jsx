@@ -9,7 +9,7 @@ class SystemStatusState extends Reflux.Component {
 
     render() {
         return (
-            <li className={this.props.state.active ? "text-success" : "system-status-state-not-active"}>
+            <li className={this.props.state.active ? "text-success" : "state-not-active"}>
                 {this.props.state.name}
             </li>
         )

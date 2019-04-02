@@ -126,7 +126,9 @@ public class NzymeImpl implements Nzyme {
     @Override
     public void initialize() {
         Version version = new Version();
-        LOG.info("Initializing probe version: {}.", version.getVersionString());
+        LOG.info("Initializing nzyme version: {}.", version.getVersionString());
+
+        LOG.info("Active alerts: {}", configuredAlerts);
 
         // Start OUI manager and regularly refresh it.
         try {

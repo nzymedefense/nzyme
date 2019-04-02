@@ -18,9 +18,11 @@
 package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.rest.responses.alerts.AlertConfigurationResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;
 import org.apache.logging.log4j.LogManager;
@@ -44,11 +46,20 @@ public class AlertsResource {
     private Nzyme nzyme;
 
     @GET
-    @Path("/configured")
+    @Path("/configuration")
     public Response configured() {
-        //nzyme.getConfiguration().
+        ImmutableList.Builder<Alert.TYPE_WIDE> enabled = new ImmutableList.Builder<>();
+        ImmutableList.Builder<Alert.TYPE_WIDE> disabled = new ImmutableList.Builder<>();
 
-        return Response.ok().build();
+        for (Alert.TYPE_WIDE type : Alert.TYPE_WIDE.values()) {
+            if (nzyme.getConfiguration().getDot11Alerts().contains(type)) {
+                enabled.add(type);
+            } else {
+                disabled.add(type);
+            }
+        }
+
+        return Response.ok(AlertConfigurationResponse.create(enabled.build(), disabled.build())).build();
     }
 
     @GET
