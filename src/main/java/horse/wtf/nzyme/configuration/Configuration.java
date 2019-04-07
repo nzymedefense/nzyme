@@ -150,8 +150,6 @@ public class Configuration {
 
             if (Enums.getIfPresent(Alert.TYPE_WIDE.class, name).isPresent()) {
                 result.add(Alert.TYPE_WIDE.valueOf(name));
-            } else {
-                LOG.warn("Skipping unknown alert type [{}].", name);
             }
         }
 
