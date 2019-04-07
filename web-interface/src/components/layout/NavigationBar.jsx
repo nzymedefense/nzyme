@@ -1,6 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 import Routes from "../../util/Routes";
+import NavigationLink from "./NavigationLink";
 
 class NavigationBar extends Reflux.Component {
 
@@ -14,11 +15,11 @@ class NavigationBar extends Reflux.Component {
             </a>
 
             <span className="pull-right">
-              <a href={Routes.DASHBOARD} className="btn btn-dark">Dashboard</a>
+              <NavigationLink href={Routes.DASHBOARD} title="Dashboard" />
               &nbsp;
-              <a href={Routes.NETWORKS} className="btn btn-dark">Networks</a>
+              <NavigationLink href={Routes.NETWORKS} title="Networks" />
               &nbsp;
-              <a href={Routes.SYSTEM_STATUS} className="btn btn-dark">System Status</a>
+              <NavigationLink href={Routes.SYSTEM_STATUS} title="System Status" />
               &nbsp;
               <a href="https://go.nzyme.org/help" target="_blank" className="btn btn-primary">Help</a>
             </span>
