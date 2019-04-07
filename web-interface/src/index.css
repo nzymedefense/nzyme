@@ -1,3 +1,8 @@
+header {
+    background-color: #191b28;
+    margin-bottom: 11px;
+}
+
 hr {
     background-color: #444
 }
@@ -12,7 +17,10 @@ div.overview-statistic span {
 
 a.navbar-brand {
     color: #fff;
-    border-bottom: 1px dashed #444;
+}
+
+a.navbar-brand:hover {
+    color: #fff;
 }
 
 a:hover {
