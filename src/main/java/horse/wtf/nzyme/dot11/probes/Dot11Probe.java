@@ -47,6 +47,8 @@ public abstract class Dot11Probe {
 
     protected final MetricRegistry metrics;
 
+    public abstract void initialize() throws Dot11ProbeInitializationException;
+
     public abstract Runnable loop() throws Dot11ProbeInitializationException;
     public abstract boolean isInLoop();
     public abstract Integer getCurrentChannel();

@@ -32,7 +32,6 @@ import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
-import horse.wtf.nzyme.dot11.probes.Dot11ProbeInitializationException;
 import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -40,6 +39,7 @@ import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.InjectionBinder;
+import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
@@ -181,6 +181,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new InjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
+        resourceConfig.register(new NzymeExceptionMapper());
 
         // Register resources.
         resourceConfig.register(PingResource.class);
@@ -223,40 +224,38 @@ public class NzymeImpl implements Nzyme {
     private void initializeProbes() {
         // Broad monitor probes.
         for (Dot11MonitorDefinition m : configuration.getDot11Monitors()) {
-            try {
-                Dot11MonitorProbe probe = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
-                        "broad-monitor-" + m.device(),
-                        configuration.getGraylogUplinks(),
-                        configuration.getNzymeId(),
-                        m.device(),
-                        m.channels(),
-                        m.channelHopInterval(),
-                        m.channelHopCommand(),
-                        configuration.getDot11Networks()
-                ), getMetrics());
+            Dot11MonitorProbe probe = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
+                    "broad-monitor-" + m.device(),
+                    configuration.getGraylogUplinks(),
+                    configuration.getNzymeId(),
+                    m.device(),
+                    m.channels(),
+                    m.channelHopInterval(),
+                    m.channelHopCommand(),
+                    configuration.getDot11Networks()
+            ), getMetrics());
 
-                // Add standard interceptors for broad channel monitoring.
-                Dot11MonitorProbe.configureAsBroadMonitor(probe);
+            // Add standard interceptors for broad channel monitoring.
+            Dot11MonitorProbe.configureAsBroadMonitor(probe);
 
-                // Add alerting interceptors.
-                if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
-                    probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
-                }
-                if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
-                    probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
-                }
-                if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
-                    probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
-                }
-
-                // Statistics interceptor.
-                probe.addFrameInterceptors(new StatisticsInterceptorSet(this).getInterceptors());
-
-                probeExecutor.submit(probe.loop());
-                this.probes.add(probe);
-            } catch(Dot11ProbeInitializationException e) {
-                LOG.error("Couldn't initialize probe on interface [{}].", m.device(), e);
+            // Add alerting interceptors.
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
+                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
             }
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
+                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
+            }
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
+                probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
+            }
+
+            // Statistics interceptor.
+            probe.addFrameInterceptors(new StatisticsInterceptorSet(this).getInterceptors());
+
+            probeExecutor.submit(probe.loop());
+            this.probes.add(probe);
+
+            // Initialization happens in thread.
         }
 
         // Trap pairs.
