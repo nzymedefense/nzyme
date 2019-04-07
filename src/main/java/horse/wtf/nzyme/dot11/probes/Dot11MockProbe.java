@@ -31,6 +31,11 @@ public class Dot11MockProbe extends Dot11Probe {
     }
 
     @Override
+    public void initialize() throws Dot11ProbeInitializationException {
+
+    }
+
+    @Override
     public Runnable loop() throws Dot11ProbeInitializationException {
         return () -> { /* noop */ };
     }

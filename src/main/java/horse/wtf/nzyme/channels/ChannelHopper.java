@@ -36,7 +36,7 @@ public class ChannelHopper {
     private final Dot11Probe probe;
     private final Dot11ProbeConfiguration probeConfiguration;
 
-    private Integer currentChannel = null;
+    private int currentChannel = 0;
 
     private int currentChannelIndex = 0;
 

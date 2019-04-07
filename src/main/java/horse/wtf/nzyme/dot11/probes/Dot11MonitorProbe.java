@@ -54,7 +54,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Nzyme nzyme;
     private final Dot11ProbeConfiguration configuration;
 
-    private final PcapHandle pcap;
+    private PcapHandle pcap;
     private final ChannelHopper channelHopper;
 
     // Interceptors.
@@ -77,7 +77,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) throws Dot11ProbeInitializationException {
+    public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
         super(configuration, nzyme);
 
         this.nzyme = nzyme;
@@ -94,10 +94,17 @@ public class Dot11MonitorProbe extends Dot11Probe {
         authenticationFrameParser = new Dot11AuthenticationFrameParser(metrics);
         deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics);
 
-        // Initialize channel hopper.
+        // Metrics.
+        this.globalFrameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
+        this.globalFrameTimer = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
+        this.localFrameMeter = nzyme.getMetrics().meter(MetricRegistry.name(this.getClass(), this.getName(), "frameCount"));
+
         channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
+    }
 
+    @Override
+    public void initialize() throws Dot11ProbeInitializationException {
         // Get network interface for PCAP.
         PcapNetworkInterface networkInterface;
         try {
@@ -130,9 +137,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
             throw new Dot11ProbeInitializationException("Could not build PCAP handle.", e);
         }
 
-        this.globalFrameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
-        this.globalFrameTimer = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
-        this.localFrameMeter = nzyme.getMetrics().meter(MetricRegistry.name(this.getClass(), this.getName(), "frameCount"));
 
         LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.networkInterfaceName(), Joiner.on(",").join(configuration.channels()));
     }
@@ -145,6 +149,24 @@ public class Dot11MonitorProbe extends Dot11Probe {
             LOG.info("Commencing 802.11 frame processing on [{}] ... (⌐■_■)–︻╦╤─ – – pew pew", configuration.networkInterfaceName());
 
             while (true) {
+                try {
+                    if(!isInLoop()) {
+                        initialize();
+                    }
+                } catch (Dot11ProbeInitializationException e) {
+                    inLoop.set(false);
+
+                    LOG.error("Could not initialize probe [{}]. Retrying soon.", this.getName(), e);
+                    // Try again with delay.
+                    try {
+                        Thread.sleep(2500);
+                    } catch (InterruptedException ex) { /* noop */ }
+
+                    continue;
+                }
+
+                // We are in the loop and active if we reach here.
+                inLoop.set(true);
 
                 Packet packet;
 
@@ -162,8 +184,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
                     LOG.trace(e);
                     continue;
                 }
-
-                inLoop.set(true);
 
                 if (packet != null) {
                     this.globalFrameMeter.mark();
