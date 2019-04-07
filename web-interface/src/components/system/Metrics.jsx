@@ -2,7 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 import SystemStore from "../../stores/SystemStore";
 import SystemActions from "../../actions/SystemActions";
-import Timer from "./Timer";
+import TimerRow from "./TimerRow";
 import LoadingSpinner from "./ProbesList";
 
 class Metrics extends Reflux.Component {
@@ -34,7 +34,21 @@ class Metrics extends Reflux.Component {
                         <div className="col-md-12">
                             <h3>Metrics</h3>
 
-                            <Timer title="Frame Processing Timer" timer={this.state.systemMetrics.frame_timing}/>
+                            <table className="table table-sm table-hover table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Maximum</th>
+                                    <th>Minimum</th>
+                                    <th>Mean</th>
+                                    <th>99th Percentile</th>
+                                    <th>Standard Deviation</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <TimerRow title="Frame Processing Timer" timer={this.state.systemMetrics.frame_timing}/>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
