@@ -269,6 +269,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
     }
 
     @Override
+    public List<Dot11FrameInterceptor> getInterceptors() {
+        return frameInterceptors;
+    }
+
+    @Override
     public void scheduleAction() {
         throw new RuntimeException("Monitor probe cannot schedule actions.");
     }

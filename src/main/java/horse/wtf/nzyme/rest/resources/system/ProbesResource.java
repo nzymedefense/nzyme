@@ -17,9 +17,12 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
@@ -44,6 +47,13 @@ public class ProbesResource {
     public Response all() {
         List<ProbeResponse> response = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {
+            ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
+            for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
+                for (Object alertClass : interceptor.raisesAlerts()) {
+                    raisesAlerts.add(((Class) alertClass).getSimpleName());
+                }
+            }
+
             response.add(ProbeResponse.create(
                     probe.getName(),
                     probe.getClass().getSimpleName(),
@@ -51,7 +61,8 @@ public class ProbesResource {
                     probe.isInLoop(),
                     probe.getConfiguration().channels(),
                     probe.getCurrentChannel(),
-                    probe.getTotalFrames()
+                    probe.getTotalFrames(),
+                    raisesAlerts.build()
             ));
         }
 
