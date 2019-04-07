@@ -1,3 +1,22 @@
+body {
+    font-family: 'Inconsolata', monospace;
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+}
+
+h1 {
+    text-align: center;
+    border-bottom: 1px solid #191b28;
+    border-top: 1px solid #191b28;
+    padding-bottom: 5px;
+    padding-top: 10px;
+    margin-bottom: 20px;
+}
+
 header {
     background-color: #191b28;
     margin-bottom: 11px;
