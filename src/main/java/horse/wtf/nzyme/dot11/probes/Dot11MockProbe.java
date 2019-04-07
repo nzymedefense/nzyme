@@ -21,6 +21,9 @@ import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.statistics.Statistics;
 
+import java.util.Collections;
+import java.util.List;
+
 public class Dot11MockProbe extends Dot11Probe {
 
     public Dot11MockProbe(Dot11ProbeConfiguration configuration, Statistics statistics) {
@@ -50,6 +53,11 @@ public class Dot11MockProbe extends Dot11Probe {
     @Override
     public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
 
+    }
+
+    @Override
+    public List<Dot11FrameInterceptor> getInterceptors() {
+        return Collections.emptyList();
     }
 
     @Override

@@ -25,6 +25,8 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Dot11SenderProbe extends Dot11Probe {
@@ -81,6 +83,11 @@ public class Dot11SenderProbe extends Dot11Probe {
     @Override
     public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
         throw new RuntimeException("Sender probe cannot intercept frames.");
+    }
+
+    @Override
+    public List<Dot11FrameInterceptor> getInterceptors() {
+        return Collections.emptyList();
     }
 
     @Override

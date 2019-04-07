@@ -53,6 +53,7 @@ public abstract class Dot11Probe {
     public abstract Long getTotalFrames();
 
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
+    public abstract List<Dot11FrameInterceptor> getInterceptors();
 
     public abstract void scheduleAction();
 
