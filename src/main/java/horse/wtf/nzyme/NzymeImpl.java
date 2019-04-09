@@ -26,13 +26,10 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
-import horse.wtf.nzyme.dot11.interceptors.CryptoDropInterceptorSet;
-import horse.wtf.nzyme.dot11.interceptors.StatisticsInterceptorSet;
-import horse.wtf.nzyme.dot11.interceptors.UnexpectedSSIDInterceptorSet;
+import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
-import horse.wtf.nzyme.dot11.interceptors.UnexpectedBSSIDInterceptorSet;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
@@ -247,6 +244,9 @@ public class NzymeImpl implements Nzyme {
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
                 probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
+            }
+            if(configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
+                probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(probe).getInterceptors());
             }
 
             // Statistics interceptor.
