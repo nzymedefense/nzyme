@@ -33,7 +33,8 @@ public abstract class Alert {
     public enum TYPE_WIDE {
         UNEXPECTED_BSSID,
         UNEXPECTED_SSID,
-        CRYPTO_DROP
+        CRYPTO_DROP,
+        UNEXPECTED_CHANNEL
     }
 
     public enum Type {
@@ -42,7 +43,9 @@ public abstract class Alert {
         UNEXPECTED_BEACON_SSID,
         UNEXPECTED_PROBERESP_SSID,
         CRYPTO_DROP_BEACON,
-        CRYPTO_DROP_PROBERESP
+        CRYPTO_DROP_PROBERESP,
+        UNEXPECTED_CHANNEL_BEACON,
+        UNEXPECTED_CHANNEL_PROBERESP
     }
 
     private final Subsystem subsystem;
