@@ -47,10 +47,6 @@ class AlertDetailsPage extends Reflux.Component {
                 <div>
                     <div className="row">
                         <div className="col-md-12">
-                            <span className="float-right">
-                                <a href={Routes.DASHBOARD} className="btn btn-dark">Back to Dashboard</a>
-                            </span>
-
                             <h2>Alert <em>{this.state.alert.id}</em></h2>
 
                             <blockquote className={"text-danger"}>{this.state.alert.message}</blockquote>
