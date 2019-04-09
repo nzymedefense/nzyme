@@ -33,7 +33,7 @@ public class UnexpectedChannelBeaconAlert extends Alert {
 
     private static final String DESCRIPTION = "The network is advertised on a channel that is not in the list of configured expected channels. This could " +
             "indicate that a possible attacker is not careful enough and does not limit spoofing to channels that are in use by the legitimate access points.";
-    private static final String DOC_LINK = "guidance-UNEXPECTED_CHANNEL_BEACON";
+    private static final String DOC_LINK = "guidance-UNEXPECTED_CHANNEL";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>() {{
         add("A legitimate change of the access point configuration took place and the nzyme configuration has not been updated.");
         add("Some access points will dynamically choose channels based on RF spectrum congestion. Always include all possibly used channels in the nzyme configuration.");
