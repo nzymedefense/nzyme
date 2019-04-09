@@ -49,7 +49,7 @@ class AlertDetailsPage extends Reflux.Component {
                         <div className="col-md-12">
                             <h2>Alert <em>{this.state.alert.id}</em></h2>
 
-                            <blockquote className={"text-danger"}>{this.state.alert.message}</blockquote>
+                            <blockquote className={"text-danger"} style={{"font-weight":"bold"}}>{this.state.alert.message}</blockquote>
 
                             <hr />
                         </div>
