@@ -12,9 +12,11 @@ class SSIDRow extends Reflux.Component {
     render() {
         const c = this.props.channel;
 
+        console.log(this.props.ssid);
+
         return (
             <tr>
-                <td>{this.props.ssid}</td>
+                <td>{/[^a-zA-Z0-9]/.test(this.props.ssid) ? "[hidden]" : this.props.ssid }</td>
                 <td><strong>{this.props.channelNumber}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{numeral(c.signal_quality_min).format('0')}</td>
