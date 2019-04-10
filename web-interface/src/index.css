@@ -34,8 +34,14 @@ div.overview-statistic span {
     font-size: 26px;
 }
 
+.navbar img.logo {
+    height: 30px;
+    margin-right: 15px;
+}
+
 a.navbar-brand {
     color: #fff;
+    font-weight: 500 !important;
 }
 
 a.navbar-brand:hover {
