@@ -11,7 +11,8 @@ class NavigationBar extends Reflux.Component {
         <div className="navbar box-shadow">
           <div className="container d-flex">
             <a href="/" className="navbar-brand d-flex align-items-center">
-              <strong>nzyme - WiFi Defense System</strong>
+              <img src="/static/nzyme.png" alt="nzyme" className="logo" />
+              nzyme - WiFi Defense System
             </a>
 
             <span className="pull-right">
