@@ -33,7 +33,7 @@ class BSSIDTable extends Reflux.Component {
                         </thead>
                         <tbody>
                         {Object.keys(this.state.bssids).map(function (key,i) {
-                            return <BSSIDTableRow key={i} bssid={self.state.bssids[key]} />;
+                            return <BSSIDTableRow key={self.state.bssids[key].bssid} bssid={self.state.bssids[key]} />;
                         })}
                         </tbody>
                     </table>
