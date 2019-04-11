@@ -69,6 +69,10 @@ public class Configuration {
         return general.getString(Keys.ID);
     }
 
+    public String getDatabasePath() {
+        return general.getString(Keys.DATABASE_PATH);
+    }
+
     public String getPythonExecutable() {
         return python.getString(Keys.PYTHON_PATH);
     }
@@ -189,6 +193,7 @@ public class Configuration {
         // Completeness and type validity.
         expectEnum(general, Keys.ROLE, Keys.GENERAL, Role.class);
         expect(general, Keys.ID, Keys.GENERAL, String.class);
+        expect(general, Keys.DATABASE_PATH, Keys.GENERAL, String.class);
         expect(general, Keys.VERSIONCHECKS, Keys.GENERAL, Boolean.class);
         expect(python, Keys.PYTHON_PATH, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
