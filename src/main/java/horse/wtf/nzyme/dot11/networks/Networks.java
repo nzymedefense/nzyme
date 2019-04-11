@@ -18,8 +18,7 @@
 package horse.wtf.nzyme.dot11.networks;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.frames.*;
@@ -28,7 +27,9 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -152,7 +153,22 @@ public class Networks {
     }
 
     public Map<String, BSSID> getBSSIDs() {
-        return bssids;
+        return new ImmutableMap.Builder<String, BSSID>().putAll(bssids).build();
+    }
+
+    // NOTE: This is just a list of the SSIDs and is not to be confused with SSIDs per BSSID. Multiple SSIDs are swallowed.
+    public Set<String> getSSIDs() {
+        Set<String> ssids = Sets.newHashSet();
+
+        for (BSSID bssid : bssids.values()) {
+            for (String ssid : bssid.ssids().keySet()) {
+                if (!ssids.contains(ssid)) {
+                    ssids.add(ssid);
+                }
+            }
+        }
+
+        return new ImmutableSet.Builder<String>().addAll(ssids).build();
     }
 
     public SignalDelta getSignalDelta(String bssid, String ssidName, int channelNumber) throws NoSuchNetworkException, NoSuchChannelException {

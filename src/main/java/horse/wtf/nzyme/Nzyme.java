@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -34,6 +35,7 @@ public interface Nzyme {
     void shutdown();
 
     Networks getNetworks();
+    Clients getClients();
 
     Statistics getStatistics();
     Configuration getConfiguration();
