@@ -22,7 +22,9 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
+import horse.wtf.nzyme.dot11.frames.Dot11AssociationRequestFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
+import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -66,6 +68,40 @@ public class StatisticsInterceptorSet {
             @Override
             public byte forSubtype() {
                 return Dot11FrameSubtype.PROBE_RESPONSE;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
+        });
+
+        interceptors.add(new Dot11FrameInterceptor<Dot11ProbeRequestFrame>() {
+            @Override
+            public void intercept(Dot11ProbeRequestFrame frame) throws IllegalRawDataException {
+                nzyme.getClients().registerProbeRequestFrame(frame);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.PROBE_REQUEST;
+            }
+
+            @Override
+            public List<Class<? extends Alert>> raisesAlerts() {
+                return Collections.emptyList();
+            }
+        });
+
+        interceptors.add(new Dot11FrameInterceptor<Dot11AssociationRequestFrame>() {
+            @Override
+            public void intercept(Dot11AssociationRequestFrame frame) throws IllegalRawDataException {
+                nzyme.getClients().registerAssociationRequestFrame(frame);
+            }
+
+            @Override
+            public byte forSubtype() {
+                return Dot11FrameSubtype.ASSOCIATION_REQUEST;
             }
 
             @Override

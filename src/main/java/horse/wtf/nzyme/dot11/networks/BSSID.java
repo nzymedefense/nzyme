@@ -55,7 +55,6 @@ public abstract class BSSID {
         return best;
     }
 
-
     @JsonIgnore
     public void updateLastSeen() {
         this.lastSeen = new DateTime();

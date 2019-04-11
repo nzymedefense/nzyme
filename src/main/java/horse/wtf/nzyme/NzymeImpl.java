@@ -26,6 +26,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -71,9 +72,11 @@ public class NzymeImpl implements Nzyme {
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
     private final MetricRegistry metrics;
-    private final Networks networks;
     private final SystemStatus systemStatus;
     private final OUIManager ouiManager;
+
+    private final Networks networks;
+    private final Clients clients;
 
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
@@ -88,6 +91,7 @@ public class NzymeImpl implements Nzyme {
         this.metrics = new MetricRegistry();
         this.probes = Lists.newArrayList();
         this.networks = new Networks(this);
+        this.clients = new Clients(this);
         this.systemStatus = new SystemStatus();
 
         // Register JVM metrics.
@@ -299,6 +303,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public Networks getNetworks() {
         return networks;
+    }
+
+    @Override
+    public Clients getClients() {
+        return clients;
     }
 
 }

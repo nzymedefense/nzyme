@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import horse.wtf.nzyme.Nzyme;
@@ -31,7 +30,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -72,10 +70,9 @@ public class StatisticsResource {
                         nzyme.getStatistics().getMalformedCount().get(),
                         frameTypes,
                         channelStatistics,
-                        nzyme.getStatistics().
-                        getProbingDevices().keySet(),
-                        nzyme.getStatistics().getBeaconedNetworks().keySet(),
-                        nzyme.getStatistics().getAccessPoints().keySet()
+                        nzyme.getClients().getClients().keySet(),
+                        nzyme.getNetworks().getSSIDs(),
+                        nzyme.getNetworks().getBSSIDs().keySet()
                 )
         ).build();
     }
