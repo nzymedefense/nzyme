@@ -21,6 +21,8 @@ import com.beust.jcommander.JCommander;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.database.Database;
+import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -65,6 +67,15 @@ public class Main {
 
         if (cliArguments.isPacketInfo()) {
             configuration.setPrintPacketInfo(true);
+        }
+
+        // Database.
+        Database db = new Database(configuration);
+        try {
+            db.initializeAndMigrate();
+        } catch (LiquibaseException e) {
+            LOG.fatal("Error during database initialization and migration.", e);
+            System.exit(FAILURE);
         }
 
         Nzyme nzyme = new NzymeImpl(configuration);

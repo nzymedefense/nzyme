@@ -18,5 +18,9 @@
         <Logger name="org.pcap4j" level="error">
             <AppenderRef ref="Logfile" />
         </Logger>
+
+        <Logger name="liquibase" level="warn">
+            <AppenderRef ref="Logfile" />
+        </Logger>
     </Loggers>
 </Configuration>

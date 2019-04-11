@@ -8,4 +8,6 @@ dependency-reduced-pom.xml
 logs/
 target/
 
+nzyme.db
+
 src/main/resources/git.properties

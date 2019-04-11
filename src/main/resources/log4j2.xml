@@ -24,5 +24,10 @@
             <AppenderRef ref="Console" />
             <AppenderRef ref="Logfile" />
         </Logger>
+
+        <Logger name="liquibase" level="warn">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="Logfile" />
+        </Logger>
     </Loggers>
 </Configuration>
