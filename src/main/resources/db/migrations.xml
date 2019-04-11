@@ -6,4 +6,25 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
+
+    <changeSet id="0" author="lennartkoopmann">
+        <createTable tableName="measurements" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="measurement_type" type="varchar(15)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="measurement_value" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

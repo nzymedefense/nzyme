@@ -15,12 +15,14 @@ public class Database {
 
     private final Configuration configuration;
 
+    private Jdbi jdbi;
+
     public Database(Configuration configuration) {
         this.configuration = configuration;
     }
 
     public void initializeAndMigrate() throws LiquibaseException {
-        Jdbi jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.getDatabasePath())
+        this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.getDatabasePath())
                 .installPlugin(new SQLitePlugin());
 
         // Run migrations against underlying JDBC connection.
