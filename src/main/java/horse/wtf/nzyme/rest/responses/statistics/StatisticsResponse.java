@@ -48,7 +48,13 @@ public abstract class StatisticsResponse {
     @JsonProperty("current_bssids")
     public abstract Set<String> currentBSSIDs();
 
-    public static StatisticsResponse create(Long totalFrames, Long malformedFrames, Map<String, Long> frameTypes, Map<Integer, ChannelStatisticsResponse> channels, Set<String> currentProbingDevices, Set<String> currentSSIDs, Set<String> currentBSSIDs) {
+    @JsonProperty("histogram_probing_devices")
+    public abstract Map<String, Long> histogramProbingDevices();
+
+    @JsonProperty("histogram_bssids")
+    public abstract Map<String, Long> histogramBSSIDs();
+
+    public static StatisticsResponse create(Long totalFrames, Long malformedFrames, Map<String, Long> frameTypes, Map<Integer, ChannelStatisticsResponse> channels, Set<String> currentProbingDevices, Set<String> currentSSIDs, Set<String> currentBSSIDs, Map<String, Long> histogramProbingDevices, Map<String, Long> histogramBSSIDs) {
         return builder()
                 .totalFrames(totalFrames)
                 .malformedFrames(malformedFrames)
@@ -57,6 +63,8 @@ public abstract class StatisticsResponse {
                 .currentProbingDevices(currentProbingDevices)
                 .currentSSIDs(currentSSIDs)
                 .currentBSSIDs(currentBSSIDs)
+                .histogramProbingDevices(histogramProbingDevices)
+                .histogramBSSIDs(histogramBSSIDs)
                 .build();
     }
 
@@ -79,6 +87,10 @@ public abstract class StatisticsResponse {
         public abstract Builder currentSSIDs(Set<String> currentSSIDs);
 
         public abstract Builder currentBSSIDs(Set<String> currentBSSIDs);
+
+        public abstract Builder histogramProbingDevices(Map<String, Long> histogramProbingDevices);
+
+        public abstract Builder histogramBSSIDs(Map<String, Long> histogramBSSIDs);
 
         public abstract StatisticsResponse build();
     }

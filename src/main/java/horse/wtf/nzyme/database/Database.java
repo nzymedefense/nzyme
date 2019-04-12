@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.database;
 
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -27,7 +28,8 @@ public class Database {
     public void initializeAndMigrate() throws LiquibaseException {
         this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.getDatabasePath())
                 .installPlugin(new SQLitePlugin())
-                .installPlugin(new JodaTimePlugin());
+                .installPlugin(new JodaTimePlugin())
+                .registerRowMapper(new MeasurementMapper());
 
         // Run migrations against underlying JDBC connection.
         liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(jdbi.open().getConnection()));

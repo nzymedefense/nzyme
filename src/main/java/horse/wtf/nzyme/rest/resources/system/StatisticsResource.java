@@ -17,10 +17,13 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.measurements.Measurement;
+import horse.wtf.nzyme.measurements.MeasurementType;
 import horse.wtf.nzyme.rest.responses.statistics.ChannelStatisticsResponse;
 import horse.wtf.nzyme.rest.responses.statistics.StatisticsResponse;
 
@@ -30,6 +33,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,6 +41,8 @@ import java.util.concurrent.atomic.AtomicLong;
 @Path("/api/system/networks")
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsResource {
+
+    private static final String MEASUREMENTS_QUERY = "SELECT * FROM measurements WHERE measurement_type = ? AND created_at > DATETIME('now', 'utc', '-1 day')";
 
     @Inject
     private Nzyme nzyme;
@@ -64,6 +70,19 @@ public class StatisticsResource {
             channelStatistics.put(channel, ChannelStatisticsResponse.create(count, malformed));
         }
 
+        Map<String, Long> clientCountHistogram = buildMeasurementHistogram(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(MEASUREMENTS_QUERY)
+                        .bind(0, MeasurementType.DOT11_CLIENT_COUNT)
+                        .mapTo(Measurement.class)
+                        .list()
+        ));
+
+        Map<String, Long> accessPointHistogram = buildMeasurementHistogram(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(MEASUREMENTS_QUERY)
+                        .bind(0, MeasurementType.DOT11_ACCESS_POINT_COUNT)
+                        .mapTo(Measurement.class)
+                        .list()
+        ));
         return Response.ok(
                 StatisticsResponse.create(
                         nzyme.getStatistics().getFrameCount().get(),
@@ -72,9 +91,22 @@ public class StatisticsResource {
                         channelStatistics,
                         nzyme.getClients().getClients().keySet(),
                         nzyme.getNetworks().getSSIDs(),
-                        nzyme.getNetworks().getBSSIDs().keySet()
+                        nzyme.getNetworks().getBSSIDs().keySet(),
+                        clientCountHistogram,
+                        accessPointHistogram
                 )
         ).build();
+    }
+
+    private Map<String, Long> buildMeasurementHistogram(List<Measurement> measurements) {
+        ImmutableMap.Builder<String, Long> clientCountHistogram = new ImmutableMap.Builder<>();
+        if (measurements != null && !measurements.isEmpty()) {
+            for (Measurement measurement : measurements) {
+                clientCountHistogram.put(measurement.createdAt().toString(), measurement.value());
+            }
+        }
+
+        return clientCountHistogram.build();
     }
 
 }
