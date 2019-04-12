@@ -38,7 +38,7 @@ public class Clients {
                 for (Map.Entry<String, Client> entry : Lists.newArrayList(clients.entrySet())) {
                     Client client = entry.getValue();
 
-                    if (client.lastSeen.isBefore(DateTime.now().minusMinutes(10))) {
+                    if (client.lastSeen.isBefore(DateTime.now().minusMinutes(5))) {
                         LOG.info("Retention cleaning expired client [{}] from internal clients list.", client);
                         clients.remove(entry.getKey());
                     }
