@@ -8,9 +8,11 @@ import AlertsActions from "../../actions/AlertsActions"
 import ProbesStore from "../../stores/ProbesStore";
 import ProbesActions from "../../actions/ProbesActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
+import AlertsList from "./AlertsList";
 
 import numeral from "numeral";
-import AlertsList from "./AlertsList";
+import Plot from 'react-plotly.js';
+import SimpleLineChart from "../charts/SimpleLineChart";
 
 class GlobalStatistics extends Reflux.Component {
 
@@ -32,7 +34,7 @@ class GlobalStatistics extends Reflux.Component {
     StatisticsActions.findGlobal();
     AlertsActions.findActive(GlobalStatistics.ALERT_LIMIT);
 
-    setInterval(StatisticsActions.findGlobal, 1000);
+    setInterval(StatisticsActions.findGlobal, 5000);
     setInterval(AlertsActions.findActive, 1000);
     setInterval(ProbesActions.findCurrentChannels, 900);
   }
@@ -111,15 +113,19 @@ class GlobalStatistics extends Reflux.Component {
                   <span>{numeral(this.state.global_statistics.current_probing_devices.length).format('0,0')}</span>
                 </div>
               </div>
+
+              <SimpleLineChart title="802.11 Clients" data={this.state.global_statistics.histogram_probing_devices} />
             </div>
 
             <div className="col-md-4">
               <div className="card bg-success text-center overview-statistic">
                 <div className="card-body">
-                  <p>802.11  Access points</p>
+                  <p>802.11 Access points</p>
                   <span>{numeral(this.state.global_statistics.current_bssids.length).format('0,0')}</span>
                 </div>
               </div>
+
+              <SimpleLineChart title="802.11 Access Points" data={this.state.global_statistics.histogram_bssids} />
             </div>
           </div>
 
