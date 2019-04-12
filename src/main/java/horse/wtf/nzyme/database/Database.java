@@ -8,7 +8,10 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import org.jdbi.v3.core.HandleCallback;
+import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.jodatime2.JodaTimePlugin;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
 
 public class Database {
@@ -23,12 +26,21 @@ public class Database {
 
     public void initializeAndMigrate() throws LiquibaseException {
         this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.getDatabasePath())
-                .installPlugin(new SQLitePlugin());
+                .installPlugin(new SQLitePlugin())
+                .installPlugin(new JodaTimePlugin());
 
         // Run migrations against underlying JDBC connection.
         liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(jdbi.open().getConnection()));
         Liquibase liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
         liquibase.update(new Contexts(), new LabelExpression());
+    }
+
+    public <R, X extends Exception> R withHandle(HandleCallback<R, X> callback) throws X {
+        return jdbi.withHandle(callback);
+    }
+
+    public <X extends Exception> void useHandle(final HandleConsumer<X> callback) throws X {
+        jdbi.useHandle(callback);
     }
 
 }
