@@ -26,12 +26,15 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.measurements.MeasurementsCleaner;
+import horse.wtf.nzyme.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
@@ -64,11 +67,12 @@ import java.util.logging.Level;
 
 public class NzymeImpl implements Nzyme {
 
-    private static final Logger LOG = LogManager.getLogger(Nzyme.class);
+    private static final Logger LOG = LogManager.getLogger(NzymeImpl.class);
 
     public static final int STATS_INTERVAL = 60;
 
     private final Configuration configuration;
+    private final Database database;
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
     private final MetricRegistry metrics;
@@ -85,8 +89,10 @@ public class NzymeImpl implements Nzyme {
 
     private HttpServer httpServer;
 
-    public NzymeImpl(Configuration configuration) {
+    public NzymeImpl(Configuration configuration, Database database) {
         this.configuration = configuration;
+        this.database = database;
+
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
         this.probes = Lists.newArrayList();
@@ -131,7 +137,7 @@ public class NzymeImpl implements Nzyme {
 
         LOG.info("Active alerts: {}", configuredAlerts);
 
-        // Start OUI manager and regularly refresh it.
+        // Start OUI manager and regularly refresh it. TODO make this a periodical
         try {
             this.ouiManager.fetchAndUpdate();
 
@@ -171,6 +177,8 @@ public class NzymeImpl implements Nzyme {
         // Periodicals.
         PeriodicalManager periodicalManager = new PeriodicalManager();
 
+        periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 1, TimeUnit.MINUTES);
         if(configuration.areVersionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
@@ -293,6 +301,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public MetricRegistry getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public Database getDatabase() {
+        return database;
     }
 
     @Override

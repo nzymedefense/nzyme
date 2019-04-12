@@ -70,15 +70,15 @@ public class Main {
         }
 
         // Database.
-        Database db = new Database(configuration);
+        Database database = new Database(configuration);
         try {
-            db.initializeAndMigrate();
+            database.initializeAndMigrate();
         } catch (LiquibaseException e) {
             LOG.fatal("Error during database initialization and migration.", e);
             System.exit(FAILURE);
         }
 
-        Nzyme nzyme = new NzymeImpl(configuration);
+        Nzyme nzyme = new NzymeImpl(configuration, database);
         nzyme.initialize();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
