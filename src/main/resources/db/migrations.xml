@@ -27,4 +27,15 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="1" author="lennartkoopmann">
+        <createIndex indexName="idx_measurements_standard_lookup" tableName="measurements" unique="false">
+            <column name="measurement_type" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_measurements_created_at" tableName="measurements" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
