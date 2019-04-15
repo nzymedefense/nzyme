@@ -36,6 +36,7 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.measurements.MeasurementsCleaner;
 import horse.wtf.nzyme.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
+import horse.wtf.nzyme.periodicals.OUIUpdater;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
@@ -50,7 +51,6 @@ import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.statistics.Statistics;
-import horse.wtf.nzyme.statistics.StatisticsPrinter;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,8 +68,6 @@ import java.util.logging.Level;
 public class NzymeImpl implements Nzyme {
 
     private static final Logger LOG = LogManager.getLogger(NzymeImpl.class);
-
-    public static final int STATS_INTERVAL = 60;
 
     private final Configuration configuration;
     private final Database database;
@@ -137,38 +135,12 @@ public class NzymeImpl implements Nzyme {
 
         LOG.info("Active alerts: {}", configuredAlerts);
 
-        // Start OUI manager and regularly refresh it. TODO make this a periodical
+        // Initial OUI fetch. Not in periodical because this needs to be blocking.
         try {
             this.ouiManager.fetchAndUpdate();
-
-            Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                    .setDaemon(true)
-                    .setNameFormat("oui-manager-%d")
-                    .build())
-                    .scheduleAtFixedRate(() -> {
-                        try {
-                            ouiManager.fetchAndUpdate();
-                        } catch (IOException e) {
-                            LOG.error("Could not fetch and update OUI list.", e);
-                        }
-                    }, 12, 12, TimeUnit.HOURS);
         } catch (IOException e) {
             LOG.error("Could not initialize OUIs.", e);
         }
-
-        // Set up networks printer.
-        final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics, STATS_INTERVAL);
-        LOG.info("Printing networks every {} seconds.", STATS_INTERVAL);
-
-        // Statistics printer.
-        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("networks-%d")
-                .build()
-        ).scheduleAtFixedRate(() -> {
-            LOG.info(statisticsPrinter.print());
-            statistics.resetAccumulativeTicks();
-        }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
 
         // Metrics JMX reporter.
         final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
@@ -176,7 +148,7 @@ public class NzymeImpl implements Nzyme {
 
         // Periodicals.
         PeriodicalManager periodicalManager = new PeriodicalManager();
-
+        periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 1, TimeUnit.MINUTES);
         if(configuration.areVersionchecksEnabled()) {
