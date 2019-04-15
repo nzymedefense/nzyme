@@ -23,6 +23,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.util.MetricNames;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -46,10 +47,15 @@ public class OUIManager {
 
     private ImmutableMap<String, String> ouis;
 
+    private final Nzyme nzyme;
+
     private final Timer lookupTimer;
 
-    public OUIManager(MetricRegistry metrics) {
-        this.lookupTimer = metrics.timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMER));
+    public OUIManager(Nzyme nzyme) {
+        this.nzyme = nzyme;
+
+        this.ouis = ImmutableMap.<String, String>builder().build();
+        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMER));
     }
 
     @Nullable
@@ -72,6 +78,11 @@ public class OUIManager {
     }
 
     public void fetchAndUpdate() throws IOException {
+        if (!nzyme.getConfiguration().isFetchOUIsEnabled()) {
+            LOG.info("Fetching OUIs has been disabled in nzyme configuration. Not fetching.");
+            return;
+        }
+
         LOG.info("Fetching and updating list of OUIs from [{}]. This might take a moment.", OUI_SOURCE);
 
         OkHttpClient c = new OkHttpClient.Builder()

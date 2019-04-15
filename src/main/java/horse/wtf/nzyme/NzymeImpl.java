@@ -110,7 +110,7 @@ public class NzymeImpl implements Nzyme {
         this.systemStatus.setStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.TRAINING);
 
-        this.ouiManager = new OUIManager(this.metrics);
+        this.ouiManager = new OUIManager(this);
 
         this.configuredAlerts = configuration.getDot11Alerts();
         this.alerts = new AlertsService(this);

@@ -89,6 +89,10 @@ public class Configuration {
         return general.getBoolean(Keys.VERSIONCHECKS);
     }
 
+    public boolean isFetchOUIsEnabled() {
+        return general.getBoolean(Keys.FETCH_OUIS);
+    }
+
     public URI getRestListenUri() {
         return URI.create(interfaces.getString(Keys.REST_LISTEN_URI));
     }
@@ -195,6 +199,7 @@ public class Configuration {
         expect(general, Keys.ID, Keys.GENERAL, String.class);
         expect(general, Keys.DATABASE_PATH, Keys.GENERAL, String.class);
         expect(general, Keys.VERSIONCHECKS, Keys.GENERAL, Boolean.class);
+        expect(general, Keys.FETCH_OUIS, Keys.GENERAL, Boolean.class);
         expect(python, Keys.PYTHON_PATH, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
         expect(python, Keys.PYTHON_SCRIPT_PREFIX, Keys.GENERAL + "." + Keys.PYTHON, String.class);
