@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.util;
 
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
+import horse.wtf.nzyme.ouis.OUIManager;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -25,5 +26,6 @@ public class MetricNames {
 
     public static final String FRAME_COUNT = name(Dot11MonitorProbe.class, "frames");
     public static final String FRAME_TIMER = name(Dot11MonitorProbe.class, "timing");
+    public static final String OUI_LOOKUP_TIMER = name(OUIManager.class, "lookup-timing");
 
 }
