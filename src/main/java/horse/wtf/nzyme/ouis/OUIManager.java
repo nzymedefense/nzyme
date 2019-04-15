@@ -23,6 +23,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.util.MetricNames;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -48,7 +49,7 @@ public class OUIManager {
     private final Timer lookupTimer;
 
     public OUIManager(MetricRegistry metrics) {
-        this.lookupTimer = metrics.timer(MetricRegistry.name("oui-lookup"));
+        this.lookupTimer = metrics.timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMER));
     }
 
     @Nullable

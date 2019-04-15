@@ -36,7 +36,7 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.measurements.MeasurementsCleaner;
 import horse.wtf.nzyme.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
-import horse.wtf.nzyme.periodicals.OUIUpdater;
+import horse.wtf.nzyme.ouis.OUIUpdater;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;

@@ -53,6 +53,11 @@ public class MetricsResource {
                 TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.FRAME_TIMER).getSnapshot())
         );
 
+        metrics.put(
+                "oui_lookup_timing",
+                TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.OUI_LOOKUP_TIMER).getSnapshot())
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
