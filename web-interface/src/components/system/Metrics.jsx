@@ -47,6 +47,7 @@ class Metrics extends Reflux.Component {
                                 </thead>
                                 <tbody>
                                     <TimerRow title="Frame Processing Timer" timer={this.state.systemMetrics.frame_timing}/>
+                                    <TimerRow title="OUI Lookup Timer" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                 </tbody>
                             </table>
                         </div>
