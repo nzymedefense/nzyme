@@ -58,6 +58,16 @@ public class MetricsResource {
                 TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.OUI_LOOKUP_TIMER).getSnapshot())
         );
 
+        metrics.put(
+                "tagged_params_parse_timing",
+                TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.TAGGED_PARAMS_PARSE_TIMER).getSnapshot())
+        );
+
+        metrics.put(
+                "tagged_params_fingerprint_timing",
+                TimerResponse.fromSnapshot(nzyme.getMetrics().timer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER).getSnapshot())
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

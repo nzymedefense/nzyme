@@ -32,7 +32,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
     @Override
     protected Dot11BeaconFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame beacon = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
-        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(Dot11TaggedParameters.BEACON_TAGGED_PARAMS_POSITION, payload);
+        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(metrics, Dot11TaggedParameters.BEACON_TAGGED_PARAMS_POSITION, payload);
 
         String transmitter = "";
         if(beacon.getHeader().getAddress2() != null) {
@@ -46,7 +46,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
             throw new IllegalRawDataException("No SSID in beacon frame. Not even empty SSID. This is a malformed frame.");
         }
 
-        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters, meta);
+        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);
     }
 
 }

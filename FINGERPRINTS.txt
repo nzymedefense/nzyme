@@ -1,0 +1,10 @@
+Pineapple Nano  | PineAP | 2.0.2 | ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c
+Pineapple Nano  | PineAP | 2.5.2 | ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c
+Pineapple Nano  | PineAP | 2.5.2 | e1a3923e4a513e2e1040763ad0b97746a84add27d559a84e4af3b313c69bfb26
+Pineapple Nano  | public | 2.5.2 | 147a503d849b148738bf66dcb7aea39c0c08f54cbd5edd47e39efe47d6fd582e
+Pineapple Tetra | PineAP | 1.1.2 | ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c
+Pineapple Tetra | PineAP | 2.5.2 | ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c
+Pineapple Tetra | mgmt   | 1.1.2 | dacf284b8a079fc61c795a2441672baff055890f106b3f75621ab1e00c518273
+Pineapple Tetra | mgmt   | 2.5.2 | 78ad585d15e4372299c6da1175c6e126d00face9452ea2741cae240fb1d6d6f2
+Pineapple Tetra | public | 1.1.2 | 32f5dc405a16936a40a23153e91cad67cbe813f45188d1b36e58e8405b9adaef
+Pineapple Tetra | public | 2.5.2 | 99255ad871a842cfcf972b069728501ea31583b56e7692cc6abe3334c2846528

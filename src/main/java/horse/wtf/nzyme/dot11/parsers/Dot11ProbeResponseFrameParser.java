@@ -31,7 +31,7 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
     @Override
     protected Dot11ProbeResponseFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame probeReponse = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
-        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, payload);
+        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(metrics, Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, payload);
 
         String ssid;
         try {
@@ -50,7 +50,7 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
             transmitter = probeReponse.getHeader().getAddress2().toString();
         }
 
-        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters, meta);
+        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);
     }
 
 }

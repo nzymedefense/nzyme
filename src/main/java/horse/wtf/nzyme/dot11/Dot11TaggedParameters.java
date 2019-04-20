@@ -17,15 +17,21 @@
 
 package horse.wtf.nzyme.dot11;
 
-import com.google.common.collect.Lists;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
+import horse.wtf.nzyme.util.MetricNames;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.util.ByteArrays;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Map;
+import java.util.TreeMap;
 
 public class Dot11TaggedParameters {
 
@@ -35,18 +41,34 @@ public class Dot11TaggedParameters {
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
-    private static final byte ID_SSID = 0;
-    private static final byte ID_WPA_2 = 48;
+    public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
+            .add(1)   // Supported Rates
+            .add(42)  // ERP
+            .add(45)  // HT Capabilities
+            .add(48)  // RSN
+            .add(50)  // Extended Supported Rates
+            .add(127) // Extended Capabilities
+            .build();
 
-    private final Map<Byte, byte[]> params;
+    private static final int ID_SSID = 0;
+    private static final int ID_WPA_2 = 48;
 
-    public Dot11TaggedParameters(int startPosition, byte[] payload) throws MalformedFrameException {
-        this.params = Maps.newHashMap();
+    private final TreeMap<Integer, byte[]> params;
 
+    private final Timer parserTimer;
+    private final Timer fingerprintTimer;
+
+    public Dot11TaggedParameters(MetricRegistry metrics, int startPosition, byte[] payload) throws MalformedFrameException {
+        this.params = Maps.newTreeMap();
+
+        this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMER));
+        this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER));
+
+        Timer.Context time = this.parserTimer.time();
         int position = startPosition;
         while (true) {
             try {
-                byte tag = payload[position];
+                int tag = 0xFF & payload[position];
                 byte length = payload[position + 1];
 
                 if (length == 0) {
@@ -65,6 +87,8 @@ public class Dot11TaggedParameters {
                 throw new MalformedFrameException("Could not parse 802.11 tagged parameters.", e);
             }
         }
+
+        time.stop();
     }
 
     public boolean isWPA2() {
@@ -90,6 +114,26 @@ public class Dot11TaggedParameters {
 
             return new String(bytes, Charset.forName("UTF-8"));
         }
+    }
+
+    public String fingerprint() {
+        Timer.Context time = this.fingerprintTimer.time();
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+        params.forEach((k,v) -> {
+            try {
+                if (FINGERPRINT_IDS.contains(k)) {
+                    bytes.write(v);
+                }
+            } catch (IOException e) {
+                LOG.error("Could not assemble bytes for fingerprinting.", e);
+            }
+        });
+
+        String fingerprint = Hashing.sha256().hashBytes(bytes.toByteArray()).toString();
+
+        time.stop();
+        return fingerprint;
     }
 
     public class NoSuchTaggedElementException extends Exception {

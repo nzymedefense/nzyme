@@ -37,7 +37,7 @@ public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11As
     @Override
     protected Dot11AssociationRequestFrame doParse(byte[] payload, byte[] header, Dot11MetaInformation meta) throws IllegalRawDataException, MalformedFrameException {
         Dot11ManagementFrame associationRequest = Dot11ManagementFrame.newPacket(payload, 0, payload.length);
-        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(Dot11TaggedParameters.ASSOCREQ_TAGGED_PARAMS_POSITION, payload);
+        Dot11TaggedParameters taggedParameters = new Dot11TaggedParameters(metrics, Dot11TaggedParameters.ASSOCREQ_TAGGED_PARAMS_POSITION, payload);
 
         String destination = "";
         if(associationRequest.getHeader().getAddress1() != null) {

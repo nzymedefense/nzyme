@@ -55,6 +55,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
         probe.notifyUplinks(
                 new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
+                        .addField(FieldNames.TRANSMITTER_FINGERPRINT, beacon.transmitterFingerprint())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
                         .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
                         .addField(FieldNames.SUBTYPE, "beacon")
