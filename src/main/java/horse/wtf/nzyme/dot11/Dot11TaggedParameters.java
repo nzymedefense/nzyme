@@ -22,6 +22,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import horse.wtf.nzyme.util.MetricNames;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,9 @@ public class Dot11TaggedParameters {
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
+    // TODO include which vendor specific tags are present.
+    // TODO include WPS
+
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
             .add(1)   // Supported Rates
             .add(45)  // HT Capabilities
@@ -53,12 +57,14 @@ public class Dot11TaggedParameters {
     private static final int ID_WPA_2 = 48;
 
     private final TreeMap<Integer, byte[]> params;
+    private final TreeMap<String, byte[]> vendorSpecificParams;
 
     private final Timer parserTimer;
     private final Timer fingerprintTimer;
 
     public Dot11TaggedParameters(MetricRegistry metrics, int startPosition, byte[] payload) throws MalformedFrameException {
         this.params = Maps.newTreeMap();
+        this.vendorSpecificParams = Maps.newTreeMap();
 
         this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMER));
         this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER));
@@ -70,10 +76,24 @@ public class Dot11TaggedParameters {
                 int tag = 0xFF & payload[position];
                 byte length = payload[position + 1];
 
+                byte[] tagPayload;
                 if (length == 0) {
-                    params.put(tag, new byte[]{});
+                    tagPayload = new byte[]{};
                 } else {
-                    params.put(tag, ByteArrays.getSubArray(payload, position + 2, length));
+                    tagPayload = ByteArrays.getSubArray(payload, position + 2, length);
+                }
+                params.put(tag, tagPayload);
+
+                // Handle vendor specific tags.
+                if (tag == 221) {
+                    // Read vendor OUI and type into a string we can reference later.
+                    String oui = BaseEncoding.base16()
+                            .withSeparator(":", 2)
+                            .upperCase()
+                            .encode(ByteArrays.getSubArray(tagPayload, 0, 3));
+                    int type = 0xFF & tagPayload[3];
+
+                    vendorSpecificParams.put(oui + "-" + type, tagPayload);
                 }
 
                 position = position + length + 2; // 2 = tag+length offset
