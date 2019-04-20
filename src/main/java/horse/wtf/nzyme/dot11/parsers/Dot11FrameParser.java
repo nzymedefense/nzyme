@@ -27,7 +27,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 public abstract class Dot11FrameParser<T> {
 
-    private final MetricRegistry metrics;
+    protected final MetricRegistry metrics;
 
     private final Timer timer;
 

@@ -23,6 +23,7 @@ public class FieldNames {
 
     public static final String SSID = "ssid";
     public static final String TRANSMITTER = "transmitter";
+    public static final String TRANSMITTER_FINGERPRINT = "transmitter_fingerprint";
     public static final String DESTINATION = "destination";
     public static final String BSSID = "bssid";
 

@@ -46,8 +46,10 @@ class Metrics extends Reflux.Component {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    <TimerRow title="Frame Processing Timer" timer={this.state.systemMetrics.frame_timing}/>
-                                    <TimerRow title="OUI Lookup Timer" timer={this.state.systemMetrics.oui_lookup_timing}/>
+                                    <TimerRow title="802.11 Frame Processing" timer={this.state.systemMetrics.frame_timing}/>
+                                    <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
+                                    <TimerRow title="802.11 Tagged Parameter Parsing" timer={this.state.systemMetrics.tagged_params_parse_timing}/>
+                                    <TimerRow title="802.11 Fingerprinting" timer={this.state.systemMetrics.tagged_params_fingerprint_timing}/>
                                 </tbody>
                             </table>
                         </div>

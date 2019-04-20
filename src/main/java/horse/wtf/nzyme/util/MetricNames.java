@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.util;
 
+import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.ouis.OUIManager;
 
@@ -27,5 +28,7 @@ public class MetricNames {
     public static final String FRAME_COUNT = name(Dot11MonitorProbe.class, "frames");
     public static final String FRAME_TIMER = name(Dot11MonitorProbe.class, "timing");
     public static final String OUI_LOOKUP_TIMER = name(OUIManager.class, "lookup-timing");
+    public static final String TAGGED_PARAMS_PARSE_TIMER = name(Dot11TaggedParameters.class, "parse-timing");
+    public static final String TAGGED_PARAMS_FINGERPRINT_TIMER = name(Dot11TaggedParameters.class, "fingerprint-timing");
 
 }
