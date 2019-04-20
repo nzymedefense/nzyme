@@ -43,7 +43,6 @@ public class Dot11TaggedParameters {
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
             .add(1)   // Supported Rates
-            .add(42)  // ERP
             .add(45)  // HT Capabilities
             .add(48)  // RSN
             .add(50)  // Extended Supported Rates
