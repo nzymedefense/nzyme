@@ -42,7 +42,6 @@ public class Dot11TaggedParameters {
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
-    // TODO include which vendor specific tags are present.
     // TODO include WPS
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
@@ -139,11 +138,21 @@ public class Dot11TaggedParameters {
         Timer.Context time = this.fingerprintTimer.time();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
+        // Add all payloads of default tags.
         params.forEach((k,v) -> {
             try {
                 if (FINGERPRINT_IDS.contains(k)) {
                     bytes.write(v);
                 }
+            } catch (IOException e) {
+                LOG.error("Could not assemble bytes for fingerprinting.", e);
+            }
+        });
+
+        // Add sequence of vendor specific tags.
+        vendorSpecificParams.forEach((k,v) -> {
+            try {
+                bytes.write(k.getBytes());
             } catch (IOException e) {
                 LOG.error("Could not assemble bytes for fingerprinting.", e);
             }
