@@ -14,7 +14,7 @@ class SSIDRow extends Reflux.Component {
 
         let i = 0;
         fingerprints.forEach(function(f) {
-            abbv += f.substr(0,6);;
+            abbv += f;
 
             if (i !== fingerprints.length-1) {
                 abbv += ","
@@ -40,8 +40,6 @@ class SSIDRow extends Reflux.Component {
                 <td>{numeral(c.signal_quality_max).format('0')}</td>
                 <td className={c.fingerprints.length !== 1 ? "text-danger" : ""}>
                     {SSIDRow._abbreviateFingerprints(c.fingerprints)}
-                    &nbsp;
-                    <a href="#">Show</a>
                 </td>
             </tr>
         )
