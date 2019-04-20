@@ -18,11 +18,13 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class Dot11ProbeConfiguration {
@@ -39,8 +41,9 @@ public abstract class Dot11ProbeConfiguration {
     public abstract String channelHopCommand();
 
     public abstract List<Dot11NetworkDefinition> getDot11Networks();
+    public abstract Map<String, BanditFingerprintDefinition> getBanditFingerprints();
 
-    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks) {
+    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks, Map<String, BanditFingerprintDefinition> getBanditFingerprints) {
         return builder()
                 .probeName(probeName)
                 .graylogAddresses(graylogAddresses)
@@ -50,6 +53,7 @@ public abstract class Dot11ProbeConfiguration {
                 .channelHopInterval(channelHopInterval)
                 .channelHopCommand(channelHopCommand)
                 .getDot11Networks(getDot11Networks)
+                .getBanditFingerprints(getBanditFingerprints)
                 .build();
     }
 
@@ -74,6 +78,8 @@ public abstract class Dot11ProbeConfiguration {
         public abstract Builder channelHopCommand(String channelHopCommand);
 
         public abstract Builder getDot11Networks(List<Dot11NetworkDefinition> getDot11Networks);
+
+        public abstract Builder getBanditFingerprints(Map<String, BanditFingerprintDefinition> getBanditFingerprints);
 
         public abstract Dot11ProbeConfiguration build();
     }
