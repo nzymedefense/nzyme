@@ -21,6 +21,7 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -36,8 +37,11 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 
 public class Configuration {
+
+    // TODO lazy load. make everything that reads priavate and only allow access to cached vars.
 
     private static final Logger LOG = LogManager.getLogger(Nzyme.class);
 
@@ -185,6 +189,20 @@ public class Configuration {
         }
     }
 
+    public Map<String, BanditFingerprintDefinition> getKnownBanditFingerprints() {
+        ImmutableMap.Builder<String, BanditFingerprintDefinition> fingerprints = new ImmutableMap.Builder<>();
+
+        for (Config def : root.getConfigList(Keys.KNOWN_BANDIT_FINGERPRINTS)) {
+            String fingerprint = def.getString(Keys.BANDIT_FINGERPRINT);
+            fingerprints.put(
+                    fingerprint,
+                    BanditFingerprintDefinition.create(fingerprint, def.getString(Keys.BANDIT_NAME)))
+            ;
+        }
+
+        return fingerprints.build();
+    }
+
     public boolean isPrintPacketInfo() {
         return printPacketInfo;
     }
@@ -209,6 +227,7 @@ public class Configuration {
         expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
         expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);
         expect(root, Keys.DOT11_ALERTS, "<root>", List.class);
+        expect(root, Keys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
 
         // 802.11 Monitors.
         int i = 0;
@@ -295,6 +314,17 @@ public class Configuration {
                 }
                 bssids.add(bssid);
             }
+        }
+
+        // Known bandit fingerprints: Each fingerprint is unique.
+        List<String> usedFingerprints = Lists.newArrayList();
+        for (Config def : root.getConfigList(Keys.KNOWN_BANDIT_FINGERPRINTS)) {
+            String fingerprint = def.getString(Keys.BANDIT_FINGERPRINT);
+            if (usedFingerprints.contains(fingerprint)) {
+                throw new InvalidConfigurationException("Duplicate Known Bandit Fingerprint [" + fingerprint + "].");
+            }
+
+            usedFingerprints.add(fingerprint);
         }
 
         // TODO: No trap pair device is used multiple times or as a monitor.

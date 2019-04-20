@@ -28,6 +28,7 @@ public class Keys {
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAP_PAIRS = "802_11_trap_pairs";
+    public static final String KNOWN_BANDIT_FINGERPRINTS = "known_bandit_fingerprints";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -56,5 +57,7 @@ public class Keys {
     public static final String DEVICE_MONITOR = "device_monitor";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
+    public static final String BANDIT_FINGERPRINT = "fingerprint";
+    public static final String BANDIT_NAME = "bandit_name";
 
 }

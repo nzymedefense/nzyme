@@ -213,7 +213,8 @@ public class NzymeImpl implements Nzyme {
                     m.channels(),
                     m.channelHopInterval(),
                     m.channelHopCommand(),
-                    configuration.getDot11Networks()
+                    configuration.getDot11Networks(),
+                    configuration.getKnownBanditFingerprints()
             ), getMetrics());
 
             // Add standard interceptors for broad channel monitoring.
@@ -229,8 +230,11 @@ public class NzymeImpl implements Nzyme {
             if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
                 probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
             }
-            if(configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
                 probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(probe).getInterceptors());
+            }
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.KNOWN_BANDIT_FINGERPRINT)) {
+                probe.addFrameInterceptors(new KnownBanditFingerprintInterceptorSet(probe).getInterceptors());
             }
 
             // Statistics interceptor.
