@@ -21,8 +21,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.Lists;
 import com.google.common.math.Stats;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,11 +43,21 @@ public abstract class Channel {
     @JsonProperty("signal_quality_max")
     public abstract AtomicInteger signalMax();
 
+    @JsonProperty("fingerprints")
+    public abstract List<String> fingerprints();
+
     @JsonIgnore
     public abstract EvictingQueue<Integer> recentSignalQuality();
 
     @JsonIgnore
     public abstract EvictingQueue<Boolean> recentDeltaStates();
+
+    @JsonIgnore
+    public void registerFingerprint(String fingerprint) {
+        if (!fingerprints().contains(fingerprint)) {
+            fingerprints().add(fingerprint);
+        }
+    }
 
     @JsonProperty("signal_quality_avg_recent")
     public int signalQualityRecentAverage() {
@@ -93,9 +106,13 @@ public abstract class Channel {
         );
     }
 
-    public static Channel create(AtomicLong totalFrames, int signal) {
+    public static Channel create(AtomicLong totalFrames, int signal, String fingerprint) {
         EvictingQueue<Integer> q = EvictingQueue.create(RECENT_MAX_ENTRIES);
         EvictingQueue<Boolean> d = EvictingQueue.create(RECENT_MAX_ENTRIES);
+
+        List<String> fingerprints = new ArrayList<String>() {{
+            add(fingerprint);
+        }};
 
         return builder()
                 .totalFrames(totalFrames)
@@ -103,6 +120,7 @@ public abstract class Channel {
                 .signalMax(new AtomicInteger(signal))
                 .recentSignalQuality(q)
                 .recentDeltaStates(d)
+                .fingerprints(fingerprints)
                 .build();
     }
 
@@ -121,6 +139,8 @@ public abstract class Channel {
         public abstract Builder recentSignalQuality(EvictingQueue<Integer> recentSignalQuality);
 
         public abstract Builder recentDeltaStates(EvictingQueue<Boolean> recentDeltaStates);
+
+        public abstract Builder fingerprints(List<String> fingerprints);
 
         public abstract Channel build();
     }

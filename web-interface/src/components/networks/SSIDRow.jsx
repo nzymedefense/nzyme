@@ -9,6 +9,23 @@ class SSIDRow extends Reflux.Component {
         super(props);
     }
 
+    static _abbreviateFingerprints(fingerprints) {
+        let abbv = "";
+
+        let i = 0;
+        fingerprints.forEach(function(f) {
+            abbv += f.substr(0,6);;
+
+            if (i !== fingerprints.length-1) {
+                abbv += ","
+            }
+
+            i++;
+        });
+
+        return abbv;
+    }
+
     render() {
         const c = this.props.channel;
 
@@ -21,8 +38,11 @@ class SSIDRow extends Reflux.Component {
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{numeral(c.signal_quality_min).format('0')}</td>
                 <td>{numeral(c.signal_quality_max).format('0')}</td>
-                <td>{numeral(c.signal_quality_avg_recent).format('0')}</td>
-                <td>{numeral(c.out_of_delta_avg_recent_percent).format('0.00')}</td>
+                <td className={c.fingerprints.length !== 1 ? "text-danger" : ""}>
+                    {SSIDRow._abbreviateFingerprints(c.fingerprints)}
+                    &nbsp;
+                    <a href="#">Show</a>
+                </td>
             </tr>
         )
     }

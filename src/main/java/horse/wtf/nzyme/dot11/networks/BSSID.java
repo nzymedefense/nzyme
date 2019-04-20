@@ -55,6 +55,23 @@ public abstract class BSSID {
         return best;
     }
 
+    @JsonProperty("fingerprinting_ok")
+    public boolean fingerprintingOkay() {
+        boolean result = true;
+
+        for (SSID ssid : ssids().values()) {
+            for (Channel channel : ssid.channels().values()) {
+                if (channel.fingerprints().size() != 1) {
+                    return false;
+                }
+            }
+
+        }
+
+
+        return result;
+    }
+
     @JsonIgnore
     public void updateLastSeen() {
         this.lastSeen = new DateTime();

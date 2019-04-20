@@ -52,6 +52,18 @@ class BSSIDTableRow extends Reflux.Component {
         }
     }
 
+    static _decideFingerprintingStatus(status) {
+        if (status) {
+            return (
+                <i className="fas fa-check-square text-success" title="Fingerprinting reports no issues."></i>
+            )
+        } else {
+            return (
+                <i className="fas fa-exclamation-triangle text-danger" title="Multiple fingerprints recorded."></i>
+            )
+        }
+    }
+
     _bssidClick(e) {
         e.preventDefault();
 
@@ -73,6 +85,7 @@ class BSSIDTableRow extends Reflux.Component {
                     </td>
                     <td>{this._printSSIDs(this.props.bssid.ssids)}</td>
                     <td>{this.props.bssid.oui}</td>
+                    <td>{BSSIDTableRow._decideFingerprintingStatus(this.props.bssid.fingerprinting_ok)}</td>
                     <td><span title={this.props.bssid.last_seen}>{moment(this.props.bssid.last_seen).fromNow()}</span></td>
                 </tr>
 

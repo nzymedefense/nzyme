@@ -73,17 +73,17 @@ public class Networks {
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), frame.transmitterFingerprint(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), frame.transmitterFingerprint(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
-    private synchronized void register(String transmitter, String ssidName, int channelNumber, int signalQuality) {
+    private synchronized void register(String transmitter, String transmitterFingerprint, String ssidName, int channelNumber, int signalQuality) {
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -139,10 +139,13 @@ public class Networks {
                 // Add delta state.
                 channel.recentDeltaStates().add(inDelta);
 
+                // Add fingerprint.
+                channel.registerFingerprint(transmitterFingerprint);
+
                 ssid.channels().replace(channelNumber, channel);
             } else {
                 // Create new channel.
-                Channel channel = Channel.create(new AtomicLong(1), signalQuality);
+                Channel channel = Channel.create(new AtomicLong(1), signalQuality, transmitterFingerprint);
                 ssid.channels().put(channelNumber, channel);
             }
         } catch (NullPointerException e) {
