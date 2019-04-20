@@ -13,7 +13,7 @@ class SSIDTableRow extends Reflux.Component {
 
         return (
             <tr style={{"display": this.props.display ? "" : "none"}} >
-                <td colSpan="6">
+                <td colSpan="7">
                     <table className="table table-sm table-hover table-striped">
                         <thead>
                             <tr>

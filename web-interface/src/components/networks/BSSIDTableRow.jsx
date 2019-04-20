@@ -55,11 +55,23 @@ class BSSIDTableRow extends Reflux.Component {
     static _decideFingerprintingStatus(status) {
         if (status) {
             return (
-                <i className="fas fa-check-square text-success" title="Fingerprinting reports no issues."></i>
+                <i className="fas fa-check-square text-success" title="Fingerprinting reports no issues." />
             )
         } else {
             return (
-                <i className="fas fa-exclamation-triangle text-danger" title="Multiple fingerprints recorded."></i>
+                <i className="fas fa-exclamation-triangle text-danger" title="Multiple fingerprints recorded." />
+            )
+        }
+    }
+
+    static _decideWPSStatus(status) {
+        if (status) {
+            return (
+                <i className="fas fa-check-square text-warning" title="WPS is enabled on this station." />
+            )
+        } else {
+            return (
+                <i className="fas fa-times-circle text-muted" title="WPS is not enabled on this station." />
             )
         }
     }
@@ -86,6 +98,7 @@ class BSSIDTableRow extends Reflux.Component {
                     <td>{this._printSSIDs(this.props.bssid.ssids)}</td>
                     <td>{this.props.bssid.oui}</td>
                     <td>{BSSIDTableRow._decideFingerprintingStatus(this.props.bssid.fingerprinting_ok)}</td>
+                    <td>{BSSIDTableRow._decideWPSStatus(this.props.bssid.is_wps)}</td>
                     <td><span title={this.props.bssid.last_seen}>{moment(this.props.bssid.last_seen).fromNow()}</span></td>
                 </tr>
 

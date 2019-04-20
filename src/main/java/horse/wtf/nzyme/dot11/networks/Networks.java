@@ -73,17 +73,17 @@ public class Networks {
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
-    private synchronized void register(String transmitter, String transmitterFingerprint, String ssidName, int channelNumber, int signalQuality) {
+    private synchronized void register(String transmitter, String transmitterFingerprint, boolean isWPS, String ssidName, int channelNumber, int signalQuality) {
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -111,6 +111,9 @@ public class Networks {
 
         // Update 'last seen'.
         bssid.updateLastSeen();
+
+        // Update properties that could change during the lifetime of this BSSID.
+        bssid.updateIsWPS(isWPS);
 
         // Find our SSID.
         SSID ssid = bssid.ssids().get(ssidName);

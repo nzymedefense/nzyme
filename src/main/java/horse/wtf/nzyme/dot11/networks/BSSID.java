@@ -39,6 +39,9 @@ public abstract class BSSID {
     @JsonProperty("last_seen")
     public DateTime lastSeen = new DateTime();
 
+    @JsonProperty("is_wps")
+    public boolean isWPS;
+
     @JsonProperty("best_recent_signal_quality")
     public int bestRecentSignalQuality() {
         int best = 0;
@@ -72,17 +75,22 @@ public abstract class BSSID {
         return result;
     }
 
-    @JsonIgnore
-    public void updateLastSeen() {
-        this.lastSeen = new DateTime();
-    }
-
     public static BSSID create(Map<String, SSID> ssids, String oui, String bssid) {
         return builder()
                 .ssids(ssids)
                 .oui(oui)
                 .bssid(bssid)
                 .build();
+    }
+
+    @JsonIgnore
+    public void updateLastSeen() {
+        this.lastSeen = new DateTime();
+    }
+
+    @JsonIgnore
+    public void updateIsWPS(boolean isWPS) {
+        this.isWPS = isWPS;
     }
 
     public static Builder builder() {
@@ -99,4 +107,5 @@ public abstract class BSSID {
 
         public abstract BSSID build();
     }
+
 }
