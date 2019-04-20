@@ -13,7 +13,7 @@ class SSIDTableRow extends Reflux.Component {
 
         return (
             <tr style={{"display": this.props.display ? "" : "none"}} >
-                <td colSpan="5">
+                <td colSpan="6">
                     <table className="table table-sm table-hover table-striped">
                         <thead>
                             <tr>
@@ -22,8 +22,8 @@ class SSIDTableRow extends Reflux.Component {
                                 <th>Total Frames</th>
                                 <th>Quality (min)</th>
                                 <th>Quality (max)</th>
-                                <th>Recent Quality Average</th>
-                                <th>Recent Quality Stddev</th>                    </tr>
+                                <th>Fingerprint</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {Object.keys(this.props.ssid.channels).map(function (key,i) {
