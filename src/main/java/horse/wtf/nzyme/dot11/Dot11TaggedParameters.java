@@ -43,9 +43,11 @@ public class Dot11TaggedParameters {
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
     // TODO include WPS
+    // TODO get rid of isWPA2 and parse out full security config instead.
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
             .add(1)   // Supported Rates
+            .add(7)   // Country Information
             .add(45)  // HT Capabilities
             .add(48)  // RSN
             .add(50)  // Extended Supported Rates
@@ -54,6 +56,8 @@ public class Dot11TaggedParameters {
 
     private static final int ID_SSID = 0;
     private static final int ID_WPA_2 = 48;
+
+    private static final String ID_VENDOR_SPECIFIC_WPS = "00:50:F2-4";
 
     private final TreeMap<Integer, byte[]> params;
     private final TreeMap<String, byte[]> vendorSpecificParams;
@@ -111,6 +115,10 @@ public class Dot11TaggedParameters {
 
     public boolean isWPA2() {
         return params.containsKey(ID_WPA_2);
+    }
+
+    public boolean isWPS() {
+        return vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPS);
     }
 
     public String getSSID() throws MalformedFrameException, NoSuchTaggedElementException {
