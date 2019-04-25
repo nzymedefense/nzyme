@@ -24,10 +24,6 @@ class BSSIDTableRow extends Reflux.Component {
         Object.keys(ssids).forEach(function (key, ix) {
             let ssid = ssids[key].name.trim();
 
-            if (ssid.length === 0 || /[^a-zA-Z0-9]/.test(ssid) || ssid.startsWith("\u0000")) {
-                ssid = "[hidden]";
-            }
-
             x += ssid;
 
             if(ix < total-1) {
