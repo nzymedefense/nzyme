@@ -18,10 +18,14 @@
 package horse.wtf.nzyme.rest.resources;
 
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.dot11.networks.BSSID;
+import horse.wtf.nzyme.dot11.networks.Channel;
+import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.rest.responses.networks.BSSIDsResponse;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +45,20 @@ public class NetworksResource {
                 nzyme.getNetworks().getBSSIDs().size(),
                 nzyme.getNetworks().getBSSIDs()
         )).build();
+    }
+
+    @POST
+    @Path(("/fingerprints/reset"))
+    public Response resetFingerprints() {
+        for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
+            for (SSID ssid : bssid.ssids().values()) {
+                for (Channel channel : ssid.channels().values()) {
+                    channel.fingerprints().clear();
+                }
+            }
+        }
+
+        return Response.ok().build();
     }
 
 }

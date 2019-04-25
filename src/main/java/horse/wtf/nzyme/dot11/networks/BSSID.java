@@ -64,13 +64,12 @@ public abstract class BSSID {
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                if (channel.fingerprints().size() != 1) {
+                if (channel.fingerprints().size() > 1) {
                     return false;
                 }
             }
 
         }
-
 
         return result;
     }
