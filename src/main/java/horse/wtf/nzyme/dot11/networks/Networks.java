@@ -84,6 +84,11 @@ public class Networks {
     }
 
     private synchronized void register(String transmitter, String transmitterFingerprint, boolean isWPS, String ssidName, int channelNumber, int signalQuality) {
+        // Skip broadcast frames. They don't advertise a specific network and we only care about specific networks.
+        if (ssidName == null || ssidName.trim().isEmpty()) {
+            return;
+        }
+
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {

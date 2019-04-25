@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
@@ -42,7 +43,6 @@ public class Dot11TaggedParameters {
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
-    // TODO include WPS
     // TODO get rid of isWPA2 and parse out full security config instead.
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
@@ -134,11 +134,10 @@ public class Dot11TaggedParameters {
 
             // Check if the SSID is valid UTF-8 (might me malformed frame)
             if (!Tools.isValidUTF8(bytes)) {
-                LOG.trace("SSID not valid UTF8.");
                 throw new MalformedFrameException();
             }
 
-            return new String(bytes, Charset.forName("UTF-8"));
+            return new String(bytes, Charsets.UTF_8);
         }
     }
 
