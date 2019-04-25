@@ -79,7 +79,7 @@ public class Networks {
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), null, frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
@@ -143,7 +143,9 @@ public class Networks {
                 channel.recentDeltaStates().add(inDelta);
 
                 // Add fingerprint.
-                channel.registerFingerprint(transmitterFingerprint);
+                if (transmitterFingerprint != null) {
+                    channel.registerFingerprint(transmitterFingerprint);
+                }
 
                 ssid.channels().replace(channelNumber, channel);
             } else {
