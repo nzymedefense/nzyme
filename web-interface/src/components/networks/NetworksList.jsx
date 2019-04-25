@@ -46,6 +46,14 @@ class NetworksList extends Reflux.Component {
         this.setState();
     }
 
+    _resetFingerprints(e) {
+        e.preventDefault();
+
+        if (window.confirm("Reset Fingerprints? This can be necessary after a malicious device was detected but the threat is over and you no longer need the alert.")) {
+            NetworksActions.resetFingerprints();
+        }
+    }
+
     render() {
         if (!this.state.bssids) {
             return <LoadingSpinner />;
@@ -53,12 +61,16 @@ class NetworksList extends Reflux.Component {
             return (
                 <div>
                     <div className="row">
-                        <div className="col-md-12">
-                            Filter:
-
+                        <div className="col-md-6">
                             <form onSubmit={this._applyFilter}>
                                 <input type="text" name="filter" ref={this.filterInput} style={{float:"left",marginRight:5}} />
                                 <input type="submit" value="Filter" />
+                            </form>
+                        </div>
+
+                        <div className="col-md-6 text-right">
+                            <form onSubmit={this._resetFingerprints}>
+                                <input type="submit" value="Reset Fingerprints" />
                             </form>
                         </div>
                     </div>

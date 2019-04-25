@@ -3,6 +3,8 @@ import Reflux from 'reflux';
 import NetworksActions from "../actions/NetworksActions";
 import RESTClient from "../util/RESTClient";
 
+import {notify} from "react-notify-toast";
+
 class NetworksStore extends Reflux.Store {
 
     constructor() {
@@ -47,6 +49,12 @@ class NetworksStore extends Reflux.Store {
 
             self.setState({bssids: bssids});
         });
+    }
+
+    onResetFingerprints() {
+        RESTClient.post("/networks/fingerprints/reset/", {}, function() {
+            notify.show("Fingerprints reset.", "success");
+        })
     }
 
 }

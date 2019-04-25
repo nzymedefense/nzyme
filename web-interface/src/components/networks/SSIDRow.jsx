@@ -10,6 +10,10 @@ class SSIDRow extends Reflux.Component {
     }
 
     static listFingerprints(fingerprints) {
+        if (!fingerprints || fingerprints.length === 0) {
+            return "n/a";
+        }
+
         let abbv = "";
 
         let i = 0;
@@ -36,7 +40,7 @@ class SSIDRow extends Reflux.Component {
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{numeral(c.signal_quality_min).format('0')}</td>
                 <td>{numeral(c.signal_quality_max).format('0')}</td>
-                <td className={c.fingerprints.length !== 1 ? "text-danger" : ""}>
+                <td className={c.fingerprints.length > 1 ? "text-danger" : ""}>
                     {SSIDRow.listFingerprints(c.fingerprints)}
                 </td>
             </tr>
