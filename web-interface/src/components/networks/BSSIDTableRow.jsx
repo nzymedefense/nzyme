@@ -35,6 +35,10 @@ class BSSIDTableRow extends Reflux.Component {
             }
         });
 
+        if (x.length > 50) {
+            x = x.slice(0, 50) + " ...";
+        }
+
         return x;
     }
 
