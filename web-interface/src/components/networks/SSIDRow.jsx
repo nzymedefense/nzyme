@@ -9,12 +9,12 @@ class SSIDRow extends Reflux.Component {
         super(props);
     }
 
-    static _abbreviateFingerprints(fingerprints) {
+    static listFingerprints(fingerprints) {
         let abbv = "";
 
         let i = 0;
         fingerprints.forEach(function(f) {
-            abbv += f;
+            abbv += f ? f : "n/a";
 
             if (i !== fingerprints.length-1) {
                 abbv += ", "
@@ -29,8 +29,6 @@ class SSIDRow extends Reflux.Component {
     render() {
         const c = this.props.channel;
 
-        console.log(this.props.ssid);
-
         return (
             <tr>
                 <td>{/[^a-zA-Z0-9]/.test(this.props.ssid) ? "[hidden]" : this.props.ssid }</td>
@@ -39,7 +37,7 @@ class SSIDRow extends Reflux.Component {
                 <td>{numeral(c.signal_quality_min).format('0')}</td>
                 <td>{numeral(c.signal_quality_max).format('0')}</td>
                 <td className={c.fingerprints.length !== 1 ? "text-danger" : ""}>
-                    {SSIDRow._abbreviateFingerprints(c.fingerprints)}
+                    {SSIDRow.listFingerprints(c.fingerprints)}
                 </td>
             </tr>
         )
