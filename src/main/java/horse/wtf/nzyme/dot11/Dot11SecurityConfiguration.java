@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 import java.util.List;
@@ -42,8 +43,13 @@ public abstract class Dot11SecurityConfiguration {
         UNKNOWN
     }
 
+    @JsonProperty("wpa_mode")
     public abstract MODE wpaMode();
+
+    @JsonProperty("key_mgmt_modes")
     public abstract List<KEY_MGMT_MODE> keyManagementModes();
+
+    @JsonProperty("encryption_modes")
     public abstract List<ENCRYPTION_MODE> encryptionModes();
 
     public static Dot11SecurityConfiguration create(MODE wpaMode, List<KEY_MGMT_MODE> keyManagementModes, List<ENCRYPTION_MODE> encryptionModes) {

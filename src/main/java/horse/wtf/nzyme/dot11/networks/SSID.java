@@ -17,10 +17,14 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 
+import java.util.List;
 import java.util.Map;
 
 @AutoValue
@@ -31,6 +35,14 @@ public abstract class SSID {
 
     @JsonProperty
     public abstract Map<Integer, Channel> channels();
+
+    @JsonProperty
+    public List<Dot11SecurityConfiguration> security = Lists.newArrayList();
+
+    @JsonIgnore
+    public void updateSecurity(List<Dot11SecurityConfiguration> security) {
+        this.security = security;
+    }
 
     public static SSID create(String name) {
         return builder()
