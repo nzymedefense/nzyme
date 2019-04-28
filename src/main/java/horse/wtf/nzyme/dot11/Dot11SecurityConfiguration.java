@@ -32,12 +32,14 @@ public abstract class Dot11SecurityConfiguration {
 
     public enum KEY_MGMT_MODE {
         PSK,
-        EAM
+        EAM,
+        UNKNOWN
     }
 
     public enum ENCRYPTION_MODE {
         TKIP,
-        CCMP // AES
+        CCMP, // AES
+        UNKNOWN
     }
 
     public abstract MODE wpaMode();
