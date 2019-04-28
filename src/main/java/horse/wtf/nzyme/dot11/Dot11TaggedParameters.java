@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
+import horse.wtf.nzyme.dot11.networks.SecurityConfiguration;
 import horse.wtf.nzyme.util.MetricNames;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +33,6 @@ import org.pcap4j.util.ByteArrays;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.TreeMap;
 
 public class Dot11TaggedParameters {
@@ -115,6 +115,10 @@ public class Dot11TaggedParameters {
 
     public boolean isWPA2() {
         return params.containsKey(ID_WPA_2);
+    }
+
+    public SecurityConfiguration getSecurityConfiguration() {
+        return null;
     }
 
     public boolean isWPS() {
