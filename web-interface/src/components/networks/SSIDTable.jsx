@@ -20,14 +20,13 @@ class SSIDTableRow extends Reflux.Component {
                                 <th>SSID</th>
                                 <th>Channel</th>
                                 <th>Total Frames</th>
-                                <th>Quality (min)</th>
-                                <th>Quality (max)</th>
+                                <th>Security</th>
                                 <th>Fingerprint</th>
                             </tr>
                         </thead>
                         <tbody>
                             {Object.keys(this.props.ssid.channels).map(function (key,i) {
-                                return <SSIDRow key={i} ssid={self.props.ssid.name} channelNumber={key} channel={self.props.ssid.channels[key]} />;
+                                return <SSIDRow key={i} ssid={self.props.ssid} channelNumber={key} channel={self.props.ssid.channels[key]} />;
                             })}
                         </tbody>
                     </table>

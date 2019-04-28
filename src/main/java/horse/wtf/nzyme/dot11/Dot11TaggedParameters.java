@@ -132,7 +132,7 @@ public class Dot11TaggedParameters {
                 List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, wpa1);
 
                 configurations.add(Dot11SecurityConfiguration.create(
-                        Dot11SecurityConfiguration.MODE.WPA_1,
+                        Dot11SecurityConfiguration.MODE.WPA1,
                         keyMgmtModes,
                         encryptionModes
                 ));
@@ -151,7 +151,7 @@ public class Dot11TaggedParameters {
                 List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, wpa2);
 
                 configurations.add(Dot11SecurityConfiguration.create(
-                        Dot11SecurityConfiguration.MODE.WPA_2,
+                        Dot11SecurityConfiguration.MODE.WPA2,
                         keyMgmtModes,
                         encryptionModes
                 ));

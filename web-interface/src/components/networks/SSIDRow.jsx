@@ -9,7 +9,9 @@ class SSIDRow extends Reflux.Component {
         super(props);
     }
 
-    static listFingerprints(fingerprints) {
+    _listFingerprints() {
+        const fingerprints = this.props.channel.fingerprints;
+
         if (!fingerprints || fingerprints.length === 0) {
             return "n/a";
         }
@@ -30,18 +32,38 @@ class SSIDRow extends Reflux.Component {
         return abbv;
     }
 
+    _printSecurity() {
+        let x = "";
+
+        const total = this.props.ssid.security.length;
+        this.props.ssid.security.forEach(function(mode, ix) {
+            x += mode.as_string;
+
+            if(ix < total-1) {
+                x += ", ";
+            }
+        });
+
+        if (!x) {
+            return (
+                <span className="text-warning">None</span>
+            )
+        }
+
+        return x;
+    }
+
     render() {
         const c = this.props.channel;
 
         return (
             <tr>
-                <td>{this.props.ssid }</td>
+                <td>{this.props.ssid.name}</td>
                 <td><strong>{this.props.channelNumber}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
-                <td>{numeral(c.signal_quality_min).format('0')}</td>
-                <td>{numeral(c.signal_quality_max).format('0')}</td>
+                <td>{this._printSecurity()}</td>
                 <td className={c.fingerprints.length > 1 ? "text-danger" : ""}>
-                    {SSIDRow.listFingerprints(c.fingerprints)}
+                    {this._listFingerprints()}
                 </td>
             </tr>
         )

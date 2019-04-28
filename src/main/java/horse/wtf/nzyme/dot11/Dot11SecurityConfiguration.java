@@ -26,9 +26,8 @@ import java.util.List;
 public abstract class Dot11SecurityConfiguration {
 
     public enum MODE {
-        WEP,
-        WPA_1,
-        WPA_2
+        WPA1,
+        WPA2
     }
 
     public enum KEY_MGMT_MODE {
@@ -51,6 +50,22 @@ public abstract class Dot11SecurityConfiguration {
 
     @JsonProperty("encryption_modes")
     public abstract List<ENCRYPTION_MODE> encryptionModes();
+
+    @JsonProperty("as_string")
+    public String asString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(wpaMode());
+        for (KEY_MGMT_MODE managementMode : keyManagementModes()) {
+            sb.append("-").append(managementMode);
+        }
+
+        for (ENCRYPTION_MODE encryptionMode : encryptionModes()) {
+            sb.append("-").append(encryptionMode);
+        }
+
+        return sb.toString();
+    }
 
     public static Dot11SecurityConfiguration create(MODE wpaMode, List<KEY_MGMT_MODE> keyManagementModes, List<ENCRYPTION_MODE> encryptionModes) {
         return builder()
