@@ -63,6 +63,13 @@ public class Tools {
         return SAFE_PARAMETER.matchesAllOf(x);
     }
 
+    public static String byteArrayToHexPrettyPrint(byte[] a) {
+        StringBuilder sb = new StringBuilder(a.length * 2);
+        for(byte b: a)
+            sb.append(String.format("%02x", b)).append(" ");
+        return sb.toString();
+    }
+
     public static String safeAlphanumericString(String x) {
         return x.replaceAll("[^A-Za-z0-9]", "");
     }
