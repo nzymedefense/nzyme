@@ -16,8 +16,9 @@ class BSSIDTableRow extends Reflux.Component {
         this._bssidClick = this._bssidClick.bind(this);
     }
 
-    _printSSIDs(ssids) {
+    _printSSIDs() {
         let x = "";
+        const ssids = this.props.bssid.ssids;
 
         let total = Object.keys(ssids).length;
 
@@ -76,6 +77,35 @@ class BSSIDTableRow extends Reflux.Component {
         }
     }
 
+    _printSecurity() {
+        let x = "";
+        const ssids = this.props.bssid.ssids;
+        const total = ssids.length;
+
+        Object.keys(ssids).forEach(function (key, ix) {
+            const totalModes = ssids[key].security.length;
+            ssids[key].security.forEach(function(security, ix) {
+                x += security.wpa_mode;
+
+                if(ix < totalModes-1) {
+                    x += ", ";
+                }
+            });
+
+            if(ix < total-1) {
+                x += ", ";
+            }
+        });
+
+        if (!x) {
+            return (
+                <span className="text-warning">None</span>
+            )
+        }
+
+        return x;
+    }
+
     _bssidClick(e) {
         e.preventDefault();
 
@@ -89,17 +119,17 @@ class BSSIDTableRow extends Reflux.Component {
         return (
             <React.Fragment>
                 <tr>
-                    <td><a href="#" onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
+                    <td><a href="#" title={this.props.bssid.last_seen} onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
                     <td>
                         <span className={this._signalQualityColor(this.props.bssid.best_recent_signal_quality)}>
                             {this.props.bssid.best_recent_signal_quality}
                         </span>
                     </td>
-                    <td>{this._printSSIDs(this.props.bssid.ssids)}</td>
+                    <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>
                     <td>{this.props.bssid.oui}</td>
+                    <td>{this._printSecurity()}</td>
                     <td>{BSSIDTableRow._decideFingerprintingStatus(this.props.bssid.fingerprinting_ok)}</td>
                     <td>{BSSIDTableRow._decideWPSStatus(this.props.bssid.is_wps)}</td>
-                    <td><span title={this.props.bssid.last_seen}>{moment(this.props.bssid.last_seen).fromNow()}</span></td>
                 </tr>
 
                 {Object.keys(this.props.bssid.ssids).map(function (key,i) {
