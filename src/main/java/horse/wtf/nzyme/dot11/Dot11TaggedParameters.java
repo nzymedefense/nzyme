@@ -45,7 +45,7 @@ public class Dot11TaggedParameters {
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
     public static final int WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION = 10;
-    public static final int WPA1_UNICAST_KEY_MGMT_COUNT_POSITION = 20;
+    public static final int WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION = 6;
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
             .add(1)   // Supported Rates
@@ -125,49 +125,17 @@ public class Dot11TaggedParameters {
 
         // WPA 1.
         if (vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPA)) {
-            ImmutableList.Builder<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = new ImmutableList.Builder<>();
-            ImmutableList.Builder<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = new ImmutableList.Builder<>();
-
             try {
                 byte[] wpa1 = vendorSpecificParams.get(ID_VENDOR_SPECIFIC_WPA);
                 LOG.trace("WPA1 payload: {}", () -> Tools.byteArrayToHexPrettyPrint(wpa1));
 
-                // Cipher Suites / Encryption Modes.
-                int cypherSuitesCount = wpa1[WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION];
-                LOG.trace("WPA1 unicast cyphers count: {}", cypherSuitesCount);
-                parseSuites(cypherSuitesCount, wpa1, WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION).forEach(suite -> {
-                    switch(suite) {
-                        case 2:
-                            encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
-                            break;
-                        case 4:
-                            encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
-                            break;
-                        default:
-                            encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.UNKNOWN);
-                    }
-                });
-
-                // Auth Key Management Modes.
-                int keyMgmtModesCount = wpa1[WPA1_UNICAST_KEY_MGMT_COUNT_POSITION];
-                LOG.trace("WPA1 key management modes count: {}", keyMgmtModesCount);
-                parseSuites(keyMgmtModesCount, wpa1, WPA1_UNICAST_KEY_MGMT_COUNT_POSITION).forEach(suite -> {
-                    switch(suite) {
-                        case 1:
-                            keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
-                            break;
-                        case 2:
-                            keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
-                            break;
-                        default:
-                            keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.UNKNOWN);
-                    }
-                });
+                List<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = parseEncryptionModes(WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION, wpa1);
+                List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, wpa1);
 
                 configurations.add(Dot11SecurityConfiguration.create(
                         Dot11SecurityConfiguration.MODE.WPA_1,
-                        keyMgmtModes.build(),
-                        encryptionModes.build()
+                        keyMgmtModes,
+                        encryptionModes
                 ));
             } catch(Exception e) {
                 LOG.error("Could not parse WPA1 information from frame.", e);
@@ -176,18 +144,22 @@ public class Dot11TaggedParameters {
 
         // WPA 2.
         if (params.containsKey(ID_RSN)) {
-            configurations.add(Dot11SecurityConfiguration.create(
-                    Dot11SecurityConfiguration.MODE.WPA_2,
-                    Collections.emptyList(),
-                    Collections.emptyList()
-            ));
+            try {
+                byte[] wpa2 = params.get(ID_RSN);
+                LOG.trace("WPA2 payload: {}", () -> Tools.byteArrayToHexPrettyPrint(wpa2));
 
-            // parse wpa 2 key mgmt modes
+                List<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = parseEncryptionModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION, wpa2);
+                List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, wpa2);
 
-            // parse wpa 2 encryption modes
+                configurations.add(Dot11SecurityConfiguration.create(
+                        Dot11SecurityConfiguration.MODE.WPA_2,
+                        keyMgmtModes,
+                        encryptionModes
+                ));
+            } catch(Exception e) {
+                LOG.error("Could not parse WPA2 information from frame.", e);
+            }
         }
-
-        // TODO: WEP.
 
         return configurations.build();
     }
@@ -255,6 +227,46 @@ public class Dot11TaggedParameters {
         }
 
         return result.build();
+    }
+
+    private List<Dot11SecurityConfiguration.ENCRYPTION_MODE> parseEncryptionModes(int startPosition, byte[] payload) {
+        ImmutableList.Builder<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = new ImmutableList.Builder<>();
+
+        int cypherSuitesCount = payload[startPosition];
+        parseSuites(cypherSuitesCount, payload, startPosition).forEach(suite -> {
+            switch(suite) {
+                case 2:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
+                    break;
+                case 4:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    break;
+                default:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.UNKNOWN);
+            }
+        });
+
+        return encryptionModes.build();
+    }
+
+    private List<Dot11SecurityConfiguration.KEY_MGMT_MODE> parseKeyMgmtModes(int startPosition, byte[] payload) {
+        ImmutableList.Builder<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = new ImmutableList.Builder<>();
+
+        int keyMgmtModesCount = payload[startPosition];
+        parseSuites(keyMgmtModesCount, payload, startPosition).forEach(suite -> {
+            switch(suite) {
+                case 1:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    break;
+                case 2:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                    break;
+                default:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.UNKNOWN);
+            }
+        });
+
+        return keyMgmtModes.build();
     }
 
     public class NoSuchTaggedElementException extends Exception {
