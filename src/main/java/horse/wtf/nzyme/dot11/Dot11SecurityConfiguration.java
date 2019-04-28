@@ -15,16 +15,17 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.dot11.networks;
+package horse.wtf.nzyme.dot11;
 
 import com.google.auto.value.AutoValue;
 
 import java.util.List;
 
 @AutoValue
-public abstract class SecurityConfiguration {
+public abstract class Dot11SecurityConfiguration {
 
-    public enum WPA_MODE {
+    public enum MODE {
+        WEP,
         WPA_1,
         WPA_2
     }
@@ -39,35 +40,31 @@ public abstract class SecurityConfiguration {
         CCMP // AES
     }
 
-    public abstract boolean hasWEP();
-    public abstract List<WPA_MODE> wpaModes();
+    public abstract MODE wpaMode();
     public abstract List<KEY_MGMT_MODE> keyManagementModes();
     public abstract List<ENCRYPTION_MODE> encryptionModes();
 
-    public static SecurityConfiguration create(boolean hasWEP, List<WPA_MODE> wpaModes, List<KEY_MGMT_MODE> keyManagementModes, List<ENCRYPTION_MODE> encryptionModes) {
+    public static Dot11SecurityConfiguration create(MODE wpaMode, List<KEY_MGMT_MODE> keyManagementModes, List<ENCRYPTION_MODE> encryptionModes) {
         return builder()
-                .hasWEP(hasWEP)
-                .wpaModes(wpaModes)
+                .wpaMode(wpaMode)
                 .keyManagementModes(keyManagementModes)
                 .encryptionModes(encryptionModes)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_SecurityConfiguration.Builder();
+        return new AutoValue_Dot11SecurityConfiguration.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder hasWEP(boolean hasWEP);
-
-        public abstract Builder wpaModes(List<WPA_MODE> wpaModes);
+        public abstract Builder wpaMode(MODE wpaMode);
 
         public abstract Builder keyManagementModes(List<KEY_MGMT_MODE> keyManagementModes);
 
         public abstract Builder encryptionModes(List<ENCRYPTION_MODE> encryptionModes);
 
-        public abstract SecurityConfiguration build();
+        public abstract Dot11SecurityConfiguration build();
     }
 
 }
