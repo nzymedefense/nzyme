@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,17 +74,17 @@ public class Networks {
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), null, frame.taggedParameters().isWPS(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(frame.transmitter(), null, frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
-    private synchronized void register(String transmitter, String transmitterFingerprint, boolean isWPS, String ssidName, int channelNumber, int signalQuality) {
+    private synchronized void register(String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, String ssidName, int channelNumber, int signalQuality) {
         // Skip broadcast frames. They don't advertise a specific network and we only care about specific networks.
         if (ssidName == null || ssidName.trim().isEmpty()) {
             return;
@@ -118,10 +119,11 @@ public class Networks {
         bssid.updateLastSeen();
 
         // Update properties that could change during the lifetime of this BSSID.
-        bssid.updateIsWPS(isWPS);
+        bssid.updateIsWPS(taggedParameters.isWPS());
 
         // Find our SSID.
         SSID ssid = bssid.ssids().get(ssidName);
+        ssid.updateSecurity(taggedParameters.getSecurityConfiguration());
 
         try {
             // Create or update channel.
