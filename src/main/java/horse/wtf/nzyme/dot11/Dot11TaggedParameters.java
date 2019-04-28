@@ -21,10 +21,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
-import horse.wtf.nzyme.dot11.networks.SecurityConfiguration;
+import com.sun.xml.internal.bind.v2.util.CollisionCheckStack;
 import horse.wtf.nzyme.util.MetricNames;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
@@ -33,6 +34,8 @@ import org.pcap4j.util.ByteArrays;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.TreeMap;
 
 public class Dot11TaggedParameters {
@@ -42,8 +45,6 @@ public class Dot11TaggedParameters {
     public static final int BEACON_TAGGED_PARAMS_POSITION = 36;
     public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
-
-    // TODO get rid of isWPA2 and parse out full security config instead.
 
     public static ImmutableList<Integer> FINGERPRINT_IDS = new ImmutableList.Builder<Integer>()
             .add(1)   // Supported Rates
@@ -55,9 +56,10 @@ public class Dot11TaggedParameters {
             .build();
 
     private static final int ID_SSID = 0;
-    private static final int ID_WPA_2 = 48;
+    private static final int ID_RSN = 48;
 
     private static final String ID_VENDOR_SPECIFIC_WPS = "00:50:F2-4";
+    private static final String ID_VENDOR_SPECIFIC_WPA = "00:50:F2-1";
 
     private final TreeMap<Integer, byte[]> params;
     private final TreeMap<String, byte[]> vendorSpecificParams;
@@ -114,11 +116,41 @@ public class Dot11TaggedParameters {
     }
 
     public boolean isWPA2() {
-        return params.containsKey(ID_WPA_2);
+        return params.containsKey(ID_RSN);
     }
 
-    public SecurityConfiguration getSecurityConfiguration() {
-        return null;
+    public List<Dot11SecurityConfiguration> getSecurityConfiguration() {
+        ImmutableList.Builder<Dot11SecurityConfiguration> configurations = new ImmutableList.Builder<>();
+
+        // WPA.
+        if (vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPA)) {
+            configurations.add(Dot11SecurityConfiguration.create(
+                    Dot11SecurityConfiguration.MODE.WPA_1,
+                    Collections.emptyList(),
+                    Collections.emptyList()
+            ));
+
+            // parse wpa 1 key mgmt modes
+
+            // parse wpa 1 encryption modes
+        }
+
+        // WPA 2.
+        if (params.containsKey(ID_RSN)) {
+            configurations.add(Dot11SecurityConfiguration.create(
+                    Dot11SecurityConfiguration.MODE.WPA_2,
+                    Collections.emptyList(),
+                    Collections.emptyList()
+            ));
+
+            // parse wpa 2 key mgmt modes
+
+            // parse wpa 2 encryption modes
+        }
+
+        // TODO figure out WEP and other msising info
+
+        return configurations.build();
     }
 
     public boolean isWPS() {
