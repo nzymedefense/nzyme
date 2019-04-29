@@ -147,7 +147,7 @@ public class Configuration {
                     config.getString(Keys.SSID),
                     lowercaseBSSIDs.build(),
                     config.getIntList(Keys.CHANNELS),
-                    config.getBoolean(Keys.WPA_2)
+                    config.getStringList(Keys.SECURITY)
             ));
         }
 

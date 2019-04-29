@@ -48,8 +48,8 @@ public class Keys {
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String SSID = "ssid";
     public static final String BSSIDS = "bssids";
+    public static final String SECURITY = "security";
     public static final String BSSID = "bssid";
-    public static final String WPA_2 = "wpa2";
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
     public static final String DESTINATION = "destination";
