@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
@@ -115,10 +116,6 @@ public class Dot11TaggedParameters {
         time.stop();
     }
 
-    public boolean isWPA2() {
-        return params.containsKey(ID_RSN);
-    }
-
     public List<Dot11SecurityConfiguration> getSecurityConfiguration() {
         ImmutableList.Builder<Dot11SecurityConfiguration> configurations = new ImmutableList.Builder<>();
 
@@ -163,8 +160,25 @@ public class Dot11TaggedParameters {
         return configurations.build();
     }
 
+    public boolean isWPA1() {
+        return vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPA);
+    }
+
+    public boolean isWPA2() {
+        return params.containsKey(ID_RSN);
+    }
+
     public boolean isWPS() {
         return vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPS);
+    }
+
+    public String getFullSecurityString() {
+        ImmutableList.Builder<String> x = new ImmutableList.Builder<>();
+        getSecurityConfiguration().forEach(s -> {
+           x.add(s.asString());
+        });
+
+        return Joiner.on(", ").join(x.build());
     }
 
     public String getSSID() throws MalformedFrameException, NoSuchTaggedElementException {

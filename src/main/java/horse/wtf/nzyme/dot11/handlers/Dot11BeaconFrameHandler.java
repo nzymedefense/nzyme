@@ -57,7 +57,10 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.TRANSMITTER_FINGERPRINT, beacon.transmitterFingerprint())
                         .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
+                        .addField(FieldNames.SECURITY_FULL, beacon.taggedParameters().getFullSecurityString())
+                        .addField(FieldNames.IS_WPA1, beacon.taggedParameters().isWPA1())
                         .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
+                        .addField(FieldNames.IS_WPS, beacon.taggedParameters().isWPS())
                         .addField(FieldNames.SUBTYPE, "beacon")
                         .addFields(deltaFields),
                 meta

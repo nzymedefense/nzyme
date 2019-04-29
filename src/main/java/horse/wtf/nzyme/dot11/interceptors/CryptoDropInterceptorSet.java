@@ -49,7 +49,7 @@ public class CryptoDropInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
             public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
-                // Don't consider broadcast frames.
+                /*// Don't consider broadcast frames.
                 if (frame.ssid() == null) {
                     return;
                 }
@@ -58,7 +58,7 @@ public class CryptoDropInterceptorSet {
                     if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
                         probe.raiseAlert(CryptoDropProbeRespAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
-                }
+                }*/
             }
 
             @Override
@@ -78,7 +78,7 @@ public class CryptoDropInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
             public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
-                // Don't consider broadcast frames.
+                /*// Don't consider broadcast frames.
                 if (frame.ssid() == null) {
                     return;
                 }
@@ -87,7 +87,7 @@ public class CryptoDropInterceptorSet {
                     if(network.ssid().equals(frame.ssid()) && network.WPA2() && !frame.taggedParameters().isWPA2()) {
                         probe.raiseAlert(CryptoDropBeaconAlert.create(frame.ssid(), frame.transmitter(), frame.meta(), probe));
                     }
-                }
+                }*/
             }
 
             @Override

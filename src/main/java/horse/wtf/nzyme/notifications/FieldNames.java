@@ -33,7 +33,11 @@ public class FieldNames {
     public static final String REASON_STRING = "reason_string";
 
     public static final String IS_WEP = "is_wep";
+    public static final String SECURITY_FULL = "security_full";
+    public static final String IS_WPA1 = "is_wpa1";
     public static final String IS_WPA2 = "is_wpa2";
+    public static final String IS_WPS = "is_wps";
+
     public static final String TRANSACTION_SEQUENCE_NUMBER = "transaction_sequence_number";
 
     public static final String AUTH_ALGORITHM = "authentication_algorithm";

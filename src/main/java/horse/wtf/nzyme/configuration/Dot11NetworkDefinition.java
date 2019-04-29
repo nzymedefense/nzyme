@@ -32,21 +32,22 @@ public abstract class Dot11NetworkDefinition {
 
     public abstract List<Integer> channels();
 
-    public abstract boolean WPA2();
+    public abstract List<String> security();
 
-    public static Dot11NetworkDefinition create(String ssid, List<String> bssids, List<Integer> channels, boolean WPA2) {
+    public static Dot11NetworkDefinition create(String ssid, List<String> bssids, List<Integer> channels, List<String> security) {
         return builder()
                 .ssid(ssid)
                 .bssids(bssids)
                 .channels(channels)
-                .WPA2(WPA2)
+                .security(security)
                 .build();
     }
 
     public static boolean checkConfig(Config c) {
         return !Strings.isNullOrEmpty(c.getString(Keys.SSID))
                 && c.getStringList(Keys.BSSIDS) != null && !c.getStringList(Keys.BSSIDS).isEmpty()
-                && c.getIntList(Keys.CHANNELS) != null && !c.getIntList(Keys.CHANNELS).isEmpty();
+                && c.getIntList(Keys.CHANNELS) != null && !c.getIntList(Keys.CHANNELS).isEmpty()
+                && c.getStringList(Keys.SECURITY) != null;
     }
 
     public static Builder builder() {
@@ -61,8 +62,9 @@ public abstract class Dot11NetworkDefinition {
 
         public abstract Builder channels(List<Integer> channels);
 
-        public abstract Builder WPA2(boolean WPA2);
+        public abstract Builder security(List<String> security);
 
         public abstract Dot11NetworkDefinition build();
     }
+
 }
