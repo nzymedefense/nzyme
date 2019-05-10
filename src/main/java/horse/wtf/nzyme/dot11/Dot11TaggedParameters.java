@@ -33,6 +33,7 @@ import org.pcap4j.util.ByteArrays;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -118,6 +119,7 @@ public class Dot11TaggedParameters {
 
     public List<Dot11SecurityConfiguration> getSecurityConfiguration() {
         ImmutableList.Builder<Dot11SecurityConfiguration> configurations = new ImmutableList.Builder<>();
+        int found = 0;
 
         // WPA 1.
         if (vendorSpecificParams.containsKey(ID_VENDOR_SPECIFIC_WPA)) {
@@ -135,6 +137,8 @@ public class Dot11TaggedParameters {
                 ));
             } catch(Exception e) {
                 LOG.error("Could not parse WPA1 information from frame.", e);
+            } finally {
+                found++;
             }
         }
 
@@ -154,7 +158,17 @@ public class Dot11TaggedParameters {
                 ));
             } catch(Exception e) {
                 LOG.error("Could not parse WPA2 information from frame.", e);
+            } finally {
+                found++;
             }
+        }
+
+        if (found == 0) {
+            configurations.add(Dot11SecurityConfiguration.create(
+                    Dot11SecurityConfiguration.MODE.NONE,
+                    Collections.emptyList(),
+                    Collections.emptyList()
+            ));
         }
 
         return configurations.build();
@@ -173,12 +187,14 @@ public class Dot11TaggedParameters {
     }
 
     public String getFullSecurityString() {
-        ImmutableList.Builder<String> x = new ImmutableList.Builder<>();
-        getSecurityConfiguration().forEach(s -> {
-           x.add(s.asString());
-        });
+        return Joiner.on(", ").join(getSecurityStrings());
+    }
 
-        return Joiner.on(", ").join(x.build());
+    public List<String> getSecurityStrings() {
+        ImmutableList.Builder<String> x = new ImmutableList.Builder<>();
+        getSecurityConfiguration().forEach(s -> x.add(s.asString()));
+
+        return x.build();
     }
 
     public String getSSID() throws MalformedFrameException, NoSuchTaggedElementException {
