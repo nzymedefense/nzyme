@@ -28,27 +28,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CryptoDropProbeRespAlert extends Alert {
+public class CryptoChangeProbeRespAlert extends Alert {
 
-    private static final String DESCRIPTION = "A station is replying to devices that are looking for one of our networks (probing) and is not using WPA2 security " +
-            "but nzyme is configured to expect WPA2 security This could indicate that an attacker is spoofing your SSID (network name) but does not know the correct " +
+    private static final String DESCRIPTION = "A station is replying to devices that are looking for one of our networks (probing) and is using an unexpected wireless " +
+            "security mechanism. This could indicate that an attacker is spoofing your SSID (network name) but does not know the correct " +
             "password. Without the correct password, clients will not connect. The attacker might be trying to simply leave out the password (note that most modern " +
-            "devices will refuse to connect to a network that used to have a password but suddenly does not have one) or try a downgrade attack to exploit less secure mechanisms.";
-    private static final String DOC_LINK = "guidance-CRYPTO_DROP";
-    private static final List<String> FALSE_POSITIVES = new ArrayList<>();
+            "devices will refuse to connect to a network that used to have a password but suddenly does not have one) or try a downgrade attack to exploit less secure " +
+            "mechanisms. It could also indicate spoofing without attempting to properly replicate the original security mechanisms.";
+    private static final String DOC_LINK = "guidance-CRYPTO_CHANGE_NEW";
+    private static final List<String> FALSE_POSITIVES = new ArrayList<String>(){{
+        add("A legitimate configuration change of an access point could have caused this.");
+    }};
 
-    private CryptoDropProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
+    private CryptoChangeProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
         super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
     }
 
     @Override
     public String getMessage() {
-        return "SSID [" + getSSID() + "] was advertised without WPA2 security.";
+        return "SSID [" + getSSID() + "] was advertised with unexpected security settings [" + getEncounteredSecurity() + "].";
     }
 
     @Override
     public Alert.Type getType() {
-        return Type.CRYPTO_DROP_PROBERESP;
+        return Type.CRYPTO_CHANGE_PROBERESP;
     }
 
     public String getSSID() {
@@ -59,26 +62,33 @@ public class CryptoDropProbeRespAlert extends Alert {
         return (String) getFields().get(Keys.BSSID);
     }
 
+    public String getEncounteredSecurity() {
+        return (String) getFields().get(Keys.ENCOUNTERED_SECURITY);
+    }
+
     @Override
     public boolean sameAs(Alert alert) {
-        if (!(alert instanceof CryptoDropBeaconAlert)) {
+        if (!(alert instanceof CryptoChangeProbeRespAlert)) {
             return false;
         }
 
-        CryptoDropBeaconAlert a = (CryptoDropBeaconAlert) alert;
+        CryptoChangeProbeRespAlert a = (CryptoChangeProbeRespAlert) alert;
 
-        return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
+        return a.getSSID().equals(this.getSSID())
+                && a.getBSSID().equals(this.getBSSID())
+                && a.getEncounteredSecurity().equals(this.getEncounteredSecurity());
     }
 
-    public static CryptoDropProbeRespAlert create(String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static CryptoChangeProbeRespAlert create(String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(Keys.SSID, ssid);
         fields.put(Keys.BSSID, bssid.toLowerCase());
+        fields.put(Keys.ENCOUNTERED_SECURITY, encounteredSecurity);
         fields.put(Keys.CHANNEL, meta.getChannel());
         fields.put(Keys.FREQUENCY, meta.getFrequency());
         fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
 
-        return new CryptoDropProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new CryptoChangeProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }
 
 

@@ -28,27 +28,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CryptoDropBeaconAlert extends Alert {
+public class CryptoChangeBeaconAlert extends Alert {
 
-    private static final String DESCRIPTION = "The network is advertised without WPA2 security but nzyme is configured to expect WPA2 security. " +
+    private static final String DESCRIPTION = "The network is advertised with an unexpected wireless security mechanism. " +
             "This could indicate that an attacker is spoofing your SSID (network name) but does not know the correct password. Without the correct password, " +
             "clients will not connect. The attacker might be trying to simply leave out the password (note that most modern devices will refuse to connect " +
-            "to a network that used to have a password but suddenly does not have one) or try a downgrade attack to exploit less secure mechanisms.";
-    private static final String DOC_LINK = "guidance-CRYPTO_DROP";
-    private static final List<String> FALSE_POSITIVES = new ArrayList<>();
-
-    private CryptoDropBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
+            "to a network that used to have a password but suddenly does not have one) or try a downgrade attack to exploit less secure mechanisms. It could " +
+            "also indicate spoofing without attempting to properly replicate the original security mechanisms.";
+    private static final String DOC_LINK = "guidance-CRYPTO_CHANGE_NEW";
+    private static final List<String> FALSE_POSITIVES = new ArrayList<String>(){{
+        add("A legitimate configuration change of an access point could have caused this.");
+    }};
+    private CryptoChangeBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
         super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
     }
 
     @Override
     public String getMessage() {
-        return "SSID [" + getSSID() + "] was advertised without WPA2 security.";
+        return "SSID [" + getSSID() + "] was advertised with unexpected security settings [" + getEncounteredSecurity() + "].";
     }
 
     @Override
     public Type getType() {
-        return Type.CRYPTO_DROP_BEACON;
+        return Type.CRYPTO_CHANGE_BEACON;
     }
 
     public String getSSID() {
@@ -59,26 +61,33 @@ public class CryptoDropBeaconAlert extends Alert {
         return (String) getFields().get(Keys.BSSID);
     }
 
+    public String getEncounteredSecurity() {
+        return (String) getFields().get(Keys.ENCOUNTERED_SECURITY);
+    }
+
     @Override
     public boolean sameAs(Alert alert) {
-        if (!(alert instanceof CryptoDropBeaconAlert)) {
+        if (!(alert instanceof CryptoChangeBeaconAlert)) {
             return false;
         }
 
-        CryptoDropBeaconAlert a = (CryptoDropBeaconAlert) alert;
+        CryptoChangeBeaconAlert a = (CryptoChangeBeaconAlert) alert;
 
-        return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
+        return a.getSSID().equals(this.getSSID())
+                && a.getBSSID().equals(this.getBSSID())
+                && a.getEncounteredSecurity().equals(this.getEncounteredSecurity());
     }
 
-    public static CryptoDropBeaconAlert create(String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static CryptoChangeBeaconAlert create(String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(Keys.SSID, ssid);
         fields.put(Keys.BSSID, bssid.toLowerCase());
+        fields.put(Keys.ENCOUNTERED_SECURITY, encounteredSecurity);
         fields.put(Keys.CHANNEL, meta.getChannel());
         fields.put(Keys.FREQUENCY, meta.getFrequency());
         fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
 
-        return new CryptoDropBeaconAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new CryptoChangeBeaconAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }
 
 }

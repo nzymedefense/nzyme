@@ -59,5 +59,6 @@ public class Keys {
     public static final String TYPE = "type";
     public static final String BANDIT_FINGERPRINT = "fingerprint";
     public static final String BANDIT_NAME = "bandit_name";
+    public static final String ENCOUNTERED_SECURITY = "encountered_security";
 
 }

@@ -97,9 +97,9 @@ class BSSIDTableRow extends Reflux.Component {
             }
         });
 
-        if (!x) {
+        if (x === "NONE") {
             return (
-                <span className="text-warning">None</span>
+                <span className="text-warning">NONE</span>
             )
         }
 

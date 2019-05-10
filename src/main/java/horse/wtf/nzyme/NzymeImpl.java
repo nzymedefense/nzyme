@@ -227,8 +227,8 @@ public class NzymeImpl implements Nzyme {
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
                 probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
             }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_DROP)) {
-                probe.addFrameInterceptors(new CryptoDropInterceptorSet(probe).getInterceptors());
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_CHANGE)) {
+                probe.addFrameInterceptors(new CryptoChangeInterceptorSet(probe).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
                 probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(probe).getInterceptors());

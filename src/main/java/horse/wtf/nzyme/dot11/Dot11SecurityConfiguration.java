@@ -26,6 +26,7 @@ import java.util.List;
 public abstract class Dot11SecurityConfiguration {
 
     public enum MODE {
+        NONE,
         WPA1,
         WPA2
     }
