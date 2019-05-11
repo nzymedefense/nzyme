@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
@@ -30,6 +31,18 @@ public abstract class Dot11AssociationRequestFrame {
     public abstract String destination();
     public abstract String transmitter();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:        ASSOCIATION REQUEST").append("\n");
+        sb.append("SSID:        ").append(ssid()).append("\n");
+        sb.append("Transmitter: ").append(transmitter()).append("\n");
+        sb.append("Destination: ").append(destination()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11AssociationRequestFrame create(String ssid, String destination, String transmitter, Dot11MetaInformation meta) {
         return builder()
