@@ -19,21 +19,21 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <log4j.version>2.4.1</log4j.version>
-        <pcap4j.version>1.7.1</pcap4j.version>
-        <gelfclient.version>1.4.0</gelfclient.version>
-        <guava.version>22.0</guava.version>
+        <log4j.version>2.11.2</log4j.version>
+        <pcap4j.version>1.7.7</pcap4j.version>
+        <gelfclient.version>1.4.4</gelfclient.version>
+        <guava.version>27.1-jre</guava.version>
         <jcommander.version>1.72</jcommander.version>
         <testng.version>6.9.10</testng.version>
-        <okhttp.version>3.10.0</okhttp.version>
+        <okhttp.version>3.14.1</okhttp.version>
         <jackson.version>2.9.8</jackson.version>
-        <jodatime.version>2.10</jodatime.version>
+        <jodatime.version>2.10.2</jodatime.version>
         <semver.version>0.9.0</semver.version>
-        <autovalue.version>1.5.1</autovalue.version>
-        <metrics.version>4.0.0</metrics.version>
-        <jersey.version>2.27</jersey.version>
-        <typesafeconfig.version>1.3.3</typesafeconfig.version>
-        <jdbi.version>3.7.0</jdbi.version>
+        <autovalue.version>1.6.5</autovalue.version>
+        <metrics.version>4.1.0</metrics.version>
+        <jersey.version>2.28</jersey.version>
+        <typesafeconfig.version>1.3.4</typesafeconfig.version>
+        <jdbi.version>3.8.2</jdbi.version>
         <liquibase.version>3.6.3</liquibase.version>
         <sqlitejdbc.version>3.27.2.1</sqlitejdbc.version>
     </properties>
@@ -118,6 +118,11 @@
         <dependency>
             <groupId>com.google.auto.value</groupId>
             <artifactId>auto-value</artifactId>
+            <version>${autovalue.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value-annotations</artifactId>
             <version>${autovalue.version}</version>
         </dependency>
         <dependency>
