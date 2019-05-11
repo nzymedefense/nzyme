@@ -34,7 +34,7 @@ public class Dot11MetaInformation {
     private final long macTimestamp;
     private final boolean isWep;
 
-    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
+    public Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
         this.signalQuality = calculateSignalQuality(antennaSignal);

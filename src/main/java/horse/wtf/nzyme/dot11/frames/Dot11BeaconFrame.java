@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
@@ -36,6 +37,20 @@ public abstract class Dot11BeaconFrame {
     public abstract Dot11TaggedParameters taggedParameters();
 
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:        BEACON").append("\n");
+        sb.append("SSID:        ").append(ssid()).append("\n");
+        sb.append("Transmitter: ").append(transmitter()).append("\n");
+        sb.append("Fingerprint: ").append(transmitterFingerprint()).append("\n");
+        sb.append("WPS:         ").append(taggedParameters().isWPS()).append("\n");
+        sb.append("Security:    ").append(taggedParameters().getFullSecurityString()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11BeaconFrame create(String ssid, String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta) {
         return builder()
