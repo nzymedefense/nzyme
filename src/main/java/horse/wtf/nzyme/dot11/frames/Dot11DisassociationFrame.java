@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
@@ -28,6 +29,19 @@ public abstract class Dot11DisassociationFrame {
     public abstract Short reasonCode();
     public abstract String reasonString();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:          DISASSOCIATION").append("\n");
+        sb.append("Transmitter:   ").append(transmitter()).append("\n");
+        sb.append("Destination:   ").append(destination()).append("\n");
+        sb.append("Reason Code:   ").append(reasonCode()).append("\n");
+        sb.append("Reason String: ").append(reasonString()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11DisassociationFrame create(String destination, String transmitter, Short reasonCode, String reasonString, Dot11MetaInformation meta) {
         return builder()
