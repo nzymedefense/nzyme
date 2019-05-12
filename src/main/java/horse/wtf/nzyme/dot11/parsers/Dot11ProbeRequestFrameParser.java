@@ -45,12 +45,7 @@ public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeReq
         String ssid;
         boolean broadcastProbe = false;
         if (probeRequest.getHeader().getSsid() != null) {
-            // Check if the SSID is valid UTF-8 (might me malformed frame)
-            if(!Tools.isValidUTF8(probeRequest.getHeader().getSsid().getRawData())) {
-                throw new MalformedFrameException("Malformed SSID in probe request packet. Skipping. <1>");
-            }
-
-            ssid = Normalizer.normalize(probeRequest.getHeader().getSsid().getSsid(), Normalizer.Form.NFD);
+            ssid = probeRequest.getHeader().getSsid().getSsid();
 
             if (Strings.isNullOrEmpty(ssid)) {
                 ssid = null;
@@ -62,7 +57,7 @@ public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeReq
 
         String requester;
         if (probeRequest.getHeader().getAddress2() != null) {
-            requester = Normalizer.normalize(probeRequest.getHeader().getAddress2().toString(), Normalizer.Form.NFD);
+            requester = probeRequest.getHeader().getAddress2().toString();
         } else {
             throw new MalformedFrameException("Malformed SSID in probe request packet. Skipping. <3>");
         }
