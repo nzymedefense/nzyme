@@ -42,7 +42,7 @@ public class Dot11TaggedParameters {
     private static final Logger LOG = LogManager.getLogger(Dot11TaggedParameters.class);
 
     public static final int BEACON_TAGGED_PARAMS_POSITION = 36;
-    public static final int PROBERESP_TAGGED_PARAMS_POSITION = 24;
+    public static final int PROBERESP_TAGGED_PARAMS_POSITION = 36;
     public static final int ASSOCREQ_TAGGED_PARAMS_POSITION = 28;
 
     public static final int WPA1_UNICAST_CYPHER_SUITE_COUNT_POSITION = 10;
@@ -81,7 +81,7 @@ public class Dot11TaggedParameters {
         while (true) {
             try {
                 int tag = 0xFF & payload[position];
-                byte length = payload[position + 1];
+                int length = 0xFF & payload[position + 1];
 
                 byte[] tagPayload;
                 if (length == 0) {
