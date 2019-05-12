@@ -81,10 +81,10 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
         String status;
         switch(statusCode) {
             case 0:
-                status = "SUCCESS";
+                status = "success";
                 break;
             case 1:
-                status = "FAILURE";
+                status = "failure";
                 break;
             default:
                 status = "Invalid/Unknown (" + statusCode + ")";

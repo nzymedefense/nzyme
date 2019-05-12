@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
@@ -31,6 +32,20 @@ public abstract class Dot11AuthenticationFrame {
     public abstract String destination();
     public abstract String transmitter();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:            AUTHENTICATION").append("\n");
+        sb.append("Transmitter:     ").append(transmitter()).append("\n");
+        sb.append("Destination:     ").append(destination()).append("\n");
+        sb.append("Status String:   ").append(statusString()).append("\n");
+        sb.append("Status Code:     ").append(statusCode()).append("\n");
+        sb.append("Transaction Seq: ").append(transactionSequence()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11AuthenticationFrame create(Dot11AuthenticationFrameParser.ALGORITHM_TYPE algorithm, Short statusCode, String statusString, Short transactionSequence, String destination, String transmitter, Dot11MetaInformation meta) {
         return builder()

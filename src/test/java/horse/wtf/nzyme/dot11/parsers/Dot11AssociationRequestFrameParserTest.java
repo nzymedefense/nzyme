@@ -13,7 +13,7 @@ public class Dot11AssociationRequestFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParse() throws MalformedFrameException, IllegalRawDataException {
         Dot11AssociationRequestFrame frame = new Dot11AssociationRequestFrameParser(new MetricRegistry())
-                .doParse(Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_WEP);
+                .doParse(Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "ATT4Q5FBC3");
         assertEquals(frame.transmitter(), "ac:81:12:d2:26:7e");
