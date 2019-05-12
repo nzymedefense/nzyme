@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
@@ -29,6 +30,20 @@ public abstract class Dot11DeauthenticationFrame {
     public abstract Short reasonCode();
     public abstract String reasonString();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:          DEAUTHENTICATION").append("\n");
+        sb.append("Transmitter:   ").append(transmitter()).append("\n");
+        sb.append("Destination:   ").append(destination()).append("\n");
+        sb.append("BSSID:         ").append(bssid()).append("\n");
+        sb.append("Reason Code:   ").append(reasonCode()).append("\n");
+        sb.append("Reason String: ").append(reasonString()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11DeauthenticationFrame create(String destination, String transmitter, String bssid, Short reasonCode, String reasonString, Dot11MetaInformation meta) {
         return builder()
