@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/circleci-nzyme 
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          key: nzyme-{{ checksum "pom.xml" }}
+      - run: mvn dependency:go-offline
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: nzyme-{{ checksum "pom.xml" }}
+      - run: mvn package
+      - store_test_results: 
+          path: target/surefire-reports
