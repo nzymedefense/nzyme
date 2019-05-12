@@ -241,7 +241,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                                 LOG.error("Not parsing unsupported management frame subtype [{}].", type.value());
                                         }
                                     } catch (MalformedFrameException e) {
-                                        LOG.trace("Skipping malformed frame.");
+                                        LOG.info("Skipping malformed frame.", e);
                                         getStatistics().tickMalformedCountAndNotify(this, meta);
                                     }
                                 }
