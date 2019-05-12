@@ -43,7 +43,7 @@ The internet is full of compatibility information but here are the adapters I ru
 
 * ALFA AWUS036NH - 2.4Ghz and 5Ghz (Amazon Prime, about $40)
 * ALFA AWUS036NEH - 2.4Ghz (Amazon Prime, about $50)
-* ALFA AWUS036ACH - 2.4Ghz and 5Ghz (Amazon Prime, about $50)
+* ALFA AWUS036ACH - 2.4Ghz and 5Ghz (Amazon Prime, about $50) (with the [aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au) driver)
 * Panda PAU05 - 2.4Ghz (Amazon Prime, about $15)
 
 If you have another one that supports monitor mode, you can use that one. Nzyme does by far not require any specific hardware.
