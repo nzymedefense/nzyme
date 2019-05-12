@@ -52,14 +52,15 @@ public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeReq
                 broadcastProbe = true;
             }
         } else {
-            throw new MalformedFrameException("Malformed SSID in probe request packet. Skipping. <2>");
+            ssid = null;
+            broadcastProbe = true;
         }
 
         String requester;
         if (probeRequest.getHeader().getAddress2() != null) {
             requester = probeRequest.getHeader().getAddress2().toString();
         } else {
-            throw new MalformedFrameException("Malformed SSID in probe request packet. Skipping. <3>");
+            throw new MalformedFrameException("Missing requester address.");
         }
 
         return Dot11ProbeRequestFrame.create(requester, ssid, broadcastProbe, meta);
