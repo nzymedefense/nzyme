@@ -86,7 +86,7 @@ public class OUIManager {
         LOG.info("Fetching and updating list of OUIs from [{}]. This might take a moment.", OUI_SOURCE);
 
         OkHttpClient c = new OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
+                .connectTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(5, TimeUnit.MINUTES)
                 .followRedirects(true)
