@@ -14,7 +14,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParseWPA1WPA2EAMPSKCCMP() throws MalformedFrameException, IllegalRawDataException {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
-                .doParse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_WEP);
+                .doParse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "WTF");
         assertEquals(frame.transmitter(), "00:c0:ca:95:68:3b");
@@ -26,7 +26,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParseWPA1WPA2EAMPSKCCMPTKIP() throws MalformedFrameException, IllegalRawDataException {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
-                .doParse(Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_WEP);
+                .doParse(Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "WTF");
         assertEquals(frame.transmitter(), "00:c0:ca:95:68:3b");
@@ -38,7 +38,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParseNoSecurity() throws MalformedFrameException, IllegalRawDataException {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
-                .doParse(Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_WEP);
+                .doParse(Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "United_Wi-Fi");
         assertEquals(frame.transmitter(), "06:0d:2d:c9:36:23");

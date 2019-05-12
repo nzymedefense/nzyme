@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
@@ -28,6 +29,19 @@ public abstract class Dot11AssociationResponseFrame {
     public abstract String response();
     public abstract Short responseCode();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:          ASSOCIATION RESPONSE").append("\n");
+        sb.append("Transmitter:   ").append(transmitter()).append("\n");
+        sb.append("Destination:   ").append(destination()).append("\n");
+        sb.append("Response:      ").append(response()).append("\n");
+        sb.append("Response Code: ").append(responseCode()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11AssociationResponseFrame create(String transmitter, String destination, String response, Short responseCode, Dot11MetaInformation meta) {
         return builder()
