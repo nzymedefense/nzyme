@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
@@ -30,6 +31,18 @@ public abstract class Dot11ProbeRequestFrame {
     public abstract String requester();
     public abstract Boolean isBroadcastProbe();
     public abstract Dot11MetaInformation meta();
+
+    @JsonIgnore
+    public String descriptionString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("TYPE:         PROBE_REQUEST").append("\n");
+        sb.append("SSID:         ").append(ssid()).append("\n");
+        sb.append("Requester:    ").append(requester()).append("\n");
+        sb.append("Is Broadcast: ").append(isBroadcastProbe()).append("\n");
+
+        return sb.toString();
+    }
 
     public static Dot11ProbeRequestFrame create(String requester, String ssid, Boolean isBroadcastProbe, Dot11MetaInformation meta) {
         return builder()
