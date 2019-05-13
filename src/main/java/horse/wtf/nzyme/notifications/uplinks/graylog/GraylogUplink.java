@@ -27,12 +27,14 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import static horse.wtf.nzyme.Tools.calculateSignalQuality;
 
 public class GraylogUplink implements Uplink {
 
-    private static final String SOURCE = "nzyme";
+    private final String source;
 
     private final String nzymeId;
     private final String networkInterfaceName;
@@ -42,6 +44,16 @@ public class GraylogUplink implements Uplink {
     public GraylogUplink(String hostname, int port, String nzymeId, String networkInterfaceName) {
         this.nzymeId = nzymeId;
         this.networkInterfaceName = networkInterfaceName;
+	
+	String tmpsrc;
+
+        try {
+                tmpsrc = InetAddress.getLocalHost().getHostName();
+        } catch(UnknownHostException e) {
+                tmpsrc = "nzyme";
+        }
+
+	source = tmpsrc;
 
         this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
                 .transport(GelfTransports.TCP)
@@ -63,7 +75,7 @@ public class GraylogUplink implements Uplink {
                     .toString();
         }
 
-        GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
+        GelfMessage gelf = new GelfMessage(sb.toString(), source);
         gelf.addAdditionalFields(notification.getAdditionalFields());
         gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
         gelf.addAdditionalField("nic_name", this.networkInterfaceName);
