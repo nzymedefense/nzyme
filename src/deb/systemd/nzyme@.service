@@ -1,0 +1,29 @@
+[Unit]
+Description=Nzyme
+Documentation=https://github.com/lennartkoopmann/nzyme
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=root
+Group=root
+LimitNOFILE=64000
+ExecStartPre=/sbin/ip link set %i down
+ExecStartPre=/sbin/iw dev %i set type monitor
+ExecStartPre=/sbin/ip link set %i up
+ExecStart=/etc/alternatives/java -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-debian.xml /usr/share/nzyme/nzyme.jar --config-file /etc/nzyme/nzyme-%i.conf
+ExecStopPost=/sbin/ip link set %i down
+ExecStopPost=/sbin/iw dev %i set type managed
+
+# When a JVM receives a SIGTERM signal it exits with 143.
+SuccessExitStatus=143
+
+# Make sure stderr/stdout is captured in the systemd journal.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

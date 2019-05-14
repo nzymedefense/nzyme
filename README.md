@@ -221,11 +221,25 @@ Now enable the `nzyme` service to make it start on boot of the Raspberry Pi:
 $ sudo systemctl enable nzyme
 ```
 
+Alterntively, you can use the templatized systemd service unit. This method handles setting a interface into monitor mode when started, managed mode when stopped, and uses a per-device configuration file. Configuration files must ffollow this naming convention ```/etc/nzyme/nzyme-NIC.conf``` where NIC is replaced with the name of your wireless device (not phy0, but something like wlan0). NOTE: currently nzyme does not support logging to unique filenames. The contents of the log file, when using the service templates, may be corrupt dependent on a variety of circumstances.
+
+```
+$ sudo systemctl enable nzyme@wlan0
+```
+
+
 Because we are not rebooting, we have to start the service manually for once:
 
 ```
 $ sudo systemctl start nzyme
 $ sudo systemctl status nzyme
+```
+
+Or, if you chose to use the systemd service template, this starts the service, including putting the interface into monitor mode, and checks the status.
+
+```
+$ sudo systemctl start nzyme@wlan0
+$ sudo systemctl status nzyme@wlan0
 ```
 
 ![Result of systemctl status](https://github.com/lennartkoopmann/nzyme/blob/master/systemctl-status.png)
