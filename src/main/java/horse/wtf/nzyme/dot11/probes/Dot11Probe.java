@@ -66,11 +66,9 @@ public abstract class Dot11Probe {
         this.configuration = configuration;
         this.metrics = nzyme.getMetrics();
 
-        if (configuration.graylogAddresses() == null || configuration.graylogAddresses().isEmpty()) {
-            LOG.warn("No Graylog uplinks configured for probe [{}]. Consider adding a STDOUT uplink for quick local testing.", getName());
-        } else {
+        if (configuration.graylogAddresses() != null) {
             for (GraylogAddress address : configuration.graylogAddresses()) {
-                this.uplinks.add(new GraylogUplink(
+                registerUplink(new GraylogUplink(
                         address.getHost(),
                         address.getPort(),
                         configuration.nzymeId(),
@@ -78,6 +76,10 @@ public abstract class Dot11Probe {
                 );
             }
         }
+    }
+
+    public void registerUplink(Uplink uplink) {
+        this.uplinks.add(uplink);
     }
 
     public void notifyUplinks(Notification notification, Dot11MetaInformation meta) {
