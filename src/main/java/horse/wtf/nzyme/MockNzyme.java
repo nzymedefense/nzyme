@@ -33,9 +33,18 @@ import java.util.List;
 
 public class MockNzyme implements Nzyme {
 
+    private final Statistics statistics;
+    private final SystemStatus systemStatus;
+    private final Networks networks;
+
+    public MockNzyme() {
+        this.statistics = new Statistics();
+        this.systemStatus = new SystemStatus();
+        this.networks = new Networks(this);
+    }
+
     @Override
     public void initialize() {
-
     }
 
     @Override
@@ -44,7 +53,7 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public Networks getNetworks() {
-        return null;
+        return networks;
     }
 
     @Override
@@ -54,7 +63,7 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public Statistics getStatistics() {
-        return null;
+        return statistics;
     }
 
     @Override
@@ -84,7 +93,7 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public SystemStatus getSystemStatus() {
-        return null;
+        return systemStatus;
     }
 
     @Override
