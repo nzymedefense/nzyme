@@ -51,7 +51,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
     public void testdoParseBroadcast() throws MalformedFrameException, IllegalRawDataException {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
                 .doParse(Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP);
-        
+
         assertNull(frame.ssid());
         assertEquals(frame.transmitter(), "24:a4:3c:7d:01:cc");
         assertEquals(frame.transmitterFingerprint(), "52f519b9e8b1a4901a3db02407ff62246f5cfc2d5ddadd5a10e5230524ef04a9");
