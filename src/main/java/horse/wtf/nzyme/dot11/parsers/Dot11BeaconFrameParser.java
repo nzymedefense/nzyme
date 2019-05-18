@@ -43,7 +43,8 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
         try {
             ssid = taggedParameters.getSSID();
         } catch(Dot11TaggedParameters.NoSuchTaggedElementException e) {
-            throw new IllegalRawDataException("No SSID in beacon frame. Not even empty SSID. This is a malformed frame.");
+            // Broadcast/Wildcard beacon.
+            ssid = null;
         }
 
         return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);

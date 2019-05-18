@@ -39,7 +39,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
     @Override
     public void doHandle(Dot11BeaconFrame beacon) {
         String message;
-        if (!Strings.isNullOrEmpty(beacon.transmitter())) {
+        if (!Strings.isNullOrEmpty(beacon.ssid())) {
             message = "Received beacon from " + beacon.transmitter() + " for SSID " + beacon.ssid();
             probe.getStatistics().tickBeaconedNetwork(beacon.ssid());
         } else {
@@ -56,7 +56,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                 new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.TRANSMITTER_FINGERPRINT, beacon.transmitterFingerprint())
-                        .addField(FieldNames.SSID, beacon.ssid() == null ? "[no SSID]" : beacon.ssid())
+                        .addField(FieldNames.SSID, Strings.isNullOrEmpty(beacon.ssid()) ? "[no SSID]" : beacon.ssid())
                         .addField(FieldNames.SECURITY_FULL, beacon.taggedParameters().getFullSecurityString())
                         .addField(FieldNames.IS_WPA1, beacon.taggedParameters().isWPA1())
                         .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
