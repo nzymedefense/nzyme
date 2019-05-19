@@ -67,4 +67,9 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("_subtype"), "assoc-resp");
     }
 
+    @Test
+    public void testGetName() {
+        assertEquals(new Dot11AssociationResponseFrameHandler(null).getName(), "assoc-resp");
+    }
+
 }

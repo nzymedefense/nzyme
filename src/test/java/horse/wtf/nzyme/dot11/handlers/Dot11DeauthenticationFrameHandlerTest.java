@@ -44,4 +44,9 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("_subtype"), "deauth");
     }
 
+    @Test
+    public void testGetName() {
+        assertEquals(new Dot11DeauthenticationFrameHandler(null).getName(), "deauth");
+    }
+
 }

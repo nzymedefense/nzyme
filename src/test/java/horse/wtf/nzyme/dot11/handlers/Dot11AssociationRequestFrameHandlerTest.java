@@ -47,4 +47,9 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("_subtype"), "assoc-req");
     }
 
+    @Test
+    public void testGetName() {
+        assertEquals(new Dot11AssociationRequestFrameHandler(null).getName(), "assoc-req");
+    }
+
 }
