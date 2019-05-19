@@ -33,7 +33,7 @@ public class Dot11ProbeRequestFrameHandler extends Dot11FrameHandler<Dot11ProbeR
     }
 
     @Override
-    public void doHandle(Dot11ProbeRequestFrame frame) {
+    protected void doHandle(Dot11ProbeRequestFrame frame) {
         String message;
         if(!frame.isBroadcastProbe()) {
             message = "Probe request: " + frame.requester() + " is looking for " + frame.ssid();

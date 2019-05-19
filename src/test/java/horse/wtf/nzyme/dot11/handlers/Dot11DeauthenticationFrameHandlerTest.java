@@ -29,7 +29,7 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
         Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
 
-        new Dot11DeauthenticationFrameHandler(probe).doHandle(frame);
+        new Dot11DeauthenticationFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 

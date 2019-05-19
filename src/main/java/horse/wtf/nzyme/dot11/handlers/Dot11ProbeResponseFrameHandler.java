@@ -35,7 +35,7 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
     }
 
     @Override
-    public void doHandle(Dot11ProbeResponseFrame frame) {
+    protected void doHandle(Dot11ProbeResponseFrame frame) {
         String message;
         if (frame.ssid() == null) {
             message = frame.transmitter() + " responded to broadcast probe request from " + frame.destination();

@@ -33,7 +33,7 @@ public class Dot11AssociationResponseFrameHandler extends Dot11FrameHandler<Dot1
     }
 
     @Override
-    public void doHandle(Dot11AssociationResponseFrame frame) {
+    protected void doHandle(Dot11AssociationResponseFrame frame) {
         String message = frame.transmitter() + " answered association request from " + frame.destination()
                 + ". Response: " + frame.response().toUpperCase() + " (" + frame.responseCode() + ")";
 

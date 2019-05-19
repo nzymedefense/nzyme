@@ -34,7 +34,7 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
         Dot11AssociationRequestFrame frame = new Dot11AssociationRequestFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationRequestFrameHandler(probe).doHandle(frame);
+        new Dot11AssociationRequestFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 

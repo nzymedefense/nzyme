@@ -34,7 +34,7 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
     }
 
     @Override
-    public void doHandle(Dot11AuthenticationFrame frame) {
+    protected void doHandle(Dot11AuthenticationFrame frame) {
         String message = "";
         switch(frame.algorithm()) {
             case OPEN_SYSTEM:

@@ -33,7 +33,7 @@ public class Dot11DisassociationFrameHandler extends Dot11FrameHandler<Dot11Disa
     }
 
     @Override
-    public void doHandle(Dot11DisassociationFrame frame) {
+    protected void doHandle(Dot11DisassociationFrame frame) {
         String message = frame.transmitter() + " is disassociating from " + frame.destination() + " (" + frame.reasonString() + ")";
 
         probe.notifyUplinks(

@@ -33,7 +33,7 @@ public class Dot11DeauthenticationFrameHandler extends Dot11FrameHandler<Dot11De
     }
 
     @Override
-    public void doHandle(Dot11DeauthenticationFrame frame) {
+    protected void doHandle(Dot11DeauthenticationFrame frame) {
         String message = "Deauth: Transmitter " + frame.transmitter() + " is deauthenticating " + frame.destination()
                 + " from BSSID " + frame.bssid() + " (" + frame.reasonString() + ")";
 

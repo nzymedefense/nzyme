@@ -30,7 +30,7 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
         Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
                 .parse(Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP);
 
-        new Dot11ProbeRequestFrameHandler(probe).doHandle(frame);
+        new Dot11ProbeRequestFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 

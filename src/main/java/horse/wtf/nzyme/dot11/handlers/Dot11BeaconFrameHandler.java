@@ -37,7 +37,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
     }
 
     @Override
-    public void doHandle(Dot11BeaconFrame beacon) {
+    protected void doHandle(Dot11BeaconFrame beacon) {
         String message;
         if (!Strings.isNullOrEmpty(beacon.ssid())) {
             message = "Received beacon from " + beacon.transmitter() + " for SSID " + beacon.ssid();

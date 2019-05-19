@@ -33,7 +33,7 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
     }
 
     @Override
-    public void doHandle(Dot11AssociationRequestFrame associationRequest) {
+    protected void doHandle(Dot11AssociationRequestFrame associationRequest) {
         String message = associationRequest.transmitter() + " is requesting to associate with "
                 + associationRequest.ssid()
                 + " at " + associationRequest.destination();
