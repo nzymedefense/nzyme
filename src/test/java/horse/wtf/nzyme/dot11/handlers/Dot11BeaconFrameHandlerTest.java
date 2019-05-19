@@ -73,5 +73,9 @@ public class Dot11BeaconFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("_subtype"), "beacon");
     }
 
+    @Test
+    public void testGetName() {
+        assertEquals(new Dot11BeaconFrameHandler(null).getName(), "beacon");
+    }
 
 }
