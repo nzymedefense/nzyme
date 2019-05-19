@@ -35,15 +35,15 @@ public class Dot11ProbeResponseFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 9);
         assertEquals(n.getMessage(), "b0:93:5b:1d:c8:f1 responded to probe request from 3c:8d:20:52:e4:87 for Home 5F48");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_destination"), "3c:8d:20:52:e4:87");
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "b0:93:5b:1d:c8:f1");
-        assertEquals(n.getAdditionalFields().get("_ssid"), "Home 5F48");
-        assertEquals(n.getAdditionalFields().get("_security_full"), "WPA2-PSK-CCMP");
-        assertEquals(n.getAdditionalFields().get("_is_wpa1"), false);
-        assertEquals(n.getAdditionalFields().get("_is_wpa2"), true);
-        assertEquals(n.getAdditionalFields().get("_is_wps"), true);
-        assertEquals(n.getAdditionalFields().get("_subtype"), "probe-resp");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("destination"), "3c:8d:20:52:e4:87");
+        assertEquals(n.getAdditionalFields().get("transmitter"), "b0:93:5b:1d:c8:f1");
+        assertEquals(n.getAdditionalFields().get("ssid"), "Home 5F48");
+        assertEquals(n.getAdditionalFields().get("security_full"), "WPA2-PSK-CCMP");
+        assertEquals(n.getAdditionalFields().get("is_wpa1"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa2"), true);
+        assertEquals(n.getAdditionalFields().get("is_wps"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "probe-resp");
     }
 
     @Test

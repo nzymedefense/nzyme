@@ -35,12 +35,12 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(),"88:96:4e:4d:77:80 answered association request from 5c:77:76:d3:26:45. Response: SUCCESS (0)");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "88:96:4e:4d:77:80");
-        assertEquals(n.getAdditionalFields().get("_destination"), "5c:77:76:d3:26:45");
-        assertEquals(n.getAdditionalFields().get("_response_code"), (short)0);
-        assertEquals(n.getAdditionalFields().get("_response_string"), "success");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "assoc-resp");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "88:96:4e:4d:77:80");
+        assertEquals(n.getAdditionalFields().get("destination"), "5c:77:76:d3:26:45");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short)0);
+        assertEquals(n.getAdditionalFields().get("response_string"), "success");
+        assertEquals(n.getAdditionalFields().get("subtype"), "assoc-resp");
     }
 
     @Test
@@ -59,12 +59,12 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(),"88:96:4e:4d:77:80 answered association request from 5c:77:76:d3:26:45. Response: REFUSED (1)");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "88:96:4e:4d:77:80");
-        assertEquals(n.getAdditionalFields().get("_destination"), "5c:77:76:d3:26:45");
-        assertEquals(n.getAdditionalFields().get("_response_code"), (short)1);
-        assertEquals(n.getAdditionalFields().get("_response_string"), "refused");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "assoc-resp");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "88:96:4e:4d:77:80");
+        assertEquals(n.getAdditionalFields().get("destination"), "5c:77:76:d3:26:45");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short)1);
+        assertEquals(n.getAdditionalFields().get("response_string"), "refused");
+        assertEquals(n.getAdditionalFields().get("subtype"), "assoc-resp");
     }
 
     @Test

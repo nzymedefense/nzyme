@@ -35,13 +35,13 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 7);
         assertEquals(n.getMessage(), "Deauth: Transmitter b0:93:5b:1d:c8:f1 is deauthenticating e4:b2:fb:27:50:15 from BSSID b0:93:5b:1d:c8:f1 (Class 2 frame received from nonauthenticated STA)");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "b0:93:5b:1d:c8:f1");
-        assertEquals(n.getAdditionalFields().get("_destination"), "e4:b2:fb:27:50:15");
-        assertEquals(n.getAdditionalFields().get("_bssid"), "b0:93:5b:1d:c8:f1");
-        assertEquals(n.getAdditionalFields().get("_reason_code"), (short)6);
-        assertEquals(n.getAdditionalFields().get("_reason_string"), "Class 2 frame received from nonauthenticated STA");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "deauth");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "b0:93:5b:1d:c8:f1");
+        assertEquals(n.getAdditionalFields().get("destination"), "e4:b2:fb:27:50:15");
+        assertEquals(n.getAdditionalFields().get("bssid"), "b0:93:5b:1d:c8:f1");
+        assertEquals(n.getAdditionalFields().get("reason_code"), (short)6);
+        assertEquals(n.getAdditionalFields().get("reason_string"), "Class 2 frame received from nonauthenticated STA");
+        assertEquals(n.getAdditionalFields().get("subtype"), "deauth");
     }
 
     @Test

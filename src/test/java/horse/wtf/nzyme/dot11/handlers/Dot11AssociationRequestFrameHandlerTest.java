@@ -40,11 +40,11 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 5);
         assertEquals(n.getMessage(), "ac:81:12:d2:26:7e is requesting to associate with ATT4Q5FBC3 at 14:ed:bb:79:97:4d");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "ac:81:12:d2:26:7e");
-        assertEquals(n.getAdditionalFields().get("_destination"), "14:ed:bb:79:97:4d");
-        assertEquals(n.getAdditionalFields().get("_ssid"), "ATT4Q5FBC3");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "assoc-req");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "ac:81:12:d2:26:7e");
+        assertEquals(n.getAdditionalFields().get("destination"), "14:ed:bb:79:97:4d");
+        assertEquals(n.getAdditionalFields().get("ssid"), "ATT4Q5FBC3");
+        assertEquals(n.getAdditionalFields().get("subtype"), "assoc-req");
     }
 
     @Test

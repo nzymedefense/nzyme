@@ -36,10 +36,10 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 4);
         assertEquals(n.getMessage(), "Probe request: 3c:8d:20:25:20:e9 is looking for ATT6r8YXW9");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_ssid"), "ATT6r8YXW9");
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "3c:8d:20:25:20:e9");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "probe-req");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("ssid"), "ATT6r8YXW9");
+        assertEquals(n.getAdditionalFields().get("transmitter"), "3c:8d:20:25:20:e9");
+        assertEquals(n.getAdditionalFields().get("subtype"), "probe-req");
     }
 
     @Test
@@ -58,10 +58,10 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
 
         assertEquals(n.getAdditionalFields().size(), 4);
         assertEquals(n.getMessage(), "Probe request: f8:da:0c:2e:af:1c is looking for any network. (null probe request)");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_ssid"), "[no SSID]");
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "f8:da:0c:2e:af:1c");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "probe-req");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("ssid"), "[no SSID]");
+        assertEquals(n.getAdditionalFields().get("transmitter"), "f8:da:0c:2e:af:1c");
+        assertEquals(n.getAdditionalFields().get("subtype"), "probe-req");
     }
 
     @Test

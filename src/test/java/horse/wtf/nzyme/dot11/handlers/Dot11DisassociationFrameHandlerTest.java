@@ -35,12 +35,12 @@ public class Dot11DisassociationFrameHandlerTest extends FrameHandlerTest {
         
         assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(), "b4:fb:e4:41:f6:45 is disassociating from b0:70:2d:56:1c:f7 (Disassociated because sending STA is leaving (or has left) BSS)");
-        assertEquals(n.getAdditionalFields().get("_channel"), 1);
-        assertEquals(n.getAdditionalFields().get("_transmitter"), "b4:fb:e4:41:f6:45");
-        assertEquals(n.getAdditionalFields().get("_destination"), "b0:70:2d:56:1c:f7");
-        assertEquals(n.getAdditionalFields().get("_reason_code"), (short)8);
-        assertEquals(n.getAdditionalFields().get("_reason_string"), "Disassociated because sending STA is leaving (or has left) BSS");
-        assertEquals(n.getAdditionalFields().get("_subtype"), "disassoc");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "b4:fb:e4:41:f6:45");
+        assertEquals(n.getAdditionalFields().get("destination"), "b0:70:2d:56:1c:f7");
+        assertEquals(n.getAdditionalFields().get("reason_code"), (short)8);
+        assertEquals(n.getAdditionalFields().get("reason_string"), "Disassociated because sending STA is leaving (or has left) BSS");
+        assertEquals(n.getAdditionalFields().get("subtype"), "disassoc");
     }
 
     @Test

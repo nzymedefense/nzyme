@@ -43,7 +43,7 @@ public class Notification {
             return this;
         }
 
-        fields.put("_" + key, value);
+        fields.put(key, value);
 
         return this;
     }
