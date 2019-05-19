@@ -48,7 +48,7 @@ public abstract class Dot11FrameHandler<T> {
         doHandle(frame);
     }
 
-    public abstract void doHandle(T frame);
+    protected abstract void doHandle(T frame);
     public abstract String getName();
 
     protected Map<String, Object> buildDeltaInformationFields(String transmitter, String ssid, int channel, int signal) {

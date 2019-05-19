@@ -29,7 +29,7 @@ public class Dot11BeaconFrameHandlerTest extends FrameHandlerTest {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
                 .parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP);
 
-        new Dot11BeaconFrameHandler(probe).doHandle(frame);
+        new Dot11BeaconFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -56,7 +56,7 @@ public class Dot11BeaconFrameHandlerTest extends FrameHandlerTest {
         Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
                 .parse(Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP);
 
-        new Dot11BeaconFrameHandler(probe).doHandle(frame);
+        new Dot11BeaconFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 

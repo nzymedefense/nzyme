@@ -29,7 +29,7 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
         Dot11AssociationResponseFrame frame = new Dot11AssociationResponseFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_RESP_SUCCESS_1_PAYLOAD, Frames.ASSOC_RESP_SUCCESS_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationResponseFrameHandler(probe).doHandle(frame);
+        new Dot11AssociationResponseFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -53,7 +53,7 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
         Dot11AssociationResponseFrame frame = new Dot11AssociationResponseFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_RESP_FAILED_1_PAYLOAD, Frames.ASSOC_RESP_FAILED_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationResponseFrameHandler(probe).doHandle(frame);
+        new Dot11AssociationResponseFrameHandler(probe).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
