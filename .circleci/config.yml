@@ -1,4 +1,6 @@
 version: 2
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     working_directory: ~/circleci-nzyme 
@@ -16,3 +18,5 @@ jobs:
       - run: mvn package
       - store_test_results: 
           path: target/surefire-reports
+      - codecov/upload:
+          file: {{ coverage_report_filepath }}
