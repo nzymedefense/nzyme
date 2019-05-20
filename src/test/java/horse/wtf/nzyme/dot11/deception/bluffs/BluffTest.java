@@ -118,12 +118,12 @@ public class BluffTest {
         private String pythonScriptPrefix = "nzyme_";
 
         public TestableConfiguration() throws InvalidConfigurationException, IncompleteConfigurationException {
-            super(new File("nzyme-leader.conf.example"));
+            super(new File("nzyme-leader.conf.example"), true);
         }
 
         @Override
         public String getPythonExecutable() {
-            return pythonExecutable;
+            return this.pythonExecutable;
         }
 
         public void setPythonExecutable(String pythonExecutable) {

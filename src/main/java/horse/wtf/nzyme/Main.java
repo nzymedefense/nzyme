@@ -47,7 +47,7 @@ public class Main {
         // Parse configuration.
         Configuration configuration = null;
         try {
-            configuration = new Configuration(new File(cliArguments.getConfigFilePath()));
+            configuration = new Configuration(new File(cliArguments.getConfigFilePath()), false);
         } catch (Configuration.InvalidConfigurationException | ConfigException e) {
             LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
             System.exit(FAILURE);

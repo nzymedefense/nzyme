@@ -54,7 +54,7 @@ public class Configuration {
     // Manual properties.
     private boolean printPacketInfo = false;
 
-    public Configuration(File configFile) throws InvalidConfigurationException, IncompleteConfigurationException {
+    public Configuration(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException {
         this.root = ConfigFactory.parseFile(configFile);
 
         this.general = root.getConfig(Keys.GENERAL);
@@ -62,7 +62,9 @@ public class Configuration {
         this.alerting = general.getConfig(Keys.ALERTING);
         this.interfaces = root.getConfig(Keys.INTERFACES);
 
-        validate();
+        if (!skipValidation) {
+            validate();
+        }
     }
 
     public Role getRole() {

@@ -6,6 +6,10 @@ general: {
   # The ID or name of this nzyme instance. Must be unique.
   id: nzyme-master
 
+  database_path: nzyme.db
+
+  fetch_ouis: false
+
   python {
     # Path to python executable.
     path: /usr/bin/python2.7
@@ -15,6 +19,11 @@ general: {
 
     # Script prefix. A prefix for the generate scripts. There is usually no reason to change this setting.
     script_prefix: nzyme_
+  }
+
+  alerting {
+    clean_after_minutes: 5
+    training_period_seconds: 300
   }
 
   # Regularly check if this version of nzyme is outdated?
