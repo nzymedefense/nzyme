@@ -13,7 +13,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParseSuccessfulAuth() throws MalformedFrameException, IllegalRawDataException {
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
-                .doParse(Frames.AUTH_SUCCESS_1_PAYLOAD, Frames.AUTH_SUCCESS_1_HEADER, META_NO_WEP);
+                .doParse(Frames.AUTH_SUCCESS_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "ac:5f:3e:b9:5d:be");
         assertEquals(frame.destination(), "e0:22:03:f8:a3:39");
@@ -23,9 +23,21 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
     }
 
     @Test
+    public void testDoParseSuccessfulAuthStage2() throws MalformedFrameException, IllegalRawDataException {
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+                .doParse(Frames.AUTH_SUCCESS_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_2_HEADER, META_NO_WEP);
+
+        assertEquals(frame.transmitter(), "2c:5d:93:04:5c:09");
+        assertEquals(frame.destination(), "64:76:ba:d8:5d:ab");
+        assertEquals(frame.statusString(), "success");
+        assertEquals((short) frame.statusCode(), (short) 0);
+        assertEquals((short) frame.transactionSequence(), (short) 2);
+    }
+
+    @Test
     public void testDoParseFailedAuth() throws MalformedFrameException, IllegalRawDataException {
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
-                .doParse(Frames.AUTH_FAILED_1_PAYLOAD, Frames.AUTH_FAILED_1_HEADER, META_NO_WEP);
+                .doParse(Frames.AUTH_FAILED_STAGE_1_PAYLOAD, Frames.AUTH_FAILED_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "ac:5f:3e:b9:5d:be");
         assertEquals(frame.destination(), "e0:22:03:f8:a3:39");
@@ -37,7 +49,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
     @Test
     public void testDoParseInvalidResponse() throws MalformedFrameException, IllegalRawDataException {
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
-                .doParse(Frames.AUTH_INVALID_RESPONSE_1_PAYLOAD, Frames.AUTH_INVALID_RESPONSE_1_HEADER, META_NO_WEP);
+                .doParse(Frames.AUTH_INVALID_RESPONSE_STAGE_1_PAYLOAD, Frames.AUTH_INVALID_RESPONSE_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "ac:5f:3e:b9:5d:be");
         assertEquals(frame.destination(), "e0:22:03:f8:a3:39");
