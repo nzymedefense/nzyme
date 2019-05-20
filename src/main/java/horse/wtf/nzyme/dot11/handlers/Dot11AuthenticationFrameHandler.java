@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -24,6 +25,8 @@ import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
 
 public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11AuthenticationFrame> {
 
@@ -36,16 +39,20 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
     @Override
     protected void doHandle(Dot11AuthenticationFrame frame) {
         String message = "";
+        Map<String, Object> additionalFields = Maps.newHashMap();
+
         switch(frame.algorithm()) {
             case OPEN_SYSTEM:
                 switch(frame.transactionSequence()) {
                     case 1:
-                        message = frame.transmitter() + " is requesting to authenticate with Open System (WPA, WPA2, ...) " +
+                        message = frame.transmitter() + " is requesting to authenticate with Open System (Open, WPA, WPA2, ...) " +
                                 "at " + frame.destination();
                         break;
                     case 2:
-                        message = frame.transmitter() + " is responding to Open System (WPA, WPA2, ...) authentication " +
+                        message = frame.transmitter() + " is responding to Open System (Open, WPA, WPA2, ...) authentication " +
                                 "request from " + frame.destination() + ". (" + frame.statusString() + ")";
+                        additionalFields.put(FieldNames.RESPONSE_CODE, frame.statusCode());
+                        additionalFields.put(FieldNames.RESPONSE_STRING, frame.statusString());
                         break;
                     default:
                         LOG.trace("Invalid Open System authentication transaction sequence number [{}]. " +
@@ -69,6 +76,8 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                     case 4:
                         message = frame.transmitter() + " is responding to WEP authentication request from " +
                                 frame.destination() + ". (" + frame.statusString() + ")";
+                        additionalFields.put(FieldNames.RESPONSE_CODE, frame.statusCode());
+                        additionalFields.put(FieldNames.RESPONSE_STRING, frame.statusString());
                         break;
                     default:
                         LOG.trace("Invalid WEP authentication transaction sequence number [{}]. " +
@@ -78,18 +87,16 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                 break;
         }
 
-        probe.notifyUplinks(
-                new Notification(message, frame.meta().getChannel(), probe)
-                        .addField(FieldNames.TRANSMITTER, frame.transmitter())
-                        .addField(FieldNames.DESTINATION, frame.destination())
-                        .addField(FieldNames.RESPONSE_CODE, frame.statusCode())
-                        .addField(FieldNames.RESPONSE_STRING, frame.statusString())
-                        .addField(FieldNames.AUTH_ALGORITHM, frame.algorithm().toString().toLowerCase())
-                        .addField(FieldNames.TRANSACTION_SEQUENCE_NUMBER, frame.transactionSequence())
-                        .addField(FieldNames.IS_WEP, frame.algorithm().equals(Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY))
-                        .addField(FieldNames.SUBTYPE, "auth"),
-                frame.meta()
-        );
+        Notification notification = new Notification(message, frame.meta().getChannel(), probe)
+                .addField(FieldNames.TRANSMITTER, frame.transmitter())
+                .addField(FieldNames.DESTINATION, frame.destination())
+                .addField(FieldNames.AUTH_ALGORITHM, frame.algorithm().toString().toLowerCase())
+                .addField(FieldNames.TRANSACTION_SEQUENCE_NUMBER, frame.transactionSequence())
+                .addField(FieldNames.IS_WEP, frame.algorithm().equals(Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY))
+                .addField(FieldNames.SUBTYPE, "auth")
+                .addFields(additionalFields);
+
+        probe.notifyUplinks(notification, frame.meta());
 
         LOG.debug(message);
     }
