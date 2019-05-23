@@ -69,10 +69,6 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                         message = frame.transmitter() + " is responding to WEP authentication request at " +
                                 frame.destination() + " with clear text challenge.";
                         break;
-                    case 3:
-                        message = frame.transmitter() + " is responding to WEP authentication request clear text " +
-                                "challenge from " + frame.destination();
-                        break;
                     case 4:
                         message = frame.transmitter() + " is responding to WEP authentication request from " +
                                 frame.destination() + ". (" + frame.statusString() + ")";

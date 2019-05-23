@@ -43,6 +43,7 @@ public abstract class Dot11AuthenticationFrame {
         sb.append("Status String:   ").append(statusString()).append("\n");
         sb.append("Status Code:     ").append(statusCode()).append("\n");
         sb.append("Transaction Seq: ").append(transactionSequence()).append("\n");
+        sb.append("Algorithm:       ").append(algorithm()).append("\n");
 
         return sb.toString();
     }
