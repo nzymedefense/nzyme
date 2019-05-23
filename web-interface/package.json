@@ -28,7 +28,7 @@
     "fs-extra": "3.0.1",
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
-    "moment": "^2.20.1",
+    "moment": "^2.24.0",
     "numeral": "^2.0.6",
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "3.2.0",
