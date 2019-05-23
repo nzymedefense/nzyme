@@ -72,6 +72,110 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     }
 
     @Test
+    public void testDoHandleSharedKmySeq1() throws MalformedFrameException, IllegalRawDataException {
+        Nzyme nzyme = new MockNzyme();
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        LoopbackUplink loopback = new LoopbackUplink();
+        probe.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+                .parse(Frames.AUTH_SUCCESS_WEP_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_1_HEADER, META_NO_WEP);
+
+        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 7);
+        assertEquals(n.getMessage(), "e0:33:8e:34:9e:73 is requesting to authenticate using WEP at f2:e5:6f:7c:84:6d");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "e0:33:8e:34:9e:73");
+        assertEquals(n.getAdditionalFields().get("destination"), "f2:e5:6f:7c:84:6d");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 1);
+        assertEquals(n.getAdditionalFields().get("is_wep"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDoHandleSharedKmySeq2() throws MalformedFrameException, IllegalRawDataException {
+        Nzyme nzyme = new MockNzyme();
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        LoopbackUplink loopback = new LoopbackUplink();
+        probe.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+                .parse(Frames.AUTH_SUCCESS_WEP_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_2_HEADER, META_NO_WEP);
+
+        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 7);
+        assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request at e0:33:8e:34:9e:73 with clear text challenge.");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
+        assertEquals(n.getAdditionalFields().get("destination"), "e0:33:8e:34:9e:73");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 2);
+        assertEquals(n.getAdditionalFields().get("is_wep"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDoHandleSharedKmySeq4() throws MalformedFrameException, IllegalRawDataException {
+        Nzyme nzyme = new MockNzyme();
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        LoopbackUplink loopback = new LoopbackUplink();
+        probe.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+                .parse(Frames.AUTH_SUCCESS_WEP_STAGE_4_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_4_HEADER, META_NO_WEP);
+
+        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request from e0:33:8e:34:9e:73. (success)");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
+        assertEquals(n.getAdditionalFields().get("destination"), "e0:33:8e:34:9e:73");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short) 0);
+        assertEquals(n.getAdditionalFields().get("response_string"), "success");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 4);
+        assertEquals(n.getAdditionalFields().get("is_wep"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDoHandleSharedKmySeq4Failure() throws MalformedFrameException, IllegalRawDataException {
+        Nzyme nzyme = new MockNzyme();
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        LoopbackUplink loopback = new LoopbackUplink();
+        probe.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+                .parse(Frames.AUTH_FAILED_WEP_STAGE_4_PAYLOAD, Frames.AUTH_FAILED_WEP_STAGE_4_HEADER, META_NO_WEP);
+
+        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request from e0:33:8e:34:9e:73. (failure)");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
+        assertEquals(n.getAdditionalFields().get("destination"), "e0:33:8e:34:9e:73");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short) 1);
+        assertEquals(n.getAdditionalFields().get("response_string"), "failure");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 4);
+        assertEquals(n.getAdditionalFields().get("is_wep"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
     public void testGetName() {
         assertEquals(new Dot11AuthenticationFrameHandler(null).getName(), "auth");
     }
