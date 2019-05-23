@@ -25,7 +25,7 @@
         <guava.version>27.1-jre</guava.version>
         <jcommander.version>1.72</jcommander.version>
         <testng.version>6.9.10</testng.version>
-        <okhttp.version>3.14.1</okhttp.version>
+        <okhttp.version>3.14.2</okhttp.version>
         <jackson.version>2.9.9</jackson.version>
         <jodatime.version>2.10.2</jodatime.version>
         <semver.version>0.9.0</semver.version>
