@@ -7507,9 +7507,9 @@ react-is@^16.8.1:
   version "16.8.6"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.6.tgz#5bbc1e2d29141c9fbdfed456343fe2bc430a6a16"
 
-react-notify-toast@^0.4.0:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/react-notify-toast/-/react-notify-toast-0.4.1.tgz#25d760704b1577c506ffaad780b9daea8b0ab591"
+react-notify-toast@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/react-notify-toast/-/react-notify-toast-0.5.0.tgz#b00cf50a3cc97a1d222ecd7d7a8e7f14bef5fa67"
   dependencies:
     object-assign "^4.0.0"
     prop-types "^15.5.8"
