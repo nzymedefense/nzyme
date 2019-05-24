@@ -60,7 +60,7 @@ public abstract class Bluff {
             File script = ensureScript();
 
             StringBuilder exec = new StringBuilder()
-                    .append(configuration.getPythonExecutable())
+                    .append(configuration.pythonExecutable())
                     .append(" ")
                     .append(script.getCanonicalPath())
                     .append(" ");
@@ -129,8 +129,8 @@ public abstract class Bluff {
     }
 
     private void validateParameters() throws InsecureParametersException {
-        if (!Tools.isSafeParameter(configuration.getPythonScriptDirectory()) || !Tools.isSafeParameter(configuration.getPythonScriptPrefix())
-                || !Tools.isSafeParameter(configuration.getPythonExecutable())
+        if (!Tools.isSafeParameter(configuration.pythonScriptDirectory()) || !Tools.isSafeParameter(configuration.pythonScriptPrefix())
+                || !Tools.isSafeParameter(configuration.pythonExecutable())
                 || !Tools.isSafeParameter(this.getClass().getSimpleName())
                 || !Tools.isSafeParameter(scriptCategory()) || !Tools.isSafeParameter(scriptName())) {
             throw new InsecureParametersException();
@@ -154,7 +154,7 @@ public abstract class Bluff {
     private File ensureScript() throws IOException {
         URL url = Resources.getResource("bluffs/" + scriptCategory() + "/" + scriptName());
         String text = Resources.toString(url, Charsets.UTF_8);
-        File target = new File("/" + configuration.getPythonScriptDirectory() + "/" + configuration.getPythonScriptPrefix() + this.getClass().getSimpleName());
+        File target = new File("/" + configuration.pythonScriptDirectory() + "/" + configuration.pythonScriptPrefix() + this.getClass().getSimpleName());
 
         Files.asByteSink(target).write(text.getBytes());
 

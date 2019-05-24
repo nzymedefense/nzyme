@@ -112,15 +112,15 @@ public class NzymeImpl implements Nzyme {
 
         this.ouiManager = new OUIManager(this);
 
-        this.configuredAlerts = configuration.getDot11Alerts();
+        this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
 
         // Disable TRAINING status when training period is over.
-        LOG.info("Training period ends in <{}> seconds.", configuration.getAlertingTrainingPeriodSeconds());
+        LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
             LOG.info("Training period is over!");
             systemStatus.unsetStatus(SystemStatus.TYPE.TRAINING);
-        }, configuration.getAlertingTrainingPeriodSeconds(), TimeUnit.SECONDS);
+        }, configuration.alertingTrainingPeriodSeconds(), TimeUnit.SECONDS);
 
         probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -151,7 +151,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 1, TimeUnit.MINUTES);
-        if(configuration.areVersionchecksEnabled()) {
+        if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
@@ -174,8 +174,8 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(SystemResource.class);
 
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
-        httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.getRestListenUri(), resourceConfig);
-        LOG.info("Started web interface and REST API at [{}].", configuration.getRestListenUri());
+        httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
+        LOG.info("Started web interface and REST API at [{}].", configuration.restListenUri());
 
         // Start server.
         try {
@@ -204,17 +204,17 @@ public class NzymeImpl implements Nzyme {
 
     private void initializeProbes() {
         // Broad monitor probes.
-        for (Dot11MonitorDefinition m : configuration.getDot11Monitors()) {
+        for (Dot11MonitorDefinition m : configuration.dot11Monitors()) {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
-                    configuration.getGraylogUplinks(),
-                    configuration.getNzymeId(),
+                    configuration.graylogUplinks(),
+                    configuration.nzymeId(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),
                     m.channelHopCommand(),
-                    configuration.getDot11Networks(),
-                    configuration.getKnownBanditFingerprints()
+                    configuration.dot11Networks(),
+                    configuration.knownBanditFingerprints()
             ), getMetrics());
 
             // Add standard interceptors for broad channel monitoring.

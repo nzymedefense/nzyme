@@ -58,7 +58,7 @@ public class StatisticsResource {
 
         // Channels.
         Set<Integer> configuredChannels = Sets.newHashSet();
-        for (Dot11MonitorDefinition monitor : nzyme.getConfiguration().getDot11Monitors()) {
+        for (Dot11MonitorDefinition monitor : nzyme.getConfiguration().dot11Monitors()) {
             configuredChannels.addAll(monitor.channels());
         }
 

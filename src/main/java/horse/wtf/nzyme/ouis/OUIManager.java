@@ -78,7 +78,7 @@ public class OUIManager {
     }
 
     public void fetchAndUpdate() throws IOException {
-        if (!nzyme.getConfiguration().isFetchOUIsEnabled()) {
+        if (!nzyme.getConfiguration().fetchOuis()) {
             LOG.info("Fetching OUIs has been disabled in nzyme configuration. Not fetching.");
             return;
         }

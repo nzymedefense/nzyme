@@ -52,7 +52,7 @@ public class AlertsResource {
         ImmutableList.Builder<Alert.TYPE_WIDE> disabled = new ImmutableList.Builder<>();
 
         for (Alert.TYPE_WIDE type : Alert.TYPE_WIDE.values()) {
-            if (nzyme.getConfiguration().getDot11Alerts().contains(type)) {
+            if (nzyme.getConfiguration().dot11Alerts().contains(type)) {
                 enabled.add(type);
             } else {
                 disabled.add(type);
