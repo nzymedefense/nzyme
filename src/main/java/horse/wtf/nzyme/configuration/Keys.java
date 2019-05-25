@@ -19,11 +19,6 @@ package horse.wtf.nzyme.configuration;
 
 public class Keys {
 
-    public static final String NZYME_SENSOR_ID = "nzyme_sensor_id";
-    public static final String NZYME_MESSAGE_TYPE = "nzyme_message_type";
-    public static final String NZYME_NIC_NAME = "nzyme_nic_name";
-    public static final String NZYME_PROBE_NAME = "nzyme_probe_name";
-
     public static final String GENERAL = "general";
     public static final String PYTHON = "python";
     public static final String ALERTING = "alerting";
@@ -57,7 +52,6 @@ public class Keys {
     public static final String BSSID = "bssid";
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
-    public static final String SIGNAL_QUALITY = "signal_quality";
     public static final String DESTINATION = "destination";
     public static final String DEVICE_SENDER = "device_sender";
     public static final String DEVICE_MONITOR = "device_monitor";
@@ -66,7 +60,5 @@ public class Keys {
     public static final String BANDIT_FINGERPRINT = "fingerprint";
     public static final String BANDIT_NAME = "bandit_name";
     public static final String ENCOUNTERED_SECURITY = "encountered_security";
-    public static final String MAC_TIMESTAMP = "mac_timestamp";
-    public static final String ALERT_TYPE = "alert_type";
 
 }
