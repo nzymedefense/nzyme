@@ -34,7 +34,7 @@
     "postcss-flexbugs-fixes": "3.2.0",
     "postcss-loader": "2.0.8",
     "promise": "8.0.1",
-    "raf": "3.4.0",
+    "raf": "3.4.1",
     "react": "^16.4.1",
     "react-dev-utils": "^5.0.2",
     "react-dom": "^16.8.6",
