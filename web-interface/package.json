@@ -5,7 +5,7 @@
   "dependencies": {
     "autoprefixer": "7.1.6",
     "axios": "^0.18.0",
-    "babel-core": "6.26.0",
+    "babel-core": "6.26.3",
     "babel-eslint": "7.2.3",
     "babel-jest": "23.6.0",
     "babel-loader": "7.1.5",
