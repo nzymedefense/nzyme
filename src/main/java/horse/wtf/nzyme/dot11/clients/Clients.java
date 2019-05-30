@@ -33,20 +33,7 @@ public class Clients {
                         .setDaemon(true)
                         .setNameFormat("clients-cleaner")
                         .build()
-        ).scheduleAtFixedRate(() -> {
-            try {
-                for (Map.Entry<String, Client> entry : Lists.newArrayList(clients.entrySet())) {
-                    Client client = entry.getValue();
-
-                    if (client.lastSeen.isBefore(DateTime.now().minusMinutes(5))) {
-                        LOG.info("Retention cleaning expired client [{}] from internal clients list.", client);
-                        clients.remove(entry.getKey());
-                    }
-                }
-            } catch(Exception e) {
-                LOG.error("Error when trying to clean expired clients.", e);
-            }
-        }, 1, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(() -> retentionClean(300), 1, 1, TimeUnit.MINUTES);
     }
 
     public void registerProbeRequestFrame(Dot11ProbeRequestFrame frame) {
@@ -76,6 +63,21 @@ public class Clients {
 
     public Map<String, Client> getClients() {
         return new ImmutableMap.Builder<String, Client>().putAll(clients).build();
+    }
+
+    public void retentionClean(int seconds) {
+        try {
+            for (Map.Entry<String, Client> entry : Lists.newArrayList(clients.entrySet())) {
+                Client client = entry.getValue();
+
+                if (client.lastSeen.isBefore(DateTime.now().minusSeconds(seconds))) {
+                    LOG.info("Retention cleaning expired client [{}] from internal clients list.", client);
+                    clients.remove(entry.getKey());
+                }
+            }
+        } catch(Exception e) {
+            LOG.error("Error when trying to clean expired clients.", e);
+        }
     }
 
 }
