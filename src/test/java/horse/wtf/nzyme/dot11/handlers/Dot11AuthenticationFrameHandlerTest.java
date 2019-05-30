@@ -33,14 +33,13 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 7);
+        assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(), "ac:5f:3e:b9:5d:be is requesting to authenticate with Open System (Open, WPA, WPA2, ...) at e0:22:03:f8:a3:39");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "ac:5f:3e:b9:5d:be");
         assertEquals(n.getAdditionalFields().get("destination"), "e0:22:03:f8:a3:39");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "open_system");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 1);
-        assertEquals(n.getAdditionalFields().get("is_wep"), false);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 
@@ -58,7 +57,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 8);
         assertEquals(n.getMessage(), "2c:5d:93:04:5c:09 is responding to Open System (Open, WPA, WPA2, ...) authentication request from 64:76:ba:d8:5d:ab. (success)");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "2c:5d:93:04:5c:09");
@@ -67,7 +66,6 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("response_string"), "success");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "open_system");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 2);
-        assertEquals(n.getAdditionalFields().get("is_wep"), false);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 
@@ -85,14 +83,13 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 7);
+        assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(), "e0:33:8e:34:9e:73 is requesting to authenticate using WEP at f2:e5:6f:7c:84:6d");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "e0:33:8e:34:9e:73");
         assertEquals(n.getAdditionalFields().get("destination"), "f2:e5:6f:7c:84:6d");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 1);
-        assertEquals(n.getAdditionalFields().get("is_wep"), true);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 
@@ -110,14 +107,13 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 7);
+        assertEquals(n.getAdditionalFields().size(), 6);
         assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request at e0:33:8e:34:9e:73 with clear text challenge.");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
         assertEquals(n.getAdditionalFields().get("destination"), "e0:33:8e:34:9e:73");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 2);
-        assertEquals(n.getAdditionalFields().get("is_wep"), true);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 
@@ -135,7 +131,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 8);
         assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request from e0:33:8e:34:9e:73. (success)");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
@@ -144,7 +140,6 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("response_string"), "success");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 4);
-        assertEquals(n.getAdditionalFields().get("is_wep"), true);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 
@@ -162,7 +157,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 8);
         assertEquals(n.getMessage(), "f2:e5:6f:7c:84:6d is responding to WEP authentication request from e0:33:8e:34:9e:73. (failure)");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "f2:e5:6f:7c:84:6d");
@@ -171,7 +166,6 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         assertEquals(n.getAdditionalFields().get("response_string"), "failure");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 4);
-        assertEquals(n.getAdditionalFields().get("is_wep"), true);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 

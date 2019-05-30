@@ -88,7 +88,6 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                 .addField(FieldNames.DESTINATION, frame.destination())
                 .addField(FieldNames.AUTH_ALGORITHM, frame.algorithm().toString().toLowerCase())
                 .addField(FieldNames.TRANSACTION_SEQUENCE_NUMBER, frame.transactionSequence())
-                .addField(FieldNames.IS_WEP, frame.algorithm().equals(Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY))
                 .addField(FieldNames.SUBTYPE, "auth")
                 .addFields(additionalFields);
 

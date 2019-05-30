@@ -53,7 +53,7 @@ public class AlertsService {
                 for (Map.Entry<UUID, Alert> entry : Lists.newArrayList(activeAlerts.entrySet())) {
                     Alert alert = entry.getValue();
 
-                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(nzyme.getConfiguration().getAlertingRetentionPeriodMinutes()))) {
+                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(nzyme.getConfiguration().alertingRetentionPeriodMinutes()))) {
                         LOG.info("Retention cleaning expired alert [{}/{}]", entry.getValue(), alert.getType());
                         activeAlerts.remove(entry.getKey());
                     }

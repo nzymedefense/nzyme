@@ -247,10 +247,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                 }
                             }
 
-                            if(this.nzyme.getConfiguration().isPrintPacketInfo()) {
-                                LOG.info("Type: {}, Header: {} bytes, Payload: {} bytes", type.value(), r.getHeader().getRawData().length, payload.length);
-                            }
-
                             this.nzyme.getStatistics().tickFrameCount(meta);
                             time.stop();
                         }

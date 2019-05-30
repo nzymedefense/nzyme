@@ -48,7 +48,7 @@ class SimpleLineChart extends React.Component {
           showlegend: false,
           dragmode: false,
           clickmode: "none",
-          hovermode: "y",
+          hovermode: "x",
           hoverlabel: {
             font: { size: 11 }
           },

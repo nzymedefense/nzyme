@@ -21,6 +21,7 @@ import com.beust.jcommander.JCommander;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.configuration.CLIArguments;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.ConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
@@ -47,11 +48,11 @@ public class Main {
         // Parse configuration.
         Configuration configuration = null;
         try {
-            configuration = new Configuration(new File(cliArguments.getConfigFilePath()), false);
-        } catch (Configuration.InvalidConfigurationException | ConfigException e) {
+            configuration = new ConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+        } catch (ConfigurationLoader.InvalidConfigurationException | ConfigException e) {
             LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
             System.exit(FAILURE);
-        } catch (Configuration.IncompleteConfigurationException e) {
+        } catch (ConfigurationLoader.IncompleteConfigurationException e) {
             LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
             System.exit(FAILURE);
         }
@@ -63,10 +64,6 @@ public class Main {
 
         if(cliArguments.isTraceMode()) {
             Logging.setRootLoggerLevel(Level.TRACE);
-        }
-
-        if (cliArguments.isPacketInfo()) {
-            configuration.setPrintPacketInfo(true);
         }
 
         // Database.

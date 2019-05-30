@@ -26,7 +26,7 @@ public class Database {
     }
 
     public void initializeAndMigrate() throws LiquibaseException {
-        this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.getDatabasePath())
+        this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.databasePath())
                 .installPlugin(new SQLitePlugin())
                 .installPlugin(new JodaTimePlugin())
                 .registerRowMapper(new MeasurementMapper());

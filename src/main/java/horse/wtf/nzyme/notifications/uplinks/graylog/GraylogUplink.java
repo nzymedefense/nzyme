@@ -19,6 +19,7 @@ package horse.wtf.nzyme.notifications.uplinks.graylog;
 
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import org.graylog2.gelfclient.GelfConfiguration;
@@ -65,21 +66,19 @@ public class GraylogUplink implements Uplink {
 
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
         gelf.addAdditionalFields(notification.getAdditionalFields());
-        gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
-        gelf.addAdditionalField("nzyme_message_type", "record");
-        gelf.addAdditionalField("nzyme_nic_name", this.networkInterfaceName);
-        gelf.addAdditionalField("nzyme_probe_name", notification.getProbe().getName());
-
+        gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
+        gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "frame_record");
+        gelf.addAdditionalField(FieldNames.NZYME_NIC_NAME, this.networkInterfaceName);
+        gelf.addAdditionalField(FieldNames.NZYME_PROBE_NAME, notification.getProbe().getName());
 
         // Meta information.
         if(meta != null) {
-            gelf.addAdditionalField("signal_strength", meta.getAntennaSignal());
-            gelf.addAdditionalField("frequency", meta.getFrequency());
-            gelf.addAdditionalField("signal_quality", meta.getSignalQuality());
-            gelf.addAdditionalField("is_wep", meta.isWep());
+            gelf.addAdditionalField(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+            gelf.addAdditionalField(FieldNames.FREQUENCY, meta.getFrequency());
+            gelf.addAdditionalField(FieldNames.SIGNAL_QUALITY, meta.getSignalQuality());
 
             if(meta.getMacTimestamp() >= 0) {
-                gelf.addAdditionalField("mac_timestamp", meta.getMacTimestamp());
+                gelf.addAdditionalField(FieldNames.MAC_TIMESTAMP, meta.getMacTimestamp());
             }
         }
 
@@ -89,11 +88,11 @@ public class GraylogUplink implements Uplink {
     @Override
     public void notifyOfAlert(Alert alert) {
         GelfMessage gelf = new GelfMessage("ALERT: " + alert.getMessage(), SOURCE);
-        gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
-        gelf.addAdditionalField("nzyme_message_type", "alert");
-        gelf.addAdditionalField("nic_name", this.networkInterfaceName);
-        gelf.addAdditionalField("probe_name", alert.getProbe().getName());
-        gelf.addAdditionalField("alert_type", alert.getType().toString().toLowerCase());
+        gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
+        gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "alert");
+        gelf.addAdditionalField(FieldNames.NZYME_NIC_NAME, this.networkInterfaceName);
+        gelf.addAdditionalField(FieldNames.NZYME_PROBE_NAME, alert.getProbe().getName());
+        gelf.addAdditionalField(FieldNames.ALERT_TYPE, alert.getType().toString().toLowerCase());
 
         for (Map.Entry<String, Object> x : alert.getFields().entrySet()) {
             gelf.addAdditionalField("alert_" + x.getKey(), x.getValue());
