@@ -36,11 +36,19 @@ public abstract class BSSID {
     @JsonProperty
     public abstract String bssid();
 
-    @JsonProperty("last_seen")
-    public DateTime lastSeen = new DateTime();
+    private DateTime lastSeen = new DateTime();
+
+    private boolean isWPS;
 
     @JsonProperty("is_wps")
-    public boolean isWPS;
+    public boolean isWPS() {
+        return isWPS;
+    }
+
+    @JsonProperty("last_seen")
+    public DateTime getLastSeen() {
+        return lastSeen;
+    }
 
     @JsonProperty("best_recent_signal_quality")
     public int bestRecentSignalQuality() {

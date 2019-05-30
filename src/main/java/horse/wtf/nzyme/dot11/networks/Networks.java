@@ -56,20 +56,7 @@ public class Networks {
                         .setDaemon(true)
                         .setNameFormat("bssids-cleaner")
                         .build()
-        ).scheduleAtFixedRate(() -> {
-            try {
-                for (Map.Entry<String, BSSID> entry : Lists.newArrayList(bssids.entrySet())) {
-                    BSSID bssid = entry.getValue();
-
-                    if (bssid.lastSeen.isBefore(DateTime.now().minusMinutes(10))) {
-                        LOG.info("Retention cleaning expired BSSID [{}] from internal networks list.", bssid.bssid());
-                        bssids.remove(entry.getKey());
-                    }
-                }
-            } catch(Exception e) {
-                LOG.error("Error when trying to clean expired BSSIDs.", e);
-            }
-        }, 1, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(() -> retentionClean(600), 1, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -85,11 +72,6 @@ public class Networks {
     }
 
     private synchronized void register(String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, String ssidName, int channelNumber, int signalQuality) {
-        // Skip broadcast frames. They don't advertise a specific network and we only care about specific networks.
-        if (ssidName == null || ssidName.trim().isEmpty()) {
-            return;
-        }
-
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -198,6 +180,21 @@ public class Networks {
         }
 
         return ssid.channels().get(channelNumber).expectedDelta();
+    }
+
+    public void retentionClean(int seconds) {
+        try {
+            for (Map.Entry<String, BSSID> entry : Lists.newArrayList(bssids.entrySet())) {
+                BSSID bssid = entry.getValue();
+
+                if (bssid.getLastSeen().isBefore(DateTime.now().minusSeconds(seconds))) {
+                    LOG.info("Retention cleaning expired BSSID [{}] from internal networks list.", bssid.bssid());
+                    bssids.remove(entry.getKey());
+                }
+            }
+        } catch(Exception e) {
+            LOG.error("Error when trying to clean expired BSSIDs.", e);
+        }
     }
 
     public static class NoSuchNetworkException extends Exception {
