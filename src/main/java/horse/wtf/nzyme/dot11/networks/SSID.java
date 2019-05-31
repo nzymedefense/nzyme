@@ -47,8 +47,12 @@ public abstract class SSID {
         return false;
     }
 
+    private List<Dot11SecurityConfiguration> security = Lists.newArrayList();
+
     @JsonProperty
-    public List<Dot11SecurityConfiguration> security = Lists.newArrayList();
+    public List<Dot11SecurityConfiguration> getSecurity() {
+        return security;
+    }
 
     @JsonProperty("name")
     public String nameSafe() {

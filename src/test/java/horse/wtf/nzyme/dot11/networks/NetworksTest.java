@@ -3,6 +3,7 @@ package horse.wtf.nzyme.dot11.networks;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
@@ -12,6 +13,9 @@ import horse.wtf.nzyme.dot11.parsers.Frames;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.testng.Assert.*;
 
@@ -86,6 +90,29 @@ public class NetworksTest {
         assertTrue(n1.getLastSeen().isAfter(new DateTime().minusSeconds(5)));
         assertEquals(n1.ssids().size(), 1);
         assertEquals(n1.ssids().get("WTF").name(), "WTF");
+        assertEquals(n1.ssids().get("WTF").getSecurity().size(), 2);
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(0),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA1,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
+                }}
+        ));
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(1),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA2,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
+                }}
+        ));
         assertEquals(n1.ssids().get("WTF").channels().size(), 2);
         assertEquals(n1.ssids().get("WTF").channels().get(1).totalFrames().get(), 3L);
         assertEquals(n1.ssids().get("WTF").channels().get(1).signalMin().get(), 56);
@@ -106,6 +133,12 @@ public class NetworksTest {
         assertTrue(n1.getLastSeen().isAfter(new DateTime().minusSeconds(5)));
         assertEquals(n2.ssids().size(), 1);
         assertEquals(n2.ssids().get("United_Wi-Fi").name(), "United_Wi-Fi");
+        assertEquals(n2.ssids().get("United_Wi-Fi").getSecurity().size(), 1);
+        assertEquals(n2.ssids().get("United_Wi-Fi").getSecurity().get(0),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.NONE,
+                Collections.emptyList(),
+                Collections.emptyList()
+        ));
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().size(), 1);
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).totalFrames().get(), 1L);
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).signalMin().get(), 100);
@@ -148,6 +181,67 @@ public class NetworksTest {
 
         assertTrue(n1.getLastSeen().isBefore(new DateTime()));
         assertTrue(n1.getLastSeen().isAfter(new DateTime().minusSeconds(2)));
+    }
+
+    @Test
+    public void testSecurityChangeIsRecorded() throws MalformedFrameException, IllegalRawDataException {
+        Networks n = new Networks(new MockNzyme());
+
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
+        ));
+
+        BSSID n1 = n.getBSSIDs().get("00:c0:ca:95:68:3b");
+        assertEquals(n1.ssids().get("WTF").getSecurity().size(), 2);
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(0),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA1,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                }}
+        ));
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(1),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA2,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                }}
+        ));
+
+        // Same network, but advertising TKIP, too.
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_NO_WEP
+        ));
+
+        assertEquals(n1.ssids().get("WTF").getSecurity().size(), 2);
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(0),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA1,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
+                }}
+        ));
+        assertEquals(n1.ssids().get("WTF").getSecurity().get(1),  Dot11SecurityConfiguration.create(
+                Dot11SecurityConfiguration.MODE.WPA2,
+                new ArrayList<Dot11SecurityConfiguration.KEY_MGMT_MODE>(){{
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAM);
+                    add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
+                }},
+                new ArrayList<Dot11SecurityConfiguration.ENCRYPTION_MODE>(){{
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
+                }}
+        ));
     }
 
     @Test
