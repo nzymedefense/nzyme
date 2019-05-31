@@ -24,20 +24,40 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @AutoValue
 public abstract class SSID {
 
-    @JsonProperty
     public abstract String name();
 
     @JsonProperty
     public abstract Map<Integer, Channel> channels();
 
+    @JsonProperty("human_readable")
+    public boolean isHumanReadable() {
+        for (char c : name().toCharArray()) {
+            if (!Character.isISOControl(c) && !Character.isWhitespace(c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @JsonProperty
     public List<Dot11SecurityConfiguration> security = Lists.newArrayList();
+
+    @JsonProperty("name")
+    public String nameSafe() {
+        if (isHumanReadable()) {
+            return name();
+        } else {
+            return "[not human readable]";
+        }
+    }
 
     @JsonIgnore
     public void updateSecurity(List<Dot11SecurityConfiguration> security) {

@@ -2,6 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 
 import numeral from "numeral";
+import SSID from "./SSID";
 
 class SSIDRow extends Reflux.Component {
 
@@ -58,7 +59,7 @@ class SSIDRow extends Reflux.Component {
 
         return (
             <tr>
-                <td>{this.props.ssid.name}</td>
+                <td><SSID ssid={this.props.ssid} /></td>
                 <td><strong>{this.props.channelNumber}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{this._printSecurity()}</td>

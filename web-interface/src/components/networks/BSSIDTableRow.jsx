@@ -1,7 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
 
-import moment from "moment";
 import SSIDTable from "./SSIDTable";
 
 class BSSIDTableRow extends Reflux.Component {
