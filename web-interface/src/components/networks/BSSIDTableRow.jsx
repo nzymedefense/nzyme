@@ -79,7 +79,9 @@ class BSSIDTableRow extends Reflux.Component {
     _printSecurity() {
         let x = "";
         const ssids = this.props.bssid.ssids;
-        const total = ssids.length;
+        const total = Object.keys(ssids).length;
+
+        console.log(total);
 
         Object.keys(ssids).forEach(function (key, ix) {
             const totalModes = ssids[key].security.length;
@@ -91,7 +93,7 @@ class BSSIDTableRow extends Reflux.Component {
                 }
             });
 
-            if(ix < total-1) {
+            if(ix+1 < total) {
                 x += ", ";
             }
         });
