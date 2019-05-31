@@ -67,6 +67,11 @@ public class NetworksTest {
                 Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP
         ));
 
+        // Required for the getLastSeen() comparisons later.
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) { fail(); }
+
         assertEquals(n.getSSIDs().size(), 2);
         assertEquals(n.getBSSIDs().size(), 2);
 
