@@ -39,4 +39,10 @@ public class LoopbackUplink implements Uplink {
         return lastAlert;
     }
 
+    public void clear() {
+        lastNotification = null;
+        lastMeta = null;
+        lastAlert = null;
+    }
+
 }
