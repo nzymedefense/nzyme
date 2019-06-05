@@ -65,6 +65,8 @@ public class InterceptorSetTest {
                                 add("00:c0:ca:95:68:3b");
                             }},
                             new ArrayList<Integer>() {{
+                                add(1);
+                                add(6);
                                 add(11);
                             }},
                             new ArrayList<String>() {{

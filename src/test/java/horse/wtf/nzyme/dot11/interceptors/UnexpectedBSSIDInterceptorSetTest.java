@@ -40,7 +40,7 @@ public class UnexpectedBSSIDInterceptorSetTest extends InterceptorSetTest {
                 ));
                 assertNull(loopback.getLastAlert());
 
-                // Beacon from a different network and different security. Should not trigger.
+                // Beacon from a wrong BSSID but different network. Should not trigger.
                 interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
                 ));
@@ -65,7 +65,7 @@ public class UnexpectedBSSIDInterceptorSetTest extends InterceptorSetTest {
                 ));
                 assertNull(loopback.getLastAlert());
 
-                // Probe-resp from a different network and different security. Should not trigger.
+                // Probe-resp from a wrong BSSID but different network. Should not trigger.
                 interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
                         Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP
                 ));
