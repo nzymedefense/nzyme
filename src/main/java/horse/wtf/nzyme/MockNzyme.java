@@ -36,6 +36,7 @@ public class MockNzyme implements Nzyme {
     private final Statistics statistics;
     private final SystemStatus systemStatus;
     private final Networks networks;
+    private final Clients clients;
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
@@ -45,6 +46,7 @@ public class MockNzyme implements Nzyme {
         this.statistics = new Statistics();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
+        this.clients = new Clients(this);
         this.ouiManager = new OUIManager(this);
         this.alertsService = new AlertsService(this);
     }
@@ -64,7 +66,7 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public Clients getClients() {
-        return null;
+        return clients;
     }
 
     @Override

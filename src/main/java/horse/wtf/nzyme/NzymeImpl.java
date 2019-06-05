@@ -238,7 +238,7 @@ public class NzymeImpl implements Nzyme {
             }
 
             // Statistics interceptor.
-            probe.addFrameInterceptors(new StatisticsInterceptorSet(this).getInterceptors());
+            probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
 
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);

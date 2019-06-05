@@ -19,11 +19,13 @@ package horse.wtf.nzyme.dot11.interceptors;
 
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.statistics.Statistics;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +46,11 @@ public class InterceptorSetTest {
     }};
 
     protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits) {
-        return new Dot11MockProbe(new MockNzyme(), Dot11ProbeConfiguration.create(
+        return buildMockProbe(bandits, new MockNzyme());
+    }
+
+    protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits, MockNzyme nzyme) {
+        return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
                 "test-probe-1",
                 Collections.emptyList(),
                 "nzyme-testng-1",
@@ -52,7 +58,21 @@ public class InterceptorSetTest {
                 Collections.emptyList(),
                 0,
                 "foo",
-                Collections.emptyList(),
+                new ArrayList<Dot11NetworkDefinition>(){{
+                    add(Dot11NetworkDefinition.create(
+                            "WTF",
+                            new ArrayList<String>(){{
+                                add("00:c0:ca:95:68:3b");
+                            }},
+                            new ArrayList<Integer>() {{
+                                add(11);
+                            }},
+                            new ArrayList<String>() {{
+                                add("WPA1-EAM-PSK-CCMP");
+                                add("WPA2-EAM-PSK-CCMP");
+                            }})
+                    );
+                }},
                 BANDITS_STANDARD
         ), new Statistics());
     }

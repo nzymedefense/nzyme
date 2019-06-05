@@ -31,11 +31,11 @@ import org.pcap4j.packet.IllegalRawDataException;
 import java.util.Collections;
 import java.util.List;
 
-public class StatisticsInterceptorSet {
+public class NetworksAndClientsInterceptorSet {
 
     private final Nzyme nzyme;
 
-    public StatisticsInterceptorSet(Nzyme nzyme) {
+    public NetworksAndClientsInterceptorSet(Nzyme nzyme) {
         this.nzyme = nzyme;
     }
 

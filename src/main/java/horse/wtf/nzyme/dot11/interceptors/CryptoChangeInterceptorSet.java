@@ -65,7 +65,7 @@ public class CryptoChangeInterceptorSet {
                         // One of our networks. Compare security configuration.
                         if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
-                                    CryptoChangeBeaconAlert.create(
+                                    CryptoChangeProbeRespAlert.create(
                                             frame.ssid(),
                                             frame.transmitter(),
                                             frame.taggedParameters().getFullSecurityString(),
@@ -104,7 +104,7 @@ public class CryptoChangeInterceptorSet {
                         // One of our networks. Compare security configuration.
                         if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
-                                    CryptoChangeProbeRespAlert.create(
+                                    CryptoChangeBeaconAlert.create(
                                             frame.ssid(),
                                             frame.transmitter(),
                                             frame.taggedParameters().getFullSecurityString(),
