@@ -93,14 +93,18 @@ public class Dot11TaggedParameters {
 
                 // Handle vendor specific tags.
                 if (tag == 221) {
-                    // Read vendor OUI and type into a string we can reference later.
-                    String oui = BaseEncoding.base16()
-                            .withSeparator(":", 2)
-                            .upperCase()
-                            .encode(ByteArrays.getSubArray(tagPayload, 0, 3));
-                    int type = 0xFF & tagPayload[3];
+                    try {
+                        // Read vendor OUI and type into a string we can reference later.
+                        String oui = BaseEncoding.base16()
+                                .withSeparator(":", 2)
+                                .upperCase()
+                                .encode(ByteArrays.getSubArray(tagPayload, 0, 3));
+                        int type = 0xFF & tagPayload[3];
 
-                    vendorSpecificParams.put(oui + "-" + type, tagPayload);
+                        vendorSpecificParams.put(oui + "-" + type, tagPayload);
+                    } catch(ArrayIndexOutOfBoundsException e) {
+                        LOG.debug("Tag 221 out of bounds/malformed. Skipping.", e);
+                    }
                 }
 
                 position = position + length + 2; // 2 = tag+length offset
