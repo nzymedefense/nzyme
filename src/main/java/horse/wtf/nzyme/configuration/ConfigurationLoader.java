@@ -57,10 +57,14 @@ public class ConfigurationLoader {
 
         this.root = ConfigFactory.parseFile(configFile);
 
-        this.general = root.getConfig(Keys.GENERAL);
-        this.python = general.getConfig(Keys.PYTHON);
-        this.alerting = general.getConfig(Keys.ALERTING);
-        this.interfaces = root.getConfig(Keys.INTERFACES);
+        try {
+            this.general = root.getConfig(Keys.GENERAL);
+            this.python = general.getConfig(Keys.PYTHON);
+            this.alerting = general.getConfig(Keys.ALERTING);
+            this.interfaces = root.getConfig(Keys.INTERFACES);
+        } catch(ConfigException e) {
+            throw new IncompleteConfigurationException("Incomplete configuration.", e);
+        }
 
         if (!skipValidation) {
             validate();
@@ -438,6 +442,10 @@ public class ConfigurationLoader {
 
         public IncompleteConfigurationException(String msg) {
             super(msg);
+        }
+
+        public IncompleteConfigurationException(String msg, Throwable t) {
+            super(msg, t);
         }
 
     }

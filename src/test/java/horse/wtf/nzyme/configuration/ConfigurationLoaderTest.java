@@ -46,12 +46,12 @@ public class ConfigurationLoaderTest {
         assertTrue(c.fetchOuis());
         assertTrue(c.versionchecksEnabled());
         assertEquals(c.restListenUri(), URI.create("http://127.0.0.1:22900/"));
-        assertEquals(c.graylogUplinks(), new ArrayList<GraylogAddress>(){{
+        assertEquals(c.graylogUplinks(), new ArrayList<GraylogAddress>() {{
             add(GraylogAddress.create("10.243.255.10", 33001));
             add(GraylogAddress.create("127.0.0.1", 9001));
         }});
-        assertEquals(c.dot11Monitors(), new ArrayList<Dot11MonitorDefinition>(){{
-            add(Dot11MonitorDefinition.create("wlx00c0ca8fd89a", new ArrayList<Integer>(){{
+        assertEquals(c.dot11Monitors(), new ArrayList<Dot11MonitorDefinition>() {{
+            add(Dot11MonitorDefinition.create("wlx00c0ca8fd89a", new ArrayList<Integer>() {{
                 add(1);
                 add(2);
                 add(3);
@@ -59,7 +59,7 @@ public class ConfigurationLoaderTest {
                 add(5);
                 add(6);
             }}, "sudo /sbin/iwconfig {interface} channel {channel}", 1));
-            add(Dot11MonitorDefinition.create("wlx00c0ca971216", new ArrayList<Integer>(){{
+            add(Dot11MonitorDefinition.create("wlx00c0ca971216", new ArrayList<Integer>() {{
                 add(7);
                 add(8);
                 add(9);
@@ -67,21 +67,21 @@ public class ConfigurationLoaderTest {
                 add(11);
             }}, "sudo /sbin/iwconfig {interface} channel {channel}", 3));
         }});
-        assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>(){{
+        assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
             add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<String>() {{
                 add("06:0d:2d:c9:36:23");
                 add("24:a4:3c:7d:01:cc");
-            }}, new ArrayList<Integer>(){{
+            }}, new ArrayList<Integer>() {{
                 add(1);
                 add(6);
                 add(11);
-            }}, new ArrayList<String>(){{
+            }}, new ArrayList<String>() {{
                 add("None");
             }}));
 
             add(Dot11NetworkDefinition.create("WTF", new ArrayList<String>() {{
                 add("00:c0:ca:95:68:3b");
-            }}, new ArrayList<Integer>(){{
+            }}, new ArrayList<Integer>() {{
                 add(1);
                 add(2);
                 add(3);
@@ -95,7 +95,7 @@ public class ConfigurationLoaderTest {
                 add(11);
                 add(12);
                 add(13);
-            }}, new ArrayList<String>(){{
+            }}, new ArrayList<String>() {{
                 add("WPA1-EAM-PSK-CCMP-TKIP");
                 add("WPA2-EAM-PSK-CCMP-TKIP");
             }}));
@@ -107,7 +107,7 @@ public class ConfigurationLoaderTest {
             add(Alert.TYPE_WIDE.CRYPTO_CHANGE);
             add(Alert.TYPE_WIDE.KNOWN_BANDIT_FINGERPRINT);
         }});
-        assertEquals(c.knownBanditFingerprints(), new HashMap<String, BanditFingerprintDefinition>(){{
+        assertEquals(c.knownBanditFingerprints(), new HashMap<String, BanditFingerprintDefinition>() {{
             put("ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c", BanditFingerprintDefinition.create(
                     "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
                     "WiFi Pineapple Nano or Tetra (PineAP)"
@@ -117,6 +117,11 @@ public class ConfigurationLoaderTest {
                     "WiFi Pineapple Nano (management access point)"
             ));
         }});
+    }
+
+    @Test(expectedExceptions = ConfigurationLoader.IncompleteConfigurationException.class)
+    public void testGetInvalidConfigIncomplete() throws ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException, FileNotFoundException {
+        new ConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf"), false).get();
     }
 
 }
