@@ -17,22 +17,32 @@
 
 package horse.wtf.nzyme.notifications.uplinks.graylog;
 
-public class GraylogAddress {
+import com.google.auto.value.AutoValue;
 
-    private final String host;
-    private final int port;
+@AutoValue
+public abstract class GraylogAddress {
 
-    public GraylogAddress(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public abstract String host();
+    public abstract int port();
+
+    public static GraylogAddress create(String host, int port) {
+        return builder()
+                .host(host)
+                .port(port)
+                .build();
     }
 
-    public String getHost() {
-        return host;
+    public static Builder builder() {
+        return new AutoValue_GraylogAddress.Builder();
     }
 
-    public int getPort() {
-        return port;
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder host(String host);
+
+        public abstract Builder port(int port);
+
+        public abstract GraylogAddress build();
     }
 
 }

@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 public class Main {
 
@@ -54,6 +55,9 @@ public class Main {
             System.exit(FAILURE);
         } catch (ConfigurationLoader.IncompleteConfigurationException e) {
             LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (FileNotFoundException e) {
+            LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
         }
 

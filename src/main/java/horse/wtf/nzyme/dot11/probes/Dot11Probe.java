@@ -69,8 +69,8 @@ public abstract class Dot11Probe {
         if (configuration.graylogAddresses() != null) {
             for (GraylogAddress address : configuration.graylogAddresses()) {
                 registerUplink(new GraylogUplink(
-                        address.getHost(),
-                        address.getPort(),
+                        address.host(),
+                        address.port(),
                         configuration.nzymeId(),
                         configuration.networkInterfaceName())
                 );

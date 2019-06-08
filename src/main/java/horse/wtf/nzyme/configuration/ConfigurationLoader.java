@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.List;
@@ -49,7 +50,11 @@ public class ConfigurationLoader {
     private final Config python;
     private final Config alerting;
 
-    public ConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException {
+    public ConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+        if (!Files.isReadable(configFile.toPath())) {
+            throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
+        }
+
         this.root = ConfigFactory.parseFile(configFile);
 
         this.general = root.getConfig(Keys.GENERAL);
@@ -197,7 +202,7 @@ public class ConfigurationLoader {
             List<GraylogAddress> result = Lists.newArrayList();
             for (String address : graylogAddresses) {
                 String[] parts = address.split(":");
-                result.add(new GraylogAddress(parts[0], Integer.parseInt(parts[1])));
+                result.add(GraylogAddress.create(parts[0], Integer.parseInt(parts[1])));
             }
 
             return result;
