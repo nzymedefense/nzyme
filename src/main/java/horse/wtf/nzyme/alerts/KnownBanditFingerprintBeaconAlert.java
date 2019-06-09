@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.configuration.Keys;
@@ -39,19 +40,19 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
         add("A legitimate device could have the same fingerprint as a known bandit device. This is very unlikely in practice.");
     }};
 
-    private final String banditName;
+    private final List<String> banditNames;
     private final String fingerprint;
 
-    private KnownBanditFingerprintBeaconAlert(String banditName, String fingerprint, DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
+    private KnownBanditFingerprintBeaconAlert(List<String> banditNames, String fingerprint, DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
         super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
 
-        this.banditName = banditName;
+        this.banditNames = banditNames;
         this.fingerprint = fingerprint;
     }
 
     @Override
     public String getMessage() {
-        return "SSID [" + getSSID() + "] was advertised by a known bandit device of type: [" + banditName + "] with fingerprint [" + fingerprint + "]";
+        return "SSID [" + getSSID() + "] was advertised by a known bandit device of type: [" + Joiner.on(",").join(banditNames) + "] with fingerprint [" + fingerprint + "]";
     }
 
     @Override
@@ -82,17 +83,17 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
     }
 
-    public static KnownBanditFingerprintBeaconAlert create(String banditName, String fingerprint, String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static KnownBanditFingerprintBeaconAlert create(List<String> banditNames, String fingerprint, String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(Keys.SSID, ssid);
         fields.put(Keys.BSSID, bssid.toLowerCase());
         fields.put(Keys.CHANNEL, meta.getChannel());
         fields.put(Keys.FREQUENCY, meta.getFrequency());
         fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
-        fields.put(Keys.BANDIT_NAME, banditName);
+        fields.put(Keys.BANDIT_NAMES, Joiner.on(",").join(banditNames));
         fields.put(Keys.BANDIT_FINGERPRINT, fingerprint);
 
-        return new KnownBanditFingerprintBeaconAlert(banditName, fingerprint, DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new KnownBanditFingerprintBeaconAlert(banditNames, fingerprint, DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }
 
 }

@@ -223,7 +223,7 @@ public class ConfigurationLoader {
             String fingerprint = def.getString(Keys.BANDIT_FINGERPRINT);
             fingerprints.put(
                     fingerprint,
-                    BanditFingerprintDefinition.create(fingerprint, def.getString(Keys.BANDIT_NAME)))
+                    BanditFingerprintDefinition.create(fingerprint, def.getStringList(Keys.BANDIT_NAMES)))
             ;
         }
 

@@ -108,14 +108,19 @@ public class ConfigurationLoaderTest {
             add(Alert.TYPE_WIDE.KNOWN_BANDIT_FINGERPRINT);
         }});
         assertEquals(c.knownBanditFingerprints(), new HashMap<String, BanditFingerprintDefinition>() {{
+            put("535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83", BanditFingerprintDefinition.create(
+                    "535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
+                    new ArrayList<String>(){{
+                        add("WiFi Pineapple Nano or Tetra (PineAP)");
+                    }})
+            );
             put("ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c", BanditFingerprintDefinition.create(
                     "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
-                    "WiFi Pineapple Nano or Tetra (PineAP)"
-            ));
-            put("e1a3923e4a513e2e1040763ad0b97746a84add27d559a84e4af3b313c69bfb26", BanditFingerprintDefinition.create(
-                    "e1a3923e4a513e2e1040763ad0b97746a84add27d559a84e4af3b313c69bfb26",
-                    "WiFi Pineapple Nano (management access point)"
-            ));
+                    new ArrayList<String>(){{
+                        add("WiFi Pineapple Nano or Tetra (PineAP)");
+                        add("spacehuhn/esp8266_deauther (attack frames)");
+                    }})
+            );
         }});
     }
 

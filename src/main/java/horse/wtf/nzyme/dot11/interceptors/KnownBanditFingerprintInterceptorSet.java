@@ -53,7 +53,7 @@ public class KnownBanditFingerprintInterceptorSet {
                     BanditFingerprintDefinition bandit = bandits.get(frame.transmitterFingerprint());
 
                     probe.raiseAlert(KnownBanditFingerprintProbeRespAlert.create(
-                            bandit.name(),
+                            bandit.names(),
                             bandit.fingerprint(),
                             frame.ssid() == null ? "[hidden]" : frame.ssid(),
                             frame.transmitter(),
@@ -83,7 +83,7 @@ public class KnownBanditFingerprintInterceptorSet {
                     BanditFingerprintDefinition bandit = bandits.get(frame.transmitterFingerprint());
 
                     probe.raiseAlert(KnownBanditFingerprintBeaconAlert.create(
-                            bandit.name(),
+                            bandit.names(),
                             bandit.fingerprint(),
                             frame.ssid() == null ? "[hidden]" : frame.ssid(),
                             frame.transmitter(),

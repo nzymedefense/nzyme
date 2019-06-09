@@ -38,11 +38,16 @@ public class InterceptorSetTest {
         put("ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
                 BanditFingerprintDefinition.create(
                         "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
-                        "WiFi Pineapple Nano or Tetra (PineAP)"));
+                        new ArrayList<String>(){{
+                            add("WiFi Pineapple Nano or Tetra (PineAP)");
+                            add("spacehuhn/esp8266_deauther (attack frames)");
+                        }}));
         put("535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
                 BanditFingerprintDefinition.create(
                         "535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
-                        "WiFi Pineapple Nano or Tetra (PineAP)"));
+                        new ArrayList<String>(){{
+                            add("WiFi Pineapple Nano or Tetra (PineAP)");
+                        }}));
     }};
 
     protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits) {

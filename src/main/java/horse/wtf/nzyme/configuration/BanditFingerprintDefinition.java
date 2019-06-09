@@ -19,16 +19,18 @@ package horse.wtf.nzyme.configuration;
 
 import com.google.auto.value.AutoValue;
 
+import java.util.List;
+
 @AutoValue
 public abstract class BanditFingerprintDefinition {
 
     public abstract String fingerprint();
-    public abstract String name();
+    public abstract List<String> names();
 
-    public static BanditFingerprintDefinition create(String fingerprint, String name) {
+    public static BanditFingerprintDefinition create(String fingerprint, List<String> names) {
         return builder()
                 .fingerprint(fingerprint)
-                .name(name)
+                .names(names)
                 .build();
     }
 
@@ -40,7 +42,7 @@ public abstract class BanditFingerprintDefinition {
     public abstract static class Builder {
         public abstract Builder fingerprint(String fingerprint);
 
-        public abstract Builder name(String name);
+        public abstract Builder names(List<String> names);
 
         public abstract BanditFingerprintDefinition build();
     }
