@@ -21,7 +21,7 @@ class SSIDRow extends Reflux.Component {
 
         let i = 0;
         fingerprints.forEach(function(f) {
-            abbv += f ? f : "n/a";
+            abbv += f;
 
             if (i !== fingerprints.length-1) {
                 abbv += ", "

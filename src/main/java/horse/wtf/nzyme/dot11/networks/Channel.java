@@ -111,7 +111,9 @@ public abstract class Channel {
         EvictingQueue<Boolean> d = EvictingQueue.create(RECENT_MAX_ENTRIES);
 
         List<String> fingerprints = new ArrayList<String>() {{
-            add(fingerprint);
+            if(fingerprint != null) {
+                add(fingerprint);
+            }
         }};
 
         return builder()
