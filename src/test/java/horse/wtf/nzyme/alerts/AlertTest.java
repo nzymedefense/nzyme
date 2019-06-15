@@ -117,4 +117,23 @@ public class AlertTest {
         assertEquals(a.getUUID(), x);
     }
 
+    @Test
+    public void testIncrementFrameCount() {
+        CryptoChangeBeaconAlert a = CryptoChangeBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                "WPA2-EAM-PSK-CCMP",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        );
+
+        assertEquals(a.getFrameCount(), 1);
+
+        a.incrementFrameCount();
+        a.incrementFrameCount();
+
+        assertEquals(a.getFrameCount(), 3);
+    }
+
+
 }
