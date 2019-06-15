@@ -18,3 +18,5 @@ jobs:
       - run: mvn package
       - codecov/upload:
           file: target/site/cobertura/coverage.xml
+      - store_test_results:
+          path: target/surefire-reports
