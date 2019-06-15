@@ -74,6 +74,15 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
         assertFalse(a.sameAs(a3));
         assertFalse(a.sameAs(a4));
         assertFalse(a.sameAs(a5));
+
+        UnexpectedSSIDBeaconAlert a6 = UnexpectedSSIDBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:4b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        );
+
+        assertFalse(a.sameAs(a6));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
