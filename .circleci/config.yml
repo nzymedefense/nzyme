@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     working_directory: ~/circleci-nzyme 
@@ -14,5 +16,5 @@ jobs:
             - ~/.m2
           key: nzyme-{{ checksum "pom.xml" }}
       - run: mvn package
-      - store_test_results: 
-          path: target/site/cobertura/coverage.xml
+      - codecov/upload:
+          file: target/site/cobertura/coverage.xml
