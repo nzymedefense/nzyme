@@ -33,6 +33,8 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
         assertEquals(a.getFrameCount(), 1);
         assertFalse(a.getLastSeen().isAfterNow());
         assertTrue(a.getLastSeen().isBeforeNow());
+        assertFalse(a.getFirstSeen().isAfterNow());
+        assertTrue(a.getFirstSeen().isBeforeNow());
         assertNotNull(a.getDocumentationLink());
         assertNotNull(a.getFalsePositives());
         assertNotNull(a.getDescription());

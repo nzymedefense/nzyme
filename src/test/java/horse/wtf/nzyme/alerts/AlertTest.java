@@ -24,11 +24,12 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.statistics.Statistics;
+import org.joda.time.DateTime;
+import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+import static org.testng.Assert.assertEquals;
 
 public class AlertTest {
 
@@ -82,6 +83,38 @@ public class AlertTest {
                 }},
                 BANDITS_STANDARD
         ), new Statistics());
+    }
+
+    @Test
+    public void testSetLastSeen() {
+        CryptoChangeBeaconAlert a = CryptoChangeBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                "WPA2-EAM-PSK-CCMP",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        );
+
+        DateTime x = DateTime.now();
+
+        a.setLastSeen(x.minusHours(1));
+        assertEquals(a.getLastSeen(), x.minusHours(1));
+    }
+
+    @Test
+    public void testSetUUID() {
+        CryptoChangeBeaconAlert a = CryptoChangeBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                "WPA2-EAM-PSK-CCMP",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        );
+
+        UUID x = UUID.randomUUID();
+
+        a.setUUID(x);
+        assertEquals(a.getUUID(), x);
     }
 
 }
