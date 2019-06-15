@@ -5,11 +5,12 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class CryptoChangeBeaconAlertTest extends AlertTest {
+public class CryptoChangeProbeRespAlertTest extends AlertTest {
+
 
     @Test
     public void testAlertStandard() {
-        CryptoChangeBeaconAlert a = CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert a = CryptoChangeProbeRespAlert.create(
                 "wtf",
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP",
@@ -26,7 +27,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
         assertEquals(a.getSSID(), "wtf");
         assertEquals(a.getBSSID(), "00:c0:ca:95:68:3b");
         assertEquals(a.getMessage(), "SSID [wtf] was advertised with unexpected security settings [WPA2-EAM-PSK-CCMP].");
-        assertEquals(a.getType(), Alert.Type.CRYPTO_CHANGE_BEACON);
+        assertEquals(a.getType(), Alert.Type.CRYPTO_CHANGE_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
         assertEquals(a.getFrameCount(), 1);
         assertFalse(a.getLastSeen().isAfterNow());
@@ -37,7 +38,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
         assertNotNull(a.getFalsePositives());
         assertNotNull(a.getDescription());
 
-        CryptoChangeBeaconAlert a2 = CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert a2 = CryptoChangeProbeRespAlert.create(
                 "wtf",
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP",
@@ -47,7 +48,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
 
         assertTrue(a.sameAs(a2));
 
-        CryptoChangeBeaconAlert a3 = CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert a3 = CryptoChangeProbeRespAlert.create(
                 "wtfoooked",
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP",
@@ -55,7 +56,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
                 buildMockProbe(BANDITS_STANDARD)
         );
 
-        CryptoChangeBeaconAlert a4 = CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert a4 = CryptoChangeProbeRespAlert.create(
                 "wtf",
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP-TKIP",
@@ -63,7 +64,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
                 buildMockProbe(BANDITS_STANDARD)
         );
 
-        CryptoChangeBeaconAlert a5 = CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert a5 = CryptoChangeProbeRespAlert.create(
                 "wtf",
                 "00:c0:ca:95:68:4b",
                 "WPA2-EAM-PSK-CCMP",
@@ -78,7 +79,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testAlertHiddenSSID1() {
-        CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert.create(
                 null,
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP",
@@ -90,7 +91,7 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testAlertHiddenSSID2() {
-        CryptoChangeBeaconAlert.create(
+        CryptoChangeProbeRespAlert.create(
                 "",
                 "00:c0:ca:95:68:3b",
                 "WPA2-EAM-PSK-CCMP",
@@ -98,5 +99,6 @@ public class CryptoChangeBeaconAlertTest extends AlertTest {
                 buildMockProbe(BANDITS_STANDARD)
         );
     }
+
 
 }

@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.configuration.Keys;
@@ -80,6 +81,10 @@ public class CryptoChangeProbeRespAlert extends Alert {
     }
 
     public static CryptoChangeProbeRespAlert create(String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
+        if (Strings.isNullOrEmpty(ssid)) {
+            throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
+        }
+
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(Keys.SSID, ssid);
         fields.put(Keys.BSSID, bssid.toLowerCase());
