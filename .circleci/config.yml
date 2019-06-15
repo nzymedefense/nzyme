@@ -15,4 +15,4 @@ jobs:
           key: nzyme-{{ checksum "pom.xml" }}
       - run: mvn package
       - store_test_results: 
-          path: target/surefire-reports
+          path: target/site/cobertura/coverage.xml

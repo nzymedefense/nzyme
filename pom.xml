@@ -318,11 +318,18 @@
                 <version>2.7</version>
                 <configuration>
                     <formats>
-                        <format>html</format>
                         <format>xml</format>
                     </formats>
                     <check />
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>cobertura</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
