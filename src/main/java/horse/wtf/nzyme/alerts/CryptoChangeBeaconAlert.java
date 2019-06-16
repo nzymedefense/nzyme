@@ -25,6 +25,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class CryptoChangeBeaconAlert extends Alert {
                 && a.getEncounteredSecurity().equals(this.getEncounteredSecurity());
     }
 
-    public static CryptoChangeBeaconAlert create(String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static CryptoChangeBeaconAlert create(@NotNull String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
