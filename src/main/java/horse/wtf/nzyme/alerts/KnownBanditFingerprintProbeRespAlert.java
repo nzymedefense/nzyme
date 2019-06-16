@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.alerts;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.configuration.Keys;
@@ -25,6 +26,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +54,9 @@ public class KnownBanditFingerprintProbeRespAlert extends Alert {
 
     @Override
     public String getMessage() {
-        return "SSID [" + getSSID() + "] was advertised by a known bandit device of type: [" + Joiner.on(",").join(banditNames) + "] with fingerprint [" + fingerprint + "]";
+        String ssid = getSSID() == null ? "hidden/broadcast" : getSSID();
+
+        return "SSID [" + ssid + "] was advertised by a known bandit device of type: [" + Joiner.on(",").join(banditNames) + "] with fingerprint [" + fingerprint + "]";
     }
 
     @Override
@@ -83,9 +87,13 @@ public class KnownBanditFingerprintProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
     }
 
-    public static KnownBanditFingerprintProbeRespAlert create(List<String> banditNames, String fingerprint, String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static KnownBanditFingerprintProbeRespAlert create(List<String> banditNames, String fingerprint, @Nullable String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
-        fields.put(Keys.SSID, ssid);
+
+        if (!Strings.isNullOrEmpty(ssid)) {
+            fields.put(Keys.SSID, ssid);
+        }
+
         fields.put(Keys.BSSID, bssid.toLowerCase());
         fields.put(Keys.CHANNEL, meta.getChannel());
         fields.put(Keys.FREQUENCY, meta.getFrequency());
