@@ -51,7 +51,7 @@ public class UnexpectedSSIDProbeRespAlert extends Alert {
 
     @Override
     public Alert.Type getType() {
-        return Alert.Type.UNEXPECTED_PROBERESP_SSID;
+        return Type.UNEXPECTED_SSID_PROBERESP;
     }
 
     public String getSSID() {

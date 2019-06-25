@@ -52,7 +52,7 @@ public class UnexpectedBSSIDBeaconAlert extends Alert {
 
     @Override
     public Type getType() {
-        return Type.UNEXPECTED_BEACON_BSSID;
+        return Type.UNEXPECTED_BSSID_BEACON;
     }
 
     public String getSSID() {

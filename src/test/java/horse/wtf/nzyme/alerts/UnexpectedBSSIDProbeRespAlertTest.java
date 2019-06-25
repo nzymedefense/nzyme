@@ -26,7 +26,7 @@ public class UnexpectedBSSIDProbeRespAlertTest extends AlertTest {
         assertEquals(a.getBSSID(), "00:c0:ca:95:68:3b");
         assertEquals(a.getDestination(), "e0:22:03:f8:a3:39");
         assertEquals(a.getMessage(), "SSID [wtf] was advertised with probe response frame by unexpected BSSID [00:c0:ca:95:68:3b] for [e0:22:03:f8:a3:39]");
-        assertEquals(a.getType(), Alert.Type.UNEXPECTED_PROBERESP_BSSID);
+        assertEquals(a.getType(), Alert.Type.UNEXPECTED_BSSID_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
         assertEquals(a.getFrameCount(), 1);
         assertFalse(a.getLastSeen().isAfterNow());

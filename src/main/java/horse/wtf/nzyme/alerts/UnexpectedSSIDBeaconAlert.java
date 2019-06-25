@@ -51,7 +51,7 @@ public class UnexpectedSSIDBeaconAlert extends Alert  {
 
     @Override
     public Alert.Type getType() {
-        return Alert.Type.UNEXPECTED_BEACON_SSID;
+        return Type.UNEXPECTED_SSID_BEACON;
     }
 
     public String getSSID() {

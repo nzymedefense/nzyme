@@ -23,7 +23,7 @@ public class UnexpectedSSIDProbeRespAlertTest extends AlertTest {
 
         assertEquals(a.getSSID(), "wtf");
         assertEquals(a.getMessage(), "Our BSSID [00:c0:ca:95:68:3b] advertised unexpected SSID [wtf] with probe response frame.");
-        assertEquals(a.getType(), Alert.Type.UNEXPECTED_PROBERESP_SSID);
+        assertEquals(a.getType(), Alert.Type.UNEXPECTED_SSID_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
         assertEquals(a.getFrameCount(), 1);
         assertFalse(a.getLastSeen().isAfterNow());

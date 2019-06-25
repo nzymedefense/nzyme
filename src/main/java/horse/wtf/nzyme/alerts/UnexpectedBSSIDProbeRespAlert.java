@@ -52,7 +52,7 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
 
     @Override
     public Type getType() {
-        return Type.UNEXPECTED_PROBERESP_BSSID;
+        return Type.UNEXPECTED_BSSID_PROBERESP;
     }
 
     public String getSSID() {
