@@ -37,7 +37,7 @@ public class AlertsService {
     private final Map<UUID, Alert> activeAlerts;
 
     public AlertsService(Nzyme nzyme) {
-        this(nzyme, 10, TimeUnit.SECONDS, nzyme.getConfiguration().alertingRetentionPeriodMinutes());
+        this(nzyme, 10, TimeUnit.SECONDS, nzyme.getConfiguration() == null ? 1 : nzyme.getConfiguration().alertingRetentionPeriodMinutes());
     }
 
     public AlertsService(Nzyme nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionMinutes) {
