@@ -37,6 +37,10 @@ public class AlertsService {
     private final Map<UUID, Alert> activeAlerts;
 
     public AlertsService(Nzyme nzyme) {
+        this(nzyme, 10, TimeUnit.SECONDS, nzyme.getConfiguration().alertingRetentionPeriodMinutes());
+    }
+
+    public AlertsService(Nzyme nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionMinutes) {
         this.activeAlerts = Maps.newHashMap();
 
         // Regularly delete expired alerts from active alerts.
@@ -50,7 +54,7 @@ public class AlertsService {
                 for (Map.Entry<UUID, Alert> entry : Lists.newArrayList(activeAlerts.entrySet())) {
                     Alert alert = entry.getValue();
 
-                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(nzyme.getConfiguration().alertingRetentionPeriodMinutes()))) {
+                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(retentionMinutes))) {
                         LOG.info("Retention cleaning expired alert [{}/{}]", entry.getValue(), alert.getType());
                         activeAlerts.remove(entry.getKey());
                     }
@@ -58,7 +62,7 @@ public class AlertsService {
             } catch(Exception e){
                 LOG.error("Error when trying to retention clean expired alerts.", e);
             }
-        }, 10, 10, TimeUnit.SECONDS);
+        }, retentionCheckInterval, retentionCheckInterval, retentionCheckTimeUnit);
     }
 
     public void handle(Alert alert) {

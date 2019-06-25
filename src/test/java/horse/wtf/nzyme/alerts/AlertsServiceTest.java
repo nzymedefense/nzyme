@@ -10,13 +10,58 @@ import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 import horse.wtf.nzyme.statistics.Statistics;
 import org.testng.annotations.Test;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import static org.testng.Assert.*;
 
 public class AlertsServiceTest extends AlertTestHelper {
 
-    // TODO: fucking with a copy doesn't fuck with original, is immutable
     // TODO: retention cleaning old alerts works
     // TODO: updating last_seen works for sameAs alerts
+
+    /*@Test
+    public void testRetentionCleaning() {
+        AlertsService as = new AlertsService(new MockNzyme(), 250, TimeUnit.MILLISECONDS, 1);
+
+        as.handle(UnexpectedSSIDBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        ));
+
+        assertEquals(as.getActiveAlerts().size(), 1);
+
+        as.handle(UnexpectedChannelBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        ));
+
+        assertEquals(as.getActiveAlerts().size(), 2);
+
+        // Wait a little to make lastSeen() assertions work.
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {}
+    }*/
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void testGetActiveAlertsReturnsImmutableCopyPut() {
+        new AlertsService(new MockNzyme()).getActiveAlerts().put(UUID.randomUUID(), UnexpectedSSIDBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        ));
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void testGetActiveAlertsReturnsImmutableCopyRemove() {
+        new AlertsService(new MockNzyme()).getActiveAlerts().remove(UUID.randomUUID());
+    }
 
     @Test
     public void testSetsUUID() {
