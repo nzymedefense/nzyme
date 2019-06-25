@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class CryptoChangeBeaconAlertTest extends AlertTest {
+public class CryptoChangeBeaconAlertTest extends AlertTestHelper {
 
     @Test
     public void testAlertStandard() {

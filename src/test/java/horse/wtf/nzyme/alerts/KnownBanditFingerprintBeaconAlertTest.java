@@ -8,7 +8,7 @@ import java.util.List;
 
 import static org.testng.Assert.*;
 
-public class KnownBanditFingerprintBeaconAlertTest extends AlertTest {
+public class KnownBanditFingerprintBeaconAlertTest extends AlertTestHelper {
 
     private static final List<String> ONE_BANDIT = new ArrayList<String>(){{
        add("WiFi Pineapple Nano or Tetra (PineAP)");

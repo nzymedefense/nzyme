@@ -34,12 +34,9 @@ public class AlertsService {
 
     private static final Logger LOG = LogManager.getLogger(AlertsService.class);
 
-    private final Nzyme nzyme;
-
     private final Map<UUID, Alert> activeAlerts;
 
     public AlertsService(Nzyme nzyme) {
-        this.nzyme = nzyme;
         this.activeAlerts = Maps.newHashMap();
 
         // Regularly delete expired alerts from active alerts.

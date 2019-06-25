@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class UnexpectedSSIDBeaconAlertTest extends AlertTest {
+public class UnexpectedSSIDBeaconAlertTest extends AlertTestHelper {
 
     @Test
     public void testAlertStandard() {

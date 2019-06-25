@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;
 
-public class UnexpectedChannelProbeRespAlertTest extends AlertTest {
+public class UnexpectedChannelProbeRespAlertTest extends AlertTestHelper {
 
     @Test
     public void testAlertStandard() {
