@@ -35,7 +35,7 @@
         <typesafeconfig.version>1.3.4</typesafeconfig.version>
         <jdbi.version>3.8.2</jdbi.version>
         <liquibase.version>3.6.3</liquibase.version>
-        <sqlitejdbc.version>3.27.2.1</sqlitejdbc.version>
+        <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
     </properties>
 
     <dependencies>
