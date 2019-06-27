@@ -17,12 +17,17 @@ import static org.testng.Assert.*;
 
 public class AlertsServiceTest extends AlertTestHelper {
 
-    // TODO: retention cleaning old alerts works
     // TODO: updating last_seen works for sameAs alerts
 
-    /*@Test
+    @Test
     public void testRetentionCleaning() {
-        AlertsService as = new AlertsService(new MockNzyme(), 250, TimeUnit.MILLISECONDS, 1);
+        AlertsService as = new AlertsService(
+                new MockNzyme(),
+                100,
+                TimeUnit.MILLISECONDS,
+                1,
+                TimeUnit.SECONDS
+        );
 
         as.handle(UnexpectedSSIDBeaconAlert.create(
                 "wtf",
@@ -33,6 +38,10 @@ public class AlertsServiceTest extends AlertTestHelper {
 
         assertEquals(as.getActiveAlerts().size(), 1);
 
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {}
+
         as.handle(UnexpectedChannelBeaconAlert.create(
                 "wtf",
                 "00:c0:ca:95:68:3b",
@@ -42,11 +51,18 @@ public class AlertsServiceTest extends AlertTestHelper {
 
         assertEquals(as.getActiveAlerts().size(), 2);
 
-        // Wait a little to make lastSeen() assertions work.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
+
+        assertEquals(as.getActiveAlerts().size(), 1);
+
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {}
-    }*/
+
+        assertEquals(as.getActiveAlerts().size(), 0);
+    }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testGetActiveAlertsReturnsImmutableCopyPut() {

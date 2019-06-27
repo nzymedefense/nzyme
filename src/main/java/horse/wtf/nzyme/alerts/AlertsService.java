@@ -25,6 +25,8 @@ import horse.wtf.nzyme.Nzyme;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.joda.time.ReadableDuration;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,10 +39,16 @@ public class AlertsService {
     private final Map<UUID, Alert> activeAlerts;
 
     public AlertsService(Nzyme nzyme) {
-        this(nzyme, 10, TimeUnit.SECONDS, nzyme.getConfiguration() == null ? 1 : nzyme.getConfiguration().alertingRetentionPeriodMinutes());
+        this(
+                nzyme,
+                10,
+                TimeUnit.SECONDS,
+                nzyme.getConfiguration() == null ? 1 : nzyme.getConfiguration().alertingRetentionPeriodMinutes(),
+                TimeUnit.MINUTES
+        );
     }
 
-    public AlertsService(Nzyme nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionMinutes) {
+    public AlertsService(Nzyme nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionDuration, TimeUnit retentionDurationTimeUnit) {
         this.activeAlerts = Maps.newHashMap();
 
         // Regularly delete expired alerts from active alerts.
@@ -54,7 +62,7 @@ public class AlertsService {
                 for (Map.Entry<UUID, Alert> entry : Lists.newArrayList(activeAlerts.entrySet())) {
                     Alert alert = entry.getValue();
 
-                    if (alert.getLastSeen().isBefore(DateTime.now().minusMinutes(retentionMinutes))) {
+                    if (alert.getLastSeen().isBefore(DateTime.now().minus(TimeUnit.MILLISECONDS.convert(retentionDuration, retentionDurationTimeUnit)))) {
                         LOG.info("Retention cleaning expired alert [{}/{}]", entry.getValue(), alert.getType());
                         activeAlerts.remove(entry.getKey());
                     }
