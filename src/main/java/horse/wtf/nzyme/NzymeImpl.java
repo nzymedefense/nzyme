@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
@@ -162,6 +163,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new InjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
+        resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
 
         // Register resources.
