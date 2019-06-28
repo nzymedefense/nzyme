@@ -58,10 +58,10 @@ public abstract class Dot11MonitorDefinition {
     }
 
     public static boolean checkConfig(Config c) {
-        return !Strings.isNullOrEmpty(c.getString(Keys.DEVICE))
-                && c.getIntList(Keys.CHANNELS) != null && !c.getIntList(Keys.CHANNELS).isEmpty()
-                && !Strings.isNullOrEmpty(c.getString(Keys.HOP_COMMAND))
-                && c.getInt(Keys.HOP_INTERVAL) >= 0;
+        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.DEVICE))
+                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
+                && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
+                && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0;
     }
 
 }

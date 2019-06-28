@@ -58,10 +58,10 @@ public class ConfigurationLoader {
         this.root = ConfigFactory.parseFile(configFile);
 
         try {
-            this.general = root.getConfig(Keys.GENERAL);
-            this.python = general.getConfig(Keys.PYTHON);
-            this.alerting = general.getConfig(Keys.ALERTING);
-            this.interfaces = root.getConfig(Keys.INTERFACES);
+            this.general = root.getConfig(ConfigurationKeys.GENERAL);
+            this.python = general.getConfig(ConfigurationKeys.PYTHON);
+            this.alerting = general.getConfig(ConfigurationKeys.ALERTING);
+            this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -93,63 +93,63 @@ public class ConfigurationLoader {
     }
 
     private Role parseRole() {
-        return general.getEnum(Role.class, Keys.ROLE);
+        return general.getEnum(Role.class, ConfigurationKeys.ROLE);
     }
 
     private String parseNzymeId() {
-        return general.getString(Keys.ID);
+        return general.getString(ConfigurationKeys.ID);
     }
 
     private String parseDatabasePath() {
-        return general.getString(Keys.DATABASE_PATH);
+        return general.getString(ConfigurationKeys.DATABASE_PATH);
     }
 
     private String parsePythonExecutable() {
-        return python.getString(Keys.PYTHON_PATH);
+        return python.getString(ConfigurationKeys.PYTHON_PATH);
     }
 
     private String parsePythonScriptDirectory() {
-        return python.getString(Keys.PYTHON_SCRIPT_DIR);
+        return python.getString(ConfigurationKeys.PYTHON_SCRIPT_DIR);
     }
 
     private String parsePythonScriptPrefix() {
-        return python.getString(Keys.PYTHON_SCRIPT_PREFIX);
+        return python.getString(ConfigurationKeys.PYTHON_SCRIPT_PREFIX);
     }
 
     private boolean parseVersionchecksEnabled() {
-        return general.getBoolean(Keys.VERSIONCHECKS);
+        return general.getBoolean(ConfigurationKeys.VERSIONCHECKS);
     }
 
     private boolean parseFetchOUIsEnabled() {
-        return general.getBoolean(Keys.FETCH_OUIS);
+        return general.getBoolean(ConfigurationKeys.FETCH_OUIS);
     }
 
     private URI parseRestListenUri() {
-        return URI.create(interfaces.getString(Keys.REST_LISTEN_URI));
+        return URI.create(interfaces.getString(ConfigurationKeys.REST_LISTEN_URI));
     }
 
     private Integer parseAlertingRetentionPeriodMinutes() {
-        return alerting.getInt(Keys.CLEAN_AFTER_MINUTES);
+        return alerting.getInt(ConfigurationKeys.CLEAN_AFTER_MINUTES);
     }
 
     private Integer parseAlertingTrainingPeriodSeconds() {
-        return alerting.getInt(Keys.TRAINING_PERIOD_SECONDS);
+        return alerting.getInt(ConfigurationKeys.TRAINING_PERIOD_SECONDS);
     }
 
     private List<Dot11MonitorDefinition> parseDot11Monitors() {
         ImmutableList.Builder<Dot11MonitorDefinition> result = new ImmutableList.Builder<>();
 
-        for (Config config : root.getConfigList(Keys.DOT11_MONITORS)) {
+        for (Config config : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
             if (!Dot11MonitorDefinition.checkConfig(config)) {
                 LOG.info("Skipping 802.11 monitor with invalid configuration. Invalid monitor: [{}]", config);
                 continue;
             }
 
             result.add(Dot11MonitorDefinition.create(
-                    config.getString(Keys.DEVICE),
-                    config.getIntList(Keys.CHANNELS),
-                    config.getString(Keys.HOP_COMMAND),
-                    config.getInt(Keys.HOP_INTERVAL)
+                    config.getString(ConfigurationKeys.DEVICE),
+                    config.getIntList(ConfigurationKeys.CHANNELS),
+                    config.getString(ConfigurationKeys.HOP_COMMAND),
+                    config.getInt(ConfigurationKeys.HOP_INTERVAL)
             ));
         }
 
@@ -159,22 +159,22 @@ public class ConfigurationLoader {
     private List<Dot11NetworkDefinition> parseDot11Networks() {
         ImmutableList.Builder<Dot11NetworkDefinition> result = new ImmutableList.Builder<>();
 
-        for (Config config : root.getConfigList(Keys.DOT11_NETWORKS)) {
+        for (Config config : root.getConfigList(ConfigurationKeys.DOT11_NETWORKS)) {
             if (!Dot11NetworkDefinition.checkConfig(config)) {
                 LOG.info("Skipping 802.11 network with invalid configuration. Invalid network: [{}]", config);
                 continue;
             }
 
             ImmutableList.Builder<String> lowercaseBSSIDs = new ImmutableList.Builder<>();
-            for (String bssid : config.getStringList(Keys.BSSIDS)) {
+            for (String bssid : config.getStringList(ConfigurationKeys.BSSIDS)) {
                 lowercaseBSSIDs.add(bssid.toLowerCase());
             }
 
             result.add(Dot11NetworkDefinition.create(
-                    config.getString(Keys.SSID),
+                    config.getString(ConfigurationKeys.SSID),
                     lowercaseBSSIDs.build(),
-                    config.getIntList(Keys.CHANNELS),
-                    config.getStringList(Keys.SECURITY)
+                    config.getIntList(ConfigurationKeys.CHANNELS),
+                    config.getStringList(ConfigurationKeys.SECURITY)
             ));
         }
 
@@ -184,7 +184,7 @@ public class ConfigurationLoader {
     private List<Alert.TYPE_WIDE> parseDot11Alerts() {
         ImmutableList.Builder<Alert.TYPE_WIDE> result = new ImmutableList.Builder<>();
 
-        for (String alert : root.getStringList(Keys.DOT11_ALERTS)) {
+        for (String alert : root.getStringList(ConfigurationKeys.DOT11_ALERTS)) {
             String name = alert.toUpperCase();
 
             if (Enums.getIfPresent(Alert.TYPE_WIDE.class, name).isPresent()) {
@@ -198,7 +198,7 @@ public class ConfigurationLoader {
     @Nullable
     private List<GraylogAddress> parseGraylogUplinks() {
         try {
-            List<String> graylogAddresses = root.getStringList(Keys.GRAYLOG_UPLINKS);
+            List<String> graylogAddresses = root.getStringList(ConfigurationKeys.GRAYLOG_UPLINKS);
             if (graylogAddresses == null) {
                 return null;
             }
@@ -219,11 +219,11 @@ public class ConfigurationLoader {
     private Map<String, BanditFingerprintDefinition> parseKnownBanditFingerprints() {
         ImmutableMap.Builder<String, BanditFingerprintDefinition> fingerprints = new ImmutableMap.Builder<>();
 
-        for (Config def : root.getConfigList(Keys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(Keys.BANDIT_FINGERPRINT);
+        for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
+            String fingerprint = def.getString(ConfigurationKeys.BANDIT_FINGERPRINT);
             fingerprints.put(
                     fingerprint,
-                    BanditFingerprintDefinition.create(fingerprint, def.getStringList(Keys.BANDIT_NAMES)))
+                    BanditFingerprintDefinition.create(fingerprint, def.getStringList(ConfigurationKeys.BANDIT_NAMES)))
             ;
         }
 
@@ -232,54 +232,54 @@ public class ConfigurationLoader {
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
-        expectEnum(general, Keys.ROLE, Keys.GENERAL, Role.class);
-        expect(general, Keys.ID, Keys.GENERAL, String.class);
-        expect(general, Keys.DATABASE_PATH, Keys.GENERAL, String.class);
-        expect(general, Keys.VERSIONCHECKS, Keys.GENERAL, Boolean.class);
-        expect(general, Keys.FETCH_OUIS, Keys.GENERAL, Boolean.class);
-        expect(python, Keys.PYTHON_PATH, Keys.GENERAL + "." + Keys.PYTHON, String.class);
-        expect(python, Keys.PYTHON_SCRIPT_DIR, Keys.GENERAL + "." + Keys.PYTHON, String.class);
-        expect(python, Keys.PYTHON_SCRIPT_PREFIX, Keys.GENERAL + "." + Keys.PYTHON, String.class);
-        expect(alerting, Keys.CLEAN_AFTER_MINUTES, Keys.GENERAL + "." + Keys.ALERTING, Integer.class);
-        expect(alerting, Keys.TRAINING_PERIOD_SECONDS, Keys.GENERAL + "." + Keys.ALERTING, Integer.class);
-        expect(interfaces, Keys.REST_LISTEN_URI, Keys.INTERFACES, String.class);
-        expect(root, Keys.DOT11_MONITORS, "<root>", List.class);
-        expect(root, Keys.DOT11_NETWORKS, "<root>", List.class);
-        expect(root, Keys.DOT11_ALERTS, "<root>", List.class);
-        expect(root, Keys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
+        expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
+        expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
+        expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
+        expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
+        expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
+        expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        expect(alerting, ConfigurationKeys.CLEAN_AFTER_MINUTES, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
+        expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
+        expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
+        expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
+        expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
+        expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
+        expect(root, ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
 
         // 802.11 Monitors.
         int i = 0;
-        for (Config c : root.getConfigList(Keys.DOT11_MONITORS)) {
-            String where = Keys.DOT11_MONITORS + "." + "#" + i;
-            expect(c, Keys.DEVICE, where, String.class);
-            expect(c, Keys.CHANNELS, where, List.class);
-            expect(c, Keys.HOP_COMMAND, where, String.class);
-            expect(c, Keys.HOP_INTERVAL, where, Integer.class);
+        for (Config c : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
+            String where = ConfigurationKeys.DOT11_MONITORS + "." + "#" + i;
+            expect(c, ConfigurationKeys.DEVICE, where, String.class);
+            expect(c, ConfigurationKeys.CHANNELS, where, List.class);
+            expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
+            expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
             i++;
         }
 
         // 802.11 Trap Pairs
         i = 0;
-        for (Config c : root.getConfigList(Keys.DOT11_TRAP_PAIRS)) {
-            String where = Keys.DOT11_TRAP_PAIRS + "." + "#" + i;
-            expect(c, Keys.DEVICE_SENDER, where, String.class);
-            expect(c, Keys.DEVICE_MONITOR, where, String.class);
-            expect(c, Keys.CHANNELS, where, List.class);
-            expect(c, Keys.HOP_COMMAND, where, String.class);
-            expect(c, Keys.HOP_INTERVAL, where, Integer.class);
-            expect(c, Keys.TRAPS, where, List.class);
+        for (Config c : root.getConfigList(ConfigurationKeys.DOT11_TRAP_PAIRS)) {
+            String where = ConfigurationKeys.DOT11_TRAP_PAIRS + "." + "#" + i;
+            expect(c, ConfigurationKeys.DEVICE_SENDER, where, String.class);
+            expect(c, ConfigurationKeys.DEVICE_MONITOR, where, String.class);
+            expect(c, ConfigurationKeys.CHANNELS, where, List.class);
+            expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
+            expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
+            expect(c, ConfigurationKeys.TRAPS, where, List.class);
         }
 
         // Logical validity.
         // Python: executable is an executable file.
         if(!Files.isExecutable(new File(parsePythonExecutable()).toPath())) {
-            throw new InvalidConfigurationException("Parameter [general.python." + Keys.PYTHON_PATH + "] does not point to an executable file: " + parsePythonExecutable());
+            throw new InvalidConfigurationException("Parameter [general.python." + ConfigurationKeys.PYTHON_PATH + "] does not point to an executable file: " + parsePythonExecutable());
         }
 
         // Python: script directory is a directory and writable.
         if (!Files.isDirectory(new File(parsePythonScriptDirectory()).toPath()) || !Files.isWritable(new File(parsePythonScriptDirectory()).toPath())) {
-            throw new InvalidConfigurationException("Parameter [general.python." + Keys.PYTHON_SCRIPT_DIR + "] does not point to a writable directory: " + parsePythonScriptDirectory());
+            throw new InvalidConfigurationException("Parameter [general.python." + ConfigurationKeys.PYTHON_SCRIPT_DIR + "] does not point to a writable directory: " + parsePythonScriptDirectory());
         }
 
         // REST listen URI can be parsed into a URI.
@@ -287,11 +287,11 @@ public class ConfigurationLoader {
             parseRestListenUri();
         } catch(Exception e) {
             LOG.error(e);
-            throw new InvalidConfigurationException("Parameter [interfaces." + Keys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
+            throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
 
         // All channels are all integers, larger than 0.
-        validateChannelList(Keys.DOT11_MONITORS);
+        validateChannelList(ConfigurationKeys.DOT11_MONITORS);
 
         // 802_11 monitors should be parsed and safe to use for further logical checks from here on.
 
@@ -337,8 +337,8 @@ public class ConfigurationLoader {
 
         // Known bandit fingerprints: Each fingerprint is unique.
         List<String> usedFingerprints = Lists.newArrayList();
-        for (Config def : root.getConfigList(Keys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(Keys.BANDIT_FINGERPRINT);
+        for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
+            String fingerprint = def.getString(ConfigurationKeys.BANDIT_FINGERPRINT);
             if (usedFingerprints.contains(fingerprint)) {
                 throw new InvalidConfigurationException("Duplicate Known Bandit Fingerprint [" + fingerprint + "].");
             }
@@ -356,7 +356,7 @@ public class ConfigurationLoader {
         for (Config c : root.getConfigList(key)) {
             String where = key + "." + "#" + x;
             try {
-                for (Integer channel : c.getIntList(Keys.CHANNELS)) {
+                for (Integer channel : c.getIntList(ConfigurationKeys.CHANNELS)) {
                     if (channel < 1) {
                         throw new InvalidConfigurationException("Invalid channels in list for [" + where + "}. All channels must be integers larger than 0.");
                     }

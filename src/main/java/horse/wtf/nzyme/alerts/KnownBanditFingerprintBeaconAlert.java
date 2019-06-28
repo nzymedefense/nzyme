@@ -21,9 +21,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
-import horse.wtf.nzyme.configuration.Keys;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.notifications.FieldNames;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -65,11 +65,11 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
     }
 
     public String getSSID() {
-        return (String) getFields().get(Keys.SSID);
+        return (String) getFields().get(FieldNames.SSID);
     }
 
     public String getBSSID() {
-        return (String) getFields().get(Keys.BSSID);
+        return (String) getFields().get(FieldNames.BSSID);
     }
 
     public String getFingerprint() {
@@ -91,15 +91,15 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
 
         if (!Strings.isNullOrEmpty(ssid)) {
-            fields.put(Keys.SSID, ssid);
+            fields.put(FieldNames.SSID, ssid);
         }
 
-        fields.put(Keys.BSSID, bssid.toLowerCase());
-        fields.put(Keys.CHANNEL, meta.getChannel());
-        fields.put(Keys.FREQUENCY, meta.getFrequency());
-        fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
-        fields.put(Keys.BANDIT_NAMES, Joiner.on(",").join(banditNames));
-        fields.put(Keys.BANDIT_FINGERPRINT, fingerprint);
+        fields.put(FieldNames.BSSID, bssid.toLowerCase());
+        fields.put(FieldNames.CHANNEL, meta.getChannel());
+        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
+        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.BANDIT_NAMES, Joiner.on(",").join(banditNames));
+        fields.put(FieldNames.BANDIT_FINGERPRINT, fingerprint);
 
         return new KnownBanditFingerprintBeaconAlert(banditNames, fingerprint, DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }

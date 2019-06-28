@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.configuration;
 
-public class Keys {
+public class ConfigurationKeys {
 
     public static final String GENERAL = "general";
     public static final String PYTHON = "python";
@@ -52,13 +52,11 @@ public class Keys {
     public static final String BSSID = "bssid";
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
-    public static final String DESTINATION = "destination";
     public static final String DEVICE_SENDER = "device_sender";
     public static final String DEVICE_MONITOR = "device_monitor";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
     public static final String BANDIT_FINGERPRINT = "fingerprint";
     public static final String BANDIT_NAMES = "bandit_names";
-    public static final String ENCOUNTERED_SECURITY = "encountered_security";
 
 }

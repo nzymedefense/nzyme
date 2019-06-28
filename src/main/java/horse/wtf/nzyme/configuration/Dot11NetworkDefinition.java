@@ -44,10 +44,10 @@ public abstract class Dot11NetworkDefinition {
     }
 
     public static boolean checkConfig(Config c) {
-        return !Strings.isNullOrEmpty(c.getString(Keys.SSID))
-                && c.getStringList(Keys.BSSIDS) != null && !c.getStringList(Keys.BSSIDS).isEmpty()
-                && c.getIntList(Keys.CHANNELS) != null && !c.getIntList(Keys.CHANNELS).isEmpty()
-                && c.getStringList(Keys.SECURITY) != null;
+        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.SSID))
+                && c.getStringList(ConfigurationKeys.BSSIDS) != null && !c.getStringList(ConfigurationKeys.BSSIDS).isEmpty()
+                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
+                && c.getStringList(ConfigurationKeys.SECURITY) != null;
     }
 
     public static Builder builder() {

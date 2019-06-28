@@ -20,9 +20,9 @@ package horse.wtf.nzyme.alerts;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
-import horse.wtf.nzyme.configuration.Keys;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.notifications.FieldNames;
 import org.joda.time.DateTime;
 
 import javax.validation.constraints.NotNull;
@@ -57,11 +57,11 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
     }
 
     public String getSSID() {
-        return (String) getFields().get(Keys.SSID);
+        return (String) getFields().get(FieldNames.SSID);
     }
 
     public int getChannel() {
-        return (int) getFields().get(Keys.CHANNEL);
+        return (int) getFields().get(FieldNames.CHANNEL);
     }
 
     @Override
@@ -81,11 +81,11 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
         }
 
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
-        fields.put(Keys.SSID, ssid);
-        fields.put(Keys.BSSID, bssid.toLowerCase());
-        fields.put(Keys.CHANNEL, meta.getChannel());
-        fields.put(Keys.FREQUENCY, meta.getFrequency());
-        fields.put(Keys.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.SSID, ssid);
+        fields.put(FieldNames.BSSID, bssid.toLowerCase());
+        fields.put(FieldNames.CHANNEL, meta.getChannel());
+        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
+        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
 
         return new UnexpectedChannelProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }

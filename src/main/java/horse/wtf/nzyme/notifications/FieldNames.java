@@ -32,6 +32,7 @@ public class FieldNames {
     public static final String DESTINATION = "destination";
     public static final String BSSID = "bssid";
     public static final String FREQUENCY = "frequency";
+    public static final String CHANNEL = "channel";
     public static final String SIGNAL_QUALITY = "signal_quality";
     public static final String MAC_TIMESTAMP = "mac_timestamp";
 
@@ -54,6 +55,11 @@ public class FieldNames {
     public static final String SIGNAL_DELTA_UPPER = "signal_delta_upper";
     public static final String SIGNAL_DELTA_LOWER = "signal_delta_lower";
     public static final String SIGNAL_DELTA_DIFF = "signal_delta_diff_percent";
+
+    public static final String BANDIT_NAMES = "bandit_names";
+    public static final String BANDIT_FINGERPRINT = "bandit_fingerprint";
+
+    public static final String ENCOUNTERED_SECURITY = "encountered_security";
 
     public static final String ALERT_TYPE = "alert_type";
 
