@@ -8,8 +8,10 @@ import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 import horse.wtf.nzyme.statistics.Statistics;
+import org.joda.time.DateTime;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -62,6 +64,45 @@ public class AlertsServiceTest extends AlertTestHelper {
         } catch (InterruptedException e) {}
 
         assertEquals(as.getActiveAlerts().size(), 0);
+    }
+
+    @Test
+    public void testSameAlertsAreNotDuplicatedAndLastSeenIsUpdated() {
+        AlertsService as = new AlertsService(
+                new MockNzyme(),
+                100,
+                TimeUnit.MILLISECONDS,
+                10,
+                TimeUnit.MINUTES
+        );
+
+        as.handle(UnexpectedSSIDBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        ));
+
+        assertEquals(as.getActiveAlerts().size(), 1);
+        Alert a1 = new ArrayList<>(as.getActiveAlerts().values()).get(0);
+        DateTime lastSeen = a1.getLastSeen();
+        assertNotNull(a1.getLastSeen());
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {}
+
+        as.handle(UnexpectedSSIDBeaconAlert.create(
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                META_NO_WEP,
+                buildMockProbe(BANDITS_STANDARD)
+        ));
+
+        assertEquals(as.getActiveAlerts().size(), 1);
+        Alert a1a = new ArrayList<>(as.getActiveAlerts().values()).get(0);
+        assertNotNull(a1a.getLastSeen());
+        assertNotEquals(lastSeen, a1a.getLastSeen());
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
