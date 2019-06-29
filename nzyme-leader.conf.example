@@ -200,4 +200,11 @@ known_bandit_fingerprints: [
       ]
     }
 
+    {
+      fingerprint: 4d2c7aeb85869ef12a92d39754ebdbfb101bebf4224cc055ee89b96c9f41ee3b
+      bandit_names: [
+        "wifiphisher"
+      ]
+    }
+    
 ]
