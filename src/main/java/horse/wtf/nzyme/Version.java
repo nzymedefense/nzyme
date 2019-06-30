@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class Version {
@@ -32,12 +33,19 @@ public class Version {
         Properties buildProperties = new Properties();
 
         try {
-            gitProperties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
-            buildProperties.load(getClass().getClassLoader().getResourceAsStream("build.properties"));
+            InputStream git = getClass().getClassLoader().getResourceAsStream("git.properties");
+            InputStream build = getClass().getClassLoader().getResourceAsStream("build.properties");
+
+            if (git == null || build == null) {
+                throw new RuntimeException("git.properties or build.properties missing. Run mvn:package to fix.");
+            }
+
+            gitProperties.load(git);
+            buildProperties.load(build);
 
             return new StringBuilder(String.valueOf(gitProperties.get("git.build.version")))
                     .append(" built at [")
-                    .append(String.valueOf(buildProperties.get("date"))).append("]")
+                    .append(buildProperties.get("date")).append("]")
                     .toString();
         } catch (IOException e) {
             LOG.error("Could not load version information.", e);
