@@ -42,6 +42,9 @@ public class MeasurementsWriter extends Periodical  {
 
             handle.execute("INSERT INTO measurements(measurement_type, measurement_value, created_at) VALUES(?, ?, DATETIME('now'))",
                     MeasurementType.DOT11_CLIENT_COUNT, nzyme.getClients().getClients().size());
+
+            handle.execute("INSERT INTO measurements(measurement_type, measurement_value, created_at) VALUES(?, ?, DATETIME('now'))",
+                    MeasurementType.DOT11_FRAME_COUNT, nzyme.getStatistics().getRecentFrameCount());
         });
     }
 

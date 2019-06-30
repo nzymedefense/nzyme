@@ -41,8 +41,6 @@ public class Dot11ProbeRequestFrameHandler extends Dot11FrameHandler<Dot11ProbeR
             message = "Probe request: " + frame.requester() + " is looking for any network. (null probe request)";
         }
 
-        probe.getStatistics().tickProbingDevice(frame.requester());
-
         probe.notifyUplinks(
                 new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.SSID, frame.ssid() == null ? "[no SSID]" : frame.ssid())

@@ -83,9 +83,18 @@ public class StatisticsResource {
                         .mapTo(Measurement.class)
                         .list()
         ));
+
+        Map<String, Long> frameThroughputHistogram = buildMeasurementHistogram(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(MEASUREMENTS_QUERY)
+                        .bind(0, MeasurementType.DOT11_FRAME_COUNT)
+                        .mapTo(Measurement.class)
+                        .list()
+        ));
+
         return Response.ok(
                 StatisticsResponse.create(
                         nzyme.getStatistics().getFrameCount().get(),
+                        nzyme.getStatistics().getRecentFrameCount(),
                         nzyme.getStatistics().getMalformedCount().get(),
                         frameTypes,
                         channelStatistics,
@@ -93,7 +102,8 @@ public class StatisticsResource {
                         nzyme.getNetworks().getSSIDs(),
                         nzyme.getNetworks().getBSSIDs().keySet(),
                         clientCountHistogram,
-                        accessPointHistogram
+                        accessPointHistogram,
+                        frameThroughputHistogram
                 )
         ).build();
     }

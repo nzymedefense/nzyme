@@ -19,6 +19,6 @@ package horse.wtf.nzyme.measurements;
 
 public enum MeasurementType {
 
-    DOT11_ACCESS_POINT_COUNT, DOT11_CLIENT_COUNT
+    DOT11_ACCESS_POINT_COUNT, DOT11_CLIENT_COUNT, DOT11_FRAME_COUNT
 
 }

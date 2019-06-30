@@ -18,17 +18,22 @@
 package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
 
     private final AtomicLong frameCount;
+    private final AtomicLong recentFrameCount;
     private final AtomicLong malformedCount;
     private final Map<String, AtomicLong> frameTypes;
 
@@ -36,32 +41,37 @@ public class Statistics {
     private final Map<Integer, AtomicLong> channelMalformedCounts;
 
     // Remember to reset these in resetStats()
-    private final Map<String, AtomicLong> probingDevices;
-    private final Map<String, AtomicLong> accessPoints;
-    private final Map<String, AtomicLong> beaconedNetworks;
 
     public Statistics() {
         this.frameCount = new AtomicLong(0);
+        this.recentFrameCount = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
 
         this.channelCounts = Maps.newHashMap();
         this.channelMalformedCounts = Maps.newHashMap();
 
         this.frameTypes = Maps.newHashMap();
-        this.probingDevices = Maps.newHashMap();
-        this.accessPoints = Maps.newHashMap();
-        this.beaconedNetworks = Maps.newHashMap();
-    }
 
-    public void resetAccumulativeTicks() {
-        probingDevices.clear();
-        accessPoints.clear();
-        beaconedNetworks.clear();
+        // Periodically clean up recent statistics.
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("statistics-recent-cleaner-%d")
+                .build())
+                .scheduleAtFixedRate(this::resetRecentFrameCount, 10, 10, TimeUnit.SECONDS);
     }
 
     public void tickFrameCount(Dot11MetaInformation meta) {
         frameCount.incrementAndGet();
+        recentFrameCount.incrementAndGet();
         tickInMap(meta.getChannel(), channelCounts);
+    }
+
+    public void resetRecentFrameCount() {
+        recentFrameCount.set(0);
+    }
+
+    public long getRecentFrameCount() {
+        return recentFrameCount.get();
     }
 
     public void tickMalformedCountAndNotify(Dot11Probe probe, Dot11MetaInformation meta) {
@@ -83,30 +93,6 @@ public class Statistics {
 
     public void tickType(String type) {
         tickInMap(type, frameTypes);
-    }
-
-    public void tickProbingDevice(String bssid) {
-        tickInMap(bssid, probingDevices);
-    }
-
-    public void tickAccessPoint(String bssid) {
-        tickInMap(bssid, accessPoints);
-    }
-
-    public void tickBeaconedNetwork(String ssid) {
-        tickInMap(ssid, beaconedNetworks);
-    }
-
-    public Map<String, AtomicLong> getProbingDevices() {
-        return probingDevices;
-    }
-
-    public Map<String, AtomicLong> getAccessPoints() {
-        return accessPoints;
-    }
-
-    public Map<String, AtomicLong> getBeaconedNetworks() {
-        return beaconedNetworks;
     }
 
     public AtomicLong getFrameCount() {

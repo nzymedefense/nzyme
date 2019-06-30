@@ -30,6 +30,9 @@ public abstract class StatisticsResponse {
     @JsonProperty("total_frames")
     public abstract Long totalFrames();
 
+    @JsonProperty("frame_throughput")
+    public abstract Long frameThroughput();
+
     @JsonProperty("malformed_frames")
     public abstract Long malformedFrames();
 
@@ -54,9 +57,13 @@ public abstract class StatisticsResponse {
     @JsonProperty("histogram_bssids")
     public abstract Map<String, Long> histogramBSSIDs();
 
-    public static StatisticsResponse create(Long totalFrames, Long malformedFrames, Map<String, Long> frameTypes, Map<Integer, ChannelStatisticsResponse> channels, Set<String> currentProbingDevices, Set<String> currentSSIDs, Set<String> currentBSSIDs, Map<String, Long> histogramProbingDevices, Map<String, Long> histogramBSSIDs) {
+    @JsonProperty("histogram_frame_throughput")
+    public abstract Map<String, Long> histogramFrameThroughput();
+
+    public static StatisticsResponse create(Long totalFrames, Long frameThroughput, Long malformedFrames, Map<String, Long> frameTypes, Map<Integer, ChannelStatisticsResponse> channels, Set<String> currentProbingDevices, Set<String> currentSSIDs, Set<String> currentBSSIDs, Map<String, Long> histogramProbingDevices, Map<String, Long> histogramBSSIDs, Map<String, Long> histogramFrameThroughput) {
         return builder()
                 .totalFrames(totalFrames)
+                .frameThroughput(frameThroughput)
                 .malformedFrames(malformedFrames)
                 .frameTypes(frameTypes)
                 .channels(channels)
@@ -65,6 +72,7 @@ public abstract class StatisticsResponse {
                 .currentBSSIDs(currentBSSIDs)
                 .histogramProbingDevices(histogramProbingDevices)
                 .histogramBSSIDs(histogramBSSIDs)
+                .histogramFrameThroughput(histogramFrameThroughput)
                 .build();
     }
 
@@ -75,6 +83,8 @@ public abstract class StatisticsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder totalFrames(Long totalFrames);
+
+        public abstract Builder frameThroughput(Long frameThroughput);
 
         public abstract Builder malformedFrames(Long malformedFrames);
 
@@ -92,7 +102,8 @@ public abstract class StatisticsResponse {
 
         public abstract Builder histogramBSSIDs(Map<String, Long> histogramBSSIDs);
 
+        public abstract Builder histogramFrameThroughput(Map<String, Long> histogramFrameThroughput);
+
         public abstract StatisticsResponse build();
     }
-
 }

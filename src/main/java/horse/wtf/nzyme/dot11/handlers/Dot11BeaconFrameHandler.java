@@ -41,13 +41,10 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
         String message;
         if (!Strings.isNullOrEmpty(beacon.ssid())) {
             message = "Received beacon from " + beacon.transmitter() + " for SSID " + beacon.ssid();
-            probe.getStatistics().tickBeaconedNetwork(beacon.ssid());
         } else {
             // Broadcast beacon.
             message = "Received broadcast beacon from " + beacon.transmitter();
         }
-
-        probe.getStatistics().tickAccessPoint(beacon.transmitter());
 
         Dot11MetaInformation meta = beacon.meta();
 

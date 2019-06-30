@@ -11,7 +11,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsList from "./AlertsList";
 
 import numeral from "numeral";
-import Plot from 'react-plotly.js';
+
 import SimpleLineChart from "../charts/SimpleLineChart";
 
 class GlobalStatistics extends Reflux.Component {
@@ -100,10 +100,12 @@ class GlobalStatistics extends Reflux.Component {
             <div className="col-md-4">
               <div className="card bg-success text-center overview-statistic">
                 <div className="card-body">
-                  <p>Total 802.11 frames considered:</p>
+                  <p>Total 802.11 frames recorded:</p>
                   <span>{numeral(this.state.global_statistics.total_frames).format('0,0')}</span>
                 </div>
               </div>
+
+              <SimpleLineChart title="802.11 Frames" data={this.state.global_statistics.histogram_frame_throughput} />
             </div>
 
             <div className="col-md-4">
