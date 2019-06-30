@@ -105,7 +105,7 @@ class GlobalStatistics extends Reflux.Component {
                 </div>
               </div>
 
-              <SimpleLineChart title="802.11 Frames" data={this.state.global_statistics.histogram_frame_throughput} />
+              <SimpleLineChart title="802.11 Frame Throughput" data={this.state.global_statistics.histogram_frame_throughput} />
             </div>
 
             <div className="col-md-4">

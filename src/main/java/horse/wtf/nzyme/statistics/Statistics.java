@@ -34,6 +34,7 @@ public class Statistics {
 
     private final AtomicLong frameCount;
     private final AtomicLong recentFrameCount;
+    private final AtomicLong recentFrameCountTemp;
     private final AtomicLong malformedCount;
     private final Map<String, AtomicLong> frameTypes;
 
@@ -45,6 +46,7 @@ public class Statistics {
     public Statistics() {
         this.frameCount = new AtomicLong(0);
         this.recentFrameCount = new AtomicLong(0);
+        this.recentFrameCountTemp = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
 
         this.channelCounts = Maps.newHashMap();
@@ -57,17 +59,18 @@ public class Statistics {
                 .setDaemon(true)
                 .setNameFormat("statistics-recent-cleaner-%d")
                 .build())
-                .scheduleAtFixedRate(this::resetRecentFrameCount, 10, 10, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(this::resetRecentFrameCount, 1, 1, TimeUnit.MINUTES);
     }
 
     public void tickFrameCount(Dot11MetaInformation meta) {
         frameCount.incrementAndGet();
-        recentFrameCount.incrementAndGet();
+        recentFrameCountTemp.incrementAndGet();
         tickInMap(meta.getChannel(), channelCounts);
     }
 
     public void resetRecentFrameCount() {
-        recentFrameCount.set(0);
+        recentFrameCount.set(recentFrameCountTemp.get());
+        recentFrameCountTemp.set(0);
     }
 
     public long getRecentFrameCount() {
