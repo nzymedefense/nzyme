@@ -165,9 +165,12 @@ public class ConfigurationLoader {
                 continue;
             }
 
-            ImmutableList.Builder<String> lowercaseBSSIDs = new ImmutableList.Builder<>();
-            for (String bssid : config.getStringList(ConfigurationKeys.BSSIDS)) {
-                lowercaseBSSIDs.add(bssid.toLowerCase());
+            ImmutableList.Builder<Dot11BSSIDDefinition> lowercaseBSSIDs = new ImmutableList.Builder<>();
+            for (Config bssid : config.getConfigList(ConfigurationKeys.BSSIDS)) {
+                lowercaseBSSIDs.add(Dot11BSSIDDefinition.create(
+                        bssid.getString(ConfigurationKeys.ADDRESS).toLowerCase(),
+                        bssid.getString(ConfigurationKeys.FINGERPRINT)
+                ));
             }
 
             result.add(Dot11NetworkDefinition.create(
@@ -220,7 +223,7 @@ public class ConfigurationLoader {
         ImmutableMap.Builder<String, BanditFingerprintDefinition> fingerprints = new ImmutableMap.Builder<>();
 
         for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(ConfigurationKeys.BANDIT_FINGERPRINT);
+            String fingerprint = def.getString(ConfigurationKeys.FINGERPRINT);
             fingerprints.put(
                     fingerprint,
                     BanditFingerprintDefinition.create(fingerprint, def.getStringList(ConfigurationKeys.BANDIT_NAMES)))
@@ -327,18 +330,18 @@ public class ConfigurationLoader {
         // 802.11 networks: BSSIDs are unique for this network. (note that a BSSID can be used in multiple networks)
         for (Dot11NetworkDefinition net : parseDot11Networks()) {
             List<String> bssids = Lists.newArrayList();
-            for (String bssid : net.bssids()) {
-                if(bssids.contains(bssid)) {
+            for (Dot11BSSIDDefinition bssid : net.bssids()) {
+                if(bssids.contains(bssid.address())) {
                     throw new InvalidConfigurationException("Network [" + net.ssid() + "] has at least one BSSID defined twice. You cannot define a BSSID for the same network more than once.");
                 }
-                bssids.add(bssid);
+                bssids.add(bssid.address());
             }
         }
 
         // Known bandit fingerprints: Each fingerprint is unique.
         List<String> usedFingerprints = Lists.newArrayList();
         for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(ConfigurationKeys.BANDIT_FINGERPRINT);
+            String fingerprint = def.getString(ConfigurationKeys.FINGERPRINT);
             if (usedFingerprints.contains(fingerprint)) {
                 throw new InvalidConfigurationException("Duplicate Known Bandit Fingerprint [" + fingerprint + "].");
             }

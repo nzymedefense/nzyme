@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.alerts;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
@@ -40,17 +39,13 @@ public class UnexpectedFingerprintBeaconAlert extends Alert {
         add("A legitimate change of the access point configuration took place and the nzyme configuration has not been updated.");
     }};
 
-    private final List<String> banditNames;
-
-    private UnexpectedFingerprintBeaconAlert(List<String> banditNames, DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
+    private UnexpectedFingerprintBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
         super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
-
-        this.banditNames = banditNames;
     }
 
     @Override
     public String getMessage() {
-        return "SSID [" + getSSID() + "] was advertised by a device with an unexpected fingerprint. Device type [" + Joiner.on(",").join(banditNames) + "] with fingerprint [" + getFingerprint() + "]";
+        return "SSID [" + getSSID() + "] was advertised by a device with unexpected fingerprint [" + getFingerprint() + "]";
     }
 
     @Override
@@ -78,24 +73,27 @@ public class UnexpectedFingerprintBeaconAlert extends Alert {
 
         UnexpectedFingerprintBeaconAlert a = (UnexpectedFingerprintBeaconAlert) alert;
 
-        return a.getSSID().equals(this.getSSID()) && a.getFingerprint() == this.getFingerprint();
+        return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
     }
 
-    public static UnexpectedFingerprintBeaconAlert create(@NotNull String ssid, List<String> banditNames, String fingerprint, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedFingerprintBeaconAlert create(@NotNull String ssid, String fingerprint, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
+        }
+
+        if (Strings.isNullOrEmpty(fingerprint)) {
+            throw new IllegalArgumentException("This alert cannot be raised for empty fingerprints.");
         }
 
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BANDIT_FINGERPRINT, fingerprint);
-        fields.put(FieldNames.BANDIT_NAMES, Joiner.on(",").join(banditNames));
         fields.put(FieldNames.CHANNEL, meta.getChannel());
         fields.put(FieldNames.FREQUENCY, meta.getFrequency());
         fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
 
-        return new UnexpectedFingerprintBeaconAlert(banditNames, DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedFingerprintBeaconAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
     }
 
 }

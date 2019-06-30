@@ -68,9 +68,9 @@ public class ConfigurationLoaderTest {
             }}, "sudo /sbin/iwconfig {interface} channel {channel}", 3));
         }});
         assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
-            add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<String>() {{
-                add("06:0d:2d:c9:36:23");
-                add("24:a4:3c:7d:01:cc");
+            add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<Dot11BSSIDDefinition>() {{
+                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", "abc123"));
+                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", "def456"));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(6);
@@ -79,8 +79,8 @@ public class ConfigurationLoaderTest {
                 add("None");
             }}));
 
-            add(Dot11NetworkDefinition.create("WTF", new ArrayList<String>() {{
-                add("00:c0:ca:95:68:3b");
+            add(Dot11NetworkDefinition.create("WTF", new ArrayList<Dot11BSSIDDefinition>() {{
+                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", "123456"));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(2);

@@ -55,7 +55,7 @@ public class UnexpectedSSIDInterceptorSet {
                 }
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
-                    if (network.bssids().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
+                    if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDProbeRespAlert.create(
                                 frame.ssid(),
                                 frame.transmitter(),
@@ -89,7 +89,7 @@ public class UnexpectedSSIDInterceptorSet {
                 }
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
-                    if (network.bssids().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
+                    if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDBeaconAlert.create(
                                 frame.ssid(),
                                 frame.transmitter(),

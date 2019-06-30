@@ -56,7 +56,7 @@ public class ConfigurationKeys {
     public static final String DEVICE_MONITOR = "device_monitor";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
-    public static final String BANDIT_FINGERPRINT = "fingerprint";
     public static final String BANDIT_NAMES = "bandit_names";
-
+    public static final String ADDRESS = "address";
+    public static final String FINGERPRINT = "fingerprint";
 }
