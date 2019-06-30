@@ -169,7 +169,7 @@ public class ConfigurationLoader {
             for (Config bssid : config.getConfigList(ConfigurationKeys.BSSIDS)) {
                 lowercaseBSSIDs.add(Dot11BSSIDDefinition.create(
                         bssid.getString(ConfigurationKeys.ADDRESS).toLowerCase(),
-                        bssid.getString(ConfigurationKeys.FINGERPRINT)
+                        bssid.getStringList(ConfigurationKeys.FINGERPRINTS)
                 ));
             }
 

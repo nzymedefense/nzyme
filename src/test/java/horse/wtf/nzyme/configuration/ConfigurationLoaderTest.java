@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.configuration;
 
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
@@ -69,8 +70,8 @@ public class ConfigurationLoaderTest {
         }});
         assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
             add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", "abc123"));
-                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", "def456"));
+                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", ImmutableList.of("abc123")));
+                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", ImmutableList.of("def456")));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(6);
@@ -80,7 +81,7 @@ public class ConfigurationLoaderTest {
             }}));
 
             add(Dot11NetworkDefinition.create("WTF", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", "123456"));
+                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("123456")));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(2);

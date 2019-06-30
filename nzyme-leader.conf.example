@@ -71,7 +71,10 @@ graylog_uplinks: [
     channels: [1,2,3,4,5,6,7,8,9,10,11,12,13]
     security: [WPA2-PSK-CCMP]
     bssids: [
-      { address: "f0:9f:c2:dd:18:f6", fingerprint: 8ba95bfb6207749c01479235017a76b15ad63c387fd0bcc74593388f81326ca0 }
+      {
+        address:  "f0:9f:c2:dd:18:f6",
+        fingerprints: [ 8ba95bfb6207749c01479235017a76b15ad63c387fd0bcc74593388f81326ca0 ]
+      }
     ]
   }
 ]

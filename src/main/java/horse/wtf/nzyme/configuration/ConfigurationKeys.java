@@ -59,4 +59,6 @@ public class ConfigurationKeys {
     public static final String BANDIT_NAMES = "bandit_names";
     public static final String ADDRESS = "address";
     public static final String FINGERPRINT = "fingerprint";
+    public static final String FINGERPRINTS = "fingerprints";
+
 }

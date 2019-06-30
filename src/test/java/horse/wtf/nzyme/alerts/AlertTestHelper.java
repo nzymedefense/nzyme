@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
@@ -66,7 +67,7 @@ public class AlertTestHelper {
                     add(Dot11NetworkDefinition.create(
                             "WTF",
                             new ArrayList<Dot11BSSIDDefinition>(){{
-                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", "foo"));
+                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", ImmutableList.of("foo")));
                             }},
                             new ArrayList<Integer>() {{
                                 add(1);

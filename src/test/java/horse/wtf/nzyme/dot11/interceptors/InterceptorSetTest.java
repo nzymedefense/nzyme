@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.interceptors;
 
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
@@ -68,7 +69,7 @@ public class InterceptorSetTest {
                     add(Dot11NetworkDefinition.create(
                             "WTF",
                             new ArrayList<Dot11BSSIDDefinition>(){{
-                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", "dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b"));
+                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", ImmutableList.of("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b")));
                             }},
                             new ArrayList<Integer>() {{
                                 add(1);

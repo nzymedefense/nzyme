@@ -21,7 +21,7 @@ class SSIDTableRow extends Reflux.Component {
                                 <th>Channel</th>
                                 <th>Total Frames</th>
                                 <th>Security</th>
-                                <th>Fingerprint</th>
+                                <th>Fingerprints</th>
                             </tr>
                         </thead>
                         <tbody>

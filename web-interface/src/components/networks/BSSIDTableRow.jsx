@@ -59,7 +59,7 @@ class BSSIDTableRow extends Reflux.Component {
             )
         } else {
             return (
-                <i className="fas fa-exclamation-triangle text-danger" title="Multiple fingerprints recorded." />
+                <i className="fas fa-exclamation-triangle text-danger" title="More than two fingerprints recorded. Consult nzyme documentation." />
             )
         }
     }

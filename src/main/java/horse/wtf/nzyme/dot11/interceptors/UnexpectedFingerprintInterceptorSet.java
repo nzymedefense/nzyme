@@ -43,7 +43,7 @@ public class UnexpectedFingerprintInterceptorSet {
                     for (Dot11BSSIDDefinition bssid : network.bssids()) {
                         if (!Strings.isNullOrEmpty(frame.transmitterFingerprint())
                                 && frame.transmitter().equals(bssid.address())
-                                && !frame.transmitterFingerprint().equals(bssid.fingerprint())) {
+                                && !bssid.fingerprints().contains(frame.transmitterFingerprint())) {
                             probe.raiseAlert(UnexpectedFingerprintProbeRespAlert.create(
                                     frame.ssid(),
                                     frame.transmitterFingerprint(),
@@ -82,7 +82,7 @@ public class UnexpectedFingerprintInterceptorSet {
                     for (Dot11BSSIDDefinition bssid : network.bssids()) {
                         if (!Strings.isNullOrEmpty(frame.transmitterFingerprint())
                                 && frame.transmitter().equals(bssid.address())
-                                && !frame.transmitterFingerprint().equals(bssid.fingerprint())) {
+                                && !bssid.fingerprints().contains(frame.transmitterFingerprint())) {
                             probe.raiseAlert(UnexpectedFingerprintBeaconAlert.create(
                                     frame.ssid(),
                                     frame.transmitterFingerprint(),
