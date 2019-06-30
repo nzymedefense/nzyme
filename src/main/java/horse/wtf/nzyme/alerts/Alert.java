@@ -35,7 +35,8 @@ public abstract class Alert {
         UNEXPECTED_SSID,
         CRYPTO_CHANGE,
         UNEXPECTED_CHANNEL,
-        KNOWN_BANDIT_FINGERPRINT
+        KNOWN_BANDIT_FINGERPRINT,
+        UNEXPECTED_FINGERPRINT
     }
 
     public enum Type {
@@ -48,7 +49,9 @@ public abstract class Alert {
         UNEXPECTED_CHANNEL_BEACON,
         UNEXPECTED_CHANNEL_PROBERESP,
         KNOWN_BANDIT_FINGERPRINT_BEACON,
-        KNOWN_BANDIT_FINGERPRINT_PROBERESP
+        KNOWN_BANDIT_FINGERPRINT_PROBERESP,
+        UNEXPECTED_FINGERPRINT_BEACON,
+        UNEXPECTED_FINGERPRINT_PROBERESP
     }
 
     private final Subsystem subsystem;
