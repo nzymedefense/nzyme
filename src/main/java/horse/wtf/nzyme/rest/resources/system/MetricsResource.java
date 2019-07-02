@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.codahale.metrics.Snapshot;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.rest.responses.metrics.GaugeResponse;
@@ -31,6 +32,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.OutputStream;
 import java.util.Map;
 
 @Path("/api/system/metrics")
@@ -51,22 +53,22 @@ public class MetricsResource {
 
         metrics.put(
                 "frame_timing",
-                TimerResponse.fromSnapshot(nzyme.getMetrics().getTimers().get(MetricNames.FRAME_TIMER).getSnapshot())
+                TimerResponse.fromSnapshot(getTimer(MetricNames.FRAME_TIMER))
         );
 
         metrics.put(
                 "oui_lookup_timing",
-                TimerResponse.fromSnapshot(nzyme.getMetrics().getTimers().get(MetricNames.OUI_LOOKUP_TIMER).getSnapshot())
+                TimerResponse.fromSnapshot(getTimer(MetricNames.OUI_LOOKUP_TIMER))
         );
 
         metrics.put(
                 "tagged_params_parse_timing",
-                TimerResponse.fromSnapshot(nzyme.getMetrics().getTimers().get(MetricNames.TAGGED_PARAMS_PARSE_TIMER).getSnapshot())
+                TimerResponse.fromSnapshot(getTimer(MetricNames.TAGGED_PARAMS_PARSE_TIMER))
         );
 
         metrics.put(
                 "tagged_params_fingerprint_timing",
-                TimerResponse.fromSnapshot(nzyme.getMetrics().getTimers().get(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER).getSnapshot())
+                TimerResponse.fromSnapshot(getTimer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER))
         );
 
         metrics.put(
@@ -90,6 +92,53 @@ public class MetricsResource {
         );
 
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
+    }
+
+    private Snapshot getTimer(String name) {
+        if (nzyme.getMetrics().getTimers().get(name) != null) {
+            return nzyme.getMetrics().getTimers().get(name).getSnapshot();
+        } else {
+            return new Snapshot() {
+                @Override
+                public double getValue(double v) {
+                    return 0;
+                }
+
+                @Override
+                public long[] getValues() {
+                    return new long[0];
+                }
+
+                @Override
+                public int size() {
+                    return 0;
+                }
+
+                @Override
+                public long getMax() {
+                    return 0;
+                }
+
+                @Override
+                public double getMean() {
+                    return 0;
+                }
+
+                @Override
+                public long getMin() {
+                    return 0;
+                }
+
+                @Override
+                public double getStdDev() {
+                    return 0;
+                }
+
+                @Override
+                public void dump(OutputStream outputStream) {
+                }
+            };
+        }
     }
 
 }
