@@ -5,6 +5,8 @@ import SystemActions from "../../actions/SystemActions";
 import TimerRow from "./TimerRow";
 import LoadingSpinner from "./ProbesList";
 
+import numeral from "numeral";
+
 class Metrics extends Reflux.Component {
 
     constructor(props) {
@@ -33,6 +35,21 @@ class Metrics extends Reflux.Component {
                     <div className="row">
                         <div className="col-md-12">
                             <h3>Metrics</h3>
+
+                            <dl>
+                                <dt>Heap Memory Usage:</dt>
+                                <dd>
+                                    using {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
+                                    &nbsp;of&nbsp;
+                                    {numeral(this.state.systemMetrics.mem_heap_max.value).format("0.0b")}
+                                    &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format("0.0%")})
+                                </dd>
+
+                                <dt>Non-Heap Memory Usage:</dt>
+                                <dd>
+                                    using {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
+                                </dd>
+                            </dl>
 
                             <table className="table table-sm table-hover table-striped">
                                 <thead>

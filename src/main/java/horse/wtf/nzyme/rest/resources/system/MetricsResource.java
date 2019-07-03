@@ -91,6 +91,26 @@ public class MetricsResource {
                 GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_HEAP_USAGE_PERCENT))
         );
 
+        metrics.put(
+                "mem_nonheap_init",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_NONHEAP_INIT))
+        );
+
+        metrics.put(
+                "mem_nonheap_max",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_NONHEAP_MAX))
+        );
+
+        metrics.put(
+                "mem_nonheap_used",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_NONHEAP_USED))
+        );
+
+        metrics.put(
+                "mem_nonheap_usage_percent",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_NONHEAP_USAGE_PERCENT))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
