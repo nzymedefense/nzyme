@@ -63,9 +63,9 @@ class SSIDRow extends Reflux.Component {
                 <td><strong>{this.props.channelNumber}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{this._printSecurity()}</td>
-                <td>{numeral(this.props.channel.out_of_delta_avg_recent_percent).format("0.00")}</td>
+                <td>{numeral(this.props.channel.signal_index).format("0.00")} (THOLD: 25.12)</td>
                 <td className={c.fingerprints.length > 2 ? "text-danger" : ""}>
-                    {this._listFingerprints()}
+                    1 <a href="#">Show All</a>
                 </td>
             </tr>
         )

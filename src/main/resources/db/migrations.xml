@@ -38,4 +38,43 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="2" author="lennartkoopmann">
+        <createTable tableName="signal_index_history" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_index" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_sigindex_standard_lookup" tableName="signal_index_history" unique="false">
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="channel" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_sigindex_created_at" tableName="signal_index_history" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

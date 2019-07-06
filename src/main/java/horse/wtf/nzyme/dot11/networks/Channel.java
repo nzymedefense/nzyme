@@ -68,8 +68,8 @@ public abstract class Channel {
         return Long.valueOf(Math.round(Stats.of(recentSignalQuality()).mean())).intValue();
     }
 
-    @JsonProperty("out_of_delta_avg_recent_percent")
-    public float outOfDeltaRecentAveragePercent() {
+    @JsonProperty("signal_index")
+    public float signalIndex() {
         if (recentDeltaStates().isEmpty()) {
             return 0;
         }

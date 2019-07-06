@@ -34,8 +34,10 @@ import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.networks.Networks;
-import horse.wtf.nzyme.measurements.MeasurementsCleaner;
-import horse.wtf.nzyme.measurements.MeasurementsWriter;
+import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
+import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
+import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
+import horse.wtf.nzyme.periodicals.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.ouis.OUIUpdater;
 import horse.wtf.nzyme.periodicals.PeriodicalManager;
@@ -58,6 +60,7 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
+import sun.misc.Signal;
 
 import java.io.IOException;
 import java.util.List;
@@ -151,7 +154,9 @@ public class NzymeImpl implements Nzyme {
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(getNetworks(), getDatabase()), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {

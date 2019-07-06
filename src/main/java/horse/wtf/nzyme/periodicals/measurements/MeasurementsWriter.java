@@ -15,9 +15,10 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.measurements;
+package horse.wtf.nzyme.periodicals.measurements;
 
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.measurements.MeasurementType;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

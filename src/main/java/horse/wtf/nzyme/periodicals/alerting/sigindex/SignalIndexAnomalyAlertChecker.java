@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.periodicals.alerting;
+package horse.wtf.nzyme.periodicals.alerting.sigindex;
 
 public class SignalIndexAnomalyAlertChecker {
 
