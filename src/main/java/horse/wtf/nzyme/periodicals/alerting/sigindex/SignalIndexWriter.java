@@ -53,7 +53,7 @@ public class SignalIndexWriter extends Periodical {
                         write(
                                 bssid.getValue().bssid(),
                                 ssid.getValue().name(),
-                                channel.getKey(),
+                                channel.getValue().channelNumber(),
                                 channel.getValue().signalIndex()
                         );
                     }

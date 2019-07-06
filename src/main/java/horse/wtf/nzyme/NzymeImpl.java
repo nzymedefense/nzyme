@@ -98,9 +98,9 @@ public class NzymeImpl implements Nzyme {
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
         this.probes = Lists.newArrayList();
+        this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
-        this.systemStatus = new SystemStatus();
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());

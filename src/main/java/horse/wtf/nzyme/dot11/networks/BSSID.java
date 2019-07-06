@@ -71,8 +71,32 @@ public abstract class BSSID {
         boolean result = true;
 
         for (SSID ssid : ssids().values()) {
+            if (!ssid.isHumanReadable()) {
+                continue;
+            }
+
             for (Channel channel : ssid.channels().values()) {
                 if (channel.fingerprints().size() > 2) {
+                    return false;
+                }
+            }
+
+        }
+
+        return result;
+    }
+
+    @JsonProperty("signal_index_ok")
+    public boolean signalIndexOkay() {
+        boolean result = true;
+
+        for (SSID ssid : ssids().values()) {
+            if (!ssid.isHumanReadable()) {
+                continue;
+            }
+
+            for (Channel channel : ssid.channels().values()) {
+                if (channel.signalIndexStatus() == Channel.SignalIndexStatus.ANOMALY) {
                     return false;
                 }
             }

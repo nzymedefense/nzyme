@@ -21,8 +21,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.EvictingQueue;
-import com.google.common.collect.Lists;
 import com.google.common.math.Stats;
+import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
+import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,19 @@ import java.util.concurrent.atomic.AtomicLong;
 @AutoValue
 public abstract class Channel {
 
-    public static final int RECENT_MAX_ENTRIES = 500;
+    public static final int RECENT_MAX_ENTRIES = 2500; // TODO make configurable
+
+    @JsonIgnore
+    public abstract SignalIndexManager signalIndexManager();
+
+    @JsonProperty("channel_number")
+    public abstract int channelNumber();
+
+    @JsonProperty("bssid")
+    public abstract String bssid();
+
+    @JsonProperty("ssid")
+    public abstract String ssid();
 
     @JsonProperty("total_frames")
     public abstract AtomicLong totalFrames();
@@ -85,6 +98,34 @@ public abstract class Channel {
         return ((float)out)/(float)recentDeltaStates().size()*100;
     }
 
+    @JsonProperty("signal_index_threshold")
+    public AverageSignalIndex signalIndexThreshold() {
+        return signalIndexManager().getRecentAverageSignalIndex(bssid(), ssid(), channelNumber(), recentDeltaStates().size());
+    }
+
+    enum SignalIndexStatus {
+        TRAINING, TEMP_NA, OK, ANOMALY
+    }
+
+    @JsonProperty("signal_index_status")
+    public SignalIndexStatus signalIndexStatus() {
+        AverageSignalIndex avg = signalIndexThreshold();
+
+        if (avg.inTraining()) {
+            return SignalIndexStatus.TRAINING;
+        }
+
+        if (!avg.hadEnoughData()) {
+            return SignalIndexStatus.TEMP_NA;
+        }
+
+        if (signalIndex() > avg.index()) {
+            return SignalIndexStatus.ANOMALY;
+        } else {
+            return SignalIndexStatus.OK;
+        }
+    }
+
     @JsonProperty("signal_quality_stddev_recent")
     public double signalQualityRecentStddev() {
         if(recentSignalQuality().isEmpty()) {
@@ -106,7 +147,7 @@ public abstract class Channel {
         );
     }
 
-    public static Channel create(AtomicLong totalFrames, int signal, String fingerprint) {
+    public static Channel create(SignalIndexManager signalIndexManager, int channelNumber, String bssid, String ssid, AtomicLong totalFrames, int signal, String fingerprint) {
         EvictingQueue<Integer> q = EvictingQueue.create(RECENT_MAX_ENTRIES);
         EvictingQueue<Boolean> d = EvictingQueue.create(RECENT_MAX_ENTRIES);
 
@@ -117,6 +158,10 @@ public abstract class Channel {
         }};
 
         return builder()
+                .signalIndexManager(signalIndexManager)
+                .bssid(bssid)
+                .ssid(ssid)
+                .channelNumber(channelNumber)
                 .totalFrames(totalFrames)
                 .signalMin(new AtomicInteger(signal))
                 .signalMax(new AtomicInteger(signal))
@@ -132,6 +177,14 @@ public abstract class Channel {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder signalIndexManager(SignalIndexManager signalIndexManager);
+
+        public abstract Builder bssid(String bssid);
+
+        public abstract Builder ssid(String ssid);
+
+        public abstract Builder channelNumber(int channelNumber);
+
         public abstract Builder totalFrames(AtomicLong totalFrames);
 
         public abstract Builder signalMin(AtomicInteger signalMin);

@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsResource {
 
-    private static final String MEASUREMENTS_QUERY = "SELECT * FROM measurements WHERE measurement_type = ? AND created_at > DATETIME('now', 'utc', '-1 day')";
+    private static final String MEASUREMENTS_QUERY = "SELECT * FROM measurements WHERE measurement_type = ? AND created_at > DATETIME('now', '-1 day')";
 
     @Inject
     private Nzyme nzyme;

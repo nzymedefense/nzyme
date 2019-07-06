@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
+import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -37,18 +38,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Networks {
 
-    /*
-     * TODO keep a graph of who usually sends deauths for whom and with what signal strength
-     */
-
     private static final Logger LOG = LogManager.getLogger(Networks.class);
 
     private final Map<String, BSSID> bssids;
+    private final SignalIndexManager signalIndexManager;
     private final Nzyme nzyme;
 
     public Networks(Nzyme nzyme) {
         this.nzyme = nzyme;
         this.bssids = Maps.newHashMap();
+        this.signalIndexManager = new SignalIndexManager(nzyme);
 
         // Regularly delete networks that have not been seen for a while.
         Executors.newSingleThreadScheduledExecutor(
@@ -139,7 +138,7 @@ public class Networks {
                 ssid.channels().replace(channelNumber, channel);
             } else {
                 // Create new channel.
-                Channel channel = Channel.create(new AtomicLong(1), signalQuality, transmitterFingerprint);
+                Channel channel = Channel.create(this.signalIndexManager, channelNumber, bssid.bssid(), ssid.name(), new AtomicLong(1), signalQuality, transmitterFingerprint);
                 ssid.channels().put(channelNumber, channel);
             }
         } catch (NullPointerException e) {
