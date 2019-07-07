@@ -23,10 +23,10 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 public class SignalIndexManager {
 
-    private static final int MINIMUM_DELTA_STATE_BASE = 50; // TODO make configurable
+    private static final int MINIMUM_DELTA_STATE_BASE = 50; // TODO make configurable (this is how many frames per minutes we need to have at least)
 
     private static final String AVERAGE_QUERY = "SELECT AVG(signal_index)_index FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-15 minutes')";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-30 minutes')";
 
     private final Database database;
     private final SystemStatus systemStatus;

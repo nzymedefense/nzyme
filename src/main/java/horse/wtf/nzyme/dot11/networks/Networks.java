@@ -56,6 +56,41 @@ public class Networks {
                         .setNameFormat("bssids-cleaner")
                         .build()
         ).scheduleAtFixedRate(() -> retentionClean(600), 1, 1, TimeUnit.MINUTES);
+
+        // Regularly delete old channel signal quality measurements.
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("channels-sigqual-cleaner")
+                        .build()
+        ).scheduleAtFixedRate(() -> {
+            for (BSSID bssid : bssids.values()) {
+                for (SSID ssid : bssid.ssids().values()) {
+                    for (Channel channel : ssid.channels().values()) {
+                        DateTime cutoff = DateTime.now().minusMinutes(1);
+                        LOG.debug("Deleting expired signal quality measurements from [{}]", channel);
+
+                        ImmutableList.Builder<Channel.SignalQuality> newQualities = new ImmutableList.Builder<>();
+                        channel.recentSignalQuality().forEach(signalQuality -> {
+                            if (signalQuality.createdAt().isAfter(cutoff)) {
+                                newQualities.add(signalQuality);
+                            }
+                        });
+                        channel.recentSignalQuality().clear();
+                        channel.recentSignalQuality().addAll(newQualities.build());
+
+                        ImmutableList.Builder<Channel.DeltaState> newDeltaStates = new ImmutableList.Builder<>();
+                        channel.recentDeltaStates().forEach(deltaState -> {
+                            if (deltaState.createdAt().isAfter(cutoff)) {
+                                newDeltaStates.add(deltaState);
+                            }
+                        });
+                        channel.recentDeltaStates().clear();
+                        channel.recentDeltaStates().addAll(newDeltaStates.build());
+                    }
+                }
+            }
+        }, 0, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -109,12 +144,13 @@ public class Networks {
         try {
             // Create or update channel.
             if (ssid.channels().containsKey(channelNumber)) {
+                DateTime now = DateTime.now();
                 // Update channel statistics.
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
 
                 // Add signal quality to history of signal qualities.
-                channel.recentSignalQuality().add(signalQuality);
+                channel.recentSignalQuality().add(Channel.SignalQuality.create(now, signalQuality));
 
                 // Update max or min quality if required.
                 boolean inDelta = true;
@@ -128,7 +164,7 @@ public class Networks {
                 }
 
                 // Add delta state.
-                channel.recentDeltaStates().add(inDelta);
+                channel.recentDeltaStates().add(Channel.DeltaState.create(now, inDelta));
 
                 // Add fingerprint.
                 if (transmitterFingerprint != null) {
