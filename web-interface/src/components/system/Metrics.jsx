@@ -36,39 +36,65 @@ class Metrics extends Reflux.Component {
                         <div className="col-md-12">
                             <h3>Metrics</h3>
 
-                            <dl>
-                                <dt>Heap Memory Usage:</dt>
-                                <dd>
-                                    using {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
-                                    &nbsp;of&nbsp;
-                                    {numeral(this.state.systemMetrics.mem_heap_max.value).format("0.0b")}
-                                    &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format("0.0%")})
-                                </dd>
+                            <div className="row">
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Heap Memory Usage:</dt>
+                                        <dd>
+                                            using {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
+                                            &nbsp;of&nbsp;
+                                            {numeral(this.state.systemMetrics.mem_heap_max.value).format("0.0b")}
+                                            &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format("0.0%")})
+                                        </dd>
 
-                                <dt>Non-Heap Memory Usage:</dt>
-                                <dd>
-                                    using {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
-                                </dd>
-                            </dl>
+                                        <dt>Non-Heap Memory Usage:</dt>
+                                        <dd>
+                                            using {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
+                                        </dd>
+                                    </dl>
+                                </div>
 
-                            <table className="table table-sm table-hover table-striped">
-                                <thead>
-                                <tr>
-                                    <th>Metric</th>
-                                    <th>Maximum</th>
-                                    <th>Minimum</th>
-                                    <th>Mean</th>
-                                    <th>99th Percentile</th>
-                                    <th>Standard Deviation</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    <TimerRow title="802.11 Frame Processing" timer={this.state.systemMetrics.frame_timing}/>
-                                    <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
-                                    <TimerRow title="802.11 Tagged Parameter Parsing" timer={this.state.systemMetrics.tagged_params_parse_timing}/>
-                                    <TimerRow title="802.11 Fingerprinting" timer={this.state.systemMetrics.tagged_params_fingerprint_timing}/>
-                                </tbody>
-                            </table>
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Signal Index Table</dt>
+                                        <dd>
+                                            {numeral(this.state.systemMetrics.networks_sigquality_msrmnt_count.value).format("0,0")} in memory
+                                        </dd>
+
+                                        <dt>Signal Delta State Table</dt>
+                                        <dd>
+                                            {numeral(this.state.systemMetrics.networks_deltastate_msrmnt_count.value).format("0,0")} in memory
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <table className="table table-sm table-hover table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th>Maximum</th>
+                                            <th>Minimum</th>
+                                            <th>Mean</th>
+                                            <th>99th Percentile</th>
+                                            <th>Standard Deviation</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <TimerRow title="802.11 Frame Processing" timer={this.state.systemMetrics.frame_timing}/>
+                                            <TimerRow title="802.11 Tagged Parameter Parsing" timer={this.state.systemMetrics.tagged_params_parse_timing}/>
+                                            <TimerRow title="802.11 Fingerprinting" timer={this.state.systemMetrics.tagged_params_fingerprint_timing}/>
+                                            <TimerRow title="Signal Index Writes" timer={this.state.systemMetrics.sigidx_writer_timing}/>
+                                            <TimerRow title="Signal Index Reads" timer={this.state.systemMetrics.sigidx_reader_timing}/>
+                                            <TimerRow title="Signal Index Cleans" timer={this.state.systemMetrics.sigidx_cleaner_timing}/>
+                                            <TimerRow title="Signal Index Memory Cleans" timer={this.state.systemMetrics.sigidx_memory_cleaner_timing}/>
+                                            <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

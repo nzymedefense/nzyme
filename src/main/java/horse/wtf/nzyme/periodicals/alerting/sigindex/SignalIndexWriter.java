@@ -17,12 +17,16 @@
 
 package horse.wtf.nzyme.periodicals.alerting.sigindex;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.periodicals.Periodical;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,13 +39,19 @@ public class SignalIndexWriter extends Periodical {
     private final Networks networks;
     private final Database database;
 
-    public SignalIndexWriter(Networks networks, Database database) {
-        this.networks = networks;
-        this.database = database;
+    private final Timer writeTimer;
+
+    public SignalIndexWriter(Nzyme nzyme) {
+        this.networks = nzyme.getNetworks();
+        this.database = nzyme.getDatabase();
+
+        this.writeTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_WRITER_TIMER));
     }
 
     @Override
     protected void execute() {
+        Timer.Context timer = writeTimer.time();
+
         try {
             for (Map.Entry<String, BSSID> bssid : networks.getBSSIDs().entrySet()) {
                 for (Map.Entry<String, SSID> ssid : bssid.getValue().ssids().entrySet()) {
@@ -62,6 +72,8 @@ public class SignalIndexWriter extends Periodical {
 
         } catch(Exception e) {
             LOG.error("Could not write signal index information.", e);
+        } finally {
+            timer.stop();
         }
     }
 

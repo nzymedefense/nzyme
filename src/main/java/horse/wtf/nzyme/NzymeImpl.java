@@ -155,7 +155,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(getNetworks(), getDatabase()), 1, 1, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);

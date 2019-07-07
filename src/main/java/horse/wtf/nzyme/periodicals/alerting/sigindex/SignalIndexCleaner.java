@@ -17,8 +17,11 @@
 
 package horse.wtf.nzyme.periodicals.alerting.sigindex;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.periodicals.Periodical;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -29,18 +32,30 @@ public class SignalIndexCleaner extends Periodical {
 
     private final Nzyme nzyme;
 
+    private final Timer timer;
+
     public SignalIndexCleaner(Nzyme nzyme) {
         this.nzyme = nzyme;
+
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_CLEANER_TIMER));
     }
 
     @Override
     protected void execute() {
-        DateTime limit = new DateTime().minusDays(1);
-        LOG.debug("Deleting all signal index values older than <{}>.", limit);
+        Timer.Context ctx = timer.time();
 
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.execute("DELETE FROM signal_index_history WHERE created_at < ?", limit);
-        });
+        try {
+            DateTime limit = new DateTime().minusDays(1);
+            LOG.debug("Deleting all signal index values older than <{}>.", limit);
+
+            nzyme.getDatabase().useHandle(handle -> {
+                handle.execute("DELETE FROM signal_index_history WHERE created_at < ?", limit);
+            });
+        } catch(Exception e) {
+            LOG.error("Could not retention clean signal index information.", e);
+        } finally {
+            ctx.stop();
+        }
     }
 
     @Override

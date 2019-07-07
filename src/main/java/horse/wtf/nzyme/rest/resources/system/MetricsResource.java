@@ -111,6 +111,36 @@ public class MetricsResource {
                 GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.MEMORY_NONHEAP_USAGE_PERCENT))
         );
 
+        metrics.put(
+                "networks_sigquality_msrmnt_count",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS))
+        );
+
+        metrics.put(
+                "networks_deltastate_msrmnt_count",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS))
+        );
+
+        metrics.put(
+                "sigidx_memory_cleaner_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER))
+        );
+
+        metrics.put(
+                "sigidx_writer_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_WRITER_TIMER))
+        );
+
+        metrics.put(
+                "sigidx_reader_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_READER_TIMER))
+        );
+
+        metrics.put(
+                "sigidx_cleaner_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_CLEANER_TIMER))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
