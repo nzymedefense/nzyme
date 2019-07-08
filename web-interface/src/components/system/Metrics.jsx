@@ -67,6 +67,15 @@ class Metrics extends Reflux.Component {
                                         </dd>
                                     </dl>
                                 </div>
+
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Signal Monitor Table</dt>
+                                        <dd>
+                                            {numeral(this.state.systemMetrics.sigidx_monitor_msrmnt_count.value).format("0,0")} in memory
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
 
                             <div className="row">
@@ -90,6 +99,7 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="Signal Index Reads" timer={this.state.systemMetrics.sigidx_reader_timing}/>
                                             <TimerRow title="Signal Index Cleans" timer={this.state.systemMetrics.sigidx_cleaner_timing}/>
                                             <TimerRow title="Signal Index Memory Cleans" timer={this.state.systemMetrics.sigidx_memory_cleaner_timing}/>
+                                            <TimerRow title="Signal Index Monitor Executions" timer={this.state.systemMetrics.sigidx_monitor_timing}/>
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                         </tbody>
                                     </table>

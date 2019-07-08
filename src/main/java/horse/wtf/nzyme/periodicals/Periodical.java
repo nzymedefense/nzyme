@@ -32,7 +32,7 @@ public abstract class Periodical implements Runnable {
 
     @Override
     public void run() {
-        LOG.info("Running periodical [{}].", getName());
+        LOG.debug("Running periodical [{}].", getName());
         Stopwatch timer = Stopwatch.createStarted();
 
         try {
@@ -41,7 +41,7 @@ public abstract class Periodical implements Runnable {
             LOG.error("Error during execution of periodical [{}].", getName(), e);
         }
 
-        LOG.info("Periodical [{}] finished in <{} ms>.", getName(), timer.elapsed(TimeUnit.MILLISECONDS));
+        LOG.debug("Periodical [{}] finished in <{} ms>.", getName(), timer.elapsed(TimeUnit.MILLISECONDS));
     }
 
 }

@@ -141,6 +141,16 @@ public class MetricsResource {
                 TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_CLEANER_TIMER))
         );
 
+        metrics.put(
+                "sigidx_monitor_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_MONITOR_TIMER))
+        );
+
+        metrics.put(
+                "sigidx_monitor_msrmnt_count",
+                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.SIGNAL_INDEX_MONITOR_MEASUREMENTS))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

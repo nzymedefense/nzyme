@@ -129,7 +129,7 @@ public abstract class Channel {
         return signalIndexManager().getRecentAverageSignalIndex(bssid(), ssid(), channelNumber(), recentDeltaStates().size());
     }
 
-    enum SignalIndexStatus {
+    public enum SignalIndexStatus {
         TRAINING, TEMP_NA, OK, ANOMALY
     }
 
@@ -163,7 +163,7 @@ public abstract class Channel {
 
     @JsonProperty("expected_delta")
     public SignalDelta expectedDelta() {
-        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/3)).intValue();
+        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/2)).intValue();
         int lower = signalQualityRecentAverage()-delta;
         int upper = signalQualityRecentAverage()+delta;
 

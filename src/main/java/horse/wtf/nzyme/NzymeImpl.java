@@ -34,6 +34,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
@@ -157,6 +158,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 5, TimeUnit.SECONDS);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {

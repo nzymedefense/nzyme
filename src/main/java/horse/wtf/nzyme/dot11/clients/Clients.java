@@ -71,7 +71,7 @@ public class Clients {
                 Client client = entry.getValue();
 
                 if (client.lastSeen.isBefore(DateTime.now().minusSeconds(seconds))) {
-                    LOG.info("Retention cleaning expired client [{}] from internal clients list.", client);
+                    LOG.debug("Retention cleaning expired client [{}] from internal clients list.", client);
                     clients.remove(entry.getKey());
                 }
             }

@@ -58,29 +58,33 @@ public class Networks {
 
         this.tableCleanerTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER));
 
-        nzyme.getMetrics().register(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS, (Gauge<Long>) () -> {
-            long result = 0;
-            for (BSSID bssid : bssids.values()) {
-                for (SSID ssid : bssid.ssids().values()) {
-                    for (Channel channel : ssid.channels().values()) {
-                        result += channel.recentSignalQuality().size();
+        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS)) {
+            nzyme.getMetrics().register(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS, (Gauge<Long>) () -> {
+                long result = 0;
+                for (BSSID bssid : bssids.values()) {
+                    for (SSID ssid : bssid.ssids().values()) {
+                        for (Channel channel : ssid.channels().values()) {
+                            result += channel.recentSignalQuality().size();
+                        }
                     }
                 }
-            }
-            return result;
-        });
+                return result;
+            });
+        }
 
-        nzyme.getMetrics().register(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS, (Gauge<Long>) () -> {
-            long result = 0;
-            for (BSSID bssid : bssids.values()) {
-                for (SSID ssid : bssid.ssids().values()) {
-                    for (Channel channel : ssid.channels().values()) {
-                        result += channel.recentDeltaStates().size();
+        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS)) {
+            nzyme.getMetrics().register(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS, (Gauge<Long>) () -> {
+                long result = 0;
+                for (BSSID bssid : bssids.values()) {
+                    for (SSID ssid : bssid.ssids().values()) {
+                        for (Channel channel : ssid.channels().values()) {
+                            result += channel.recentDeltaStates().size();
+                        }
                     }
                 }
-            }
-            return result;
-        });
+                return result;
+            });
+        }
 
         // Regularly delete networks that have not been seen for a while.
         Executors.newSingleThreadScheduledExecutor(
@@ -263,7 +267,7 @@ public class Networks {
                 BSSID bssid = entry.getValue();
 
                 if (bssid.getLastSeen().isBefore(DateTime.now().minusSeconds(seconds))) {
-                    LOG.info("Retention cleaning expired BSSID [{}] from internal networks list.", bssid.bssid());
+                    LOG.debug("Retention cleaning expired BSSID [{}] from internal networks list.", bssid.bssid());
                     bssids.remove(entry.getKey());
                 }
             }
