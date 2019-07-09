@@ -7,7 +7,6 @@ import AlertsActions from "../../actions/AlertsActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 
 import moment from "moment";
-import Routes from "../../util/Routes";
 
 class AlertDetailsPage extends Reflux.Component {
 

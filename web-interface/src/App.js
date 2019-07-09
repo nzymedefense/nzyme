@@ -21,6 +21,7 @@ import Routes from "./util/Routes";
 import Footer from "./components/layout/Footer";
 import SystemPage from "./components/system/SystemPage";
 import NetworksPage from "./components/networks/NetworksPage";
+import NetworkDetailsPage from "./components/networks/details/NetworkDetailsPage";
 
 class App extends Reflux.Component {
 
@@ -55,7 +56,10 @@ class App extends Reflux.Component {
                                 <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage} />
 
                                 { /* Networks. */ }
-                                <Route exact path={Routes.NETWORKS} component={NetworksPage} />
+                                <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage} />
+
+                                { /* Networks. */ }
+                                <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")} component={NetworkDetailsPage} />
 
                                 { /* Alerts. */ }
                                 <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage} />

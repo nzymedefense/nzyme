@@ -18,7 +18,7 @@ class NavigationBar extends Reflux.Component {
             <span className="pull-right">
               <NavigationLink href={Routes.DASHBOARD} title="Dashboard" />
               &nbsp;
-              <NavigationLink href={Routes.NETWORKS} title="Networks" />
+              <NavigationLink href={Routes.NETWORKS.INDEX} title="Networks" />
               &nbsp;
               <NavigationLink href={Routes.SYSTEM_STATUS} title="System Status" />
               &nbsp;
