@@ -30,6 +30,7 @@ import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public class SignalIndexWriter extends Periodical {
@@ -64,7 +65,11 @@ public class SignalIndexWriter extends Periodical {
                                 bssid.getValue().bssid(),
                                 ssid.getValue().name(),
                                 channel.getValue().channelNumber(),
-                                channel.getValue().signalIndex()
+                                channel.getValue().signalIndex(),
+                                channel.getValue().signalIndexThreshold().hadEnoughData() && !channel.getValue().signalIndexThreshold().inTraining() ?
+                                    channel.getValue().signalIndexThreshold().index() : null,
+                                channel.getValue().expectedDelta().lower(),
+                                channel.getValue().expectedDelta().upper()
                         );
                     }
                 }
@@ -77,10 +82,10 @@ public class SignalIndexWriter extends Periodical {
         }
     }
 
-    private void write(String bssid, String ssid, int channel, float signalIndex) {
+    private void write(String bssid, String ssid, int channel, float signalIndex, @Nullable Float signalIndexThreshold, int expectedDeltaUpper, int expectedDeltaLower) {
         database.useHandle(handle -> {
-            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, created_at) " +
-                    "VALUES(?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex);
+            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, signal_index_threshold, expected_delta_upper, expected_delta_lower, created_at) " +
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex, signalIndexThreshold, expectedDeltaUpper, expectedDeltaLower);
         });
     }
 

@@ -60,6 +60,18 @@
                 <constraints nullable="false" />
             </column>
 
+            <column name="signal_index_threshold" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="expected_delta_upper" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="expected_delta_lower" type="integer">
+                <constraints nullable="false" />
+            </column>
+
             <column name="created_at" type="timestamp">
                 <constraints nullable="false" />
             </column>
