@@ -140,7 +140,7 @@ class ChannelDetails extends Reflux.Component {
                 <div className="row">
                     <div className="col-md-12 mt-md-3">
                         <SimpleLineChart
-                            title="Signal Quality and Expected Deltas"
+                            title="Signal Quality and Expected Delta"
                             width={1100}
                             height={200}
                             finalData={this._formatSignalQualityHistory(this.props.channel.signal_history)}
