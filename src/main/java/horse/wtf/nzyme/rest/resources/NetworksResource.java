@@ -21,19 +21,33 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
+import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 import horse.wtf.nzyme.rest.responses.networks.BSSIDsResponse;
+import horse.wtf.nzyme.rest.responses.networks.SSIDResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/api/networks")
 @Produces(MediaType.APPLICATION_JSON)
 public class NetworksResource {
+
+    private static final Logger LOG = LogManager.getLogger(NetworksResource.class);
+
+    private static final String SIGNAL_AVERAGE_QUERY = "SELECT created_at, channel, AVG(signal_index) AS avg_signal_index, " +
+            "AVG(signal_index_threshold) AS avg_signal_index_threshold, AVG(signal_quality) AS avg_signal_quality, " +
+            "AVG(signal_stddev) AS avg_signal_stddev, AVG(expected_delta_lower) AS avg_expected_delta_lower, " +
+            "AVG(expected_delta_upper) AS avg_expected_delta_upper FROM signal_index_history " +
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-1 day') " +
+            "AND signal_index NOT NULL AND signal_quality NOT NULL " +
+            "GROUP BY strftime('%Y%m%d%H0', created_at)+strftime('%M', created_at) " +
+            "ORDER BY created_at";
 
     @Inject
     private Nzyme nzyme;
@@ -45,6 +59,41 @@ public class NetworksResource {
                 nzyme.getNetworks().getBSSIDs().size(),
                 nzyme.getNetworks().getBSSIDs()
         )).build();
+    }
+
+    @GET
+    @Path("/bssids/{bssid}/ssids/{ssid}")
+    public Response ssid(@PathParam("bssid") @NotNull String bssid, @PathParam("ssid") @NotNull String ssid) {
+        bssid = bssid.toLowerCase();
+
+        if (nzyme.getNetworks().getBSSIDs().containsKey(bssid)) {
+            BSSID b = nzyme.getNetworks().getBSSIDs().get(bssid);
+
+            if (b.ssids().containsKey(ssid)) {
+                SSID s = b.ssids().get(ssid);
+
+                // Enrich channels with signal index and quality information.
+                for (Channel channel : s.channels().values()) {
+                    List<SignalInformation> sigInfoHistory = nzyme.getDatabase().withHandle(handle ->
+                            handle.createQuery(SIGNAL_AVERAGE_QUERY)
+                                    .bind(0, b.bssid())
+                                    .bind(1, s.name())
+                                    .bind(2, channel.channelNumber())
+                                    .mapTo(SignalInformation.class)
+                                    .list()
+                    );
+
+                    channel.setSignalHistory(sigInfoHistory);
+                }
+                return Response.ok(SSIDResponse.create(s)).build();
+            } else {
+                LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+        } else {
+            LOG.debug("Could not find requested BSSID [{}].", bssid);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 
     @POST

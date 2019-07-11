@@ -105,7 +105,11 @@ class GlobalStatistics extends Reflux.Component {
                 </div>
               </div>
 
-              <SimpleLineChart title="802.11 Frame Throughput" data={this.state.global_statistics.histogram_frame_throughput} />
+              <SimpleLineChart
+                  title="802.11 Frame Throughput"
+                  width={335}
+                  height={150}
+                  data={this.state.global_statistics.histogram_frame_throughput}/>
             </div>
 
             <div className="col-md-4">
@@ -116,7 +120,11 @@ class GlobalStatistics extends Reflux.Component {
                 </div>
               </div>
 
-              <SimpleLineChart title="802.11 Clients" data={this.state.global_statistics.histogram_probing_devices} />
+              <SimpleLineChart
+                  title="802.11 Clients"
+                  width={335}
+                  height={150}
+                  data={this.state.global_statistics.histogram_probing_devices} />
             </div>
 
             <div className="col-md-4">
@@ -127,7 +135,11 @@ class GlobalStatistics extends Reflux.Component {
                 </div>
               </div>
 
-              <SimpleLineChart title="802.11 Access Points" data={this.state.global_statistics.histogram_bssids} />
+              <SimpleLineChart
+                  title="802.11 Access Points"
+                  width={335}
+                  height={150}
+                  data={this.state.global_statistics.histogram_bssids} />
             </div>
           </div>
 

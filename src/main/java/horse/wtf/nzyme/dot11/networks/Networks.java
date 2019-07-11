@@ -157,7 +157,7 @@ public class Networks {
 
             // Ensure that the SSID has been recorded for this BSSID.
             if(!bssid.ssids().containsKey(ssidName)) {
-                bssid.ssids().put(ssidName, SSID.create(ssidName));
+                bssid.ssids().put(ssidName, SSID.create(ssidName, bssid.bssid()));
             }
         } else {
             // First time we are seeing this BSSID.
@@ -167,7 +167,7 @@ public class Networks {
                 oui = "unknown";
             }
 
-            SSID ssid = SSID.create(ssidName);
+            SSID ssid = SSID.create(ssidName, transmitter);
             bssid = BSSID.create(new HashMap<String, SSID>(){{
                 put(ssidName, ssid);
             }}, oui, transmitter);

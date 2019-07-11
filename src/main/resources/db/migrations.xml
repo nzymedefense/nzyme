@@ -57,19 +57,27 @@
             </column>
 
             <column name="signal_index" type="float">
-                <constraints nullable="false" />
+                <constraints nullable="true" />
             </column>
 
             <column name="signal_index_threshold" type="float">
                 <constraints nullable="true" />
             </column>
 
+            <column name="signal_quality" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="signal_stddev" type="float">
+                <constraints nullable="true" />
+            </column>
+
             <column name="expected_delta_upper" type="integer">
-                <constraints nullable="false" />
+                <constraints nullable="true" />
             </column>
 
             <column name="expected_delta_lower" type="integer">
-                <constraints nullable="false" />
+                <constraints nullable="true" />
             </column>
 
             <column name="created_at" type="timestamp">

@@ -3,7 +3,6 @@ import Reflux from 'reflux';
 
 import numeral from "numeral";
 import SSID from "./SSID";
-import SignalIndexThreshold from "./SignalIndexThreshold";
 import SignalIndex from "./SignalIndex";
 
 class SSIDRow extends Reflux.Component {

@@ -64,6 +64,8 @@ public class SignalIndexManager {
                 return AverageSignalIndex.create(0, false, isTraining());
             }
 
+            avg = (float) (avg+(avg*0.25)); // TODO make cushion configurable
+
             if (basedOnSize < MINIMUM_DELTA_STATE_BASE) {
                 return AverageSignalIndex.create(avg, false, isTraining());
             }

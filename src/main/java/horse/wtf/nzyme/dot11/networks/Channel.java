@@ -25,9 +25,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.math.Stats;
 import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
+import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,6 +62,9 @@ public abstract class Channel {
 
     @JsonProperty("fingerprints")
     public abstract List<String> fingerprints();
+
+    @JsonProperty("signal_history")
+    public List<SignalInformation> signalHistory = Collections.emptyList();
 
     @JsonIgnore
     public abstract EvictingQueue<SignalQuality> recentSignalQuality();
@@ -163,7 +168,7 @@ public abstract class Channel {
 
     @JsonProperty("expected_delta")
     public SignalDelta expectedDelta() {
-        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/2)).intValue();
+        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/1.5)).intValue(); // TODO make factor configurable
         int lower = signalQualityRecentAverage()-delta;
         int upper = signalQualityRecentAverage()+delta;
 
@@ -171,6 +176,11 @@ public abstract class Channel {
                 lower,
                 upper
         );
+    }
+
+    @JsonIgnore
+    public void setSignalHistory(List<SignalInformation> history) {
+        this.signalHistory = history;
     }
 
     public static Channel create(SignalIndexManager signalIndexManager, int channelNumber, String bssid, String ssid, AtomicLong totalFrames, int signal, String fingerprint) {

@@ -3,7 +3,7 @@ const Routes = {
     SYSTEM_STATUS: "/system",
     NETWORKS: {
         INDEX: "/networks",
-        SHOW: (bssid, ssid, channel) => `/networks/show/${bssid}/${ssid}/${channel}`
+        SHOW: (bssid, ssid) => `/networks/show/${bssid}/${ssid}`
     },
     NOT_FOUND: "/notfound",
     ALERTS: {

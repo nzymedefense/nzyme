@@ -31,7 +31,11 @@ import java.util.Map;
 @AutoValue
 public abstract class SSID {
 
+    @JsonIgnore
     public abstract String name();
+
+    @JsonProperty
+    public abstract String bssid();
 
     @JsonProperty
     public abstract Map<Integer, Channel> channels();
@@ -63,16 +67,17 @@ public abstract class SSID {
         }
     }
 
+    public static SSID create(String name, String bssid) {
+        return builder()
+                .name(name)
+                .bssid(bssid)
+                .channels(Maps.newHashMap())
+                .build();
+    }
+
     @JsonIgnore
     public void updateSecurity(List<Dot11SecurityConfiguration> security) {
         this.security = security;
-    }
-
-    public static SSID create(String name) {
-        return builder()
-                .name(name)
-                .channels(Maps.newHashMap())
-                .build();
     }
 
     public static Builder builder() {
@@ -82,6 +87,8 @@ public abstract class SSID {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
+
+        public abstract Builder bssid(String bssid);
 
         public abstract Builder channels(Map<Integer, Channel> channels);
 

@@ -26,6 +26,7 @@ import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.periodicals.Periodical;
+import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,12 +40,14 @@ public class SignalIndexWriter extends Periodical {
 
     private final Networks networks;
     private final Database database;
+    private final SystemStatus systemStatus;
 
     private final Timer writeTimer;
 
     public SignalIndexWriter(Nzyme nzyme) {
         this.networks = nzyme.getNetworks();
         this.database = nzyme.getDatabase();
+        this.systemStatus = nzyme.getSystemStatus();
 
         this.writeTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_WRITER_TIMER));
     }
@@ -61,16 +64,32 @@ public class SignalIndexWriter extends Periodical {
                     }
 
                     for (Map.Entry<Integer, Channel> channel : ssid.getValue().channels().entrySet()) {
-                        write(
-                                bssid.getValue().bssid(),
-                                ssid.getValue().name(),
-                                channel.getValue().channelNumber(),
-                                channel.getValue().signalIndex(),
-                                channel.getValue().signalIndexThreshold().hadEnoughData() && !channel.getValue().signalIndexThreshold().inTraining() ?
-                                    channel.getValue().signalIndexThreshold().index() : null,
-                                channel.getValue().expectedDelta().lower(),
-                                channel.getValue().expectedDelta().upper()
-                        );
+                        if (this.systemStatus.isInStatus(SystemStatus.TYPE.TRAINING) || !channel.getValue().signalIndexThreshold().hadEnoughData()) {
+                            // Don't write status during training phase or during low channel activity. It will fuck up the charts, make them hard to understand.
+                            write(
+                                    bssid.getValue().bssid(),
+                                    ssid.getValue().name(),
+                                    channel.getValue().channelNumber(),
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                            );
+                        } else {
+                            write(
+                                    bssid.getValue().bssid(),
+                                    ssid.getValue().name(),
+                                    channel.getValue().channelNumber(),
+                                    channel.getValue().signalIndex(),
+                                    channel.getValue().signalIndexThreshold().index(),
+                                    channel.getValue().signalQualityRecentAverage(),
+                                    channel.getValue().signalQualityRecentStddev(),
+                                    channel.getValue().expectedDelta().lower(),
+                                    channel.getValue().expectedDelta().upper()
+                            );
+                        }
                     }
                 }
             }
@@ -82,10 +101,10 @@ public class SignalIndexWriter extends Periodical {
         }
     }
 
-    private void write(String bssid, String ssid, int channel, float signalIndex, @Nullable Float signalIndexThreshold, int expectedDeltaUpper, int expectedDeltaLower) {
+    private void write(String bssid, String ssid, Integer channel, Float signalIndex, Float signalIndexThreshold, Integer signalQuality, Double signalStddev, Integer expectedDeltaUpper, Integer expectedDeltaLower) {
         database.useHandle(handle -> {
-            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, signal_index_threshold, expected_delta_upper, expected_delta_lower, created_at) " +
-                    "VALUES(?, ?, ?, ?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex, signalIndexThreshold, expectedDeltaUpper, expectedDeltaLower);
+            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, signal_index_threshold, signal_quality, signal_stddev, expected_delta_upper, expected_delta_lower, created_at) " +
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex, signalIndexThreshold, signalQuality, signalStddev, expectedDeltaUpper, expectedDeltaLower);
         });
     }
 

@@ -17,29 +17,34 @@ class SimpleLineChart extends React.Component {
   }
 
   render() {
-    let x = [];
-    let y = [];
+      let x = [];
+      let y = [];
 
-    const data = this.state.data;
+      const data = this.state.data;
 
-    Object.keys(data).forEach(function(key) {
-      x.push(new Date(key));
-      y.push(data[key]);
-    });
+      let finalData = this.props.finalData;
+      if (!finalData) {
+          Object.keys(data).forEach(function (key) {
+              x.push(new Date(key));
+              y.push(data[key]);
+          });
+
+          finalData = [
+              {
+                  x: x,
+                  y: y,
+                  type: "scatter",
+                  line: {width: 1, shape: "linear", color: "#2983fe"}
+              }
+          ];
+      }
 
     return (
       <Plot
-        data={[
-          {
-            x: x,
-            y: y,
-            type: "scatter",
-            line: { width: 1, shape: "linear", color: "#2983fe" }
-          }
-        ]}
+        data={finalData}
         layout={{
-          width: 335,
-          height: 150,
+          width: this.props.width,
+          height: this.props.height,
           font: { family: "'Inconsolata', monospace", size: 10 },
           margin: { l: 25, r: 0, b: 50, t: 25, pad: 0 },
           title: { text: this.props.title },
@@ -50,8 +55,10 @@ class SimpleLineChart extends React.Component {
           clickmode: "none",
           hovermode: "x",
           hoverlabel: {
-            font: { size: 11 }
+            font: { size: 11 },
+            namelength: -1
           },
+          connectgaps: false,
           xaxis: { fixedrange: true },
           yaxis: { fixedrange: true }
         }}

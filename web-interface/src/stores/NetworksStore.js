@@ -51,6 +51,14 @@ class NetworksStore extends Reflux.Store {
         });
     }
 
+    onFindSSIDOnBSSID(bssid, ssid) {
+        let self = this;
+
+        RESTClient.get("networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {}, function(response) {
+            self.setState({ssid: response.data.ssid})
+        });
+    }
+
     onResetFingerprints() {
         RESTClient.post("/networks/fingerprints/reset/", {}, function() {
             notify.show("Fingerprints reset.", "success");

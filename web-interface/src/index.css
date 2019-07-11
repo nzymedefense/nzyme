@@ -72,3 +72,8 @@ li.state-not-active {
     text-decoration: line-through;
     color: #999;
 }
+
+ul.channel-details-fingerprints {
+    list-style-type: square;
+    padding-left: 15px;
+}

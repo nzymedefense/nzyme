@@ -1,4 +1,5 @@
 import React from 'react';
+import Routes from "../../util/Routes";
 
 class SSID extends React.Component {
 
@@ -7,11 +8,20 @@ class SSID extends React.Component {
     }
 
     render() {
-        return (
-            <span className={this.props.ssid.human_readable ? "" : "text-muted"}>
-                {this.props.ssid.name.trim()}
-            </span>
-        );
+        if (this.props.ssid.human_readable) {
+            return (
+                <a href={Routes.NETWORKS.SHOW(encodeURIComponent(this.props.ssid.bssid), encodeURIComponent(this.props.ssid.name))}>
+                    {this.props.ssid.name.trim()}
+                </a>
+            );
+        } else {
+            return (
+                <span className="text-muted">
+                    {this.props.ssid.name.trim()}
+                </span>
+            );
+        }
+
     }
 
 }
