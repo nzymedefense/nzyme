@@ -64,8 +64,8 @@ public class SignalIndexWriter extends Periodical {
                     }
 
                     for (Map.Entry<Integer, Channel> channel : ssid.getValue().channels().entrySet()) {
-                        if (this.systemStatus.isInStatus(SystemStatus.TYPE.TRAINING) || !channel.getValue().signalIndexThreshold().hadEnoughData()) {
-                            // Don't write status during training phase or during low channel activity. It will fuck up the charts, make them hard to understand.
+                        if (this.systemStatus.isInStatus(SystemStatus.TYPE.TRAINING)) {
+                            // Don't write status during training phase. It will fuck up the charts, make them hard to understand.
                             write(
                                     bssid.getValue().bssid(),
                                     ssid.getValue().name(),
