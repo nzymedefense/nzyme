@@ -168,7 +168,7 @@ public abstract class Channel {
 
     @JsonProperty("expected_delta")
     public SignalDelta expectedDelta() {
-        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/1.5)).intValue(); // TODO make factor configurable
+        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/3)).intValue(); // TODO make factor configurable
         int lower = signalQualityRecentAverage()-delta;
         int upper = signalQualityRecentAverage()+delta;
 
