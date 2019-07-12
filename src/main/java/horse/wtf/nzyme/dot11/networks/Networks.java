@@ -106,7 +106,7 @@ public class Networks {
                 for (BSSID bssid : bssids.values()) {
                     for (SSID ssid : bssid.ssids().values()) {
                         for (Channel channel : ssid.channels().values()) {
-                            DateTime cutoff = DateTime.now().minusMinutes(1);
+                            DateTime cutoff = DateTime.now().minusMinutes(5); // TODO make configurable
                             LOG.debug("Deleting expired signal quality measurements from [{}]", channel);
 
                             ImmutableList.Builder<Channel.SignalQuality> newQualities = new ImmutableList.Builder<>();

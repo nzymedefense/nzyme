@@ -89,8 +89,10 @@ public class AlertsService {
         UUID uuid = UUID.randomUUID();
         alert.setUUID(uuid);
 
-        // Notify uplinks.
-        alert.getProbe().notifyUplinksOfAlert(alert);
+        // Notify uplinks
+        if (alert.getProbe() != null) { // TODO remove me. HACK until probe -> uplink rel is refactored.
+            alert.getProbe().notifyUplinksOfAlert(alert);
+        }
 
         activeAlerts.put(uuid, alert);
     }

@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.AlertsService;
+import horse.wtf.nzyme.alerts.SignalStrengthAnomalyAlert;
+import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -48,7 +51,9 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
     private static final Logger LOG = LogManager.getLogger(SignalIndexAnomalyAlertMonitor.class);
 
     private final Networks networks;
+    private final Configuration configuration;
     private final SystemStatus systemStatus;
+    private final AlertsService alertsService;
 
     private final Timer timer;
 
@@ -57,6 +62,8 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
     public SignalIndexAnomalyAlertMonitor(Nzyme nzyme) {
         this.networks = nzyme.getNetworks();
         this.systemStatus = nzyme.getSystemStatus();
+        this.configuration = nzyme.getConfiguration();
+        this.alertsService = nzyme.getAlertsService();
 
         this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_MONITOR_TIMER));
         this.statusTable = new AtomicReference<>(Maps.newHashMap());
@@ -127,23 +134,24 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
             for (Map.Entry<AnomalySource, List<AnomalyStatus>> x : statusTable.get().entrySet()) {
                 AnomalySource source = x.getKey();
 
-                // TODO only for our networks!
-
-                if (x.getValue().size() < 12) {
-                    // We have not had enough measurements for this source yet.
-                    LOG.debug("Skipping source with not enough measurements (<{}>): [{}]", x.getValue().size(), source);
-                    continue;
-                }
-
-                int anomalies = 0;
-                for (AnomalyStatus status : x.getValue()) {
-                    if (status.anomaly()) {
-                        anomalies++;
+                // Only run of our SSIDs.
+                if(configuration.ourSSIDs().contains(source.ssid())) {
+                    if (x.getValue().size() < 3 * 12) { // TODO make configurable
+                        // We have not had enough measurements for this source yet.
+                        LOG.debug("Skipping source with not enough measurements (<{}>): [{}]", x.getValue().size(), source);
+                        continue;
                     }
-                }
 
-                if (anomalies > 10) {
-                    LOG.warn("ALERT!!!! {}", source);
+                    int anomalies = 0;
+                    for (AnomalyStatus status : x.getValue()) {
+                        if (status.anomaly()) {
+                            anomalies++;
+                        }
+                    }
+
+                    if (anomalies > (3 * 12) * 0.8) { // TODO make configurable
+                        alertsService.handle(SignalStrengthAnomalyAlert.create(source.ssid(), source.bssid(), source.channel()));
+                    }
                 }
             }
 

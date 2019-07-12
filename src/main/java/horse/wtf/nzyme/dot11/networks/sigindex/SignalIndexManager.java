@@ -29,7 +29,7 @@ public class SignalIndexManager {
     private static final int MINIMUM_DELTA_STATE_BASE = 15; // TODO make configurable (this is how many frames per minutes we need to have at least)
 
     private static final String AVERAGE_QUERY = "SELECT AVG(signal_index)_index FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-30 minutes')";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-10 minutes')"; // TODO make the sliding window configurable
 
     private final Database database;
     private final SystemStatus systemStatus;
@@ -61,13 +61,15 @@ public class SignalIndexManager {
             );
 
             if (avg == null) {
-                return AverageSignalIndex.create(0, false, isTraining());
+                return AverageSignalIndex.create(null, false, isTraining());
             }
 
-            avg = (float) (avg+(avg*0.25)); // TODO make cushion configurable
+            if (avg < 1) { // TODO make minimum configurable
+                avg = 1.0F;
+            }
 
             if (basedOnSize < MINIMUM_DELTA_STATE_BASE) {
-                return AverageSignalIndex.create(avg, false, isTraining());
+                return AverageSignalIndex.create(null, false, isTraining());
             }
 
             return AverageSignalIndex.create(avg, true, isTraining());

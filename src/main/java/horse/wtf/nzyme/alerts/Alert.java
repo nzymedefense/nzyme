@@ -22,6 +22,7 @@ import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +37,8 @@ public abstract class Alert {
         CRYPTO_CHANGE,
         UNEXPECTED_CHANNEL,
         KNOWN_BANDIT_FINGERPRINT,
-        UNEXPECTED_FINGERPRINT
+        UNEXPECTED_FINGERPRINT,
+        SIGNAL_ANOMALY
     }
 
     public enum Type {
@@ -51,7 +53,8 @@ public abstract class Alert {
         KNOWN_BANDIT_FINGERPRINT_BEACON,
         KNOWN_BANDIT_FINGERPRINT_PROBERESP,
         UNEXPECTED_FINGERPRINT_BEACON,
-        UNEXPECTED_FINGERPRINT_PROBERESP
+        UNEXPECTED_FINGERPRINT_PROBERESP,
+        SIGNAL_ANOMALY
     }
 
     private final Subsystem subsystem;
@@ -71,7 +74,7 @@ public abstract class Alert {
 
     protected UUID uuid;
 
-    protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, String description, String documentationLink, List<String> falsePositives, Dot11Probe probe) {
+    protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, String description, String documentationLink, List<String> falsePositives, @Nullable Dot11Probe probe) {
         this.firstSeen = timestamp;
         this.lastSeen = new AtomicReference<>(timestamp);
         this.subsystem = subsystem;

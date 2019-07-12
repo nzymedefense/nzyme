@@ -64,18 +64,6 @@ class BSSIDTableRow extends Reflux.Component {
         }
     }
 
-    static _decideSignalIndexStatus(status) {
-        if (status) {
-            return (
-                <i className="fas fa-check-square text-success" title="No signal strength anomaly detected or in training phase." />
-            )
-        } else {
-            return (
-                <i className="fas fa-exclamation-triangle text-danger" title="A signal strength anomaly has been detected." />
-            )
-        }
-    }
-
     static _decideWPSStatus(status) {
         if (status) {
             return (
@@ -141,7 +129,6 @@ class BSSIDTableRow extends Reflux.Component {
                     <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>
                     <td>{this.props.bssid.oui}</td>
                     <td>{this._printSecurity()}</td>
-                    <td>{BSSIDTableRow._decideSignalIndexStatus(this.props.bssid.signal_index_ok)}</td>
                     <td>{BSSIDTableRow._decideFingerprintingStatus(this.props.bssid.fingerprinting_ok)}</td>
                     <td>{BSSIDTableRow._decideWPSStatus(this.props.bssid.is_wps)}</td>
                 </tr>

@@ -87,6 +87,7 @@ graylog_uplinks: [
   unexpected_channel
   known_bandit_fingerprint
   unexpected_fingerprint
+  signal_anomaly
 }
 
 802_11_trap_pairs: [

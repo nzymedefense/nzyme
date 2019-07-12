@@ -101,10 +101,10 @@ public class SignalIndexWriter extends Periodical {
         }
     }
 
-    private void write(String bssid, String ssid, Integer channel, Float signalIndex, Float signalIndexThreshold, Integer signalQuality, Double signalStddev, Integer expectedDeltaUpper, Integer expectedDeltaLower) {
+    private void write(String bssid, String ssid, Integer channel, Float signalIndex, Float signalIndexThreshold, Integer signalQuality, Double signalStddev, Integer expectedDeltaLower, Integer expectedDeltaUpper) {
         database.useHandle(handle -> {
-            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, signal_index_threshold, signal_quality, signal_stddev, expected_delta_upper, expected_delta_lower, created_at) " +
-                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex, signalIndexThreshold, signalQuality, signalStddev, expectedDeltaUpper, expectedDeltaLower);
+            handle.execute("INSERT INTO signal_index_history(bssid, ssid, channel, signal_index, signal_index_threshold, signal_quality, signal_stddev, expected_delta_lower, expected_delta_upper, created_at) " +
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))", bssid.toLowerCase(), ssid, channel, signalIndex, signalIndexThreshold, signalQuality, signalStddev, expectedDeltaLower, expectedDeltaUpper);
         });
     }
 

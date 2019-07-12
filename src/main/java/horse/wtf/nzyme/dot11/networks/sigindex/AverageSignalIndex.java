@@ -21,11 +21,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class AverageSignalIndex {
 
+    @Nullable
     @JsonProperty("index")
-    public abstract float index();
+    public abstract Float index();
 
     @JsonProperty("had_enough_data")
     public abstract boolean hadEnoughData();
@@ -33,7 +36,7 @@ public abstract class AverageSignalIndex {
     @JsonProperty("in_training")
     public abstract boolean inTraining();
 
-    public static AverageSignalIndex create(float index, boolean hadEnoughData, boolean inTraining) {
+    public static AverageSignalIndex create(Float index, boolean hadEnoughData, boolean inTraining) {
         return builder()
                 .index(index)
                 .hadEnoughData(hadEnoughData)
@@ -47,7 +50,7 @@ public abstract class AverageSignalIndex {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder index(float index);
+        public abstract Builder index(Float index);
 
         public abstract Builder hadEnoughData(boolean hadEnoughData);
 

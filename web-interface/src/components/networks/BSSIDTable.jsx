@@ -29,7 +29,6 @@ class BSSIDTable extends Reflux.Component {
                             <th>Advertised Networks</th>
                             <th>OUI</th>
                             <th>SEC</th>
-                            <th>SIG</th>
                             <th>FP</th>
                             <th>WPS</th>
                         </tr>

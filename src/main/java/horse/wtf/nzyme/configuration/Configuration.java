@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.configuration;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
@@ -26,7 +27,6 @@ public abstract class Configuration {
 
     public abstract URI restListenUri();
 
-
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
     public abstract List<Dot11NetworkDefinition> dot11Networks();
 
@@ -36,6 +36,12 @@ public abstract class Configuration {
     public abstract Map<String, BanditFingerprintDefinition> knownBanditFingerprints();
 
     public abstract List<GraylogAddress> graylogUplinks();
+
+    public List<String> ourSSIDs() {
+        ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
+        dot11Networks().forEach(n -> ssids.add(n.ssid()));
+        return ssids.build();
+    }
 
     public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, List<GraylogAddress> graylogUplinks) {
         return builder()

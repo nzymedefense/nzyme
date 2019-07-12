@@ -158,11 +158,14 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 10, 10, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 5, TimeUnit.SECONDS);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
+        }
+
+        if (configuredAlerts.contains(Alert.TYPE_WIDE.SIGNAL_ANOMALY)) {
+            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 5, TimeUnit.SECONDS);
         }
 
         // Spin up REST API and web interface.
