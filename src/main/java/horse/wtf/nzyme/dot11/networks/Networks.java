@@ -28,6 +28,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
+import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
@@ -47,8 +48,11 @@ public class Networks {
     private static final Logger LOG = LogManager.getLogger(Networks.class);
 
     private final Map<String, BSSID> bssids;
-    private final SignalIndexManager signalIndexManager;
+
     private final Nzyme nzyme;
+
+    private final SignalIndexManager signalIndexManager;
+    private final BeaconRateManager beaconRateManager;
 
     private final Timer tableCleanerTimer;
 
@@ -58,6 +62,7 @@ public class Networks {
         this.nzyme = nzyme;
         this.bssids = Maps.newHashMap();
         this.signalIndexManager = new SignalIndexManager(nzyme);
+        this.beaconRateManager = new BeaconRateManager(nzyme);
         this.signalDeltaModifier = nzyme.getConfiguration().expectedSignalDeltaModifier();
 
         this.tableCleanerTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER));
@@ -235,6 +240,7 @@ public class Networks {
                 // Create new channel.
                 Channel channel = Channel.create(
                         this.signalIndexManager,
+                        this.beaconRateManager,
                         channelNumber,
                         bssid.bssid(),
                         ssid.name(),
