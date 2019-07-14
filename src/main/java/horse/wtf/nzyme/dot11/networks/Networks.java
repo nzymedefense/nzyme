@@ -51,10 +51,13 @@ public class Networks {
 
     private final Timer tableCleanerTimer;
 
+    private final double signalDeltaModifier;
+
     public Networks(Nzyme nzyme) {
         this.nzyme = nzyme;
         this.bssids = Maps.newHashMap();
         this.signalIndexManager = new SignalIndexManager(nzyme);
+        this.signalDeltaModifier = nzyme.getConfiguration().expectedSignalDeltaModifier();
 
         this.tableCleanerTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER));
 
@@ -106,7 +109,7 @@ public class Networks {
                 for (BSSID bssid : bssids.values()) {
                     for (SSID ssid : bssid.ssids().values()) {
                         for (Channel channel : ssid.channels().values()) {
-                            DateTime cutoff = DateTime.now().minusMinutes(5); // TODO make configurable
+                            DateTime cutoff = DateTime.now().minusMinutes(nzyme.getConfiguration().signalQualityTableSizeMinutes());
                             LOG.debug("Deleting expired signal quality measurements from [{}]", channel);
 
                             ImmutableList.Builder<Channel.SignalQuality> newQualities = new ImmutableList.Builder<>();
@@ -218,7 +221,15 @@ public class Networks {
                 ssid.channels().replace(channelNumber, channel);
             } else {
                 // Create new channel.
-                Channel channel = Channel.create(this.signalIndexManager, channelNumber, bssid.bssid(), ssid.name(), new AtomicLong(1), signalQuality, transmitterFingerprint);
+                Channel channel = Channel.create(
+                        this.signalIndexManager,
+                        channelNumber,
+                        bssid.bssid(),
+                        ssid.name(),
+                        new AtomicLong(1),
+                        signalQuality,
+                        transmitterFingerprint,
+                        signalDeltaModifier);
                 ssid.channels().put(channelNumber, channel);
             }
         } catch (NullPointerException e) {

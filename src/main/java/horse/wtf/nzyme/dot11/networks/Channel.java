@@ -67,6 +67,9 @@ public abstract class Channel {
     public List<SignalInformation> signalHistory = Collections.emptyList();
 
     @JsonIgnore
+    public abstract double expectedDeltaRangeModifier();
+
+    @JsonIgnore
     public abstract EvictingQueue<SignalQuality> recentSignalQuality();
 
     @JsonIgnore
@@ -168,9 +171,17 @@ public abstract class Channel {
 
     @JsonProperty("expected_delta")
     public SignalDelta expectedDelta() {
-        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/3)).intValue(); // TODO make factor configurable
+        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/expectedDeltaRangeModifier())).intValue();
         int lower = signalQualityRecentAverage()-delta;
         int upper = signalQualityRecentAverage()+delta;
+
+        if (lower < 0) {
+            lower = 0;
+        }
+
+        if (upper > 100) {
+            upper = 100;
+        }
 
         return SignalDelta.create(
                 lower,
@@ -183,7 +194,7 @@ public abstract class Channel {
         this.signalHistory = history;
     }
 
-    public static Channel create(SignalIndexManager signalIndexManager, int channelNumber, String bssid, String ssid, AtomicLong totalFrames, int signal, String fingerprint) {
+    public static Channel create(SignalIndexManager signalIndexManager, int channelNumber, String bssid, String ssid, AtomicLong totalFrames, int signal, String fingerprint, double expectedDeltaRangeModifier) {
         EvictingQueue<SignalQuality> q = EvictingQueue.create(RECENT_MAX_ENTRIES);
         EvictingQueue<DeltaState> d = EvictingQueue.create(RECENT_MAX_ENTRIES);
 
@@ -204,6 +215,7 @@ public abstract class Channel {
                 .recentSignalQuality(q)
                 .recentDeltaStates(d)
                 .fingerprints(fingerprints)
+                .expectedDeltaRangeModifier(expectedDeltaRangeModifier)
                 .build();
     }
 
@@ -232,6 +244,8 @@ public abstract class Channel {
         public abstract Builder recentDeltaStates(EvictingQueue<DeltaState> recentDeltaStates);
 
         public abstract Builder fingerprints(List<String> fingerprints);
+
+        public abstract Builder expectedDeltaRangeModifier(double expectedDeltaRangeModifier);
 
         public abstract Channel build();
     }

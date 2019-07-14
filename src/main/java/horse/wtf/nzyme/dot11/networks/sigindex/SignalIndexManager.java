@@ -26,10 +26,10 @@ import horse.wtf.nzyme.util.MetricNames;
 
 public class SignalIndexManager {
 
-    private static final int MINIMUM_DELTA_STATE_BASE = 25; // TODO make configurable (this is how many frames per minutes we need to have at least)
+    private static final int MINIMUM_DELTA_STATE_BASE = 25;
 
     private static final String AVERAGE_QUERY = "SELECT AVG(signal_index)_index FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-10 minutes')"; // TODO make the sliding window configurable
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-10 minutes')";
 
     private final Database database;
     private final SystemStatus systemStatus;
@@ -64,7 +64,7 @@ public class SignalIndexManager {
                 return AverageSignalIndex.create(null, false, isTraining());
             }
 
-            if (avg < 1) { // TODO make minimum configurable
+            if (avg < 1) {
                 avg = 1.0F;
             }
 

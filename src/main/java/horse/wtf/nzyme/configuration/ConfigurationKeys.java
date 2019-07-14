@@ -29,6 +29,7 @@ public class ConfigurationKeys {
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAP_PAIRS = "802_11_trap_pairs";
     public static final String KNOWN_BANDIT_FINGERPRINTS = "known_bandit_fingerprints";
+    public static final String TUNING_PARAMETERS = "tuning_parameters";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -60,5 +61,9 @@ public class ConfigurationKeys {
     public static final String ADDRESS = "address";
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
+    public static final String SIGNAL_QUALITY_TABLE_SIZE_MINUTES = "signal_quality_table_size_minutes";
+    public static final String EXPECTED_SIGNAL_DELTA_MODIFIER = "expected_signal_delta_modifier";
+    public static final String ANOMALY_ALERT_LOOKBACK_MINUTES = "anomaly_alert_lookback_minutes";
+    public static final String ANOMALY_ALERT_TRIGGER_RATIO = "anomaly_alert_trigger_ratio";
 
 }

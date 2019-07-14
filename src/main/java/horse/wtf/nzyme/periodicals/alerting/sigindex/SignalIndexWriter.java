@@ -20,6 +20,7 @@ package horse.wtf.nzyme.periodicals.alerting.sigindex;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;

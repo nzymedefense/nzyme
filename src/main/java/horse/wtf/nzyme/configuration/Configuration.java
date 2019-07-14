@@ -35,6 +35,11 @@ public abstract class Configuration {
     public abstract int alertingTrainingPeriodSeconds();
     public abstract Map<String, BanditFingerprintDefinition> knownBanditFingerprints();
 
+    public abstract int signalQualityTableSizeMinutes();
+    public abstract double expectedSignalDeltaModifier();
+    public abstract int anomalyAlertLookbackMinutes();
+    public abstract double anomalyAlertTriggerRatio();
+
     public abstract List<GraylogAddress> graylogUplinks();
 
     public List<String> ourSSIDs() {
@@ -43,7 +48,7 @@ public abstract class Configuration {
         return ssids.build();
     }
 
-    public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, List<GraylogAddress> graylogUplinks) {
+    public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, int signalQualityTableSizeMinutes, double expectedSignalDeltaModifier, int anomalyAlertLookbackMinutes, double anomalyAlertTriggerRatio, List<GraylogAddress> graylogUplinks) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -60,6 +65,10 @@ public abstract class Configuration {
                 .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .knownBanditFingerprints(knownBanditFingerprints)
+                .signalQualityTableSizeMinutes(signalQualityTableSizeMinutes)
+                .expectedSignalDeltaModifier(expectedSignalDeltaModifier)
+                .anomalyAlertLookbackMinutes(anomalyAlertLookbackMinutes)
+                .anomalyAlertTriggerRatio(anomalyAlertTriggerRatio)
                 .graylogUplinks(graylogUplinks)
                 .build();
     }
@@ -99,6 +108,14 @@ public abstract class Configuration {
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
 
         public abstract Builder knownBanditFingerprints(Map<String, BanditFingerprintDefinition> knownBanditFingerprints);
+
+        public abstract Builder signalQualityTableSizeMinutes(int signalQualityTableSizeMinutes);
+
+        public abstract Builder expectedSignalDeltaModifier(double expectedSignalDeltaModifier);
+
+        public abstract Builder anomalyAlertLookbackMinutes(int anomalyAlertLookbackMinutes);
+
+        public abstract Builder anomalyAlertTriggerRatio(double anomalyAlertTriggerRatio);
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
 

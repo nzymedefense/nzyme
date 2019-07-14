@@ -72,7 +72,7 @@ graylog_uplinks: [
     security: [WPA2-PSK-CCMP]
     bssids: [
       {
-        address:  "f0:9f:c2:dd:18:f6",
+        address: "f0:9f:c2:dd:18:f6",
         fingerprints: [ 8ba95bfb6207749c01479235017a76b15ad63c387fd0bcc74593388f81326ca0 ]
       }
     ]
@@ -88,6 +88,13 @@ graylog_uplinks: [
   known_bandit_fingerprint
   unexpected_fingerprint
   signal_anomaly
+}
+
+tuning_parameters {
+  signal_quality_table_size_minutes: 5
+  expected_signal_delta_modifier: 3.0
+  anomaly_alert_lookback_minutes: 3
+  anomaly_alert_trigger_ratio: 0.8
 }
 
 802_11_trap_pairs: [
