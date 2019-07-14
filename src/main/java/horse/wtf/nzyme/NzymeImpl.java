@@ -37,6 +37,8 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
+import horse.wtf.nzyme.periodicals.beaconrate.BeaconRateCleaner;
+import horse.wtf.nzyme.periodicals.beaconrate.BeaconRateWriter;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -158,6 +160,8 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 10, 10, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 10, 10, TimeUnit.SECONDS);
+        periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {

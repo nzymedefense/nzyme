@@ -97,4 +97,43 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="3" author="lennartkoopmann">
+        <createTable tableName="beacon_rate_history" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="beacon_rate" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_beaconrate_standard_lookup" tableName="beacon_rate_history" unique="false">
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="channel" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_beaconrate_created_at" tableName="beacon_rate_history" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

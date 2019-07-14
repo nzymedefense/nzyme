@@ -194,6 +194,8 @@ public abstract class Channel {
         this.signalHistory = history;
     }
 
+    public final AtomicInteger beaconCount = new AtomicInteger(1);;
+
     public static Channel create(SignalIndexManager signalIndexManager, int channelNumber, String bssid, String ssid, AtomicLong totalFrames, int signal, String fingerprint, double expectedDeltaRangeModifier) {
         EvictingQueue<SignalQuality> q = EvictingQueue.create(RECENT_MAX_ENTRIES);
         EvictingQueue<DeltaState> d = EvictingQueue.create(RECENT_MAX_ENTRIES);

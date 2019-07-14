@@ -25,6 +25,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
@@ -142,17 +143,23 @@ public class Networks {
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(Dot11FrameSubtype.BEACON, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(Dot11FrameSubtype.PROBE_RESPONSE, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         }
     }
 
-    private synchronized void register(String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, String ssidName, int channelNumber, int signalQuality) {
+    private synchronized void register(byte subtype,
+                                       String transmitter,
+                                       String transmitterFingerprint,
+                                       Dot11TaggedParameters taggedParameters,
+                                       String ssidName,
+                                       int channelNumber,
+                                       int signalQuality) {
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -195,6 +202,11 @@ public class Networks {
                 // Update channel statistics.
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
+
+                if (subtype == Dot11FrameSubtype.BEACON) {
+                    // Used for beacon rate calculation.
+                    channel.beaconCount.incrementAndGet();
+                }
 
                 // Add signal quality to history of signal qualities.
                 channel.recentSignalQuality().add(Channel.SignalQuality.create(now, signalQuality));
