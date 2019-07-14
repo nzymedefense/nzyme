@@ -35,7 +35,7 @@ public class BeaconRateManager {
     }
 
     public BeaconRate getAverageBeaconRate(String bssid, String ssid, int channel) {
-        float avg = database.withHandle(handle ->
+        Float avg = database.withHandle(handle ->
                 handle.createQuery(AVERAGE_QUERY)
                         .bind(0, bssid)
                         .bind(1, ssid)
@@ -43,6 +43,10 @@ public class BeaconRateManager {
                         .mapTo(Float.class)
                         .first()
         );
+
+        if (avg == null) {
+            avg = 0.0F;
+        }
 
         return BeaconRate.create(avg, systemStatus.isInStatus(SystemStatus.TYPE.TRAINING));
     }

@@ -204,6 +204,7 @@ public abstract class Channel {
         this.signalHistory = history;
     }
 
+    @JsonIgnore
     public final AtomicInteger beaconCount = new AtomicInteger(1);;
 
     public static Channel create(SignalIndexManager signalIndexManager,
