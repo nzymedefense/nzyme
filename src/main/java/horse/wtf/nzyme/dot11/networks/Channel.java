@@ -23,6 +23,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.math.Stats;
+import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
 import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
@@ -70,6 +71,9 @@ public abstract class Channel {
 
     @JsonProperty("signal_history")
     public List<SignalInformation> signalHistory = Collections.emptyList();
+
+    @JsonProperty("beacon_rate_history")
+    public List<AverageBeaconRate> beaconRateHistory = Collections.emptyList();
 
     @JsonIgnore
     public abstract double expectedDeltaRangeModifier();
@@ -202,6 +206,11 @@ public abstract class Channel {
     @JsonIgnore
     public void setSignalHistory(List<SignalInformation> history) {
         this.signalHistory = history;
+    }
+
+    @JsonIgnore
+    public void setBeaconRateHistory(List<AverageBeaconRate> history) {
+        this.beaconRateHistory = history;
     }
 
     @JsonIgnore

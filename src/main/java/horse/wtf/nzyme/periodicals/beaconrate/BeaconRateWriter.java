@@ -51,8 +51,8 @@ public class BeaconRateWriter extends Periodical {
                     for (Channel channel : ssid.channels().values()) {
                         database.useHandle(handle -> handle.execute("INSERT INTO beacon_rate_history(bssid, ssid, channel, beacon_rate, created_at) " +
                                 "VALUES(?, ?, ?, ?, DATETIME('now'))",
-                                bssid.bssid(),
-                                ssid.name().toLowerCase(),
+                                bssid.bssid().toLowerCase(),
+                                ssid.name(),
                                 channel.channelNumber(),
                                 channel.beaconCount.get()
                         ));

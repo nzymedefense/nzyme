@@ -21,6 +21,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
+import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 import horse.wtf.nzyme.rest.responses.networks.BSSIDsResponse;
 import horse.wtf.nzyme.rest.responses.networks.SSIDResponse;
@@ -48,6 +49,12 @@ public class NetworksResource {
             "AND signal_index NOT NULL AND signal_quality NOT NULL " +
             "GROUP BY strftime('%Y%m%d%H0', created_at)+strftime('%M', created_at) " +
             "ORDER BY created_at";
+
+    public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT created_at, channel, AVG(beacon_rate) AS avg_beacon_rate " +
+            "FROM beacon_rate_history " +
+            "WHERE bssid = ? AND ssid = ? AND channel = ? " +
+            "GROUP BY strftime('%Y%m%d%H0', created_at)+strftime('%M', created_at) " +
+            "ORDER BY created_at;";
 
     @Inject
     private Nzyme nzyme;
@@ -85,6 +92,21 @@ public class NetworksResource {
 
                     channel.setSignalHistory(sigInfoHistory);
                 }
+
+                // Enrich with beacon rate history.
+                for (Channel channel : s.channels().values()) {
+                    List<AverageBeaconRate> beaconRateHistory = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery(BEACON_RATE_AVERAGE_QUERY)
+                                .bind(0, b.bssid())
+                                .bind(1, s.name())
+                                .bind(2, channel.channelNumber())
+                                .mapTo(AverageBeaconRate.class)
+                                .list()
+                    );
+
+                    channel.setBeaconRateHistory(beaconRateHistory);
+                }
+
                 return Response.ok(SSIDResponse.create(s)).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);

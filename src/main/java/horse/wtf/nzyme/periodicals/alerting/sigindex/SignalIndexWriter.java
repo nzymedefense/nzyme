@@ -68,7 +68,7 @@ public class SignalIndexWriter extends Periodical {
                         if (this.systemStatus.isInStatus(SystemStatus.TYPE.TRAINING)) {
                             // Don't write status during training phase. It will fuck up the charts, make them hard to understand.
                             write(
-                                    bssid.getValue().bssid(),
+                                    bssid.getValue().bssid().toLowerCase(),
                                     ssid.getValue().name(),
                                     channel.getValue().channelNumber(),
                                     null,

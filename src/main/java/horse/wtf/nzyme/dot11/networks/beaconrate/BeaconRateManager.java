@@ -24,7 +24,7 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 public class BeaconRateManager {
 
     private static final String AVERAGE_QUERY = "SELECT AVG(beacon_rate) FROM beacon_rate_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-5 minutes')";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-1 minutes')";
 
     private final Database database;
     private final SystemStatus systemStatus;

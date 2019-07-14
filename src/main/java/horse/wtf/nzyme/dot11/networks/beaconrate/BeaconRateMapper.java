@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.dot11.networks.sigindex;
+package horse.wtf.nzyme.dot11.networks.beaconrate;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
@@ -25,23 +25,19 @@ import org.joda.time.format.DateTimeFormat;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SignalInformationMapper implements RowMapper<SignalInformation> {
+public class BeaconRateMapper implements RowMapper<AverageBeaconRate> {
 
     @Override
-    public SignalInformation map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return SignalInformation.create(
+    public AverageBeaconRate map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return AverageBeaconRate.create(
+                rs.getFloat("avg_beacon_rate"),
                 rs.getInt("channel"),
                 DateTime.parse(
                         rs.getString("created_at"),
                         DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC()
-                ),
-                rs.getFloat("avg_signal_index"),
-                rs.getFloat("avg_signal_index_threshold"),
-                rs.getFloat("avg_signal_quality"),
-                rs.getFloat("avg_signal_stddev"),
-                rs.getFloat("avg_expected_delta_lower"),
-                rs.getFloat("avg_expected_delta_upper")
+                )
         );
+
     }
 
 }

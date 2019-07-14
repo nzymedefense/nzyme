@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.database;
 
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformationMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import liquibase.Contexts;
@@ -31,7 +32,8 @@ public class Database {
                 .installPlugin(new SQLitePlugin())
                 .installPlugin(new JodaTimePlugin())
                 .registerRowMapper(new MeasurementMapper())
-                .registerRowMapper(new SignalInformationMapper());
+                .registerRowMapper(new SignalInformationMapper())
+                .registerRowMapper(new BeaconRateMapper());
 
         // Run migrations against underlying JDBC connection.
         liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(jdbi.open().getConnection()));

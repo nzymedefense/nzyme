@@ -4,6 +4,7 @@ import Reflux from 'reflux';
 import numeral from "numeral";
 import SSID from "./SSID";
 import SignalIndex from "./SignalIndex";
+import BeaconRate from "./details/BeaconRate";
 
 class SSIDRow extends Reflux.Component {
 
@@ -64,6 +65,7 @@ class SSIDRow extends Reflux.Component {
                 <td><strong>{this.props.channelNumber}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{this._printSecurity()}</td>
+                <td><BeaconRate rate={c.beacon_rate} /></td>
                 <td><SignalIndex channel={this.props.channel} ssid={this.props.ssid} /></td>
                 <td className={c.fingerprints.length > 2 ? "text-danger" : ""}>
                     1 <a href="#">Show All</a>

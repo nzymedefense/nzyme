@@ -64,8 +64,9 @@ public class SignalIndexManager {
                 return AverageSignalIndex.create(null, false, isTraining());
             }
 
-            if (avg < 1) {
-                avg = 1.0F;
+            // A minimum buffer.
+            if (avg < 0.1) {
+                avg = 0.1F;
             }
 
             if (basedOnSize < MINIMUM_DELTA_STATE_BASE) {

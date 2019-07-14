@@ -58,7 +58,7 @@ class SimpleLineChart extends React.Component {
             font: { size: 11 },
             namelength: -1
           },
-          connectgaps: false,
+          connectgaps: true,
           xaxis: { fixedrange: true },
           yaxis: { fixedrange: true }
         }}
