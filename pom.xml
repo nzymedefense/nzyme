@@ -36,6 +36,10 @@
         <jdbi.version>3.8.2</jdbi.version>
         <liquibase.version>3.6.3</liquibase.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
+
+        <nodejs.version>v12.3.1</nodejs.version>
+        <yarn.version>v1.16.0</yarn.version>
+        <skip.web.build>false</skip.web.build>
     </properties>
 
     <dependencies>
@@ -208,6 +212,10 @@
                 <includes>
                     <include>**/*.p12</include>
                 </includes>
+            </resource>
+            <resource>
+                <directory>web-interface/target/web/build</directory>
+                <targetPath>web-interface/assets</targetPath>
             </resource>
         </resources>
 
@@ -431,5 +439,86 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>web-interface-build</id>
+            <activation>
+                <property>
+                    <name>!skip.web.build</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>web-interface</directory>
+                                    <includes>
+                                        <include>target/**/*</include>
+                                        <include>node_modules/**/*</include>
+                                    </includes>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+
+                        <configuration>
+                            <workingDirectory>web-interface</workingDirectory>
+                            <nodeVersion>${nodejs.version}</nodeVersion>
+                            <yarnVersion>${yarn.version}</yarnVersion>
+                        </configuration>
+
+                        <executions>
+                            <execution>
+                                <id>install node and yarn</id>
+                                <goals>
+                                    <goal>install-node-and-yarn</goal>
+                                </goals>
+                            </execution>
+
+                            <execution>
+                                <id>yarn install</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>install</arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>yarn run build</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>run build</arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>yarn run check-production-build</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>run check-production-build</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

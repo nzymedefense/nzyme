@@ -11,4 +11,6 @@ target/
 nzyme.db
 nzyme.db-journal
 
+web-interface/node
+
 src/main/resources/git.properties
