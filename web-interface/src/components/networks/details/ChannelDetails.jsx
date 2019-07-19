@@ -169,6 +169,8 @@ class ChannelDetails extends Reflux.Component {
                             title="Beacon Rate"
                             width={1100}
                             height={200}
+                            customMarginLeft={60}
+                            customMarginRight={60}
                             finalData={this._formatBeaconRateHistory(this.props.channel.beacon_rate_history)}
                         />
                     </div>
@@ -180,6 +182,8 @@ class ChannelDetails extends Reflux.Component {
                             title="Signal Quality and Expected Delta"
                             width={1100}
                             height={200}
+                            customMarginLeft={60}
+                            customMarginRight={60}
                             finalData={this._formatSignalQualityHistory(this.props.channel.signal_history)}
                         />
                     </div>
@@ -191,6 +195,8 @@ class ChannelDetails extends Reflux.Component {
                             title="Signal Index"
                             width={1100}
                             height={200}
+                            customMarginLeft={60}
+                            customMarginRight={60}
                             finalData={this._formatSignalIndexHistory(this.props.channel.signal_history)}
                         />
                     </div>

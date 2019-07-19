@@ -39,6 +39,9 @@ class SimpleLineChart extends React.Component {
           ];
       }
 
+      let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25;
+      let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0;
+
     return (
       <Plot
         data={finalData}
@@ -46,7 +49,7 @@ class SimpleLineChart extends React.Component {
           width: this.props.width,
           height: this.props.height,
           font: { family: "'Inconsolata', monospace", size: 10 },
-          margin: { l: 25, r: 0, b: 50, t: 25, pad: 0 },
+          margin: { l: marginLeft, r: marginRight, b: 50, t: 25, pad: 0 },
           title: { text: this.props.title },
           paper_bgcolor: "#0c0d16",
           plot_bgcolor: "#0c0d16",
