@@ -214,7 +214,7 @@
                 </includes>
             </resource>
             <resource>
-                <directory>web-interface/target/web/build</directory>
+                <directory>web-interface/build</directory>
                 <targetPath>web-interface/assets</targetPath>
             </resource>
         </resources>
