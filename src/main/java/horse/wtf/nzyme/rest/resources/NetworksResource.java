@@ -47,13 +47,13 @@ public class NetworksResource {
             "AVG(expected_delta_upper) AS avg_expected_delta_upper FROM signal_index_history " +
             "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-1 day') " +
             "AND signal_index NOT NULL AND signal_quality NOT NULL " +
-            "GROUP BY strftime('%Y%m%d%H0', created_at)+strftime('%M', created_at) " +
+            "GROUP BY strftime('%Y%m%d%H%M', created_at) " +
             "ORDER BY created_at";
 
     public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT created_at, channel, AVG(beacon_rate) AS avg_beacon_rate " +
             "FROM beacon_rate_history " +
             "WHERE bssid = ? AND ssid = ? AND channel = ? " +
-            "GROUP BY strftime('%Y%m%d%H0', created_at)+strftime('%M', created_at) " +
+            "GROUP BY strftime('%Y%m%d%H%M', created_at) " +
             "ORDER BY created_at;";
 
     @Inject
