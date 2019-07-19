@@ -35,11 +35,10 @@ public class MeasurementsCleaner extends Periodical {
 
     @Override
     protected void execute() {
-        DateTime limit = new DateTime().minusDays(1);
-        LOG.debug("Deleting all measurements older than <{}>.", limit);
+        LOG.debug("Retention cleaning measurements.");
 
         nzyme.getDatabase().useHandle(handle -> {
-            handle.execute("DELETE FROM measurements WHERE created_at < ?", limit);
+            handle.execute("DELETE FROM measurements WHERE created_at < DATETIME('now', '-1 day')");
         });
     }
 

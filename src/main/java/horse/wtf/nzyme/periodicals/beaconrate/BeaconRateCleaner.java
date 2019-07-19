@@ -37,11 +37,10 @@ public class BeaconRateCleaner extends Periodical {
     @Override
     protected void execute() {
         try {
-            DateTime limit = new DateTime().minusDays(1);
-            LOG.debug("Deleting all beacon rate values older than <{}>.", limit);
+            LOG.debug("Retention cleaning beacon rate values.");
 
             database.useHandle(handle -> {
-                handle.execute("DELETE FROM beacon_rate_history WHERE created_at < ?", limit);
+                handle.execute("DELETE FROM beacon_rate_history WHERE created_at < DATETIME('now', '-1 day')");
             });
         } catch(Exception e) {
             LOG.error("Could not retention clean beacon rate information.", e);

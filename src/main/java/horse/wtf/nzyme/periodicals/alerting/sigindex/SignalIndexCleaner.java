@@ -45,11 +45,10 @@ public class SignalIndexCleaner extends Periodical {
         Timer.Context ctx = timer.time();
 
         try {
-            DateTime limit = new DateTime().minusDays(1);
-            LOG.debug("Deleting all signal index values older than <{}>.", limit);
+            LOG.debug("Retention cleaning signal index values.");
 
             nzyme.getDatabase().useHandle(handle -> {
-                handle.execute("DELETE FROM signal_index_history WHERE created_at < ?", limit);
+                handle.execute("DELETE FROM signal_index_history WHERE created_at < DATETIME('now', '-1 day')");
             });
         } catch(Exception e) {
             LOG.error("Could not retention clean signal index information.", e);
