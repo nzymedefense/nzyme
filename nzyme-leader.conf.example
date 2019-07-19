@@ -91,7 +91,7 @@ graylog_uplinks: [
 }
 
 tuning_parameters {
-  signal_quality_table_size_minutes: 5
+  signal_quality_table_size_minutes: 2
   expected_signal_delta_modifier: 3.0
   anomaly_alert_lookback_minutes: 3
   anomaly_alert_trigger_ratio: 0.8
