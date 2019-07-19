@@ -92,6 +92,8 @@ public class VersioncheckThread extends Periodical {
                             versionResponse.releasedAt + ").";
                     LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
                 }
+
+                LOG.info("Successfully completed version check. Everything seems up to date.");
             } else {
                 LOG.error("Could not check for newest probe version. Received empty response. Please consult the README.");
             }
