@@ -88,7 +88,7 @@ graylog_uplinks: [
   known_bandit_fingerprint
   unexpected_fingerprint
   signal_anomaly
-}
+]
 
 tuning_parameters {
   signal_quality_table_size_minutes: 2
