@@ -9,5 +9,6 @@ logs/
 target/
 
 nzyme.db
+nzyme.db-journal
 
 src/main/resources/git.properties
