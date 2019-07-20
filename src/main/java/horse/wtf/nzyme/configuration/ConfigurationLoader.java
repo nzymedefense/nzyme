@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -83,6 +84,9 @@ public class ConfigurationLoader {
                 parsePythonExecutable(),
                 parsePythonScriptDirectory(),
                 parsePythonScriptPrefix(),
+                parseUseTls(),
+                parseTlsCertificatePath(),
+                parseTlsKeyPath(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
                 parseDot11Monitors(),
@@ -129,6 +133,18 @@ public class ConfigurationLoader {
 
     private boolean parseFetchOUIsEnabled() {
         return general.getBoolean(ConfigurationKeys.FETCH_OUIS);
+    }
+
+    private boolean parseUseTls() {
+        return interfaces.getBoolean(ConfigurationKeys.USE_TLS);
+    }
+
+    private Path parseTlsCertificatePath() {
+        return new File(interfaces.getString(ConfigurationKeys.TLS_CERTIFICATE_PATH)).toPath();
+    }
+
+    private Path parseTlsKeyPath() {
+        return new File(interfaces.getString(ConfigurationKeys.TLS_KEY_PATH)).toPath();
     }
 
     private URI parseRestListenUri() {
@@ -336,6 +352,47 @@ public class ConfigurationLoader {
             throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
 
+        // TLS, if TLS is enabled.
+        if (parseUseTls()) {
+            // URI schemes must be HTTPS if TLS is enabled.
+            if (!parseRestListenUri().getScheme().equals("https")) {
+                throw new InvalidConfigurationException("TLS is enabled but [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] is not configured to use HTTPS.");
+            }
+
+            if (!parseHttpExternalUri().getScheme().equals("https")) {
+                throw new InvalidConfigurationException("TLS is enabled but [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] is not configured to use HTTPS.");
+            }
+
+            try {
+                Path cert = parseTlsCertificatePath();
+                if (!cert.toFile().canRead()) {
+                    throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_CERTIFICATE_PATH + "] points to a file that is not readable.");
+                }
+            } catch(Exception e) {
+                LOG.error(e);
+                throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_CERTIFICATE_PATH + "] cannot be parsed into a path. Make sure it is correct.");
+            }
+
+            try {
+                Path key = parseTlsKeyPath();
+                if (!key.toFile().canRead()) {
+                    throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] points to a file that is not readable.");
+                }
+            } catch(Exception e) {
+                LOG.error(e);
+                throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] cannot be parsed into a path. Make sure it is correct.");
+            }
+        } else {
+            // URI schemes must be HTTP if TLS is DISABLED..
+            if (!parseRestListenUri().getScheme().equals("http")) {
+                throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] is not configured to use HTTP. Do not use HTTPS.");
+            }
+
+            if (!parseHttpExternalUri().getScheme().equals("http")) {
+                throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] is not configured to use HTTP. Do not use HTTPS.");
+            }
+        }
+
         // All channels are all integers, larger than 0.
         validateChannelList(ConfigurationKeys.DOT11_MONITORS);
 
@@ -480,6 +537,10 @@ public class ConfigurationLoader {
 
         public InvalidConfigurationException(String msg) {
             super(msg);
+        }
+
+        public InvalidConfigurationException(String msg, Throwable e) {
+            super(msg, e);
         }
 
     }

@@ -48,6 +48,9 @@ public class ConfigurationKeys {
     public static final String TRAINING_PERIOD_SECONDS = "training_period_seconds";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String HTTP_EXTERNAL_URI = "http_external_uri";
+    public static final String USE_TLS = "use_tls";
+    public static final String TLS_CERTIFICATE_PATH = "tls_certificate_path";
+    public static final String TLS_KEY_PATH = "tls_key_path";
     public static final String SSID = "ssid";
     public static final String BSSIDS = "bssids";
     public static final String SECURITY = "security";

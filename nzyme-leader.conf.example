@@ -34,6 +34,9 @@ general: {
 interfaces: {
   rest_listen_uri: "http://127.0.0.1:22900/"
   http_external_uri: "http://127.0.0.1:22900/"
+  use_tls: false
+  tls_certificate_path: none
+  tls_key_path: none
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)

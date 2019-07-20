@@ -7,6 +7,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,10 @@ public abstract class Configuration {
 
     public abstract URI restListenUri();
     public abstract URI httpExternalUri();
+
+    public abstract boolean useTls();
+    public abstract Path tlsCertificatePath();
+    public abstract Path tlsKeyPath();
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
     public abstract List<Dot11NetworkDefinition> dot11Networks();
@@ -49,7 +54,30 @@ public abstract class Configuration {
         return ssids.build();
     }
 
-    public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, int signalQualityTableSizeMinutes, double expectedSignalDeltaModifier, int anomalyAlertLookbackMinutes, double anomalyAlertTriggerRatio, List<GraylogAddress> graylogUplinks) {
+    public static Configuration create(boolean versionchecksEnabled,
+                                       boolean fetchOuis,
+                                       Role role,
+                                       String nzymeId,
+                                       String databasePath,
+                                       String pythonExecutable,
+                                       String pythonScriptDirectory,
+                                       String pythonScriptPrefix,
+                                       boolean useTls,
+                                       Path tlsCertificatePath,
+                                       Path tlsKeyPath,
+                                       URI restListenUri,
+                                       URI httpExternalUri,
+                                       List<Dot11MonitorDefinition> dot11Monitors,
+                                       List<Dot11NetworkDefinition> dot11Networks,
+                                       List<Alert.TYPE_WIDE> dot11Alerts,
+                                       int alertingRetentionPeriodMinutes,
+                                       int alertingTrainingPeriodSeconds,
+                                       Map<String, BanditFingerprintDefinition> knownBanditFingerprints,
+                                       int signalQualityTableSizeMinutes,
+                                       double expectedSignalDeltaModifier,
+                                       int anomalyAlertLookbackMinutes,
+                                       double anomalyAlertTriggerRatio,
+                                       List<GraylogAddress> graylogUplinks) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -59,6 +87,9 @@ public abstract class Configuration {
                 .pythonExecutable(pythonExecutable)
                 .pythonScriptDirectory(pythonScriptDirectory)
                 .pythonScriptPrefix(pythonScriptPrefix)
+                .useTls(useTls)
+                .tlsCertificatePath(tlsCertificatePath)
+                .tlsKeyPath(tlsKeyPath)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
                 .dot11Monitors(dot11Monitors)
@@ -100,6 +131,12 @@ public abstract class Configuration {
         public abstract Builder restListenUri(URI restListenUri);
 
         public abstract Builder httpExternalUri(URI httpExternalUri);
+
+        public abstract Builder useTls(boolean useTls);
+
+        public abstract Builder tlsCertificatePath(Path tlsCertificatePath);
+
+        public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
         public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
 

@@ -13,4 +13,7 @@ nzyme.db-journal
 
 web-interface/node
 
+openssl.cnf
+*.pem
+
 src/main/resources/git.properties

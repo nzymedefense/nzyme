@@ -57,21 +57,34 @@ import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
+import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import sun.misc.Signal;
 
+import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class NzymeImpl implements Nzyme {
 
@@ -174,6 +187,7 @@ public class NzymeImpl implements Nzyme {
         }
 
         // Spin up REST API and web interface.
+        java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new InjectionBinder(this));
@@ -193,8 +207,23 @@ public class NzymeImpl implements Nzyme {
         // Register web interface asset resources.
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
-        java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
-        httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
+        if(configuration.useTls()) {
+            try {
+                httpServer = GrizzlyHttpServerFactory.createHttpServer(
+                        configuration.restListenUri(),
+                        resourceConfig,
+                        true,
+                        SSLEngineConfiguratorBuilder.build(
+                                configuration.tlsCertificatePath(),
+                                configuration.tlsKeyPath()
+                        )
+                );
+            } catch (GeneralSecurityException | IOException e) {
+                throw new RuntimeException("Could not initialize secure web server.", e);
+            }
+        } else {
+            httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
+        }
         LOG.info("Started web interface and REST API at [{}].", configuration.restListenUri());
 
         // Start server.

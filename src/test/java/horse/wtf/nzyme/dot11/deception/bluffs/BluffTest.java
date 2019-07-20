@@ -5,7 +5,9 @@ import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.ConfigurationLoader;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,9 @@ public class BluffTest {
                 pythonExecutable,
                 pythonScriptDirectory,
                 pythonScriptPrefix,
+                false,
+                new File("").toPath(),
+                new File("").toPath(),
                 URI.create("http://localhost:23444"),
                 URI.create("http://localhost:23444"),
                 Collections.emptyList(),
