@@ -1,7 +1,6 @@
 import Reflux from 'reflux';
 
 import PingActions from "../actions/PingActions";
-import {API_ROOT} from "../util/API";
 
 var axios = require('axios');
 
@@ -15,9 +14,9 @@ class PingStore extends Reflux.Store {
   }
 
   static buildUri(uri) {
-    let stableRoot = API_ROOT;
-    if(API_ROOT.slice(-1) !== '/') {
-      stableRoot = API_ROOT + "/";
+    let stableRoot = window.appConfig.nzymeApiUri;
+    if(window.appConfig.nzymeApiUri.slice(-1) !== '/') {
+      stableRoot = window.appConfig.nzymeApiUri + "/";
     }
 
     let stableUri = uri;

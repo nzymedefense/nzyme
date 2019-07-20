@@ -52,6 +52,7 @@ import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
+import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
@@ -180,7 +181,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
 
-        // Register resources.
+        // Register REST API resources.
         resourceConfig.register(PingResource.class);
         resourceConfig.register(AlertsResource.class);
         resourceConfig.register(ProbesResource.class);
@@ -188,6 +189,9 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(StatisticsResource.class);
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
+
+        // Register web interface asset resources.
+        resourceConfig.register(WebInterfaceAssetsResource.class);
 
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);

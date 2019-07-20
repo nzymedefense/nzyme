@@ -1,15 +1,13 @@
-import {API_ROOT} from "./API";
 import {notify} from "react-notify-toast";
-import Routes from "./Routes";
 
 var axios = require('axios');
 
 const RESTClient = {
 
   buildUri(uri) {
-    let stableRoot = API_ROOT;
-    if(API_ROOT.slice(-1) !== '/') {
-      stableRoot = API_ROOT + "/";
+    let stableRoot = window.appConfig.nzymeApiUri;
+    if(window.appConfig.nzymeApiUri.slice(-1) !== '/') {
+      stableRoot = window.appConfig.nzymeApiUri + "/";
     }
 
     let stableUri = uri;

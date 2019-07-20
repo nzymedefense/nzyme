@@ -18,7 +18,12 @@
 package horse.wtf.nzyme.rest;
 
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.rest.web.AssetManifest;
+import horse.wtf.nzyme.rest.web.IndexHtmlGenerator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import javax.activation.MimetypesFileTypeMap;
+import java.io.IOException;
 
 public class InjectionBinder extends AbstractBinder {
 
@@ -31,6 +36,13 @@ public class InjectionBinder extends AbstractBinder {
     @Override
     protected void configure() {
         bind(nzyme).to(Nzyme.class);
+        bind(new MimetypesFileTypeMap()).to(MimetypesFileTypeMap.class);
+
+        try {
+            bind(new IndexHtmlGenerator(nzyme.getConfiguration(), new AssetManifest())).to(IndexHtmlGenerator.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not bind IndexHtmlGenerator.", e);
+        }
     }
 
 }

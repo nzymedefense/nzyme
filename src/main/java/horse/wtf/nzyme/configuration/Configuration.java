@@ -26,6 +26,7 @@ public abstract class Configuration {
     public abstract String pythonScriptPrefix();
 
     public abstract URI restListenUri();
+    public abstract URI httpExternalUri();
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
     public abstract List<Dot11NetworkDefinition> dot11Networks();
@@ -48,7 +49,7 @@ public abstract class Configuration {
         return ssids.build();
     }
 
-    public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, int signalQualityTableSizeMinutes, double expectedSignalDeltaModifier, int anomalyAlertLookbackMinutes, double anomalyAlertTriggerRatio, List<GraylogAddress> graylogUplinks) {
+    public static Configuration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, Map<String, BanditFingerprintDefinition> knownBanditFingerprints, int signalQualityTableSizeMinutes, double expectedSignalDeltaModifier, int anomalyAlertLookbackMinutes, double anomalyAlertTriggerRatio, List<GraylogAddress> graylogUplinks) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -59,6 +60,7 @@ public abstract class Configuration {
                 .pythonScriptDirectory(pythonScriptDirectory)
                 .pythonScriptPrefix(pythonScriptPrefix)
                 .restListenUri(restListenUri)
+                .httpExternalUri(httpExternalUri)
                 .dot11Monitors(dot11Monitors)
                 .dot11Networks(dot11Networks)
                 .dot11Alerts(dot11Alerts)
@@ -96,6 +98,8 @@ public abstract class Configuration {
         public abstract Builder pythonScriptPrefix(String pythonScriptPrefix);
 
         public abstract Builder restListenUri(URI restListenUri);
+
+        public abstract Builder httpExternalUri(URI httpExternalUri);
 
         public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
 

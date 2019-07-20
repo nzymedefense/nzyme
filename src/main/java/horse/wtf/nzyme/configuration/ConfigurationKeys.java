@@ -47,6 +47,7 @@ public class ConfigurationKeys {
     public static final String CLEAN_AFTER_MINUTES = "clean_after_minutes";
     public static final String TRAINING_PERIOD_SECONDS = "training_period_seconds";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
+    public static final String HTTP_EXTERNAL_URI = "http_external_uri";
     public static final String SSID = "ssid";
     public static final String BSSIDS = "bssids";
     public static final String SECURITY = "security";

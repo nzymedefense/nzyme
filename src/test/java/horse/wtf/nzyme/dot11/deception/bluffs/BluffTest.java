@@ -25,6 +25,7 @@ public class BluffTest {
                 pythonScriptDirectory,
                 pythonScriptPrefix,
                 URI.create("http://localhost:23444"),
+                URI.create("http://localhost:23444"),
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),

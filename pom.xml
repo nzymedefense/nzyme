@@ -36,6 +36,7 @@
         <jdbi.version>3.8.2</jdbi.version>
         <liquibase.version>3.6.3</liquibase.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
+        <jmte.version>5.0.0</jmte.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -194,6 +195,11 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>${sqlitejdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.floreysoft</groupId>
+            <artifactId>jmte</artifactId>
+            <version>${jmte.version}</version>
         </dependency>
     </dependencies>
 

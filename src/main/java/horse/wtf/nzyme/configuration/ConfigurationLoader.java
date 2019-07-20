@@ -84,6 +84,7 @@ public class ConfigurationLoader {
                 parsePythonScriptDirectory(),
                 parsePythonScriptPrefix(),
                 parseRestListenUri(),
+                parseHttpExternalUri(),
                 parseDot11Monitors(),
                 parseDot11Networks(),
                 parseDot11Alerts(),
@@ -132,6 +133,10 @@ public class ConfigurationLoader {
 
     private URI parseRestListenUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.REST_LISTEN_URI));
+    }
+
+    private URI parseHttpExternalUri() {
+        return URI.create(interfaces.getString(ConfigurationKeys.HTTP_EXTERNAL_URI));
     }
 
     private Integer parseAlertingRetentionPeriodMinutes() {
@@ -268,6 +273,7 @@ public class ConfigurationLoader {
         expect(alerting, ConfigurationKeys.CLEAN_AFTER_MINUTES, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
         expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
         expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
+        expect(interfaces, ConfigurationKeys.HTTP_EXTERNAL_URI, ConfigurationKeys.INTERFACES, String.class);
         expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
         expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
@@ -320,6 +326,14 @@ public class ConfigurationLoader {
         } catch(Exception e) {
             LOG.error(e);
             throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
+        }
+
+        // HTTP external URI can be parsed into a URI.
+        try {
+            parseHttpExternalUri();
+        } catch(Exception e) {
+            LOG.error(e);
+            throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
 
         // All channels are all integers, larger than 0.

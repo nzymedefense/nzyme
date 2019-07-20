@@ -30,9 +30,10 @@ general: {
   versionchecks: true
 }
 
-# REST API configuration.
+# Web interface and REST API configuration.
 interfaces: {
   rest_listen_uri: "http://127.0.0.1:22900/"
+  http_external_uri: "http://127.0.0.1:22900/"
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)
