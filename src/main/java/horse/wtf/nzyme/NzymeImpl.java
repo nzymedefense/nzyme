@@ -62,11 +62,16 @@ import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.CompressionConfig;
+import org.glassfish.grizzly.http.GZipContentEncoding;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.message.DeflateEncoder;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.EncodingFilter;
 import sun.misc.Signal;
 
 import javax.net.ssl.SSLContext;
@@ -204,6 +209,9 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
 
+        // Enable GZIP.
+        resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
+
         // Register web interface asset resources.
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
@@ -224,6 +232,7 @@ public class NzymeImpl implements Nzyme {
         } else {
             httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
         }
+
         LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
                 configuration.restListenUri(),
                 configuration.httpExternalUri());
