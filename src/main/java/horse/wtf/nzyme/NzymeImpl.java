@@ -224,7 +224,9 @@ public class NzymeImpl implements Nzyme {
         } else {
             httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
         }
-        LOG.info("Started web interface and REST API at [{}].", configuration.restListenUri());
+        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
+                configuration.restListenUri(),
+                configuration.httpExternalUri());
 
         // Start server.
         try {
