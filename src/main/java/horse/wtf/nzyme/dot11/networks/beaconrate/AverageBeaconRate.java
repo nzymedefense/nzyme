@@ -21,11 +21,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class AverageBeaconRate {
 
     @JsonProperty("rate")
-    public abstract float rate();
+    @Nullable
+    public abstract Float rate();
 
     @JsonProperty("channel")
     public abstract int channel();
@@ -33,7 +36,7 @@ public abstract class AverageBeaconRate {
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static AverageBeaconRate create(float rate, int channel, DateTime createdAt) {
+    public static AverageBeaconRate create(Float rate, int channel, DateTime createdAt) {
         return builder()
                 .rate(rate)
                 .channel(channel)
@@ -47,7 +50,7 @@ public abstract class AverageBeaconRate {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder rate(float rate);
+        public abstract Builder rate(Float rate);
 
         public abstract Builder channel(int channel);
 

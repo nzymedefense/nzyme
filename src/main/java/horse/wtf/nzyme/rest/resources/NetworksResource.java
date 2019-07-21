@@ -27,6 +27,7 @@ import horse.wtf.nzyme.rest.responses.networks.BSSIDsResponse;
 import horse.wtf.nzyme.rest.responses.networks.SSIDResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -90,6 +91,10 @@ public class NetworksResource {
                                     .list()
                     );
 
+
+                    // Always have charts go from now to -24h.
+                    sigInfoHistory.set(0, createEmptySignalInformation(channel.channelNumber(), DateTime.now().minusDays(1)));
+                    sigInfoHistory.add(createEmptySignalInformation(channel.channelNumber(), DateTime.now()));
                     channel.setSignalHistory(sigInfoHistory);
                 }
 
@@ -103,6 +108,10 @@ public class NetworksResource {
                                 .mapTo(AverageBeaconRate.class)
                                 .list()
                     );
+
+                    // Always have charts go from now to -24h.
+                    beaconRateHistory.set(0, createEmptyAverageBeaconRate(channel.channelNumber(), DateTime.now().minusDays(1)));
+                    beaconRateHistory.add(createEmptyAverageBeaconRate(channel.channelNumber(), DateTime.now()));
 
                     channel.setBeaconRateHistory(beaconRateHistory);
                 }
@@ -130,6 +139,20 @@ public class NetworksResource {
         }
 
         return Response.ok().build();
+    }
+
+    private final SignalInformation createEmptySignalInformation(int channel, DateTime at) {
+        return SignalInformation.create(channel, at,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private final AverageBeaconRate createEmptyAverageBeaconRate(int channel, DateTime at) {
+        return AverageBeaconRate.create(0.0F, channel, at);
     }
 
 }

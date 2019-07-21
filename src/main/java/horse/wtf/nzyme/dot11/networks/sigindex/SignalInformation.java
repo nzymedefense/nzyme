@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class SignalInformation {
 
@@ -28,24 +30,31 @@ public abstract class SignalInformation {
     public abstract int channel();
 
     @JsonProperty("created_at")
+    @Nullable
     public abstract DateTime createdAt();
 
     @JsonProperty("average_signal_index")
+    @Nullable
     public abstract Float averageSignalIndex();
 
     @JsonProperty("average_signal_index_threshold")
+    @Nullable
     public abstract Float averageSignalIndexThreshold();
 
     @JsonProperty("average_signal_quality")
+    @Nullable
     public abstract Float averageSignalQuality();
 
     @JsonProperty("average_signal_stddev")
+    @Nullable
     public abstract Float averageSignalStddev();
 
     @JsonProperty("average_expected_delta_lower")
+    @Nullable
     public abstract Float averageExpectedDeltaLower();
 
     @JsonProperty("average_expected_delta_upper")
+    @Nullable
     public abstract Float averageExpectedDeltaUpper();
 
     public static SignalInformation create(int channel, DateTime createdAt, Float averageSignalIndex, Float averageSignalIndexThreshold, Float averageSignalQuality, Float averageSignalStddev, Float averageExpectedDeltaLower, Float averageExpectedDeltaUpper) {
