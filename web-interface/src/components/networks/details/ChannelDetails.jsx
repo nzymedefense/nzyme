@@ -65,7 +65,7 @@ class ChannelDetails extends Reflux.Component {
         const avgSignalIndex = {
             x: [],
             y: [],
-            type: "scatter",
+            type: "bar",
             name: "Signal Index",
             line: {width: 1, shape: "linear", color: "#2983fe"}
         };
