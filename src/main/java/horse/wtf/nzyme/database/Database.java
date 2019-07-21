@@ -36,9 +36,19 @@ public class Database {
                 .registerRowMapper(new BeaconRateMapper());
 
         // Run migrations against underlying JDBC connection.
-        liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(jdbi.open().getConnection()));
-        Liquibase liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
-        liquibase.update(new Contexts(), new LabelExpression());
+        JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
+        try {
+            liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+            Liquibase liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
+            liquibase.update(new Contexts(), new LabelExpression());
+        } finally {
+            connection.close();
+        }
+
+        // Set busy timeout.
+        useHandle(handle -> {
+            handle.execute("PRAGMA busy_timeout = 10000;");
+        });
     }
 
     public <R, X extends Exception> R withHandle(HandleCallback<R, X> callback) throws X {
