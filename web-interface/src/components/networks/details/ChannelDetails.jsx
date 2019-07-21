@@ -101,7 +101,7 @@ class ChannelDetails extends Reflux.Component {
         const avgBeaconRate = {
             x: [],
             y: [],
-            type: "scatter",
+            type: "bar",
             name: "Beacon Rate",
             line: {width: 1, shape: "linear", color: "#2983fe"}
         };
