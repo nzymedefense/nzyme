@@ -8,7 +8,7 @@ class SimpleLineChart extends React.Component {
     super(props);
 
     this.state = {
-      data: props.data
+        data: props.data
     };
   }
 
@@ -17,58 +17,57 @@ class SimpleLineChart extends React.Component {
   }
 
   render() {
-      let x = [];
-      let y = [];
+    let x = [];
+    let y = [];
 
-      const data = this.state.data;
+    const data = this.state.data;
 
-      let finalData = this.props.finalData;
-      if (!finalData) {
-          Object.keys(data).forEach(function (key) {
-              x.push(new Date(key));
-              y.push(data[key]);
-          });
+    let finalData = this.props.finalData;
+    if (!finalData) {
+        Object.keys(data).forEach(function (key) {
+            x.push(new Date(key));
+            y.push(data[key]);
+        });
 
-          finalData = [
-              {
-                  x: x,
-                  y: y,
-                  type: "scatter",
-                  line: {width: 1, shape: "linear", color: "#2983fe"}
-              }
-          ];
-      }
+        finalData = [
+            {
+                x: x,
+                y: y,
+                type: "scatter",
+                line: {width: 1, shape: "linear", color: "#2983fe"},
+            }
+        ];
+    }
 
-      let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25;
-      let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0;
+    let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25;
+    let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0;
 
     return (
-      <Plot
-        data={finalData}
-        layout={{
-          width: this.props.width,
-          height: this.props.height,
-          font: { family: "'Inconsolata', monospace", size: 10 },
-          margin: { l: marginLeft, r: marginRight, b: 50, t: 25, pad: 0 },
-          title: { text: this.props.title },
-          paper_bgcolor: "#0c0d16",
-          plot_bgcolor: "#0c0d16",
-          showlegend: false,
-          dragmode: false,
-          clickmode: "none",
-          hovermode: "x",
-          hoverlabel: {
-            font: { size: 11 },
-            namelength: -1
-          },
-          connectgaps: true,
-          xaxis: { fixedrange: true },
-          yaxis: { fixedrange: true }
-        }}
-        config={{
-          displayModeBar: false
-        }}
-      />
+        <Plot
+            data={finalData}
+            layout={{
+                width: this.props.width,
+                height: this.props.height,
+                font: { family: "'Inconsolata', monospace", size: 10 },
+                margin: { l: marginLeft, r: marginRight, b: 50, t: 25, pad: 0 },
+                title: { text: this.props.title },
+                paper_bgcolor: "#0c0d16",
+                plot_bgcolor: "#0c0d16",
+                showlegend: false,
+                dragmode: false,
+                clickmode: "none",
+                hovermode: "x",
+                hoverlabel: {
+                    font: { size: 11 },
+                    namelength: -1
+                },
+                xaxis: { fixedrange: true },
+                yaxis: { fixedrange: true }
+            }}
+            config={{
+                displayModeBar: false
+            }}
+        />
     )
   }
 
