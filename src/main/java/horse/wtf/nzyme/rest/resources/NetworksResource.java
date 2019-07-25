@@ -93,7 +93,12 @@ public class NetworksResource {
 
 
                     // Always have charts go from now to -24h.
-                    sigInfoHistory.set(0, createEmptySignalInformation(channel.channelNumber(), DateTime.now().minusDays(1)));
+                    DateTime yesterday = DateTime.now().minusDays(1);
+                    if (!sigInfoHistory.isEmpty()) {
+                        sigInfoHistory.set(0, createEmptySignalInformation(channel.channelNumber(), yesterday));
+                    } else {
+                        sigInfoHistory.add(createEmptySignalInformation(channel.channelNumber(), yesterday));
+                    }
                     sigInfoHistory.add(createEmptySignalInformation(channel.channelNumber(), DateTime.now()));
                     channel.setSignalHistory(sigInfoHistory);
                 }
