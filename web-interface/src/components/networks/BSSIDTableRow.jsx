@@ -2,6 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 
 import SSIDTable from "./SSIDTable";
+import BSSIDTableRowTop from "./BSSIDTableRowTop";
 
 class BSSIDTableRow extends Reflux.Component {
 
@@ -10,101 +11,9 @@ class BSSIDTableRow extends Reflux.Component {
 
         this.state = {
             displayDetails: false
-        }
+        };
 
         this._bssidClick = this._bssidClick.bind(this);
-    }
-
-    _printSSIDs() {
-        let x = "";
-        const ssids = this.props.bssid.ssids;
-
-        let total = Object.keys(ssids).length;
-
-        Object.keys(ssids).forEach(function (key, ix) {
-            let ssid = ssids[key].name.trim();
-
-            x += ssid;
-
-            if(ix < total-1) {
-                x += ", ";
-            }
-        });
-
-        if (x.length > 50) {
-            x = x.slice(0, 50) + " ...";
-        }
-
-        return x;
-    }
-
-    _signalQualityColor(quality) {
-        if (quality >= 90) {
-            return "text-success";
-        }
-
-        if (quality >= 50) {
-            return "text-warning";
-        }
-
-        if (quality < 50) {
-            return "text-danger";
-        }
-    }
-
-    static _decideFingerprintingStatus(status) {
-        if (status) {
-            return (
-                <i className="fas fa-check-square text-success" title="Fingerprinting reports no issues." />
-            )
-        } else {
-            return (
-                <i className="fas fa-exclamation-triangle text-danger" title="More than two fingerprints recorded. Consult nzyme documentation." />
-            )
-        }
-    }
-
-    static _decideWPSStatus(status) {
-        if (status) {
-            return (
-                <i className="fas fa-check-square text-warning" title="WPS is enabled on this station." />
-            )
-        } else {
-            return (
-                <i className="fas fa-times-circle text-muted" title="WPS is not enabled on this station." />
-            )
-        }
-    }
-
-    _printSecurity() {
-        let x = "";
-        const ssids = this.props.bssid.ssids;
-        const total = Object.keys(ssids).length;
-
-        console.log(total);
-
-        Object.keys(ssids).forEach(function (key, ix) {
-            const totalModes = ssids[key].security.length;
-            ssids[key].security.forEach(function(security, ix) {
-                x += security.wpa_mode;
-
-                if(ix < totalModes-1) {
-                    x += ", ";
-                }
-            });
-
-            if(ix+1 < total) {
-                x += ", ";
-            }
-        });
-
-        if (x === "NONE") {
-            return (
-                <span className="text-warning">NONE</span>
-            )
-        }
-
-        return x;
     }
 
     _bssidClick(e) {
@@ -117,27 +26,23 @@ class BSSIDTableRow extends Reflux.Component {
     render() {
         const self = this;
 
-        return (
-            <React.Fragment>
-                <tr>
-                    <td><a href="#" title={this.props.bssid.last_seen} onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
-                    <td>
-                        <span className={this._signalQualityColor(this.props.bssid.best_recent_signal_quality)}>
-                            {this.props.bssid.best_recent_signal_quality}
-                        </span>
-                    </td>
-                    <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>
-                    <td>{this.props.bssid.oui}</td>
-                    <td>{this._printSecurity()}</td>
-                    <td>{BSSIDTableRow._decideFingerprintingStatus(this.props.bssid.fingerprinting_ok)}</td>
-                    <td>{BSSIDTableRow._decideWPSStatus(this.props.bssid.is_wps)}</td>
-                </tr>
+        if (!this.state.displayDetails) {
+            return (
+                <React.Fragment>
+                    <BSSIDTableRowTop bssid={this.props.bssid} clickHandler={this._bssidClick} />
+                </React.Fragment>
+            )
+        } else {
+            return (
+                <React.Fragment>
+                    <BSSIDTableRowTop bssid={this.props.bssid} clickHandler={this._bssidClick} />
 
-                {Object.keys(this.props.bssid.ssids).map(function (key,i) {
-                    return <SSIDTable key={i}  display={self.state.displayDetails} ssid={self.props.bssid.ssids[key]} />;
-                })}
-            </React.Fragment>
-        )
+                    {Object.keys(this.props.bssid.ssids).map(function (key,i) {
+                        return <SSIDTable key={i}  bssid={self.props.bssid.bssid} ssid={self.props.bssid.ssids[key]} />;
+                    })}
+                </React.Fragment>
+            )
+        }
     }
 
 }

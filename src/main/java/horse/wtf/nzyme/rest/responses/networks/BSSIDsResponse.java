@@ -31,15 +31,14 @@ public abstract class BSSIDsResponse {
     public abstract int total();
 
     @JsonProperty
-    public abstract List<BSSID> bssids();
+    public abstract List<BSSIDResponse> bssids();
 
-    public static BSSIDsResponse create(int total, Map<String, BSSID> bssids) {
-        List<BSSID> sortedBSSIDs = Lists.newArrayList(bssids.values());
-        Collections.sort(sortedBSSIDs, new BSSIDComparator());
+    public static BSSIDsResponse create(int total, List<BSSIDResponse> bssids) {
+        Collections.sort(bssids, new BSSIDComparator());
 
         return builder()
                 .total(total)
-                .bssids(sortedBSSIDs)
+                .bssids(bssids)
                 .build();
     }
 
@@ -51,16 +50,16 @@ public abstract class BSSIDsResponse {
     public abstract static class Builder {
         public abstract Builder total(int total);
 
-        public abstract Builder bssids(List<BSSID> bssids);
+        public abstract Builder bssids(List<BSSIDResponse> bssids);
 
         public abstract BSSIDsResponse build();
     }
 
-    private static class BSSIDComparator implements Comparator<BSSID> {
+    private static class BSSIDComparator implements Comparator<BSSIDResponse> {
 
         @Override
-        public int compare(BSSID b1, BSSID b2) {
-            return b2.bestRecentSignalQuality() - b1.bestRecentSignalQuality();
+        public int compare(BSSIDResponse b1, BSSIDResponse b2) {
+            return b2.signalQuality() - b1.signalQuality();
         }
 
     }

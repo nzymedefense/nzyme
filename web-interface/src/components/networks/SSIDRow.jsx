@@ -62,14 +62,11 @@ class SSIDRow extends Reflux.Component {
         return (
             <tr>
                 <td><SSID ssid={this.props.ssid} /></td>
-                <td><strong>{this.props.channelNumber}</strong></td>
+                <td><strong>{c.channel_number}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{this._printSecurity()}</td>
                 <td><BeaconRate rate={c.beacon_rate} /></td>
-                <td><SignalIndex channel={this.props.channel} ssid={this.props.ssid} /></td>
-                <td className={c.fingerprints.length > 2 ? "text-danger" : ""}>
-                    1 <a href="#">Show All</a>
-                </td>
+                <td><SignalIndex channel={c} ssid={this.props.ssid} /></td>
             </tr>
         )
     }

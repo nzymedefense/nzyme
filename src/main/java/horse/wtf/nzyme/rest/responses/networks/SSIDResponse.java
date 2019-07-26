@@ -21,15 +21,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.networks.SSID;
 
+import java.util.List;
+import java.util.Map;
+
 @AutoValue
 public abstract class SSIDResponse {
 
     @JsonProperty
-    public abstract SSID ssid();
+    public abstract List<SSIDSecurityResponse> security();
 
-    public static SSIDResponse create(SSID ssid) {
+    @JsonProperty
+    public abstract String bssid();
+
+    @JsonProperty("human_readable")
+    public abstract boolean humanReadable();
+
+    @JsonProperty
+    public abstract String name();
+
+    @JsonProperty
+    public abstract Map<Integer, ChannelResponse> channels();
+
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels) {
         return builder()
-                .ssid(ssid)
+                .security(security)
+                .bssid(bssid)
+                .humanReadable(humanReadable)
+                .name(name)
+                .channels(channels)
                 .build();
     }
 
@@ -39,7 +58,15 @@ public abstract class SSIDResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder ssid(SSID ssid);
+        public abstract Builder security(List<SSIDSecurityResponse> security);
+
+        public abstract Builder bssid(String bssid);
+
+        public abstract Builder humanReadable(boolean humanReadable);
+
+        public abstract Builder name(String name);
+
+        public abstract Builder channels(Map<Integer, ChannelResponse> channels);
 
         public abstract SSIDResponse build();
     }

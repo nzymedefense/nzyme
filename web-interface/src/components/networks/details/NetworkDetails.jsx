@@ -12,9 +12,10 @@ class NetworkDetails extends Reflux.Component {
 
         this.store = NetworksStore;
 
-        this.state = {
-            ssid: undefined
-        };
+        this.stateKey = props.bssid + "_" + props.ssid;
+        const state = {};
+        state[this.stateKey] = undefined;
+        this.state = state;
     }
 
     componentDidMount() {
@@ -23,16 +24,18 @@ class NetworkDetails extends Reflux.Component {
         const bssid = this.props.bssid;
         const ssid = this.props.ssid;
 
-        NetworksActions.findSSIDOnBSSID(bssid, ssid);
+        NetworksActions.findSSIDOnBSSID(bssid, ssid, true);
         setInterval(function () {
-            NetworksActions.findSSIDOnBSSID(bssid, ssid)
+            NetworksActions.findSSIDOnBSSID(bssid, ssid, true)
         }, 15000);
     }
 
     render() {
         const self = this;
 
-        if (!this.state.ssid) {
+        const ssid = this.state[this.stateKey];
+
+        if (!ssid) {
             return <LoadingSpinner />;
         } else {
             return (
@@ -41,14 +44,14 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-3">
                             <dl>
                                 <dt>BSSID</dt>
-                                <dd>{this.state.ssid.bssid}</dd>
+                                <dd>{ssid.bssid}</dd>
                             </dl>
                         </div>
 
                         <div className="col-md-3">
                             <dl>
                                 <dt>SSID</dt>
-                                <dd>{this.state.ssid.name}</dd>
+                                <dd>{ssid.name}</dd>
                             </dl>
                         </div>
                     </div>
@@ -57,8 +60,8 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <hr />
 
-                            {Object.keys(this.state.ssid.channels).map(function (key,i) {
-                                return <ChannelDetails channel={self.state.ssid.channels[key]} ssid={self.state.ssid} />;
+                            {Object.keys(ssid.channels).map(function (key,i) {
+                                return <ChannelDetails channel={ssid.channels[key]} ssid={ssid} />;
                             })}
                         </div>
                     </div>
