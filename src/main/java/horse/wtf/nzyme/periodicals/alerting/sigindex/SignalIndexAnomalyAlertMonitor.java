@@ -130,13 +130,13 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
                 return;
             }
 
-            // Trigger alert for those over the limit. We have 12 measurements per source per minute. (polling every 5 seconds)
+            // Trigger alert for those over the limit. We have 2 measurements per source per minute. (polling every 30 seconds)
             for (Map.Entry<AnomalySource, List<AnomalyStatus>> x : statusTable.get().entrySet()) {
                 AnomalySource source = x.getKey();
 
                 // Only run of our SSIDs.
                 if(configuration.ourSSIDs().contains(source.ssid())) {
-                    if (x.getValue().size() < configuration.anomalyAlertLookbackMinutes() * 12) {
+                    if (x.getValue().size() < configuration.anomalyAlertLookbackMinutes() * 2) {
                         // We have not had enough measurements for this source yet.
                         LOG.debug("Skipping source with not enough measurements (<{}>): [{}]", x.getValue().size(), source);
                         continue;
@@ -149,7 +149,7 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
                         }
                     }
 
-                    if (anomalies > (configuration.anomalyAlertLookbackMinutes() * 12) * configuration.anomalyAlertTriggerRatio()) {
+                    if (anomalies > (configuration.anomalyAlertLookbackMinutes() * 2) * configuration.anomalyAlertTriggerRatio()) {
                         alertsService.handle(SignalStrengthAnomalyAlert.create(source.ssid(), source.bssid(), source.channel()));
                     }
                 }

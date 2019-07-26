@@ -179,7 +179,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 10, 10, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 10, 10, TimeUnit.SECONDS);
+        periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 30, 30, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
@@ -188,7 +188,7 @@ public class NzymeImpl implements Nzyme {
         }
 
         if (configuredAlerts.contains(Alert.TYPE_WIDE.SIGNAL_ANOMALY)) {
-            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 5, TimeUnit.SECONDS);
+            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 30, TimeUnit.SECONDS);
         }
 
         // Spin up REST API and web interface.
