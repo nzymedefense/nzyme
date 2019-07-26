@@ -15,9 +15,20 @@ import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.jodatime2.JodaTimePlugin;
-import org.jdbi.v3.sqlite3.SQLitePlugin;
+import org.jdbi.v3.postgres.PostgresPlugin;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
 
 public class Database {
+
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss.")
+            .appendFractionOfSecond(0, 6)
+            .toFormatter().withZoneUTC();
+
+    public static final DateTimeFormatter BUCKET_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
+            .toFormatter().withZoneUTC();
 
     private final Configuration configuration;
 
@@ -28,8 +39,8 @@ public class Database {
     }
 
     public void initializeAndMigrate() throws LiquibaseException {
-        this.jdbi = Jdbi.create("jdbc:sqlite:" + this.configuration.databasePath())
-                .installPlugin(new SQLitePlugin())
+        this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
+                .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
                 .registerRowMapper(new MeasurementMapper())
                 .registerRowMapper(new SignalInformationMapper())
@@ -44,11 +55,6 @@ public class Database {
         } finally {
             connection.close();
         }
-
-        // Set busy timeout.
-        useHandle(handle -> {
-            handle.execute("PRAGMA busy_timeout = 10000;");
-        });
     }
 
     public <R, X extends Exception> R withHandle(HandleCallback<R, X> callback) throws X {

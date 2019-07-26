@@ -13,7 +13,7 @@
                 <constraints primaryKey="true" nullable="false" />
             </column>
 
-            <column name="measurement_type" type="varchar(15)">
+            <column name="measurement_type" type="varchar(50)">
                 <constraints nullable="false" />
             </column>
 

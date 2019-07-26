@@ -23,6 +23,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
+import horse.wtf.nzyme.util.Tools;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,13 +43,7 @@ public abstract class SSID {
 
     @JsonProperty("human_readable")
     public boolean isHumanReadable() {
-        for (char c : name().toCharArray()) {
-            if (!Character.isISOControl(c) && !Character.isWhitespace(c)) {
-                return true;
-            }
-        }
-
-        return false;
+        return Tools.isHumanlyReadable(name());
     }
 
     private List<Dot11SecurityConfiguration> security = Lists.newArrayList();

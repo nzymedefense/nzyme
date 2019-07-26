@@ -38,7 +38,7 @@ public class MeasurementsCleaner extends Periodical {
         LOG.debug("Retention cleaning measurements.");
 
         nzyme.getDatabase().useHandle(handle -> {
-            handle.execute("DELETE FROM measurements WHERE created_at < DATETIME('now', '-1 day')");
+            handle.execute("DELETE FROM measurements WHERE created_at < (current_timestamp at time zone 'UTC' - interval '1 day')");
         });
     }
 

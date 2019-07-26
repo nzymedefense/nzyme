@@ -8,9 +8,6 @@ dependency-reduced-pom.xml
 logs/
 target/
 
-nzyme.db
-nzyme.db-journal
-
 web-interface/node
 
 openssl.cnf

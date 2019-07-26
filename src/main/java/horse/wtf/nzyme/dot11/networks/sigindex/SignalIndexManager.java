@@ -23,13 +23,14 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.util.MetricNames;
+import horse.wtf.nzyme.util.Tools;
 
 public class SignalIndexManager {
 
     private static final int MINIMUM_DELTA_STATE_BASE = 25;
 
     private static final String AVERAGE_QUERY = "SELECT AVG(signal_index) FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-15 minutes')";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > current_timestamp at time zone 'UTC' - interval '15 minutes'";
 
     private final Database database;
     private final SystemStatus systemStatus;
@@ -48,6 +49,10 @@ public class SignalIndexManager {
     }
 
     public AverageSignalIndex getRecentAverageSignalIndex(String bssid, String ssid, int channel, int basedOnSize) {
+        if (!Tools.isHumanlyReadable(ssid)) {
+            return AverageSignalIndex.create(null, false, isTraining());
+        }
+
         Timer.Context ctx = timer.time();
 
         try {

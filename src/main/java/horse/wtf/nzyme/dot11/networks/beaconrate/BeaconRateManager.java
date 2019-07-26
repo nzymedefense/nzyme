@@ -20,11 +20,12 @@ package horse.wtf.nzyme.dot11.networks.beaconrate;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.util.Tools;
 
 public class BeaconRateManager {
 
     private static final String AVERAGE_QUERY = "SELECT AVG(beacon_rate) FROM beacon_rate_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-1 minutes')";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 minute')";
 
     private final Database database;
     private final SystemStatus systemStatus;
@@ -35,6 +36,10 @@ public class BeaconRateManager {
     }
 
     public BeaconRate getAverageBeaconRate(String bssid, String ssid, int channel) {
+        if (!Tools.isHumanlyReadable(ssid)) {
+            return BeaconRate.create(0.0F, systemStatus.isInStatus(SystemStatus.TYPE.TRAINING));
+        }
+
         Float avg = database.withHandle(handle ->
                 handle.createQuery(AVERAGE_QUERY)
                         .bind(0, bssid)

@@ -48,7 +48,7 @@ public class SignalIndexCleaner extends Periodical {
             LOG.debug("Retention cleaning signal index values.");
 
             nzyme.getDatabase().useHandle(handle -> {
-                handle.execute("DELETE FROM signal_index_history WHERE created_at < DATETIME('now', '-1 day')");
+                handle.execute("DELETE FROM signal_index_history WHERE created_at < (current_timestamp at time zone 'UTC' - interval '1 day')");
             });
         } catch(Exception e) {
             LOG.error("Could not retention clean signal index information.", e);

@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.networks.sigindex;
 
+import horse.wtf.nzyme.database.Database;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -31,10 +32,7 @@ public class SignalInformationMapper implements RowMapper<SignalInformation> {
     public SignalInformation map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SignalInformation.create(
                 rs.getInt("channel"),
-                DateTime.parse(
-                        rs.getString("created_at"),
-                        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC()
-                ),
+                DateTime.parse(rs.getString("bucket"), Database.BUCKET_DATE_TIME_FORMATTER),
                 rs.getFloat("avg_signal_index"),
                 rs.getFloat("avg_signal_index_threshold"),
                 rs.getFloat("avg_signal_quality"),

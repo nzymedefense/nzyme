@@ -42,20 +42,19 @@ public class NetworksResource {
 
     private static final Logger LOG = LogManager.getLogger(NetworksResource.class);
 
-    private static final String SIGNAL_AVERAGE_QUERY = "SELECT created_at, channel, AVG(signal_index) AS avg_signal_index, " +
+    private static final String SIGNAL_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, channel, AVG(signal_index) AS avg_signal_index, " +
             "AVG(signal_index_threshold) AS avg_signal_index_threshold, AVG(signal_quality) AS avg_signal_quality, " +
             "AVG(signal_stddev) AS avg_signal_stddev, AVG(expected_delta_lower) AS avg_expected_delta_lower, " +
             "AVG(expected_delta_upper) AS avg_expected_delta_upper FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > DATETIME('now', '-1 day') " +
-            "AND signal_index NOT NULL AND signal_quality NOT NULL " +
-            "GROUP BY strftime('%Y%m%d%H%M', created_at) " +
-            "ORDER BY created_at";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
+            "GROUP BY bucket, channel " +
+            "ORDER BY bucket ASC";
 
-    public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT created_at, channel, AVG(beacon_rate) AS avg_beacon_rate " +
+    public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, channel, AVG(beacon_rate) AS avg_beacon_rate " +
             "FROM beacon_rate_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? " +
-            "GROUP BY strftime('%Y%m%d%H%M', created_at) " +
-            "ORDER BY created_at;";
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
+            "GROUP BY bucket, channel " +
+            "ORDER BY bucket ASC";
 
     @Inject
     private Nzyme nzyme;
@@ -81,6 +80,7 @@ public class NetworksResource {
                 SSID s = b.ssids().get(ssid);
 
                 // Enrich channels with signal index and quality information.
+                DateTime yesterday = DateTime.now().minusDays(1);
                 for (Channel channel : s.channels().values()) {
                     List<SignalInformation> sigInfoHistory = nzyme.getDatabase().withHandle(handle ->
                             handle.createQuery(SIGNAL_AVERAGE_QUERY)
@@ -93,7 +93,6 @@ public class NetworksResource {
 
 
                     // Always have charts go from now to -24h.
-                    DateTime yesterday = DateTime.now().minusDays(1);
                     if (!sigInfoHistory.isEmpty()) {
                         sigInfoHistory.set(0, createEmptySignalInformation(channel.channelNumber(), yesterday));
                     } else {
@@ -115,7 +114,11 @@ public class NetworksResource {
                     );
 
                     // Always have charts go from now to -24h.
-                    beaconRateHistory.set(0, createEmptyAverageBeaconRate(channel.channelNumber(), DateTime.now().minusDays(1)));
+                    if (!beaconRateHistory.isEmpty()) {
+                        beaconRateHistory.set(0, createEmptyAverageBeaconRate(channel.channelNumber(), yesterday));
+                    } else {
+                        beaconRateHistory.add(createEmptyAverageBeaconRate(channel.channelNumber(), yesterday));
+                    }
                     beaconRateHistory.add(createEmptyAverageBeaconRate(channel.channelNumber(), DateTime.now()));
 
                     channel.setBeaconRateHistory(beaconRateHistory);

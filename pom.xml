@@ -37,7 +37,7 @@
         <liquibase.version>3.6.3</liquibase.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
         <jmte.version>5.0.0</jmte.version>
-
+        <postgresql.version>42.2.6</postgresql.version>
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
         <skip.web.build>false</skip.web.build>
@@ -172,8 +172,13 @@
         </dependency>
         <dependency>
             <groupId>org.jdbi</groupId>
-            <artifactId>jdbi3-sqlite</artifactId>
+            <artifactId>jdbi3-postgres</artifactId>
             <version>${jdbi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jdbi</groupId>
@@ -190,11 +195,6 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>${sqlitejdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.floreysoft</groupId>

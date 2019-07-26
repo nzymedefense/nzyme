@@ -43,6 +43,16 @@ public class Tools {
         }
     }
 
+    public static boolean isHumanlyReadable(String string) {
+        for (char c : string.toCharArray()) {
+            if (Character.isISOControl(c) || Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static int calculateSignalQuality(int antennaSignal) {
         if(antennaSignal >= -50) {
             return 100;
