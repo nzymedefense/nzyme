@@ -120,10 +120,7 @@ class App extends Reflux.Component {
         } else {
             return (
                 <div className="nzyme">
-                    <NavigationBar handleLogout={App._handleLogout} />
-
                     <div className="container">
-                        <Notifications />
                         <NotConnectedPage />
                         <Footer/>
                     </div>
