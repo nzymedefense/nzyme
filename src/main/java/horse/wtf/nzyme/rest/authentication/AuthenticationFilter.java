@@ -30,8 +30,10 @@ import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.security.Principal;
 
 @Secured
 @Provider
@@ -61,6 +63,32 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
         try {
             validateToken(token);
+
+            // Set new security context for later use in resources.
+            final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
+            requestContext.setSecurityContext(new SecurityContext() {
+
+                @Override
+                public Principal getUserPrincipal() {
+                    return () -> token;
+                }
+
+                @Override
+                public boolean isUserInRole(String role) {
+                    return true;
+                }
+
+                @Override
+                public boolean isSecure() {
+                    return currentSecurityContext.isSecure();
+                }
+
+                @Override
+                public String getAuthenticationScheme() {
+                    return AUTHENTICATION_SCHEME;
+                }
+
+            });
         } catch(SignatureException e) {
             LOG.warn("POSSIBLE BREAK-IN ATTEMPT! Invalid signature of JWT token. Token was: [{}]", token, e);
             abortWithUnauthorized(requestContext);

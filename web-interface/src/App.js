@@ -25,6 +25,7 @@ import NetworkDetailsPage from "./components/networks/details/NetworkDetailsPage
 import LoginPage from "./components/authentication/LoginPage";
 import Store from "./util/Store";
 import AuthenticationStore from "./stores/AuthenticationStore";
+import AuthenticationActions from "./actions/AuthenticationActions";
 
 class App extends Reflux.Component {
 
@@ -49,6 +50,12 @@ class App extends Reflux.Component {
         setInterval(function () {
             self.setState({authenticated: App._isAuthenticated()});
         }, 1000);
+
+        // Check if session is about to expire and log out if so.
+        AuthenticationActions.checkSession();
+        setInterval(function () {
+            AuthenticationActions.checkSession();
+        }, 10000);
     }
 
     static _isAuthenticated() {

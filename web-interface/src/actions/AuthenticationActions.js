@@ -1,7 +1,8 @@
 import Reflux from 'reflux';
 
 const AuthenticationActions = Reflux.createActions([
-    "createSession"
+    "createSession",
+    "checkSession"
 ]);
 
 export default AuthenticationActions;

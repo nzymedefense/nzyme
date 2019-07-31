@@ -17,6 +17,14 @@ class AuthenticationStore extends Reflux.Store {
         });
     }
 
+    onCheckSession() {
+        RESTClient.get("/authentication/session/information", {}, function(response) {
+            if(response.data.seconds_left_valid <= 60) {
+                Store.delete("api_token");
+            }
+        });
+    }
+
 }
 
 export default AuthenticationStore;
