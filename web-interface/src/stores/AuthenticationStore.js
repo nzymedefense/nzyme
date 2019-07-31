@@ -12,8 +12,12 @@ class AuthenticationStore extends Reflux.Store {
     }
 
     onCreateSession(username, password) {
+        let self = this;
+
         RESTClient.post("/authentication/session", {username: username, password: password}, function(response) {
             Store.set("api_token", response.data.token);
+        }, function(response) {
+            self.setState({loggingIn: false});
         });
     }
 

@@ -14,11 +14,16 @@ class LoginPage extends Reflux.Component {
         this.usernameInput = React.createRef();
         this.passwordInput = React.createRef();
 
+        this.state = {
+            loggingIn: false
+        }
+
         this._submitLoginForm = this._submitLoginForm.bind(this);
     }
 
     _submitLoginForm(e) {
         e.preventDefault();
+        this.setState({loggingIn:true});
 
         const username = this.usernameInput.current.value;
         const password = this.passwordInput.current.value;
@@ -51,7 +56,7 @@ class LoginPage extends Reflux.Component {
                                 <input type="password" required className="form-control" placeholder="password" ref={this.passwordInput} />
                             </div>
                             <div className="form-group">
-                                <input type="submit" value="Login" className="btn float-right btn-primary" />
+                                <input type="submit" value={this.state.loggingIn ? "Logging in ..." : "Login"} className="btn float-right btn-primary" />
                             </div>
                         </form>
                     </div>
