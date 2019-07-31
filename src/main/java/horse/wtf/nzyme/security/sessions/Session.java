@@ -15,21 +15,23 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.rest.resources;
+package horse.wtf.nzyme.security.sessions;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.jsonwebtoken.Jwts;
+import org.joda.time.DateTime;
 
-@Path("/api/ping")
-@Produces(MediaType.TEXT_PLAIN)
-public class PingResource {
+import java.security.Key;
 
-    @GET
-    public Response ping() {
-        return Response.ok("pong").build();
+public class Session {
+
+    public static String createToken(String username, Key signingKey) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuer("nzyme")
+                .setIssuedAt(DateTime.now().toDate())
+                .setExpiration(DateTime.now().plusHours(8).toDate())
+                .signWith(signingKey)
+                .compact();
     }
 
 }

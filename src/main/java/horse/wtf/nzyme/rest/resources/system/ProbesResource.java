@@ -24,6 +24,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/system/probes")
+@Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class ProbesResource {
 
@@ -44,6 +46,7 @@ public class ProbesResource {
     private Nzyme nzyme;
 
     @GET
+    @Secured
     public Response all() {
         List<ProbeResponse> response = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {
@@ -70,6 +73,7 @@ public class ProbesResource {
     }
 
     @GET
+    @Secured
     @Path("/channels")
     public Response channels() {
         ImmutableMap.Builder<String, Integer> channels = new ImmutableMap.Builder<>();

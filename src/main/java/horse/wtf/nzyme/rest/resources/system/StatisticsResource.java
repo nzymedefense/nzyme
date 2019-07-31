@@ -24,6 +24,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.measurements.Measurement;
 import horse.wtf.nzyme.measurements.MeasurementType;
+import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.statistics.ChannelStatisticsResponse;
 import horse.wtf.nzyme.rest.responses.statistics.StatisticsResponse;
 
@@ -39,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Path("/api/system/networks")
+@Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class StatisticsResource {
 

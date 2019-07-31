@@ -60,7 +60,7 @@ public class AssetManifest {
             }
 
         } else {
-            throw new IllegalStateException("Unable to find vendor assets.");
+            throw new IllegalStateException("Unable to find vendor assets. Make sure to run `mvn package` at least once locally.");
         }
     }
 

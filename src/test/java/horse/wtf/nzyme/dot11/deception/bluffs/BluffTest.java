@@ -22,6 +22,7 @@ public class BluffTest {
                 false,
                 Role.LEADER,
                 "testng",
+                "95d30169a59c418b52013315fc81bc99fdf0a7b03a116f346ab628496f349ed5",
                 "nzyme-test.db",
                 pythonExecutable,
                 pythonScriptDirectory,

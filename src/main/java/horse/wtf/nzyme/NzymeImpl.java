@@ -49,10 +49,12 @@ import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.InjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
+import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
+import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
@@ -60,6 +62,8 @@ import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
@@ -81,6 +85,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.util.List;
@@ -106,6 +111,8 @@ public class NzymeImpl implements Nzyme {
     private final Networks networks;
     private final Clients clients;
 
+    private final Key signingKey;
+
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
 
@@ -114,6 +121,7 @@ public class NzymeImpl implements Nzyme {
     private HttpServer httpServer;
 
     public NzymeImpl(Configuration configuration, Database database) {
+        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
 
@@ -194,6 +202,7 @@ public class NzymeImpl implements Nzyme {
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(new AuthenticationFilter(this));
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new InjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
@@ -201,6 +210,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(new NzymeExceptionMapper());
 
         // Register REST API resources.
+        resourceConfig.register(AuthenticationResource.class);
         resourceConfig.register(PingResource.class);
         resourceConfig.register(AlertsResource.class);
         resourceConfig.register(ProbesResource.class);
@@ -360,6 +370,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public Clients getClients() {
         return clients;
+    }
+
+    @Override
+    public Key getSigningKey() {
+        return signingKey;
     }
 
 }

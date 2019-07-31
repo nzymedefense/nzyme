@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.alerts.AlertConfigurationResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Path("/api/alerts")
+@Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class AlertsResource {
 

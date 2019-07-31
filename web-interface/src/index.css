@@ -1,6 +1,13 @@
-body {
+html, body {
     font-family: 'Inconsolata', monospace;
     color: #fff;
+    height: 100%;
+}
+
+body.login-page {
+    padding-top: 35px;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -24,6 +31,28 @@ header {
 
 hr {
     background-color: #444
+}
+
+.container-login {
+    height: 100%;
+    align-content: center;
+}
+
+.container-login .card {
+    height: 285px;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 400px;
+    background-color: rgba(0,0,0,0.5) !important;
+}
+
+.container-login .card-header h5 {
+    margin-bottom: 0;
+}
+
+.container-login .card-footer {
+    background-color: rgba(0,0,0,0.8) !important;
+    color: #757e86;
 }
 
 div.overview-statistic p {

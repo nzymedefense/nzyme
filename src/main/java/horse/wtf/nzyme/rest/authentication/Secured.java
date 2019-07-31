@@ -15,21 +15,17 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.rest.resources;
+package horse.wtf.nzyme.rest.authentication;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.NameBinding;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-@Path("/api/ping")
-@Produces(MediaType.TEXT_PLAIN)
-public class PingResource {
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    @GET
-    public Response ping() {
-        return Response.ok("pong").build();
-    }
-
-}
+@NameBinding
+@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+public @interface Secured { }

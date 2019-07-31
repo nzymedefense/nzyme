@@ -20,6 +20,8 @@ public abstract class Configuration {
     public abstract Role role();
     public abstract String nzymeId();
 
+    public abstract String adminPasswordHash();
+
     public abstract String databasePath();
 
     public abstract String pythonExecutable();
@@ -58,6 +60,7 @@ public abstract class Configuration {
                                        boolean fetchOuis,
                                        Role role,
                                        String nzymeId,
+                                       String adminPasswordHash,
                                        String databasePath,
                                        String pythonExecutable,
                                        String pythonScriptDirectory,
@@ -83,6 +86,7 @@ public abstract class Configuration {
                 .fetchOuis(fetchOuis)
                 .role(role)
                 .nzymeId(nzymeId)
+                .adminPasswordHash(adminPasswordHash)
                 .databasePath(databasePath)
                 .pythonExecutable(pythonExecutable)
                 .pythonScriptDirectory(pythonScriptDirectory)
@@ -119,6 +123,8 @@ public abstract class Configuration {
         public abstract Builder role(Role role);
 
         public abstract Builder nzymeId(String nzymeId);
+
+        public abstract Builder adminPasswordHash(String adminPasswordHash);
 
         public abstract Builder databasePath(String databasePath);
 

@@ -1,8 +1,20 @@
 import {notify} from "react-notify-toast";
+import Store from "./Store";
 
 var axios = require('axios');
 
 const RESTClient = {
+
+  getAuthHeaders() {
+    const headers = {};
+
+    // Add API token authorization if we have one.
+    if (Store.get("api_token") !== undefined) {
+      headers["Authorization"] = "Bearer " + Store.get("api_token");
+    }
+
+    return headers;
+  },
 
   buildUri(uri) {
     let stableRoot = window.appConfig.nzymeApiUri;
@@ -19,7 +31,7 @@ const RESTClient = {
   },
 
   get(uri, params, successCallback) {
-    axios.get(this.buildUri(uri), { params: params })
+    axios.get(this.buildUri(uri), { params: params, headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response);
       })
@@ -33,7 +45,7 @@ const RESTClient = {
   },
 
   post(uri, data, successCallback) {
-    axios.post(this.buildUri(uri), data)
+    axios.post(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function(response) {
         successCallback(response);
       })
@@ -48,7 +60,7 @@ const RESTClient = {
   },
 
   put(uri, data, successCallback) {
-    axios.put(this.buildUri(uri), data)
+    axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function(response) {
         successCallback(response);
       })

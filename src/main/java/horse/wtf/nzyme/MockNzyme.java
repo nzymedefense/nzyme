@@ -27,7 +27,10 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
+import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,8 +43,10 @@ public class MockNzyme implements Nzyme {
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
+    private final Key signingKey;
 
     public MockNzyme() {
+        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.metricRegistry = new MetricRegistry();
         this.statistics = new Statistics();
         this.systemStatus = new SystemStatus();
@@ -107,6 +112,11 @@ public class MockNzyme implements Nzyme {
     @Override
     public OUIManager getOUIManager() {
         return ouiManager;
+    }
+
+    @Override
+    public Key getSigningKey() {
+        return signingKey;
     }
 
 }

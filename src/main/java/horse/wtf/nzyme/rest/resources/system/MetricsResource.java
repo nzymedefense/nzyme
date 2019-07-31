@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Snapshot;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
@@ -48,7 +49,7 @@ public class MetricsResource {
 
         metrics.put(
                 "total_frames",
-                MeterResponse.fromMeter(nzyme.getMetrics().getMeters().get(MetricNames.FRAME_COUNT))
+                MeterResponse.fromMeter(getMeter(MetricNames.FRAME_COUNT))
         );
 
         metrics.put(
@@ -152,6 +153,14 @@ public class MetricsResource {
         );
 
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
+    }
+
+    private Meter getMeter(String name) {
+        if (nzyme.getMetrics().getMeters().get(name) != null) {
+            return nzyme.getMetrics().getMeters().get(name);
+        } else {
+            return new Meter();
+        }
     }
 
     private Snapshot getTimer(String name) {

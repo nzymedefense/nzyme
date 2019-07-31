@@ -22,6 +22,9 @@ import Footer from "./components/layout/Footer";
 import SystemPage from "./components/system/SystemPage";
 import NetworksPage from "./components/networks/NetworksPage";
 import NetworkDetailsPage from "./components/networks/details/NetworkDetailsPage";
+import LoginPage from "./components/authentication/LoginPage";
+import Store from "./util/Store";
+import AuthenticationStore from "./stores/AuthenticationStore";
 
 class App extends Reflux.Component {
 
@@ -29,55 +32,88 @@ class App extends Reflux.Component {
         super(props);
 
         this.state = {
-            apiConnected: true
+            apiConnected: true,
+            authenticated: App._isAuthenticated()
         };
 
-        this.store = PingStore;
+        this.stores = [PingStore, AuthenticationStore];
+
+        App._handleLogout = App._handleLogout.bind(this);
     }
 
     componentDidMount() {
+        const self = this;
         PingActions.ping();
+
+        // Check if we are authenticated.
+        setInterval(function () {
+            self.setState({authenticated: App._isAuthenticated()});
+        }, 1000);
+    }
+
+    static _isAuthenticated() {
+        return Store.get("api_token") !== undefined;
+    }
+
+    static _handleLogout(e) {
+        e.preventDefault();
+        Store.delete("api_token");
     }
 
     render() {
+        // TODO: This is fucked but it's currently required to hide the login page styling after initial login.
+        document.body.classList.remove('login-page');
+        document.body.style.backgroundImage = "";
+
         if(this.state.apiConnected) {
-            return (
-                <Router>
+            if (this.state.authenticated) {
+                return (
+                    <Router>
+                        <div className="nzyme">
+                            <NavigationBar handleLogout={App._handleLogout} />
+
+                            <div className="container">
+                                <Notifications/>
+
+                                <Switch>
+                                    <Route exact path={Routes.DASHBOARD} component={OverviewPage}/>
+
+                                    { /* System Status. */}
+                                    <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage}/>
+
+                                    { /* Networks. */}
+                                    <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
+
+                                    { /* Networks. */}
+                                    <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
+                                           component={NetworkDetailsPage}/>
+
+                                    { /* Alerts. */}
+                                    <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
+
+                                    { /* 404. */}
+                                    <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>
+                                    <Route path="*" component={NotFoundPage}/> { /* Catch-all.  */}
+                                </Switch>
+
+                                <Footer/>
+                            </div>
+                        </div>
+                    </Router>
+                );
+            } else {
+                return (
                     <div className="nzyme">
-                        <NavigationBar/>
-
-                        <div className="container">
-                            <Notifications/>
-
-                            <Switch>
-                                <Route exact path={Routes.DASHBOARD} component={OverviewPage} />
-
-                                { /* System Status. */ }
-                                <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage} />
-
-                                { /* Networks. */ }
-                                <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage} />
-
-                                { /* Networks. */ }
-                                <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")} component={NetworkDetailsPage} />
-
-                                { /* Alerts. */ }
-                                <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage} />
-
-                                { /* 404. */ }
-                                <Route path={Routes.NOT_FOUND} component={NotFoundPage} />
-                                <Route path="*" component={NotFoundPage} /> { /* Catch-all.  */ }
-                            </Switch>
-
-                            <Footer/>
+                        <div className="container container-login">
+                            <LoginPage />
                         </div>
                     </div>
-                </Router>
-            );
+                );
+            }
         } else {
             return (
                 <div className="nzyme">
-                    <NavigationBar/>
+                    <NavigationBar handleLogout={App._handleLogout} />
 
                     <div className="container">
                         <Notifications />

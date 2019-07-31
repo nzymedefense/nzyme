@@ -80,6 +80,7 @@ public class ConfigurationLoader {
                 parseFetchOUIsEnabled(),
                 parseRole(),
                 parseNzymeId(),
+                parseAdminPasswordHash(),
                 parseDatabasePath(),
                 parsePythonExecutable(),
                 parsePythonScriptDirectory(),
@@ -109,6 +110,10 @@ public class ConfigurationLoader {
 
     private String parseNzymeId() {
         return general.getString(ConfigurationKeys.ID);
+    }
+
+    private String parseAdminPasswordHash() {
+        return general.getString(ConfigurationKeys.ADMIN_PASSWORD_HASH);
     }
 
     private String parseDatabasePath() {
@@ -280,6 +285,7 @@ public class ConfigurationLoader {
         // Completeness and type validity.
         expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
         expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
+        expect(general, ConfigurationKeys.ADMIN_PASSWORD_HASH, ConfigurationKeys.GENERAL, String.class);
         expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
         expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
         expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
@@ -295,6 +301,11 @@ public class ConfigurationLoader {
         expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
         expect(root, ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
         expect(root, ConfigurationKeys.TUNING_PARAMETERS, "<root>", Map.class);
+
+        // Password hash is 64 characters long (the size of a SHA256 hash string)
+        if (parseAdminPasswordHash().length() != 64) {
+            throw new InvalidConfigurationException("Parameter [general." + ConfigurationKeys.ADMIN_PASSWORD_HASH + "] must be 64 characters long (a SHA256 hash).");
+        }
 
         // 802.11 Monitors.
         int i = 0;

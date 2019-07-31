@@ -28,6 +28,7 @@ import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
+import java.security.Key;
 import java.util.List;
 
 public interface Nzyme {
@@ -51,5 +52,7 @@ public interface Nzyme {
     SystemStatus getSystemStatus();
 
     OUIManager getOUIManager();
+
+    Key getSigningKey();
 
 }
