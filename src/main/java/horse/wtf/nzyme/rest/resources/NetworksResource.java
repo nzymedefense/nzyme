@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.rest.resources;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
@@ -32,7 +31,6 @@ import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import sun.misc.Signal;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
