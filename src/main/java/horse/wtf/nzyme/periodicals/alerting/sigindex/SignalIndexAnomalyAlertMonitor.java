@@ -92,6 +92,11 @@ public class SignalIndexAnomalyAlertMonitor extends Periodical {
                         continue;
                     }
 
+                    // Only run for our own networks.
+                    if (!configuration.ourSSIDs().contains(ssid.name())) {
+                        continue;
+                    }
+
                     for (Channel channel : ssid.channels().values()) {
                         AnomalySource source = AnomalySource.create(bssid.bssid(), ssid.name(), channel.channelNumber());
 
