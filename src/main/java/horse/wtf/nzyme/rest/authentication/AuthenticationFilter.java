@@ -90,7 +90,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
             });
         } catch(SignatureException e) {
-            LOG.warn("POSSIBLE BREAK-IN ATTEMPT! Invalid signature of JWT token. Token was: [{}]", token, e);
+            LOG.debug("Invalid signature of JWT token. This could be an old session running in a browser somewhere. Token was: [{}]", token, e);
             abortWithUnauthorized(requestContext);
         } catch(ExpiredJwtException e) {
             LOG.info("Token is expired. Please create a new session by logging in.  Token was: [{}]", token, e);
