@@ -4,7 +4,7 @@ general: {
   role: LEADER
 
   # The ID or name of this nzyme instance. Must be unique.
-  id: nzyme-master
+  id: nzyme-node-01
 
   # Admin password SHA256 hash. (64 characters) - generate with, for example, sha256sum on Linux: $ echo -n secretpassword | sha256sum
   admin_password_hash:
