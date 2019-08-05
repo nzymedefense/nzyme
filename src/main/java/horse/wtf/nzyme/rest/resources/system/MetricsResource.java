@@ -152,6 +152,11 @@ public class MetricsResource {
                 GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.SIGNAL_INDEX_MONITOR_MEASUREMENTS))
         );
 
+        metrics.put(
+                "beaconrate_monitor_timing",
+                TimerResponse.fromSnapshot(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMER))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

@@ -25,7 +25,7 @@ public class SignalStrengthAnomalyAlert extends Alert {
     }};
 
     private SignalStrengthAnomalyAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, null);
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, null, false);
     }
 
     @Override

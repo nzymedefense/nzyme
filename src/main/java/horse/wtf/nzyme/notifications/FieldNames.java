@@ -36,6 +36,9 @@ public class FieldNames {
     public static final String SIGNAL_QUALITY = "signal_quality";
     public static final String MAC_TIMESTAMP = "mac_timestamp";
 
+    public static final String BEACON_RATE = "beacon_rate";
+    public static final String BEACON_RATE_THRESHOLD = "beacon_rate_threshold";
+
     public static final String RESPONSE_CODE = "response_code";
     public static final String RESPONSE_STRING = "response_string";
     public static final String REASON_CODE = "reason_code";

@@ -51,12 +51,12 @@ public class AlertTest extends AlertTestHelper {
                 buildMockProbe(BANDITS_STANDARD)
         );
 
-        assertEquals(a.getFrameCount(), 1);
+        assertEquals(a.getFrameCount(), (Long) 1L);
 
         a.incrementFrameCount();
         a.incrementFrameCount();
 
-        assertEquals(a.getFrameCount(), 3);
+        assertEquals(a.getFrameCount(),  (Long) 1L);
     }
 
 }

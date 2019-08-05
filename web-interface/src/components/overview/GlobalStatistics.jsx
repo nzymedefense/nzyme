@@ -8,7 +8,7 @@ import AlertsActions from "../../actions/AlertsActions"
 import ProbesStore from "../../stores/ProbesStore";
 import ProbesActions from "../../actions/ProbesActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
-import AlertsList from "./AlertsList";
+import AlertsList from "../alerts/AlertsList";
 
 import numeral from "numeral";
 

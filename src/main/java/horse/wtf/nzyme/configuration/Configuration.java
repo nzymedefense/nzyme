@@ -6,6 +6,7 @@ import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -54,6 +55,17 @@ public abstract class Configuration {
         ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
         dot11Networks().forEach(n -> ssids.add(n.ssid()));
         return ssids.build();
+    }
+
+    @Nullable
+    public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
+        for (Dot11NetworkDefinition network : dot11Networks()) {
+            if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
+                return network;
+            }
+        }
+
+        return null;
     }
 
     public static Configuration create(boolean versionchecksEnabled,

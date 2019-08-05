@@ -22,6 +22,7 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.ouis.OUIManager;
+import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
@@ -54,5 +55,6 @@ public class MetricNames {
     public static final String SIGNAL_INDEX_READER_TIMER = name(SignalIndexManager.class, "read-timing");
     public static final String SIGNAL_INDEX_MONITOR_TIMER = name(SignalIndexAnomalyAlertMonitor.class, "monitor-timing");
     public static final String SIGNAL_INDEX_MONITOR_MEASUREMENTS = name(SignalIndexAnomalyAlertMonitor.class, "signal-monitor-measurements");
+    public static final String BEACON_RATE_MONITOR_TIMER = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
 
 }

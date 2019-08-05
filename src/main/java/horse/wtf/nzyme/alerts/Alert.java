@@ -38,7 +38,8 @@ public abstract class Alert {
         UNEXPECTED_CHANNEL,
         KNOWN_BANDIT_FINGERPRINT,
         UNEXPECTED_FINGERPRINT,
-        SIGNAL_ANOMALY
+        SIGNAL_ANOMALY,
+        BEACON_RATE_ANOMALY
     }
 
     public enum Type {
@@ -54,7 +55,8 @@ public abstract class Alert {
         KNOWN_BANDIT_FINGERPRINT_PROBERESP,
         UNEXPECTED_FINGERPRINT_BEACON,
         UNEXPECTED_FINGERPRINT_PROBERESP,
-        SIGNAL_ANOMALY
+        SIGNAL_ANOMALY,
+        BEACON_RATE_ANOMALY
     }
 
     private final Subsystem subsystem;
@@ -63,6 +65,7 @@ public abstract class Alert {
     private final AtomicReference<DateTime> lastSeen;
     private final AtomicLong frameCount;
     private final Dot11Probe probe;
+    private final boolean useFrameCount;
 
     private final String description;
     private final String documentationLink;
@@ -75,6 +78,10 @@ public abstract class Alert {
     protected UUID uuid;
 
     protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, String description, String documentationLink, List<String> falsePositives, @Nullable Dot11Probe probe) {
+        this(timestamp, subsystem, fields, description, documentationLink, falsePositives, probe, true);
+    }
+
+    protected Alert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, String description, String documentationLink, List<String> falsePositives, @Nullable Dot11Probe probe, boolean useFrameCount) {
         this.firstSeen = timestamp;
         this.lastSeen = new AtomicReference<>(timestamp);
         this.subsystem = subsystem;
@@ -83,6 +90,7 @@ public abstract class Alert {
         this.documentationLink = documentationLink;
         this.falsePositives = falsePositives;
         this.probe = probe;
+        this.useFrameCount = useFrameCount;
 
         this.frameCount = new AtomicLong(1);
     }
@@ -103,8 +111,9 @@ public abstract class Alert {
         this.frameCount.incrementAndGet();
     }
 
-    public long getFrameCount() {
-        return this.frameCount.get();
+    @Nullable
+    public Long getFrameCount() {
+        return this.useFrameCount ? this.frameCount.get() : null;
     }
 
     public Subsystem getSubsystem() {

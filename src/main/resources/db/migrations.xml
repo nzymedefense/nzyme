@@ -136,4 +136,8 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="4" author="lennartkoopmann">
+        <dropColumn tableName="beacon_rate_history" columnName="channel" />
+    </changeSet>
+
 </databaseChangeLog>

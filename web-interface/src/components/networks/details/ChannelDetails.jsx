@@ -4,7 +4,6 @@ import Reflux from 'reflux';
 import numeral from "numeral";
 import SignalIndex from "../SignalIndex";
 import SimpleLineChart from "../../charts/SimpleLineChart";
-import BeaconRate from "./BeaconRate";
 
 class ChannelDetails extends Reflux.Component {
 
@@ -95,29 +94,6 @@ class ChannelDetails extends Reflux.Component {
         return result;
     }
 
-    _formatBeaconRateHistory(data) {
-        const result = [];
-
-        const avgBeaconRate = {
-            x: [],
-            y: [],
-            type: "bar",
-            name: "Beacon Rate",
-            line: {width: 1, shape: "linear", color: "#2983fe"}
-        };
-
-        Object.keys(data).map(function (key) {
-            const point = data[key];
-            const date = new Date(point["created_at"]);
-            avgBeaconRate["x"].push(date);
-            avgBeaconRate["y"].push(point["rate"]);
-        });
-
-        result.push(avgBeaconRate);
-
-        return result;
-    }
-
     render() {
         const self = this;
         return (
@@ -133,8 +109,6 @@ class ChannelDetails extends Reflux.Component {
                         <dl>
                             <dt>Total Frames</dt>
                             <dd>{numeral(this.props.channel.total_frames).format("0,0")}</dd>
-                            <dt>Beacon Rate</dt>
-                            <dd><BeaconRate rate={this.props.channel.beacon_rate} /></dd>
                         </dl>
                     </div>
 
@@ -160,19 +134,6 @@ class ChannelDetails extends Reflux.Component {
                                 return <li>{self.props.channel.fingerprints[key]}</li>
                             })}
                         </ul>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12 mt-md-1">
-                        <SimpleLineChart
-                            title="Beacon Rate"
-                            width={1100}
-                            height={200}
-                            customMarginLeft={60}
-                            customMarginRight={60}
-                            finalData={this._formatBeaconRateHistory(this.props.channel.beacon_rate_history)}
-                        />
                     </div>
                 </div>
 

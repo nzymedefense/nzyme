@@ -23,14 +23,21 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
+import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
+import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
+import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
 import horse.wtf.nzyme.util.Tools;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @AutoValue
 public abstract class SSID {
+
+    @JsonIgnore
+    public abstract BeaconRateManager beaconRateManager();
 
     @JsonIgnore
     public abstract String name();
@@ -53,6 +60,12 @@ public abstract class SSID {
         return security;
     }
 
+    @JsonProperty("beacon_rate_history")
+    public List<AverageBeaconRate> beaconRateHistory = Collections.emptyList();
+
+    @JsonIgnore
+    public final AtomicInteger beaconCount = new AtomicInteger(1);
+
     @JsonProperty("name")
     public String nameSafe() {
         if (isHumanReadable()) {
@@ -62,11 +75,22 @@ public abstract class SSID {
         }
     }
 
-    public static SSID create(String name, String bssid) {
+    @JsonProperty("beacon_rate")
+    public BeaconRate beaconRate() {
+        return beaconRateManager().getAverageBeaconRate(bssid(), name());
+    }
+
+    @JsonIgnore
+    public void setBeaconRateHistory(List<AverageBeaconRate> history) {
+        this.beaconRateHistory = history;
+    }
+
+    public static SSID create(String name, String bssid, BeaconRateManager beaconRateManager) {
         return builder()
                 .name(name)
                 .bssid(bssid)
                 .channels(Maps.newHashMap())
+                .beaconRateManager(beaconRateManager)
                 .build();
     }
 
@@ -86,6 +110,8 @@ public abstract class SSID {
         public abstract Builder bssid(String bssid);
 
         public abstract Builder channels(Map<Integer, Channel> channels);
+
+        public abstract Builder beaconRateManager(BeaconRateManager beaconRateManager);
 
         public abstract SSID build();
     }

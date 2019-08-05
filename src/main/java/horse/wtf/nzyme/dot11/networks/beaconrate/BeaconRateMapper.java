@@ -32,7 +32,6 @@ public class BeaconRateMapper implements RowMapper<AverageBeaconRate> {
     public AverageBeaconRate map(ResultSet rs, StatementContext ctx) throws SQLException {
         return AverageBeaconRate.create(
                 rs.getFloat("avg_beacon_rate"),
-                rs.getInt("channel"),
                 DateTime.parse(rs.getString("bucket"), Database.BUCKET_DATE_TIME_FORMATTER)
         );
 

@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.networks.SignalDelta;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
 import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 
@@ -34,10 +33,6 @@ public abstract class ChannelResponse {
     @JsonProperty("signal_history")
     @Nullable
     public abstract List<SignalInformation> signalHistory();
-
-    @JsonProperty("beacon_rate_history")
-    @Nullable
-    public abstract List<AverageBeaconRate> beaconRateHistory();
 
     @JsonProperty("channel_number")
     public abstract int channelNumber();
@@ -66,13 +61,9 @@ public abstract class ChannelResponse {
     @JsonProperty("expected_delta")
     public abstract SignalDelta expectedDelta();
 
-    @JsonProperty("beacon_rate")
-    public abstract BeaconRate beaconRate();
-
-    public static ChannelResponse create(List<SignalInformation> signalHistory, List<AverageBeaconRate> beaconRateHistory, int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, double signalIndex, AverageSignalIndex signalIndexThreshold, String signalIndexStatus, SignalDelta expectedDelta, BeaconRate beaconRate) {
+    public static ChannelResponse create(List<SignalInformation> signalHistory, int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, double signalIndex, AverageSignalIndex signalIndexThreshold, String signalIndexStatus, SignalDelta expectedDelta) {
         return builder()
                 .signalHistory(signalHistory)
-                .beaconRateHistory(beaconRateHistory)
                 .channelNumber(channelNumber)
                 .bssid(bssid)
                 .ssid(ssid)
@@ -82,7 +73,6 @@ public abstract class ChannelResponse {
                 .signalIndexThreshold(signalIndexThreshold)
                 .signalIndexStatus(signalIndexStatus)
                 .expectedDelta(expectedDelta)
-                .beaconRate(beaconRate)
                 .build();
     }
 
@@ -93,8 +83,6 @@ public abstract class ChannelResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder signalHistory(List<SignalInformation> signalHistory);
-
-        public abstract Builder beaconRateHistory(List<AverageBeaconRate> beaconRateHistory);
 
         public abstract Builder channelNumber(int channelNumber);
 
@@ -113,8 +101,6 @@ public abstract class ChannelResponse {
         public abstract Builder signalIndexStatus(String signalIndexStatus);
 
         public abstract Builder expectedDelta(SignalDelta expectedDelta);
-
-        public abstract Builder beaconRate(BeaconRate beaconRate);
 
         public abstract ChannelResponse build();
     }

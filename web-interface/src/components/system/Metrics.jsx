@@ -100,6 +100,7 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="Signal Index Cleans" timer={this.state.systemMetrics.sigidx_cleaner_timing}/>
                                             <TimerRow title="Signal Index Memory Cleans" timer={this.state.systemMetrics.sigidx_memory_cleaner_timing}/>
                                             <TimerRow title="Signal Index Monitor Executions" timer={this.state.systemMetrics.sigidx_monitor_timing}/>
+                                            <TimerRow title="Beacon Rate Monitor Executions" timer={this.state.systemMetrics.beaconrate_monitor_timing}/>
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                         </tbody>
                                     </table>

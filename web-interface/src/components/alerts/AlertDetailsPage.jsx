@@ -7,6 +7,7 @@ import AlertsActions from "../../actions/AlertsActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 
 import moment from "moment";
+import FrameCount from "./FrameCount";
 
 class AlertDetailsPage extends Reflux.Component {
 
@@ -82,7 +83,7 @@ class AlertDetailsPage extends Reflux.Component {
                             <p>
                                 <dl>
                                     <dt>Frames</dt>
-                                    <dd>{this.state.alert.frame_count}</dd>
+                                    <dd><FrameCount alert={this.state.alert} /></dd>
                                     <dt>Subsystem</dt>
                                     <dd>{this.state.alert.subsystem}</dd>
                                     <dt>Alert Type ID</dt>

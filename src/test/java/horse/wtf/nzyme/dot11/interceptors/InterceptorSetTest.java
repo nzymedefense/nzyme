@@ -79,7 +79,7 @@ public class InterceptorSetTest {
                             new ArrayList<String>() {{
                                 add("WPA1-EAM-PSK-CCMP");
                                 add("WPA2-EAM-PSK-CCMP");
-                            }})
+                            }}, 0)
                     );
                 }},
                 BANDITS_STANDARD

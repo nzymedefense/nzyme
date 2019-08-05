@@ -1,5 +1,6 @@
 import React from 'react';
 import Reflux from "reflux";
+import BeaconRate from "./details/BeaconRate";
 
 class BSSIDTableRowTop extends Reflux.Component {
 
@@ -96,9 +97,9 @@ class BSSIDTableRowTop extends Reflux.Component {
                 <td><a href="#" title={this.props.bssid.last_seen}
                        onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
                 <td>
-                        <span className={this._signalQualityColor(this.props.bssid.signal_quality)}>
-                            {this.props.bssid.signal_quality}
-                        </span>
+                    <span className={this._signalQualityColor(this.props.bssid.signal_quality)}>
+                        {this.props.bssid.signal_quality}
+                    </span>
                 </td>
                 <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>
                 <td>{this.props.bssid.oui}</td>

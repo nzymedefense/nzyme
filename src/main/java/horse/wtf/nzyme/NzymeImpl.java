@@ -34,11 +34,12 @@ import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
-import horse.wtf.nzyme.periodicals.beaconrate.BeaconRateCleaner;
-import horse.wtf.nzyme.periodicals.beaconrate.BeaconRateWriter;
+import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateCleaner;
+import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateWriter;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -66,35 +67,21 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.grizzly.http.CompressionConfig;
-import org.glassfish.grizzly.http.GZipContentEncoding;
 import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import sun.misc.Signal;
 
-import javax.net.ssl.SSLContext;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyStore;
-import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import static com.google.common.base.MoreObjects.firstNonNull;
 
 public class NzymeImpl implements Nzyme {
 
@@ -187,7 +174,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 10, 30, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 30, 30, TimeUnit.SECONDS);
+        periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
@@ -196,7 +183,11 @@ public class NzymeImpl implements Nzyme {
         }
 
         if (configuredAlerts.contains(Alert.TYPE_WIDE.SIGNAL_ANOMALY)) {
-            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 0, 30, TimeUnit.SECONDS);
+            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 60, 60, TimeUnit.SECONDS);
+        }
+
+        if (configuredAlerts.contains(Alert.TYPE_WIDE.BEACON_RATE_ANOMALY)) {
+            periodicalManager.scheduleAtFixedRate(new BeaconRateAnomalyAlertMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
         // Spin up REST API and web interface.

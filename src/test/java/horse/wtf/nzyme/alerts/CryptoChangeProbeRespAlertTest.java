@@ -29,7 +29,7 @@ public class CryptoChangeProbeRespAlertTest extends AlertTestHelper {
         assertEquals(a.getMessage(), "SSID [wtf] was advertised with unexpected security settings [WPA2-EAM-PSK-CCMP].");
         assertEquals(a.getType(), Alert.Type.CRYPTO_CHANGE_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
-        assertEquals(a.getFrameCount(), 1);
+        assertEquals(a.getFrameCount(), (Long) 1L);
         assertFalse(a.getLastSeen().isAfterNow());
         assertTrue(a.getLastSeen().isBeforeNow());
         assertFalse(a.getFirstSeen().isAfterNow());

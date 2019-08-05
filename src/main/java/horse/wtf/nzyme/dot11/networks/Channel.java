@@ -23,9 +23,6 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.math.Stats;
-import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
-import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
 import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
 import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
@@ -44,9 +41,6 @@ public abstract class Channel {
 
     @JsonIgnore
     public abstract SignalIndexManager signalIndexManager();
-
-    @JsonIgnore
-    public abstract BeaconRateManager beaconRateManager();
 
     @JsonProperty("channel_number")
     public abstract int channelNumber();
@@ -71,9 +65,6 @@ public abstract class Channel {
 
     @JsonProperty("signal_history")
     public List<SignalInformation> signalHistory = Collections.emptyList();
-
-    @JsonProperty("beacon_rate_history")
-    public List<AverageBeaconRate> beaconRateHistory = Collections.emptyList();
 
     @JsonIgnore
     public abstract double expectedDeltaRangeModifier();
@@ -198,26 +189,12 @@ public abstract class Channel {
         );
     }
 
-    @JsonProperty("beacon_rate")
-    public BeaconRate beaconRate() {
-        return beaconRateManager().getAverageBeaconRate(bssid(), ssid(), channelNumber());
-    }
-
     @JsonIgnore
     public void setSignalHistory(List<SignalInformation> history) {
         this.signalHistory = history;
     }
 
-    @JsonIgnore
-    public void setBeaconRateHistory(List<AverageBeaconRate> history) {
-        this.beaconRateHistory = history;
-    }
-
-    @JsonIgnore
-    public final AtomicInteger beaconCount = new AtomicInteger(1);;
-
     public static Channel create(SignalIndexManager signalIndexManager,
-                                 BeaconRateManager beaconRateManager,
                                  int channelNumber,
                                  String bssid,
                                  String ssid,
@@ -236,7 +213,6 @@ public abstract class Channel {
 
         return builder()
                 .signalIndexManager(signalIndexManager)
-                .beaconRateManager(beaconRateManager)
                 .bssid(bssid)
                 .ssid(ssid)
                 .channelNumber(channelNumber)
@@ -257,8 +233,6 @@ public abstract class Channel {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder signalIndexManager(SignalIndexManager signalIndexManager);
-
-        public abstract Builder beaconRateManager(BeaconRateManager beaconRateManager);
 
         public abstract Builder bssid(String bssid);
 

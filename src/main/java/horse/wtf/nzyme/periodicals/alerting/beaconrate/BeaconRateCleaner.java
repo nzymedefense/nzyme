@@ -15,14 +15,13 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.periodicals.beaconrate;
+package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
 public class BeaconRateCleaner extends Periodical {
 

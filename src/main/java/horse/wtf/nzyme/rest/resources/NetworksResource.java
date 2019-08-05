@@ -55,10 +55,10 @@ public class NetworksResource {
             "GROUP BY bucket, channel " +
             "ORDER BY bucket ASC";
 
-    public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, channel, AVG(beacon_rate) AS avg_beacon_rate " +
+    public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, AVG(beacon_rate) AS avg_beacon_rate " +
             "FROM beacon_rate_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
-            "GROUP BY bucket, channel " +
+            "WHERE bssid = ? AND ssid = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
+            "GROUP BY bucket " +
             "ORDER BY bucket ASC";
 
     @Inject
@@ -145,7 +145,6 @@ public class NetworksResource {
                 for (Channel c : s.channels().values()) {
                     channels.put(c.channelNumber(), ChannelResponse.create(
                             includeHistory ? buildSignalHistory(b, s, c) : null,
-                            includeHistory ? buildBeaconRateHistory(b, s, c) : null,
                             c.channelNumber(),
                             b.bssid(),
                             s.nameSafe(),
@@ -154,8 +153,7 @@ public class NetworksResource {
                             c.signalIndex(),
                             c.signalIndexThreshold(),
                             c.signalIndexStatus().name(),
-                            c.expectedDelta(),
-                            c.beaconRate()
+                            c.expectedDelta()
                     ));
                 }
 
@@ -164,7 +162,9 @@ public class NetworksResource {
                         b.bssid(),
                         s.isHumanReadable(),
                         s.nameSafe(),
-                        channels
+                        channels,
+                        s.beaconRate(),
+                        includeHistory ? buildBeaconRateHistory(b, s) : null
                 )).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
@@ -200,8 +200,8 @@ public class NetworksResource {
                 null);
     }
 
-    private final AverageBeaconRate createEmptyAverageBeaconRate(int channel, DateTime at) {
-        return AverageBeaconRate.create(0.0F, channel, at);
+    private final AverageBeaconRate createEmptyAverageBeaconRate(DateTime at) {
+        return AverageBeaconRate.create(0.0F, at);
     }
 
     public List<SignalInformation> buildSignalHistory(BSSID b, SSID s, Channel channel) {
@@ -227,25 +227,24 @@ public class NetworksResource {
         return sigInfoHistory;
     }
 
-    public List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s, Channel channel) {
+    public List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {
         DateTime yesterday = DateTime.now().minusDays(1);
 
         List<AverageBeaconRate> beaconRateHistory = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(BEACON_RATE_AVERAGE_QUERY)
                         .bind(0, b.bssid())
                         .bind(1, s.name())
-                        .bind(2, channel.channelNumber())
                         .mapTo(AverageBeaconRate.class)
                         .list()
         );
 
         // Always have charts go from now to -24h.
         if (!beaconRateHistory.isEmpty()) {
-            beaconRateHistory.set(0, createEmptyAverageBeaconRate(channel.channelNumber(), yesterday));
+            beaconRateHistory.set(0, createEmptyAverageBeaconRate(yesterday));
         } else {
-            beaconRateHistory.add(createEmptyAverageBeaconRate(channel.channelNumber(), yesterday));
+            beaconRateHistory.add(createEmptyAverageBeaconRate(yesterday));
         }
-        beaconRateHistory.add(createEmptyAverageBeaconRate(channel.channelNumber(), DateTime.now()));
+        beaconRateHistory.add(createEmptyAverageBeaconRate(DateTime.now()));
 
         return beaconRateHistory;
     }

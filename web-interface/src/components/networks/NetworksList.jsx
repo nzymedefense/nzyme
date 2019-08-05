@@ -1,7 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 
-import LoadingSpinner from "../overview/AlertsList";
+import LoadingSpinner from "../alerts/AlertsList";
 
 import NetworksActions from "../../actions/NetworksActions";
 import NetworksStore from "../../stores/NetworksStore";

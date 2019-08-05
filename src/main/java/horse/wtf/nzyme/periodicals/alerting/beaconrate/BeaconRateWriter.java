@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.periodicals.beaconrate;
+package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.database.Database;
@@ -48,18 +48,15 @@ public class BeaconRateWriter extends Periodical {
                         continue;
                     }
 
-                    for (Channel channel : ssid.channels().values()) {
-                        database.useHandle(handle -> handle.execute("INSERT INTO beacon_rate_history(bssid, ssid, channel, beacon_rate, created_at) " +
-                                "VALUES(?, ?, ?, ?, current_timestamp at time zone 'UTC')",
-                                bssid.bssid().toLowerCase(),
-                                ssid.name(),
-                                channel.channelNumber(),
-                                channel.beaconCount.get()
-                        ));
+                    database.useHandle(handle -> handle.execute("INSERT INTO beacon_rate_history(bssid, ssid, beacon_rate, created_at) " +
+                            "VALUES(?, ?, ?, current_timestamp at time zone 'UTC')",
+                            bssid.bssid().toLowerCase(),
+                            ssid.name(),
+                            ssid.beaconCount.get()
+                    ));
 
-                        // Reset internal counter.
-                        channel.beaconCount.set(0);
-                    }
+                    // Reset internal counter.
+                    ssid.beaconCount.set(0);
                 }
             }
         } catch(Exception e) {

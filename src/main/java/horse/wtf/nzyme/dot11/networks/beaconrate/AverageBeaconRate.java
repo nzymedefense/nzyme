@@ -30,16 +30,12 @@ public abstract class AverageBeaconRate {
     @Nullable
     public abstract Float rate();
 
-    @JsonProperty("channel")
-    public abstract int channel();
-
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static AverageBeaconRate create(Float rate, int channel, DateTime createdAt) {
+    public static AverageBeaconRate create(Float rate, DateTime createdAt) {
         return builder()
                 .rate(rate)
-                .channel(channel)
                 .createdAt(createdAt)
                 .build();
     }
@@ -51,8 +47,6 @@ public abstract class AverageBeaconRate {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder rate(Float rate);
-
-        public abstract Builder channel(int channel);
 
         public abstract Builder createdAt(DateTime createdAt);
 

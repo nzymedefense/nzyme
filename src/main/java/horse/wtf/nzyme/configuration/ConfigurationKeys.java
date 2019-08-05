@@ -66,6 +66,7 @@ public class ConfigurationKeys {
     public static final String ADDRESS = "address";
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
+    public static final String BEACON_RATE = "beacon_rate";
     public static final String SIGNAL_QUALITY_TABLE_SIZE_MINUTES = "signal_quality_table_size_minutes";
     public static final String EXPECTED_SIGNAL_DELTA_MODIFIER = "expected_signal_delta_modifier";
     public static final String ANOMALY_ALERT_LOOKBACK_MINUTES = "anomaly_alert_lookback_minutes";

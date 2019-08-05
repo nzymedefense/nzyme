@@ -30,7 +30,7 @@ public class UnexpectedFingerprintProbeRespAlertTest extends AlertTest {
         assertEquals(a.getMessage(), "SSID [wtf] was advertised with a probe response by a device with unexpected fingerprint [ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c]");
         assertEquals(a.getType(), Alert.Type.UNEXPECTED_FINGERPRINT_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
-        assertEquals(a.getFrameCount(), 1);
+        assertEquals(a.getFrameCount(), (Long) 1L);
         assertFalse(a.getLastSeen().isAfterNow());
         assertTrue(a.getLastSeen().isBeforeNow());
         assertFalse(a.getFirstSeen().isAfterNow());

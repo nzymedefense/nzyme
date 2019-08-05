@@ -37,6 +37,8 @@ public abstract class Dot11NetworkDefinition {
 
     public abstract List<String> security();
 
+    public abstract int beaconRate();
+
     @JsonIgnore
     public List<String> allBSSIDAddresses() {
         if (bssids() == null || bssids().isEmpty()) {
@@ -51,12 +53,13 @@ public abstract class Dot11NetworkDefinition {
         }
     }
 
-    public static Dot11NetworkDefinition create(String ssid, List<Dot11BSSIDDefinition> bssids, List<Integer> channels, List<String> security) {
+    public static Dot11NetworkDefinition create(String ssid, List<Dot11BSSIDDefinition> bssids, List<Integer> channels, List<String> security, int beaconRate) {
         return builder()
                 .ssid(ssid)
                 .bssids(bssids)
                 .channels(channels)
                 .security(security)
+                .beaconRate(beaconRate)
                 .build();
     }
 
@@ -65,7 +68,8 @@ public abstract class Dot11NetworkDefinition {
         return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.SSID))
                 && c.getConfigList(ConfigurationKeys.BSSIDS) != null && !c.getConfigList(ConfigurationKeys.BSSIDS).isEmpty()
                 && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
-                && c.getStringList(ConfigurationKeys.SECURITY) != null;
+                && c.getStringList(ConfigurationKeys.SECURITY) != null
+                && c.getInt(ConfigurationKeys.BEACON_RATE) >= 0;
     }
 
     public static Builder builder() {
@@ -81,6 +85,8 @@ public abstract class Dot11NetworkDefinition {
         public abstract Builder channels(List<Integer> channels);
 
         public abstract Builder security(List<String> security);
+
+        public abstract Builder beaconRate(int beaconRate);
 
         public abstract Dot11NetworkDefinition build();
     }

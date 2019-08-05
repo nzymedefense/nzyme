@@ -172,7 +172,7 @@ public class Networks {
 
             // Ensure that the SSID has been recorded for this BSSID.
             if(!bssid.ssids().containsKey(ssidName)) {
-                bssid.ssids().put(ssidName, SSID.create(ssidName, bssid.bssid()));
+                bssid.ssids().put(ssidName, SSID.create(ssidName, bssid.bssid(), beaconRateManager));
             }
         } else {
             // First time we are seeing this BSSID.
@@ -182,7 +182,7 @@ public class Networks {
                 oui = "unknown";
             }
 
-            SSID ssid = SSID.create(ssidName, transmitter);
+            SSID ssid = SSID.create(ssidName, transmitter, beaconRateManager);
             bssid = BSSID.create(new HashMap<String, SSID>(){{
                 put(ssidName, ssid);
             }}, oui, transmitter);
@@ -200,6 +200,12 @@ public class Networks {
         SSID ssid = bssid.ssids().get(ssidName);
         ssid.updateSecurity(taggedParameters.getSecurityConfiguration());
 
+        // Update beacon counter.
+        if (subtype == Dot11FrameSubtype.BEACON) {
+            // Used for beacon rate calculation.
+            ssid.beaconCount.incrementAndGet();
+        }
+
         try {
             // Create or update channel.
             if (ssid.channels().containsKey(channelNumber)) {
@@ -207,11 +213,6 @@ public class Networks {
                 // Update channel statistics.
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
-
-                if (subtype == Dot11FrameSubtype.BEACON) {
-                    // Used for beacon rate calculation.
-                    channel.beaconCount.incrementAndGet();
-                }
 
                 // Add signal quality to history of signal qualities.
                 channel.recentSignalQuality().add(Channel.SignalQuality.create(now, signalQuality));
@@ -240,7 +241,6 @@ public class Networks {
                 // Create new channel.
                 Channel channel = Channel.create(
                         this.signalIndexManager,
-                        this.beaconRateManager,
                         channelNumber,
                         bssid.bssid(),
                         ssid.name(),

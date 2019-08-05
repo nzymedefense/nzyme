@@ -26,7 +26,7 @@ public class UnexpectedChannelProbeRespAlertTest extends AlertTestHelper {
         assertEquals(a.getMessage(), "SSID [wtf] was advertised with a probe response frame on an unexpected channel.");
         assertEquals(a.getType(), Alert.Type.UNEXPECTED_CHANNEL_PROBERESP);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
-        assertEquals(a.getFrameCount(), 1);
+        assertEquals(a.getFrameCount(), (Long) 1L);
         assertFalse(a.getLastSeen().isAfterNow());
         assertTrue(a.getLastSeen().isBeforeNow());
         assertFalse(a.getFirstSeen().isAfterNow());

@@ -23,6 +23,7 @@ import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.Alert;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -52,6 +53,7 @@ public abstract class AlertDetailsResponse {
     public abstract DateTime lastSeen();
 
     @JsonProperty("frame_count")
+    @Nullable
     public abstract Long frameCount();
 
     @JsonProperty("description")

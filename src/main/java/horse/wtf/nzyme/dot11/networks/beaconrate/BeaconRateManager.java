@@ -25,7 +25,7 @@ import horse.wtf.nzyme.util.Tools;
 public class BeaconRateManager {
 
     private static final String AVERAGE_QUERY = "SELECT AVG(beacon_rate) FROM beacon_rate_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 minute')";
+            "WHERE bssid = ? AND ssid = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 minute')";
 
     private final Database database;
     private final SystemStatus systemStatus;
@@ -35,7 +35,7 @@ public class BeaconRateManager {
         this.systemStatus = nzyme.getSystemStatus();
     }
 
-    public BeaconRate getAverageBeaconRate(String bssid, String ssid, int channel) {
+    public BeaconRate getAverageBeaconRate(String bssid, String ssid) {
         if (!Tools.isHumanlyReadable(ssid)) {
             return BeaconRate.create(0.0F, systemStatus.isInStatus(SystemStatus.TYPE.TRAINING));
         }
@@ -44,7 +44,6 @@ public class BeaconRateManager {
                 handle.createQuery(AVERAGE_QUERY)
                         .bind(0, bssid)
                         .bind(1, ssid)
-                        .bind(2, channel)
                         .mapTo(Float.class)
                         .first()
         );

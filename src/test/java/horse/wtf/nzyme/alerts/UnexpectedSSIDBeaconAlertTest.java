@@ -25,7 +25,7 @@ public class UnexpectedSSIDBeaconAlertTest extends AlertTestHelper {
         assertEquals(a.getMessage(), "Our BSSID [00:c0:ca:95:68:3b] advertised unexpected SSID [wtf] with beacon frame.");
         assertEquals(a.getType(), Alert.Type.UNEXPECTED_SSID_BEACON);
         assertEquals(a.getSubsystem(), Subsystem.DOT_11);
-        assertEquals(a.getFrameCount(), 1);
+        assertEquals(a.getFrameCount(), (Long) 1L);
         assertFalse(a.getLastSeen().isAfterNow());
         assertTrue(a.getLastSeen().isBeforeNow());
         assertFalse(a.getFirstSeen().isAfterNow());

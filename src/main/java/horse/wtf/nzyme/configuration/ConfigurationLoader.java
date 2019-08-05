@@ -209,7 +209,8 @@ public class ConfigurationLoader {
                     config.getString(ConfigurationKeys.SSID),
                     lowercaseBSSIDs.build(),
                     config.getIntList(ConfigurationKeys.CHANNELS),
-                    config.getStringList(ConfigurationKeys.SECURITY)
+                    config.getStringList(ConfigurationKeys.SECURITY),
+                    config.getInt(ConfigurationKeys.BEACON_RATE)
             ));
         }
 

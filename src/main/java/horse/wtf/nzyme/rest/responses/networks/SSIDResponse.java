@@ -20,7 +20,10 @@ package horse.wtf.nzyme.rest.responses.networks;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.networks.SSID;
+import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
+import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -42,13 +45,22 @@ public abstract class SSIDResponse {
     @JsonProperty
     public abstract Map<Integer, ChannelResponse> channels();
 
-    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels) {
+    @JsonProperty("beacon_rate")
+    public abstract BeaconRate beaconRate();
+
+    @JsonProperty("beacon_rate_history")
+    @Nullable
+    public abstract List<AverageBeaconRate> beaconRateHistory();
+
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory) {
         return builder()
                 .security(security)
                 .bssid(bssid)
                 .humanReadable(humanReadable)
                 .name(name)
                 .channels(channels)
+                .beaconRate(beaconRate)
+                .beaconRateHistory(beaconRateHistory)
                 .build();
     }
 
@@ -67,6 +79,10 @@ public abstract class SSIDResponse {
         public abstract Builder name(String name);
 
         public abstract Builder channels(Map<Integer, ChannelResponse> channels);
+
+        public abstract Builder beaconRate(BeaconRate beaconRate);
+
+        public abstract Builder beaconRateHistory(List<AverageBeaconRate> beaconRateHistory);
 
         public abstract SSIDResponse build();
     }

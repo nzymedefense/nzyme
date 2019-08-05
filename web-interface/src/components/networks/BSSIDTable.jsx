@@ -28,8 +28,8 @@ class BSSIDTable extends Reflux.Component {
                             <th><i className="fas fa-signal" /></th>
                             <th>Advertised Networks</th>
                             <th>OUI</th>
-                            <th>SEC</th>
-                            <th>FP</th>
+                            <th title="Security">SEC</th>
+                            <th title="Fingerprints">FP</th>
                             <th>WPS</th>
                         </tr>
                         </thead>
