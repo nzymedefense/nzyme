@@ -38,6 +38,7 @@ public abstract class Configuration {
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
     public abstract List<Dot11NetworkDefinition> dot11Networks();
+    public abstract List<Dot11TrapDeviceDefinition> dot11TrapDevices();
 
     public abstract List<Alert.TYPE_WIDE> dot11Alerts();
     public abstract int alertingRetentionPeriodMinutes();
@@ -84,6 +85,7 @@ public abstract class Configuration {
                                        URI httpExternalUri,
                                        List<Dot11MonitorDefinition> dot11Monitors,
                                        List<Dot11NetworkDefinition> dot11Networks,
+                                       List<Dot11TrapDeviceDefinition> dot11TrapDevices,
                                        List<Alert.TYPE_WIDE> dot11Alerts,
                                        int alertingRetentionPeriodMinutes,
                                        int alertingTrainingPeriodSeconds,
@@ -110,6 +112,7 @@ public abstract class Configuration {
                 .httpExternalUri(httpExternalUri)
                 .dot11Monitors(dot11Monitors)
                 .dot11Networks(dot11Networks)
+                .dot11TrapDevices(dot11TrapDevices)
                 .dot11Alerts(dot11Alerts)
                 .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
@@ -159,6 +162,8 @@ public abstract class Configuration {
         public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
 
         public abstract Builder dot11Networks(List<Dot11NetworkDefinition> dot11Networks);
+
+        public abstract Builder dot11TrapDevices(List<Dot11TrapDeviceDefinition> dot11TrapDevices);
 
         public abstract Builder dot11Alerts(List<Alert.TYPE_WIDE> dot11Alerts);
 

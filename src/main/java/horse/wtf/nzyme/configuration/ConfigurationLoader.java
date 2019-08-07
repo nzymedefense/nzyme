@@ -28,6 +28,7 @@ import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -92,6 +93,7 @@ public class ConfigurationLoader {
                 parseHttpExternalUri(),
                 parseDot11Monitors(),
                 parseDot11Networks(),
+                parseDot11TrapDeviceDefinitions(),
                 parseDot11Alerts(),
                 parseAlertingRetentionPeriodMinutes(),
                 parseAlertingTrainingPeriodSeconds(),
@@ -217,6 +219,35 @@ public class ConfigurationLoader {
         return result.build();
     }
 
+    private List<Dot11TrapDeviceDefinition> parseDot11TrapDeviceDefinitions() {
+        ImmutableList.Builder<Dot11TrapDeviceDefinition> result = new ImmutableList.Builder<>();
+
+        for (Config config : root.getConfigList(ConfigurationKeys.DOT11_TRAPS)) {
+            if (!Dot11TrapDeviceDefinition.checkConfig(config)) {
+                LOG.info("Skipping 802.11 trap device definition with invalid configuration. Invalid definition: [{}]", config);
+                continue;
+            }
+
+            ImmutableList.Builder<Dot11TrapConfiguration> traps = new ImmutableList.Builder<>();
+            for (Config trapConfig : config.getConfigList(ConfigurationKeys.TRAPS)) {
+                traps.add(Dot11TrapConfiguration.create(
+                        Trap.Type.valueOf(trapConfig.getString(ConfigurationKeys.TYPE)),
+                        trapConfig
+                ));
+            }
+
+            result.add(Dot11TrapDeviceDefinition.create(
+                    config.getString(ConfigurationKeys.DEVICE_SENDER),
+                    config.getIntList(ConfigurationKeys.CHANNELS),
+                    config.getString(ConfigurationKeys.HOP_COMMAND),
+                    config.getInt(ConfigurationKeys.HOP_INTERVAL),
+                    traps.build()
+            ));
+        }
+
+        return result.build();
+    }
+
     private List<Alert.TYPE_WIDE> parseDot11Alerts() {
         ImmutableList.Builder<Alert.TYPE_WIDE> result = new ImmutableList.Builder<>();
 
@@ -321,14 +352,29 @@ public class ConfigurationLoader {
 
         // 802.11 Trap Pairs
         i = 0;
-        for (Config c : root.getConfigList(ConfigurationKeys.DOT11_TRAP_PAIRS)) {
-            String where = ConfigurationKeys.DOT11_TRAP_PAIRS + "." + "#" + i;
+        for (Config c : root.getConfigList(ConfigurationKeys.DOT11_TRAPS)) {
+            String where = ConfigurationKeys.DOT11_TRAPS + ".#" + i;
             expect(c, ConfigurationKeys.DEVICE_SENDER, where, String.class);
-            expect(c, ConfigurationKeys.DEVICE_MONITOR, where, String.class);
             expect(c, ConfigurationKeys.CHANNELS, where, List.class);
             expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
             expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
             expect(c, ConfigurationKeys.TRAPS, where, List.class);
+
+            int y = 0;
+            for (Config trap : c.getConfigList(ConfigurationKeys.TRAPS)) {
+                String trapWhere = where + ".#" + y;
+
+                // Make sure trap type exists and is set to an existing trap type.
+                expect(trap, ConfigurationKeys.TYPE, trapWhere, String.class);
+                String trapType = trap.getString(ConfigurationKeys.TYPE);
+                try {
+                    Trap.Type.valueOf(trapType);
+                } catch(IllegalArgumentException e) {
+                    throw new InvalidConfigurationException("Trap [" + trapWhere + "] is of invalid type [" + trapType + "].");
+                }
+                y++;
+            }
+
         }
 
         // Tuning parameters
@@ -461,8 +507,7 @@ public class ConfigurationLoader {
             usedFingerprints.add(fingerprint);
         }
 
-        // TODO: No trap pair device is used multiple times or as a monitor.
-        // TODO: No trap pair device has a trap configured multiple times.
+        // TODO: No trap device is used multiple times or as a monitor.
     }
 
     private void validateChannelList(String key) throws InvalidConfigurationException {

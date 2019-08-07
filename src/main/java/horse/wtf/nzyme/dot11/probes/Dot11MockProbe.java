@@ -65,8 +65,4 @@ public class Dot11MockProbe extends Dot11Probe {
         return Collections.emptyList();
     }
 
-    @Override
-    public void scheduleAction() {
-
-    }
 }

@@ -31,6 +31,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.handlers.*;
+import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import horse.wtf.nzyme.dot11.parsers.*;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
@@ -70,7 +71,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Dot11AuthenticationFrameParser authenticationFrameParser;
     private final Dot11DeauthenticationFrameParser deauthenticationFrameParser;
 
-    // Merics
+    // Metrics
     private final Meter globalFrameMeter;
     private final Timer globalFrameTimer;
     private final Meter localFrameMeter;
@@ -137,8 +138,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
             throw new Dot11ProbeInitializationException("Could not build PCAP handle.", e);
         }
 
-
-        LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.networkInterfaceName(), Joiner.on(",").join(configuration.channels()));
+        LOG.info("PCAP handle for [{}] acquired. Cycling through channels <{}>.", configuration.probeName(), Joiner.on(",").join(configuration.channels()));
     }
 
     @Override
@@ -287,11 +287,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public List<Dot11FrameInterceptor> getInterceptors() {
         return frameInterceptors;
-    }
-
-    @Override
-    public void scheduleAction() {
-        throw new RuntimeException("Monitor probe cannot schedule actions.");
     }
 
     public static void configureAsBroadMonitor(final Dot11MonitorProbe probe) {
@@ -446,6 +441,8 @@ public class Dot11MonitorProbe extends Dot11Probe {
                 return Collections.emptyList();
             }
         });
+
+        probe.addFrameInterceptors(new ProbeRequestTrapResponseInterceptorSet(probe).getInterceptors());
     }
 
 }

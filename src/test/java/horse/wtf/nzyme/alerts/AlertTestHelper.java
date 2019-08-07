@@ -80,6 +80,7 @@ public class AlertTestHelper {
                             }}, 0)
                     );
                 }},
+                Collections.emptyList(),
                 BANDITS_STANDARD
         ), new Statistics());
     }
@@ -92,6 +93,7 @@ public class AlertTestHelper {
             Collections.emptyList(),
             1,
             "foo",
+            Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyMap()
     );

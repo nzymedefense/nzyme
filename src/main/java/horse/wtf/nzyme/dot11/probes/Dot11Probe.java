@@ -57,8 +57,6 @@ public abstract class Dot11Probe {
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
     public abstract List<Dot11FrameInterceptor> getInterceptors();
 
-    public abstract void scheduleAction();
-
     public Dot11Probe(Dot11ProbeConfiguration configuration, Nzyme nzyme) {
         this.nzyme = nzyme;
         this.uplinks = Lists.newArrayList();

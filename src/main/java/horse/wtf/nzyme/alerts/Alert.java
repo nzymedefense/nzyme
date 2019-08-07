@@ -39,7 +39,8 @@ public abstract class Alert {
         KNOWN_BANDIT_FINGERPRINT,
         UNEXPECTED_FINGERPRINT,
         SIGNAL_ANOMALY,
-        BEACON_RATE_ANOMALY
+        BEACON_RATE_ANOMALY,
+        PROBE_RESPONSE_TRAP_1
     }
 
     public enum Type {
@@ -56,7 +57,8 @@ public abstract class Alert {
         UNEXPECTED_FINGERPRINT_BEACON,
         UNEXPECTED_FINGERPRINT_PROBERESP,
         SIGNAL_ANOMALY,
-        BEACON_RATE_ANOMALY
+        BEACON_RATE_ANOMALY,
+        PROBE_RESPONSE_TRAP_1
     }
 
     private final Subsystem subsystem;

@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11.probes;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
+import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
@@ -41,9 +42,19 @@ public abstract class Dot11ProbeConfiguration {
     public abstract String channelHopCommand();
 
     public abstract List<Dot11NetworkDefinition> getDot11Networks();
+    public abstract List<Dot11TrapDeviceDefinition> getDot11TrapDevices();
     public abstract Map<String, BanditFingerprintDefinition> getBanditFingerprints();
 
-    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks, Map<String, BanditFingerprintDefinition> getBanditFingerprints) {
+    public static Dot11ProbeConfiguration create(String probeName,
+                                                 List<GraylogAddress> graylogAddresses,
+                                                 String nzymeId,
+                                                 String networkInterfaceName,
+                                                 List<Integer> channels,
+                                                 Integer channelHopInterval,
+                                                 String channelHopCommand,
+                                                 List<Dot11NetworkDefinition> getDot11Networks,
+                                                 List<Dot11TrapDeviceDefinition> getDot11TrapDevices,
+                                                 Map<String, BanditFingerprintDefinition> getBanditFingerprints) {
         return builder()
                 .probeName(probeName)
                 .graylogAddresses(graylogAddresses)
@@ -53,6 +64,7 @@ public abstract class Dot11ProbeConfiguration {
                 .channelHopInterval(channelHopInterval)
                 .channelHopCommand(channelHopCommand)
                 .getDot11Networks(getDot11Networks)
+                .getDot11TrapDevices(getDot11TrapDevices)
                 .getBanditFingerprints(getBanditFingerprints)
                 .build();
     }
@@ -78,6 +90,8 @@ public abstract class Dot11ProbeConfiguration {
         public abstract Builder channelHopCommand(String channelHopCommand);
 
         public abstract Builder getDot11Networks(List<Dot11NetworkDefinition> getDot11Networks);
+
+        public abstract Builder getDot11TrapDevices(List<Dot11TrapDeviceDefinition> getDot11TrapDevices);
 
         public abstract Builder getBanditFingerprints(Map<String, BanditFingerprintDefinition> getBanditFingerprints);
 

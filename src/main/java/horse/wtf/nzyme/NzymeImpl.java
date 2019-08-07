@@ -25,14 +25,13 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.AlertsService;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
+import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.dot11.interceptors.*;
-import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
-import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
@@ -77,6 +76,7 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -275,6 +275,7 @@ public class NzymeImpl implements Nzyme {
                     m.channelHopInterval(),
                     m.channelHopCommand(),
                     configuration.dot11Networks(),
+                    configuration.dot11TrapDevices(),
                     configuration.knownBanditFingerprints()
             ), getMetrics());
 
@@ -310,7 +311,56 @@ public class NzymeImpl implements Nzyme {
             // Initialization happens in thread.
         }
 
-        // Trap pairs.
+        // Traps.
+        for (Dot11TrapDeviceDefinition td : configuration.dot11TrapDevices()) {
+            int i = 0;
+            for (Dot11TrapConfiguration tc : td.traps()) {
+                Trap trap;
+
+                // This part doesn't belong here but it's fine for now. REFACTOR.
+                switch (tc.type()) {
+                    case PROBE_REQUEST_1:
+                        // TODO validation
+                        try {
+                            trap = new ProbeRequestTrap(
+                                    configuration,
+                                    td.deviceSender(),
+                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                    tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
+                            );
+                        } catch(Exception e) {
+                            LOG.error("Failed to construct trap of type [{}].", tc.type(), e);
+                            continue;
+                        }
+                        break;
+                    default:
+                        LOG.error("Cannot construct trap of type [{}]", tc.type());
+                        continue;
+                }
+
+                Dot11SenderProbe probe = new Dot11SenderProbe(this,
+                        Dot11ProbeConfiguration.create(
+                                "trap-sender-" + td.deviceSender() + "-" + tc.type() + "-" + i,
+                                configuration.graylogUplinks(),
+                                configuration.nzymeId(),
+                                td.deviceSender(),
+                                td.channels(),
+                                td.channelHopInterval(),
+                                td.channelHopCommand(),
+                                configuration.dot11Networks(),
+                                configuration.dot11TrapDevices(),
+                                configuration.knownBanditFingerprints()
+                        ), trap, getMetrics());
+
+                probeExecutor.submit(probe.loop());
+                probes.add(probe);
+
+                i++;
+            }
+        }
+
+        // TODO: Trap interceptors on all monitors.
     }
 
     @Override

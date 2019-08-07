@@ -36,6 +36,7 @@ public class FrameHandlerTest {
             1,
             "foo",
             Collections.emptyList(),
+            Collections.emptyList(),
             Collections.emptyMap()
     );
 

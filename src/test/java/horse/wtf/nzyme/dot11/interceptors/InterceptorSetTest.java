@@ -82,6 +82,7 @@ public class InterceptorSetTest {
                             }}, 0)
                     );
                 }},
+                Collections.emptyList(),
                 BANDITS_STANDARD
         ), new Statistics());
     }

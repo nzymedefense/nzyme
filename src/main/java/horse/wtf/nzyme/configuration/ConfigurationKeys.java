@@ -27,7 +27,7 @@ public class ConfigurationKeys {
     public static final String DOT11_NETWORKS = "802_11_networks";
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
-    public static final String DOT11_TRAP_PAIRS = "802_11_trap_pairs";
+    public static final String DOT11_TRAPS = "802_11_traps";
     public static final String KNOWN_BANDIT_FINGERPRINTS = "known_bandit_fingerprints";
     public static final String TUNING_PARAMETERS = "tuning_parameters";
 
@@ -53,17 +53,19 @@ public class ConfigurationKeys {
     public static final String TLS_CERTIFICATE_PATH = "tls_certificate_path";
     public static final String TLS_KEY_PATH = "tls_key_path";
     public static final String SSID = "ssid";
+    public static final String SSIDS = "ssids";
     public static final String BSSIDS = "bssids";
     public static final String SECURITY = "security";
     public static final String BSSID = "bssid";
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
     public static final String DEVICE_SENDER = "device_sender";
-    public static final String DEVICE_MONITOR = "device_monitor";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
     public static final String BANDIT_NAMES = "bandit_names";
     public static final String ADDRESS = "address";
+    public static final String TRANSMITTER = "transmitter";
+    public static final String DELAY_SECONDS = "delay_seconds";
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";

@@ -57,13 +57,12 @@ graylog_uplinks: [
     device: wlx00c0ca971201
 
     # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
-    # Consider local legal requirements and regulations. Default is US 2.4GHz band.
-    # Configure one or more interfaces here.
+    # Consider local legal requirements and regulations.
     # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
     channels: [1,2,3,4,5,6,7,8,9,10,11]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux and OSX are in the README.
+    # configure the adapter. Examples for Linux and OSX are in the documentation.
     channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
@@ -105,43 +104,39 @@ tuning_parameters {
   anomaly_alert_trigger_ratio: 0.8
 }
 
-802_11_trap_pairs: [
+802_11_traps: [
   {
     # The name of the 802.11/WiFi adapter that should be used to send data.
-    device_sender: wlx00c0ca971216
-
-    # The name of the 802.11/WiFi adapter that should be used to monitor for bandit interaction with the bluff.
-    # Note that this is different from the 802_11_monitors section above and devices cannot be re-used for this.
-    device_monitor: wlx00c0ca97120e
+    device: wlx00c0ca971216
 
     # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
-    # Consider local legal requirements and regulations. Default is US 2.4GHz band.
-    # Configure one or more interfaces here.
-    # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
-    channels: [1,2,3,4,5,6,7,8,9,10,11]
+    channels: [6]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux and OSX are in the README.
+    # configure the adapter. Examples for Linux and OSX are in the documentation.
     channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
     channel_hop_interval: 1
 
-    # Which traps to set using this trap pair.
+    # Which types of traps to set.
     traps: [
       {
-        type: DEAUTH_TRAP
-        ssid: getoffmylawn
-      }
+        # Sends crafted probe-requests for a non-existent network that an attacker might want to target. Any probe-response
+        # to it is considered malicious and will cause an alert.
+        type: PROBE_REQUEST_1
 
-      {
-        type: RECORDED_BEACON_TRAP
-        ssid: getoffmylawn
-      }
+        # Transmitter address for crafted probe-requests. This example looks like it's an Apple iPhone. (E0:33:8E)
+        transmitter: "E0:33:8E:36:AC:FA"
 
-      {
-        type: PROBE_REQ_TRAP
-        ssid: fooked
+        # The SSIDs to use in the crafted probe-requests.
+        ssids: [
+          ECorp_Omaha,
+          CenturyLink8683
+        ]
+
+        # How often to send the probe-requests, in seconds.
+        delay_seconds: 30
       }
     ]
   }
