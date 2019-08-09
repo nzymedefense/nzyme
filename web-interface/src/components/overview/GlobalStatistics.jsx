@@ -58,7 +58,6 @@ class GlobalStatistics extends Reflux.Component {
         <td>{channel}</td>
         <td>{numeral(data.total_frames).format('0,0')}</td>
         <td className={GlobalStatistics.decideFrameQualityColor(quality)}>{numeral(data.malformed_frames).format('0')}</td>
-        <td className={GlobalStatistics.decideFrameQualityColor(quality)}>{numeral(quality).format('0')}</td>
       </tr>
     )
   }
@@ -161,7 +160,6 @@ class GlobalStatistics extends Reflux.Component {
                     <th>Channel</th>
                     <th>Total frames considered</th>
                     <th>Malformed</th>
-                    <th>Quality</th>
                   </tr>
                 </thead>
 
