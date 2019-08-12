@@ -22,6 +22,14 @@ nzyme is not designed to be physically moving around in any way. It is supposed 
 
 Please use [the Wiki](https://github.com/lennartkoopmann/nzyme/wiki) to get started.
 
+## Contributing
+
+There are many ways to contribute and all community interaction is absolutely welcome:
+
+* test
+
+Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforced across all channels and platforms.
+
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on license-free frequencies.
