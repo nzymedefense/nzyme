@@ -1,4 +1,4 @@
-# Nzyme - A WiFi Defense System
+# nzyme - A WiFi Defense System
 
 [![CircleCI](https://circleci.com/gh/lennartkoopmann/nzyme/tree/master.svg?style=shield)](https://circleci.com/gh/lennartkoopmann/nzyme/tree/master)
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
@@ -6,11 +6,17 @@
 
 ## Introduction
 
-* TODO:
-  * alerting
-  * deception
-  * threat hunting / long pcap
-  * it's not a kismet/wardriving/low-power
+### What is nzyme?
+
+The nzyme project uses WiFi adapters in monitor mode to scan the frequencies for suspicious behavior, specifically rogue access points and known WiFi attack platforms. Each recorded wireless frame is parsed and optionally sent to a [Graylog](https://www.graylog.org/) log management system for long-term storage that allows you to perform forensics and incident response. Ever wondered what to do if you catch a malicious wireless actor? With 
+
+Several [types of alerts](https://go.nzyme.org/alerting) are automatically raised. The employed techniques range from signature based analysis of expected network infrastructure to threat landscape assessment with fingerprinting to setting traps with deception capabilities.
+
+### What is nzyme not?
+
+## Getting Started
+
+Please use [the Wiki](https://github.com/lennartkoopmann/nzyme/wiki) to get started.
 
 ## Legal notice
 
