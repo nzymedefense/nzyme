@@ -32,6 +32,7 @@ There are many ways to contribute and all community interaction is absolutely we
 * Write documentation.
 * Write a blog post.
 * Help a user in the issue tracker or the IRC channel (#nzyme on FreeNode.)
+* Get in contact and say how you use it or what would be a cool addition.
 * Tell the world.
 
 Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforced across all channels and platforms.
