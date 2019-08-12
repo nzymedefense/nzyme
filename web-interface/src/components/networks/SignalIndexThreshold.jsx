@@ -3,10 +3,6 @@ import numeral from "numeral";
 
 class SignalIndexThreshold extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         // Still in training period.
         if (this.props.status === "TRAINING") {

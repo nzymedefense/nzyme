@@ -4,10 +4,6 @@ import numeral from "numeral";
 
 class BeaconRate extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <span>

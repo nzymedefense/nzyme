@@ -34,7 +34,7 @@ class SystemStatus extends Reflux.Component {
         } else {
             return (
                 <div>
-                    <h3>Status <small><a href="https://go.nzyme.org/system-status-explained" target="_blank">help</a></small></h3>
+                    <h3>Status <small><a href="https://go.nzyme.org/system-status-explained" target="_blank" rel="noopener noreferrer">help</a></small></h3>
                     <ul>
                         {Object.keys(this.state.systemStatus).map(function (key) {
                             return <SystemStatusState state={self.state.systemStatus[key]}/>

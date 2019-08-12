@@ -8,9 +8,6 @@ import AlertConfiguration from "./AlertConfiguration";
 
 class SystemPage extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
     render() {
         return (
             <div>

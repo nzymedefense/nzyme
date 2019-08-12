@@ -30,7 +30,7 @@ class AlertConfiguration extends Reflux.Component {
                 <div>
                     <div className="row">
                         <div className="col-md-12">
-                            <h3>Configured Alerts <small><a href="https://go.nzyme.org/alerts-explained" target="_blank">help</a></small></h3>
+                            <h3>Configured Alerts <small><a href="https://go.nzyme.org/alerts-explained" target="_blank" rel="noopener noreferrer">help</a></small></h3>
 
                             <ul>
                                 {Object.keys(this.state.alert_configuration.enabled).map(function (key) {

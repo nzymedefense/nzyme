@@ -39,23 +39,22 @@ class GlobalStatistics extends Reflux.Component {
     setInterval(ProbesActions.findCurrentChannels, 900);
   }
 
-  static _buildChannelRow(channel, data, activeChannels) {
+  static _buildChannelRow(channelNumber, data, activeChannels) {
     let is_active = false;
-    Object.keys(activeChannels).map(function (key) {
-      const entry = activeChannels[key];
-      for (const key of Object.keys(entry)) {
-        const activeChannel = entry[key];
+    for(const channel in activeChannels) {
+      for (const key of Object.keys(channel)) {
+        const activeChannel = channel[key];
 
-        if(parseInt(channel) === activeChannel) {
+        if(parseInt(channelNumber, 10) === activeChannel) {
           is_active = true;
         }
       }
-    });
+    };
 
     const quality = ((data.total_frames-data.malformed_frames)*100)/data.total_frames;
     return (
-      <tr key={channel} className={is_active ? "text-info" : ""}>
-        <td>{channel}</td>
+      <tr key={channelNumber} className={is_active ? "text-info" : ""}>
+        <td>{channelNumber}</td>
         <td>{numeral(data.total_frames).format('0,0')}</td>
         <td className={GlobalStatistics.decideFrameQualityColor(quality)}>{numeral(data.malformed_frames).format('0')}</td>
       </tr>

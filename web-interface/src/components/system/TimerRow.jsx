@@ -4,10 +4,6 @@ import numeral from "numeral";
 
 class TimerRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         return (
             <tr>

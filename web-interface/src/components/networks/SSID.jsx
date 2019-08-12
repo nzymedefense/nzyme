@@ -3,10 +3,6 @@ import Routes from "../../util/Routes";
 
 class SSID extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         if (this.props.ssid.human_readable) {
             return (

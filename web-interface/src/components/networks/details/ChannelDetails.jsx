@@ -7,10 +7,6 @@ import SimpleLineChart from "../../charts/SimpleLineChart";
 
 class ChannelDetails extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     _formatSignalQualityHistory(data) {
         const result = [];
 
@@ -38,8 +34,7 @@ class ChannelDetails extends Reflux.Component {
             line: {width: 1, shape: "linear", color: "#a80000"}
         };
 
-        Object.keys(data).map(function (key) {
-            const point = data[key];
+        data.forEach(function(point) {
             const date = new Date(point["created_at"]);
             avgSignalQuality["x"].push(date);
             avgSignalQuality["y"].push(point["average_signal_quality"]);
@@ -77,9 +72,7 @@ class ChannelDetails extends Reflux.Component {
             line: {width: 1, shape: "linear", color: "#a80000"}
         };
 
-
-        Object.keys(data).map(function (key) {
-            const point = data[key];
+        data.forEach(function(point) {
             const date = new Date(point["created_at"]);
             avgSignalIndex["x"].push(date);
             avgSignalIndex["y"].push(point["average_signal_index"]);

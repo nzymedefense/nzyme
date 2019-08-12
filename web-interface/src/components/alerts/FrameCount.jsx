@@ -3,10 +3,6 @@ import numeral from "numeral";
 
 class FrameCount extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         if (this.props.alert.frame_count) {
             return (

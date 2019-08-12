@@ -22,11 +22,11 @@ class NavigationBar extends Reflux.Component {
               &nbsp;
               <NavigationLink href={Routes.SYSTEM_STATUS} title="System Status" />
               &nbsp;
-              <a href="#" onClick={this.props.handleLogout} className="btn btn-dark" title="Sign Out">
+              <a href="#logout" onClick={this.props.handleLogout} className="btn btn-dark" title="Sign Out">
                 <i className="fas fa-sign-out-alt" />
               </a>
               &nbsp;
-              <a href="https://go.nzyme.org/help" target="_blank" className="btn btn-primary">Help</a>
+              <a href="https://go.nzyme.org/help" target="_blank" rel="noopener noreferrer" className="btn btn-primary">Help</a>
             </span>
           </div>
         </div>

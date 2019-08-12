@@ -5,10 +5,6 @@ import ProbeTableRow from "./ProbeTableRow";
 
 class ProbesList extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const self = this;
 

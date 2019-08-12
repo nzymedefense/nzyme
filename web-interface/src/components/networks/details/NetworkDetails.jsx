@@ -41,8 +41,7 @@ class NetworkDetails extends Reflux.Component {
             line: {width: 1, shape: "linear", color: "#2983fe"}
         };
 
-        Object.keys(data).map(function (key) {
-            const point = data[key];
+        data.forEach(function(point) {
             const date = new Date(point["created_at"]);
             avgBeaconRate["x"].push(date);
             avgBeaconRate["y"].push(point["rate"]);
@@ -54,8 +53,6 @@ class NetworkDetails extends Reflux.Component {
     }
 
     render() {
-        const self = this;
-
         const ssid = this.state[this.stateKey];
 
         if (!ssid) {

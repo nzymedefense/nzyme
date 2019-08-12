@@ -4,10 +4,6 @@ import numeral from "numeral";
 
 class ProbesTableRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     static _decideStatus(isInLoop) {
         if (isInLoop) {
             return (

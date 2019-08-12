@@ -7,10 +7,6 @@ import SignalIndex from "./SignalIndex";
 
 class SSIDRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     _listFingerprints() {
         const fingerprints = this.props.channel.fingerprints;
 
