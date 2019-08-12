@@ -26,7 +26,13 @@ Please use [the Wiki](https://github.com/lennartkoopmann/nzyme/wiki) to get star
 
 There are many ways to contribute and all community interaction is absolutely welcome:
 
-* test
+* Open an issue for any kind of bug you think you have found.
+* Open an issue for anything that was confusing to you. Bad, missing or confusing documentation is considered a bug.
+* Open a Pull Request for a new feature or a bugfix. It is a good idea to get in contact first to make sure that it fits the roadmap and has a chance to be merged.
+* Write documentation.
+* Write a blog post.
+* Help a user in the issue tracker or the IRC channel (#nzyme on FreeNode.)
+* Tell the world.
 
 Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforced across all channels and platforms.
 
