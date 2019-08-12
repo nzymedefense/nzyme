@@ -14,6 +14,10 @@ Several [types of alerts](https://go.nzyme.org/alerting) are automatically raise
 
 ### What is nzyme not?
 
+nzyme is not designed to be physically moving around in any way. It is supposed to stay stationary and constantly observe the WiFi RF spectrum. If you are looking for a WiFi recon or wardriving tool, you should check out [Kismet](https://www.kismetwireless.net/);
+
+(It obviously won't break from moving around but the interface and some of the functionality won't make much sense anymore.)
+
 ## Getting Started
 
 Please use [the Wiki](https://github.com/lennartkoopmann/nzyme/wiki) to get started.
