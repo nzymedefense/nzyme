@@ -56,7 +56,7 @@ public class AlertTest extends AlertTestHelper {
         a.incrementFrameCount();
         a.incrementFrameCount();
 
-        assertEquals(a.getFrameCount(),  (Long) 1L);
+        assertEquals(a.getFrameCount(),  (Long) 3L);
     }
 
 }

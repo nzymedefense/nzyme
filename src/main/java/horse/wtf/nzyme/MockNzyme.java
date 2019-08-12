@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.ConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -30,13 +31,26 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
 public class MockNzyme implements Nzyme {
 
+    private File loadFromResourceFile(String name) {
+        URL resource = getClass().getClassLoader().getResource(name);
+        if (resource == null) {
+            throw new RuntimeException("test config file does not exist in resources");
+        }
+
+        return new File(resource.getFile());
+    }
+
     private final Statistics statistics;
+    private final Configuration configuration;
     private final SystemStatus systemStatus;
     private final Networks networks;
     private final Clients clients;
@@ -47,6 +61,13 @@ public class MockNzyme implements Nzyme {
 
     public MockNzyme() {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
+        try {
+            this.configuration = new ConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
+        } catch (ConfigurationLoader.InvalidConfigurationException | ConfigurationLoader.IncompleteConfigurationException | FileNotFoundException e) {
+            throw new RuntimeException("Could not load test config file from resources.", e);
+        }
+
         this.metricRegistry = new MetricRegistry();
         this.statistics = new Statistics();
         this.systemStatus = new SystemStatus();
@@ -81,7 +102,7 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public Configuration getConfiguration() {
-        return null;
+        return configuration;
     }
 
     @Override

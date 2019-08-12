@@ -38,7 +38,7 @@ public class ConfigurationLoaderTest {
 
         assertEquals(c.role(), Role.LEADER);
         assertEquals(c.nzymeId(), "nzyme-testng");
-        assertEquals(c.databasePath(), "nzyme.db");
+        assertEquals(c.databasePath(), "postgresql://localhost:5432/nzyme?user=nzyme&password=YOUR_PASSWORD");
         assertEquals(c.pythonExecutable(), "/usr/bin/python2.7");
         assertEquals(c.pythonScriptDirectory(), "/tmp");
         assertEquals(c.pythonScriptPrefix(), "nzyme_");
@@ -78,7 +78,7 @@ public class ConfigurationLoaderTest {
                 add(11);
             }}, new ArrayList<String>() {{
                 add("None");
-            }}, 0));
+            }}, 40));
 
             add(Dot11NetworkDefinition.create("WTF", new ArrayList<Dot11BSSIDDefinition>() {{
                 add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("123456")));
@@ -99,7 +99,7 @@ public class ConfigurationLoaderTest {
             }}, new ArrayList<String>() {{
                 add("WPA1-EAM-PSK-CCMP-TKIP");
                 add("WPA2-EAM-PSK-CCMP-TKIP");
-            }}, 0));
+            }}, 40));
         }});
         assertEquals(c.dot11Alerts(), new ArrayList<Alert.TYPE_WIDE>() {{
             add(Alert.TYPE_WIDE.UNEXPECTED_BSSID);
