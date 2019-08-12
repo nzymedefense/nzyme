@@ -287,6 +287,7 @@
 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -479,6 +480,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.1.0</version>
                         <configuration>
                             <filesets>
                                 <fileset>
@@ -494,6 +496,7 @@
                     </plugin>
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
+                        <version>1.8.0</version>
                         <artifactId>frontend-maven-plugin</artifactId>
 
                         <configuration>
@@ -527,17 +530,6 @@
                                 </goals>
                                 <configuration>
                                     <arguments>run build</arguments>
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>yarn run check-production-build</id>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <phase>test</phase>
-                                <configuration>
-                                    <arguments>run check-production-build</arguments>
                                 </configuration>
                             </execution>
                         </executions>
