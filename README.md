@@ -12,7 +12,7 @@
   * threat hunting / long pcap
   * it's not a kismet/wardriving/low-power
 
-## Installation and configuration on a Raspberry Pi 3
+## Installation and configuration on a Raspberry Pi
 
 
 #### Requirements
@@ -93,84 +93,6 @@ Beaconing networks:                17 (last 60s)
 #### Renaming WiFi interfaces (optional)
 
 The interface names `wlan0`, `wlan1` etc are not always deterministic. Sometimes they can change after a reboot and suddenly nzyme will attempt to use the onboard WiFi chip that does not support monitor mode. To avoid this problem, you can "pin" interface names by MAC address. I like to rename the onboard chip to `wlanBoard` to avoid accidental usage.
-
-**IMPORTANT NOTE:** Starting with Debian/Raspbian Stretch (late 2017), `udev` started to assign predictable network interface names by default. To enable this on Raspbian, you only have to delete the `/etc/systemd/network/99-default.link` symlink and restart your Raspberry Pi. After this, you'll see a predictable naming scheme that includes the MAC address of the device. For example, my previously named `wlan0` is now always `wlxx00c0ca95683b`. **Do this and skip all following steps for renaming network interfaces if you are on Debian/Raspbian Stretch.** (You can find out your version like this: `cat /etc/os-release`)
-
-This is what `ifconfig` looks like with no external WiFi adapters plugged in.
-
-```
-pi@parabola:~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr b8:27:eb:0f:0e:d4  
-          inet addr:172.16.0.136  Bcast:172.16.0.255  Mask:255.255.255.0
-          inet6 addr: fe80::8966:2353:4688:c9a/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1327 errors:0 dropped:22 overruns:0 frame:0
-          TX packets:1118 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:290630 (283.8 KiB)  TX bytes:233228 (227.7 KiB)
-
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:304 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:304 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1 
-          RX bytes:24552 (23.9 KiB)  TX bytes:24552 (23.9 KiB)
-
-wlan0     Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81  
-          inet6 addr: fe80::77be:fb8a:ad75:cca9/64 Scope:Link
-          UP BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-```
-
-In this case `wlan0` is the onboard WiFi chip that we want to rename to `wifiBoard`.
-
-Open the file `/lib/udev/rules.d/75-persistent-net-generator.rules` and add `wlan*` to the device name whitelist:
-
-```
-# device name whitelist
-KERNEL!="wlan*|ath*|msh*|ra*|sta*|ctc*|lcs*|hsi*", \
-                                        GOTO="persistent_net_generator_end"
-```
-
-Reboot the system. After it is back up, open `/etc/udev/rules.d/70-persistent-net.rules` and change the `NAME` variable:
-
-```
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="b8:27:eb:5a:5b:81", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="wlan*", NAME="wlanBoard"
-```
-
-Reboot the system again and enjoy the consistent naming. Any new WiFi adapter you plug in, will be a classic, numbered `wlan0`, `wlan1` etc that can be safely referenced in the nzyme config without the chance of accidentally selecting the onboard chip, because it's called `wlanBoard` now.
-
-```
-eth0      Link encap:Ethernet  HWaddr b8:27:eb:0f:0e:d4  
-          inet addr:172.16.0.136  Bcast:172.16.0.255  Mask:255.255.255.0
-          inet6 addr: fe80::8966:2353:4688:c9a/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:349 errors:0 dropped:8 overruns:0 frame:0
-          TX packets:378 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:75761 (73.9 KiB)  TX bytes:69865 (68.2 KiB)
-
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:228 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:228 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1 
-          RX bytes:18624 (18.1 KiB)  TX bytes:18624 (18.1 KiB)
-
-wlanBoard Link encap:Ethernet  HWaddr b8:27:eb:5a:5b:81  
-          UP BROADCAST MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-```
 
 ## Legal notice
 
