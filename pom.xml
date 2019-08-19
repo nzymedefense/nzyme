@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <log4j.version>2.12.0</log4j.version>
-        <pcap4j.version>1.8.1</pcap4j.version>
+        <pcap4j.version>1.8.2</pcap4j.version>
         <gelfclient.version>1.4.4</gelfclient.version>
         <guava.version>28.0-jre</guava.version>
         <jcommander.version>1.72</jcommander.version>
