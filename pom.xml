@@ -23,7 +23,7 @@
         <pcap4j.version>1.8.1</pcap4j.version>
         <gelfclient.version>1.4.4</gelfclient.version>
         <guava.version>28.0-jre</guava.version>
-        <jcommander.version>1.72</jcommander.version>
+        <jcommander.version>1.78</jcommander.version>
         <testng.version>6.14.3</testng.version>
         <okhttp.version>4.0.0</okhttp.version>
         <jackson.version>2.9.9</jackson.version>
