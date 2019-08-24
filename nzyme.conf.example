@@ -1,18 +1,22 @@
 # General nzyme configuration.
 general: {
-  # The role of this nzyme instance. Options are: LEADER, SATELLITE
+  # In this version, only LEADER is supported. Added for future compatibility. Do not change.
   role: LEADER
 
   # The ID or name of this nzyme instance. Must be unique.
   id: nzyme-node-01
 
   # Admin password SHA256 hash. (64 characters) - generate with, for example, sha256sum on Linux: $ echo -n secretpassword | sha256sum
+  # You will use this password to log in to the web interface.
   admin_password_hash:
 
+  # Path to postgreSQL database. Make suer to change username, password and database name. (This is described in the documentation)
   database_path: "postgresql://localhost:5432/nzyme?user=nzyme&password=YOUR_PASSWORD"
 
-  fetch_ouis: false
+  # Download current list of manufacturers and enable MAC address to manufacturer lookup?
+  fetch_ouis: true
 
+  # We use Python to inject frames.
   python {
     # Path to python executable.
     path: /usr/bin/python2.7
@@ -25,7 +29,10 @@ general: {
   }
 
   alerting {
+    # How many minutes to keep alerts active?
     clean_after_minutes: 5
+
+    # Length of training period. Do not change this if you don't know what this means.
     training_period_seconds: 300
   }
 
@@ -35,25 +42,33 @@ general: {
 
 # Web interface and REST API configuration.
 interfaces: {
+  # Make sure to set this to an IP address you can reach from your workstation.
   rest_listen_uri: "http://127.0.0.1:22900/"
+
+  # This is usually the same as the `rest_listen_uri`. Take a look at the configuration documentation to learn about
+  # other use-cases. It will be interesting if you run behind a load balancer or NAT. (basically, it is the address
+  # that your web browser will use to try to connect to nzyme and it has to be reachable for it.)
   http_external_uri: "http://127.0.0.1:22900/"
+
+  # Use TLS? (HTTPS) See https://go.nzyme.org/docs-https
   use_tls: false
   tls_certificate_path: none
   tls_key_path: none
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)
+# See https://go.nzyme.org/docs-wifi-threat-hunting
 graylog_uplinks: [
   "graylog.example.org:13999"
 ]
 
 # 802.11/Wifi adapters that are designated to read traffic.
-# Traffic recorded by monitor interfaces will be written to Graylog for analytics/forensics and also used for alerting.
+# Traffic recorded by monitor interfaces will be written to Graylog for analytics/forensics and also be used for alerting.
 # The more monitors you have listening on different channels, the more traffic will be picked up and the more
 # traffic will be available as the basis for alerts.
 802_11_monitors: [
   {
-    # The 802.11/WiFi adapter name.
+    # The 802.11/WiFi adapter name. (from ifconfig)
     device: wlx00c0ca971201
 
     # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
@@ -62,7 +77,7 @@ graylog_uplinks: [
     channels: [1,2,3,4,5,6,7,8,9,10,11]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux and OSX are in the documentation.
+    # configure the adapter. Examples for Linux are in the documentation.
     channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
@@ -71,6 +86,9 @@ graylog_uplinks: [
 ]
 
 # A list of all your 802.11/WiFi networks. This will be used for automatic alerting.
+# It is recommended to leave this empty or on default at first start of nzyme and
+# then build it using the data nzyme shows in the web interface. For example, the
+# "security" and "fingerprints" strings can be copied from the web interface.
 802_11_networks: [
   {
     ssid: mywifinetwork
@@ -98,6 +116,7 @@ graylog_uplinks: [
   beacon_rate_anomaly
 ]
 
+# Leave on default if you don't know what this is.
 tuning_parameters {
   signal_quality_table_size_minutes: 2
   expected_signal_delta_modifier: 3.0
@@ -105,6 +124,8 @@ tuning_parameters {
   anomaly_alert_trigger_ratio: 0.8
 }
 
+# Deception. Simply delete all trap definitions if you don't want to use this feature for now or if you simply don't
+# have another WiFi adapter available.
 802_11_traps: [
   {
     # The name of the 802.11/WiFi adapter that should be used to send data.
@@ -114,7 +135,7 @@ tuning_parameters {
     channels: [6]
 
     # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux and OSX are in the documentation.
+    # configure the adapter. Examples for Linux are in the documentation.
     channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
@@ -143,13 +164,14 @@ tuning_parameters {
   }
 ]
 
+# Fingerprints of known bad devices.
 known_bandit_fingerprints: [
 
     {
       fingerprint: ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c,
       bandit_names: [
         "WiFi Pineapple Nano or Tetra (PineAP)"
-        "spacehuhn/esp8266_deauther (attack frames)"
+        "esp8266_deauther (attack frames)"
       ]
     }
 
