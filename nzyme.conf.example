@@ -129,7 +129,7 @@ tuning_parameters {
 802_11_traps: [
   {
     # The name of the 802.11/WiFi adapter that should be used to send data.
-    device: wlx00c0ca971216
+    device_sender: wlx00c0ca971216
 
     # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
     channels: [6]
