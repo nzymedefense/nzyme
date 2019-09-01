@@ -60,7 +60,7 @@ public class Networks {
 
     public Networks(Nzyme nzyme) {
         this.nzyme = nzyme;
-        this.bssids = Maps.newHashMap();
+        this.bssids = Maps.newConcurrentMap();
         this.signalIndexManager = new SignalIndexManager(nzyme);
         this.beaconRateManager = new BeaconRateManager(nzyme);
         this.signalDeltaModifier = nzyme.getConfiguration().expectedSignalDeltaModifier();
@@ -158,7 +158,7 @@ public class Networks {
         }
     }
 
-    private synchronized void register(byte subtype,
+    private void register(byte subtype,
                                        String transmitter,
                                        String transmitterFingerprint,
                                        Dot11TaggedParameters taggedParameters,
@@ -171,7 +171,7 @@ public class Networks {
             bssid = bssids.get(transmitter);
 
             // Ensure that the SSID has been recorded for this BSSID.
-            if(!bssid.ssids().containsKey(ssidName)) {
+            if (!bssid.ssids().containsKey(ssidName)) {
                 bssid.ssids().put(ssidName, SSID.create(ssidName, bssid.bssid(), beaconRateManager));
             }
         } else {
@@ -183,7 +183,7 @@ public class Networks {
             }
 
             SSID ssid = SSID.create(ssidName, transmitter, beaconRateManager);
-            bssid = BSSID.create(new HashMap<String, SSID>(){{
+            bssid = BSSID.create(new HashMap<String, SSID>() {{
                 put(ssidName, ssid);
             }}, oui, transmitter);
 
@@ -254,7 +254,6 @@ public class Networks {
             LOG.error(ssid);
             throw e;
         }
-
     }
 
     public Map<String, BSSID> getBSSIDs() {
