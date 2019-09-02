@@ -140,4 +140,9 @@
         <dropColumn tableName="beacon_rate_history" columnName="channel" />
     </changeSet>
 
+    <changeSet id="5" author="lennartkoopmann">
+        <dropTable tableName="signal_index_history" />
+    </changeSet>
+
+
 </databaseChangeLog>

@@ -51,31 +51,4 @@ public abstract class Dot11FrameHandler<T> {
     protected abstract void doHandle(T frame);
     public abstract String getName();
 
-    protected Map<String, Object> buildDeltaInformationFields(String transmitter, String ssid, int channel, int signal) {
-        Map<String, Object> x = Maps.newHashMap();
-
-        if (!this.probe.getSystemStatus().isInStatus(SystemStatus.TYPE.TRAINING)) {
-            try {
-                SignalDelta delta = probe.getNetworks().getSignalDelta(transmitter, ssid, channel);
-                x.put(FieldNames.SIGNAL_DELTA_LOWER, delta.lower());
-                x.put(FieldNames.SIGNAL_DELTA_UPPER, delta.upper());
-
-                if (signal > delta.upper()) {
-                    x.put(FieldNames.SIGNAL_IN_DELTA, false);
-                    x.put(FieldNames.SIGNAL_DELTA_DIFF, ((float) signal / (float) delta.upper() * 100.0) - 100);
-                } else if (signal < delta.lower()) {
-                    x.put(FieldNames.SIGNAL_IN_DELTA, false);
-                    x.put(FieldNames.SIGNAL_DELTA_DIFF, ((float) signal / (float) delta.lower() * 100.0) - 100);
-                } else {
-                    x.put(FieldNames.SIGNAL_IN_DELTA, true);
-                }
-            } catch (Networks.NoSuchChannelException | Networks.NoSuchNetworkException e) {
-                // This can happen for newly observed channels.
-                LOG.debug(e);
-            }
-        }
-
-        return x;
-    }
-
 }

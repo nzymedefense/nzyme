@@ -20,16 +20,9 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.EvictingQueue;
-import com.google.common.collect.ImmutableList;
-import com.google.common.math.Stats;
-import horse.wtf.nzyme.dot11.networks.sigindex.AverageSignalIndex;
-import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
-import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,9 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class Channel {
 
     public static final int RECENT_MAX_ENTRIES = 10000;
-
-    @JsonIgnore
-    public abstract SignalIndexManager signalIndexManager();
 
     @JsonProperty("channel_number")
     public abstract int channelNumber();
@@ -63,42 +53,6 @@ public abstract class Channel {
     @JsonProperty("fingerprints")
     public abstract List<String> fingerprints();
 
-    @JsonProperty("signal_history")
-    public List<SignalInformation> signalHistory = Collections.emptyList();
-
-    @JsonIgnore
-    public abstract double expectedDeltaRangeModifier();
-
-    @JsonIgnore
-    public abstract EvictingQueue<SignalQuality> recentSignalQuality();
-
-    @JsonIgnore
-    public abstract EvictingQueue<DeltaState> recentDeltaStates();
-
-    @JsonIgnore
-    public List<Integer> getRecentSignalQualityValues() {
-        ImmutableList.Builder<Integer> values = new ImmutableList.Builder<>();
-
-        for (SignalQuality x : recentSignalQuality()) {
-            values.add(x.quality());
-        }
-
-
-        return values.build();
-    }
-
-    @JsonIgnore
-    public List<Boolean> getRecentDeltaStateValues() {
-        ImmutableList.Builder<Boolean> values = new ImmutableList.Builder<>();
-
-        for (DeltaState x : recentDeltaStates()) {
-            values.add(x.state());
-        }
-
-
-        return values.build();
-    }
-
     @JsonIgnore
     public void registerFingerprint(String fingerprint) {
         if (!fingerprints().contains(fingerprint)) {
@@ -106,104 +60,12 @@ public abstract class Channel {
         }
     }
 
-    @JsonProperty("signal_quality_avg_recent")
-    public int signalQualityRecentAverage() {
-        if(recentSignalQuality().isEmpty()) {
-            return 0;
-        }
-
-        return Long.valueOf(Math.round(Stats.of(getRecentSignalQualityValues()).mean())).intValue();
-    }
-
-    @JsonProperty("signal_index")
-    public float signalIndex() {
-        if (recentDeltaStates().isEmpty()) {
-            return 0;
-        }
-
-        long out = 0;
-
-        for (Boolean inDelta : getRecentDeltaStateValues()) {
-            if(!inDelta) {
-                out += 1;
-            }
-        }
-
-        return ((float)out)/(float)recentDeltaStates().size()*100;
-    }
-
-    @JsonProperty("signal_index_threshold")
-    public AverageSignalIndex signalIndexThreshold() {
-        return signalIndexManager().getRecentAverageSignalIndex(bssid(), ssid(), channelNumber(), recentDeltaStates().size());
-    }
-
-    public enum SignalIndexStatus {
-        TRAINING, TEMP_NA, OK, ANOMALY
-    }
-
-    @JsonProperty("signal_index_status")
-    public SignalIndexStatus signalIndexStatus() {
-        AverageSignalIndex avg = signalIndexThreshold();
-
-        if (avg.inTraining()) {
-            return SignalIndexStatus.TRAINING;
-        }
-
-        if (!avg.hadEnoughData()) {
-            return SignalIndexStatus.TEMP_NA;
-        }
-
-        if (signalIndex() > avg.index()) {
-            return SignalIndexStatus.ANOMALY;
-        } else {
-            return SignalIndexStatus.OK;
-        }
-    }
-
-    @JsonProperty("signal_quality_stddev_recent")
-    public double signalQualityRecentStddev() {
-        if(recentSignalQuality().isEmpty()) {
-            return 0.0;
-        }
-
-        return Stats.of(getRecentSignalQualityValues()).populationStandardDeviation();
-    }
-
-    @JsonProperty("expected_delta")
-    public SignalDelta expectedDelta() {
-        int delta = Long.valueOf(Math.round(Math.pow(signalQualityRecentStddev(), 2)/expectedDeltaRangeModifier())).intValue();
-        int lower = signalQualityRecentAverage()-delta;
-        int upper = signalQualityRecentAverage()+delta;
-
-        if (lower < 0) {
-            lower = 0;
-        }
-
-        if (upper > 100) {
-            upper = 100;
-        }
-
-        return SignalDelta.create(
-                lower,
-                upper
-        );
-    }
-
-    @JsonIgnore
-    public void setSignalHistory(List<SignalInformation> history) {
-        this.signalHistory = history;
-    }
-
-    public static Channel create(SignalIndexManager signalIndexManager,
-                                 int channelNumber,
+    public static Channel create(int channelNumber,
                                  String bssid,
                                  String ssid,
                                  AtomicLong totalFrames,
                                  int signal,
-                                 String fingerprint,
-                                 double expectedDeltaRangeModifier) {
-        EvictingQueue<SignalQuality> q = EvictingQueue.create(RECENT_MAX_ENTRIES);
-        EvictingQueue<DeltaState> d = EvictingQueue.create(RECENT_MAX_ENTRIES);
+                                 String fingerprint) {
 
         List<String> fingerprints = new ArrayList<String>() {{
             if(fingerprint != null) {
@@ -212,17 +74,13 @@ public abstract class Channel {
         }};
 
         return builder()
-                .signalIndexManager(signalIndexManager)
                 .bssid(bssid)
                 .ssid(ssid)
                 .channelNumber(channelNumber)
                 .totalFrames(totalFrames)
                 .signalMin(new AtomicInteger(signal))
                 .signalMax(new AtomicInteger(signal))
-                .recentSignalQuality(q)
-                .recentDeltaStates(d)
                 .fingerprints(fingerprints)
-                .expectedDeltaRangeModifier(expectedDeltaRangeModifier)
                 .build();
     }
 
@@ -232,7 +90,6 @@ public abstract class Channel {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder signalIndexManager(SignalIndexManager signalIndexManager);
 
         public abstract Builder bssid(String bssid);
 
@@ -246,13 +103,7 @@ public abstract class Channel {
 
         public abstract Builder signalMax(AtomicInteger signalMax);
 
-        public abstract Builder recentSignalQuality(EvictingQueue<SignalQuality> recentSignalQuality);
-
-        public abstract Builder recentDeltaStates(EvictingQueue<DeltaState> recentDeltaStates);
-
         public abstract Builder fingerprints(List<String> fingerprints);
-
-        public abstract Builder expectedDeltaRangeModifier(double expectedDeltaRangeModifier);
 
         public abstract Channel build();
     }

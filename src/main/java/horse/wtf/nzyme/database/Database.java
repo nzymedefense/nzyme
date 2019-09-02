@@ -2,7 +2,6 @@ package horse.wtf.nzyme.database;
 
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
-import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformationMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -43,7 +42,6 @@ public class Database {
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
                 .registerRowMapper(new MeasurementMapper())
-                .registerRowMapper(new SignalInformationMapper())
                 .registerRowMapper(new BeaconRateMapper());
 
         // Run migrations against underlying JDBC connection.

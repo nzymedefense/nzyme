@@ -17,10 +17,6 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -29,14 +25,11 @@ import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
-import horse.wtf.nzyme.dot11.networks.sigindex.SignalIndexManager;
-import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -51,49 +44,12 @@ public class Networks {
 
     private final Nzyme nzyme;
 
-    private final SignalIndexManager signalIndexManager;
     private final BeaconRateManager beaconRateManager;
-
-    private final Timer tableCleanerTimer;
-
-    private final double signalDeltaModifier;
 
     public Networks(Nzyme nzyme) {
         this.nzyme = nzyme;
         this.bssids = Maps.newConcurrentMap();
-        this.signalIndexManager = new SignalIndexManager(nzyme);
         this.beaconRateManager = new BeaconRateManager(nzyme);
-        this.signalDeltaModifier = nzyme.getConfiguration().expectedSignalDeltaModifier();
-
-        this.tableCleanerTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER));
-
-        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS)) {
-            nzyme.getMetrics().register(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS, (Gauge<Long>) () -> {
-                long result = 0;
-                for (BSSID bssid : bssids.values()) {
-                    for (SSID ssid : bssid.ssids().values()) {
-                        for (Channel channel : ssid.channels().values()) {
-                            result += channel.recentSignalQuality().size();
-                        }
-                    }
-                }
-                return result;
-            });
-        }
-
-        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS)) {
-            nzyme.getMetrics().register(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS, (Gauge<Long>) () -> {
-                long result = 0;
-                for (BSSID bssid : bssids.values()) {
-                    for (SSID ssid : bssid.ssids().values()) {
-                        for (Channel channel : ssid.channels().values()) {
-                            result += channel.recentDeltaStates().size();
-                        }
-                    }
-                }
-                return result;
-            });
-        }
 
         // Regularly delete networks that have not been seen for a while.
         Executors.newSingleThreadScheduledExecutor(
@@ -102,48 +58,6 @@ public class Networks {
                         .setNameFormat("bssids-cleaner")
                         .build()
         ).scheduleAtFixedRate(() -> retentionClean(600), 1, 1, TimeUnit.MINUTES);
-
-        // Regularly delete old channel signal quality measurements.
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat("channels-sigqual-cleaner")
-                        .build()
-        ).scheduleAtFixedRate(() -> {
-            Timer.Context ctx = this.tableCleanerTimer.time();
-            try {
-                for (BSSID bssid : bssids.values()) {
-                    for (SSID ssid : bssid.ssids().values()) {
-                        for (Channel channel : ssid.channels().values()) {
-                            DateTime cutoff = DateTime.now().minusMinutes(nzyme.getConfiguration().signalQualityTableSizeMinutes());
-                            LOG.debug("Deleting expired signal quality measurements from [{}]", channel);
-
-                            ImmutableList.Builder<Channel.SignalQuality> newQualities = new ImmutableList.Builder<>();
-                            channel.recentSignalQuality().forEach(signalQuality -> {
-                                if (signalQuality.createdAt().isAfter(cutoff)) {
-                                    newQualities.add(signalQuality);
-                                }
-                            });
-                            channel.recentSignalQuality().clear();
-                            channel.recentSignalQuality().addAll(newQualities.build());
-
-                            ImmutableList.Builder<Channel.DeltaState> newDeltaStates = new ImmutableList.Builder<>();
-                            channel.recentDeltaStates().forEach(deltaState -> {
-                                if (deltaState.createdAt().isAfter(cutoff)) {
-                                    newDeltaStates.add(deltaState);
-                                }
-                            });
-                            channel.recentDeltaStates().clear();
-                            channel.recentDeltaStates().addAll(newDeltaStates.build());
-                        }
-                    }
-                }
-            } catch(Exception e) {
-                LOG.error("Could not clean signal index tables.", e);
-            } finally {
-                ctx.stop();
-            }
-        }, 0, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -214,9 +128,6 @@ public class Networks {
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
 
-                // Add signal quality to history of signal qualities.
-                channel.recentSignalQuality().add(Channel.SignalQuality.create(now, signalQuality));
-
                 // Update max or min quality if required.
                 boolean inDelta = true;
                 if (signalQuality > channel.signalMax().get()) {
@@ -228,9 +139,6 @@ public class Networks {
                     inDelta = false;
                 }
 
-                // Add delta state.
-                channel.recentDeltaStates().add(Channel.DeltaState.create(now, inDelta));
-
                 // Add fingerprint.
                 if (transmitterFingerprint != null) {
                     channel.registerFingerprint(transmitterFingerprint);
@@ -240,14 +148,13 @@ public class Networks {
             } else {
                 // Create new channel.
                 Channel channel = Channel.create(
-                        this.signalIndexManager,
                         channelNumber,
                         bssid.bssid(),
                         ssid.name(),
                         new AtomicLong(1),
                         signalQuality,
-                        transmitterFingerprint,
-                        signalDeltaModifier);
+                        transmitterFingerprint
+                );
                 ssid.channels().put(channelNumber, channel);
             }
         } catch (NullPointerException e) {
@@ -273,20 +180,6 @@ public class Networks {
         }
 
         return new ImmutableSet.Builder<String>().addAll(ssids).build();
-    }
-
-    public SignalDelta getSignalDelta(String bssid, String ssidName, int channelNumber) throws NoSuchNetworkException, NoSuchChannelException {
-        if(!getBSSIDs().containsKey(bssid) || !getBSSIDs().get(bssid).ssids().containsKey(ssidName)) {
-            throw new NoSuchNetworkException();
-        }
-
-        SSID ssid = getBSSIDs().get(bssid).ssids().get(ssidName);
-
-        if(!ssid.channels().containsKey(channelNumber)) {
-            throw new NoSuchChannelException();
-        }
-
-        return ssid.channels().get(channelNumber).expectedDelta();
     }
 
     public void retentionClean(int seconds) {

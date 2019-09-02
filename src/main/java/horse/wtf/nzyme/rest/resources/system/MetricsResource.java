@@ -113,46 +113,6 @@ public class MetricsResource {
         );
 
         metrics.put(
-                "networks_sigquality_msrmnt_count",
-                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.NETWORKS_SIGNAL_QUALITY_MEASUREMENTS))
-        );
-
-        metrics.put(
-                "networks_deltastate_msrmnt_count",
-                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.NETWORKS_DELTA_STATE_MEASUREMENTS))
-        );
-
-        metrics.put(
-                "sigidx_memory_cleaner_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_MEMORY_CLEANER_TIMER))
-        );
-
-        metrics.put(
-                "sigidx_writer_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_WRITER_TIMER))
-        );
-
-        metrics.put(
-                "sigidx_reader_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_READER_TIMER))
-        );
-
-        metrics.put(
-                "sigidx_cleaner_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_CLEANER_TIMER))
-        );
-
-        metrics.put(
-                "sigidx_monitor_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.SIGNAL_INDEX_MONITOR_TIMER))
-        );
-
-        metrics.put(
-                "sigidx_monitor_msrmnt_count",
-                GaugeResponse.fromGauge(nzyme.getMetrics().getGauges().get(MetricNames.SIGNAL_INDEX_MONITOR_MEASUREMENTS))
-        );
-
-        metrics.put(
                 "beaconrate_monitor_timing",
                 TimerResponse.fromSnapshot(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMER))
         );

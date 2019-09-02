@@ -52,38 +52,8 @@ public abstract class BSSID {
 
     @JsonProperty("best_recent_signal_quality")
     public int bestRecentSignalQuality() {
-        int best = 0;
-
-        for (SSID ssid : ssids().values()) {
-            for (Channel channel : ssid.channels().values()) {
-                if (channel.signalQualityRecentAverage() > best) {
-                    best = channel.signalQualityRecentAverage();
-                }
-            }
-        }
-
-
-        return best;
-    }
-
-    @JsonProperty("signal_index_ok")
-    public boolean signalIndexOkay() {
-        boolean result = true;
-
-        for (SSID ssid : ssids().values()) {
-            if (!ssid.isHumanReadable()) {
-                continue;
-            }
-
-            for (Channel channel : ssid.channels().values()) {
-                if (channel.signalIndexStatus() == Channel.SignalIndexStatus.ANOMALY) {
-                    return false;
-                }
-            }
-
-        }
-
-        return result;
+        // TODO actually calculate from somewhere
+        return 100;
     }
 
     public static BSSID create(Map<String, SSID> ssids, String oui, String bssid) {

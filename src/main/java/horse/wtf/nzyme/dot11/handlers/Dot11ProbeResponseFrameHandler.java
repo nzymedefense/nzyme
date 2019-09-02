@@ -43,7 +43,6 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
             message = frame.transmitter() + " responded to probe request from " + frame.destination() + " for " + frame.ssid();
         }
 
-        Map<String, Object> deltaFields = buildDeltaInformationFields(frame.transmitter(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
         probe.notifyUplinks(
                 new Notification(message, frame.meta().getChannel(), probe)
                         .addField(FieldNames.DESTINATION, frame.destination())
@@ -53,9 +52,8 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
                         .addField(FieldNames.IS_WPA1, frame.taggedParameters().isWPA1())
                         .addField(FieldNames.IS_WPA2, frame.taggedParameters().isWPA2())
                         .addField(FieldNames.IS_WPS, frame.taggedParameters().isWPS())
-                        .addField(FieldNames.SUBTYPE, "probe-resp")
-                        .addFields(deltaFields),
-                frame.meta()
+                        .addField(FieldNames.SUBTYPE, "probe-resp"),
+                        frame.meta()
         );
 
         LOG.debug(message);

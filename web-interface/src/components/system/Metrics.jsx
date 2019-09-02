@@ -53,29 +53,6 @@ class Metrics extends Reflux.Component {
                                         </dd>
                                     </dl>
                                 </div>
-
-                                <div className="col-md-3">
-                                    <dl>
-                                        <dt>Signal Index Table</dt>
-                                        <dd>
-                                            {numeral(this.state.systemMetrics.networks_sigquality_msrmnt_count.value).format("0,0")} in memory
-                                        </dd>
-
-                                        <dt>Signal Delta State Table</dt>
-                                        <dd>
-                                            {numeral(this.state.systemMetrics.networks_deltastate_msrmnt_count.value).format("0,0")} in memory
-                                        </dd>
-                                    </dl>
-                                </div>
-
-                                <div className="col-md-3">
-                                    <dl>
-                                        <dt>Signal Monitor Table</dt>
-                                        <dd>
-                                            {numeral(this.state.systemMetrics.sigidx_monitor_msrmnt_count.value).format("0,0")} in memory
-                                        </dd>
-                                    </dl>
-                                </div>
                             </div>
 
                             <div className="row">
@@ -95,11 +72,6 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="802.11 Frame Processing" timer={this.state.systemMetrics.frame_timing}/>
                                             <TimerRow title="802.11 Tagged Parameter Parsing" timer={this.state.systemMetrics.tagged_params_parse_timing}/>
                                             <TimerRow title="802.11 Fingerprinting" timer={this.state.systemMetrics.tagged_params_fingerprint_timing}/>
-                                            <TimerRow title="Signal Index Writes" timer={this.state.systemMetrics.sigidx_writer_timing}/>
-                                            <TimerRow title="Signal Index Reads" timer={this.state.systemMetrics.sigidx_reader_timing}/>
-                                            <TimerRow title="Signal Index Cleans" timer={this.state.systemMetrics.sigidx_cleaner_timing}/>
-                                            <TimerRow title="Signal Index Memory Cleans" timer={this.state.systemMetrics.sigidx_memory_cleaner_timing}/>
-                                            <TimerRow title="Signal Index Monitor Executions" timer={this.state.systemMetrics.sigidx_monitor_timing}/>
                                             <TimerRow title="Beacon Rate Monitor Executions" timer={this.state.systemMetrics.beaconrate_monitor_timing}/>
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                         </tbody>

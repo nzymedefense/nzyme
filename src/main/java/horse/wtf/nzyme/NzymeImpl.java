@@ -34,9 +34,6 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
-import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexAnomalyAlertMonitor;
-import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexCleaner;
-import horse.wtf.nzyme.periodicals.alerting.sigindex.SignalIndexWriter;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateCleaner;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateWriter;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
@@ -172,18 +169,12 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new SignalIndexWriter(this), 10, 30, TimeUnit.SECONDS);
-        periodicalManager.scheduleAtFixedRate(new SignalIndexCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
-        }
-
-        if (configuredAlerts.contains(Alert.TYPE_WIDE.SIGNAL_ANOMALY)) {
-            periodicalManager.scheduleAtFixedRate(new SignalIndexAnomalyAlertMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
         if (configuredAlerts.contains(Alert.TYPE_WIDE.BEACON_RATE_ANOMALY)) {

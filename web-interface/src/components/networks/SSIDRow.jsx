@@ -3,7 +3,6 @@ import Reflux from 'reflux';
 
 import numeral from "numeral";
 import SSID from "./SSID";
-import SignalIndex from "./SignalIndex";
 
 class SSIDRow extends Reflux.Component {
 
@@ -60,7 +59,6 @@ class SSIDRow extends Reflux.Component {
                 <td><strong>{c.channel_number}</strong></td>
                 <td>{numeral(c.total_frames).format('0,0')}</td>
                 <td>{this._printSecurity()}</td>
-                <td><SignalIndex channel={c} ssid={this.props.ssid} /></td>
             </tr>
         )
     }

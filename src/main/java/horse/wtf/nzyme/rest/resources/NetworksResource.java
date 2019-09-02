@@ -25,7 +25,6 @@ import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.sigindex.SignalInformation;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -46,14 +45,6 @@ import java.util.Map;
 public class NetworksResource {
 
     private static final Logger LOG = LogManager.getLogger(NetworksResource.class);
-
-    private static final String SIGNAL_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, channel, AVG(signal_index) AS avg_signal_index, " +
-            "AVG(signal_index_threshold) AS avg_signal_index_threshold, AVG(signal_quality) AS avg_signal_quality, " +
-            "AVG(signal_stddev) AS avg_signal_stddev, AVG(expected_delta_lower) AS avg_expected_delta_lower, " +
-            "AVG(expected_delta_upper) AS avg_expected_delta_upper FROM signal_index_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
-            "GROUP BY bucket, channel " +
-            "ORDER BY bucket ASC";
 
     public static final String BEACON_RATE_AVERAGE_QUERY = "SELECT date_trunc('minute', created_at) AS bucket, AVG(beacon_rate) AS avg_beacon_rate " +
             "FROM beacon_rate_history " +
@@ -144,16 +135,11 @@ public class NetworksResource {
                 Map<Integer, ChannelResponse> channels = Maps.newTreeMap();
                 for (Channel c : s.channels().values()) {
                     channels.put(c.channelNumber(), ChannelResponse.create(
-                            includeHistory ? buildSignalHistory(b, s, c) : null,
                             c.channelNumber(),
                             b.bssid(),
                             s.nameSafe(),
                             c.totalFrames().get(),
-                            fingerprints,
-                            c.signalIndex(),
-                            c.signalIndexThreshold(),
-                            c.signalIndexStatus().name(),
-                            c.expectedDelta()
+                            fingerprints
                     ));
                 }
 
@@ -190,41 +176,8 @@ public class NetworksResource {
         return Response.ok().build();
     }
 
-    private final SignalInformation createEmptySignalInformation(int channel, DateTime at) {
-        return SignalInformation.create(channel, at,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null);
-    }
-
     private final AverageBeaconRate createEmptyAverageBeaconRate(DateTime at) {
         return AverageBeaconRate.create(0.0F, at);
-    }
-
-    public List<SignalInformation> buildSignalHistory(BSSID b, SSID s, Channel channel) {
-        DateTime yesterday = DateTime.now().minusDays(1);
-        List<SignalInformation> sigInfoHistory = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery(SIGNAL_AVERAGE_QUERY)
-                        .bind(0, b.bssid())
-                        .bind(1, s.name())
-                        .bind(2, channel.channelNumber())
-                        .mapTo(SignalInformation.class)
-                        .list()
-        );
-
-
-        // Always have charts go from now to -24h.
-        if (!sigInfoHistory.isEmpty()) {
-            sigInfoHistory.set(0, createEmptySignalInformation(channel.channelNumber(), yesterday));
-        } else {
-            sigInfoHistory.add(createEmptySignalInformation(channel.channelNumber(), yesterday));
-        }
-        sigInfoHistory.add(createEmptySignalInformation(channel.channelNumber(), DateTime.now()));
-
-        return sigInfoHistory;
     }
 
     public List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {

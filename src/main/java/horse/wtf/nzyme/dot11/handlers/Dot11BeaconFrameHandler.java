@@ -48,7 +48,6 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
 
         Dot11MetaInformation meta = beacon.meta();
 
-        Map<String, Object> deltaFields = buildDeltaInformationFields(beacon.transmitter(), beacon.ssid(), meta.getChannel(), meta.getSignalQuality());
         probe.notifyUplinks(
                 new Notification(message, beacon.meta().getChannel(), probe)
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
@@ -59,8 +58,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                         .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
                         .addField(FieldNames.IS_WPS, beacon.taggedParameters().isWPS())
                         .addField(FieldNames.SUBTYPE, "beacon")
-                        .addFields(deltaFields),
-                meta
+                        ,meta
         );
 
         LOG.debug(message);
