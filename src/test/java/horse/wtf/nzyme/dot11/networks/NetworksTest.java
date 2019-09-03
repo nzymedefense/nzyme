@@ -115,13 +115,9 @@ public class NetworksTest {
         ));
         assertEquals(n1.ssids().get("WTF").channels().size(), 2);
         assertEquals(n1.ssids().get("WTF").channels().get(1).totalFrames().get(), 3L);
-        assertEquals(n1.ssids().get("WTF").channels().get(1).signalMin().get(), 56);
-        assertEquals(n1.ssids().get("WTF").channels().get(1).signalMax().get(), 92);
         assertEquals(n1.ssids().get("WTF").channels().get(1).fingerprints().size(), 2);
         assertEquals(n1.ssids().get("WTF").channels().get(1).fingerprints().get(0), "dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b");
         assertEquals(n1.ssids().get("WTF").channels().get(6).totalFrames().get(), 4L);
-        assertEquals(n1.ssids().get("WTF").channels().get(6).signalMin().get(), 86);
-        assertEquals(n1.ssids().get("WTF").channels().get(6).signalMax().get(), 98);
         assertEquals(n1.ssids().get("WTF").channels().get(6).fingerprints().size(), 2);
         assertEquals(n1.ssids().get("WTF").channels().get(6).fingerprints().get(0), "dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b");
 
@@ -141,8 +137,6 @@ public class NetworksTest {
         ));
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().size(), 1);
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).totalFrames().get(), 1L);
-        assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).signalMin().get(), 100);
-        assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).signalMax().get(), 100);
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).fingerprints().size(), 1);
         assertEquals(n2.ssids().get("United_Wi-Fi").channels().get(1).fingerprints().get(0), "c9ed4adc12dc3e17208446b6a10070b70a73b9ce3a99215e05426faea6de91c7");
     }

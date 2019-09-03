@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.util;
 
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
+import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
@@ -43,5 +44,6 @@ public class MetricNames {
     public static final String TAGGED_PARAMS_PARSE_TIMER = name(Dot11TaggedParameters.class, "parse-timing");
     public static final String TAGGED_PARAMS_FINGERPRINT_TIMER = name(Dot11TaggedParameters.class, "fingerprint-timing");
     public static final String BEACON_RATE_MONITOR_TIMER = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
+    public static final String NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS = name(Networks.class, "signal-strength-measurements");
 
 }

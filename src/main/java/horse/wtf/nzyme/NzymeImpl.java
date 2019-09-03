@@ -293,7 +293,10 @@ public class NzymeImpl implements Nzyme {
                 probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(probe).getInterceptors());
             }
 
-            // Statistics interceptor.
+            // Signal Index calculator interceptors. WARNING: This must run BEFORE the Networks interceptor.
+            probe.addFrameInterceptors(new SignalIndexInterceptorSet(this).getInterceptors());
+
+            // Networks manager interceptors.
             probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
 
             probeExecutor.submit(probe.loop());

@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.networks;
 
+import com.codahale.metrics.Gauge;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -25,10 +26,13 @@ import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateManager;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +55,21 @@ public class Networks {
         this.bssids = Maps.newConcurrentMap();
         this.beaconRateManager = new BeaconRateManager(nzyme);
 
+        // Metric: Combined length of all signal strength tables.
+        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS)) {
+            nzyme.getMetrics().register(MetricNames.NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS, (Gauge<Long>) () -> {
+                long result = 0;
+                for (BSSID bssid : bssids.values()) {
+                    for (SSID ssid : bssid.ssids().values()) {
+                        for (Channel channel : ssid.channels().values()) {
+                            result += channel.getSignalStrengthTable().getSize();
+                        }
+                    }
+                }
+                return result;
+            });
+        }
+
         // Regularly delete networks that have not been seen for a while.
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -58,6 +77,22 @@ public class Networks {
                         .setNameFormat("bssids-cleaner")
                         .build()
         ).scheduleAtFixedRate(() -> retentionClean(600), 1, 1, TimeUnit.MINUTES);
+
+        // Regularly delete old entries in signal strength tables.
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("signalstrengths-cleaner")
+                        .build()
+        ).scheduleAtFixedRate(() -> {
+            for (BSSID bssid : bssids.values()) {
+                for (SSID ssid : bssid.ssids().values()) {
+                    for (Channel channel : ssid.channels().values()) {
+                        channel.getSignalStrengthTable().retentionClean(300); // TODO ZSCORE make configurable
+                    }
+                }
+            }
+        }, 10, 10, TimeUnit.SECONDS); // TODO ZSCORE make configurable
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -73,12 +108,12 @@ public class Networks {
     }
 
     private void register(byte subtype,
-                                       String transmitter,
-                                       String transmitterFingerprint,
-                                       Dot11TaggedParameters taggedParameters,
-                                       String ssidName,
-                                       int channelNumber,
-                                       int signalQuality) {
+                          String transmitter,
+                          String transmitterFingerprint,
+                          Dot11TaggedParameters taggedParameters,
+                          String ssidName,
+                          int channelNumber,
+                          int signalQuality) {
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -120,29 +155,23 @@ public class Networks {
             ssid.beaconCount.incrementAndGet();
         }
 
+        DateTime now = DateTime.now();
         try {
             // Create or update channel.
             if (ssid.channels().containsKey(channelNumber)) {
-                DateTime now = DateTime.now();
                 // Update channel statistics.
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
-
-                // Update max or min quality if required.
-                boolean inDelta = true;
-                if (signalQuality > channel.signalMax().get()) {
-                    channel.signalMax().set(signalQuality);
-                    inDelta = false;
-                }
-                if (signalQuality < channel.signalMin().get()) {
-                    channel.signalMin().set(signalQuality);
-                    inDelta = false;
-                }
 
                 // Add fingerprint.
                 if (transmitterFingerprint != null) {
                     channel.registerFingerprint(transmitterFingerprint);
                 }
+
+                // Record signal strength.
+                channel.getSignalStrengthTable().recordSignalStrength(
+                        SignalStrengthTable.SignalStrength.create(now, signalQuality)
+                );
 
                 ssid.channels().replace(channelNumber, channel);
             } else {
@@ -152,9 +181,14 @@ public class Networks {
                         bssid.bssid(),
                         ssid.name(),
                         new AtomicLong(1),
-                        signalQuality,
                         transmitterFingerprint
                 );
+
+                // Record signal strength.
+                channel.getSignalStrengthTable().recordSignalStrength(
+                        SignalStrengthTable.SignalStrength.create(now, signalQuality)
+                );
+
                 ssid.channels().put(channelNumber, channel);
             }
         } catch (NullPointerException e) {
@@ -180,6 +214,29 @@ public class Networks {
         }
 
         return new ImmutableSet.Builder<String>().addAll(ssids).build();
+    }
+
+    @Nullable
+    public Channel findChannel(String bssidMac, String ssidName, int channelNumber) {
+        for (BSSID bssid : bssids.values()) {
+            if (!bssid.bssid().equals(bssidMac)) {
+                continue;
+            }
+
+            for (SSID ssid : bssid.ssids().values()) {
+                if (!ssid.name().equals(ssidName)) {
+                    continue;
+                }
+
+                for (Channel channel : ssid.channels().values()) {
+                    if (channel.channelNumber() == channelNumber) {
+                        return channel;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public void retentionClean(int seconds) {
