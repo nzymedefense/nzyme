@@ -27,8 +27,10 @@ import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SignalStrengthTable {
@@ -101,6 +103,13 @@ public class SignalStrengthTable {
         }
 
         return histogram;
+    }
+
+    public int getBestSiqnalQuality() {
+        return copyOfAllValues()
+                .stream()
+                .max(Comparator.comparingInt(i -> i))
+                .orElse(0);
     }
 
     private List<Integer> copyOfAllValues() {

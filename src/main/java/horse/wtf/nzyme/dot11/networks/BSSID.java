@@ -52,8 +52,18 @@ public abstract class BSSID {
 
     @JsonProperty("best_recent_signal_quality")
     public int bestRecentSignalQuality() {
-        // TODO actually calculate from somewhere
-        return 100;
+        int best = 0;
+
+        for (SSID ssid : ssids().values()) {
+            for (Channel channel : ssid.channels().values()) {
+                int channelBest = channel.signalStrengthTable.getBestSiqnalQuality();
+                if (channelBest > best) {
+                    best = channelBest;
+                }
+            }
+        }
+
+        return best;
     }
 
     public static BSSID create(Map<String, SSID> ssids, String oui, String bssid) {
