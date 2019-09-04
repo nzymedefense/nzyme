@@ -18,12 +18,18 @@
 package horse.wtf.nzyme.dot11.networks.signalstrength;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.math.Stats;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import org.joda.time.DateTime;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SignalStrengthTable {
 
@@ -81,6 +87,22 @@ public class SignalStrengthTable {
         return table.size();
     }
 
+    public Map<Double, AtomicLong> getZScoreDistributionHistogram() {
+        Map<Double, AtomicLong> histogram = Maps.newTreeMap();
+
+        for (SignalStrength signalStrength : copyOfTable()) {
+            double roundedZScore = round(signalStrength.zScore(), 2);
+
+            if (histogram.containsKey(roundedZScore)) {
+                histogram.get(roundedZScore).incrementAndGet();
+            } else {
+                histogram.put(roundedZScore, new AtomicLong(1));
+            }
+        }
+
+        return histogram;
+    }
+
     private List<Integer> copyOfAllValues() {
         List<SignalStrength> copy = copyOfTable();
         List<Integer> values = Lists.newArrayList();
@@ -96,7 +118,7 @@ public class SignalStrengthTable {
         return Lists.newArrayList();
     }
 
-    public List<SignalStrength> copyOfTable() {
+    private List<SignalStrength> copyOfTable() {
         synchronized (mutex) {
             List<SignalStrength> copy = newEmptyTable();
             copy.addAll(table);
@@ -104,16 +126,26 @@ public class SignalStrengthTable {
         }
     }
 
+    private static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(Double.toString(value));
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
     @AutoValue
     public static abstract class SignalStrength {
 
         public abstract DateTime timestamp();
         public abstract Integer signalStrength();
+        public abstract Double zScore();
 
-        public static SignalStrength create(DateTime timestamp, Integer signalStrength) {
+        public static SignalStrength create(DateTime timestamp, Integer signalStrength, Double zScore) {
             return builder()
                     .timestamp(timestamp)
                     .signalStrength(signalStrength)
+                    .zScore(zScore)
                     .build();
         }
 
@@ -126,6 +158,8 @@ public class SignalStrengthTable {
             public abstract Builder timestamp(DateTime timestamp);
 
             public abstract Builder signalStrength(Integer signalStrength);
+
+            public abstract Builder zScore(Double zScore);
 
             public abstract SignalStrength build();
         }

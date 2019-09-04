@@ -22,6 +22,8 @@ import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.networks.SignalDelta;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @AutoValue
 public abstract class ChannelResponse {
@@ -41,13 +43,17 @@ public abstract class ChannelResponse {
     @JsonProperty("fingerprints")
     public abstract List<String> fingerprints();
 
-    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints) {
+    @JsonProperty("signal_index_distribution")
+    public abstract Map<Double, AtomicLong> signalIndexDistribution();
+
+    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Double, AtomicLong> signalIndexDistribution) {
         return builder()
                 .channelNumber(channelNumber)
                 .bssid(bssid)
                 .ssid(ssid)
                 .totalFrames(totalFrames)
                 .fingerprints(fingerprints)
+                .signalIndexDistribution(signalIndexDistribution)
                 .build();
     }
 
@@ -57,7 +63,6 @@ public abstract class ChannelResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-
         public abstract Builder channelNumber(int channelNumber);
 
         public abstract Builder bssid(String bssid);
@@ -68,8 +73,9 @@ public abstract class ChannelResponse {
 
         public abstract Builder fingerprints(List<String> fingerprints);
 
-        public abstract ChannelResponse build();
+        public abstract Builder signalIndexDistribution(Map<Double, AtomicLong> signalIndexDistribution);
 
+        public abstract ChannelResponse build();
     }
 
 }

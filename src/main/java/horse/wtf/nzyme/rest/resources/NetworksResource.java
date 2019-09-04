@@ -139,7 +139,8 @@ public class NetworksResource {
                             b.bssid(),
                             s.nameSafe(),
                             c.totalFrames().get(),
-                            fingerprints
+                            fingerprints,
+                            c.getSignalStrengthTable().getZScoreDistributionHistogram()
                     ));
                 }
 

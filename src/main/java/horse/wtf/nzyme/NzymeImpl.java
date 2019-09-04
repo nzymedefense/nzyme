@@ -73,7 +73,6 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -292,9 +291,6 @@ public class NzymeImpl implements Nzyme {
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_FINGERPRINT)) {
                 probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(probe).getInterceptors());
             }
-
-            // Signal Index calculator interceptors. WARNING: This must run BEFORE the Networks interceptor.
-            probe.addFrameInterceptors(new SignalIndexInterceptorSet(this).getInterceptors());
 
             // Networks manager interceptors.
             probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
