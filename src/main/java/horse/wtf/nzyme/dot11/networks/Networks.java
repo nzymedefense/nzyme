@@ -62,7 +62,7 @@ public class Networks {
                 for (BSSID bssid : bssids.values()) {
                     for (SSID ssid : bssid.ssids().values()) {
                         for (Channel channel : ssid.channels().values()) {
-                            result += channel.getSignalStrengthTable().getSize();
+                            result += channel.signalStrengthTable().getSize();
                         }
                     }
                 }
@@ -88,7 +88,7 @@ public class Networks {
             for (BSSID bssid : bssids.values()) {
                 for (SSID ssid : bssid.ssids().values()) {
                     for (Channel channel : ssid.channels().values()) {
-                        channel.getSignalStrengthTable().retentionClean(300); // TODO ZSCORE make configurable
+                        channel.signalStrengthTable().retentionClean(300); // TODO ZSCORE make configurable
                     }
                 }
             }
@@ -169,11 +169,11 @@ public class Networks {
                 }
 
                 // Record signal strength.
-                channel.getSignalStrengthTable().recordSignalStrength(
+                channel.signalStrengthTable().recordSignalStrength(
                         SignalStrengthTable.SignalStrength.create(
                                 now,
                                 signalQuality,
-                                channel.getSignalStrengthTable().calculateZScore(signalQuality)
+                                channel.signalStrengthTable().calculateZScore(signalQuality)
                         )
                 );
 
@@ -181,6 +181,7 @@ public class Networks {
             } else {
                 // Create new channel.
                 Channel channel = Channel.create(
+                        nzyme,
                         channelNumber,
                         bssid.bssid(),
                         ssid.name(),
@@ -189,7 +190,7 @@ public class Networks {
                 );
 
                 // Record signal strength.
-                channel.getSignalStrengthTable().recordSignalStrength(
+                channel.signalStrengthTable().recordSignalStrength(
                         SignalStrengthTable.SignalStrength.create(now, signalQuality, 0.0)
                 );
 

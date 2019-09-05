@@ -19,6 +19,7 @@ package horse.wtf.nzyme.rest.resources.system;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.rest.responses.metrics.GaugeResponse;
@@ -54,22 +55,22 @@ public class MetricsResource {
 
         metrics.put(
                 "frame_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.FRAME_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.FRAME_TIMER))
         );
 
         metrics.put(
                 "oui_lookup_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.OUI_LOOKUP_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.OUI_LOOKUP_TIMER))
         );
 
         metrics.put(
                 "tagged_params_parse_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.TAGGED_PARAMS_PARSE_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_PARSE_TIMER))
         );
 
         metrics.put(
                 "tagged_params_fingerprint_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER))
         );
 
         metrics.put(
@@ -114,7 +115,12 @@ public class MetricsResource {
 
         metrics.put(
                 "beaconrate_monitor_timing",
-                TimerResponse.fromSnapshot(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMER))
+        );
+
+        metrics.put(
+                "signaltables_mutex_wait",
+                TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TABLES_MUTEX_WAIT))
         );
 
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
@@ -128,50 +134,11 @@ public class MetricsResource {
         }
     }
 
-    private Snapshot getTimer(String name) {
+    private Timer getTimer(String name) {
         if (nzyme.getMetrics().getTimers().get(name) != null) {
-            return nzyme.getMetrics().getTimers().get(name).getSnapshot();
+            return nzyme.getMetrics().getTimers().get(name);
         } else {
-            return new Snapshot() {
-                @Override
-                public double getValue(double v) {
-                    return 0;
-                }
-
-                @Override
-                public long[] getValues() {
-                    return new long[0];
-                }
-
-                @Override
-                public int size() {
-                    return 0;
-                }
-
-                @Override
-                public long getMax() {
-                    return 0;
-                }
-
-                @Override
-                public double getMean() {
-                    return 0;
-                }
-
-                @Override
-                public long getMin() {
-                    return 0;
-                }
-
-                @Override
-                public double getStdDev() {
-                    return 0;
-                }
-
-                @Override
-                public void dump(OutputStream outputStream) {
-                }
-            };
+            return new Timer();
         }
     }
 

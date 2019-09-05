@@ -56,7 +56,7 @@ public abstract class BSSID {
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                int channelBest = channel.signalStrengthTable.getBestSiqnalQuality();
+                int channelBest = channel.signalStrengthTable().getBestSiqnalQuality();
                 if (channelBest > best) {
                     best = channelBest;
                 }

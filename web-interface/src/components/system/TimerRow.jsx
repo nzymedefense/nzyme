@@ -13,6 +13,7 @@ class TimerRow extends Reflux.Component {
                 <td>{numeral(this.props.timer.mean).format("0,0")} &#181;s</td>
                 <td>{numeral(this.props.timer.percentile_99).format("0,0")} &#181;s</td>
                 <td>{numeral(this.props.timer.stddev).format("0,0")} &#181;s</td>
+                <td>{numeral(this.props.timer.count).format(0,0)}</td>
             </tr>
         )
     }

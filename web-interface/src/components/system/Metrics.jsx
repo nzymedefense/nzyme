@@ -66,6 +66,7 @@ class Metrics extends Reflux.Component {
                                             <th>Mean</th>
                                             <th>99th Percentile</th>
                                             <th>Standard Deviation</th>
+                                            <th>Calls</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -74,6 +75,8 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="802.11 Fingerprinting" timer={this.state.systemMetrics.tagged_params_fingerprint_timing}/>
                                             <TimerRow title="Beacon Rate Monitor Executions" timer={this.state.systemMetrics.beaconrate_monitor_timing}/>
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
+                                            <TimerRow title="Signal Tables Mutex Acquisition" timer={this.state.systemMetrics.signaltables_mutex_wait}/>
+
                                         </tbody>
                                     </table>
                                 </div>

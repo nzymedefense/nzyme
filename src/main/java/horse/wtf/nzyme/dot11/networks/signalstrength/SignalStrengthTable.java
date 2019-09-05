@@ -17,12 +17,15 @@
 
 package horse.wtf.nzyme.dot11.networks.signalstrength;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.math.Stats;
 import horse.wtf.nzyme.dot11.networks.Channel;
+import horse.wtf.nzyme.util.MetricNames;
 import org.joda.time.DateTime;
 
 import java.math.BigDecimal;
@@ -39,26 +42,32 @@ public class SignalStrengthTable {
 
     private List<SignalStrength> table;
 
-    public SignalStrengthTable(Channel channel) {
+    private final Timer mutexTimer;
+
+    public SignalStrengthTable(MetricRegistry metrics) {
         this.table = newEmptyTable();
+
+        this.mutexTimer = metrics.timer(MetricNames.SIGNAL_TABLES_MUTEX_WAIT);
     }
 
     public void recordSignalStrength(SignalStrength signalStrength) {
-        // TODO ZSCORE record mutex wait here
-
-        synchronized (mutex) {
-            table.add(signalStrength);
-        }
+        Timer.Context timer = mutexTimer.time();
+         synchronized (mutex) {
+             timer.stop();
+             table.add(signalStrength);
+         }
     }
 
     public void retentionClean(int seconds) {
         DateTime cutoff = DateTime.now().minusSeconds(seconds);
 
-        // TODO ZSCORE record mutex wait here.
         // TODO ZSCORE record total retention clean time here
 
         List<SignalStrength> newList = newEmptyTable();
+
+        Timer.Context timer = mutexTimer.time();
         synchronized (mutex) {
+            timer.stop();
             for (SignalStrength s : table) {
                 if (s.timestamp().isAfter(cutoff)) {
                     newList.add(s);
@@ -68,7 +77,6 @@ public class SignalStrengthTable {
         }
     }
 
-    // TODO ZSCORE: timer
     public double calculateZScore(int from) {
         List<Integer> values = copyOfAllValues();
         if (values.isEmpty()) {
@@ -128,7 +136,9 @@ public class SignalStrengthTable {
     }
 
     private List<SignalStrength> copyOfTable() {
+        Timer.Context timer = mutexTimer.time();
         synchronized (mutex) {
+            timer.stop();
             List<SignalStrength> copy = newEmptyTable();
             copy.addAll(table);
             return copy;

@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import org.joda.time.DateTime;
 
@@ -47,7 +48,7 @@ public abstract class Channel {
     public abstract List<String> fingerprints();
 
     @JsonIgnore
-    public SignalStrengthTable signalStrengthTable = new SignalStrengthTable(this);
+    public abstract SignalStrengthTable signalStrengthTable();
 
     @JsonIgnore
     public void registerFingerprint(String fingerprint) {
@@ -56,12 +57,8 @@ public abstract class Channel {
         }
     }
 
-    @JsonIgnore
-    public SignalStrengthTable getSignalStrengthTable() {
-        return signalStrengthTable;
-    }
-
-    public static Channel create(int channelNumber,
+    public static Channel create(Nzyme nzyme,
+                                 int channelNumber,
                                  String bssid,
                                  String ssid,
                                  AtomicLong totalFrames,
@@ -74,6 +71,7 @@ public abstract class Channel {
         }};
 
         return builder()
+                .signalStrengthTable(new SignalStrengthTable(nzyme.getMetrics()))
                 .bssid(bssid)
                 .ssid(ssid)
                 .channelNumber(channelNumber)
@@ -88,6 +86,8 @@ public abstract class Channel {
 
     @AutoValue.Builder
     public abstract static class Builder {
+
+        public abstract Builder signalStrengthTable(SignalStrengthTable signalStrengthTable);
 
         public abstract Builder bssid(String bssid);
 

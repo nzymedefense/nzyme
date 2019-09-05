@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.rest.responses.metrics;
 
 import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
@@ -41,13 +42,19 @@ public abstract class TimerResponse {
     @JsonProperty("percentile_99")
     public abstract double percentile99();
 
-    public static TimerResponse fromSnapshot(Snapshot s) {
+    @JsonProperty
+    public abstract long count();
+
+    public static TimerResponse fromTimer(Timer t) {
+        Snapshot s = t.getSnapshot();
+
         return builder()
                 .mean(TimeUnit.MICROSECONDS.convert((long) s.getMean(), TimeUnit.NANOSECONDS))
                 .max(TimeUnit.MICROSECONDS.convert(s.getMax(), TimeUnit.NANOSECONDS))
                 .min(TimeUnit.MICROSECONDS.convert(s.getMin(), TimeUnit.NANOSECONDS))
                 .stddev(TimeUnit.MICROSECONDS.convert((long) s.getStdDev(), TimeUnit.NANOSECONDS))
                 .percentile99(TimeUnit.MICROSECONDS.convert((long) s.get99thPercentile(), TimeUnit.NANOSECONDS))
+                .count(t.getCount())
                 .build();
     }
 
@@ -66,6 +73,8 @@ public abstract class TimerResponse {
         public abstract Builder stddev(double stddev);
 
         public abstract Builder percentile99(double percentile99);
+
+        public abstract Builder count(long count);
 
         public abstract TimerResponse build();
     }
