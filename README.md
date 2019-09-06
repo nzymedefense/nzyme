@@ -4,6 +4,8 @@
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
 [![License](https://img.shields.io/github/license/lennartkoopmann/nzyme.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
 
+# !!! You are looking at a soon-to-be-replaced version of nzyme. Version v1.0.0 is a complete WiFi IDS and will be released in the coming days. (see v1.0.0 branch) [Follow me on Twitter](https://twitter.com/_lennart) to stay up to date.
+
 ## Introduction
 
 Nzyme collects 802.11 management frames directly from the air and sends them to a [Graylog](https://www.graylog.org/) (Open Source log management) setup for WiFi IDS, monitoring, and incident response. It only needs a JVM and a WiFi adapter that supports monitor mode.
