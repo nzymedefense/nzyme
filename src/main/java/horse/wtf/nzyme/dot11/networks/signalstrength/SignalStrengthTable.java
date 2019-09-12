@@ -101,7 +101,7 @@ public class SignalStrengthTable {
         Map<Double, AtomicLong> histogram = Maps.newTreeMap();
 
         for (SignalStrength signalStrength : copyOfTable()) {
-            double roundedZScore = round(signalStrength.zScore(), 2);
+            double roundedZScore = round(signalStrength.zScore(), 1);
 
             if (histogram.containsKey(roundedZScore)) {
                 histogram.get(roundedZScore).incrementAndGet();
