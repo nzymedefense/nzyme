@@ -112,6 +112,7 @@ class App extends Reflux.Component {
                 return (
                     <div className="nzyme">
                         <div className="container container-login">
+                            <Notifications/>
                             <LoginPage />
                         </div>
                     </div>
@@ -121,6 +122,7 @@ class App extends Reflux.Component {
             return (
                 <div className="nzyme">
                     <div className="container">
+                        <Notifications/>
                         <NotConnectedPage />
                         <Footer/>
                     </div>
