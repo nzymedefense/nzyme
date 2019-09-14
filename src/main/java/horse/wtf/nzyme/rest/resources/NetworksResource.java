@@ -58,7 +58,7 @@ public class NetworksResource {
             "ORDER BY bucket ASC";
 
     public static final String HISTOGRAM_HISTORY_QUERY = "SELECT histogram, created_at FROM sigidx_histogram_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 hour') " +
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '3 hours') " +
             "ORDER BY created_at ASC";
 
     @Inject
