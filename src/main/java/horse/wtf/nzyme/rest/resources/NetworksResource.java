@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
@@ -25,6 +27,8 @@ import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistory;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryEntry;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -52,8 +56,15 @@ public class NetworksResource {
             "GROUP BY bucket " +
             "ORDER BY bucket ASC";
 
+    public static final String HISTOGRAM_HISTORY_QUERY = "SELECT histogram, created_at FROM sigidx_histogram_history " +
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 hour') " +
+            "ORDER BY created_at ASC";
+
     @Inject
     private Nzyme nzyme;
+
+    @Inject
+    private ObjectMapper om;
 
     @GET
     @Path("/bssids")
@@ -140,7 +151,8 @@ public class NetworksResource {
                             s.nameSafe(),
                             c.totalFrames().get(),
                             fingerprints,
-                            c.signalStrengthTable().getZScoreDistributionHistogram()
+                            c.signalStrengthTable().getZScoreDistributionHistogram(),
+                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c) : null
                     ));
                 }
 
@@ -201,6 +213,31 @@ public class NetworksResource {
         beaconRateHistory.add(createEmptyAverageBeaconRate(DateTime.now()));
 
         return beaconRateHistory;
+    }
+
+    public List<SignalIndexHistogramHistory> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
+        List<SignalIndexHistogramHistoryEntry> values = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(HISTOGRAM_HISTORY_QUERY)
+                        .bind(0, b.bssid())
+                        .bind(1, s.name())
+                        .bind(2, c.channelNumber())
+                        .mapTo(SignalIndexHistogramHistoryEntry.class)
+                        .list()
+        );
+
+        // Transform the histogram string blobs from the database to structured data.
+        List<SignalIndexHistogramHistory> history = Lists.newArrayList();
+        for (SignalIndexHistogramHistoryEntry value : values) {
+            try {
+                Map<Double, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Double, Long>>(){});
+                
+            } catch (Exception e) {
+                LOG.error("Could not parse histogram blob to structured data for BSSID [{}].", b, e);
+            }
+        }
+
+
+        return history;
     }
 
 }

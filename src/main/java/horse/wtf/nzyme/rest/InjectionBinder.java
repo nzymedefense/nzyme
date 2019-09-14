@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.rest.web.AssetManifest;
 import horse.wtf.nzyme.rest.web.IndexHtmlGenerator;
@@ -37,6 +38,7 @@ public class InjectionBinder extends AbstractBinder {
     protected void configure() {
         bind(nzyme).to(Nzyme.class);
         bind(new MimetypesFileTypeMap()).to(MimetypesFileTypeMap.class);
+        bind(new ObjectMapper()).to(ObjectMapper.class);
 
         try {
             bind(new IndexHtmlGenerator(nzyme.getConfiguration(), new AssetManifest())).to(IndexHtmlGenerator.class);

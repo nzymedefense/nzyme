@@ -3,6 +3,7 @@ import Reflux from 'reflux';
 
 import numeral from "numeral";
 import SimpleLineChart from "../../charts/SimpleLineChart";
+import HeatmapWaterfallChart from "../../charts/HeatmapWaterfallChart";
 
 class ChannelDetails extends Reflux.Component {
 
@@ -70,6 +71,12 @@ class ChannelDetails extends Reflux.Component {
                                 customMarginRight={60}
                                 finalData={this._formatSignalIndexDistribution(self.props.channel.signal_index_distribution)}
                             />
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-md-12">
+                            <HeatmapWaterfallChart />
                         </div>
                     </div>
                 </div>
