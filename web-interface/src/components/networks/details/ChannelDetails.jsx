@@ -24,12 +24,21 @@ class ChannelDetails extends Reflux.Component {
         distribution["x"].push(10);
         distribution["y"].push(0);
 
-        Object.keys(data).forEach(function(point){
+        Object.keys(data).forEach(function(point) {
             distribution["x"].push(point);
             distribution["y"].push(data[point]);
         });
 
         result.push(distribution);
+
+        return result;
+    }
+
+    _formatSignalIndexHeatmap(data) {
+        const result = {};
+        result["z"] = data;
+
+        // TODO if this works: add range -10.0 -> +10.0
 
         return result;
     }
@@ -76,7 +85,7 @@ class ChannelDetails extends Reflux.Component {
 
                     <div className="row">
                         <div className="col-md-12">
-                            <HeatmapWaterfallChart />
+                            <HeatmapWaterfallChart data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}/>
                         </div>
                     </div>
                 </div>

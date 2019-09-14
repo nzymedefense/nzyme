@@ -4,33 +4,23 @@ import Plot from 'react-plotly.js';
 
 class HeatmapWaterfallChart extends React.Component {
 
-    render() {
-        const finalData =  [
-            {
-                z: [
-                    [0,0,0,0,0,0,100,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,105,0,0,0,0,0,0],
-                    [0,0,0,0,0,50,90 ,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,120,0,0,0,0,0,0],
-                    [0,0,0,0,0,0,95 ,0,0,0,0,0,0],
-                ],
-                x: [
-                    -6,
-                    -5,
-                    -4,
-                    -3,
-                    -2,
-                    -1,
-                    0,
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6
-                ],
-                type: 'heatmap',
+    constructor(props) {
+        super(props);
 
+        this.state = {
+            data: props.data
+        };
+    }
+
+    render() {
+        const data = this.state.data;
+
+        const finalData = [
+            {
+                z: data.z,
+                type: "heatmap",
+                hoverinfo: "none",
+                colorscale: [[0, 'rgb(12,13,22)'], [1, 'rgb(14,201,0)']]
             }
         ];
 
@@ -48,11 +38,6 @@ class HeatmapWaterfallChart extends React.Component {
                     showlegend: false,
                     dragmode: false,
                     clickmode: "none",
-                    hovermode: "x",
-                    hoverlabel: {
-                        font: { size: 11 },
-                        namelength: -1
-                    },
                     xaxis: { visible: true },
                     yaxis: { visible: false }
                 }}

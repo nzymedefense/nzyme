@@ -27,8 +27,8 @@ import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryEntry;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -216,7 +216,7 @@ public class NetworksResource {
         return beaconRateHistory;
     }
 
-    public List<List<SignalIndexHistogramHistoryEntry>> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
+    public List<List<Long>> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
         List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(HISTOGRAM_HISTORY_QUERY)
                         .bind(0, b.bssid())
@@ -227,14 +227,19 @@ public class NetworksResource {
         );
 
         // Transform the histogram string blobs from the database to structured data.
-        List<List<SignalIndexHistogramHistoryEntry>> history = Lists.newArrayList();
+        List<List<Long>> history = Lists.newArrayList();
         for (SignalIndexHistogramHistoryDBEntry value : values) {
             try {
-                List<SignalIndexHistogramHistoryEntry> entries = new ArrayList<>();
+                List<Long> entries = new ArrayList<>();
+                Map<Double, Long> tempReduced = Maps.newHashMap();
                 Map<Double, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Double, Long>>(){});
 
                 for (Map.Entry<Double, Long> x : histogram.entrySet()) {
-                    entries.add(SignalIndexHistogramHistoryEntry.create(x.getValue(), x.getKey()));
+                    tempReduced.put(SignalStrengthTable.round(x.getKey(), 1), x.getValue());
+                }
+
+                for(double cnt = -10.0; cnt < 10.0; cnt+=0.1) {
+                    entries.add(tempReduced.getOrDefault(SignalStrengthTable.round(cnt, 1), 0L));
                 }
 
                 history.add(entries);

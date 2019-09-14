@@ -145,7 +145,7 @@ public class SignalStrengthTable {
         }
     }
 
-    private static double round(double value, int places) {
+    public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
 
         BigDecimal bd = new BigDecimal(Double.toString(value));
