@@ -8,11 +8,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SignalIndexHistogramHistoryEntryMapper implements RowMapper<SignalIndexHistogramHistoryEntry> {
+public class SignalIndexHistogramHistoryDBEntryMapper implements RowMapper<SignalIndexHistogramHistoryDBEntry> {
 
     @Override
-    public SignalIndexHistogramHistoryEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return SignalIndexHistogramHistoryEntry.create(
+    public SignalIndexHistogramHistoryDBEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return SignalIndexHistogramHistoryDBEntry.create(
                 rs.getString("histogram"),
                 DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER)
         );

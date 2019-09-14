@@ -27,8 +27,8 @@ import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistory;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryEntry;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -40,6 +40,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -215,27 +216,32 @@ public class NetworksResource {
         return beaconRateHistory;
     }
 
-    public List<SignalIndexHistogramHistory> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
-        List<SignalIndexHistogramHistoryEntry> values = nzyme.getDatabase().withHandle(handle ->
+    public List<List<SignalIndexHistogramHistoryEntry>> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
+        List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(HISTOGRAM_HISTORY_QUERY)
                         .bind(0, b.bssid())
                         .bind(1, s.name())
                         .bind(2, c.channelNumber())
-                        .mapTo(SignalIndexHistogramHistoryEntry.class)
+                        .mapTo(SignalIndexHistogramHistoryDBEntry.class)
                         .list()
         );
 
         // Transform the histogram string blobs from the database to structured data.
-        List<SignalIndexHistogramHistory> history = Lists.newArrayList();
-        for (SignalIndexHistogramHistoryEntry value : values) {
+        List<List<SignalIndexHistogramHistoryEntry>> history = Lists.newArrayList();
+        for (SignalIndexHistogramHistoryDBEntry value : values) {
             try {
+                List<SignalIndexHistogramHistoryEntry> entries = new ArrayList<>();
                 Map<Double, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Double, Long>>(){});
-                
+
+                for (Map.Entry<Double, Long> x : histogram.entrySet()) {
+                    entries.add(SignalIndexHistogramHistoryEntry.create(x.getValue(), x.getKey()));
+                }
+
+                history.add(entries);
             } catch (Exception e) {
                 LOG.error("Could not parse histogram blob to structured data for BSSID [{}].", b, e);
             }
         }
-
 
         return history;
     }
