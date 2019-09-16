@@ -37,7 +37,7 @@
         <liquibase.version>3.6.3</liquibase.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
         <jmte.version>5.0.0</jmte.version>
-        <postgresql.version>42.2.6</postgresql.version>
+        <postgresql.version>42.2.8</postgresql.version>
         <jwt.version>0.10.7</jwt.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
