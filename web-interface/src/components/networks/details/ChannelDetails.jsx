@@ -44,15 +44,23 @@ class ChannelDetails extends Reflux.Component {
     }
 
     render() {
+        if (!this.props.channel) {
+            return (
+                <div>
+                    <div className="row">
+                        <div className="col-md-12">
+                            <div className="alert alert-danger" role="alert">
+                                Requested channel not found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
         const self = this;
         return (
             <div>
-                <div className="row">
-                    <div className="col-md-12">
-                        <h3>Channel {this.props.channel.channel_number}</h3>
-                    </div>
-                </div>
-
                 <div className="row">
                     <div className="col-md-3">
                         <dl>

@@ -9,6 +9,7 @@ class NetworkDetailsPage extends Reflux.Component {
 
         this.bssid = decodeURIComponent(props.match.params.bssid);
         this.ssid = decodeURIComponent(props.match.params.ssid);
+        this.channelNumber = decodeURIComponent(props.match.params.channel);
     }
 
     render() {
@@ -20,7 +21,7 @@ class NetworkDetailsPage extends Reflux.Component {
                     </div>
                 </div>
                 
-                <NetworkDetails bssid={this.bssid} ssid={this.ssid} />
+                <NetworkDetails bssid={this.bssid} ssid={this.ssid} channelNumber={this.channelNumber} />
             </div>
         );
     }

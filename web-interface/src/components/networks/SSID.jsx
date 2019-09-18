@@ -6,7 +6,7 @@ class SSID extends React.Component {
     render() {
         if (this.props.ssid.human_readable) {
             return (
-                <a href={Routes.NETWORKS.SHOW(encodeURIComponent(this.props.ssid.bssid), encodeURIComponent(this.props.ssid.name))}>
+                <a href={Routes.NETWORKS.SHOW(encodeURIComponent(this.props.ssid.bssid), encodeURIComponent(this.props.ssid.name), encodeURIComponent(this.props.channel))}>
                     {this.props.ssid.name.trim()}
                 </a>
             );

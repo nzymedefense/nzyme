@@ -133,6 +133,20 @@ public class NetworksResource {
                     ));
                 }
 
+                // Channels.
+                Map<Integer, ChannelResponse> channels = Maps.newTreeMap();
+                for (Channel c : s.channels().values()) {
+                    channels.put(c.channelNumber(), ChannelResponse.create(
+                            c.channelNumber(),
+                            b.bssid(),
+                            s.nameSafe(),
+                            c.totalFrames().get(),
+                            c.fingerprints(),
+                            c.signalStrengthTable().getZScoreDistributionHistogram(),
+                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c) : null
+                    ));
+                }
+
                 // Fingerprints.
                 List<String> fingerprints = Lists.newArrayList();
                 for (Channel channel : s.channels().values()) {
@@ -143,26 +157,13 @@ public class NetworksResource {
                     }
                 }
 
-                // Channels.
-                Map<Integer, ChannelResponse> channels = Maps.newTreeMap();
-                for (Channel c : s.channels().values()) {
-                    channels.put(c.channelNumber(), ChannelResponse.create(
-                            c.channelNumber(),
-                            b.bssid(),
-                            s.nameSafe(),
-                            c.totalFrames().get(),
-                            fingerprints,
-                            c.signalStrengthTable().getZScoreDistributionHistogram(),
-                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c) : null
-                    ));
-                }
-
                 return Response.ok(SSIDResponse.create(
                         security,
                         b.bssid(),
                         s.isHumanReadable(),
                         s.nameSafe(),
                         channels,
+                        fingerprints,
                         s.beaconRate(),
                         includeHistory ? buildBeaconRateHistory(b, s) : null
                 )).build();
@@ -190,11 +191,11 @@ public class NetworksResource {
         return Response.ok().build();
     }
 
-    private final AverageBeaconRate createEmptyAverageBeaconRate(DateTime at) {
+    private AverageBeaconRate createEmptyAverageBeaconRate(DateTime at) {
         return AverageBeaconRate.create(0.0F, at);
     }
 
-    public List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {
+    private List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {
         DateTime yesterday = DateTime.now().minusDays(1);
 
         List<AverageBeaconRate> beaconRateHistory = nzyme.getDatabase().withHandle(handle ->

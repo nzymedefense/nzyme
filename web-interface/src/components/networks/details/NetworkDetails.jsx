@@ -61,7 +61,7 @@ class NetworkDetails extends Reflux.Component {
             return (
                 <div>
                     <div className="row">
-                        <div className="col-md-3">
+                        <div className="col-md">
                             <dl>
                                 <dt>BSSID</dt>
                                 <dd>{ssid.bssid}</dd>
@@ -87,7 +87,7 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <hr />
 
-                            <h3>Network Beacon Rate</h3>
+                            <h3>Beacon Rate</h3>
 
                             <SimpleLineChart
                                 title="Beacon Rate"
@@ -104,9 +104,23 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <hr />
 
-                            {Object.keys(ssid.channels).map(function (key,i) {
-                                return <ChannelDetails channel={ssid.channels[key]} ssid={ssid} />;
-                            })}
+                            <h3>Fingerprints</h3>
+
+                            <ul>
+                                {Object.keys(ssid.fingerprints).map(function (key,i) {
+                                    return <li>{ssid.fingerprints[key]}</li>
+                                })}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-md-12">
+                            <hr />
+
+                            <h2>Channel {this.props.channelNumber}</h2>
+
+                            <ChannelDetails channel={ssid.channels[this.props.channelNumber]} ssid={ssid} />
                         </div>
                     </div>
                 </div>
