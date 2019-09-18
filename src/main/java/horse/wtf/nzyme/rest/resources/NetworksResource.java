@@ -142,7 +142,7 @@ public class NetworksResource {
                             s.nameSafe(),
                             c.totalFrames().get(),
                             c.fingerprints(),
-                            c.signalStrengthTable().getZScoreDistributionHistogram(),
+                            c.signalStrengthTable().getSignalDistributionHistogram(),
                             includeHistory ? buildSignalIndexHistogramHistory(b, s, c) : null
                     ));
                 }
@@ -239,7 +239,7 @@ public class NetworksResource {
                     tempReduced.put(SignalStrengthTable.round(x.getKey(), 1), x.getValue());
                 }
 
-                for(double cnt = -10.0; cnt < 10.0; cnt+=0.1) {
+                for(double cnt = 0; cnt < 100; cnt++) {
                     entries.add(tempReduced.getOrDefault(SignalStrengthTable.round(cnt, 1), 0L));
                 }
 

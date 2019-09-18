@@ -35,7 +35,7 @@ public class SignalIndexHistogramWriter extends Periodical {
                 for (Channel channel : ssid.channels().values()) {
                     final String histogram;
                     try {
-                        histogram = om.writeValueAsString(channel.signalStrengthTable().getZScoreDistributionHistogram());
+                        histogram = om.writeValueAsString(channel.signalStrengthTable().getSignalDistributionHistogram());
                     } catch (JsonProcessingException e) {
                         LOG.error("Could not write signal index histogram to JSON for BSSID [{}].", bssid, e);
                         continue;

@@ -19,9 +19,9 @@ class ChannelDetails extends Reflux.Component {
         };
 
         // We want a static scale from -10.0 to +10.0.
-        distribution["x"].push(-10);
+        distribution["x"].push(0);
         distribution["y"].push(0);
-        distribution["x"].push(10);
+        distribution["x"].push(100);
         distribution["y"].push(0);
 
         Object.keys(data).forEach(function(point) {
@@ -35,12 +35,9 @@ class ChannelDetails extends Reflux.Component {
     }
 
     _formatSignalIndexHeatmap(data) {
-        const result = {};
-        result["z"] = data;
-
-        // TODO if this works: add range -10.0 -> +10.0
-
-        return result;
+        return {
+            "z": data
+        };
     }
 
     render() {
@@ -81,9 +78,11 @@ class ChannelDetails extends Reflux.Component {
                     <div className="row">
                         <div className="col-md-12">
                             <SimpleLineChart
-                                title="Signal Index Distribution"
+                                title="Signal Strength Distribution"
                                 width={1100}
                                 height={200}
+                                xaxistitle="Signal Strength"
+                                yaxistitle="Signal Count"
                                 customMarginLeft={60}
                                 customMarginRight={60}
                                 finalData={this._formatSignalIndexDistribution(self.props.channel.signal_index_distribution)}
@@ -93,7 +92,12 @@ class ChannelDetails extends Reflux.Component {
 
                     <div className="row">
                         <div className="col-md-12">
-                            <HeatmapWaterfallChart data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}/>
+                            <HeatmapWaterfallChart
+                                title="Signal Strength Waterfall"
+                                xaxistitle="Signal Strength"
+                                yaxistitle="Sample Minute"
+                                data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}
+                            />
                         </div>
                     </div>
                 </div>

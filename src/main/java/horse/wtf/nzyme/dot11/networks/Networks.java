@@ -172,8 +172,7 @@ public class Networks {
                 channel.signalStrengthTable().recordSignalStrength(
                         SignalStrengthTable.SignalStrength.create(
                                 now,
-                                signalQuality,
-                                channel.signalStrengthTable().calculateZScore(signalQuality)
+                                signalQuality
                         )
                 );
 
@@ -191,7 +190,7 @@ public class Networks {
 
                 // Record signal strength.
                 channel.signalStrengthTable().recordSignalStrength(
-                        SignalStrengthTable.SignalStrength.create(now, signalQuality, 0.0)
+                        SignalStrengthTable.SignalStrength.create(now, signalQuality)
                 );
 
                 ssid.channels().put(channelNumber, channel);

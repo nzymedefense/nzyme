@@ -20,11 +20,8 @@ package horse.wtf.nzyme.dot11.networks.signalstrength;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.math.Stats;
-import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.util.MetricNames;
 import org.joda.time.DateTime;
 
@@ -33,7 +30,6 @@ import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SignalStrengthTable {
@@ -77,36 +73,18 @@ public class SignalStrengthTable {
         }
     }
 
-    public double calculateZScore(int from) {
-        List<Integer> values = copyOfAllValues();
-        if (values.isEmpty()) {
-            return 0;
-        }
-
-        Stats stats = Stats.of(values);
-        Double result = (from-stats.mean())/stats.populationStandardDeviation();
-
-        if (result.isNaN() || result.isInfinite()) {
-            return 0;
-        }
-
-        return result;
-    }
-
     public int getSize() {
         return table.size();
     }
 
-    public Map<Double, AtomicLong> getZScoreDistributionHistogram() {
-        Map<Double, AtomicLong> histogram = Maps.newTreeMap();
+    public Map<Integer, AtomicLong> getSignalDistributionHistogram() {
+        Map<Integer, AtomicLong> histogram = Maps.newTreeMap();
 
         for (SignalStrength signalStrength : copyOfTable()) {
-            double roundedZScore = round(signalStrength.zScore(), 1);
-
-            if (histogram.containsKey(roundedZScore)) {
-                histogram.get(roundedZScore).incrementAndGet();
+            if (histogram.containsKey(signalStrength.signalStrength())) {
+                histogram.get(signalStrength.signalStrength()).incrementAndGet();
             } else {
-                histogram.put(roundedZScore, new AtomicLong(1));
+                histogram.put(signalStrength.signalStrength(), new AtomicLong(1));
             }
         }
 
@@ -158,13 +136,11 @@ public class SignalStrengthTable {
 
         public abstract DateTime timestamp();
         public abstract Integer signalStrength();
-        public abstract Double zScore();
 
-        public static SignalStrength create(DateTime timestamp, Integer signalStrength, Double zScore) {
+        public static SignalStrength create(DateTime timestamp, Integer signalStrength) {
             return builder()
                     .timestamp(timestamp)
                     .signalStrength(signalStrength)
-                    .zScore(zScore)
                     .build();
         }
 
@@ -177,8 +153,6 @@ public class SignalStrengthTable {
             public abstract Builder timestamp(DateTime timestamp);
 
             public abstract Builder signalStrength(Integer signalStrength);
-
-            public abstract Builder zScore(Double zScore);
 
             public abstract SignalStrength build();
         }
