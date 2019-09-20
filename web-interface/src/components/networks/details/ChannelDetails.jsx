@@ -81,7 +81,7 @@ class ChannelDetails extends Reflux.Component {
                                 title="Signal Strength Distribution"
                                 width={1100}
                                 height={200}
-                                xaxistitle="Signal Strength"
+                                xaxistitle="Signal Strength (dBm)"
                                 yaxistitle="Signal Count"
                                 customMarginLeft={60}
                                 customMarginRight={60}
@@ -94,7 +94,7 @@ class ChannelDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <HeatmapWaterfallChart
                                 title="Signal Strength Waterfall"
-                                xaxistitle="Signal Strength"
+                                xaxistitle="Signal Strength (dBm)"
                                 yaxistitle="Sample Minute"
                                 data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}
                             />
