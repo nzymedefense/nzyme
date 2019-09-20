@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.util.Tools;
 import org.joda.time.DateTime;
 
 import java.util.Map;
@@ -56,7 +57,7 @@ public abstract class BSSID {
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                int channelBest = channel.signalStrengthTable().getBestSiqnalQuality();
+                int channelBest = Tools.calculateSignalQuality(channel.signalStrengthTable().getBestSiqnalStrength());
                 if (channelBest > best) {
                     best = channelBest;
                 }

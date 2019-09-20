@@ -89,10 +89,10 @@ public class SignalStrengthTable {
         return histogram;
     }
 
-    public int getBestSiqnalQuality() {
+    public int getBestSiqnalStrength() {
         return copyOfAllValues()
                 .stream()
-                .max(Comparator.comparingInt(i -> i))
+                .min(Comparator.comparingInt(i -> i))
                 .orElse(0);
     }
 
