@@ -97,13 +97,13 @@ public class Networks {
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(Dot11FrameSubtype.BEACON, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(Dot11FrameSubtype.BEACON, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getAntennaSignal());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
-            register(Dot11FrameSubtype.PROBE_RESPONSE, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getSignalQuality());
+            register(Dot11FrameSubtype.PROBE_RESPONSE, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getAntennaSignal());
         }
     }
 
@@ -113,7 +113,7 @@ public class Networks {
                           Dot11TaggedParameters taggedParameters,
                           String ssidName,
                           int channelNumber,
-                          int signalQuality) {
+                          int antennaSignal) {
         // Ensure that the BSSID exists in the map.
         BSSID bssid;
         if (bssids.containsKey(transmitter)) {
@@ -172,7 +172,7 @@ public class Networks {
                 channel.signalStrengthTable().recordSignalStrength(
                         SignalStrengthTable.SignalStrength.create(
                                 now,
-                                signalQuality
+                                antennaSignal
                         )
                 );
 
@@ -190,7 +190,7 @@ public class Networks {
 
                 // Record signal strength.
                 channel.signalStrengthTable().recordSignalStrength(
-                        SignalStrengthTable.SignalStrength.create(now, signalQuality)
+                        SignalStrengthTable.SignalStrength.create(now, antennaSignal)
                 );
 
                 ssid.channels().put(channelNumber, channel);

@@ -57,8 +57,8 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                         .addField(FieldNames.IS_WPA1, beacon.taggedParameters().isWPA1())
                         .addField(FieldNames.IS_WPA2, beacon.taggedParameters().isWPA2())
                         .addField(FieldNames.IS_WPS, beacon.taggedParameters().isWPS())
-                        .addField(FieldNames.SUBTYPE, "beacon")
-                        ,meta
+                        .addField(FieldNames.SUBTYPE, "beacon"),
+                meta
         );
 
         LOG.debug(message);

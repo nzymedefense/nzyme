@@ -232,15 +232,15 @@ public class NetworksResource {
         for (SignalIndexHistogramHistoryDBEntry value : values) {
             try {
                 List<Long> entries = new ArrayList<>();
-                Map<Double, Long> tempReduced = Maps.newHashMap();
-                Map<Double, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Double, Long>>(){});
+                Map<Integer, Long> tempReduced = Maps.newHashMap();
+                Map<Integer, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Integer, Long>>(){});
 
-                for (Map.Entry<Double, Long> x : histogram.entrySet()) {
-                    tempReduced.put(SignalStrengthTable.round(x.getKey(), 1), x.getValue());
+                for (Map.Entry<Integer, Long> x : histogram.entrySet()) {
+                    tempReduced.put(x.getKey(), x.getValue());
                 }
 
-                for(double cnt = 0; cnt < 100; cnt++) {
-                    entries.add(tempReduced.getOrDefault(SignalStrengthTable.round(cnt, 1), 0L));
+                for(int cnt = -100; cnt < 0; cnt++) {
+                    entries.add(tempReduced.getOrDefault(cnt, 0L));
                 }
 
                 history.add(entries);

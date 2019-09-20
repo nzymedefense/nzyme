@@ -18,10 +18,10 @@ class ChannelDetails extends Reflux.Component {
             line: {width: 1, shape: "linear", color: "#2983fe"}
         };
 
-        // We want a static scale from -10.0 to +10.0.
-        distribution["x"].push(0);
+        // We want a static scale from -100 to 0.
+        distribution["x"].push(-100);
         distribution["y"].push(0);
-        distribution["x"].push(100);
+        distribution["x"].push(0);
         distribution["y"].push(0);
 
         Object.keys(data).forEach(function(point) {

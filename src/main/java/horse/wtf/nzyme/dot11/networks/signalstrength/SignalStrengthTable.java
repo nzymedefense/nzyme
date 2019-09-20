@@ -25,8 +25,6 @@ import com.google.common.collect.Maps;
 import horse.wtf.nzyme.util.MetricNames;
 import org.joda.time.DateTime;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -121,14 +119,6 @@ public class SignalStrengthTable {
             copy.addAll(table);
             return copy;
         }
-    }
-
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        BigDecimal bd = new BigDecimal(Double.toString(value));
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
     }
 
     @AutoValue
