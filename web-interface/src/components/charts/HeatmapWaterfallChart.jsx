@@ -12,6 +12,10 @@ class HeatmapWaterfallChart extends React.Component {
         };
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({ data: nextProps.data });
+    }
+
     render() {
         const data = this.state.data;
 
