@@ -48,9 +48,9 @@ public abstract class ChannelResponse {
 
     @JsonProperty("signal_index_history")
     @Nullable
-    public abstract List<List<Long>> signalIndexHistory();
+    public abstract Map<String, List>  signalIndexHistory();
 
-    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, List<List<Long>> signalIndexHistory) {
+    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, Map<String, List>  signalIndexHistory) {
         return builder()
                 .channelNumber(channelNumber)
                 .bssid(bssid)
@@ -80,7 +80,7 @@ public abstract class ChannelResponse {
 
         public abstract Builder signalIndexDistribution(Map<Integer, AtomicLong> signalIndexDistribution);
 
-        public abstract Builder signalIndexHistory(List<List<Long>> signalIndexHistory);
+        public abstract Builder signalIndexHistory(Map<String, List> signalIndexHistory);
 
         public abstract ChannelResponse build();
     }

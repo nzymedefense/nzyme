@@ -35,8 +35,16 @@ class ChannelDetails extends Reflux.Component {
     }
 
     _formatSignalIndexHeatmap(data) {
+        const yDates = [];
+
+        Object.keys(data.y).forEach(function(point) {
+            yDates.push(new Date(data.y[point]));
+        });
+
         return {
-            "z": data
+            "z": data.z,
+            "x": data.x,
+            "y": yDates
         };
     }
 
@@ -96,6 +104,7 @@ class ChannelDetails extends Reflux.Component {
                                 title="Signal Strength Waterfall"
                                 xaxistitle="Signal Strength (dBm)"
                                 yaxistitle="Sample Minute"
+                                hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                                 data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}
                             />
                         </div>

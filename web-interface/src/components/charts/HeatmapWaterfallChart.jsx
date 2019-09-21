@@ -18,8 +18,10 @@ class HeatmapWaterfallChart extends React.Component {
         const finalData = [
             {
                 z: data.z,
+                x: data.x,
+                y: data.y,
                 type: "heatmap",
-                hovertemplate: "Signal Strength: %{x}<extra></extra>",
+                hovertemplate: this.props.hovertemplate,
                 showscale: false,
                 colorscale: [[0, 'rgb(12,13,22)'], [1, 'rgb(14,201,0)']]
             }

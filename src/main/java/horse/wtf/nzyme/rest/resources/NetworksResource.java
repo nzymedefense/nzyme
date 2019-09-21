@@ -217,7 +217,8 @@ public class NetworksResource {
         return beaconRateHistory;
     }
 
-    public List<List<Long>> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
+    // TODO better use an AutoValue object to return here lol
+    private Map<String, List> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
         List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(HISTOGRAM_HISTORY_QUERY)
                         .bind(0, b.bssid())
@@ -228,7 +229,8 @@ public class NetworksResource {
         );
 
         // Transform the histogram string blobs from the database to structured data.
-        List<List<Long>> history = Lists.newArrayList();
+        List<List<Long>> z = Lists.newArrayList();
+        List<DateTime> y = Lists.newArrayList();
         for (SignalIndexHistogramHistoryDBEntry value : values) {
             try {
                 List<Long> entries = new ArrayList<>();
@@ -243,13 +245,25 @@ public class NetworksResource {
                     entries.add(tempReduced.getOrDefault(cnt, 0L));
                 }
 
-                history.add(entries);
+                z.add(entries);
+                y.add(value.createdAt().withSecondOfMinute(0));
             } catch (Exception e) {
                 LOG.error("Could not parse histogram blob to structured data for BSSID [{}].", b, e);
             }
         }
 
-        return history;
+        // X Axis.
+        List<Integer> x = Lists.newArrayList();
+        for(int cnt = -100; cnt < 0; cnt++) {
+            x.add(cnt);
+        }
+
+        Map<String, List> coords = Maps.newHashMap();
+        coords.put("z", z);
+        coords.put("x", x);
+        coords.put("y", y);
+
+        return coords;
     }
 
 }
