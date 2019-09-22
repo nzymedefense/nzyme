@@ -51,10 +51,10 @@ class NetworksStore extends Reflux.Store {
         });
     }
 
-    onFindSSIDOnBSSID(bssid, ssid, includeHistory = false) {
+    onFindSSIDOnBSSID(bssid, ssid, includeHistory = false, historySeconds = 600) {
         let self = this;
 
-        RESTClient.get("networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {include_history: includeHistory}, function(response) {
+        RESTClient.get("networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {include_history: includeHistory, history_seconds: historySeconds}, function(response) {
             const key = bssid + "_" + ssid;
             const state = {};
             state[key] = response.data;

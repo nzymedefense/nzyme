@@ -28,7 +28,6 @@ import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
-import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -58,7 +57,7 @@ public class NetworksResource {
             "ORDER BY bucket ASC";
 
     public static final String HISTOGRAM_HISTORY_QUERY = "SELECT histogram, created_at FROM sigidx_histogram_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '3 hours') " +
+            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval <lookback>) " +
             "ORDER BY created_at ASC";
 
     @Inject
@@ -115,7 +114,8 @@ public class NetworksResource {
     @Path("/bssids/{bssid}/ssids/{ssid}")
     public Response ssid(@PathParam("bssid") @NotNull String bssid,
                          @PathParam("ssid") @NotNull String ssid,
-                         @QueryParam("include_history") @DefaultValue("false") boolean includeHistory) {
+                         @QueryParam("include_history") @DefaultValue("false") boolean includeHistory,
+                         @QueryParam("history_seconds") @DefaultValue("10800") int historySeconds) {
         bssid = bssid.toLowerCase();
 
         if (nzyme.getNetworks().getBSSIDs().containsKey(bssid)) {
@@ -143,7 +143,7 @@ public class NetworksResource {
                             c.totalFrames().get(),
                             c.fingerprints(),
                             c.signalStrengthTable().getSignalDistributionHistogram(),
-                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c) : null
+                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c, historySeconds) : null
                     ));
                 }
 
@@ -218,12 +218,13 @@ public class NetworksResource {
     }
 
     // TODO better use an AutoValue object to return here lol
-    private Map<String, List> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c) {
+    private Map<String, List> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c, int seconds) {
         List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(HISTOGRAM_HISTORY_QUERY)
                         .bind(0, b.bssid())
                         .bind(1, s.name())
                         .bind(2, c.channelNumber())
+                        .define("lookback", "'" + seconds + " seconds'") // TODO this is fucked
                         .mapTo(SignalIndexHistogramHistoryDBEntry.class)
                         .list()
         );

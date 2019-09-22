@@ -25,9 +25,9 @@ class NetworkDetails extends Reflux.Component {
         const bssid = this.props.bssid;
         const ssid = this.props.ssid;
 
-        NetworksActions.findSSIDOnBSSID(bssid, ssid, true);
+        NetworksActions.findSSIDOnBSSID(bssid, ssid, true, 60*60);
         setInterval(function () {
-            NetworksActions.findSSIDOnBSSID(bssid, ssid, true)
+            NetworksActions.findSSIDOnBSSID(bssid, ssid, true, 60*60)
         }, 15000);
     }
 
