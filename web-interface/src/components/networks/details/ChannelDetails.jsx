@@ -77,7 +77,7 @@ class ChannelDetails extends Reflux.Component {
 
                     <div className="col-md-6">
                         <h6>
-                            Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                            Channel Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
                         </h6>
                         <ul className="channel-details-fingerprints">
                             {Object.keys(this.props.channel.fingerprints).map(function (key,i) {

@@ -106,7 +106,7 @@ class NetworkDetails extends Reflux.Component {
                             <hr />
 
                             <h3>
-                                Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                                Network-wide Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
                             </h3>
 
                             <ul>
