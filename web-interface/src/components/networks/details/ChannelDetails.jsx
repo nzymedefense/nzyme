@@ -4,6 +4,7 @@ import Reflux from 'reflux';
 import numeral from "numeral";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import HeatmapWaterfallChart from "../../charts/HeatmapWaterfallChart";
+import HelpBubble from "../../misc/HelpBubble";
 
 class ChannelDetails extends Reflux.Component {
 
@@ -75,7 +76,9 @@ class ChannelDetails extends Reflux.Component {
                     </div>
 
                     <div className="col-md-6">
-                        <strong>Fingerprints</strong>
+                        <h6>
+                            Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                        </h6>
                         <ul className="channel-details-fingerprints">
                             {Object.keys(this.props.channel.fingerprints).map(function (key,i) {
                                 return <li>{self.props.channel.fingerprints[key]}</li>

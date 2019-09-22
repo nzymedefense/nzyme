@@ -6,6 +6,7 @@ import NetworksActions from "../../../actions/NetworksActions";
 import ChannelDetails from "./ChannelDetails";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import BeaconRate from "./BeaconRate";
+import HelpBubble from "../../misc/HelpBubble";
 
 class NetworkDetails extends Reflux.Component {
 
@@ -104,7 +105,9 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <hr />
 
-                            <h3>Fingerprints</h3>
+                            <h3>
+                                Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                            </h3>
 
                             <ul>
                                 {Object.keys(ssid.fingerprints).map(function (key,i) {
