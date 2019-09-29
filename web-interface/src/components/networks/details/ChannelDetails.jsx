@@ -106,7 +106,7 @@ class ChannelDetails extends Reflux.Component {
                             <HeatmapWaterfallChart
                                 title="Signal Strength Waterfall"
                                 xaxistitle="Signal Strength (dBm)"
-                                yaxistitle="Sample Minute"
+                                yaxistitle="Time"
                                 hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                                 data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}
                             />
