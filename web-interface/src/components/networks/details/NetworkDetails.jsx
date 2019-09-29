@@ -7,6 +7,7 @@ import ChannelDetails from "./ChannelDetails";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import BeaconRate from "./BeaconRate";
 import HelpBubble from "../../misc/HelpBubble";
+import ChannelSwitcher from "./ChannelSwitcher";
 
 class NetworkDetails extends Reflux.Component {
 
@@ -15,10 +16,11 @@ class NetworkDetails extends Reflux.Component {
 
         this.store = NetworksStore;
 
-        this.stateKey = props.bssid + "_" + props.ssid;
-        const state = {};
-        state[this.stateKey] = undefined;
-        this.state = state;
+        this.state = {
+            channelNumber: props.channelNumber
+        };
+
+        this._changeChannel = this._changeChannel.bind(this);
     }
 
     componentDidMount() {
@@ -53,8 +55,12 @@ class NetworkDetails extends Reflux.Component {
         return result;
     }
 
+    _changeChannel(channelNumber) {
+        this.setState({channelNumber: channelNumber});
+    }
+
     render() {
-        const ssid = this.state[this.stateKey];
+        const ssid = this.state.ssid;
 
         if (!ssid) {
             return <LoadingSpinner />;
@@ -111,7 +117,7 @@ class NetworkDetails extends Reflux.Component {
 
                             <ul>
                                 {Object.keys(ssid.fingerprints).map(function (key,i) {
-                                    return <li>{ssid.fingerprints[key]}</li>
+                                    return <li key={"fp-" + ssid.fingerprints[key]}>{ssid.fingerprints[key]}</li>
                                 })}
                             </ul>
                         </div>
@@ -121,9 +127,24 @@ class NetworkDetails extends Reflux.Component {
                         <div className="col-md-12">
                             <hr />
 
-                            <h2>Channel {this.props.channelNumber}</h2>
+                            <div className="row">
+                                <div className="col-md-9">
+                                    <h2>Channel {this.state.channelNumber}</h2>
+                                </div>
+                                <div className="col-md-3">
+                                    <ChannelSwitcher
+                                        channels={ssid.channels}
+                                        currentChannel={this.state.channelNumber}
+                                        changeChannel={this._changeChannel}
+                                    />
+                                </div>
+                            </div>
 
-                            <ChannelDetails channel={ssid.channels[this.props.channelNumber]} ssid={ssid} />
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <ChannelDetails channel={ssid.channels[this.state.channelNumber]} ssid={ssid} />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

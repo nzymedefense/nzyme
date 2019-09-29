@@ -81,7 +81,7 @@ class ChannelDetails extends Reflux.Component {
                         </h6>
                         <ul className="channel-details-fingerprints">
                             {Object.keys(this.props.channel.fingerprints).map(function (key,i) {
-                                return <li>{self.props.channel.fingerprints[key]}</li>
+                                return <li key={"channel-fp-" + self.props.channel.fingerprints[key]}>{self.props.channel.fingerprints[key]}</li>
                             })}
                         </ul>
                     </div>

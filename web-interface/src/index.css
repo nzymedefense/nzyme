@@ -106,3 +106,7 @@ ul.channel-details-fingerprints {
     list-style-type: square;
     padding-left: 15px;
 }
+
+select.channel-switcher {
+    margin-left: 12px;
+}

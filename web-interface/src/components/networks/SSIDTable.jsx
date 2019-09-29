@@ -11,11 +11,6 @@ class SSIDTableRow extends Reflux.Component {
         super(props);
 
         this.store = NetworksStore;
-
-        this.stateKey = props.bssid + "_" + props.ssid;
-        const state = {};
-        state[this.stateKey] = undefined;
-        this.state = state;
     }
 
     componentDidMount() {
@@ -30,22 +25,20 @@ class SSIDTableRow extends Reflux.Component {
         }
     }
 
-    // fetch all details here.
-
     render() {
         const self = this;
 
         if (this.props.ssid === "[not human readable]") {
             return (
                 <tr>
-                    <td colSpan="7" style={{"text-align": "center"}}>
+                    <td colSpan="7" style={{textAlign: "center"}}>
                         Not showing details for hidden or not human readable SSIDs.
                     </td>
                 </tr>
             )
         }
 
-        if (!this.state[this.stateKey]) {
+        if (!this.state.ssid) {
             return (
                 <tr>
                     <td colSpan="7">
@@ -68,8 +61,8 @@ class SSIDTableRow extends Reflux.Component {
                             </tr>
                         </thead>
                         <tbody>
-                        {Object.keys(this.state[this.stateKey].channels).map(function (key,i) {
-                            return <SSIDRow key={i} ssid={self.state[self.stateKey]} channel={self.state[self.stateKey].channels[key]} />;
+                        {Object.keys(this.state.ssid.channels).map(function (key,i) {
+                            return <SSIDRow key={"ssidrow-" + self.props.bssid + "-" + self.state.ssid.name + "-" + key} ssid={self.state.ssid} channel={self.state.ssid.channels[key]} />;
                         })}
                         </tbody>
                     </table>

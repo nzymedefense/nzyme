@@ -55,10 +55,7 @@ class NetworksStore extends Reflux.Store {
         let self = this;
 
         RESTClient.get("networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {include_history: includeHistory, history_seconds: historySeconds}, function(response) {
-            const key = bssid + "_" + ssid;
-            const state = {};
-            state[key] = response.data;
-            self.setState(state);
+            self.setState({ssid: response.data});
         });
     }
 

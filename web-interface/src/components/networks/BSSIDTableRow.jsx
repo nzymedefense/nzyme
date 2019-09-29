@@ -10,35 +10,34 @@ class BSSIDTableRow extends Reflux.Component {
         super(props);
 
         this.state = {
-            displayDetails: false
+            displayDetails: this.props.displayDetails
         };
-
-        this._bssidClick = this._bssidClick.bind(this);
     }
 
-    _bssidClick(e) {
-        e.preventDefault();
-
-        const oldState = this.state.displayDetails;
-        this.setState({displayDetails: !oldState})
+    componentWillReceiveProps(newProps) {
+        this.setState({displayDetails: newProps.displayDetails});
     }
 
     render() {
-        const self = this;
+        const bssid = this.props.bssid;
 
         if (!this.state.displayDetails) {
             return (
                 <React.Fragment>
-                    <BSSIDTableRowTop bssid={this.props.bssid} clickHandler={this._bssidClick} />
+                    <BSSIDTableRowTop bssid={bssid} clickHandler={(e) => this.props.onBSSIDClick(e, bssid.bssid)} />
                 </React.Fragment>
             )
         } else {
             return (
                 <React.Fragment>
-                    <BSSIDTableRowTop bssid={this.props.bssid} clickHandler={this._bssidClick} />
+                    <BSSIDTableRowTop bssid={bssid} clickHandler={(e) => this.props.onBSSIDClick(e, bssid.bssid)} />
 
-                    {Object.keys(this.props.bssid.ssids).map(function (key,i) {
-                        return <SSIDTable key={i}  bssid={self.props.bssid.bssid} ssid={self.props.bssid.ssids[key]} />;
+                    {Object.keys(bssid.ssids).map(function (key,i) {
+                        return <SSIDTable
+                            key={"ssidtable-" +bssid.bssid + "-" + bssid.ssids[key] + "-" + key}
+                            bssid={bssid.bssid}
+                            ssid={bssid.ssids[key]}
+                        />;
                     })}
                 </React.Fragment>
             )

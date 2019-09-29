@@ -8,12 +8,20 @@ class BSSIDTable extends Reflux.Component {
         super(props);
 
         this.state = {
-            bssids: props.bssids
-        }
+            bssids: props.bssids,
+            selectedBSSID: undefined
+        };
+
+        this._onBSSIDClick = this._onBSSIDClick.bind(this);
     }
 
     componentWillReceiveProps(newProps) {
         this.setState({bssids: newProps.bssids});
+    }
+
+    _onBSSIDClick(e, bssid) {
+        e.preventDefault();
+        this.setState({selectedBSSID: bssid})
     }
 
     render() {
@@ -35,7 +43,11 @@ class BSSIDTable extends Reflux.Component {
                         </thead>
                         <tbody>
                         {Object.keys(this.state.bssids).map(function (key,i) {
-                            return <BSSIDTableRow key={self.state.bssids[key].bssid} bssid={self.state.bssids[key]} />;
+                            return <BSSIDTableRow
+                                key={self.state.bssids[key].bssid}
+                                bssid={self.state.bssids[key]}
+                                displayDetails={self.state.selectedBSSID === self.state.bssids[key].bssid}
+                                onBSSIDClick={self._onBSSIDClick} />;
                         })}
                         </tbody>
                     </table>
