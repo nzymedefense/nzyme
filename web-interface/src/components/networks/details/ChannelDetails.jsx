@@ -5,8 +5,18 @@ import numeral from "numeral";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import HeatmapWaterfallChart from "../../charts/HeatmapWaterfallChart";
 import HelpBubble from "../../misc/HelpBubble";
+import TimerangeSwitcher from "./TimerangeSwitcher";
 
 class ChannelDetails extends Reflux.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            channel: props.channel,
+            historyHours: props.historyHours
+        };
+    }
 
     _formatSignalIndexDistribution(data) {
         const result = [];
@@ -49,8 +59,15 @@ class ChannelDetails extends Reflux.Component {
         };
     }
 
+    componentWillReceiveProps(newProps) {
+        this.setState({
+            channel: newProps.channel,
+            historyHours: newProps.historyHours
+        });
+    }
+
     render() {
-        if (!this.props.channel) {
+        if (!this.state.channel) {
             return (
                 <div>
                     <div className="row">
@@ -71,7 +88,7 @@ class ChannelDetails extends Reflux.Component {
                     <div className="col-md-3">
                         <dl>
                             <dt>Total Frames</dt>
-                            <dd>{numeral(this.props.channel.total_frames).format("0,0")}</dd>
+                            <dd>{numeral(this.state.channel.total_frames).format("0,0")}</dd>
                         </dl>
                     </div>
 
@@ -80,37 +97,48 @@ class ChannelDetails extends Reflux.Component {
                             Channel Fingerprints <small><HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
                         </h6>
                         <ul className="channel-details-fingerprints">
-                            {Object.keys(this.props.channel.fingerprints).map(function (key,i) {
-                                return <li key={"channel-fp-" + self.props.channel.fingerprints[key]}>{self.props.channel.fingerprints[key]}</li>
+                            {Object.keys(this.state.channel.fingerprints).map(function (key,i) {
+                                return <li key={"channel-fp-" + self.state.channel.fingerprints[key]}>{self.state.channel.fingerprints[key]}</li>
                             })}
                         </ul>
                     </div>
+                </div>
 
-                    <div className="row">
-                        <div className="col-md-12">
-                            <SimpleLineChart
-                                title={"Signal Strength Distribution (last " + self.props.channel.signal_index_distribution_minutes + " minutes)"}
-                                width={1100}
-                                height={200}
-                                xaxistitle="Signal Strength (dBm)"
-                                yaxistitle="Signal Count"
-                                customMarginLeft={60}
-                                customMarginRight={60}
-                                finalData={this._formatSignalIndexDistribution(self.props.channel.signal_index_distribution)}
-                            />
-                        </div>
+                <div className="row">
+                    <div className="col-md-12">
+                        <SimpleLineChart
+                            title={"Signal Strength Distribution (last " + self.state.channel.signal_index_distribution_minutes + " minutes)"}
+                            width={1100}
+                            height={200}
+                            xaxistitle="Signal Strength (dBm)"
+                            yaxistitle="Signal Count"
+                            customMarginLeft={60}
+                            customMarginRight={60}
+                            finalData={this._formatSignalIndexDistribution(self.state.channel.signal_index_distribution)}
+                        />
                     </div>
+                </div>
 
-                    <div className="row">
-                        <div className="col-md-12">
-                            <HeatmapWaterfallChart
-                                title="Signal Strength Waterfall"
-                                xaxistitle="Signal Strength (dBm)"
-                                yaxistitle="Time"
-                                hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
-                                data={this._formatSignalIndexHeatmap(self.props.channel.signal_index_history)}
-                            />
-                        </div>
+                <div className="row">
+                    <div className="col-md-12">
+                        <HeatmapWaterfallChart
+                            title={"Signal Strength Waterfall (last " + self.state.historyHours + " hours)"}
+                            xaxistitle="Signal Strength (dBm)"
+                            yaxistitle="Time"
+                            hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
+                            data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
+                        />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-4">
+                        <TimerangeSwitcher
+                            ranges={[1,2,4,8,12,24]}
+                            currentRange={self.state.historyHours}
+                            _changeRange={self.props._changeRange}
+                            title={"Waterfall Time Range"}
+                        />
                     </div>
                 </div>
 

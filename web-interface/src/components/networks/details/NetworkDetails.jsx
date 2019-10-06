@@ -17,20 +17,24 @@ class NetworkDetails extends Reflux.Component {
         this.store = NetworksStore;
 
         this.state = {
-            channelNumber: props.channelNumber
+            channelNumber: props.channelNumber,
+            historyHours: 4
         };
 
+        this._loadChannel = this._loadChannel.bind(this);
         this._changeChannel = this._changeChannel.bind(this);
+        this._changeRange = this._changeRange.bind(this);
     }
 
     componentDidMount() {
-        const bssid = this.props.bssid;
-        const ssid = this.props.ssid;
+        const load = this._loadChannel;
 
-        NetworksActions.findSSIDOnBSSID(bssid, ssid, true, 60*60);
-        setInterval(function () {
-            NetworksActions.findSSIDOnBSSID(bssid, ssid, true, 60*60)
-        }, 15000);
+        load();
+        setInterval(function () { load(); }, 15000);
+    }
+
+    _loadChannel() {
+        NetworksActions.findSSIDOnBSSID(this.props.bssid, this.props.ssid, true, this.state.historyHours*60*60);
     }
 
     _formatBeaconRateHistory(data) {
@@ -57,6 +61,10 @@ class NetworkDetails extends Reflux.Component {
 
     _changeChannel(channelNumber) {
         this.setState({channelNumber: channelNumber});
+    }
+
+    _changeRange(range) {
+        this.setState({historyHours: range}, () => this._loadChannel());
     }
 
     render() {
@@ -142,7 +150,12 @@ class NetworkDetails extends Reflux.Component {
 
                             <div className="row">
                                 <div className="col-md-12">
-                                    <ChannelDetails channel={ssid.channels[this.state.channelNumber]} ssid={ssid} />
+                                    <ChannelDetails
+                                        channel={ssid.channels[this.state.channelNumber]}
+                                        ssid={ssid}
+                                        historyHours={this.state.historyHours}
+                                        _changeRange={this._changeRange}
+                                    />
                                 </div>
                             </div>
                         </div>

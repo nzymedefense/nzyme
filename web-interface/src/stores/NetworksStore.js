@@ -51,7 +51,7 @@ class NetworksStore extends Reflux.Store {
         });
     }
 
-    onFindSSIDOnBSSID(bssid, ssid, includeHistory = false, historySeconds = 600) {
+    onFindSSIDOnBSSID(bssid, ssid, includeHistory = false, historySeconds = 10800) {
         let self = this;
 
         RESTClient.get("networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {include_history: includeHistory, history_seconds: historySeconds}, function(response) {
