@@ -88,7 +88,7 @@ public class Networks {
             for (BSSID bssid : bssids.values()) {
                 for (SSID ssid : bssid.ssids().values()) {
                     for (Channel channel : ssid.channels().values()) {
-                        channel.signalStrengthTable().retentionClean(300); // TODO ZSCORE make configurable
+                        channel.signalStrengthTable().retentionClean((int) TimeUnit.MINUTES.toSeconds(SignalStrengthTable.RETENTION_MINUTES));
                     }
                 }
             }

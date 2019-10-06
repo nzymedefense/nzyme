@@ -28,6 +28,7 @@ import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
+import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -143,6 +144,7 @@ public class NetworksResource {
                             c.totalFrames().get(),
                             c.fingerprints(),
                             c.signalStrengthTable().getSignalDistributionHistogram(),
+                            SignalStrengthTable.RETENTION_MINUTES,
                             includeHistory ? buildSignalIndexHistogramHistory(b, s, c, historySeconds) : null
                     ));
                 }

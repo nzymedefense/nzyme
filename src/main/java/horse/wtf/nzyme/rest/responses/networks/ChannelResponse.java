@@ -46,11 +46,14 @@ public abstract class ChannelResponse {
     @JsonProperty("signal_index_distribution")
     public abstract Map<Integer, AtomicLong> signalIndexDistribution();
 
+    @JsonProperty("signal_index_distribution_minutes")
+    public abstract int signalIndexDistributionMinutes();
+
     @JsonProperty("signal_index_history")
     @Nullable
     public abstract Map<String, List>  signalIndexHistory();
 
-    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, Map<String, List>  signalIndexHistory) {
+    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, int signalIndexDistributionMinutes, Map<String, List> signalIndexHistory) {
         return builder()
                 .channelNumber(channelNumber)
                 .bssid(bssid)
@@ -58,6 +61,7 @@ public abstract class ChannelResponse {
                 .totalFrames(totalFrames)
                 .fingerprints(fingerprints)
                 .signalIndexDistribution(signalIndexDistribution)
+                .signalIndexDistributionMinutes(signalIndexDistributionMinutes)
                 .signalIndexHistory(signalIndexHistory)
                 .build();
     }
@@ -79,6 +83,8 @@ public abstract class ChannelResponse {
         public abstract Builder fingerprints(List<String> fingerprints);
 
         public abstract Builder signalIndexDistribution(Map<Integer, AtomicLong> signalIndexDistribution);
+
+        public abstract Builder signalIndexDistributionMinutes(int signalIndexDistributionMinutes);
 
         public abstract Builder signalIndexHistory(Map<String, List> signalIndexHistory);
 

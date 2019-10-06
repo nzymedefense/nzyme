@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class SignalStrengthTable {
 
+    public static final int RETENTION_MINUTES = 5;
+
     private final Object mutex = new Object();
 
     private List<SignalStrength> table;
