@@ -22,7 +22,7 @@ public class SignalIndexHistogramCleaner extends Periodical {
             LOG.debug("Retention cleaning signal index history values.");
 
             database.useHandle(handle -> {
-                handle.execute("DELETE FROM sigidx_histogram_history WHERE created_at < (current_timestamp at time zone 'UTC' - interval '8 hours')");
+                handle.execute("DELETE FROM sigidx_histogram_history WHERE created_at < (current_timestamp at time zone 'UTC' - interval '24 hours')");
             });
         } catch(Exception e) {
             LOG.error("Could not retention clean signal index history information.", e);
