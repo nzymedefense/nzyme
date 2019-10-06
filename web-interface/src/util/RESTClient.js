@@ -41,7 +41,9 @@ const RESTClient = {
             Store.delete("api_token");
           }
 
-          notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+          if (error.response.status !== 401) {
+            notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+          }
         } else {
           notify.show("REST call failed. No response. Is nzyme running?", "error");
         }
