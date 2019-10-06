@@ -21,7 +21,13 @@ class BSSIDTable extends Reflux.Component {
 
     _onBSSIDClick(e, bssid) {
         e.preventDefault();
-        this.setState({selectedBSSID: bssid})
+
+        if (this.state.selectedBSSID === bssid) {
+            // Click on a selected BSSID closes it.
+            this.setState({selectedBSSID: undefined});
+        } else {
+            this.setState({selectedBSSID: bssid})
+        }
     }
 
     render() {

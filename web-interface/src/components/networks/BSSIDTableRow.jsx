@@ -34,7 +34,7 @@ class BSSIDTableRow extends Reflux.Component {
 
                     {Object.keys(bssid.ssids).map(function (key,i) {
                         return <SSIDTable
-                            key={"ssidtable-" +bssid.bssid + "-" + bssid.ssids[key] + "-" + key}
+                            key={"ssidtable-" + bssid.bssid + "-" + bssid.ssids[key] + "-" + key}
                             bssid={bssid.bssid}
                             ssid={bssid.ssids[key]}
                         />;

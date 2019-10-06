@@ -11,17 +11,20 @@ class SSIDTableRow extends Reflux.Component {
         super(props);
 
         this.store = NetworksStore;
+
+        this.state = {
+            ssid: undefined
+        };
     }
 
     componentDidMount() {
         const ssid = this.props.ssid;
         const bssid = this.props.bssid;
 
+        this.setState({ssid: undefined});
+
         if (ssid !== "[not human readable]") {
             NetworksActions.findSSIDOnBSSID(bssid, ssid);
-            setInterval(function () {
-                NetworksActions.findSSIDOnBSSID(bssid, ssid)
-            }, 15000);
         }
     }
 

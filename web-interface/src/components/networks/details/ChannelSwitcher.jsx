@@ -19,19 +19,13 @@ class ChannelSwitcher extends React.Component {
     }
 
     render() {
-        const currentChannel = this.props.currentChannel;
-
         return (
             <div>
                 Select Channel:
 
-                <select className="channel-switcher" onChange={this._changeChannel} ref={this.menu}>
+                <select className="channel-switcher" defaultValue={this.props.currentChannel} onChange={this._changeChannel} ref={this.menu}>
                     {this.state.channelNumbers.map(function (key,i) {
-                        return <option
-                            key={"channel-switch-" + key}
-                            value={key}
-                            selected={currentChannel === key}
-                        >
+                        return <option key={"channel-switch-" + key} value={key}>
                             {key}
                         </option>
                     })}
