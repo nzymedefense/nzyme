@@ -55,7 +55,11 @@ public abstract class SSIDResponse {
     @Nullable
     public abstract List<AverageBeaconRate> beaconRateHistory();
 
-    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory) {
+    @JsonProperty("beacon_rate_threshold")
+    @Nullable
+    public abstract Integer beaconRateThreshold();
+
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold) {
         return builder()
                 .security(security)
                 .bssid(bssid)
@@ -65,6 +69,7 @@ public abstract class SSIDResponse {
                 .fingerprints(fingerprints)
                 .beaconRate(beaconRate)
                 .beaconRateHistory(beaconRateHistory)
+                .beaconRateThreshold(beaconRateThreshold)
                 .build();
     }
 
@@ -89,6 +94,8 @@ public abstract class SSIDResponse {
         public abstract Builder beaconRate(BeaconRate beaconRate);
 
         public abstract Builder beaconRateHistory(List<AverageBeaconRate> beaconRateHistory);
+
+        public abstract Builder beaconRateThreshold(Integer beaconRateThreshold);
 
         public abstract SSIDResponse build();
     }

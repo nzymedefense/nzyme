@@ -59,6 +59,28 @@ class NetworkDetails extends Reflux.Component {
         return result;
     }
 
+    _buildBeaconRateHistoryShapes(data, threshold) {
+        if (!threshold) {
+            return [];
+        }
+
+        return [
+            {
+                type: "line",
+                visible: true,
+                x0: new Date(data[0].created_at),
+                x1: new Date(data[data.length-1].created_at),
+                y0: threshold,
+                y1: threshold,
+                line: {
+                    color: "#8a0000",
+                    dash: "dash",
+                    width: 1,
+                }
+            }
+        ];
+    }
+
     _changeChannel(channelNumber) {
         this.setState({channelNumber: channelNumber});
     }
@@ -111,7 +133,10 @@ class NetworkDetails extends Reflux.Component {
                                 customMarginLeft={60}
                                 customMarginRight={60}
                                 finalData={this._formatBeaconRateHistory(ssid.beacon_rate_history)}
+                                shapes={this._buildBeaconRateHistoryShapes(ssid.beacon_rate_history, ssid.beacon_rate_threshold)}
                             />
+
+                            Beacon Rate Alert Threshold: { ssid.beacon_rate_threshold ? ssid.beacon_rate_threshold : "not configured for this network"}
                         </div>
                     </div>
 

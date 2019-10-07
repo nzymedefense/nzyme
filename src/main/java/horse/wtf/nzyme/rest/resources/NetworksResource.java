@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
@@ -43,6 +44,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Path("/api/networks")
 @Produces(MediaType.APPLICATION_JSON)
@@ -167,7 +169,8 @@ public class NetworksResource {
                         channels,
                         fingerprints,
                         s.beaconRate(),
-                        includeHistory ? buildBeaconRateHistory(b, s) : null
+                        includeHistory ? buildBeaconRateHistory(b, s) : null,
+                        findBeaconRateThresholdOfNetwork(b, s).orElse(null)
                 )).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
@@ -217,6 +220,16 @@ public class NetworksResource {
         beaconRateHistory.add(createEmptyAverageBeaconRate(DateTime.now()));
 
         return beaconRateHistory;
+    }
+
+    private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
+        for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
+            if (dot11Network.allBSSIDAddresses().contains(b.bssid()) && dot11Network.ssid().equals(s.name())) {
+                return Optional.of(dot11Network.beaconRate());
+            }
+        }
+
+        return Optional.empty();
     }
 
     // TODO better use an AutoValue object to return here lol

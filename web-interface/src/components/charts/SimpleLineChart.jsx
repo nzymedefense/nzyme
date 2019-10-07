@@ -62,7 +62,8 @@ class SimpleLineChart extends React.Component {
                     namelength: -1
                 },
                 xaxis: { fixedrange: true, title: this.props.xaxistitle },
-                yaxis: { fixedrange: true, title: this.props.yaxistitle }
+                yaxis: { fixedrange: true, title: this.props.yaxistitle },
+                shapes: this.props.shapes
             }}
             config={{
                 displayModeBar: false
