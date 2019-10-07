@@ -45,6 +45,37 @@ class ChannelDetails extends Reflux.Component {
         return result;
     }
 
+    _buildSignalIndexDistributionThreshold() {
+        return [
+            {
+                type: "line",
+                visible: true,
+                x0: -59,
+                x1: -59,
+                y0: 0,
+                y1: 70,
+                line: {
+                    color: "#8a0000",
+                    dash: "dash",
+                    width: 1,
+                }
+            },
+            {
+                type: "line",
+                visible: true,
+                x0: -41,
+                x1: -41,
+                y0: 0,
+                y1: 70,
+                line: {
+                    color: "#8a0000",
+                    dash: "dash",
+                    width: 1,
+                }
+            }
+        ];
+    }
+
     _formatSignalIndexHeatmap(data) {
         const yDates = [];
 
@@ -57,6 +88,37 @@ class ChannelDetails extends Reflux.Component {
             "x": data.x,
             "y": yDates
         };
+    }
+
+    _buildSignalIndexHeatmapTracks(data) {
+        return [
+            {
+                type: "line",
+                visible: true,
+                x0: -58,
+                x1: -58,
+                y0: new Date(data.y[0]),
+                y1: new Date(data.y[data.y.length-1]),
+                line: {
+                    color: "#8a0000",
+                    dash: "solid",
+                    width: 1,
+                }
+            },
+            {
+                type: "line",
+                visible: true,
+                x0: -42,
+                x1: -42,
+                y0: new Date(data.y[0]),
+                y1: new Date(data.y[data.y.length-1]),
+                line: {
+                    color: "#8a0000",
+                    dash: "solid",
+                    width: 1,
+                }
+            }
+        ];
     }
 
     componentWillReceiveProps(newProps) {
@@ -115,6 +177,7 @@ class ChannelDetails extends Reflux.Component {
                             customMarginLeft={60}
                             customMarginRight={60}
                             finalData={this._formatSignalIndexDistribution(self.state.channel.signal_index_distribution)}
+                            shapes={this._buildSignalIndexDistributionThreshold()}
                         />
                     </div>
                 </div>
@@ -127,6 +190,7 @@ class ChannelDetails extends Reflux.Component {
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                             data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
+                            shapes={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history)}
                         />
                     </div>
                 </div>
