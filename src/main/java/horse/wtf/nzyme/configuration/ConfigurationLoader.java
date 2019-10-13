@@ -51,7 +51,6 @@ public class ConfigurationLoader {
     private final Config interfaces;
     private final Config python;
     private final Config alerting;
-    private final Config tuningParams;
 
     public ConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
@@ -65,7 +64,6 @@ public class ConfigurationLoader {
             this.python = general.getConfig(ConfigurationKeys.PYTHON);
             this.alerting = general.getConfig(ConfigurationKeys.ALERTING);
             this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
-            this.tuningParams = root.getConfig(ConfigurationKeys.TUNING_PARAMETERS);
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -98,10 +96,6 @@ public class ConfigurationLoader {
                 parseAlertingRetentionPeriodMinutes(),
                 parseAlertingTrainingPeriodSeconds(),
                 parseKnownBanditFingerprints(),
-                parseSignalQualityTableSizeMinutes(),
-                parseExpectedSignalDeltaModifier(),
-                parseAnomalyAlertLookbackMinutes(),
-                parseAnomalyAlertTriggerRatio(),
                 parseGraylogUplinks()
         );
     }
@@ -297,22 +291,6 @@ public class ConfigurationLoader {
         return fingerprints.build();
     }
 
-    private double parseAnomalyAlertTriggerRatio() {
-        return tuningParams.getDouble(ConfigurationKeys.ANOMALY_ALERT_TRIGGER_RATIO);
-    }
-
-    private int parseAnomalyAlertLookbackMinutes() {
-        return tuningParams.getInt(ConfigurationKeys.ANOMALY_ALERT_LOOKBACK_MINUTES);
-    }
-
-    private double parseExpectedSignalDeltaModifier() {
-        return tuningParams.getDouble(ConfigurationKeys.EXPECTED_SIGNAL_DELTA_MODIFIER);
-    }
-
-    private int parseSignalQualityTableSizeMinutes() {
-        return tuningParams.getInt(ConfigurationKeys.SIGNAL_QUALITY_TABLE_SIZE_MINUTES);
-    }
-
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
         expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
@@ -332,7 +310,6 @@ public class ConfigurationLoader {
         expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
         expect(root, ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
-        expect(root, ConfigurationKeys.TUNING_PARAMETERS, "<root>", Map.class);
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)
         if (parseAdminPasswordHash().length() != 64) {
@@ -376,12 +353,6 @@ public class ConfigurationLoader {
             }
 
         }
-
-        // Tuning parameters
-        expect(tuningParams, ConfigurationKeys.SIGNAL_QUALITY_TABLE_SIZE_MINUTES, ConfigurationKeys.TUNING_PARAMETERS, Integer.class);
-        expect(tuningParams, ConfigurationKeys.EXPECTED_SIGNAL_DELTA_MODIFIER, ConfigurationKeys.TUNING_PARAMETERS, Float.class);
-        expect(tuningParams, ConfigurationKeys.ANOMALY_ALERT_LOOKBACK_MINUTES, ConfigurationKeys.TUNING_PARAMETERS, Integer.class);
-        expect(tuningParams, ConfigurationKeys.ANOMALY_ALERT_TRIGGER_RATIO, ConfigurationKeys.TUNING_PARAMETERS, Float.class);
 
         // Logical validity.
         // Python: executable is an executable file.

@@ -108,10 +108,6 @@ public class ConfigurationLoaderTest {
             add(Alert.TYPE_WIDE.CRYPTO_CHANGE);
             add(Alert.TYPE_WIDE.KNOWN_BANDIT_FINGERPRINT);
         }});
-        assertEquals(c.signalQualityTableSizeMinutes(), 5);
-        assertEquals(c.expectedSignalDeltaModifier(), 3.0);
-        assertEquals(c.anomalyAlertLookbackMinutes(), 3);
-        assertEquals(c.anomalyAlertTriggerRatio(), 0.8);
         assertEquals(c.knownBanditFingerprints(), new HashMap<String, BanditFingerprintDefinition>() {{
             put("535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83", BanditFingerprintDefinition.create(
                     "535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
