@@ -96,7 +96,7 @@ public class SignalStrengthTable {
         List<Integer> values = copyOfAllValues();
 
         if (values.isEmpty()) {
-            return 0;
+            return -100;
         }
 
         return (int) Math.round(Stats.meanOf(values));

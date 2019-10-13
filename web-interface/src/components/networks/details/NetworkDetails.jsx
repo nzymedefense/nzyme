@@ -81,6 +81,47 @@ class NetworkDetails extends Reflux.Component {
         ];
     }
 
+    _formatSignalIndexDistribution(channels) {
+        const result = [];
+
+        Object.keys(channels).forEach(function(channelNumber) {
+            const data = channels[channelNumber].signal_index_distribution;
+
+            const distribution = {
+                x: [],
+                y: [],
+                type: "bar",
+                name: "Channel " + channelNumber
+            };
+
+            // We want a static scale from -100 to 0.
+            distribution["x"].push(-100);
+            distribution["y"].push(0);
+            distribution["x"].push(0);
+            distribution["y"].push(0);
+
+            Object.keys(data).forEach(function(point) {
+                distribution["x"].push(point);
+                distribution["y"].push(data[point]);
+            });
+
+            result.push(distribution);
+        });
+
+        return result;
+    }
+
+    // This assumes that all channels have the same history minutes.
+    _findSignalIndexDistributionHistoryMinutes(channels) {
+        let minutes = 0;
+        Object.keys(channels).forEach(function(channelNumber) {
+           minutes = channels[channelNumber].signal_index_distribution_minutes;
+           return;
+        });
+
+        return minutes;
+    }
+
     _changeChannel(channelNumber) {
         this.setState({channelNumber: channelNumber});
     }
@@ -135,8 +176,19 @@ class NetworkDetails extends Reflux.Component {
                                 finalData={this._formatBeaconRateHistory(ssid.beacon_rate_history)}
                                 shapes={this._buildBeaconRateHistoryShapes(ssid.beacon_rate_history, ssid.beacon_rate_threshold)}
                             />
+                        </div>
+                    </div>
 
-                            Beacon Rate Alert Threshold: { ssid.beacon_rate_threshold ? ssid.beacon_rate_threshold : "not configured for this network"}
+                    <div className="row">
+                        <div className="col-md-12">
+                            <SimpleLineChart
+                                title={"Signal Strength Distribution by Channel (last " + this._findSignalIndexDistributionHistoryMinutes(ssid.channels) + " minutes)"}
+                                width={1100}
+                                height={200}
+                                customMarginLeft={60}
+                                customMarginRight={60}
+                                finalData={this._formatSignalIndexDistribution(ssid.channels)}
+                            />
                         </div>
                     </div>
 

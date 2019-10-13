@@ -66,6 +66,10 @@ public abstract class BSSID {
             }
         }
 
+        if (records.isEmpty()) {
+            return -100;
+        }
+
         return (int) Math.round(Stats.meanOf(records));
     }
 

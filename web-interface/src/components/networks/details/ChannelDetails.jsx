@@ -25,7 +25,7 @@ class ChannelDetails extends Reflux.Component {
             x: [],
             y: [],
             type: "bar",
-            name: "Signal Index",
+            name: "Signal Strength Distribution",
             line: {width: 1, shape: "linear", color: "#2983fe"}
         };
 
