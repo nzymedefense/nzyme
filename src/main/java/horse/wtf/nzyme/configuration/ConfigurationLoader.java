@@ -195,9 +195,15 @@ public class ConfigurationLoader {
 
             ImmutableList.Builder<Dot11BSSIDDefinition> lowercaseBSSIDs = new ImmutableList.Builder<>();
             for (Config bssid : config.getConfigList(ConfigurationKeys.BSSIDS)) {
+                Config expectedSignal = bssid.getConfig(ConfigurationKeys.EXPECTED_SIGNAL_STRENGTH);
+
                 lowercaseBSSIDs.add(Dot11BSSIDDefinition.create(
                         bssid.getString(ConfigurationKeys.ADDRESS).toLowerCase(),
-                        bssid.getStringList(ConfigurationKeys.FINGERPRINTS)
+                        bssid.getStringList(ConfigurationKeys.FINGERPRINTS),
+                        ExpectedSignalStrength.create(
+                                expectedSignal.getInt(ConfigurationKeys.FROM),
+                                expectedSignal.getInt(ConfigurationKeys.TO)
+                        )
                 ));
             }
 
@@ -464,6 +470,20 @@ public class ConfigurationLoader {
                     throw new InvalidConfigurationException("Network [" + net.ssid() + "] has at least one BSSID defined twice. You cannot define a BSSID for the same network more than once.");
                 }
                 bssids.add(bssid.address());
+            }
+        }
+
+        // 802.11 networks: Expected signal is in range.
+        for (Dot11NetworkDefinition net : parseDot11Networks()) {
+            List<String> bssids = Lists.newArrayList();
+            for (Dot11BSSIDDefinition bssid : net.bssids()) {
+                if (bssid.expectedSignalStrength().from() < -100 || bssid.expectedSignalStrength().to() > 0) {
+                    throw new IncompleteConfigurationException("Expected signal strengths of network [" + net.ssid() + "] must be between -100 and 0.");
+                }
+
+                if (bssid.expectedSignalStrength().from() > bssid.expectedSignalStrength().to()) {
+                    throw new IncompleteConfigurationException("Expected signal strengths of network [" + net.ssid() + "] are invalid. FROM must have a lower value than TO.");
+                }
             }
         }
 
