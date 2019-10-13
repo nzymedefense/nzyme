@@ -59,7 +59,10 @@ public abstract class BSSID {
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                records.add(channel.signalStrengthTable().getAverageSiqnalStrength());
+                int averageSiqnalStrength = channel.signalStrengthTable().getAverageSiqnalStrength();
+                if (averageSiqnalStrength < 0) {
+                    records.add(averageSiqnalStrength);
+                }
             }
         }
 
