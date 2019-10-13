@@ -38,15 +38,15 @@ class BSSIDTableRowTop extends Reflux.Component {
     }
 
     _signalQualityColor(quality) {
-        if (quality >= 90) {
+        if (quality >= -60) {
             return "text-success";
         }
 
-        if (quality >= 50) {
+        if (quality >= -70) {
             return "text-warning";
         }
 
-        if (quality < 50) {
+        if (quality < -50) {
             return "text-danger";
         }
     }
@@ -96,8 +96,8 @@ class BSSIDTableRowTop extends Reflux.Component {
                 <td><a href={"#" + this.props.bssid.bssid} title={this.props.bssid.last_seen}
                        onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
                 <td>
-                    <span className={this._signalQualityColor(this.props.bssid.signal_quality)}>
-                        {this.props.bssid.signal_quality}
+                    <span className={this._signalQualityColor(this.props.bssid.signal_strength)}>
+                        {this.props.bssid.signal_strength} dBm
                     </span>
                 </td>
                 <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>

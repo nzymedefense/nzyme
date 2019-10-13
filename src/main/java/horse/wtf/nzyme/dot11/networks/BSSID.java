@@ -51,14 +51,14 @@ public abstract class BSSID {
         return lastSeen;
     }
 
-    @JsonProperty("best_recent_signal_quality")
-    public int bestRecentSignalQuality() {
+    @JsonProperty("best_recent_signal_strength")
+    public int bestRecentSignalStrength() {
         int best = 0;
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                int channelBest = Tools.calculateSignalQuality(channel.signalStrengthTable().getBestSiqnalStrength());
-                if (channelBest > best) {
+                int channelBest = channel.signalStrengthTable().getBestSiqnalStrength();
+                if (channelBest < best) {
                     best = channelBest;
                 }
             }

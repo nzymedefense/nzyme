@@ -59,7 +59,7 @@ public abstract class BSSIDsResponse {
 
         @Override
         public int compare(BSSIDResponse b1, BSSIDResponse b2) {
-            return b2.signalQuality() - b1.signalQuality();
+            return b2.signalStrength() - b1.signalStrength();
         }
 
     }

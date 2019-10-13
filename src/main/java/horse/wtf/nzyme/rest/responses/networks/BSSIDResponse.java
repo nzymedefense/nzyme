@@ -29,8 +29,8 @@ public abstract class BSSIDResponse {
     @JsonProperty("bssid")
     public abstract String bssid();
 
-    @JsonProperty("signal_quality")
-    public abstract int signalQuality();
+    @JsonProperty("signal_strength")
+    public abstract int signalStrength();
 
     @JsonProperty("ssids")
     public abstract List<String> ssids();
@@ -50,10 +50,10 @@ public abstract class BSSIDResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static BSSIDResponse create(String bssid, int signalQuality, List<String> ssids, String oui, List<String> securityMechanisms, int fingerprintCount, boolean hasWPS, DateTime lastSeen) {
+    public static BSSIDResponse create(String bssid, int signalStrength, List<String> ssids, String oui, List<String> securityMechanisms, int fingerprintCount, boolean hasWPS, DateTime lastSeen) {
         return builder()
                 .bssid(bssid)
-                .signalQuality(signalQuality)
+                .signalStrength(signalStrength)
                 .ssids(ssids)
                 .oui(oui)
                 .securityMechanisms(securityMechanisms)
@@ -71,7 +71,7 @@ public abstract class BSSIDResponse {
     public abstract static class Builder {
         public abstract Builder bssid(String bssid);
 
-        public abstract Builder signalQuality(int signalQuality);
+        public abstract Builder signalStrength(int signalStrength);
 
         public abstract Builder ssids(List<String> ssids);
 
