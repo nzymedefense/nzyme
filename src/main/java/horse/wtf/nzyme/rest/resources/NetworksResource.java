@@ -99,7 +99,7 @@ public class NetworksResource {
 
             bssids.add(BSSIDResponse.create(
                     bssid.bssid(),
-                    bssid.bestRecentSignalStrength(),
+                    bssid.averageRecentSignalStrength(),
                     ssids,
                     bssid.oui(),
                     securityMechanisms,

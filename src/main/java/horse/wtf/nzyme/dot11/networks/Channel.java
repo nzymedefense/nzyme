@@ -22,11 +22,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @AutoValue

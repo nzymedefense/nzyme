@@ -22,6 +22,7 @@ import com.codahale.metrics.Timer;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.math.Stats;
 import horse.wtf.nzyme.util.MetricNames;
 import org.joda.time.DateTime;
 
@@ -91,11 +92,14 @@ public class SignalStrengthTable {
         return histogram;
     }
 
-    public int getBestSiqnalStrength() {
-        return copyOfAllValues()
-                .stream()
-                .min(Comparator.comparingInt(i -> i))
-                .orElse(0);
+    public int getAverageSiqnalStrength() {
+        List<Integer> values = copyOfAllValues();
+
+        if (values.isEmpty()) {
+            return 0;
+        }
+
+        return (int) Math.round(Stats.meanOf(values));
     }
 
     private List<Integer> copyOfAllValues() {

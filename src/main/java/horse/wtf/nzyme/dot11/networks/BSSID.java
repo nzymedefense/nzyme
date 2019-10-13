@@ -20,9 +20,11 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.util.Tools;
+import com.google.common.collect.Lists;
+import com.google.common.math.Stats;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Map;
 
 @AutoValue
@@ -51,20 +53,17 @@ public abstract class BSSID {
         return lastSeen;
     }
 
-    @JsonProperty("best_recent_signal_strength")
-    public int bestRecentSignalStrength() {
-        int best = 0;
+    @JsonProperty("average_recent_signal_strength")
+    public int averageRecentSignalStrength() {
+        List<Integer> records = Lists.newArrayList();
 
         for (SSID ssid : ssids().values()) {
             for (Channel channel : ssid.channels().values()) {
-                int channelBest = channel.signalStrengthTable().getBestSiqnalStrength();
-                if (channelBest < best) {
-                    best = channelBest;
-                }
+                records.add(channel.signalStrengthTable().getAverageSiqnalStrength());
             }
         }
 
-        return best;
+        return (int) Math.round(Stats.meanOf(records));
     }
 
     public static BSSID create(Map<String, SSID> ssids, String oui, String bssid) {
