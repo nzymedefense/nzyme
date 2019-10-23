@@ -19,7 +19,6 @@ package horse.wtf.nzyme.rest.responses.networks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
 
@@ -59,7 +58,11 @@ public abstract class SSIDResponse {
     @Nullable
     public abstract Integer beaconRateThreshold();
 
-    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold) {
+    @JsonProperty("expected_signal_strength")
+    @Nullable
+    public abstract ExpectedSignalStrengthResponse expectedSignalStrength();
+
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold, ExpectedSignalStrengthResponse expectedSignalStrength) {
         return builder()
                 .security(security)
                 .bssid(bssid)
@@ -70,6 +73,7 @@ public abstract class SSIDResponse {
                 .beaconRate(beaconRate)
                 .beaconRateHistory(beaconRateHistory)
                 .beaconRateThreshold(beaconRateThreshold)
+                .expectedSignalStrength(expectedSignalStrength)
                 .build();
     }
 
@@ -96,6 +100,8 @@ public abstract class SSIDResponse {
         public abstract Builder beaconRateHistory(List<AverageBeaconRate> beaconRateHistory);
 
         public abstract Builder beaconRateThreshold(Integer beaconRateThreshold);
+
+        public abstract Builder expectedSignalStrength(ExpectedSignalStrengthResponse expectedSignalStrength);
 
         public abstract SSIDResponse build();
     }

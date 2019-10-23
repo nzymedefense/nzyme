@@ -45,15 +45,31 @@ class ChannelDetails extends Reflux.Component {
         return result;
     }
 
-    _buildSignalIndexDistributionThreshold() {
+    _findHighestSignalCount(data) {
+        let x = 0;
+
+        Object.keys(data).forEach(function(point) {
+           if (data[point] > x) {
+               x = data[point];
+           }
+        });
+
+        return x;
+    }
+
+    _buildSignalIndexDistributionThreshold(expected, maxY) {
+        if (!expected) {
+            return [];
+        }
+
         return [
             {
                 type: "line",
                 visible: true,
-                x0: -59,
-                x1: -59,
+                x0: expected.from,
+                x1: expected.from,
                 y0: 0,
-                y1: 70,
+                y1: maxY,
                 line: {
                     color: "#8a0000",
                     dash: "dash",
@@ -63,10 +79,10 @@ class ChannelDetails extends Reflux.Component {
             {
                 type: "line",
                 visible: true,
-                x0: -41,
-                x1: -41,
+                x0: expected.to,
+                x1: expected.to,
                 y0: 0,
-                y1: 70,
+                y1: maxY,
                 line: {
                     color: "#8a0000",
                     dash: "dash",
@@ -90,13 +106,17 @@ class ChannelDetails extends Reflux.Component {
         };
     }
 
-    _buildSignalIndexHeatmapTracks(data) {
+    _buildSignalIndexHeatmapTracks(data, expected) {
+        if (!expected) {
+            return [];
+        }
+
         return [
             {
                 type: "line",
                 visible: true,
-                x0: -58,
-                x1: -58,
+                x0: expected.from,
+                x1: expected.from,
                 y0: new Date(data.y[0]),
                 y1: new Date(data.y[data.y.length-1]),
                 line: {
@@ -108,8 +128,8 @@ class ChannelDetails extends Reflux.Component {
             {
                 type: "line",
                 visible: true,
-                x0: -42,
-                x1: -42,
+                x0: expected.to,
+                x1: expected.to,
                 y0: new Date(data.y[0]),
                 y1: new Date(data.y[data.y.length-1]),
                 line: {
@@ -177,7 +197,10 @@ class ChannelDetails extends Reflux.Component {
                             customMarginLeft={60}
                             customMarginRight={60}
                             finalData={this._formatSignalIndexDistribution(self.state.channel.signal_index_distribution)}
-                            shapes={this._buildSignalIndexDistributionThreshold()}
+                            shapes={this._buildSignalIndexDistributionThreshold(
+                                self.props.ssid.expected_signal_strength,
+                                this._findHighestSignalCount(self.state.channel.signal_index_distribution))
+                            }
                         />
                     </div>
                 </div>
@@ -190,7 +213,7 @@ class ChannelDetails extends Reflux.Component {
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                             data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
-                            shapes={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history)}
+                            shapes={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.props.ssid.expected_signal_strength)}
                         />
                     </div>
                 </div>

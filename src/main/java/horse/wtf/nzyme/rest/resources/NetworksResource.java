@@ -22,7 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
+import horse.wtf.nzyme.configuration.ExpectedSignalStrength;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
@@ -170,7 +172,8 @@ public class NetworksResource {
                         fingerprints,
                         s.beaconRate(),
                         includeHistory ? buildBeaconRateHistory(b, s) : null,
-                        findBeaconRateThresholdOfNetwork(b, s).orElse(null)
+                        findBeaconRateThresholdOfNetwork(b, s).orElse(null),
+                        findExpectedSignalStrengthOfNetwork(b, s).orElse(null)
                 )).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
@@ -221,15 +224,42 @@ public class NetworksResource {
 
         return beaconRateHistory;
     }
-
-    private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
+    
+    private Optional<Dot11NetworkDefinition> findNetworkDefinition(BSSID b, SSID s) {
         for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
             if (dot11Network.allBSSIDAddresses().contains(b.bssid()) && dot11Network.ssid().equals(s.name())) {
-                return Optional.of(dot11Network.beaconRate());
+                return Optional.of(dot11Network);
             }
         }
 
         return Optional.empty();
+    }
+    
+    private Optional<Dot11BSSIDDefinition> findBSSIDDefinition(BSSID b, SSID s) {
+        Optional<Dot11NetworkDefinition> network = findNetworkDefinition(b, s);
+        if (network.isPresent()) {
+            for (Dot11BSSIDDefinition bssid : network.get().bssids()) {
+                if (bssid.address().equals(b.bssid())) {
+                    return Optional.of(bssid);
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
+        return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
+    }
+
+    private Optional<ExpectedSignalStrengthResponse> findExpectedSignalStrengthOfNetwork(BSSID b, SSID s) {
+        Optional<Dot11BSSIDDefinition> bssid = findBSSIDDefinition(b, s);
+        if (bssid.isPresent()) {
+            ExpectedSignalStrength expected = bssid.get().expectedSignalStrength();
+            return Optional.of(ExpectedSignalStrengthResponse.create(expected.from(), expected.to()));
+        } else {
+            return Optional.empty();
+        }
     }
 
     // TODO better use an AutoValue object to return here lol

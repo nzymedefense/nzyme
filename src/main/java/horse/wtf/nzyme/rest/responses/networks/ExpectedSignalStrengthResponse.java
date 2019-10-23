@@ -15,18 +15,21 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.configuration;
+package horse.wtf.nzyme.rest.responses.networks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class ExpectedSignalStrength {
+public abstract class ExpectedSignalStrengthResponse {
 
+    @JsonProperty
     public abstract int from();
+
+    @JsonProperty
     public abstract int to();
 
-    public static ExpectedSignalStrength create(int from, int to) {
+    public static ExpectedSignalStrengthResponse create(int from, int to) {
         return builder()
                 .from(from)
                 .to(to)
@@ -34,7 +37,7 @@ public abstract class ExpectedSignalStrength {
     }
 
     public static Builder builder() {
-        return new AutoValue_ExpectedSignalStrength.Builder();
+        return new AutoValue_ExpectedSignalStrengthResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -43,7 +46,6 @@ public abstract class ExpectedSignalStrength {
 
         public abstract Builder to(int to);
 
-        public abstract ExpectedSignalStrength build();
+        public abstract ExpectedSignalStrengthResponse build();
     }
-
 }
