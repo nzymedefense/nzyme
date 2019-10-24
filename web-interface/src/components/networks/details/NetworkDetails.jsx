@@ -8,6 +8,7 @@ import SimpleLineChart from "../../charts/SimpleLineChart";
 import BeaconRate from "./BeaconRate";
 import HelpBubble from "../../misc/HelpBubble";
 import ChannelSwitcher from "./ChannelSwitcher";
+import NetworkMonitoredAlert from "./NetworkMonitoredAlert";
 
 class NetworkDetails extends Reflux.Component {
 
@@ -139,7 +140,7 @@ class NetworkDetails extends Reflux.Component {
             return (
                 <div>
                     <div className="row">
-                        <div className="col-md">
+                        <div className="col-md-3">
                             <dl>
                                 <dt>BSSID</dt>
                                 <dd>{ssid.bssid}</dd>
@@ -160,6 +161,8 @@ class NetworkDetails extends Reflux.Component {
                             </dl>
                         </div>
                     </div>
+
+                    <NetworkMonitoredAlert ssid={ssid} />
 
                     <div className="row">
                         <div className="col-md-12">

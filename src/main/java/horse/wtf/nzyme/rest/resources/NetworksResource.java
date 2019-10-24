@@ -173,7 +173,8 @@ public class NetworksResource {
                         s.beaconRate(),
                         includeHistory ? buildBeaconRateHistory(b, s) : null,
                         findBeaconRateThresholdOfNetwork(b, s).orElse(null),
-                        findExpectedSignalStrengthOfNetwork(b, s).orElse(null)
+                        findExpectedSignalStrengthOfNetwork(b, s).orElse(null),
+                        findNetworkDefinition(b, s).isPresent()
                 )).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
