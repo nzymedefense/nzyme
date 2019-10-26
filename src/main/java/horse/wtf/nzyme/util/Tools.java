@@ -44,10 +44,23 @@ public class Tools {
     }
 
     public static boolean isHumanlyReadable(String string) {
+        int length = string.length();
+
+        // Check if it only consists of control chars or whitespaces.
+        int controlChars = 0;
+        int whitespaces = 0;
         for (char c : string.toCharArray()) {
-            if (Character.isISOControl(c) || Character.isWhitespace(c)) {
-                return false;
+            if (Character.isISOControl(c)) {
+                controlChars++;
             }
+
+            if (Character.isISOControl(c)) {
+                whitespaces++;
+            }
+        }
+
+        if (length == controlChars || length == whitespaces) {
+            return false;
         }
 
         return true;
