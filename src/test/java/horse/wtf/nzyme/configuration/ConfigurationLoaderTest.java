@@ -70,8 +70,8 @@ public class ConfigurationLoaderTest {
         }});
         assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
             add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", ImmutableList.of("abc123"), ExpectedSignalStrength.create(-50, -60)));
-                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", ImmutableList.of("def456"), ExpectedSignalStrength.create(-70, -90)));
+                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", ImmutableList.of("abc123"), ExpectedSignalStrength.create(-44, -20)));
+                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", ImmutableList.of("def456"), ExpectedSignalStrength.create(-41, -25)));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(6);
@@ -81,7 +81,7 @@ public class ConfigurationLoaderTest {
             }}, 40));
 
             add(Dot11NetworkDefinition.create("WTF", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("123456"), ExpectedSignalStrength.create(-50, -60)));
+                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("123456"), ExpectedSignalStrength.create(-37, -27)));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(2);
