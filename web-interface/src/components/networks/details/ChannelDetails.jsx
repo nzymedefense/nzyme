@@ -14,8 +14,11 @@ class ChannelDetails extends Reflux.Component {
 
         this.state = {
             channel: props.channel,
-            historyHours: props.historyHours
+            historyHours: props.historyHours,
+            showRawHistogramData: false
         };
+
+        this._showRawHistogramData = this._showRawHistogramData.bind(this);
     }
 
     _formatSignalIndexDistribution(data) {
@@ -148,6 +151,11 @@ class ChannelDetails extends Reflux.Component {
         });
     }
 
+    _showRawHistogramData(e) {
+        e.preventDefault();
+        this.setState({showRawHistogramData: true})
+    }
+
     render() {
         if (!this.state.channel) {
             return (
@@ -227,13 +235,24 @@ class ChannelDetails extends Reflux.Component {
                             title={"Waterfall Time Range"}
                         />
                     </div>
+
+                    <div className="col-md-8 text-right">
+                        <a href="#" className="text-muted small" onClick={this._showRawHistogramData}>debug</a>
+                    </div>
+                </div>
+
+                <div className="row mt-md-3" style={{"display": this.state.showRawHistogramData ? "block" : "none"}}>
+                    <div className="col-md-12">
+                        <textarea style={{width: "100%", height: 250}}>
+                            {JSON.stringify(self.state.channel.signal_index_history, null, 2)}
+                        </textarea>
+                    </div>
                 </div>
 
                 <hr />
             </div>
         );
     }
-
 }
 
 export default ChannelDetails;
