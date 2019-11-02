@@ -32,6 +32,7 @@ import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogram;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -263,8 +264,7 @@ public class NetworksResource {
         }
     }
 
-    // TODO better use an AutoValue object to return here lol
-    private Map<String, List> buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c, int seconds) {
+    private SignalWaterfallHistogram buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c, int seconds) {
         List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(HISTOGRAM_HISTORY_QUERY)
                         .bind(0, b.bssid())
@@ -305,12 +305,7 @@ public class NetworksResource {
             x.add(cnt);
         }
 
-        Map<String, List> coords = Maps.newHashMap();
-        coords.put("z", z);
-        coords.put("x", x);
-        coords.put("y", y);
-
-        return coords;
+        return SignalWaterfallHistogram.create(z, x, y);
     }
 
 }

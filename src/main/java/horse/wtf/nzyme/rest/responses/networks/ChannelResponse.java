@@ -19,6 +19,7 @@ package horse.wtf.nzyme.rest.responses.networks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogram;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -51,9 +52,9 @@ public abstract class ChannelResponse {
 
     @JsonProperty("signal_index_history")
     @Nullable
-    public abstract Map<String, List>  signalIndexHistory();
+    public abstract SignalWaterfallHistogram signalIndexHistory();
 
-    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, int signalIndexDistributionMinutes, Map<String, List> signalIndexHistory) {
+    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, int signalIndexDistributionMinutes, SignalWaterfallHistogram signalIndexHistory) {
         return builder()
                 .channelNumber(channelNumber)
                 .bssid(bssid)
@@ -86,7 +87,7 @@ public abstract class ChannelResponse {
 
         public abstract Builder signalIndexDistributionMinutes(int signalIndexDistributionMinutes);
 
-        public abstract Builder signalIndexHistory(Map<String, List> signalIndexHistory);
+        public abstract Builder signalIndexHistory(SignalWaterfallHistogram signalIndexHistory);
 
         public abstract ChannelResponse build();
     }
