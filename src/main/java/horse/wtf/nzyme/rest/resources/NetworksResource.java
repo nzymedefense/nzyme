@@ -33,6 +33,8 @@ import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogram;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
@@ -142,6 +144,17 @@ public class NetworksResource {
                 // Channels.
                 Map<Integer, ChannelResponse> channels = Maps.newTreeMap();
                 for (Channel c : s.channels().values()) {
+                    SignalWaterfallHistogram histogram;
+                    List<Track> tracks;
+                    if (includeHistory) {
+                        histogram = buildSignalIndexHistogramHistory(b, s, c, historySeconds);
+                        tracks = Lists.newArrayList();
+                        tracks.addAll(new TrackDetector(histogram).detect());
+                    } else {
+                        histogram = null;
+                        tracks = null;
+                    }
+
                     channels.put(c.channelNumber(), ChannelResponse.create(
                             c.channelNumber(),
                             b.bssid(),
@@ -150,7 +163,8 @@ public class NetworksResource {
                             c.fingerprints(),
                             c.signalStrengthTable().getSignalDistributionHistogram(),
                             SignalStrengthTable.RETENTION_MINUTES,
-                            includeHistory ? buildSignalIndexHistogramHistory(b, s, c, historySeconds) : null
+                            histogram,
+                            tracks
                     ));
                 }
 

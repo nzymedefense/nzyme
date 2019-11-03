@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.configuration;
 
 import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.ResourcesAccessingTest;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
@@ -16,16 +17,7 @@ import java.util.HashMap;
 
 import static org.testng.Assert.*;
 
-public class ConfigurationLoaderTest {
-
-    private File loadFromResourceFile(String name) {
-        URL resource = getClass().getClassLoader().getResource(name);
-        if (resource == null) {
-            throw new RuntimeException("test config file does not exist in resources");
-        }
-
-        return new File(resource.getFile());
-    }
+public class ConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test(expectedExceptions = FileNotFoundException.class)
     public void testGetConfigWithNonExistentFile() throws ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException, FileNotFoundException {

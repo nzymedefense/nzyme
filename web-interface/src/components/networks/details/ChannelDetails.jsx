@@ -109,39 +109,82 @@ class ChannelDetails extends Reflux.Component {
         };
     }
 
-    _buildSignalIndexHeatmapTracks(data, expected) {
-        if (!expected) {
-            return [];
+    _buildSignalIndexHeatmapTracks(data, expected, tracks) {
+        let boxes = [];
+
+        // Expected signal boundaries.
+        if (expected) {
+            boxes.push(
+                {
+                    type: "line",
+                    visible: true,
+                    x0: expected.from,
+                    x1: expected.from,
+                    y0: new Date(data.y[0]),
+                    y1: new Date(data.y[data.y.length-1]),
+                    line: {
+                        color: "#8a0000",
+                        dash: "solid",
+                        width: 1,
+                    }
+                }
+            );
+            boxes.push(
+                {
+                    type: "line",
+                    visible: true,
+                    x0: expected.to,
+                    x1: expected.to,
+                    y0: new Date(data.y[0]),
+                    y1: new Date(data.y[data.y.length-1]),
+                    line: {
+                        color: "#8a0000",
+                        dash: "solid",
+                        width: 1,
+                    }
+                }
+            );
         }
 
-        return [
-            {
-                type: "line",
-                visible: true,
-                x0: expected.from,
-                x1: expected.from,
-                y0: new Date(data.y[0]),
-                y1: new Date(data.y[data.y.length-1]),
-                line: {
-                    color: "#8a0000",
-                    dash: "solid",
-                    width: 1,
-                }
-            },
-            {
-                type: "line",
-                visible: true,
-                x0: expected.to,
-                x1: expected.to,
-                y0: new Date(data.y[0]),
-                y1: new Date(data.y[data.y.length-1]),
-                line: {
-                    color: "#8a0000",
-                    dash: "solid",
-                    width: 1,
-                }
-            }
-        ];
+        // Tracks.
+        console.log(tracks);
+        if(tracks) {
+            Object.keys(tracks).forEach(function(t) {
+                const track = tracks[t];
+                boxes.push(
+                    {
+                        type: "line",
+                        visible: true,
+                        x0: track.min_signal,
+                        x1: track.min_signal,
+                        y0: new Date(track.start),
+                        y1: new Date(track.end),
+                        line: {
+                            color: "#8a0000",
+                            dash: "solid",
+                            width: 1,
+                        }
+                    }
+                );
+                boxes.push(
+                    {
+                        type: "line",
+                        visible: true,
+                        x0: track.max_signal,
+                        x1: track.max_signal,
+                        y0: new Date(track.start),
+                        y1: new Date(track.end),
+                        line: {
+                            color: "#8a0000",
+                            dash: "solid",
+                            width: 1,
+                        }
+                    }
+                );
+            });
+        }
+
+        return boxes;
     }
 
     componentWillReceiveProps(newProps) {
@@ -221,7 +264,7 @@ class ChannelDetails extends Reflux.Component {
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                             data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
-                            shapes={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.props.ssid.expected_signal_strength)}
+                            shapes={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.props.ssid.expected_signal_strengthm, self.state.channel.signal_index_tracks)}
                         />
                     </div>
                 </div>

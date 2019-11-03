@@ -20,6 +20,7 @@ package horse.wtf.nzyme.rest.responses.networks;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogram;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -54,7 +55,11 @@ public abstract class ChannelResponse {
     @Nullable
     public abstract SignalWaterfallHistogram signalIndexHistory();
 
-    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, int signalIndexDistributionMinutes, SignalWaterfallHistogram signalIndexHistory) {
+    @JsonProperty("signal_index_tracks")
+    @Nullable
+    public abstract List<Track> signalIndexTracks();
+
+    public static ChannelResponse create(int channelNumber, String bssid, String ssid, long totalFrames, List<String> fingerprints, Map<Integer, AtomicLong> signalIndexDistribution, int signalIndexDistributionMinutes, SignalWaterfallHistogram signalIndexHistory, List<Track> signalIndexTracks) {
         return builder()
                 .channelNumber(channelNumber)
                 .bssid(bssid)
@@ -64,6 +69,7 @@ public abstract class ChannelResponse {
                 .signalIndexDistribution(signalIndexDistribution)
                 .signalIndexDistributionMinutes(signalIndexDistributionMinutes)
                 .signalIndexHistory(signalIndexHistory)
+                .signalIndexTracks(signalIndexTracks)
                 .build();
     }
 
@@ -88,6 +94,8 @@ public abstract class ChannelResponse {
         public abstract Builder signalIndexDistributionMinutes(int signalIndexDistributionMinutes);
 
         public abstract Builder signalIndexHistory(SignalWaterfallHistogram signalIndexHistory);
+
+        public abstract Builder signalIndexTracks(List<Track> signalIndexTracks);
 
         public abstract ChannelResponse build();
     }
