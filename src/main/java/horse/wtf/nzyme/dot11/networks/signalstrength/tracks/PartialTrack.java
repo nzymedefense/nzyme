@@ -6,10 +6,13 @@ import org.joda.time.DateTime;
 @AutoValue
 public abstract class PartialTrack {
 
-    public abstract String id();
     public abstract DateTime timestamp();
     public abstract int minSignal();
     public abstract int maxSignal();
+
+    public int averageSignal() {
+        return ((minSignal()+maxSignal())/2);
+    }
 
     public static PartialTrack create(String id, DateTime timestamp, int minSignal, int maxSignal) {
         return builder()

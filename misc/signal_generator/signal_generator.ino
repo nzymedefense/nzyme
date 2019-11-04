@@ -14,24 +14,24 @@ int loopCount = 0;
 
 // CONFIG HERE
 // Milliseconds between beacons.
-#define BEACON_FREQUENCY_MS 100
+#define BEACON_FREQUENCY_MS 200
 
 // The source MAC address, as HEX. There is
 // totally a way to this with a string constant
 // but god knows how this work with Arduino C
 // so you have to live with this shitty way.
-#define MAC_1 0x37
-#define MAC_2 0x80
-#define MAC_3 0x72
-#define MAC_4 0xb2
-#define MAC_5 0x94
-#define MAC_6 0x2b
+#define MAC_1 0x88
+#define MAC_2 0x96
+#define MAC_3 0x4e
+#define MAC_4 0x4d
+#define MAC_5 0x77
+#define MAC_6 0x80
 
 // SSID
-#define SSID "your_ssid"
+#define SSID "ATT78V5wjA"
 
 // Channel
-#define CHANNEL 11
+#define CHANNEL 1
 // CONFIG END
 
 void setup() {

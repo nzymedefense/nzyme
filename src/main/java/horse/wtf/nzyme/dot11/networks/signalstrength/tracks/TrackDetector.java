@@ -52,7 +52,7 @@ public class TrackDetector {
 
         int yIdx = 0;
 
-        Map<String, List<PartialTrack>> partialTracks = Maps.newHashMap();
+        Map<Integer, List<PartialTrack>> partialTracks = Maps.newHashMap();
         for (List<Long> line : histogram.z()) {
             DateTime y = histogram.y().get(yIdx);
             int x = -100;
@@ -81,10 +81,10 @@ public class TrackDetector {
                             PartialTrack partialTrack = PartialTrack.create("sst-" + trackIdx, y, trackStart, x-GAP_THRESHOLD+2);
 
                             LOG.debug(partialTrack);
-                            if (!partialTracks.containsKey(partialTrack.id())) {
-                                partialTracks.put(partialTrack.id(), Lists.newArrayList());
+                            if (!partialTracks.containsKey(partialTrack.averageSignal())) {
+                                partialTracks.put(partialTrack.averageSignal(), Lists.newArrayList());
                             }
-                            partialTracks.get(partialTrack.id()).add(partialTrack);
+                            partialTracks.get(partialTrack.averageSignal()).add(partialTrack);
 
                             // Friendship with track ended.
                             trackIdx++;
@@ -102,9 +102,14 @@ public class TrackDetector {
         }
 
         /*
-         * Take all partial tracks, by ID (we ID by order of tracks), and calculate their start and end to find
-         * Y markers as well as their maximum and minumum strength to find X markers. Using this information,
-         * the frontend can draw the track box.
+         * TODO
+         *  
+         * Take all partial tracks, by center line (center line is the average signal strength) and try to
+         * feed them into buckets using the SIGNAL_CENTER_LINE_JITTER: Aggregate all center lines that fit
+         * within the SIGNAL_CENTER_LINE_JITTER on the lower and higher side of the signal into a general
+         * track.
+         *
+         * Using this track, including timestamps for the Y axis,the frontend can draw boxes.
          */
         ImmutableList.Builder<Track> tracks = new ImmutableList.Builder<>();
         for (Map.Entry<String, List<PartialTrack>> partialTrack : partialTracks.entrySet()) {

@@ -27,7 +27,11 @@ class HeatmapWaterfallChart extends React.Component {
                 type: "heatmap",
                 hovertemplate: this.props.hovertemplate,
                 showscale: false,
-                colorscale: [[0, 'rgb(12,13,22)'], [1, 'rgb(14,201,0)']]
+                colorscale: [
+                    [0, 'rgb(12,13,22)'], [0.125, 'rgb(0,60,170)'],
+                    [0.375, 'rgb(5,255,255)'], [0.625, 'rgb(255,255,0)'],
+                    [0.875, 'rgb(250,0,0)'], [1, 'rgb(128,0,0)']
+                ]
             }
         ];
 

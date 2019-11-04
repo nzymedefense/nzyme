@@ -160,9 +160,9 @@ class ChannelDetails extends Reflux.Component {
                         y0: new Date(track.start),
                         y1: new Date(track.end),
                         line: {
-                            color: "#8a0000",
+                            color: "#ff0000",
                             dash: "solid",
-                            width: 1,
+                            width: 3,
                         }
                     }
                 );
@@ -175,9 +175,9 @@ class ChannelDetails extends Reflux.Component {
                         y0: new Date(track.start),
                         y1: new Date(track.end),
                         line: {
-                            color: "#8a0000",
+                            color: "#ff0000",
                             dash: "solid",
-                            width: 1,
+                            width: 3,
                         }
                     }
                 );
