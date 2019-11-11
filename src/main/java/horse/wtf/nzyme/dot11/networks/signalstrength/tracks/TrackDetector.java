@@ -23,9 +23,11 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Minutes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /*
  * Give me a ping, Vasily. One ping only, please.
@@ -36,6 +38,7 @@ public class TrackDetector {
 
     public static final int FRAME_THRESHOLD = 20;
     public static final int GAP_THRESHOLD = 8;
+    public static final int SIGNAL_CENTERLINE_JITTER = 8;
 
     private final SignalWaterfallHistogram histogram;
 
@@ -59,7 +62,6 @@ public class TrackDetector {
             int trackLength = 0;
             int gapLength = 0;
             int trackStart = -1;
-            int trackIdx = 0;
 
             for (Long z : line) {
                 if (z > FRAME_THRESHOLD && x != -100) {
@@ -78,7 +80,7 @@ public class TrackDetector {
                         gapLength++;
 
                         if (gapLength >= GAP_THRESHOLD || x == 0) {
-                            PartialTrack partialTrack = PartialTrack.create("sst-" + trackIdx, y, trackStart, x-GAP_THRESHOLD+2);
+                            PartialTrack partialTrack = PartialTrack.create( y, trackStart, x-GAP_THRESHOLD+2);
 
                             LOG.debug(partialTrack);
                             if (!partialTracks.containsKey(partialTrack.averageSignal())) {
@@ -87,7 +89,6 @@ public class TrackDetector {
                             partialTracks.get(partialTrack.averageSignal()).add(partialTrack);
 
                             // Friendship with track ended.
-                            trackIdx++;
                             trackLength = 0;
                             gapLength = 0;
                         }
@@ -102,18 +103,39 @@ public class TrackDetector {
         }
 
         /*
-         * TODO
-         *  
          * Take all partial tracks, by center line (center line is the average signal strength) and try to
          * feed them into buckets using the SIGNAL_CENTER_LINE_JITTER: Aggregate all center lines that fit
-         * within the SIGNAL_CENTER_LINE_JITTER on the lower and higher side of the signal into a general
+         * within the SIGNAL_CENTERLINE_JITTER on the lower and higher side of the signal into a general
          * track.
-         *
-         * Using this track, including timestamps for the Y axis,the frontend can draw boxes.
+         */
+        Map<Integer, List<PartialTrack>> centerlineAveragedTracks = Maps.newHashMap();
+        for (Map.Entry<Integer, List<PartialTrack>> partialTrack : partialTracks.entrySet()) {
+            int partialCenterline = partialTrack.getKey();
+
+            // Find a possibly existing centerline track that we can add this partial track to.
+            Optional<Integer> matchingCenterline = Optional.empty();
+            for (Integer existingCenterline : centerlineAveragedTracks.keySet()) {
+                if (partialCenterline >= existingCenterline-SIGNAL_CENTERLINE_JITTER && partialCenterline <= existingCenterline+SIGNAL_CENTERLINE_JITTER) {
+                    matchingCenterline = Optional.of(existingCenterline);
+                }
+            }
+
+            if (matchingCenterline.isPresent()) {
+                centerlineAveragedTracks.get(matchingCenterline.get()).addAll(partialTrack.getValue());
+            } else {
+                centerlineAveragedTracks.put(partialCenterline, partialTrack.getValue());
+            }
+
+        }
+
+        /*
+         * Determine maximum and minimum values of aggregated averaged centerlined tracks, including first and
+         * last appearance. These summaries can be used by the frontend to draw boxes on the Y (date) and X
+         * (max/signal) axis of a waterfall histogram.
          */
         ImmutableList.Builder<Track> tracks = new ImmutableList.Builder<>();
-        for (Map.Entry<String, List<PartialTrack>> partialTrack : partialTracks.entrySet()) {
-            PartialTrack first = partialTrack.getValue().get(0);
+        for (Map.Entry<Integer, List<PartialTrack>> aggregated : centerlineAveragedTracks.entrySet()) {
+            PartialTrack first = aggregated.getValue().get(0);
 
             DateTime start = first.timestamp();
             DateTime end = first.timestamp();
@@ -121,7 +143,7 @@ public class TrackDetector {
             int maxSignal = first.maxSignal();
 
             // Find track specifications.
-            for (PartialTrack track : partialTrack.getValue()) {
+            for (PartialTrack track : aggregated.getValue()) {
                 if (track.timestamp().isBefore(start)) {
                     start = track.timestamp();
                 }
@@ -139,10 +161,14 @@ public class TrackDetector {
                 }
             }
 
-            // Add the final track.
-            tracks.add(Track.create(partialTrack.getKey(), start, end, minSignal, maxSignal));
-        }
+            // TODO:
+            // ACTIVE?
+            // CONTINOUS?
+            // don't assign ID if it's not in the middle of the track. (don't do this in JS)
 
+            // Add the final track.
+            tracks.add(Track.create(start, end, aggregated.getKey(), minSignal, maxSignal));
+        }
 
         return tracks.build();
     }

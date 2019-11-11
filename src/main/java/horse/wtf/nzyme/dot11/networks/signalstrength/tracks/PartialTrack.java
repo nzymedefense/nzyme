@@ -14,9 +14,8 @@ public abstract class PartialTrack {
         return ((minSignal()+maxSignal())/2);
     }
 
-    public static PartialTrack create(String id, DateTime timestamp, int minSignal, int maxSignal) {
+    public static PartialTrack create(DateTime timestamp, int minSignal, int maxSignal) {
         return builder()
-                .id(id)
                 .timestamp(timestamp)
                 .minSignal(minSignal)
                 .maxSignal(maxSignal)
@@ -29,8 +28,6 @@ public abstract class PartialTrack {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(String id);
-
         public abstract Builder timestamp(DateTime timestamp);
 
         public abstract Builder minSignal(int minSignal);
