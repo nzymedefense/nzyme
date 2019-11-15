@@ -68,7 +68,5 @@ public class ConfigurationKeys {
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";
-    public static final String EXPECTED_SIGNAL_STRENGTH = "expected_signal_strength";
-    public static final String FROM = "from";
-    public static final String TO = "to";
+
 }

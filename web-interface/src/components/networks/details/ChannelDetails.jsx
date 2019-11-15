@@ -60,41 +60,6 @@ class ChannelDetails extends Reflux.Component {
         return x;
     }
 
-    _buildSignalIndexDistributionThreshold(expected, maxY) {
-        if (!expected) {
-            return [];
-        }
-
-        return [
-            {
-                type: "line",
-                visible: true,
-                x0: expected.from,
-                x1: expected.from,
-                y0: 0,
-                y1: maxY,
-                line: {
-                    color: "#8a0000",
-                    dash: "dash",
-                    width: 1,
-                }
-            },
-            {
-                type: "line",
-                visible: true,
-                x0: expected.to,
-                x1: expected.to,
-                y0: 0,
-                y1: maxY,
-                line: {
-                    color: "#8a0000",
-                    dash: "dash",
-                    width: 1,
-                }
-            }
-        ];
-    }
-
     _formatSignalIndexHeatmap(data) {
         const yDates = [];
 
@@ -109,46 +74,12 @@ class ChannelDetails extends Reflux.Component {
         };
     }
 
-    _buildSignalIndexHeatmapTracks(data, expected, tracks) {
+    _buildSignalIndexHeatmapTracks(data, tracks) {
         const shapes = [];
         const annotations = [];
 
         const firstDate = new Date(data.y[0]);
         const lastDate = new Date(data.y[data.y.length-1]);
-
-        // Expected signal boundaries.
-        if (expected) {
-            shapes.push(
-                {
-                    type: "line",
-                    visible: true,
-                    x0: expected.from,
-                    x1: expected.from,
-                    y0: firstDate,
-                    y1: lastDate,
-                    line: {
-                        color: "#8a0000",
-                        dash: "solid",
-                        width: 1,
-                    }
-                }
-            );
-            shapes.push(
-                {
-                    type: "line",
-                    visible: true,
-                    x0: expected.to,
-                    x1: expected.to,
-                    y0: firstDate,
-                    y1: lastDate,
-                    line: {
-                        color: "#8a0000",
-                        dash: "solid",
-                        width: 1,
-                    }
-                }
-            );
-        }
 
         // Tracks.
         if(tracks) {
@@ -167,7 +98,7 @@ class ChannelDetails extends Reflux.Component {
                         line: {
                             color: "#ff0000",
                             dash: "dashdot",
-                            width: 2,
+                            width: 3,
                         }
                     }
                 );
@@ -184,7 +115,7 @@ class ChannelDetails extends Reflux.Component {
                         line: {
                             color: "#ff0000",
                             dash: "dashdot",
-                            width: 2,
+                            width: 3,
                         }
                     }
                 );
@@ -204,7 +135,7 @@ class ChannelDetails extends Reflux.Component {
                             line: {
                                 color: "#ff0000",
                                 dash: "dashdot",
-                                width: 2,
+                                width: 3,
                             }
                         }
                     );
@@ -225,7 +156,7 @@ class ChannelDetails extends Reflux.Component {
                             line: {
                                 color: "#ff0000",
                                 dash: "dashdot",
-                                width: 2,
+                                width: 3,
                             }
                         }
                     );
@@ -317,10 +248,6 @@ class ChannelDetails extends Reflux.Component {
                             customMarginLeft={60}
                             customMarginRight={60}
                             finalData={this._formatSignalIndexDistribution(self.state.channel.signal_index_distribution)}
-                            shapes={this._buildSignalIndexDistributionThreshold(
-                                self.props.ssid.expected_signal_strength,
-                                this._findHighestSignalCount(self.state.channel.signal_index_distribution))
-                            }
                         />
                     </div>
                 </div>
@@ -333,7 +260,7 @@ class ChannelDetails extends Reflux.Component {
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
                             data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
-                            layers={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.props.ssid.expected_signal_strengthm, self.state.channel.signal_index_tracks)}
+                            layers={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.state.channel.signal_index_tracks)}
                         />
                     </div>
                 </div>

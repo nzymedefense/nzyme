@@ -24,7 +24,6 @@ import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.configuration.ExpectedSignalStrength;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
@@ -188,7 +187,6 @@ public class NetworksResource {
                         s.beaconRate(),
                         includeHistory ? buildBeaconRateHistory(b, s) : null,
                         findBeaconRateThresholdOfNetwork(b, s).orElse(null),
-                        findExpectedSignalStrengthOfNetwork(b, s).orElse(null),
                         findNetworkDefinition(b, s).isPresent()
                 )).build();
             } else {
@@ -266,16 +264,6 @@ public class NetworksResource {
 
     private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
         return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
-    }
-
-    private Optional<ExpectedSignalStrengthResponse> findExpectedSignalStrengthOfNetwork(BSSID b, SSID s) {
-        Optional<Dot11BSSIDDefinition> bssid = findBSSIDDefinition(b, s);
-        if (bssid.isPresent()) {
-            ExpectedSignalStrength expected = bssid.get().expectedSignalStrength();
-            return Optional.of(ExpectedSignalStrengthResponse.create(expected.from(), expected.to()));
-        } else {
-            return Optional.empty();
-        }
     }
 
     private SignalWaterfallHistogram buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c, int seconds) {

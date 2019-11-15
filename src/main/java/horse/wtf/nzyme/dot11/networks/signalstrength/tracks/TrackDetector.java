@@ -23,7 +23,6 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.Minutes;
 
 import java.util.List;
 import java.util.Map;
@@ -160,11 +159,6 @@ public class TrackDetector {
                     maxSignal = track.maxSignal();
                 }
             }
-
-            // TODO:
-            // ACTIVE?
-            // CONTINOUS?
-            // don't assign ID if it's not in the middle of the track. (don't do this in JS)
 
             // Add the final track.
             tracks.add(Track.create(start, end, aggregated.getKey(), minSignal, maxSignal));

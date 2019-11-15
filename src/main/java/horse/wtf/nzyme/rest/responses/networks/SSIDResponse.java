@@ -58,14 +58,10 @@ public abstract class SSIDResponse {
     @Nullable
     public abstract Integer beaconRateThreshold();
 
-    @JsonProperty("expected_signal_strength")
-    @Nullable
-    public abstract ExpectedSignalStrengthResponse expectedSignalStrength();
-
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold, ExpectedSignalStrengthResponse expectedSignalStrength, boolean isMonitored) {
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold, boolean isMonitored) {
         return builder()
                 .security(security)
                 .bssid(bssid)
@@ -76,7 +72,6 @@ public abstract class SSIDResponse {
                 .beaconRate(beaconRate)
                 .beaconRateHistory(beaconRateHistory)
                 .beaconRateThreshold(beaconRateThreshold)
-                .expectedSignalStrength(expectedSignalStrength)
                 .isMonitored(isMonitored)
                 .build();
     }
@@ -104,8 +99,6 @@ public abstract class SSIDResponse {
         public abstract Builder beaconRateHistory(List<AverageBeaconRate> beaconRateHistory);
 
         public abstract Builder beaconRateThreshold(Integer beaconRateThreshold);
-
-        public abstract Builder expectedSignalStrength(ExpectedSignalStrengthResponse expectedSignalStrength);
 
         public abstract Builder isMonitored(boolean isMonitored);
 

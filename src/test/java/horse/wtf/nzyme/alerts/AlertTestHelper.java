@@ -22,7 +22,6 @@ import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.configuration.ExpectedSignalStrength;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
@@ -68,7 +67,7 @@ public class AlertTestHelper {
                     add(Dot11NetworkDefinition.create(
                             "WTF",
                             new ArrayList<Dot11BSSIDDefinition>(){{
-                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", ImmutableList.of("foo"), ExpectedSignalStrength.create(-50, -60)));
+                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", ImmutableList.of("foo")));
                             }},
                             new ArrayList<Integer>() {{
                                 add(1);
