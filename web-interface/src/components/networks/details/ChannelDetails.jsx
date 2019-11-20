@@ -276,11 +276,17 @@ class ChannelDetails extends Reflux.Component {
                     </div>
 
                     <div className="col-md-8 text-right">
-                        <a href="#" className="text-muted small" onClick={this._showRawHistogramData}>debug</a>
+                        <button
+                            className="text-muted small btn-outline-dark"
+                            style={{"cursor":"pointer", "display": this.state.showRawHistogramData ? "none" : "inline"}}
+                            onClick={this._showRawHistogramData}
+                        >
+                            debug
+                        </button>
                     </div>
                 </div>
 
-                <div className="row mt-md-3" style={{"display": this.state.showRawHistogramData ? "block" : "none"}}>
+                <div className="row mt-md-3" style={{"display" : this.state.showRawHistogramData ? "block" : "none"}}>
                     <div className="col-md-12">
                         <textarea style={{width: "100%", height: 250}}>
                             {JSON.stringify(self.state.channel.signal_index_history, null, 2)}
