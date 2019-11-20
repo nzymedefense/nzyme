@@ -18,6 +18,7 @@
 package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.ConfigurationLoader;
@@ -58,6 +59,7 @@ public class MockNzyme implements Nzyme {
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
     private final Key signingKey;
+    private final ObjectMapper objectMapper;
 
     public MockNzyme() {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
@@ -75,6 +77,7 @@ public class MockNzyme implements Nzyme {
         this.clients = new Clients(this);
         this.ouiManager = new OUIManager(this);
         this.alertsService = new AlertsService(this);
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -133,6 +136,11 @@ public class MockNzyme implements Nzyme {
     @Override
     public OUIManager getOUIManager() {
         return ouiManager;
+    }
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     @Override
