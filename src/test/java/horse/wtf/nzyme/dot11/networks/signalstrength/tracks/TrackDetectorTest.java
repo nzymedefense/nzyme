@@ -40,7 +40,7 @@ public class TrackDetectorTest extends ResourcesAccessingTest {
         // Can't compare lists directly because of JUnit DateTime timezone weirdness.
         assertEquals(tracks.size(), 1);
         Track one = tracks.get(0);
-        
+
         assertEquals(one.start().withZone(DateTimeZone.UTC), new DateTime("2019-11-02T15:24:00.851Z").withZone(DateTimeZone.UTC));
         assertEquals(one.end().withZone(DateTimeZone.UTC), new DateTime("2019-11-02T19:22:00.321Z").withZone(DateTimeZone.UTC));
         assertEquals(one.centerline(), -43);
