@@ -54,10 +54,7 @@ public class FieldNames {
     public static final String AUTH_ALGORITHM = "authentication_algorithm";
 
     public static final String ANTENNA_SIGNAL = "antenna_signal";
-    public static final String SIGNAL_IN_DELTA = "signal_delta_in_bounds";
-    public static final String SIGNAL_DELTA_UPPER = "signal_delta_upper";
-    public static final String SIGNAL_DELTA_LOWER = "signal_delta_lower";
-    public static final String SIGNAL_DELTA_DIFF = "signal_delta_diff_percent";
+    public static final String TRACK_COUNT = "track_count";
 
     public static final String BANDIT_NAMES = "bandit_names";
     public static final String BANDIT_FINGERPRINT = "bandit_fingerprint";

@@ -18,6 +18,7 @@
 package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.AlertsService;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.database.Database;
@@ -52,6 +53,8 @@ public interface Nzyme {
     SystemStatus getSystemStatus();
 
     OUIManager getOUIManager();
+
+    ObjectMapper getObjectMapper();
 
     Key getSigningKey();
 

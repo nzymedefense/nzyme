@@ -23,6 +23,7 @@ import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
+import horse.wtf.nzyme.periodicals.alerting.tracks.SignalTrackMonitor;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -47,5 +48,6 @@ public class MetricNames {
     public static final String BEACON_RATE_MONITOR_TIMER = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
     public static final String NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS = name(Networks.class, "signal-strength-measurements");
     public static final String SIGNAL_TABLES_MUTEX_WAIT = name(SignalStrengthTable.class, "mutex-wait");
+    public static final String SIGNAL_TRACK_MONITOR_TIMER = name(SignalTrackMonitor.class, "monitor-timing");
 
 }

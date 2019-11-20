@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -36,6 +37,7 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateCleaner;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateWriter;
+import horse.wtf.nzyme.periodicals.alerting.tracks.SignalTrackMonitor;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsCleaner;
 import horse.wtf.nzyme.periodicals.measurements.MeasurementsWriter;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -96,6 +98,8 @@ public class NzymeImpl implements Nzyme {
     private final Networks networks;
     private final Clients clients;
 
+    private final ObjectMapper objectMapper;
+
     private final Key signingKey;
 
     private final List<Dot11Probe> probes;
@@ -116,6 +120,8 @@ public class NzymeImpl implements Nzyme {
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
+
+        this.objectMapper = new ObjectMapper();
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());
@@ -185,7 +191,7 @@ public class NzymeImpl implements Nzyme {
         }
 
         if(configuredAlerts.contains(Alert.TYPE_WIDE.MULTIPLE_SIGNAL_TRACKS)) {
-            // TODO start monitor
+            periodicalManager.scheduleAtFixedRate(new SignalTrackMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
         // Spin up REST API and web interface.
@@ -374,6 +380,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public OUIManager getOUIManager() {
         return ouiManager;
+    }
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     @Override

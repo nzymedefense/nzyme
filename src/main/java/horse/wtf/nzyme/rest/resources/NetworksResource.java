@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.rest.resources;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -29,9 +28,9 @@ import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
-import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntry;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogram;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogramLoader;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
 import horse.wtf.nzyme.rest.authentication.Secured;
@@ -45,7 +44,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,10 +60,6 @@ public class NetworksResource {
             "WHERE bssid = ? AND ssid = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
             "GROUP BY bucket " +
             "ORDER BY bucket ASC";
-
-    public static final String HISTOGRAM_HISTORY_QUERY = "SELECT histogram, created_at FROM sigidx_histogram_history " +
-            "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval <lookback>) " +
-            "ORDER BY created_at ASC";
 
     @Inject
     private Nzyme nzyme;
@@ -141,12 +135,13 @@ public class NetworksResource {
                 }
 
                 // Channels.
+                SignalWaterfallHistogramLoader signalWaterfallHistogramLoader = new SignalWaterfallHistogramLoader(nzyme);
                 Map<Integer, ChannelResponse> channels = Maps.newTreeMap();
                 for (Channel c : s.channels().values()) {
                     SignalWaterfallHistogram histogram;
                     List<Track> tracks;
                     if (includeHistory) {
-                        histogram = buildSignalIndexHistogramHistory(b, s, c, historySeconds);
+                        histogram = signalWaterfallHistogramLoader.load(b, s, c, historySeconds);
                         tracks = Lists.newArrayList();
                         tracks.addAll(new TrackDetector(histogram).detect());
                     } else {
@@ -264,50 +259,6 @@ public class NetworksResource {
 
     private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
         return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
-    }
-
-    private SignalWaterfallHistogram buildSignalIndexHistogramHistory(BSSID b, SSID s, Channel c, int seconds) {
-        List<SignalIndexHistogramHistoryDBEntry> values = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery(HISTOGRAM_HISTORY_QUERY)
-                        .bind(0, b.bssid())
-                        .bind(1, s.name())
-                        .bind(2, c.channelNumber())
-                        .define("lookback", "'" + seconds + " seconds'") // TODO this is fucked
-                        .mapTo(SignalIndexHistogramHistoryDBEntry.class)
-                        .list()
-        );
-
-        // Transform the histogram string blobs from the database to structured data.
-        List<List<Long>> z = Lists.newArrayList();
-        List<DateTime> y = Lists.newArrayList();
-        for (SignalIndexHistogramHistoryDBEntry value : values) {
-            try {
-                List<Long> entries = new ArrayList<>();
-                Map<Integer, Long> tempReduced = Maps.newHashMap();
-                Map<Integer, Long> histogram = om.readValue(value.histogram(), new TypeReference<Map<Integer, Long>>(){});
-
-                for (Map.Entry<Integer, Long> x : histogram.entrySet()) {
-                    tempReduced.put(x.getKey(), x.getValue());
-                }
-
-                for(int cnt = -100; cnt < 0; cnt++) {
-                    entries.add(tempReduced.getOrDefault(cnt, 0L));
-                }
-
-                z.add(entries);
-                y.add(value.createdAt().withSecondOfMinute(0));
-            } catch (Exception e) {
-                LOG.error("Could not parse histogram blob to structured data for BSSID [{}].", b, e);
-            }
-        }
-
-        // X Axis.
-        List<Integer> x = Lists.newArrayList();
-        for(int cnt = -100; cnt < 0; cnt++) {
-            x.add(cnt);
-        }
-
-        return SignalWaterfallHistogram.create(z, x, y);
     }
 
 }

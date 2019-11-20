@@ -17,13 +17,81 @@
 
 package horse.wtf.nzyme.periodicals.alerting.tracks;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.MultipleTrackAlert;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
+import horse.wtf.nzyme.dot11.networks.BSSID;
+import horse.wtf.nzyme.dot11.networks.Channel;
+import horse.wtf.nzyme.dot11.networks.SSID;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogramLoader;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
 import horse.wtf.nzyme.periodicals.Periodical;
+import horse.wtf.nzyme.util.MetricNames;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 public class SignalTrackMonitor extends Periodical {
 
+    private static final Logger LOG = LogManager.getLogger(SignalTrackMonitor.class);
+
+    private final Nzyme nzyme;
+
+    private final Timer timer;
+
+    public SignalTrackMonitor(Nzyme nzyme) {
+        this.nzyme = nzyme;
+
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMER));
+    }
+
+
     @Override
     protected void execute() {
+        Timer.Context ctx = this.timer.time();
 
+        try {
+            for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
+                for (SSID ssid : bssid.ssids().values()) {
+                    if (!ssid.isHumanReadable()) {
+                        continue;
+                    }
+
+                    // Only run for our own networks.
+                    if (!nzyme.getConfiguration().ourSSIDs().contains(ssid.name())) {
+                        continue;
+                    }
+
+                    Dot11NetworkDefinition network = nzyme.getConfiguration().findNetworkDefinition(bssid.bssid(), ssid.name());
+                    if (network == null) {
+                        continue;
+                    }
+
+                    SignalWaterfallHistogramLoader signalWaterfallHistogramLoader = new SignalWaterfallHistogramLoader(nzyme);
+                    for (Channel channel : ssid.channels().values()) {
+                        TrackDetector trackDetector = new TrackDetector(signalWaterfallHistogramLoader.load(bssid, ssid, channel, 60*15));
+                        List<Track> tracks = trackDetector.detect();
+
+                        if (tracks.size() > 1) {
+                            nzyme.getAlertsService().handle(MultipleTrackAlert.create(
+                                    ssid.name(),
+                                    bssid.bssid(),
+                                    channel.channelNumber(),
+                                    tracks.size())
+                            );
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            LOG.error("Signal Track Monitor run failed.", e);
+        } finally {
+            ctx.stop();
+        }
     }
 
     @Override

@@ -38,7 +38,7 @@ public class InjectionBinder extends AbstractBinder {
     protected void configure() {
         bind(nzyme).to(Nzyme.class);
         bind(new MimetypesFileTypeMap()).to(MimetypesFileTypeMap.class);
-        bind(new ObjectMapper()).to(ObjectMapper.class);
+        bind(nzyme.getObjectMapper()).to(ObjectMapper.class);
 
         try {
             bind(new IndexHtmlGenerator(nzyme.getConfiguration(), new AssetManifest())).to(IndexHtmlGenerator.class);

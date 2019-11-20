@@ -26,7 +26,6 @@ import com.google.common.math.Stats;
 import horse.wtf.nzyme.util.MetricNames;
 import org.joda.time.DateTime;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;

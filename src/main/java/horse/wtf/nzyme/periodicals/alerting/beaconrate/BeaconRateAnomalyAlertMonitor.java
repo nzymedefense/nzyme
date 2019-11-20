@@ -88,7 +88,7 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
                 }
             }
         } catch(Exception e) {
-            LOG.error("Could not check becon rates for alerting.", e);
+            LOG.error("Beacon Rate Monitor run failed", e);
         } finally {
             ctx.stop();
         }
