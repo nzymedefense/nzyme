@@ -123,6 +123,11 @@ public class MetricsResource {
                 TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TABLES_MUTEX_WAIT))
         );
 
+        metrics.put(
+                "signaltrack_monitor_timing",
+                TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TRACK_MONITOR_TIMER))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

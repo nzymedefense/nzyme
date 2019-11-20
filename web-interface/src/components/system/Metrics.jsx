@@ -76,7 +76,7 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="Beacon Rate Monitor Executions" timer={this.state.systemMetrics.beaconrate_monitor_timing}/>
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                             <TimerRow title="Signal Tables Mutex Acquisition" timer={this.state.systemMetrics.signaltables_mutex_wait}/>
-
+                                            <TimerRow title="Signal Track Monitor Executions" timer={this.state.systemMetrics.signaltrack_monitor_timing}/>
                                         </tbody>
                                     </table>
                                 </div>
