@@ -184,6 +184,10 @@ public class NzymeImpl implements Nzyme {
             periodicalManager.scheduleAtFixedRate(new BeaconRateAnomalyAlertMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
+        if(configuredAlerts.contains(Alert.TYPE_WIDE.MULTIPLE_SIGNAL_TRACKS)) {
+            // TODO start monitor
+        }
+
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         ResourceConfig resourceConfig = new ResourceConfig();

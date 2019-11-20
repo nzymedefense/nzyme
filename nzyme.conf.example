@@ -115,6 +115,7 @@ graylog_uplinks: [
   unexpected_fingerprint
   signal_anomaly
   beacon_rate_anomaly
+  multiple_signal_tracks
 ]
 
 # Deception. Simply delete all trap definitions if you don't want to use this feature for now or if you simply don't

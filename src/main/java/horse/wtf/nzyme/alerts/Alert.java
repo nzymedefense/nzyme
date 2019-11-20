@@ -40,7 +40,8 @@ public abstract class Alert {
         UNEXPECTED_FINGERPRINT,
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
-        PROBE_RESPONSE_TRAP_1
+        PROBE_RESPONSE_TRAP_1,
+        MULTIPLE_SIGNAL_TRACKS
     }
 
     public enum Type {
@@ -58,7 +59,8 @@ public abstract class Alert {
         UNEXPECTED_FINGERPRINT_PROBERESP,
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
-        PROBE_RESPONSE_TRAP_1
+        PROBE_RESPONSE_TRAP_1,
+        MULTIPLE_SIGNAL_TRACKS
     }
 
     private final Subsystem subsystem;

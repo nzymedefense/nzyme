@@ -29,7 +29,6 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRate;
 import horse.wtf.nzyme.periodicals.Periodical;
-import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +39,6 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
 
     private final Networks networks;
     private final Configuration configuration;
-    private final SystemStatus systemStatus;
     private final AlertsService alertsService;
 
     private final Timer timer;
@@ -48,7 +46,6 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
     public BeaconRateAnomalyAlertMonitor(Nzyme nzyme) {
         this.networks = nzyme.getNetworks();
         this.configuration = nzyme.getConfiguration();
-        this.systemStatus = nzyme.getSystemStatus();
         this.alertsService = nzyme.getAlertsService();
 
         this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BEACON_RATE_MONITOR_TIMER));
