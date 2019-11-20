@@ -1,6 +1,5 @@
 package horse.wtf.nzyme.dot11.networks.signalstrength.tracks;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.hash.Hashing;
