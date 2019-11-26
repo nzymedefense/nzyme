@@ -36,7 +36,7 @@ public class TrackDetector {
     private static final Logger LOG = LogManager.getLogger(TrackDetector.class);
 
     public static final int FRAME_THRESHOLD = 20;
-    public static final int GAP_THRESHOLD = 8;
+    public static final int GAP_THRESHOLD = 9;
     public static final int SIGNAL_CENTERLINE_JITTER = 8;
 
     private final SignalWaterfallHistogram histogram;
