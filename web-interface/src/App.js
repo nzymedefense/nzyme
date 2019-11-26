@@ -26,6 +26,8 @@ import LoginPage from "./components/authentication/LoginPage";
 import Store from "./util/Store";
 import AuthenticationStore from "./stores/AuthenticationStore";
 import AuthenticationActions from "./actions/AuthenticationActions";
+import AlertsActions from "./actions/AlertsActions";
+import AlertsStore from "./stores/AlertsStore";
 
 class App extends Reflux.Component {
 
@@ -34,10 +36,11 @@ class App extends Reflux.Component {
 
         this.state = {
             apiConnected: true,
-            authenticated: App._isAuthenticated()
+            authenticated: App._isAuthenticated(),
+            active_alerts: []
         };
 
-        this.stores = [PingStore, AuthenticationStore];
+        this.stores = [PingStore, AuthenticationStore, AlertsStore];
 
         App._handleLogout = App._handleLogout.bind(this);
     }
@@ -56,6 +59,11 @@ class App extends Reflux.Component {
         setInterval(function () {
             AuthenticationActions.checkSession();
         }, 10000);
+
+        if(App._isAuthenticated()) {
+            AlertsActions.findActive(1);
+            setInterval(AlertsActions.findActive, 5000);
+        }
     }
 
     static _isAuthenticated() {
@@ -77,7 +85,7 @@ class App extends Reflux.Component {
                 return (
                     <Router>
                         <div className="nzyme">
-                            <NavigationBar handleLogout={App._handleLogout} />
+                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts.length > 0} />
 
                             <div className="container">
                                 <Notifications/>

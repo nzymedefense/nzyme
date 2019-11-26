@@ -7,6 +7,7 @@ const Routes = {
     },
     NOT_FOUND: "/notfound",
     ALERTS: {
+        INDEX: "/",
         SHOW: id => `/alerts/show/${id}`
     }
 };

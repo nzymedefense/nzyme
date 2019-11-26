@@ -2,6 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 import Routes from "../../util/Routes";
 import NavigationLink from "./NavigationLink";
+import AlertsButton from "./AlertsButton";
 
 class NavigationBar extends Reflux.Component {
 
@@ -22,11 +23,13 @@ class NavigationBar extends Reflux.Component {
               &nbsp;
               <NavigationLink href={Routes.SYSTEM_STATUS} title="System Status" />
               &nbsp;
+              <AlertsButton hasAlerts={this.props.hasAlerts} />
+              &nbsp;
+              <a href="https://go.nzyme.org/help" target="_blank" rel="noopener noreferrer" className="btn btn-primary">Help</a>
+              &nbsp;
               <a href="#logout" onClick={this.props.handleLogout} className="btn btn-dark" title="Sign Out">
                 <i className="fas fa-sign-out-alt" />
               </a>
-              &nbsp;
-              <a href="https://go.nzyme.org/help" target="_blank" rel="noopener noreferrer" className="btn btn-primary">Help</a>
             </span>
           </div>
         </div>
