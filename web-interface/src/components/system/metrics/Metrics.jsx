@@ -1,9 +1,9 @@
 import React from 'react';
 import Reflux from 'reflux';
-import SystemStore from "../../stores/SystemStore";
-import SystemActions from "../../actions/SystemActions";
+import SystemStore from "../../../stores/SystemStore";
+import SystemActions from "../../../actions/SystemActions";
 import TimerRow from "./TimerRow";
-import LoadingSpinner from "./ProbesList";
+import LoadingSpinner from "../ProbesList";
 
 import numeral from "numeral";
 

@@ -2,7 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 
 import SystemStatus from "./SystemStatus";
-import Metrics from "./Metrics";
+import Metrics from "./metrics/Metrics";
 import Probes from "./Probes";
 import AlertConfiguration from "./AlertConfiguration";
 
