@@ -24,7 +24,7 @@ class NetworksStore extends Reflux.Store {
                     const bssid = response.data.bssids[key];
 
                     // Check if BSSID matches filter.
-                    if(key.toLowerCase().includes(filter)) {
+                    if(bssid.bssid.toLowerCase().includes(filter)) {
                         bssids[key] = bssid;
                         return;
                     }
@@ -37,7 +37,7 @@ class NetworksStore extends Reflux.Store {
 
                     // Check if any SSID matches filter.
                     Object.keys(bssid.ssids).forEach(function (ssid) {
-                        if (ssid.toLowerCase().includes(filter)) {
+                        if (bssid.ssids[ssid].toLowerCase().includes(filter)) {
                             bssids[key] = bssid;
                             return;
                         }
