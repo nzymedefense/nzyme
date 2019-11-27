@@ -18,24 +18,22 @@ class SystemPage extends Reflux.Component {
                 </div>
 
                 <div className="row">
-                    <div className="col-md-12">
+                    <div className="col-md-6">
+                        <AlertConfiguration />
+                    </div>
+
+                    <div className="col-md-6">
                         <SystemStatus />
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-md-12">
-                        <AlertConfiguration />
-                    </div>
-                </div>
-
-                <div className="row">
+                <div className="row mt-3">
                     <div className="col-md-12">
                         <Probes />
                     </div>
                 </div>
 
-                <div className="row">
+                <div className="row mt-3">
                     <div className="col-md-12">
                         <Metrics />
                     </div>

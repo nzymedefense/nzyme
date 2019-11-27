@@ -41,15 +41,19 @@ class Metrics extends Reflux.Component {
                                     <dl>
                                         <dt>Heap Memory Usage:</dt>
                                         <dd>
-                                            using {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
+                                            {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
                                             &nbsp;of&nbsp;
                                             {numeral(this.state.systemMetrics.mem_heap_max.value).format("0.0b")}
                                             &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format("0.0%")})
                                         </dd>
+                                    </dl>
+                                </div>
 
+                                <div className="col-md-3">
+                                    <dl>
                                         <dt>Non-Heap Memory Usage:</dt>
                                         <dd>
-                                            using {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
+                                            {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
                                         </dd>
                                     </dl>
                                 </div>
