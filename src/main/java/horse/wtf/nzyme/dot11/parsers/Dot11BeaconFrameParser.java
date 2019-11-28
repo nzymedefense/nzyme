@@ -47,7 +47,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
             ssid = null;
         }
 
-        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);
+        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta, payload);
     }
 
 }
