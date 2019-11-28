@@ -39,25 +39,25 @@ public abstract class PwnagotchiAdvertisement {
     public abstract Double uptime();
 
     @Nullable
-    public abstract String pwndThisRun();
+    public abstract Integer pwndThisRun();
 
     @Nullable
-    public abstract String pwnedTotal();
+    public abstract Integer pwndTotal();
 
     @JsonCreator
     public static PwnagotchiAdvertisement create(@JsonProperty("name") String name,
                                                  @JsonProperty("version") String version,
                                                  @JsonProperty("identity") String identity,
                                                  @JsonProperty("uptime") Double uptime,
-                                                 @JsonProperty("pwnd_run") String pwndThisRun,
-                                                 @JsonProperty("pwnd_tot") String pwnedTotal) {
+                                                 @JsonProperty("pwnd_run") Integer pwndThisRun,
+                                                 @JsonProperty("pwnd_tot") Integer pwndTotal) {
         return builder()
                 .name(name)
                 .version(version)
                 .identity(identity)
                 .uptime(uptime)
                 .pwndThisRun(pwndThisRun)
-                .pwnedTotal(pwnedTotal)
+                .pwndTotal(pwndTotal)
                 .build();
     }
 
@@ -75,9 +75,9 @@ public abstract class PwnagotchiAdvertisement {
 
         public abstract Builder uptime(Double uptime);
 
-        public abstract Builder pwndThisRun(String pwndThisRun);
+        public abstract Builder pwndThisRun(Integer pwndThisRun);
 
-        public abstract Builder pwnedTotal(String pwnedTotal);
+        public abstract Builder pwndTotal(Integer pwndTotal);
 
         public abstract PwnagotchiAdvertisement build();
     }

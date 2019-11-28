@@ -41,7 +41,8 @@ public abstract class Alert {
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
-        MULTIPLE_SIGNAL_TRACKS
+        MULTIPLE_SIGNAL_TRACKS,
+        PWNAGOTCHI_ADVERTISEMENT
     }
 
     public enum Type {
@@ -60,7 +61,8 @@ public abstract class Alert {
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
-        MULTIPLE_SIGNAL_TRACKS
+        MULTIPLE_SIGNAL_TRACKS,
+        PWNAGOTCHI_ADVERTISEMENT
     }
 
     private final Subsystem subsystem;

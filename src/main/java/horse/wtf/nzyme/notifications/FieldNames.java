@@ -63,4 +63,11 @@ public class FieldNames {
 
     public static final String ALERT_TYPE = "alert_type";
 
+    public static final String NAME = "name";
+    public static final String VERSION = "version";
+    public static final String IDENTITY = "identity";
+    public static final String UPTIME = "uptime";
+    public static final String PWND_THIS_RUN = "pwnd_this_run";
+    public static final String PWND_TOTAL = "pwnd_total";
+
 }

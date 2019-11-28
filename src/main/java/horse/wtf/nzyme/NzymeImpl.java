@@ -305,9 +305,9 @@ public class NzymeImpl implements Nzyme {
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_FINGERPRINT)) {
                 probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(probe).getInterceptors());
             }
-
-            // TODO only if alert is enabled
-            probe.addFrameInterceptor(new PwnagotchiAdvertisementInterceptor());
+            if (configuredAlerts.contains(Alert.TYPE_WIDE.PWNAGOTCHI_ADVERTISEMENT)) {
+                probe.addFrameInterceptor(new PwnagotchiAdvertisementInterceptor(probe));
+            }
 
             // Networks manager interceptors.
             probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
