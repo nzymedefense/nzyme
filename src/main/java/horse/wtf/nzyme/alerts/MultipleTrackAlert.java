@@ -31,7 +31,7 @@ import java.util.Map;
 public class MultipleTrackAlert extends Alert {
 
     private static final String DESCRIPTION = "One of our stations is transmitting with more than one signal track. This could indicate that an attacker " +
-            "is spoofing the station but with a different signal strength than the legitimate station. If this is an attacker, the difference in signal " +
+            "is spoofing the station, causing a different signal strength than the legitimate station. If this is an attacker, the difference in signal " +
             "strength is usually caused by different physical locations of attacker and legitimate station.";
     private static final String DOC_LINK = "guidance-MULTIPLE_TRACKS";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>(){{
