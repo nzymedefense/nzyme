@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.KnownBanditFingerprintBeaconAlert;
+import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
@@ -93,7 +94,17 @@ public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor
             try {
                 parsed = this.om.readValue(fullAdvertisement, PwnagotchiAdvertisement.class);
 
-                //probe.raiseAlert(new PwnagotchiAdvertisementAlert.create());
+                /* The alert is able to deal with NULL values but we still want a warning because it means that the
+                 * pwnagotchi developers changed the advertisement protocol.
+                 */
+                if (parsed.identity() == null || parsed.name() == null || parsed.version() == null ||
+                        parsed.uptime() == null || parsed.pwndThisRun() == null || parsed.pwndTotal() == null) {
+                    LOG.warn("Unexpected pwnagotchi advertisement payload. This could mean that the pwnagotchi developers changed " +
+                            "the advertisement format and it would be great if you could report this to the nzyme developers, including the " +
+                            "following payload: {} {}", parsed, Tools.byteArrayToHexPrettyPrint(payload));
+                }
+
+                probe.raiseAlert(PwnagotchiAdvertisementAlert.create(parsed, frame.meta(), probe));
             } catch (IOException e) {
                 LOG.warn("Failed to parse what looked like a pwnagotchi advertisement payload. Please report this exception " +
                         "to the nzyme team, including the following payload: {} {}", e, Tools.byteArrayToHexPrettyPrint(payload));
