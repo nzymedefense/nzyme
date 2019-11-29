@@ -38,7 +38,7 @@ public class PwnagotchiAdvertisementAlert extends Alert {
     private static final String DESCRIPTION = "A pwnagotchi beacon advertisement frame was detected. The pwnagotchi is a " +
             "popular and mostly automated WiFi attack platform. It uses a parasitic protocol embedded in 802.11 beacon frames " +
             "to advertise it's own existence to other pwnagotchis in range and nzyme is able to detect those advertisement frames.";
-    private static final String DOC_LINK = "guidance-PWNAGOTCHI-ADVERTISEMENT";
+    private static final String DOC_LINK = "guidance-PWNAGOTCHI_ADVERTISEMENT";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>(){{
         add("No known false positives.");
     }};

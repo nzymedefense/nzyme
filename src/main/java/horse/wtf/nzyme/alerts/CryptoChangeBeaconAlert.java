@@ -37,7 +37,7 @@ public class CryptoChangeBeaconAlert extends Alert {
             "clients will not connect. The attacker might be trying to simply leave out the password (note that most modern devices will refuse to connect " +
             "to a network that used to have a password but suddenly does not have one) or try a downgrade attack to exploit less secure mechanisms. It could " +
             "also indicate spoofing without attempting to properly replicate the original security mechanisms.";
-    private static final String DOC_LINK = "guidance-CRYPTO_CHANGE_NEW";
+    private static final String DOC_LINK = "guidance-CRYPTO_CHANGE";
     private static final List<String> FALSE_POSITIVES = new ArrayList<String>(){{
         add("A legitimate configuration change of an access point could have caused this.");
     }};
