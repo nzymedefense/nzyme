@@ -20,7 +20,6 @@ package horse.wtf.nzyme.dot11.interceptors;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.alerts.KnownBanditFingerprintBeaconAlert;
 import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
@@ -120,7 +119,7 @@ public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor
     @Override
     public List<Class<? extends Alert>> raisesAlerts() {
         return new ArrayList<Class<? extends Alert>>(){{
-            add(KnownBanditFingerprintBeaconAlert.class);
+            add(PwnagotchiAdvertisementAlert.class);
         }};
     }
 
