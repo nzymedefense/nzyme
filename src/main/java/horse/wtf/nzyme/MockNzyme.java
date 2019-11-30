@@ -60,8 +60,11 @@ public class MockNzyme implements Nzyme {
     private final AlertsService alertsService;
     private final Key signingKey;
     private final ObjectMapper objectMapper;
+    private final Registry registry;
+    private final Version version;
 
     public MockNzyme() {
+        this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
@@ -71,6 +74,7 @@ public class MockNzyme implements Nzyme {
         }
 
         this.metricRegistry = new MetricRegistry();
+        this.registry = new Registry();
         this.statistics = new Statistics();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
@@ -114,6 +118,11 @@ public class MockNzyme implements Nzyme {
     }
 
     @Override
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    @Override
     public Database getDatabase() {
         return null;
     }
@@ -146,6 +155,11 @@ public class MockNzyme implements Nzyme {
     @Override
     public Key getSigningKey() {
         return signingKey;
+    }
+
+    @Override
+    public Version getVersion() {
+        return version;
     }
 
 }

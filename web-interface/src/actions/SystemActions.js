@@ -2,7 +2,8 @@ import Reflux from 'reflux';
 
 const SystemActions = Reflux.createActions([
     "getStatus",
-    "getMetrics"
+    "getMetrics",
+    "getVersionInfo"
 ]);
 
 export default SystemActions;

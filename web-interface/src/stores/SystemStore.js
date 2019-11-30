@@ -26,6 +26,14 @@ class SystemStore extends Reflux.Store {
         });
     }
 
+    onGetVersionInfo() {
+        let self = this;
+
+        RESTClient.get("/system/version", {}, function(response) {
+            self.setState({versionInfo: response.data});
+        });
+    }
+
 }
 
 export default SystemStore;

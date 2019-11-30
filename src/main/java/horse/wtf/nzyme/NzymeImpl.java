@@ -87,11 +87,14 @@ public class NzymeImpl implements Nzyme {
 
     private static final Logger LOG = LogManager.getLogger(NzymeImpl.class);
 
+    private final Version version;
+
     private final Configuration configuration;
     private final Database database;
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
     private final MetricRegistry metrics;
+    private final Registry registry;
     private final SystemStatus systemStatus;
     private final OUIManager ouiManager;
 
@@ -110,12 +113,14 @@ public class NzymeImpl implements Nzyme {
     private HttpServer httpServer;
 
     public NzymeImpl(Configuration configuration, Database database) {
+        this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
 
         this.statistics = new Statistics();
         this.metrics = new MetricRegistry();
+        this.registry = new Registry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
@@ -155,7 +160,6 @@ public class NzymeImpl implements Nzyme {
 
     @Override
     public void initialize() {
-        Version version = new Version();
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
         LOG.info("Active alerts: {}", configuredAlerts);
@@ -181,7 +185,7 @@ public class NzymeImpl implements Nzyme {
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
-            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
+            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
             LOG.info("Versionchecks are disabled.");
         }
@@ -406,6 +410,11 @@ public class NzymeImpl implements Nzyme {
     }
 
     @Override
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    @Override
     public Database getDatabase() {
         return database;
     }
@@ -428,6 +437,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public Key getSigningKey() {
         return signingKey;
+    }
+
+    @Override
+    public Version getVersion() {
+        return version;
     }
 
 }

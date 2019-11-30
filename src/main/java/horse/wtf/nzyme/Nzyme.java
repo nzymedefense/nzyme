@@ -45,6 +45,8 @@ public interface Nzyme {
 
     MetricRegistry getMetrics();
 
+    Registry getRegistry();
+
     Database getDatabase();
 
     List<Dot11Probe> getProbes();
@@ -57,5 +59,6 @@ public interface Nzyme {
     ObjectMapper getObjectMapper();
 
     Key getSigningKey();
+    Version getVersion();
 
 }

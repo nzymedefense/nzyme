@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
+import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.Registry;
 import horse.wtf.nzyme.Version;
 import horse.wtf.nzyme.periodicals.Periodical;
 import horse.wtf.nzyme.util.Wall;
@@ -46,15 +48,17 @@ public class VersioncheckThread extends Periodical {
 
     private final OkHttpClient httpClient;
     private final Version version;
+    private final Nzyme nzyme;
     private final ObjectMapper om;
 
-    public VersioncheckThread(Version version) {
+    public VersioncheckThread(Version version, Nzyme nzyme) {
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
                 .build();
 
         this.version = version;
+        this.nzyme = nzyme;
         this.om = new ObjectMapper()
                 .registerModule(new JodaModule())
                 .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
@@ -91,6 +95,8 @@ public class VersioncheckThread extends Periodical {
                             + versionResponse.getFullVersionString() + " (released at " +
                             versionResponse.releasedAt + ").";
                     LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
+
+                    nzyme.getRegistry().setBool(Registry.KEY.NEW_VERSION_AVAILABLE, true);
                 }
 
                 LOG.info("Successfully completed version check. Everything seems up to date.");

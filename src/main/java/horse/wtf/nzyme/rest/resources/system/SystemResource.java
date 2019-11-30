@@ -19,9 +19,11 @@ package horse.wtf.nzyme.rest.resources.system;
 
 import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.Registry;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusStateResponse;
+import horse.wtf.nzyme.rest.responses.system.VersionResponse;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import javax.inject.Inject;
@@ -52,10 +54,17 @@ public class SystemResource {
             ));
         }
 
-
         return Response.ok(SystemStatusResponse.create(states)).build();
     }
 
-
+    @GET
+    @Path("/version")
+    public Response getVersion() {
+        return Response.ok(VersionResponse.create(
+                nzyme.getVersion().getVersionString(),
+                nzyme.getRegistry().getBool(Registry.KEY.NEW_VERSION_AVAILABLE),
+                nzyme.getConfiguration().versionchecksEnabled()
+        )).build();
+    }
 
 }

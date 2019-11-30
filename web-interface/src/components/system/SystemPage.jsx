@@ -5,6 +5,7 @@ import SystemStatus from "./SystemStatus";
 import Metrics from "./metrics/Metrics";
 import Probes from "./Probes";
 import AlertConfiguration from "./AlertConfiguration";
+import Versioncheck from "./Versioncheck";
 
 class SystemPage extends Reflux.Component {
 
@@ -24,6 +25,12 @@ class SystemPage extends Reflux.Component {
 
                     <div className="col-md-6">
                         <SystemStatus />
+                    </div>
+                </div>
+
+                <div className="row mt-3">
+                    <div className="col-md-12">
+                        <Versioncheck />
                     </div>
                 </div>
 
