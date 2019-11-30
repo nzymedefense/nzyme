@@ -88,11 +88,11 @@ public class PwnagotchiAdvertisementAlert extends Alert {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
 
         fields.put(FieldNames.NAME, advertisement.name() == null ? "unknown" : advertisement.name());
-        fields.put(FieldNames.VERSION, advertisement.version() == null ? 0 : advertisement.version());
+        fields.put(FieldNames.VERSION, advertisement.version() == null ? "0" : advertisement.version());
         fields.put(FieldNames.IDENTITY, advertisement.identity() == null ? "unknown" : advertisement.identity());
         fields.put(FieldNames.UPTIME, advertisement.uptime() == null ? -1 : advertisement.uptime());
         fields.put(FieldNames.PWND_THIS_RUN, advertisement.pwndThisRun() == null ? -1 : advertisement.pwndThisRun());
-        fields.put(FieldNames.PWND_TOTAL, advertisement.pwndTotal() == null ? "unknown" : advertisement.pwndTotal());
+        fields.put(FieldNames.PWND_TOTAL, advertisement.pwndTotal() == null ? -1 : advertisement.pwndTotal());
         fields.put(FieldNames.CHANNEL, meta.getChannel());
         fields.put(FieldNames.FREQUENCY, meta.getFrequency());
         fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
