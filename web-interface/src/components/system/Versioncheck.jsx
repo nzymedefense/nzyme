@@ -24,8 +24,6 @@ class Versioncheck extends Reflux.Component {
     }
 
     render() {
-        const self = this;
-
         if (!this.state.versionInfo) {
             return <LoadingSpinner/>;
         } else {
