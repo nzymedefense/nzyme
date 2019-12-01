@@ -4,7 +4,7 @@
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
 [![License](https://img.shields.io/github/license/lennartkoopmann/nzyme.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
 
-# !!! You are looking at a soon-to-be-replaced version of nzyme. Version v1.0.0 is a complete WiFi IDS and will be released in the coming days. (see v1.0.0 branch) [Follow me on Twitter](https://twitter.com/_lennart) to stay up to date.
+# !!! You are looking at a soon-to-be-replaced version of nzyme. Version v1.0.0 is a complete WiFi IDS and will be released soon. (see v1.0.0 branch) [Follow me on Twitter](https://twitter.com/_lennart) to stay up to date.
 
 ## Introduction
 
