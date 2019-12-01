@@ -43,11 +43,10 @@ The problem is, that many adapter/driver/operating system combinations do not su
 
 The internet is full of compatibility information but here are the adapters I run nzyme with on a Raspberry Pi 3 Model B:
 
-* ALFA AWUS036NH - 2.4Ghz and 5Ghz (Amazon Prime, about $40)
-* ALFA AWUS036NEH - 2.4Ghz (Amazon Prime, about $50)
-* ALFA AWUS036ACH - 2.4Ghz and 5Ghz (Amazon Prime, about $50) (with the [aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au) driver)
-* Panda PAU05 - 2.4Ghz (Amazon Prime, about $15)
-
+* [ALFA AWUS036NH](https://amzn.to/2YV89bA) - 2.4Ghz and 5Ghz
+* [ALFA AWUS036NEH](https://amzn.to/2GVnRgF) - 2.4Ghz
+* [Panda PAU05](https://amzn.to/31u8pjc) - 2.4Ghz
+* [Panda PAU06](https://amzn.to/2yNHIK8) - 2.4Ghz
 If you have another one that supports monitor mode, you can use that one. Nzyme does by far not require any specific hardware.
 
 ### A small computer to run nzyme on.
