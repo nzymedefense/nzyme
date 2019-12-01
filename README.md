@@ -47,7 +47,8 @@ The internet is full of compatibility information but here are the adapters I ru
 * [ALFA AWUS036NEH](https://amzn.to/2GVnRgF) - 2.4Ghz
 * [Panda PAU05](https://amzn.to/31u8pjc) - 2.4Ghz
 * [Panda PAU06](https://amzn.to/2yNHIK8) - 2.4Ghz
-If you have another one that supports monitor mode, you can use that one. Nzyme does by far not require any specific hardware.
+
+If you have another one that supports monitor mode, you can use that one. Nzyme does not require any specific hardware.
 
 ### A small computer to run nzyme on.
 
