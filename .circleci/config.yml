@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get update
-      - run: sudo apt-get install postgresql-client-10.9
+      - run: sudo apt-get install postgresql-client
       - run: createdb nzyme-java-tests
       - restore_cache:
           key: nzyme-{{ checksum "pom.xml" }}
