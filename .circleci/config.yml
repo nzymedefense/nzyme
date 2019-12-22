@@ -19,7 +19,7 @@ jobs:
       - run:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
-      - run: createdb -h localhost -p 5432 nzyme-java-tests
+      - run: sudo createdb -h localhost -p 5432 nzyme-java-tests
       - restore_cache:
           key: nzyme-{{ checksum "pom.xml" }}
       - run: mvn dependency:go-offline
