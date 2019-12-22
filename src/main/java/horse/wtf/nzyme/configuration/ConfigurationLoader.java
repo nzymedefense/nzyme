@@ -57,7 +57,7 @@ public class ConfigurationLoader {
             throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
         }
 
-        this.root = ConfigFactory.parseFile(configFile);
+        this.root = ConfigFactory.parseFile(configFile).resolve();
 
         try {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
