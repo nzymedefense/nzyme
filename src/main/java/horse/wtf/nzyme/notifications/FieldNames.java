@@ -21,8 +21,6 @@ public class FieldNames {
 
     public static final String NZYME_SENSOR_ID = "nzyme_sensor_id";
     public static final String NZYME_MESSAGE_TYPE = "nzyme_message_type";
-    public static final String NZYME_NIC_NAME = "nzyme_nic_name";
-    public static final String NZYME_PROBE_NAME = "nzyme_probe_name";
 
     public static final String SUBTYPE = "subtype";
 

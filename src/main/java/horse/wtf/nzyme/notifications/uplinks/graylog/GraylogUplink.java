@@ -36,13 +36,11 @@ public class GraylogUplink implements Uplink {
     private static final String SOURCE = "nzyme";
 
     private final String nzymeId;
-    private final String networkInterfaceName;
 
     private final GelfTransport gelfTransport;
 
-    public GraylogUplink(String hostname, int port, String nzymeId, String networkInterfaceName) {
+    public GraylogUplink(String hostname, int port, String nzymeId) {
         this.nzymeId = nzymeId;
-        this.networkInterfaceName = networkInterfaceName;
 
         this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
                 .transport(GelfTransports.TCP)
@@ -68,8 +66,6 @@ public class GraylogUplink implements Uplink {
         gelf.addAdditionalFields(notification.getAdditionalFields());
         gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
         gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "frame_record");
-        gelf.addAdditionalField(FieldNames.NZYME_NIC_NAME, this.networkInterfaceName);
-        gelf.addAdditionalField(FieldNames.NZYME_PROBE_NAME, notification.getProbe().getName());
 
         // Meta information.
         if(meta != null) {
@@ -90,8 +86,6 @@ public class GraylogUplink implements Uplink {
         GelfMessage gelf = new GelfMessage("ALERT: " + alert.getMessage(), SOURCE);
         gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
         gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "alert");
-        gelf.addAdditionalField(FieldNames.NZYME_NIC_NAME, this.networkInterfaceName);
-        gelf.addAdditionalField(FieldNames.NZYME_PROBE_NAME, alert.getProbe().getName());
         gelf.addAdditionalField(FieldNames.ALERT_TYPE, alert.getType().toString().toLowerCase());
 
         for (Map.Entry<String, Object> x : alert.getFields().entrySet()) {

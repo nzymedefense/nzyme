@@ -28,7 +28,7 @@ int loopCount = 0;
 #define MAC_6 0x80
 
 // SSID
-#define SSID "ATT78V5wjA"
+#define SSID "testingdirection"
 
 // Channel
 #define CHANNEL 1

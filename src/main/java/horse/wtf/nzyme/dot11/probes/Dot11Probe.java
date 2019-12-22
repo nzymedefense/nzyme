@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.dot11.probes;
 
-import com.beust.jcommander.internal.Lists;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
@@ -25,24 +24,16 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.notifications.Uplink;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public abstract class Dot11Probe {
 
-    private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
-
     private final Dot11ProbeConfiguration configuration;
     private final Statistics statistics;
-    private final List<Uplink> uplinks;
     private final Nzyme nzyme;
 
     protected final MetricRegistry metrics;
@@ -59,37 +50,9 @@ public abstract class Dot11Probe {
 
     public Dot11Probe(Dot11ProbeConfiguration configuration, Nzyme nzyme) {
         this.nzyme = nzyme;
-        this.uplinks = Lists.newArrayList();
         this.statistics = nzyme.getStatistics();
         this.configuration = configuration;
         this.metrics = nzyme.getMetrics();
-
-        if (configuration.graylogAddresses() != null) {
-            for (GraylogAddress address : configuration.graylogAddresses()) {
-                registerUplink(new GraylogUplink(
-                        address.host(),
-                        address.port(),
-                        configuration.nzymeId(),
-                        configuration.networkInterfaceName())
-                );
-            }
-        }
-    }
-
-    public void registerUplink(Uplink uplink) {
-        this.uplinks.add(uplink);
-    }
-
-    public void notifyUplinks(Notification notification, Dot11MetaInformation meta) {
-        for (Uplink uplink : this.uplinks) {
-            uplink.notify(notification, meta);
-        }
-    }
-
-    public void notifyUplinksOfAlert(Alert alert) {
-        for (Uplink uplink : this.uplinks) {
-            uplink.notifyOfAlert(alert);
-        }
     }
 
     public void addFrameInterceptors(@NotNull List<Dot11FrameInterceptor> interceptors) {
@@ -120,6 +83,10 @@ public abstract class Dot11Probe {
 
     public SystemStatus getSystemStatus() {
         return nzyme.getSystemStatus();
+    }
+
+    public void notifyUplinksOfFrame(Notification notification, Dot11MetaInformation meta) {
+        this.nzyme.notifyUplinks(notification, meta);
     }
 
 }

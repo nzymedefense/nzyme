@@ -41,8 +41,8 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
         add("A new access point was installed and the nzyme configuration has not been updated yet.");
     }};
 
-    private UnexpectedBSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private UnexpectedBSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -51,8 +51,8 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
     }
 
     @Override
-    public Type getType() {
-        return Type.UNEXPECTED_BSSID_PROBERESP;
+    public TYPE getType() {
+        return TYPE.UNEXPECTED_BSSID_PROBERESP;
     }
 
     public String getSSID() {
@@ -78,7 +78,7 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static UnexpectedBSSIDProbeRespAlert create(@NotNull String ssid, String bssid, String destination, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedBSSIDProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, String destination, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -87,11 +87,11 @@ public class UnexpectedBSSIDProbeRespAlert extends Alert {
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
         fields.put(FieldNames.DESTINATION, destination.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new UnexpectedBSSIDProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedBSSIDProbeRespAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

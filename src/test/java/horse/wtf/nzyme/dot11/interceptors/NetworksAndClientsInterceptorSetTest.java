@@ -18,9 +18,8 @@ public class NetworksAndClientsInterceptorSetTest extends InterceptorSetTest {
     @Test
     public void testGetInterceptors() throws MalformedFrameException, IllegalRawDataException {
         MockNzyme nzyme = new MockNzyme();
-        Dot11MockProbe probe = buildMockProbe(BANDITS_STANDARD, nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
 
         NetworksAndClientsInterceptorSet set = new NetworksAndClientsInterceptorSet(nzyme);
         assertEquals(set.getInterceptors().size(), 4);

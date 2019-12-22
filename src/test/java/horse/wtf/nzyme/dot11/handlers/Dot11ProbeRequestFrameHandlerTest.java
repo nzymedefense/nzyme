@@ -23,9 +23,9 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
         Nzyme nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
 
         Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
                 .parse(Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP);
@@ -45,9 +45,9 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleBroadcastFrame() throws MalformedFrameException, IllegalRawDataException {
         Nzyme nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics());
+        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
 
         Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
                 .parse(Frames.PROBE_REQ_BROADCAST_1_PAYLOAD, Frames.PROBE_REQ_BROADCAST_1_HEADER, META_NO_WEP);

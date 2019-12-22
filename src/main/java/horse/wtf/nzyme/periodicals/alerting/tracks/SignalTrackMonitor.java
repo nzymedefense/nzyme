@@ -32,6 +32,7 @@ import horse.wtf.nzyme.periodicals.Periodical;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.List;
 
@@ -78,6 +79,7 @@ public class SignalTrackMonitor extends Periodical {
 
                         if (tracks.size() > 1) {
                             nzyme.getAlertsService().handle(MultipleTrackAlert.create(
+                                    DateTime.now(),
                                     ssid.name(),
                                     bssid.bssid(),
                                     channel.channelNumber(),

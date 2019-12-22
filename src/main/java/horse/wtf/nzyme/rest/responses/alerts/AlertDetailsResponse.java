@@ -35,7 +35,7 @@ public abstract class AlertDetailsResponse {
     public abstract Subsystem subsystem();
 
     @JsonProperty("type")
-    public abstract Alert.Type type();
+    public abstract Alert.TYPE type();
 
     @JsonProperty("id")
     public abstract UUID id();
@@ -89,7 +89,7 @@ public abstract class AlertDetailsResponse {
     public abstract static class Builder {
         public abstract Builder subsystem(Subsystem subsystem);
 
-        public abstract Builder type(Alert.Type type);
+        public abstract Builder type(Alert.TYPE type);
 
         public abstract Builder id(UUID id);
 

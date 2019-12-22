@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,8 @@ public class PwnagotchiAdvertisementAlert extends Alert {
         add("No known false positives.");
     }};
 
-    private PwnagotchiAdvertisementAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private PwnagotchiAdvertisementAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -53,8 +54,8 @@ public class PwnagotchiAdvertisementAlert extends Alert {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.PWNAGOTCHI_ADVERTISEMENT;
+    public TYPE getType() {
+        return TYPE.PWNAGOTCHI_ADVERTISEMENT;
     }
 
     public String getName() {
@@ -84,7 +85,7 @@ public class PwnagotchiAdvertisementAlert extends Alert {
         return a.getIdentity().equals(this.getIdentity());
     }
 
-    public static PwnagotchiAdvertisementAlert create(PwnagotchiAdvertisement advertisement, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static PwnagotchiAdvertisementAlert create(DateTime firstSeen, PwnagotchiAdvertisement advertisement, int channel, int frequency, int antennaSignal, long frameCount) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
 
         fields.put(FieldNames.NAME, advertisement.name() == null ? "unknown" : advertisement.name());
@@ -93,11 +94,11 @@ public class PwnagotchiAdvertisementAlert extends Alert {
         fields.put(FieldNames.UPTIME, advertisement.uptime() == null ? -1 : advertisement.uptime());
         fields.put(FieldNames.PWND_THIS_RUN, advertisement.pwndThisRun() == null ? -1 : advertisement.pwndThisRun());
         fields.put(FieldNames.PWND_TOTAL, advertisement.pwndTotal() == null ? -1 : advertisement.pwndTotal());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new PwnagotchiAdvertisementAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new PwnagotchiAdvertisementAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

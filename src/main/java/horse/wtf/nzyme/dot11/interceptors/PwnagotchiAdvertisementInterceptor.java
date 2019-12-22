@@ -29,6 +29,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.util.ByteArrays;
 
@@ -103,7 +104,14 @@ public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor
                             "following payload: {} {}", parsed, Tools.byteArrayToHexPrettyPrint(payload));
                 }
 
-                probe.raiseAlert(PwnagotchiAdvertisementAlert.create(parsed, frame.meta(), probe));
+                probe.raiseAlert(PwnagotchiAdvertisementAlert.create(
+                        DateTime.now(),
+                        parsed,
+                        frame.meta().getChannel(),
+                        frame.meta().getFrequency(),
+                        frame.meta().getAntennaSignal(),
+                        1)
+                );
             } catch (IOException e) {
                 LOG.warn("Failed to parse what looked like a pwnagotchi advertisement payload. Please report this exception " +
                         "to the nzyme team, including the following payload: {} {}", e, Tools.byteArrayToHexPrettyPrint(payload));

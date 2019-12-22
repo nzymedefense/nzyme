@@ -1,6 +1,8 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedFingerprintBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedFingerprintProbeRespAlert;
@@ -10,7 +12,6 @@ import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
-import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
@@ -25,9 +26,10 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
 
     @Test
     public void testGetInterceptors() throws MalformedFrameException, IllegalRawDataException {
-        Dot11MockProbe probe = buildMockProbe(BANDITS_STANDARD);
+        Nzyme nzyme = new MockNzyme();
+        Dot11MockProbe probe = buildMockProbe(nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
 
         UnexpectedFingerprintInterceptorSet set = new UnexpectedFingerprintInterceptorSet(probe);
         assertEquals(set.getInterceptors().size(), 2);

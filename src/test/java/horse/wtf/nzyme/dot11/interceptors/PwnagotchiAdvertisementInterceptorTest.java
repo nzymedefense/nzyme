@@ -1,6 +1,8 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
@@ -19,9 +21,10 @@ public class PwnagotchiAdvertisementInterceptorTest extends InterceptorSetTest {
 
     @Test
     public void testInterceptor() throws MalformedFrameException, IllegalRawDataException {
-        Dot11MockProbe probe = buildMockProbe(BANDITS_STANDARD);
+        Nzyme nzyme = new MockNzyme();
+        Dot11MockProbe probe = buildMockProbe(nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
         PwnagotchiAdvertisementInterceptor interceptor = new PwnagotchiAdvertisementInterceptor(probe);
 
         assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{ add(PwnagotchiAdvertisementAlert.class); }});

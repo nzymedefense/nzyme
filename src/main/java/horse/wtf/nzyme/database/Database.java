@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.database;
 
+import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
@@ -44,7 +45,8 @@ public class Database {
                 .installPlugin(new JodaTimePlugin())
                 .registerRowMapper(new MeasurementMapper())
                 .registerRowMapper(new BeaconRateMapper())
-                .registerRowMapper(new SignalIndexHistogramHistoryDBEntryMapper());
+                .registerRowMapper(new SignalIndexHistogramHistoryDBEntryMapper())
+                .registerRowMapper(new AlertDatabaseEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

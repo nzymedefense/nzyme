@@ -1,6 +1,8 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.CryptoChangeBeaconAlert;
 import horse.wtf.nzyme.alerts.CryptoChangeProbeRespAlert;
@@ -23,9 +25,10 @@ public class CryptoChangeInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testGetInterceptors() throws MalformedFrameException, IllegalRawDataException {
-        Dot11MockProbe probe = buildMockProbe(BANDITS_STANDARD);
+        Nzyme nzyme = new MockNzyme();
+        Dot11MockProbe probe = buildMockProbe(nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
-        probe.registerUplink(loopback);
+        nzyme.registerUplink(loopback);
 
         CryptoChangeInterceptorSet set = new CryptoChangeInterceptorSet(probe);
         assertEquals(set.getInterceptors().size(), 2);

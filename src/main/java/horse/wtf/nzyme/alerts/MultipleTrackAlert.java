@@ -41,7 +41,7 @@ public class MultipleTrackAlert extends Alert {
     }};
 
     private MultipleTrackAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, null, false);
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, false, -1);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class MultipleTrackAlert extends Alert {
     }
 
     @Override
-    public Type getType() {
-        return Type.MULTIPLE_SIGNAL_TRACKS;
+    public TYPE getType() {
+        return TYPE.MULTIPLE_SIGNAL_TRACKS;
     }
 
     public String getSSID() {
@@ -81,7 +81,7 @@ public class MultipleTrackAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID()) && a.getChannel() == this.getChannel();
     }
 
-    public static MultipleTrackAlert create(@NotNull String ssid, String bssid, int channel, int trackCount) {
+    public static MultipleTrackAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, int channel, int trackCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -92,7 +92,7 @@ public class MultipleTrackAlert extends Alert {
         fields.put(FieldNames.CHANNEL, channel);
         fields.put(FieldNames.TRACK_COUNT, trackCount);
 
-        return new MultipleTrackAlert(DateTime.now(), Subsystem.DOT_11, fields.build());
+        return new MultipleTrackAlert(firstSeen, Subsystem.DOT_11, fields.build());
     }
 
 }

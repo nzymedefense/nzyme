@@ -19,6 +19,7 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -41,9 +42,13 @@ public class Statistics {
     private final Map<Integer, AtomicLong> channelCounts;
     private final Map<Integer, AtomicLong> channelMalformedCounts;
 
+    private final Nzyme nzyme;
+
     // Remember to reset these in resetStats()
 
-    public Statistics() {
+    public Statistics(Nzyme nzyme) {
+        this.nzyme = nzyme;
+
         this.frameCount = new AtomicLong(0);
         this.recentFrameCount = new AtomicLong(0);
         this.recentFrameCountTemp = new AtomicLong(0);
@@ -77,7 +82,7 @@ public class Statistics {
         return recentFrameCount.get();
     }
 
-    public void tickMalformedCountAndNotify(Dot11Probe probe, Dot11MetaInformation meta) {
+    public void tickMalformedCountAndNotify(Dot11MetaInformation meta) {
         int channel = 0;
         if(meta != null) {
             channel = meta.getChannel();
@@ -85,8 +90,8 @@ public class Statistics {
             tickInMap(meta.getChannel(), channelCounts);
         }
 
-        probe.notifyUplinks(
-                new Notification("Malformed frame received.", channel, probe)
+        nzyme.notifyUplinks(
+                new Notification("Malformed frame received.", channel)
                         .addField(FieldNames.SUBTYPE, "malformed"), meta);
 
         malformedCount.incrementAndGet();

@@ -27,6 +27,7 @@ import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
@@ -53,12 +54,15 @@ public class KnownBanditFingerprintInterceptorSet {
                     BanditFingerprintDefinition bandit = bandits.get(frame.transmitterFingerprint());
 
                     probe.raiseAlert(KnownBanditFingerprintProbeRespAlert.create(
+                            DateTime.now(),
                             bandit.names(),
                             bandit.fingerprint(),
                             frame.ssid() == null ? "[hidden]" : frame.ssid(),
                             frame.transmitter(),
-                            frame.meta(),
-                            probe
+                            frame.meta().getChannel(),
+                            frame.meta().getFrequency(),
+                            frame.meta().getAntennaSignal(),
+                            1
                     ));
                 }
             }
@@ -83,12 +87,15 @@ public class KnownBanditFingerprintInterceptorSet {
                     BanditFingerprintDefinition bandit = bandits.get(frame.transmitterFingerprint());
 
                     probe.raiseAlert(KnownBanditFingerprintBeaconAlert.create(
+                            DateTime.now(),
                             bandit.names(),
                             bandit.fingerprint(),
                             frame.ssid() == null ? "[hidden]" : frame.ssid(),
                             frame.transmitter(),
-                            frame.meta(),
-                            probe
+                            frame.meta().getChannel(),
+                            frame.meta().getFrequency(),
+                            frame.meta().getAntennaSignal(),
+                            1
                     ));
                 }
             }

@@ -48,8 +48,8 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
 
         Dot11MetaInformation meta = beacon.meta();
 
-        probe.notifyUplinks(
-                new Notification(message, beacon.meta().getChannel(), probe)
+        probe.notifyUplinksOfFrame(
+                new Notification(message, beacon.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.TRANSMITTER_FINGERPRINT, beacon.transmitterFingerprint())
                         .addField(FieldNames.SSID, Strings.isNullOrEmpty(beacon.ssid()) ? "[no SSID]" : beacon.ssid())

@@ -27,6 +27,7 @@ import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
@@ -57,10 +58,13 @@ public class UnexpectedSSIDInterceptorSet {
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDProbeRespAlert.create(
+                                DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),
-                                frame.meta(),
-                                probe
+                                frame.meta().getChannel(),
+                                frame.meta().getFrequency(),
+                                frame.meta().getAntennaSignal(),
+                                1
                         ));
                     }
                 }
@@ -91,10 +95,13 @@ public class UnexpectedSSIDInterceptorSet {
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
                         probe.raiseAlert(UnexpectedSSIDBeaconAlert.create(
+                                DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),
-                                frame.meta(),
-                                probe
+                                frame.meta().getChannel(),
+                                frame.meta().getFrequency(),
+                                frame.meta().getAntennaSignal(),
+                                1
                         ));
                     }
                 }

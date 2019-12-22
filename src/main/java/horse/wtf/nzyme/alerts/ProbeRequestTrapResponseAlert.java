@@ -42,8 +42,8 @@ public class ProbeRequestTrapResponseAlert extends Alert {
         add("This can only be a false positive if you used a legitimate SSID in the trap configuration.");
     }};
 
-    private ProbeRequestTrapResponseAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private ProbeRequestTrapResponseAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class ProbeRequestTrapResponseAlert extends Alert {
     }
 
     @Override
-    public Type getType() {
-        return Type.PROBE_RESPONSE_TRAP_1;
+    public TYPE getType() {
+        return TYPE.PROBE_RESPONSE_TRAP_1;
     }
 
     public String getSSID() {
@@ -75,7 +75,7 @@ public class ProbeRequestTrapResponseAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static ProbeRequestTrapResponseAlert create(@NotNull String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static ProbeRequestTrapResponseAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -83,11 +83,11 @@ public class ProbeRequestTrapResponseAlert extends Alert {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new ProbeRequestTrapResponseAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new ProbeRequestTrapResponseAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

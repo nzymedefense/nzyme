@@ -20,7 +20,7 @@ package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.Nzyme;
-import horse.wtf.nzyme.alerts.AlertsService;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.alerts.BeaconRateAnomalyAlert;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
@@ -32,6 +32,7 @@ import horse.wtf.nzyme.periodicals.Periodical;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 public class BeaconRateAnomalyAlertMonitor extends Periodical {
 
@@ -79,6 +80,7 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
 
                     if (beaconRate.rate() > network.beaconRate()) {
                         alertsService.handle(BeaconRateAnomalyAlert.create(
+                                DateTime.now(),
                                 ssid.name(),
                                 bssid.bssid(),
                                 beaconRate.rate(),

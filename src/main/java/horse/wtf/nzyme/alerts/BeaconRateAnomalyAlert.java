@@ -40,7 +40,7 @@ public class BeaconRateAnomalyAlert extends Alert {
     }};
 
     private BeaconRateAnomalyAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, null, false);
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, false, -1);
     }
 
     @Override
@@ -49,8 +49,8 @@ public class BeaconRateAnomalyAlert extends Alert {
     }
 
     @Override
-    public Type getType() {
-        return Type.BEACON_RATE_ANOMALY;
+    public TYPE getType() {
+        return TYPE.BEACON_RATE_ANOMALY;
     }
 
     public String getSSID() {
@@ -80,7 +80,7 @@ public class BeaconRateAnomalyAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static BeaconRateAnomalyAlert create(@NotNull String ssid, String bssid, float beaconRate, int beaconRateThreshold) {
+    public static BeaconRateAnomalyAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, float beaconRate, int beaconRateThreshold) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -91,7 +91,7 @@ public class BeaconRateAnomalyAlert extends Alert {
         fields.put(FieldNames.BEACON_RATE, beaconRate);
         fields.put(FieldNames.BEACON_RATE_THRESHOLD, beaconRateThreshold);
 
-        return new BeaconRateAnomalyAlert(DateTime.now(), Subsystem.DOT_11, fields.build());
+        return new BeaconRateAnomalyAlert(firstSeen, Subsystem.DOT_11, fields.build());
     }
 
 }

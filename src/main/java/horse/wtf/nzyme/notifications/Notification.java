@@ -28,12 +28,10 @@ public class Notification {
 
     private final ImmutableMap.Builder<String, Object> fields;
     private final String message;
-    private final Dot11Probe probe;
 
-    public Notification(String message, int channel, Dot11Probe probe) {
+    public Notification(String message, int channel) {
         this.fields = new ImmutableMap.Builder<>();
         this.message = message;
-        this.probe = probe;
 
         addField("channel", channel);
     }
@@ -74,10 +72,6 @@ public class Notification {
                 .append(Joiner.on(", ").join(getAdditionalFields().entrySet()));
 
         return sb.toString();
-    }
-
-    public Dot11Probe getProbe() {
-        return probe;
     }
 
 }

@@ -83,7 +83,7 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                 break;
         }
 
-        Notification notification = new Notification(message, frame.meta().getChannel(), probe)
+        Notification notification = new Notification(message, frame.meta().getChannel())
                 .addField(FieldNames.TRANSMITTER, frame.transmitter())
                 .addField(FieldNames.DESTINATION, frame.destination())
                 .addField(FieldNames.AUTH_ALGORITHM, frame.algorithm().toString().toLowerCase())
@@ -91,7 +91,7 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                 .addField(FieldNames.SUBTYPE, "auth")
                 .addFields(additionalFields);
 
-        probe.notifyUplinks(notification, frame.meta());
+        probe.notifyUplinksOfFrame(notification, frame.meta());
 
         LOG.debug(message);
     }

@@ -31,6 +31,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
@@ -66,11 +67,14 @@ public class CryptoChangeInterceptorSet {
                         if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
                                     CryptoChangeProbeRespAlert.create(
+                                            DateTime.now(),
                                             frame.ssid(),
                                             frame.transmitter(),
                                             frame.taggedParameters().getFullSecurityString(),
-                                            frame.meta(),
-                                            probe
+                                            frame.meta().getChannel(),
+                                            frame.meta().getFrequency(),
+                                            frame.meta().getAntennaSignal(),
+                                            1
                                     )
                             );
                         }
@@ -105,11 +109,14 @@ public class CryptoChangeInterceptorSet {
                         if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
                                     CryptoChangeBeaconAlert.create(
+                                            DateTime.now(),
                                             frame.ssid(),
                                             frame.transmitter(),
                                             frame.taggedParameters().getFullSecurityString(),
-                                            frame.meta(),
-                                            probe
+                                            frame.meta().getChannel(),
+                                            frame.meta().getFrequency(),
+                                            frame.meta().getAntennaSignal(),
+                                            1
                                     )
                             );
                         }

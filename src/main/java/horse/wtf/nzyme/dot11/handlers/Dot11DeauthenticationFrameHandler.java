@@ -37,8 +37,8 @@ public class Dot11DeauthenticationFrameHandler extends Dot11FrameHandler<Dot11De
         String message = "Deauth: Transmitter " + frame.transmitter() + " is deauthenticating " + frame.destination()
                 + " from BSSID " + frame.bssid() + " (" + frame.reasonString() + ")";
 
-        probe.notifyUplinks(
-                new Notification(message, frame.meta().getChannel(), probe)
+        probe.notifyUplinksOfFrame(
+                new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.BSSID, frame.bssid())

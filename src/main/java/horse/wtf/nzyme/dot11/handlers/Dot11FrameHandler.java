@@ -17,20 +17,9 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import com.google.common.collect.Maps;
-import horse.wtf.nzyme.dot11.networks.Networks;
-import horse.wtf.nzyme.dot11.networks.SignalDelta;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
-import horse.wtf.nzyme.notifications.FieldNames;
-import horse.wtf.nzyme.systemstatus.SystemStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Map;
 
 public abstract class Dot11FrameHandler<T> {
-
-    private static final Logger LOG = LogManager.getLogger(Dot11FrameHandler.class);
 
     protected Dot11Probe probe;
 

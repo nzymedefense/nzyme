@@ -32,7 +32,7 @@ import java.util.*;
 
 public class AlertTestHelper {
 
-    protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
+    public static final String CLEAR_QUERY = "DELETE FROM alerts";
 
     protected static final Map<String, BanditFingerprintDefinition> BANDITS_STANDARD = new HashMap<String, BanditFingerprintDefinition>(){{
         put("ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
@@ -49,10 +49,6 @@ public class AlertTestHelper {
                             add("WiFi Pineapple Nano or Tetra (PineAP)");
                         }}));
     }};
-
-    protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits) {
-        return buildMockProbe(bandits, new MockNzyme());
-    }
 
     protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits, MockNzyme nzyme) {
         return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
@@ -82,7 +78,7 @@ public class AlertTestHelper {
                 }},
                 Collections.emptyList(),
                 BANDITS_STANDARD
-        ), new Statistics());
+        ), new Statistics(nzyme));
     }
 
     protected static final Dot11ProbeConfiguration CONFIG_STANDARD = Dot11ProbeConfiguration.create(

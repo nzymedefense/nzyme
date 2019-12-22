@@ -25,6 +25,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,8 @@ public class UnexpectedSSIDBeaconAlert extends Alert  {
         add("A new network (for example, a guest network) was created by a legitimate administrator and the nzyme configuration has not been updated yet.");
     }};
 
-    private UnexpectedSSIDBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private UnexpectedSSIDBeaconAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -50,8 +51,8 @@ public class UnexpectedSSIDBeaconAlert extends Alert  {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.UNEXPECTED_SSID_BEACON;
+    public TYPE getType() {
+        return TYPE.UNEXPECTED_SSID_BEACON;
     }
 
     public String getSSID() {
@@ -73,7 +74,7 @@ public class UnexpectedSSIDBeaconAlert extends Alert  {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static UnexpectedSSIDBeaconAlert create(@NotNull String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedSSIDBeaconAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -81,11 +82,11 @@ public class UnexpectedSSIDBeaconAlert extends Alert  {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new UnexpectedSSIDBeaconAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedSSIDBeaconAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

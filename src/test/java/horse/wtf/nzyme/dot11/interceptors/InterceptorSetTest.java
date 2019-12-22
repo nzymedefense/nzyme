@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
@@ -52,11 +53,7 @@ public class InterceptorSetTest {
                         }}));
     }};
 
-    protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits) {
-        return buildMockProbe(bandits, new MockNzyme());
-    }
-
-    protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits, MockNzyme nzyme) {
+    protected Dot11MockProbe buildMockProbe(Nzyme nzyme) {
         return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
                 "test-probe-1",
                 Collections.emptyList(),
@@ -84,7 +81,7 @@ public class InterceptorSetTest {
                 }},
                 Collections.emptyList(),
                 BANDITS_STANDARD
-        ), new Statistics());
+        ), new Statistics(nzyme));
     }
 
 }

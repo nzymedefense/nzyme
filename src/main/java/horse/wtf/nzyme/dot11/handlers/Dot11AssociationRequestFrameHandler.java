@@ -38,8 +38,8 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
                 + associationRequest.ssid()
                 + " at " + associationRequest.destination();
 
-        probe.notifyUplinks(
-                new Notification(message, associationRequest.meta().getChannel(), probe)
+        probe.notifyUplinksOfFrame(
+                new Notification(message, associationRequest.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, associationRequest.transmitter())
                         .addField(FieldNames.DESTINATION, associationRequest.destination())
                         .addField(FieldNames.SSID, associationRequest.ssid() == null ? "[no SSID]" : associationRequest.ssid())

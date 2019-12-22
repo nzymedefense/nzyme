@@ -45,8 +45,8 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
     private final List<String> banditNames;
     private final String fingerprint;
 
-    private KnownBanditFingerprintBeaconAlert(List<String> banditNames, String fingerprint, DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private KnownBanditFingerprintBeaconAlert(List<String> banditNames, String fingerprint, DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
 
         this.banditNames = banditNames;
         this.fingerprint = fingerprint;
@@ -60,8 +60,8 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.KNOWN_BANDIT_FINGERPRINT_BEACON;
+    public TYPE getType() {
+        return TYPE.KNOWN_BANDIT_FINGERPRINT_BEACON;
     }
 
     public String getSSID() {
@@ -87,7 +87,7 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
     }
 
-    public static KnownBanditFingerprintBeaconAlert create(List<String> banditNames, String fingerprint, @Nullable String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static KnownBanditFingerprintBeaconAlert create(DateTime firstSeen, List<String> banditNames, String fingerprint, @Nullable String ssid, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
 
         if (!Strings.isNullOrEmpty(ssid)) {
@@ -95,13 +95,13 @@ public class KnownBanditFingerprintBeaconAlert extends Alert {
         }
 
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
         fields.put(FieldNames.BANDIT_NAMES, Joiner.on(",").join(banditNames));
         fields.put(FieldNames.BANDIT_FINGERPRINT, fingerprint);
 
-        return new KnownBanditFingerprintBeaconAlert(banditNames, fingerprint, DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new KnownBanditFingerprintBeaconAlert(banditNames, fingerprint, firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

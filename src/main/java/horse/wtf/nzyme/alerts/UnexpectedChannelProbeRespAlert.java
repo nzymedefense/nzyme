@@ -42,8 +42,8 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
         add("Some access points will dynamically choose channels based on RF spectrum congestion. Always include all possibly used channels in the nzyme configuration.");
     }};
 
-    private UnexpectedChannelProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private UnexpectedChannelProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
     }
 
     @Override
-    public Type getType() {
-        return Type.UNEXPECTED_CHANNEL_PROBERESP;
+    public TYPE getType() {
+        return TYPE.UNEXPECTED_CHANNEL_PROBERESP;
     }
 
     public String getSSID() {
@@ -75,7 +75,7 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getChannel() == this.getChannel();
     }
 
-    public static UnexpectedChannelProbeRespAlert create(@NotNull String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedChannelProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -83,11 +83,11 @@ public class UnexpectedChannelProbeRespAlert extends Alert {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new UnexpectedChannelProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedChannelProbeRespAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

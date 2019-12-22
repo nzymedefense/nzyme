@@ -200,7 +200,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
                             if (meta.isMalformed()) {
                                 LOG.trace("Bad checksum. Skipping malformed packet.");
-                                this.nzyme.getStatistics().tickMalformedCountAndNotify(probe, meta);
+                                this.nzyme.getStatistics().tickMalformedCountAndNotify(meta);
                                 continue;
                             }
 
@@ -242,7 +242,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                         }
                                     } catch (MalformedFrameException e) {
                                         LOG.info("Skipping malformed frame.", e);
-                                        getStatistics().tickMalformedCountAndNotify(this, meta);
+                                        getStatistics().tickMalformedCountAndNotify(meta);
                                     }
                                 }
                             }

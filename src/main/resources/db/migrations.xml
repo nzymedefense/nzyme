@@ -179,4 +179,92 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="7" author="lennartkoopmann">
+        <createTable tableName="alerts" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="alert_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="alert_type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="subsystem" type="varchar(25)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="message" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fields" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="use_frame_count" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="documentation_link" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="false_positives" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="alerts_standard_lookup" tableName="alerts" unique="false">
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="8" author="lennartkoopmann">
+        <dropColumn tableName="alerts" columnName="false_positives" />
+        <dropColumn tableName="alerts" columnName="documentation_link" />
+        <dropColumn tableName="alerts" columnName="description" />
+        <dropColumn tableName="alerts" columnName="message" />
+    </changeSet>
+
+    <changeSet id="9" author="lennartkoopmann">
+        <addColumn tableName="alerts">
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="frequency" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="antenna_signal" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="10" author="lennartkoopmann">
+        <dropColumn tableName="alerts" columnName="channel" />
+        <dropColumn tableName="alerts" columnName="antenna_signal" />
+        <dropColumn tableName="alerts" columnName="frequency" />
+    </changeSet>
+
+
 </databaseChangeLog>

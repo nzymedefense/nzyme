@@ -42,8 +42,8 @@ public class CryptoChangeProbeRespAlert extends Alert {
         add("A legitimate configuration change of an access point could have caused this.");
     }};
 
-    private CryptoChangeProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private CryptoChangeProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -52,8 +52,8 @@ public class CryptoChangeProbeRespAlert extends Alert {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.CRYPTO_CHANGE_PROBERESP;
+    public TYPE getType() {
+        return TYPE.CRYPTO_CHANGE_PROBERESP;
     }
 
     public String getSSID() {
@@ -81,7 +81,7 @@ public class CryptoChangeProbeRespAlert extends Alert {
                 && a.getEncounteredSecurity().equals(this.getEncounteredSecurity());
     }
 
-    public static CryptoChangeProbeRespAlert create(@NotNull String ssid, String bssid, String encounteredSecurity, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static CryptoChangeProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, String encounteredSecurity, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -90,11 +90,11 @@ public class CryptoChangeProbeRespAlert extends Alert {
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
         fields.put(FieldNames.ENCOUNTERED_SECURITY, encounteredSecurity);
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new CryptoChangeProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new CryptoChangeProbeRespAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 

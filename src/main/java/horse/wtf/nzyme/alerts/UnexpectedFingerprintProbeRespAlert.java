@@ -39,8 +39,8 @@ public class UnexpectedFingerprintProbeRespAlert extends Alert {
         add("A legitimate change of the access point configuration took place and the nzyme configuration has not been updated.");
     }};
 
-    private UnexpectedFingerprintProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private UnexpectedFingerprintProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -49,8 +49,8 @@ public class UnexpectedFingerprintProbeRespAlert extends Alert {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.UNEXPECTED_FINGERPRINT_PROBERESP;
+    public TYPE getType() {
+        return TYPE.UNEXPECTED_FINGERPRINT_PROBERESP;
     }
 
     public String getSSID() {
@@ -76,7 +76,7 @@ public class UnexpectedFingerprintProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
     }
 
-    public static UnexpectedFingerprintProbeRespAlert create(@NotNull String ssid, String fingerprint, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedFingerprintProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String fingerprint, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -89,11 +89,11 @@ public class UnexpectedFingerprintProbeRespAlert extends Alert {
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BANDIT_FINGERPRINT, fingerprint);
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new UnexpectedFingerprintProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedFingerprintProbeRespAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 }

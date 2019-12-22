@@ -40,8 +40,8 @@ public class UnexpectedSSIDProbeRespAlert extends Alert {
         add("A new network (for example, a guest network) was created by a legitimate administrator and the nzyme configuration has not been updated yet.");
     }};
 
-    private UnexpectedSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, Dot11Probe probe) {
-        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, probe);
+    private UnexpectedSSIDProbeRespAlert(DateTime timestamp, Subsystem subsystem, Map<String, Object> fields, long frameCount) {
+        super(timestamp, subsystem, fields, DESCRIPTION, DOC_LINK, FALSE_POSITIVES, true, frameCount);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class UnexpectedSSIDProbeRespAlert extends Alert {
     }
 
     @Override
-    public Alert.Type getType() {
-        return Type.UNEXPECTED_SSID_PROBERESP;
+    public TYPE getType() {
+        return TYPE.UNEXPECTED_SSID_PROBERESP;
     }
 
     public String getSSID() {
@@ -73,7 +73,7 @@ public class UnexpectedSSIDProbeRespAlert extends Alert {
         return a.getSSID().equals(this.getSSID()) && a.getBSSID().equals(this.getBSSID());
     }
 
-    public static UnexpectedSSIDProbeRespAlert create(@NotNull String ssid, String bssid, Dot11MetaInformation meta, Dot11Probe probe) {
+    public static UnexpectedSSIDProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
         if (Strings.isNullOrEmpty(ssid)) {
             throw new IllegalArgumentException("This alert cannot be raised for hidden/broadcast SSIDs.");
         }
@@ -81,11 +81,11 @@ public class UnexpectedSSIDProbeRespAlert extends Alert {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
         fields.put(FieldNames.SSID, ssid);
         fields.put(FieldNames.BSSID, bssid.toLowerCase());
-        fields.put(FieldNames.CHANNEL, meta.getChannel());
-        fields.put(FieldNames.FREQUENCY, meta.getFrequency());
-        fields.put(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+        fields.put(FieldNames.CHANNEL, channel);
+        fields.put(FieldNames.FREQUENCY, frequency);
+        fields.put(FieldNames.ANTENNA_SIGNAL, antennaSignal);
 
-        return new UnexpectedSSIDProbeRespAlert(DateTime.now(), Subsystem.DOT_11, fields.build(), probe);
+        return new UnexpectedSSIDProbeRespAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }
 
 
