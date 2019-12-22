@@ -7,7 +7,7 @@ jobs:
     docker:
       - image: circleci/openjdk:8-jdk
         environment:
-          - TEST_DATABASE_URL: postgresql://root@localhost/circle_test
+          - TEST_DATABASE_URL: postgresql://localhost:5432/circle_test?user=root
       - image: circleci/postgres:10.9-alpine-ram
     steps:
       - checkout
