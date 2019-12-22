@@ -6,8 +6,12 @@ jobs:
     working_directory: ~/circleci-nzyme 
     docker:
       - image: circleci/openjdk:8-jdk
+      - image: circleci/postgres:10.9-alpine-ram
     steps:
       - checkout
+      - run: sudo apt-get update
+      - run: sudo apt-get install postgresql-client-10.9
+      - run: createdb nzyme-java-tests
       - restore_cache:
           key: nzyme-{{ checksum "pom.xml" }}
       - run: mvn dependency:go-offline
