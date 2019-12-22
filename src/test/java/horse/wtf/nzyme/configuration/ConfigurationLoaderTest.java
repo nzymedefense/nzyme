@@ -30,7 +30,7 @@ public class ConfigurationLoaderTest extends ResourcesAccessingTest {
 
         assertEquals(c.role(), Role.LEADER);
         assertEquals(c.nzymeId(), "nzyme-testng");
-        assertEquals(c.databasePath(), "postgresql://localhost:5432/nzyme-java-tests");
+        assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
         assertEquals(c.pythonExecutable(), "/usr/bin/python2.7");
         assertEquals(c.pythonScriptDirectory(), "/tmp");
         assertEquals(c.pythonScriptPrefix(), "nzyme_");
