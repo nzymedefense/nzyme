@@ -67,13 +67,7 @@ public class AlertsServiceTest extends AlertTestHelper {
         assertEquals(as.getActiveAlerts().size(), 2);
 
         try {
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {}
-
-        assertEquals(as.getActiveAlerts().size(), 1);
-
-        try {
-            Thread.sleep(2500);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {}
 
         assertEquals(as.getActiveAlerts().size(), 0);
