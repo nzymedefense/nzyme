@@ -6,6 +6,8 @@ jobs:
     working_directory: ~/circleci-nzyme 
     docker:
       - image: circleci/openjdk:8-jdk
+        environment:
+          - TEST_DATABASE_URL: postgresql://root@localhost/circle_test
       - image: circleci/postgres:10.9-alpine-ram
     steps:
       - checkout
