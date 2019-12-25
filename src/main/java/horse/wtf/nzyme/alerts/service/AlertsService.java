@@ -34,7 +34,8 @@ public class AlertsService {
 
     private static final Logger LOG = LogManager.getLogger(AlertsService.class);
 
-    private static final String ACTIVE_ALERTS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '10 minutes')";
+    private static final String ACTIVE_ALERTS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '10 minutes') " +
+            "ORDER BY alert_uuid";
 
     private final Nzyme nzyme;
 
