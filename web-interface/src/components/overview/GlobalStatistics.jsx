@@ -6,7 +6,6 @@ import StatisticsActions from "../../actions/StatisticsActions";
 import AlertsStore from "../../stores/AlertsStore";
 import AlertsActions from "../../actions/AlertsActions"
 import ProbesStore from "../../stores/ProbesStore";
-import ProbesActions from "../../actions/ProbesActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsList from "../alerts/AlertsList";
 
