@@ -46,4 +46,36 @@ public abstract class Bandit {
     @JsonProperty
     public abstract List<BanditIdentifier> identifiers();
 
+    public static Bandit create(UUID uuid, String name, String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
+        return builder()
+                .uuid(uuid)
+                .name(name)
+                .description(description)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .identifiers(identifiers)
+                .build();
+    }
+
+    public static Builder builder() {
+        return new AutoValue_Bandit.Builder();
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder name(String name);
+
+        public abstract Builder description(String description);
+
+        public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract Builder updatedAt(DateTime updatedAt);
+
+        public abstract Builder identifiers(List<BanditIdentifier> identifiers);
+
+        public abstract Bandit build();
+    }
+
 }

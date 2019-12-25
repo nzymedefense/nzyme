@@ -25,7 +25,7 @@ import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import javax.annotation.Nullable;
 
 @AutoValue
-public abstract class Dot11BeaconFrame {
+public abstract class Dot11BeaconFrame extends Dot11Frame {
 
     @Nullable
     public abstract String ssid();

@@ -43,7 +43,6 @@ public class SignalStrengthBanditIdentifierTest {
         ));
     }
 
-
     @Test
     public void testMatchesBeacon() throws MalformedFrameException, IllegalRawDataException {
         BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
