@@ -26,7 +26,6 @@ class GlobalStatistics extends Reflux.Component {
     this.state = {
       global_statistics: undefined,
       active_alerts: undefined,
-      current_channels: {}
     };
   }
 
@@ -35,60 +34,10 @@ class GlobalStatistics extends Reflux.Component {
     AlertsActions.findActive(GlobalStatistics.ALERT_LIMIT);
 
     setInterval(StatisticsActions.findGlobal, 5000);
-    setInterval(AlertsActions.findActive, 1000);
-    setInterval(ProbesActions.findCurrentChannels, 900);
-  }
-
-  static _buildChannelRow(channelNumber, data, activeChannels) {
-    let is_active = false;
-    for(const channel in activeChannels) {
-      for (const key of Object.keys(channel)) {
-        const activeChannel = channel[key];
-
-        if(parseInt(channelNumber, 10) === activeChannel) {
-          is_active = true;
-        }
-      }
-    };
-
-    const quality = ((data.total_frames-data.malformed_frames)*100)/data.total_frames;
-    return (
-      <tr key={channelNumber} className={is_active ? "text-info" : ""}>
-        <td>{channelNumber}</td>
-        <td>{numeral(data.total_frames).format('0,0')}</td>
-        <td className={GlobalStatistics.decideFrameQualityColor(quality)}>{numeral(data.malformed_frames).format('0')}</td>
-      </tr>
-    )
-  }
-
-  static _buildFrameTypeRow(name, count, total) {
-    return (
-      <tr key={name}>
-        <td>{name}</td>
-        <td>{numeral(count).format('0,0')}</td>
-        <td>{numeral(count*100/total).format('0.00')}%</td>
-      </tr>
-    )
-  }
-
-  static decideFrameQualityColor(quality) {
-    if (quality < 80) {
-      return "text-warning";
-    }
-  }
-
-  static _getTotalFrameCountFromStatistics(frames) {
-    let x = 0;
-
-    Object.keys(frames).map(function (key) {
-      return x += frames[key];
-    });
-
-    return x;
+    setInterval(AlertsActions.findActive, 5000);
   }
 
   render() {
-    const self = this;
     if (!this.state.global_statistics) {
       return <LoadingSpinner />;
     } else {
@@ -149,46 +98,6 @@ class GlobalStatistics extends Reflux.Component {
             </div>
           </div>
 
-          <div className="row mt-md-4">
-            <div className="col-md-6">
-              <h3 style={{display: "block"}} className="text-center">802.11 Channels</h3>
-
-              <table className="table table-sm table-hover table-striped">
-                <thead>
-                  <tr>
-                    <th>Channel</th>
-                    <th>Total frames considered</th>
-                    <th>Malformed</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                {Object.keys(this.state.global_statistics.channels).map(function (key) {
-                  return GlobalStatistics._buildChannelRow(key, self.state.global_statistics.channels[key], self.state.current_channels)
-                })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="col-md-6">
-              <h3 style={{display: "block"}} className="text-center">802.11 Frame Types</h3>
-              <table className="table table-sm table-hover table-striped">
-                <thead>
-                  <tr>
-                    <th>Frame Type</th>
-                    <th>Total frames considered</th>
-                    <th>Percentage</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                {Object.keys(this.state.global_statistics.frame_types).map(function (key) {
-                  return GlobalStatistics._buildFrameTypeRow(key, self.state.global_statistics.frame_types[key], GlobalStatistics._getTotalFrameCountFromStatistics(self.state.global_statistics.frame_types))
-                })}
-                </tbody>
-              </table>
-            </div>
-          </div>
         </div>
       )
     }
