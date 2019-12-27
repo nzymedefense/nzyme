@@ -128,6 +128,11 @@ public class MetricsResource {
                 TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TRACK_MONITOR_TIMER))
         );
 
+        metrics.put(
+                "contact_identifier_timing",
+                TimerResponse.fromTimer(getTimer(MetricNames.CONTACT_IDENTIFIER_TIMING))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

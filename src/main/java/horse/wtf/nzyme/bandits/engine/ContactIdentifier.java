@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.bandits.engine;
 
+import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
@@ -26,6 +27,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultBearing;
@@ -41,15 +43,18 @@ public class ContactIdentifier {
 
     private static final Logger LOG = LogManager.getLogger(ContactIdentifier.class);
 
+    private static final int ACTIVE_MINUTES = 10;
+
     private final Nzyme nzyme;
 
     private ImmutableMap<UUID, Contact> contacts;
     private ImmutableMap<UUID, Bandit> bandits;
 
-    private static final int ACTIVE_MINUTES = 10;
+    private final Timer timing;
 
     public ContactIdentifier(Nzyme nzyme) {
         this.nzyme = nzyme;
+        this.timing = nzyme.getMetrics().timer(MetricNames.CONTACT_IDENTIFIER_TIMING);
     }
 
     public long registerBandit(Bandit bandit) {
@@ -190,8 +195,6 @@ public class ContactIdentifier {
         this.contacts = null;
     }
 
-
-    // TODO needs retention cleaning
     public Map<UUID, Contact> getContacts() {
         if (contacts != null) {
             return contacts;
@@ -219,8 +222,8 @@ public class ContactIdentifier {
         return this.contacts;
     }
 
-    // TODO timer
     public void identify(Dot11Frame frame) {
+        Timer.Context timer = this.timing.time();
         for (Map.Entry<UUID, Bandit> x : getBandits().entrySet()) {
             Bandit bandit = x.getValue();
 
@@ -270,6 +273,8 @@ public class ContactIdentifier {
                 }
             }
         }
+
+        timer.stop();
     }
 
 }
