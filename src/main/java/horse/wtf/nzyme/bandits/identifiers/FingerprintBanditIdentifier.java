@@ -20,7 +20,10 @@ package horse.wtf.nzyme.bandits.identifiers;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import horse.wtf.nzyme.notifications.FieldNames;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class FingerprintBanditIdentifier implements BanditIdentifier {
@@ -31,6 +34,10 @@ public class FingerprintBanditIdentifier implements BanditIdentifier {
         this.fingerprint = fingerprint;
     }
 
+    public String getFingerprint() {
+        return fingerprint;
+    }
+
     @Override
     public Descriptor descriptor() {
         return Descriptor.create(
@@ -38,6 +45,13 @@ public class FingerprintBanditIdentifier implements BanditIdentifier {
                 "Matches if the frame fingerprint equals the expected fingerprint.",
                 "frame.fingerprint == \"" + fingerprint + "\""
         );
+    }
+
+    @Override
+    public Map<String, Object> configuration() {
+        return new HashMap<String, Object>(){{
+            put(FieldNames.FINGERPRINT, fingerprint);
+        }};
     }
 
     @Override

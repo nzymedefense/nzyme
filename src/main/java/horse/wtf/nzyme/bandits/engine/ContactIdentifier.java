@@ -28,8 +28,10 @@ import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.result.ResultBearing;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,43 +43,90 @@ public class ContactIdentifier {
 
     private final Nzyme nzyme;
 
-    private ImmutableMap<UUID, Bandit> bandits;
     private ImmutableMap<UUID, Contact> contacts;
+    private ImmutableMap<UUID, Bandit> bandits;
 
     public ContactIdentifier(Nzyme nzyme) {
         this.nzyme = nzyme;
     }
 
     public void registerBandit(Bandit bandit) {
-        if (bandits == null) {
-            throw new IllegalStateException("ContactIdentifier has not been initialized.");
-        }
+        nzyme.getDatabase().useHandle(x -> x.inTransaction(handle -> {
+            ResultBearing result = handle.createUpdate("INSERT INTO bandits(bandit_uuid, name, description, created_at, updated_at) " +
+                    "VALUES(:bandit_uuid, :name, :description, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+                    .bind("bandit_uuid", bandit.uuid())
+                    .bind("name", bandit.name())
+                    .bind("description", bandit.description())
+                    .executeAndReturnGeneratedKeys("id");
 
-        ImmutableMap.Builder<UUID, Bandit> newBandits = copyOfBandits();
-        newBandits.put(bandit.uuid(), bandit);
+            Long banditId = result.mapTo(Long.class).first();
 
-        this.bandits = newBandits.build();
+            if (bandit.identifiers() != null) {
+                for (BanditIdentifier identifier : bandit.identifiers()) {
+                    String configuration;
+
+                    try {
+                        configuration = nzyme.getObjectMapper().writeValueAsString(identifier.configuration());
+                    } catch(Exception e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_type, configuration, created_at, updated_at) " +
+                            "VALUES(:bandit_id, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+                            .bind("bandit_id", banditId)
+                            .bind("identifier_type", identifier.descriptor().type())
+                            .bind("configuration", configuration)
+                            .execute();
+                }
+            }
+
+            return null;
+        }));
+
+        this.bandits = null;
     }
 
     public void removeBandit(UUID uuid) {
-        if (bandits == null) {
-            throw new IllegalStateException("ContactIdentifier has not been initialized.");
-        }
-
-        ImmutableMap.Builder<UUID, Bandit> copy = copyOfBandits();
-
-        ImmutableMap.Builder<UUID, Bandit> newBandits = new ImmutableMap.Builder<>();
-        for (Map.Entry<UUID, Bandit> x : copy.build().entrySet()) {
-            if (!x.getKey().equals(uuid)) {
-                newBandits.put(x.getKey(), x.getValue());
-            }
-        }
-
-        this.bandits = newBandits.build();
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits WHERE bandit_uuid = ?", uuid));
+        this.bandits = null;
     }
 
     public Map<UUID, Bandit> getBandits() {
-        return copyOfBandits().build();
+        // Return the cached bandits if they have not been invalidated by a writing function.
+        if (bandits != null) {
+            return bandits;
+        }
+
+        List<Bandit> bandits = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM bandits")
+                        .mapTo(Bandit.class)
+                        .list()
+        );
+
+        ImmutableMap.Builder<UUID, Bandit> result = new ImmutableMap.Builder<>();
+
+        for (Bandit x : bandits) {
+            List<BanditIdentifier> identifiers = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM bandit_identifiers WHERE bandit_id = :bandit_id")
+                            .bind("bandit_id", x.databaseId())
+                            .mapTo(BanditIdentifier.class)
+                            .list()
+            );
+
+            Bandit bandit = Bandit.create(
+                    x.databaseId(),
+                    x.uuid(),
+                    x.name(),
+                    x.description(),
+                    x.createdAt(),
+                    x.updatedAt(),
+                    identifiers
+            );
+            result.put(bandit.uuid(), bandit);
+        }
+
+        this.bandits = result.build();
+        return this.bandits;
     }
 
     public void registerContact(Contact contact) {
@@ -122,75 +171,57 @@ public class ContactIdentifier {
         return copyOfContacts().build();
     }
 
-    public void initialize() {
-        // TODO seed from database (last_seen > 30 minutes)
-        bandits = new ImmutableMap.Builder<UUID, Bandit>().build();
-        contacts = new ImmutableMap.Builder<UUID, Contact>().build();
-    }
-
     // TODO timer
     public void identify(Dot11Frame frame) {
-        for (Map.Entry<UUID, Bandit> x : copyOfBandits().build().entrySet()) {
+        for (Map.Entry<UUID, Bandit> x : getBandits().entrySet()) {
             Bandit bandit = x.getValue();
 
             // Run all identifiers.
-            boolean anyMissed = false;
-            for (BanditIdentifier identifier : bandit.identifiers()) {
-                Optional<Boolean> identified = Optional.empty();
+            if(bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
+                boolean anyMissed = false;
+                for (BanditIdentifier identifier : bandit.identifiers()) {
+                    Optional<Boolean> identified = Optional.empty();
 
-                if (frame instanceof Dot11BeaconFrame) {
-                    identified = identifier.matches((Dot11BeaconFrame) frame);
-                }
+                    if (frame instanceof Dot11BeaconFrame) {
+                        identified = identifier.matches((Dot11BeaconFrame) frame);
+                    }
 
-                if (frame instanceof Dot11ProbeResponseFrame) {
-                    identified = identifier.matches((Dot11ProbeResponseFrame) frame);
-                }
+                    if (frame instanceof Dot11ProbeResponseFrame) {
+                        identified = identifier.matches((Dot11ProbeResponseFrame) frame);
+                    }
 
-                if (frame instanceof Dot11DeauthenticationFrame) {
-                    identified = identifier.matches((Dot11DeauthenticationFrame) frame);
-                }
+                    if (frame instanceof Dot11DeauthenticationFrame) {
+                        identified = identifier.matches((Dot11DeauthenticationFrame) frame);
+                    }
 
-                if (identified.isPresent()) {
-                    if (!identified.get()) {
-                        anyMissed = true;
+                    if (identified.isPresent()) {
+                        if (!identified.get()) {
+                            anyMissed = true;
+                        }
                     }
                 }
-            }
 
-            // If no identifier missed, this is a bandit frame.
-            if (!anyMissed) {
-                // Create new contact if this is the first frame.s
-                if (!banditHasActiveContact(bandit)) {
-                    LOG.debug("New contact for bandit [{}].", bandit);
-                    DateTime now = DateTime.now();
-                    registerContact(Contact.create(
-                            UUID.randomUUID(),
-                            bandit,
-                            now,
-                            now,
-                            new AtomicLong(0)
-                    ));
+                // If no identifier missed, this is a bandit frame.
+                if (!anyMissed) {
+                    // Create new contact if this is the first frame.s
+                    if (!banditHasActiveContact(bandit)) {
+                        LOG.debug("New contact for bandit [{}].", bandit);
+                        DateTime now = DateTime.now();
+                        registerContact(Contact.create(
+                                UUID.randomUUID(),
+                                bandit,
+                                now,
+                                now,
+                                new AtomicLong(0)
+                        ));
+                    }
+
+                    LOG.debug("Registering frame for existing bandit [{}]", bandit);
+                    registerContactFrame(bandit, frame);
                 }
-
-                LOG.debug("Registering frame for existing bandit [{}]", bandit);
-                registerContactFrame(bandit, frame);
             }
         }
 
-    }
-
-    private ImmutableMap.Builder<UUID, Bandit> copyOfBandits() {
-        ImmutableMap.Builder<UUID, Bandit> c = new ImmutableMap.Builder<>();
-        c.putAll(bandits);
-
-        return c;
-    }
-
-    private ImmutableMap.Builder<UUID, Contact> copyOfContacts() {
-        ImmutableMap.Builder<UUID, Contact> c = new ImmutableMap.Builder<>();
-        c.putAll(contacts);
-
-        return c;
     }
 
 }

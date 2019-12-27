@@ -22,11 +22,16 @@ import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
 @AutoValue
 public abstract class Bandit {
+
+    @JsonProperty
+    @Nullable
+    public abstract Long databaseId();
 
     @JsonProperty
     public abstract UUID uuid();
@@ -44,10 +49,12 @@ public abstract class Bandit {
     public abstract DateTime updatedAt();
 
     @JsonProperty
+    @Nullable
     public abstract List<BanditIdentifier> identifiers();
 
-    public static Bandit create(UUID uuid, String name, String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
+    public static Bandit create(Long databaseId, UUID uuid, String name, String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
         return builder()
+                .databaseId(databaseId)
                 .uuid(uuid)
                 .name(name)
                 .description(description)
@@ -74,6 +81,8 @@ public abstract class Bandit {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder identifiers(List<BanditIdentifier> identifiers);
+
+        public abstract Builder databaseId(Long databaseId);
 
         public abstract Bandit build();
     }

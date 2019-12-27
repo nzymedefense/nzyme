@@ -21,8 +21,11 @@ import com.google.common.base.Joiner;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import horse.wtf.nzyme.notifications.FieldNames;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class SSIDIBanditdentifier implements BanditIdentifier {
@@ -44,6 +47,12 @@ public class SSIDIBanditdentifier implements BanditIdentifier {
         );
     }
 
+    @Override
+    public Map<String, Object> configuration() {
+        return new HashMap<String, Object>(){{
+            put(FieldNames.SSIDS, ssids);
+        }};
+    }
 
     @Override
     public Optional<Boolean> matches(Dot11DeauthenticationFrame frame) {

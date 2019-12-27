@@ -20,7 +20,10 @@ package horse.wtf.nzyme.bandits.identifiers;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import horse.wtf.nzyme.notifications.FieldNames;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class SignalStrengthBanditIdentifier implements BanditIdentifier {
@@ -35,6 +38,14 @@ public class SignalStrengthBanditIdentifier implements BanditIdentifier {
 
         this.from = from;
         this.to = to;
+    }
+
+    @Override
+    public Map<String, Object> configuration() {
+        return new HashMap<String, Object>(){{
+            put(FieldNames.FROM, from);
+            put(FieldNames.TO, to);
+        }};
     }
 
     @Override

@@ -24,6 +24,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface BanditIdentifier {
@@ -36,6 +37,9 @@ public interface BanditIdentifier {
 
     @JsonProperty
     Descriptor descriptor();
+
+    @JsonProperty
+    Map<String, Object> configuration();
 
     @JsonIgnore
     Optional<Boolean> matches(Dot11DeauthenticationFrame frame);
