@@ -20,11 +20,10 @@ package horse.wtf.nzyme.bandits;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 @AutoValue
 public abstract class Contact {
@@ -32,7 +31,12 @@ public abstract class Contact {
     @JsonProperty
     public abstract UUID uuid();
 
+    @JsonIgnore
+    @Nullable
+    public abstract Long banditId();
+
     @JsonProperty
+    @Nullable
     public abstract Bandit bandit();
 
     @JsonProperty("first_seen")
@@ -42,7 +46,7 @@ public abstract class Contact {
     public abstract DateTime lastSeen();
 
     @JsonProperty("frame_count")
-    public abstract AtomicLong frameCount();
+    public abstract Long frameCount();
 
     @JsonProperty("is_stationary")
     public boolean isStationary() {
@@ -50,14 +54,10 @@ public abstract class Contact {
         return true;
     }
 
-    @JsonIgnore
-    public void recordFrame(Dot11Frame frame) {
-        frameCount().incrementAndGet();
-    }
-
-    public static Contact create(UUID uuid, Bandit bandit, DateTime firstSeen, DateTime lastSeen, AtomicLong frameCount) {
+    public static Contact create(UUID uuid, Long banditId, Bandit bandit, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
         return builder()
                 .uuid(uuid)
+                .banditId(banditId)
                 .bandit(bandit)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
@@ -79,7 +79,9 @@ public abstract class Contact {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract Builder frameCount(AtomicLong frameCount);
+        public abstract Builder frameCount(Long frameCount);
+
+        public abstract Builder banditId(Long banditId);
 
         public abstract Contact build();
     }

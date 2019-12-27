@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ContactIdentifier {
 
@@ -46,11 +46,14 @@ public class ContactIdentifier {
     private ImmutableMap<UUID, Contact> contacts;
     private ImmutableMap<UUID, Bandit> bandits;
 
+    private static final int ACTIVE_MINUTES = 10;
+
     public ContactIdentifier(Nzyme nzyme) {
         this.nzyme = nzyme;
     }
 
-    public void registerBandit(Bandit bandit) {
+    public long registerBandit(Bandit bandit) {
+        AtomicReference<Long> banditId = new AtomicReference<>();
         nzyme.getDatabase().useHandle(x -> x.inTransaction(handle -> {
             ResultBearing result = handle.createUpdate("INSERT INTO bandits(bandit_uuid, name, description, created_at, updated_at) " +
                     "VALUES(:bandit_uuid, :name, :description, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
@@ -59,7 +62,7 @@ public class ContactIdentifier {
                     .bind("description", bandit.description())
                     .executeAndReturnGeneratedKeys("id");
 
-            Long banditId = result.mapTo(Long.class).first();
+            banditId.set(result.mapTo(Long.class).first());
 
             if (bandit.identifiers() != null) {
                 for (BanditIdentifier identifier : bandit.identifiers()) {
@@ -73,7 +76,7 @@ public class ContactIdentifier {
 
                     handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_type, configuration, created_at, updated_at) " +
                             "VALUES(:bandit_id, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
-                            .bind("bandit_id", banditId)
+                            .bind("bandit_id", banditId.get())
                             .bind("identifier_type", identifier.descriptor().type())
                             .bind("configuration", configuration)
                             .execute();
@@ -84,6 +87,7 @@ public class ContactIdentifier {
         }));
 
         this.bandits = null;
+        return banditId.get();
     }
 
     public void removeBandit(UUID uuid) {
@@ -129,46 +133,90 @@ public class ContactIdentifier {
         return this.bandits;
     }
 
-    public void registerContact(Contact contact) {
-        if (contacts == null) {
-            throw new IllegalStateException("ContactIdentifier has not been initialized.");
+    public Optional<Bandit> findBanditByDatabaseId(Long id) {
+        for (Bandit bandit : getBandits().values()) {
+            if (bandit.databaseId() != null && bandit.databaseId().equals(id)) {
+                return Optional.of(bandit);
+            }
         }
 
-        ImmutableMap.Builder<UUID, Contact> copy = copyOfContacts();
-        copy.put(contact.uuid(), contact);
+        return Optional.empty();
+    }
 
-        this.contacts = copy.build();
+    public Optional<Bandit> findBanditByUUID(UUID uuid) {
+        for (Bandit bandit : getBandits().values()) {
+            if (bandit.uuid() != null && bandit.uuid().equals(uuid)) {
+                return Optional.of(bandit);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public void registerContact(Contact contact) {
+        //noinspection ConstantConditions
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("INSERT INTO contacts(contact_uuid, bandit_id, frame_count, first_seen, last_seen) " +
+                "VALUES(:contact_uuid, :bandit_id, 0, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+                .bind("contact_uuid", contact.uuid())
+                .bind("bandit_id", contact.bandit().databaseId())
+                .execute()
+        );
+        this.contacts = null;
     }
 
     public boolean banditHasActiveContact(Bandit bandit) {
-        if (contacts == null) {
-            throw new IllegalStateException("ContactIdentifier has not been initialized.");
-        }
+        long count = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM contacts " +
+                        "WHERE bandit_id = :bandit_id " +
+                        "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + ACTIVE_MINUTES + " minutes')")
+                .bind("bandit_id", bandit.databaseId())
+                .mapTo(Long.class)
+                .first());
 
-        for (Contact contact : copyOfContacts().build().values()) {
-            if (contact.bandit().uuid().equals(bandit.uuid())) {
-                return true;
-            }
-        }
-
-        return false;
+        this.contacts = null;
+        return count > 0;
     }
 
+    // TODO: this might lead to heavy cache invalidation and we might have to rethink caching in general.
+    //       same applies to fast UPDATES here
     public void registerContactFrame(Bandit bandit, Dot11Frame frame) {
-        if (contacts == null) {
-            throw new IllegalStateException("ContactIdentifier has not been initialized.");
-        }
-
-        for (Contact contact : contacts.values()) {
-            if (contact.bandit().uuid().equals(bandit.uuid())) {
-                contact.recordFrame(frame);
-                return;
-            }
-        }
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1, " +
+                "last_seen = (current_timestamp at time zone 'UTC') " +
+                "WHERE bandit_id = :bandit_id " +
+                "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + ACTIVE_MINUTES + " minutes')")
+                .bind("bandit_id", bandit.databaseId())
+                .execute()
+        );
+        this.contacts = null;
     }
 
+
+    // TODO needs retention cleaning
     public Map<UUID, Contact> getContacts() {
-        return copyOfContacts().build();
+        if (contacts != null) {
+            return contacts;
+        }
+
+        List<Contact> contacts = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM contacts")
+                        .mapTo(Contact.class)
+                        .list()
+        );
+
+        ImmutableMap.Builder<UUID, Contact> result = new ImmutableMap.Builder<>();
+        for (Contact x : contacts) {
+            result.put(x.uuid(), Contact.create(
+                    x.uuid(),
+                    x.banditId(),
+                    findBanditByDatabaseId(x.banditId()).orElse(null),
+                    x.firstSeen(),
+                    x.lastSeen(),
+                    x.frameCount()
+            ));
+        }
+
+        this.contacts = result.build();
+        return this.contacts;
     }
 
     // TODO timer
@@ -209,10 +257,11 @@ public class ContactIdentifier {
                         DateTime now = DateTime.now();
                         registerContact(Contact.create(
                                 UUID.randomUUID(),
+                                null,
                                 bandit,
                                 now,
                                 now,
-                                new AtomicLong(0)
+                                1L
                         ));
                     }
 
@@ -221,7 +270,6 @@ public class ContactIdentifier {
                 }
             }
         }
-
     }
 
 }

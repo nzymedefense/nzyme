@@ -267,7 +267,7 @@
     </changeSet>
 
     <changeSet id="11" author="lennartkoopmann">
-        <createTable tableName="bandits" >
+        <createTable tableName="bandits">
             <column name="id" type="integer" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false" />
             </column>
@@ -347,7 +347,69 @@
                                     onUpdate="NO ACTION"
                                     onDelete="CASCADE"
         />
+    </changeSet>
+
+    <changeSet id="13" author="lennartkoopmann">
+        <createTable tableName="contacts">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="contact_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="bandit_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="contacts_linked_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_bandits2contacts"
+                                    baseTableName="contacts"
+                                    baseColumnNames="bandit_id"
+                                    referencedTableName="bandits"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
 
     </changeSet>
+
+    <changeSet id="14" author="lennartkoopmann">
+        <modifyDataType tableName="measurements" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="measurements" columnName="measurement_value" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="beacon_rate" newDataType="bigint" />
+        <modifyDataType tableName="sigidx_histogram_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="frame_count" newDataType="bigint" />
+        <modifyDataType tableName="bandits" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="bandit_id" newDataType="bigint" />
+    </changeSet>
+
+    <changeSet id="15" author="lennartkoopmann">
+        <createIndex indexName="contacts_active_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
 
 </databaseChangeLog>
