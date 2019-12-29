@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.configuration.Configuration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -59,6 +60,7 @@ public interface Nzyme {
 
     List<Dot11Probe> getProbes();
     AlertsService getAlertsService();
+    ContactIdentifier getContactIdentifier();
 
     SystemStatus getSystemStatus();
 

@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -113,6 +114,7 @@ public class NzymeImpl implements Nzyme {
 
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
+    private final ContactIdentifier contactIdentifier;
 
     private final List<Alert.TYPE_WIDE> configuredAlerts;
 
@@ -132,7 +134,6 @@ public class NzymeImpl implements Nzyme {
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
-        ;
         this.objectMapper = new ObjectMapper();
 
         // Register JVM metrics.
@@ -151,6 +152,7 @@ public class NzymeImpl implements Nzyme {
 
         this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
+        this.contactIdentifier = new ContactIdentifier(this);
 
         // Disable TRAINING status when training period is over.
         LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
@@ -328,6 +330,9 @@ public class NzymeImpl implements Nzyme {
             // Networks manager interceptors.
             probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
 
+            // Bandit identifier.
+            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(this).getInterceptors());
+
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);
 
@@ -389,6 +394,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public AlertsService getAlertsService() {
         return alerts;
+    }
+
+    @Override
+    public ContactIdentifier getContactIdentifier() {
+        return contactIdentifier;
     }
 
     @Override
