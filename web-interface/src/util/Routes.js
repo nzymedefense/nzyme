@@ -9,6 +9,9 @@ const Routes = {
     ALERTS: {
         INDEX: "/",
         SHOW: id => `/alerts/show/${id}`
+    },
+    BANDITS: {
+        INDEX: "/bandits"
     }
 };
 
