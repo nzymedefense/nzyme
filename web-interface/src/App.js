@@ -28,6 +28,7 @@ import AuthenticationStore from "./stores/AuthenticationStore";
 import AuthenticationActions from "./actions/AuthenticationActions";
 import AlertsActions from "./actions/AlertsActions";
 import AlertsStore from "./stores/AlertsStore";
+import BanditsPage from "./components/bandits/BanditsPage";
 
 class App extends Reflux.Component {
 
@@ -105,6 +106,9 @@ class App extends Reflux.Component {
 
                                     { /* Alerts. */}
                                     <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
+
+                                    { /* Bandits. */}
+                                    <Route path={Routes.ALERTS.INDEX} component={BanditsPage}/>
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>
