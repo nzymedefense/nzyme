@@ -39,6 +39,7 @@
         <jmte.version>5.0.0</jmte.version>
         <postgresql.version>42.2.6</postgresql.version>
         <jwt.version>0.10.7</jwt.version>
+        <reflections.version>0.9.11</reflections.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -220,6 +221,12 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>${jwt.version}</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
