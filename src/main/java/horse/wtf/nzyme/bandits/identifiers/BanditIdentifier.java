@@ -35,31 +35,20 @@ public interface BanditIdentifier {
         SIGNAL_STRENGTH
     }
 
-    @JsonProperty
     Descriptor descriptor();
-
-    @JsonProperty
     Map<String, Object> configuration();
 
-    @JsonIgnore
     Optional<Boolean> matches(Dot11DeauthenticationFrame frame);
-
-    @JsonIgnore
     Optional<Boolean> matches(Dot11BeaconFrame frame);
-
-    @JsonIgnore
     Optional<Boolean> matches(Dot11ProbeResponseFrame frame);
 
     @AutoValue
     abstract class Descriptor {
 
-        @JsonProperty
         public abstract TYPE type();
 
-        @JsonProperty
         public abstract String description();
 
-        @JsonProperty
         public abstract String matches();
 
         public static Descriptor create(TYPE type, String description, String matches) {

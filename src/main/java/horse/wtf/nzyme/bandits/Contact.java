@@ -28,27 +28,17 @@ import java.util.UUID;
 @AutoValue
 public abstract class Contact {
 
-    @JsonProperty
     public abstract UUID uuid();
+    public abstract DateTime firstSeen();
+    public abstract DateTime lastSeen();
+    public abstract Long frameCount();
 
-    @JsonIgnore
     @Nullable
     public abstract Long banditId();
 
-    @JsonProperty
     @Nullable
     public abstract Bandit bandit();
 
-    @JsonProperty("first_seen")
-    public abstract DateTime firstSeen();
-
-    @JsonProperty("last_seen")
-    public abstract DateTime lastSeen();
-
-    @JsonProperty("frame_count")
-    public abstract Long frameCount();
-
-    @JsonProperty("is_stationary")
     public boolean isStationary() {
         // TODO
         return true;

@@ -15,40 +15,43 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.bandits;
+package horse.wtf.nzyme.rest.responses.bandits;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.UUID;
 
 @AutoValue
-public abstract class Bandit {
+public abstract class BanditResponse {
 
-    @Nullable
-    public abstract Long databaseId();
+    @JsonProperty
     public abstract UUID uuid();
+
+    @JsonProperty("database_id")
+    public abstract long databaseId();
+
+    @JsonProperty
     public abstract String name();
+
+    @JsonProperty
     public abstract String description();
 
-    @Nullable
+    @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    @Nullable
+    @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    @Nullable
-    public abstract List<BanditIdentifier> identifiers();
+    @JsonProperty
+    public abstract List<BanditIdentifierResponse> identifiers();
 
-    public static Bandit create(Long databaseId, UUID uuid, @NotEmpty String name, @NotEmpty String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
+    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifierResponse> identifiers) {
         return builder()
-                .databaseId(databaseId)
                 .uuid(uuid)
+                .databaseId(databaseId)
                 .name(name)
                 .description(description)
                 .createdAt(createdAt)
@@ -58,12 +61,14 @@ public abstract class Bandit {
     }
 
     public static Builder builder() {
-        return new AutoValue_Bandit.Builder();
+        return new AutoValue_BanditResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder databaseId(long databaseId);
 
         public abstract Builder name(String name);
 
@@ -73,11 +78,9 @@ public abstract class Bandit {
 
         public abstract Builder updatedAt(DateTime updatedAt);
 
-        public abstract Builder identifiers(List<BanditIdentifier> identifiers);
+        public abstract Builder identifiers(List<BanditIdentifierResponse> identifiers);
 
-        public abstract Builder databaseId(Long databaseId);
-
-        public abstract Bandit build();
+        public abstract BanditResponse build();
     }
 
 }

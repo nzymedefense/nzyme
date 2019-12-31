@@ -58,6 +58,7 @@ import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.AlertsResource;
+import horse.wtf.nzyme.rest.resources.BanditsResource;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
@@ -226,6 +227,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(AuthenticationResource.class);
         resourceConfig.register(PingResource.class);
         resourceConfig.register(AlertsResource.class);
+        resourceConfig.register(BanditsResource.class);
         resourceConfig.register(ProbesResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);

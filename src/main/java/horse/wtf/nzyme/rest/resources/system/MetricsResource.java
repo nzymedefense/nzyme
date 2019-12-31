@@ -22,6 +22,7 @@ import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.metrics.GaugeResponse;
 import horse.wtf.nzyme.rest.responses.metrics.MeterResponse;
 import horse.wtf.nzyme.rest.responses.metrics.MetricsListResponse;
@@ -38,6 +39,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 @Path("/api/system/metrics")
+@Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsResource {
 
