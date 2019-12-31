@@ -6,7 +6,7 @@ class NavigationLink extends Reflux.Component {
     render() {
         let className = "btn btn-dark";
 
-        if ((window.location.pathname === "/" && this.props.href === "/") || (window.location.pathname !== "/" && this.props.href.startsWith(window.location.pathname))) {
+        if ((window.location.pathname === "/" && this.props.href === "/") || (this.props.href !== "/" && window.location.pathname.startsWith(this.props.href))) {
             className += " active";
         }
 
