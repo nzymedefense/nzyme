@@ -29,6 +29,7 @@ import AuthenticationActions from "./actions/AuthenticationActions";
 import AlertsActions from "./actions/AlertsActions";
 import AlertsStore from "./stores/AlertsStore";
 import BanditsPage from "./components/bandits/BanditsPage";
+import CreateBanditPage from "./components/bandits/management/CreateBanditPage";
 
 class App extends Reflux.Component {
 
@@ -99,16 +100,15 @@ class App extends Reflux.Component {
 
                                     { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
-
-                                    { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
                                            component={NetworkDetailsPage}/>
 
                                     { /* Alerts. */}
-                                    <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
+                                    <Route exact path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
 
                                     { /* Bandits. */}
-                                    <Route path={Routes.ALERTS.INDEX} component={BanditsPage}/>
+                                    <Route exact path={Routes.BANDITS.INDEX} component={BanditsPage}/>
+                                    <Route exact path={Routes.BANDITS.NEW} component={CreateBanditPage}/>
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

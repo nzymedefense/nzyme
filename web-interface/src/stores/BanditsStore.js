@@ -1,0 +1,27 @@
+import Reflux from 'reflux';
+
+import RESTClient from "../util/RESTClient";
+import BanditsActions from "../actions/BanditsActions";
+
+class BanditsStore extends Reflux.Store {
+
+    constructor() {
+        super();
+        this.listenables = BanditsActions;
+    }
+
+    onFindAll() {
+
+    }
+
+    onCreateBandit(name, description, successCallback, errorCallback) {
+        RESTClient.post("/bandits", {name: name, description: description}, function(response) {
+            successCallback();
+        }, function(response) {
+            errorCallback();
+        });
+    }
+
+}
+
+export default BanditsStore;
