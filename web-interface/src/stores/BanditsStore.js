@@ -11,7 +11,11 @@ class BanditsStore extends Reflux.Store {
     }
 
     onFindAll() {
+        const self = this;
 
+        RESTClient.get("/bandits", {}, function(response) {
+            self.setState({bandits: response.data.bandits});
+        });
     }
 
     onCreateBandit(name, description, successCallback, errorCallback) {
