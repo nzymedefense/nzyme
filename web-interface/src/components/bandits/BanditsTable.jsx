@@ -4,6 +4,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import BanditsActions from "../../actions/BanditsActions";
 import BanditsStore from "../../stores/BanditsStore";
 import BanditRow from "./BanditRow";
+import Routes from "../../util/Routes";
 
 class BanditsTable extends Reflux.Component {
 
@@ -27,6 +28,14 @@ class BanditsTable extends Reflux.Component {
         }
 
         const bandits = this.state.bandits;
+
+        if (bandits.length === 0) {
+            return (
+                <div className="alert alert-info">
+                    No bandits defined yet. <a href={Routes.BANDITS.NEW} className="text-dark"><u>Create a new bandit</u></a>
+                </div>
+            )
+        }
 
         return (
             <div className="row">

@@ -30,6 +30,7 @@ import AlertsActions from "./actions/AlertsActions";
 import AlertsStore from "./stores/AlertsStore";
 import BanditsPage from "./components/bandits/BanditsPage";
 import CreateBanditPage from "./components/bandits/management/CreateBanditPage";
+import BanditDetailPage from "./components/bandits/BanditDetailPage";
 
 class App extends Reflux.Component {
 
@@ -109,6 +110,7 @@ class App extends Reflux.Component {
                                     { /* Bandits. */}
                                     <Route exact path={Routes.BANDITS.INDEX} component={BanditsPage}/>
                                     <Route exact path={Routes.BANDITS.NEW} component={CreateBanditPage}/>
+                                    <Route exact path={Routes.BANDITS.SHOW(":id")} component={BanditDetailPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

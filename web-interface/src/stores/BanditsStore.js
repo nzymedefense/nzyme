@@ -18,6 +18,14 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
+    onFindOne(id) {
+        const self = this;
+
+        RESTClient.get("/bandits/show/" + id, {}, function(response) {
+            self.setState({bandit: response.data});
+        });
+    }
+
     onCreateBandit(name, description, successCallback, errorCallback) {
         RESTClient.post("/bandits", {name: name, description: description}, function(response) {
             successCallback();

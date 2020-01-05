@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
@@ -31,10 +32,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.validation.constraints.NotEmpty;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -51,26 +50,13 @@ public class BanditsResource {
     private Nzyme nzyme;
 
     @GET
-    public Response findAllBandits() {
+    public Response findAll() {
         List<BanditResponse> bandits = Lists.newArrayList();
 
         for (Bandit x : nzyme.getContactIdentifier().getBandits().values()) {
             if (x.databaseId() == null) {
                 LOG.error("Uninitialized bandit in BanditIdentifier. Skipping.");
                 continue;
-            }
-
-            List<BanditIdentifierResponse> identifiers = Lists.newArrayList();
-
-            if (x.identifiers() != null) {
-                for (BanditIdentifier identifier : x.identifiers()) {
-                    identifiers.add(BanditIdentifierResponse.create(
-                            identifier.configuration(),
-                            identifier.descriptor().type(),
-                            identifier.descriptor().description(),
-                            identifier.descriptor().matches()
-                    ));
-                }
             }
 
             bandits.add(BanditResponse.create(
@@ -80,7 +66,7 @@ public class BanditsResource {
                     x.description(),
                     x.createdAt(),
                     x.updatedAt(),
-                    identifiers
+                    buildIdentifiersResponse(x)
             ));
         }
 
@@ -90,8 +76,41 @@ public class BanditsResource {
         )).build();
     }
 
+    @GET
+    @Path("/show/{uuid}")
+    public Response findOne(@PathParam("uuid") String id) {
+        if (Strings.isNullOrEmpty(id)) {
+            LOG.warn("Bandit ID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid Bandit UUID", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Bandit bandit = nzyme.getContactIdentifier().getBandits().get(uuid);
+        if (bandit == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(BanditResponse.create(
+                bandit.uuid(),
+                bandit.databaseId(),
+                bandit.name(),
+                bandit.description(),
+                bandit.createdAt(),
+                bandit.updatedAt(),
+                buildIdentifiersResponse(bandit)
+        )).build();
+    }
+
     @POST
-    public Response createBandit(CreateBanditRequest request) {
+    public Response create(CreateBanditRequest request) {
         if (request == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -111,6 +130,23 @@ public class BanditsResource {
         ));
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {
+        ImmutableList.Builder<BanditIdentifierResponse> response = new ImmutableList.Builder<>();
+
+        if (bandit.identifiers() != null) {
+            for (BanditIdentifier identifier : bandit.identifiers()) {
+                response.add(BanditIdentifierResponse.create(
+                        identifier.configuration(),
+                        identifier.descriptor().type(),
+                        identifier.descriptor().description(),
+                        identifier.descriptor().matches()
+                ));
+            }
+        }
+
+        return response.build();
     }
 
 }
