@@ -27,9 +27,17 @@ class BanditsStore extends Reflux.Store {
     }
 
     onCreateBandit(name, description, successCallback, errorCallback) {
-        RESTClient.post("/bandits", {name: name, description: description}, function(response) {
+        RESTClient.post("/bandits", {name: name, description: description}, function() {
             successCallback();
-        }, function(response) {
+        }, function() {
+            errorCallback();
+        });
+    }
+
+    onUpdateBandit(id, name, description, successCallback, errorCallback) {
+        RESTClient.put("/bandits/update/" + id, {name: name, description: description}, function() {
+            successCallback();
+        }, function() {
             errorCallback();
         });
     }

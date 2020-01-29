@@ -25,6 +25,7 @@ import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
+import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
 import horse.wtf.nzyme.rest.responses.bandits.BanditIdentifierResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditsListResponse;
@@ -84,7 +85,6 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-
         UUID uuid;
         try {
             uuid = UUID.fromString(id);
@@ -130,6 +130,35 @@ public class BanditsResource {
         ));
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("/update/{uuid}")
+    public Response update(@PathParam("uuid") String id, UpdateBanditRequest request) {
+        if (Strings.isNullOrEmpty(id)) {
+            LOG.warn("Bandit ID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid Bandit UUID", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (request == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (Strings.isNullOrEmpty(request.name()) || Strings.isNullOrEmpty(request.description())) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getContactIdentifier().updateBandit(uuid, request.description(), request.name());
+
+        return Response.status(Response.Status.OK).build();
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {

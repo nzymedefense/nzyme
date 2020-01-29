@@ -44,7 +44,7 @@ class CreateBanditPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-9">
-                        <BanditForm formHandler={this._createBandit} backLink={Routes.BANDITS.INDEX}/>
+                        <BanditForm formHandler={this._createBandit} backLink={Routes.BANDITS.INDEX} submitName="Create Bandit" />
                     </div>
 
                     <div className="col-md-3">

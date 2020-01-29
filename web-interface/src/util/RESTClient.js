@@ -68,17 +68,20 @@ const RESTClient = {
       });
   },
 
-  put(uri, data, successCallback) {
+  put(uri, data, successCallback,  errorCallback = undefined) {
     axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function(response) {
         successCallback(response);
       })
       .catch(function (error) {
-        console.log(error);
-        if (error.response) {
-          notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+        if(errorCallback) {
+          errorCallback();
         } else {
-          notify.show("REST call failed. No response. Is nzyme running?", "error");
+          if (error.response) {
+            notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+          } else {
+            notify.show("REST call failed. No response. Is nzyme running?", "error");
+          }
         }
       });
   },

@@ -95,6 +95,14 @@ public class ContactIdentifier {
         return banditId.get();
     }
 
+    public void updateBandit(UUID uuid, String description, String name) {
+        nzyme.getDatabase().useHandle(handle -> handle.execute(
+                "UPDATE bandits SET name = ?, description = ? WHERE bandit_uuid = ?",
+                name, description, uuid
+        ));
+        this.bandits = null;
+    }
+
     public void removeBandit(UUID uuid) {
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits WHERE bandit_uuid = ?", uuid));
         this.bandits = null;

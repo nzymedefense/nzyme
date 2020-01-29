@@ -5,6 +5,7 @@ import BanditsStore from "../../stores/BanditsStore";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import BeaconRate from "../networks/details/BeaconRate";
 import moment from "moment";
+import Routes from "../../util/Routes";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -55,10 +56,10 @@ class BanditDetailPage extends Reflux.Component {
                     </div>
 
                     <div className="col-md-6">
-                        <dl>
-                            <dt>ID:</dt>
-                            <dd>{bandit.uuid}</dd>
-                        </dl>
+                        <span className="float-right">
+                            <a href={Routes.BANDITS.INDEX} className="btn btn-dark">Back</a>&nbsp;
+                            <a href={Routes.BANDITS.EDIT(this.banditId)} className="btn btn-primary">Edit Bandit</a>
+                        </span>
                     </div>
                 </div>
 

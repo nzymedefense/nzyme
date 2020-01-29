@@ -15,13 +15,27 @@ class BanditForm extends Reflux.Component {
 
         this.state = {
             submitting: false,
-            submitted: false
+            submitted: false,
+            banditId: props.bandit ? props.bandit.uuid : undefined,
+            banditName: props.bandit ? props.bandit.name : "",
+            banditDescription: props.bandit ? props.bandit.description : ""
         };
+
+        this._handleNameInput = this._handleNameInput.bind(this);
+        this._handleDescriptionInput = this._handleDescriptionInput.bind(this);
+    }
+
+    _handleNameInput(e) {
+        this.setState({banditName: e.target.value});
+    }
+
+    _handleDescriptionInput(e) {
+        this.setState({banditDescription: e.target.value});
     }
 
     render() {
         if (this.state.submitted) {
-            return ( <Redirect to={Routes.BANDITS.INDEX} /> );
+            return ( <Redirect to={this.props.backLink} /> );
         }
 
         return (
@@ -29,13 +43,15 @@ class BanditForm extends Reflux.Component {
                 <form onSubmit={this.formHandler}>
                     <div className="form-group">
                         <label htmlFor="name">Name</label>
-                        <input type="text" className="form-control" id="name" placeholder="Enter the name of this bandit" ref={this.nameInput} maxLength={75} required />
+                        <input type="text" className="form-control" id="name" placeholder="Enter the name of this bandit"
+                               ref={this.nameInput} value={this.state.banditName} onChange={this._handleNameInput} maxLength={75} required />
                     </div>
                     <div className="form-group">
                         <label htmlFor="description">Description</label>
-                        <textarea className="form-control" id="description" placeholder="Enter the description of this bandit" ref={this.descriptionInput} required />
+                        <textarea className="form-control" id="description" placeholder="Enter the description of this bandit"
+                                  ref={this.descriptionInput} value={this.state.banditDescription} onChange={this._handleDescriptionInput} required />
                     </div>
-                    <button type="submit" className="btn btn-success" disabled={this.state.submitting}>Create Bandit</button>&nbsp;
+                    <button type="submit" className="btn btn-success" disabled={this.state.submitting}>{this.props.submitName}</button>&nbsp;
                     <a href={this.props.backLink} className="btn btn-dark">Back</a>
                 </form>
             </div>
