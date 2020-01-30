@@ -1,13 +1,31 @@
 import React from 'react';
 import Reflux from 'reflux';
+import BanditsStore from "../../../../stores/BanditsStore";
+import BanditsActions from "../../../../actions/BanditsActions";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import IdentifierTypeSelector from "./IdentifierTypeSelector";
 
 class CreateIdentifierPage extends Reflux.Component {
 
     constructor(props) {
         super(props);
+
+        this.store = BanditsStore;
+
+        this.state = {
+            banditIdentifierTypes: undefined
+        }
+    }
+
+    componentDidMount() {
+        BanditsActions.findAllIdentifierTypes();
     }
 
     render() {
+        if (!this.state.banditIdentifierTypes) {
+            return <LoadingSpinner />;
+        }
+
         return (
             <div>
                 <div className="row">
@@ -18,7 +36,7 @@ class CreateIdentifierPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-9">
-                        form
+                        <IdentifierTypeSelector types={this.state.banditIdentifierTypes} />
                     </div>
 
                     <div className="col-md-3">

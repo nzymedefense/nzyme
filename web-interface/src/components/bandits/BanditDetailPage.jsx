@@ -3,7 +3,6 @@ import Reflux from 'reflux';
 import BanditsActions from "../../actions/BanditsActions";
 import BanditsStore from "../../stores/BanditsStore";
 import LoadingSpinner from "../misc/LoadingSpinner";
-import BeaconRate from "../networks/details/BeaconRate";
 import moment from "moment";
 import Routes from "../../util/Routes";
 import BanditIdentifiersTable from "./BanditIdentifiersTable";

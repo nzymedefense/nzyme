@@ -4,7 +4,8 @@ const BanditsActions = Reflux.createActions([
     "findAll",
     "findOne",
     "createBandit",
-    "updateBandit"
+    "updateBandit",
+    "findAllIdentifierTypes"
 ]);
 
 export default BanditsActions;

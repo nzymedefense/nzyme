@@ -42,6 +42,14 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
+    onFindAllIdentifierTypes() {
+        const self = this;
+
+        RESTClient.get("/bandits/identifiers/types", {}, function(response) {
+            self.setState({banditIdentifierTypes: response.data.types});
+        });
+    }
+
 }
 
 export default BanditsStore;

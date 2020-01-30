@@ -29,6 +29,7 @@ import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
 import horse.wtf.nzyme.rest.responses.bandits.BanditIdentifierResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditsListResponse;
+import horse.wtf.nzyme.rest.responses.bandits.identifiers.IdentifierTypesResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,6 +38,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -159,6 +161,17 @@ public class BanditsResource {
         nzyme.getContactIdentifier().updateBandit(uuid, request.description(), request.name());
 
         return Response.status(Response.Status.OK).build();
+    }
+
+    @GET
+    @Path("/identifiers/types")
+    public Response findAllIdentifierTypes() {
+        List<String> types = Lists.newArrayList();
+        for (BanditIdentifier.TYPE type : BanditIdentifier.TYPE.values()) {
+            types.add(type.toString());
+        }
+
+        return Response.ok(IdentifierTypesResponse.create(types.size(), types)).build();
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {
