@@ -14,7 +14,8 @@ const Routes = {
         INDEX: "/bandits",
         SHOW: (uuid) => `/bandits/show/${uuid}`,
         NEW: "/bandits/new",
-        EDIT: (uuid) => `/bandits/edit/${uuid}`
+        EDIT: (uuid) => `/bandits/edit/${uuid}`,
+        NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
     }
 };
 

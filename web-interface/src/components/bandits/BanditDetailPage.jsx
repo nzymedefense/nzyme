@@ -6,6 +6,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import BeaconRate from "../networks/details/BeaconRate";
 import moment from "moment";
 import Routes from "../../util/Routes";
+import BanditIdentifiersTable from "./BanditIdentifiersTable";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -74,6 +75,28 @@ class BanditDetailPage extends Reflux.Component {
                                 return <span key={key}>{item}<br/></span>
                             })}
                         </div>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <hr />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-9">
+                        <h3>Identifiers</h3>
+                    </div>
+
+                    <div className="col-md-3">
+                        <a href={Routes.BANDITS.NEW_IDENTIFIER(bandit.uuid)} className="btn btn-success float-right">Create Identifier</a>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <BanditIdentifiersTable bandit={bandit}/>
                     </div>
                 </div>
             </div>
