@@ -82,6 +82,7 @@ public class AlertsResource {
             i++;
 
             Alert alert = entry.getValue();
+            alert.setUUID(entry.getKey());
             details.add(AlertDetailsResponse.fromAlert(alert));
         }
 
