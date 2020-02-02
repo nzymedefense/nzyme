@@ -4,6 +4,8 @@ import BanditsStore from "../../../../stores/BanditsStore";
 import BanditsActions from "../../../../actions/BanditsActions";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import IdentifierTypeSelector from "./IdentifierTypeSelector";
+import IdentifierFormProxy from "./forms/IdentifierFormProxy";
+import IdentifierExplanation from "./IdentifierExplanation";
 
 class CreateIdentifierPage extends Reflux.Component {
 
@@ -13,12 +15,26 @@ class CreateIdentifierPage extends Reflux.Component {
         this.store = BanditsStore;
 
         this.state = {
-            banditIdentifierTypes: undefined
-        }
+            banditIdentifierTypes: undefined,
+            selectedType: undefined,
+            configuration: undefined,
+            explanation: undefined
+        };
+
+        this._selectType = this._selectType.bind(this);
+        this._configurationUpdate = this._configurationUpdate.bind(this);
     }
 
     componentDidMount() {
         BanditsActions.findAllIdentifierTypes();
+    }
+
+    _selectType(value) {
+        this.setState({selectedType: value});
+    }
+
+    _configurationUpdate(obj) {
+        this.setState({configuration: obj.configuration, explanation: obj.explanation})
     }
 
     render() {
@@ -36,7 +52,39 @@ class CreateIdentifierPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-9">
-                        <IdentifierTypeSelector types={this.state.banditIdentifierTypes} />
+                        <div className="row">
+                            <div className="col-md-12">
+                                <strong>Step 1)</strong> Select an identifier type:&nbsp;
+                                <IdentifierTypeSelector types={this.state.banditIdentifierTypes} onChange={this._selectType} />
+                            </div>
+                        </div>
+
+                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                            <div className="col-md-12">
+                                <strong>Step 2)</strong> Configure identifier details:
+
+                                <div className="row mt-md-3">
+                                    <div className="col-md-1" />
+                                    <div className="col-md-8">
+                                        <IdentifierFormProxy
+                                            formType={this.state.selectedType}
+                                            configurationUpdate={this._configurationUpdate}/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                            <div className="col-md-12">
+                                <strong>Step 3)</strong> Confirm configuration:
+
+                                <div className="row mt-md-3">
+                                    <div className="col-md-12">
+                                        <IdentifierExplanation explanation={this.state.explanation} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="col-md-3">

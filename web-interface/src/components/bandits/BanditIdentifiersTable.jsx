@@ -4,10 +4,6 @@ import Routes from "../../util/Routes";
 
 class BanditIdentifiersTable extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const bandit = this.props.bandit;
         const identifiers = bandit.identifiers;
