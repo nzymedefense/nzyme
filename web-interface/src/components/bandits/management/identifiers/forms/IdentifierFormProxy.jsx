@@ -1,6 +1,8 @@
 import React from 'react';
 import Reflux from 'reflux';
 import FingerprintIdentifierForm from "./FingerprintIdentifierForm";
+import SignalStrengthIdentifierForm from "./SignalStrengthIdentifierForm";
+import SSIDIdentifierForm from "./SSIDIdentifierForm";
 
 class IdentifierFormProxy extends Reflux.Component {
 
@@ -14,7 +16,13 @@ class IdentifierFormProxy extends Reflux.Component {
 
         if (formType === "SIGNAL_STRENGTH") {
             return (
-                <span>strength</span>
+                <SignalStrengthIdentifierForm configurationUpdate={this.props.configurationUpdate} />
+            )
+        }
+
+        if (formType === "SSID") {
+            return (
+                <SSIDIdentifierForm configurationUpdate={this.props.configurationUpdate} />
             )
         }
 

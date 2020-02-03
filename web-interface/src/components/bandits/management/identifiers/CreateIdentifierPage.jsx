@@ -23,6 +23,7 @@ class CreateIdentifierPage extends Reflux.Component {
 
         this._selectType = this._selectType.bind(this);
         this._configurationUpdate = this._configurationUpdate.bind(this);
+        this._submitForm = this._submitForm.bind(this);
     }
 
     componentDidMount() {
@@ -30,11 +31,17 @@ class CreateIdentifierPage extends Reflux.Component {
     }
 
     _selectType(value) {
-        this.setState({selectedType: value});
+        this.setState({selectedType: value, explanation: "", configuration: {}});
     }
 
     _configurationUpdate(obj) {
-        this.setState({configuration: obj.configuration, explanation: obj.explanation})
+        this.setState({configuration: obj.configuration, explanation: obj.explanation, formReady: obj.ready});
+    }
+
+    _submitForm(e) {
+        e.preventDefault();
+
+        console.log(this.state.configuration);
     }
 
     render() {
@@ -83,6 +90,14 @@ class CreateIdentifierPage extends Reflux.Component {
                                         <IdentifierExplanation explanation={this.state.explanation} />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                            <div className="col-md-12">
+                                <button className="btn btn-success"
+                                        onClick={this._submitForm}
+                                        disabled={!this.state.formReady}>Create Identifier</button>
                             </div>
                         </div>
                     </div>

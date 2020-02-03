@@ -7,21 +7,20 @@ class FingerprintIdentifierForm extends Reflux.Component {
         super(props);
 
         this.state = {
-            fingerprint: undefined,
-            configuration: {},
-            errorMessage: ""
+            fingerprint: "",
+            errorMessage: "",
        };
 
         this._handleUpdate = this._handleUpdate.bind(this);
     }
 
-
     _handleUpdate(e) {
-        const fingerprint = e.target.value;
+        const fingerprint = e.target.value.replace(/ /g,'');
         this.setState({fingerprint: fingerprint, errorMessage: ""});
 
-        if (fingerprint.length !== 0 && fingerprint.length !== 64) {
-            this.setState({errorMessage: "Invalid fingerprint. A valid fingerprint is 64 characters long."})
+        if (fingerprint.length !== 64) {
+            this.setState({errorMessage: "Invalid fingerprint. A valid fingerprint is 64 characters long."});
+            this.props.configurationUpdate({ready: false});
             return;
         }
 
@@ -32,7 +31,8 @@ class FingerprintIdentifierForm extends Reflux.Component {
                 type: "FINGERPRINT",
                 fingerprint: fingerprint
             },
-            explanation: explanation
+            explanation: explanation,
+            ready: true
         });
     }
 
@@ -42,9 +42,9 @@ class FingerprintIdentifierForm extends Reflux.Component {
                 <div className="form-group">
                     <label htmlFor="fingerprint">Fingerprint</label>
                     <input type="text" className="form-control" id="fingerprint" placeholder="Enter the fingerprint of the bandit"
-                           ref={this.fingerprint} value={this.state.fingerprint} maxLength={64} minLength={64} onChange={this._handleUpdate} required />
+                           value={this.state.fingerprint} onChange={this._handleUpdate} required />
 
-                    <span>{this.state.errorMessage}</span>
+                    <span className="text-danger">{this.state.errorMessage}</span>
                 </div>
             </form>
         )

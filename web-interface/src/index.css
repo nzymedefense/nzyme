@@ -33,6 +33,10 @@ hr {
     background-color: #444
 }
 
+button:disabled {
+    cursor: not-allowed;
+}
+
 .container-login {
     height: 100%;
     align-content: center;
