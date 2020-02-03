@@ -54,7 +54,6 @@ class SignalStrengthIdentifierForm extends Reflux.Component {
 
         this.props.configurationUpdate({
             configuration: {
-                type: "SIGNAL_STRENGTH",
                 from: from,
                 to: to
             },

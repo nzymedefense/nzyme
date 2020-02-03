@@ -28,7 +28,6 @@ class FingerprintIdentifierForm extends Reflux.Component {
 
         this.props.configurationUpdate({
             configuration: {
-                type: "FINGERPRINT",
                 fingerprint: fingerprint
             },
             explanation: explanation,

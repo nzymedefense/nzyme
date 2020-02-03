@@ -23,7 +23,6 @@ class SSIDIdentifierForm extends Reflux.Component {
 
         this.props.configurationUpdate({
             configuration: {
-                type: "SSID",
                 ssids: compact(ssids)
             },
             explanation: explanation,

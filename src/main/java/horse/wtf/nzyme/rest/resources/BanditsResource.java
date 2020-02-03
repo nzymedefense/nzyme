@@ -24,6 +24,7 @@ import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
 import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
 import horse.wtf.nzyme.rest.responses.bandits.BanditIdentifierResponse;
@@ -172,6 +173,29 @@ public class BanditsResource {
         }
 
         return Response.ok(IdentifierTypesResponse.create(types.size(), types)).build();
+    }
+
+    @POST
+    @Path("/show/{banditUUID}/identifiers")
+    public Response createIdentifier(@PathParam("banditUUID") String banditUUID, CreateBanditIdentifierRequest request) {
+        if (Strings.isNullOrEmpty(banditUUID)) {
+            LOG.warn("Bandit ID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(banditUUID);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid Bandit UUID", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (request == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        
+        throw new RuntimeException("IMPLEMENT ME.");
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {

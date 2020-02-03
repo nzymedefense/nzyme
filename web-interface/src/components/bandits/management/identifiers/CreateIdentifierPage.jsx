@@ -6,11 +6,14 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import IdentifierTypeSelector from "./IdentifierTypeSelector";
 import IdentifierFormProxy from "./forms/IdentifierFormProxy";
 import IdentifierExplanation from "./IdentifierExplanation";
+import Routes from "../../../../util/Routes";
 
 class CreateIdentifierPage extends Reflux.Component {
 
     constructor(props) {
         super(props);
+
+        this.banditId =  decodeURIComponent(props.match.params.banditUUID);
 
         this.store = BanditsStore;
 
@@ -41,7 +44,8 @@ class CreateIdentifierPage extends Reflux.Component {
     _submitForm(e) {
         e.preventDefault();
 
-        console.log(this.state.configuration);
+        // TODO submit
+        console.log({type: this.state.selectedType, configuration: this.state.configuration});
     }
 
     render() {
@@ -97,7 +101,8 @@ class CreateIdentifierPage extends Reflux.Component {
                             <div className="col-md-12">
                                 <button className="btn btn-success"
                                         onClick={this._submitForm}
-                                        disabled={!this.state.formReady}>Create Identifier</button>
+                                        disabled={!this.state.formReady}>Create Identifier</button>&nbsp;
+                                <a href={Routes.BANDITS.SHOW(this.banditId)} className="btn btn-dark">Back</a>
                             </div>
                         </div>
                     </div>
