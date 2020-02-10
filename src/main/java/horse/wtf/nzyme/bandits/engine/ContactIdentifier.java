@@ -108,6 +108,25 @@ public class ContactIdentifier {
         this.bandits = null;
     }
 
+    public void registerIdentifier(Bandit bandit, BanditIdentifier identifier) {
+        nzyme.getDatabase().useHandle(handle -> {
+            String configuration;
+            try {
+                configuration = nzyme.getObjectMapper().writeValueAsString(identifier.configuration());
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_type, configuration, created_at, updated_at) " +
+                    "VALUES(:bandit_id, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+                    .bind("bandit_id", bandit.databaseId())
+                    .bind("identifier_type", identifier.descriptor().type())
+                    .bind("configuration", configuration)
+                    .execute();
+        });
+        this.bandits = null;
+    }
+
     public Map<UUID, Bandit> getBandits() {
         // Return the cached bandits if they have not been invalidated by a writing function.
         if (bandits != null) {

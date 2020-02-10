@@ -7,13 +7,14 @@ import IdentifierTypeSelector from "./IdentifierTypeSelector";
 import IdentifierFormProxy from "./forms/IdentifierFormProxy";
 import IdentifierExplanation from "./IdentifierExplanation";
 import Routes from "../../../../util/Routes";
+import Redirect from "react-router-dom/Redirect";
 
 class CreateIdentifierPage extends Reflux.Component {
 
     constructor(props) {
         super(props);
 
-        this.banditId =  decodeURIComponent(props.match.params.banditUUID);
+        this.banditId = decodeURIComponent(props.match.params.banditUUID);
 
         this.store = BanditsStore;
 
@@ -21,7 +22,9 @@ class CreateIdentifierPage extends Reflux.Component {
             banditIdentifierTypes: undefined,
             selectedType: undefined,
             configuration: undefined,
-            explanation: undefined
+            explanation: undefined,
+            submitting: false,
+            submitted: false
         };
 
         this._selectType = this._selectType.bind(this);
@@ -43,12 +46,14 @@ class CreateIdentifierPage extends Reflux.Component {
 
     _submitForm(e) {
         e.preventDefault();
-
-        // TODO submit
-        console.log({type: this.state.selectedType, configuration: this.state.configuration});
+        BanditsActions.createIdentifier(this.banditId, {type: this.state.selectedType, configuration: this.state.configuration});
     }
 
     render() {
+        if (this.state.submitted) {
+            return ( <Redirect to={Routes.BANDITS.SHOW(this.banditId)} /> );
+        }
+
         if (!this.state.banditIdentifierTypes) {
             return <LoadingSpinner />;
         }
@@ -101,7 +106,7 @@ class CreateIdentifierPage extends Reflux.Component {
                             <div className="col-md-12">
                                 <button className="btn btn-success"
                                         onClick={this._submitForm}
-                                        disabled={!this.state.formReady}>Create Identifier</button>&nbsp;
+                                        disabled={!this.state.formReady || (this.state.formReady && this.state.submitting)}>Create Identifier</button>&nbsp;
                                 <a href={Routes.BANDITS.SHOW(this.banditId)} className="btn btn-dark">Back</a>
                             </div>
                         </div>

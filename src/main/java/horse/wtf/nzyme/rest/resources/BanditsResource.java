@@ -23,6 +23,8 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
+import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
+import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
@@ -41,6 +43,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/bandits")
@@ -191,11 +194,34 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        Optional<Bandit> bandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        if (!bandit.isPresent()) {
+            LOG.warn("Bandit with UUID <{}> found.", banditUUID);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         if (request == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        
-        throw new RuntimeException("IMPLEMENT ME.");
+
+        BanditIdentifier.TYPE type;
+        try {
+            type = BanditIdentifier.TYPE.valueOf(request.type());
+        }catch (IllegalArgumentException e) {
+            LOG.warn("Invalid identifier type.", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        BanditIdentifier identifier;
+        try {
+            identifier = BanditIdentifierFactory.create(type, request.configuration());
+        } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException e) {
+            LOG.error("Could not create bandit identifier object.", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getContactIdentifier().registerIdentifier(bandit.get(), identifier);
+        return Response.ok().build();
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {

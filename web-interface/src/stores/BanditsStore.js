@@ -2,6 +2,7 @@ import Reflux from 'reflux';
 
 import RESTClient from "../util/RESTClient";
 import BanditsActions from "../actions/BanditsActions";
+import {notify} from "react-notify-toast";
 
 class BanditsStore extends Reflux.Store {
 
@@ -47,6 +48,18 @@ class BanditsStore extends Reflux.Store {
 
         RESTClient.get("/bandits/identifiers/types", {}, function(response) {
             self.setState({banditIdentifierTypes: response.data.types});
+        });
+    }
+
+    onCreateIdentifier(banditUUID, createRequest) {
+        const self = this;
+
+        RESTClient.post("/bandits/show/" + banditUUID + "/identifiers", createRequest, function() {
+            self.setState({submitting: false, submitted: true});
+            notify.show("Identifier created.", "success");
+        }, function() {
+            self.setState({submitting: false, submitted: false});
+            notify.show("Could not create identifier. Please check nzyme log file.", "error");
         });
     }
 

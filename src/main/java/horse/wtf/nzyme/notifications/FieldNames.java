@@ -69,7 +69,7 @@ public class FieldNames {
     public static final String PWND_TOTAL = "pwnd_total";
 
     public static final String SSIDS = "ssids";
-    public static final String FROM = "fromn";
+    public static final String FROM = "from";
     public static final String TO = "to";
     public static final String FINGERPRINT = "fingerprint";
 

@@ -30,7 +30,7 @@ public abstract class CreateBanditIdentifierRequest {
     public abstract Map<String, Object> configuration();
 
     @JsonCreator
-    public static CreateBanditIdentifierRequest create(@JsonProperty("name") String type, @JsonProperty("configuration") Map<String, Object> configuration) {
+    public static CreateBanditIdentifierRequest create(@JsonProperty("type") String type, @JsonProperty("configuration") Map<String, Object> configuration) {
         return builder()
                 .type(type)
                 .configuration(configuration)

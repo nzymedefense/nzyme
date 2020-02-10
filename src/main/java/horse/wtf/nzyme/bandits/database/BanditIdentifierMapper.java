@@ -19,10 +19,7 @@ package horse.wtf.nzyme.bandits.database;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
-import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
-import horse.wtf.nzyme.bandits.identifiers.SSIDIBanditdentifier;
-import horse.wtf.nzyme.bandits.identifiers.SignalStrengthBanditIdentifier;
+import horse.wtf.nzyme.bandits.identifiers.*;
 import horse.wtf.nzyme.notifications.FieldNames;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
@@ -30,7 +27,6 @@ import org.jdbi.v3.core.statement.StatementContext;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 public class BanditIdentifierMapper implements RowMapper<BanditIdentifier> {
@@ -57,21 +53,13 @@ public class BanditIdentifierMapper implements RowMapper<BanditIdentifier> {
             throw new SQLException("Cannot serialize bandit identifier configuration.", e);
         }
 
-        switch (type) {
-            case FINGERPRINT:
-                return new FingerprintBanditIdentifier((String) config.get(FieldNames.FINGERPRINT));
-            case SSID:
-                //noinspection unchecked
-                return new SSIDIBanditdentifier((List<String>) config.get(FieldNames.SSIDS));
-            case SIGNAL_STRENGTH:
-                return new SignalStrengthBanditIdentifier(
-                        (int) config.get(FieldNames.FROM),
-                        (int) config.get(FieldNames.TO)
-                );
-            default:
-                throw new SQLException("No serializer configured for bandit identifier of type [" + type + "].");
+        try {
+            return BanditIdentifierFactory.create(type, config);
+        } catch (BanditIdentifierFactory.NoSerializerException e) {
+            throw new SQLException("No serializer configured for bandit identifier of type [" + type + "].");
+        } catch (BanditIdentifierFactory.MappingException e) {
+            throw new SQLException("Could not map configuration to bandit identifier..");
         }
-
     }
 
 }
