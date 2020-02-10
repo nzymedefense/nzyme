@@ -97,7 +97,7 @@ public class ContactIdentifier {
 
     public void updateBandit(UUID uuid, String description, String name) {
         nzyme.getDatabase().useHandle(handle -> handle.execute(
-                "UPDATE bandits SET name = ?, description = ? WHERE bandit_uuid = ?",
+                "UPDATE bandits SET name = ?, description = ?, updated_at = (current_timestamp at time zone 'UTC') WHERE bandit_uuid = ?",
                 name, description, uuid
         ));
         this.bandits = null;
@@ -117,11 +117,16 @@ public class ContactIdentifier {
                 throw new RuntimeException(e);
             }
 
-            handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_type, configuration, created_at, updated_at) " +
-                    "VALUES(:bandit_id, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+            handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_uuid, identifier_type, configuration, created_at, updated_at) " +
+                    "VALUES(:bandit_id, :identifier_uuid, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
                     .bind("bandit_id", bandit.databaseId())
+                    .bind("identifier_uuid", UUID.randomUUID())
                     .bind("identifier_type", identifier.descriptor().type())
                     .bind("configuration", configuration)
+                    .execute();
+
+            handle.createUpdate("UPDATE bandits SET updated_at = (current_timestamp at time zone 'UTC') WHERE bandit_uuid = :bandit_uuid")
+                    .bind("bandit_uuid",  bandit.uuid())
                     .execute();
         });
         this.bandits = null;

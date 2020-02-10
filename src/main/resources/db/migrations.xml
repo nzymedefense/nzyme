@@ -411,5 +411,13 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="16" author="lennartkoopmann">
+        <addColumn tableName="bandit_identifiers">
+            <column name="identifier_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 
 </databaseChangeLog>

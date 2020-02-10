@@ -17,61 +17,43 @@
 
 package horse.wtf.nzyme.bandits.identifiers;
 
-import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface BanditIdentifier {
+public abstract class BanditIdentifier {
 
-    enum TYPE {
+    public enum TYPE {
         FINGERPRINT,
         SSID,
         SIGNAL_STRENGTH
     }
 
-    Descriptor descriptor();
-    Map<String, Object> configuration();
+    public abstract BanditIdentifierDescriptor descriptor();
+    public abstract Map<String, Object> configuration();
 
-    Optional<Boolean> matches(Dot11DeauthenticationFrame frame);
-    Optional<Boolean> matches(Dot11BeaconFrame frame);
-    Optional<Boolean> matches(Dot11ProbeResponseFrame frame);
+    public abstract Optional<Boolean> matches(Dot11DeauthenticationFrame frame);
+    public abstract Optional<Boolean> matches(Dot11BeaconFrame frame);
+    public abstract Optional<Boolean> matches(Dot11ProbeResponseFrame frame);
 
-    @AutoValue
-    abstract class Descriptor {
+    private Long databaseID;
+    private UUID uuid;
 
-        public abstract TYPE type();
+    public BanditIdentifier(Long databaseID, UUID uuid) {
+        this.databaseID = databaseID;
+        this.uuid = uuid;
+    }
 
-        public abstract String description();
+    public long getDatabaseID() {
+        return databaseID;
+    }
 
-        public abstract String matches();
-
-        public static Descriptor create(TYPE type, String description, String matches) {
-            return builder()
-                    .type(type)
-                    .description(description)
-                    .matches(matches)
-                    .build();
-        }
-
-        public static Builder builder() {
-            return new AutoValue_BanditIdentifier_Descriptor.Builder();
-        }
-
-        @AutoValue.Builder
-        public abstract static class Builder {
-            public abstract Builder type(TYPE type);
-
-            public abstract Builder description(String description);
-
-            public abstract Builder matches(String matches);
-
-            public abstract Descriptor build();
-        }
-
+    public UUID getUuid() {
+        return uuid;
     }
 
 }

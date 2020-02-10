@@ -17,9 +17,9 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testDescriptor() {
-        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b");
+        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, null);
 
-        assertEquals(id.descriptor(), BanditIdentifier.Descriptor.create(
+        assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.FINGERPRINT,
                 "Matches if the frame fingerprint equals the expected fingerprint.",
                 "frame.fingerprint == \"dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b\""
@@ -28,7 +28,7 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testMatchesBeacon() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b");
+        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
 
@@ -38,7 +38,7 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testMatchesProbeResp() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new FingerprintBanditIdentifier("2187f729bf5093a1347acac583c86a1ed72c5ce2df0ed2628cafcee4e78e591d");
+        BanditIdentifier id = new FingerprintBanditIdentifier("2187f729bf5093a1347acac583c86a1ed72c5ce2df0ed2628cafcee4e78e591d", null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP));
 
@@ -48,7 +48,7 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testIgnoresBeacon() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b");
+        BanditIdentifier id = new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_NO_WEP));
 
@@ -58,7 +58,7 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testIgnoresProbeResp() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new FingerprintBanditIdentifier("6586b438a7ef3c680c39983b8f2a079e53962f12b302f5ffeeaf4daad2e8ca33");
+        BanditIdentifier id = new FingerprintBanditIdentifier("6586b438a7ef3c680c39983b8f2a079e53962f12b302f5ffeeaf4daad2e8ca33", null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP));
 
@@ -68,7 +68,7 @@ public class FingerprintBanditIdentifierTest extends BanditIdentifierTest {
 
     @Test
     public void testDoesNotRunForDeauth() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new FingerprintBanditIdentifier("foo");
+        BanditIdentifier id = new FingerprintBanditIdentifier("foo", null, null);
 
         Optional<Boolean> result = id.matches(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP));
 

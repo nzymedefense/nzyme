@@ -19,24 +19,24 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void testDoesNotAllowOutOfRangeFromValue() {
-        new SignalStrengthBanditIdentifier(10, -50);
+        new SignalStrengthBanditIdentifier(10, -50, null, null);
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void testDoesNotAllowOutOfRangeToValue() {
-        new SignalStrengthBanditIdentifier(-15, -110);
+        new SignalStrengthBanditIdentifier(-15, -110, null, null);
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void testDoesNotAllowFromValueLowerThanToValue() {
-        new SignalStrengthBanditIdentifier(-50, -15);
+        new SignalStrengthBanditIdentifier(-50, -15, null, null);
     }
 
     @Test
     public void testDescriptor() {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
-        assertEquals(id.descriptor(), BanditIdentifier.Descriptor.create(
+        assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.SIGNAL_STRENGTH,
                 "Matches if the frame signal strength is within expected range.",
                 "(frame.signal_quality >= -50 AND frame.signal_quality <= -15)"
@@ -45,7 +45,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testMatchesBeacon() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, signal(-35)));
 
@@ -55,7 +55,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testMatchesProbeResp() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, signal(-35)));
 
@@ -65,7 +65,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testMatchesDeauth() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, signal(-35)));
 
@@ -75,7 +75,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testIgnoresBeacon() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, signal(-55)));
 
@@ -85,7 +85,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testIgnoresProbeResp() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, signal(-55)));
 
@@ -95,7 +95,7 @@ public class SignalStrengthBanditIdentifierTest {
 
     @Test
     public void testIgnoresDeauth() throws MalformedFrameException, IllegalRawDataException {
-        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50);
+        BanditIdentifier id = new SignalStrengthBanditIdentifier(-15, -50, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, signal(-55)));
 

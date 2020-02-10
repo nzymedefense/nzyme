@@ -214,7 +214,7 @@ public class BanditsResource {
 
         BanditIdentifier identifier;
         try {
-            identifier = BanditIdentifierFactory.create(type, request.configuration());
+            identifier = BanditIdentifierFactory.create(type, request.configuration(), null, null);
         } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException e) {
             LOG.error("Could not create bandit identifier object.", e);
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -233,7 +233,9 @@ public class BanditsResource {
                         identifier.configuration(),
                         identifier.descriptor().type(),
                         identifier.descriptor().description(),
-                        identifier.descriptor().matches()
+                        identifier.descriptor().matches(),
+                        identifier.getDatabaseID(),
+                        identifier.getUuid()
                 ));
             }
         }

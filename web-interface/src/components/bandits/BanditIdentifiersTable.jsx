@@ -1,6 +1,7 @@
 import React from 'react';
 import Reflux from 'reflux';
 import Routes from "../../util/Routes";
+import BanditIdentifersTableRow from "./BanditIdentifersTableRow";
 
 class BanditIdentifiersTable extends Reflux.Component {
 
@@ -17,7 +18,24 @@ class BanditIdentifiersTable extends Reflux.Component {
         }
 
         return (
-          <span>hi</span>
+            <div className="row">
+                <div className="col-md-12">
+                    <table className="table table-sm table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Matches</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                        </thead>
+                        {Object.keys(identifiers).map(function (key,i) {
+                            return <BanditIdentifersTableRow identifier={identifiers[key]} />
+                        })}
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         );
     }
 

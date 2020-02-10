@@ -25,13 +25,16 @@ import horse.wtf.nzyme.notifications.FieldNames;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-public class SignalStrengthBanditIdentifier implements BanditIdentifier {
+public class SignalStrengthBanditIdentifier extends BanditIdentifier {
 
     private final int from;
     private final int to;
 
-    public SignalStrengthBanditIdentifier(int from, int to) {
+    public SignalStrengthBanditIdentifier(int from, int to, Long databaseId, UUID uuid) {
+        super(databaseId, uuid);
+
         if (from > 0 || to < -100 || from <= to) {
             throw new IllegalArgumentException();
         }
@@ -49,8 +52,8 @@ public class SignalStrengthBanditIdentifier implements BanditIdentifier {
     }
 
     @Override
-    public Descriptor descriptor() {
-        return Descriptor.create(
+    public BanditIdentifierDescriptor descriptor() {
+        return BanditIdentifierDescriptor.create(
                 TYPE.SIGNAL_STRENGTH,
                 "Matches if the frame signal strength is within expected range.",
                 "(frame.signal_quality >= " + to + " AND frame.signal_quality <= " + from + ")"

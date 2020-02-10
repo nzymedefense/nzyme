@@ -25,12 +25,15 @@ import horse.wtf.nzyme.notifications.FieldNames;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-public class FingerprintBanditIdentifier implements BanditIdentifier {
+public class FingerprintBanditIdentifier extends BanditIdentifier {
 
     private final String fingerprint;
 
-    public FingerprintBanditIdentifier(String fingerprint) {
+    public FingerprintBanditIdentifier(String fingerprint, Long databaseID, UUID uuid) {
+        super(databaseID, uuid);
+
         this.fingerprint = fingerprint;
     }
 
@@ -39,8 +42,8 @@ public class FingerprintBanditIdentifier implements BanditIdentifier {
     }
 
     @Override
-    public Descriptor descriptor() {
-        return Descriptor.create(
+    public BanditIdentifierDescriptor descriptor() {
+        return BanditIdentifierDescriptor.create(
                 TYPE.FINGERPRINT,
                 "Matches if the frame fingerprint equals the expected fingerprint.",
                 "frame.fingerprint == \"" + fingerprint + "\""

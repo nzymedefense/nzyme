@@ -17,15 +17,15 @@
 
 package horse.wtf.nzyme.bandits.identifiers;
 
-import com.google.common.base.Strings;
 import horse.wtf.nzyme.notifications.FieldNames;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class BanditIdentifierFactory {
 
-    public static BanditIdentifier create(BanditIdentifier.TYPE type, Map<String, Object> config) throws NoSerializerException, MappingException {
+    public static BanditIdentifier create(BanditIdentifier.TYPE type, Map<String, Object> config, Long databaseID, UUID uuid) throws NoSerializerException, MappingException {
         switch (type) {
             case FINGERPRINT:
                 if (!config.containsKey(FieldNames.FINGERPRINT)) {
@@ -33,7 +33,7 @@ public class BanditIdentifierFactory {
                 }
 
                 try {
-                    return new FingerprintBanditIdentifier((String) config.get(FieldNames.FINGERPRINT));
+                    return new FingerprintBanditIdentifier((String) config.get(FieldNames.FINGERPRINT), databaseID, uuid);
                 } catch(Exception e) {
                     throw new MappingException(config.toString(), e);
                 }
@@ -44,7 +44,7 @@ public class BanditIdentifierFactory {
 
                 try {
                     //noinspection unchecked
-                    return new SSIDIBanditdentifier((List<String>) config.get(FieldNames.SSIDS));
+                    return new SSIDIBanditdentifier((List<String>) config.get(FieldNames.SSIDS), databaseID, uuid);
                 } catch(Exception e) {
                     throw new MappingException(config.toString(), e);
                 }
@@ -56,7 +56,9 @@ public class BanditIdentifierFactory {
                 try {
                     return new SignalStrengthBanditIdentifier(
                             (int) config.get(FieldNames.FROM),
-                            (int) config.get(FieldNames.TO)
+                            (int) config.get(FieldNames.TO),
+                            databaseID,
+                            uuid
                     );
                 } catch(Exception e) {
                     throw new MappingException(config.toString(), e);

@@ -69,7 +69,7 @@ class BanditDetailPage extends Reflux.Component {
 
                         <h3>Description</h3>
 
-                        <div className="alert alert-dark">
+                        <div className="alert alert-primary">
                             {bandit.description.split('\n').map((item, key) => {
                                 return <span key={key}>{item}<br/></span>
                             })}

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.UUID;
 
 public class BanditIdentifierMapper implements RowMapper<BanditIdentifier> {
 
@@ -54,7 +55,7 @@ public class BanditIdentifierMapper implements RowMapper<BanditIdentifier> {
         }
 
         try {
-            return BanditIdentifierFactory.create(type, config);
+            return BanditIdentifierFactory.create(type, config, rs.getLong(FieldNames.ID), UUID.fromString(rs.getString(FieldNames.IDENTIFIER_UUID)));
         } catch (BanditIdentifierFactory.NoSerializerException e) {
             throw new SQLException("No serializer configured for bandit identifier of type [" + type + "].");
         } catch (BanditIdentifierFactory.MappingException e) {

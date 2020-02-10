@@ -20,9 +20,9 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
     public void testDescriptorSingleSSIDs() {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("WTF");
-        }});
+        }}, null, null);
 
-        assertEquals(id.descriptor(), BanditIdentifier.Descriptor.create(
+        assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.SSID,
                 "Matches if the SSID advertised by frame is one of the configured SSIDs. (multiple SSIDs can be entered, separated by comma)",
                 "frame.ssid IN [WTF]"
@@ -34,9 +34,9 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("WTF");
             add("foo");
-        }});
+        }}, null, null);
 
-        assertEquals(id.descriptor(), BanditIdentifier.Descriptor.create(
+        assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.SSID,
                 "Matches if the SSID advertised by frame is one of the configured SSIDs. (multiple SSIDs can be entered, separated by comma)",
                 "frame.ssid IN [WTF,foo]"
@@ -48,7 +48,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("WTF");
             add("foo");
-        }});
+        }}, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
 
@@ -61,7 +61,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("WTF");
             add("foo");
-        }});
+        }}, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_2_PAYLOAD, Frames.PROBE_RESP_2_HEADER, META_NO_WEP));
 
@@ -74,7 +74,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("someSSID");
             add("foo");
-        }});
+        }}, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
 
@@ -87,7 +87,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("someSSID");
             add("foo");
-        }});
+        }}, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP));
 
@@ -100,7 +100,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         BanditIdentifier id = new SSIDIBanditdentifier(new ArrayList<String>() {{
             add("WTF");
             add("foo");
-        }});
+        }}, null, null);
 
         Optional<Boolean> result = id.matches(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP));
 

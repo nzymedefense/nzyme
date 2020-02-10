@@ -162,7 +162,7 @@ public class ContactIdentifierTest {
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
-            add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b"));
+            add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, null));
         }}));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
@@ -178,17 +178,17 @@ public class ContactIdentifierTest {
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
-            add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b"));
+            add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, null));
             add(new SSIDIBanditdentifier(new ArrayList<String>(){{
                 add("WTF");
                 add("another one");
-            }}));
+            }}, null, null));
         }}));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
         UUID bandit2UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
-            add(new SignalStrengthBanditIdentifier(-15, -25));
+            add(new SignalStrengthBanditIdentifier(-15, -25, null, null));
         }}));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 

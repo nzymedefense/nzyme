@@ -23,11 +23,16 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-public class PwnagotchiBanditIdentifier implements BanditIdentifier {
+public class PwnagotchiBanditIdentifier extends BanditIdentifier {
+
+    public PwnagotchiBanditIdentifier(Long databaseID, UUID uuid) {
+        super(databaseID, uuid);
+    }
 
     @Override
-    public Descriptor descriptor() {
+    public BanditIdentifierDescriptor descriptor() {
         return null;
     }
 

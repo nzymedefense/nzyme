@@ -23,24 +23,23 @@ import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-public class SSIDIBanditdentifier implements BanditIdentifier {
+public class SSIDIBanditdentifier extends BanditIdentifier {
 
     private final List<String> ssids;
     private final String listDescription;
 
-    public SSIDIBanditdentifier(List<String> ssids) {
+    public SSIDIBanditdentifier(List<String> ssids, Long databaseID, UUID uuid) {
+        super(databaseID, uuid);
+
         this.ssids = ssids;
         this.listDescription = Joiner.on(",").join(ssids);
     }
 
     @Override
-    public Descriptor descriptor() {
-        return Descriptor.create(
+    public BanditIdentifierDescriptor descriptor() {
+        return BanditIdentifierDescriptor.create(
                 TYPE.SSID,
                 "Matches if the SSID advertised by frame is one of the configured SSIDs. (multiple SSIDs can be entered, separated by comma)",
                 "frame.ssid IN [" + listDescription + "]"
