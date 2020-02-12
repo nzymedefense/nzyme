@@ -22,9 +22,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
-import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
@@ -32,16 +32,16 @@ import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
 import horse.wtf.nzyme.rest.responses.bandits.BanditIdentifierResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
 import horse.wtf.nzyme.rest.responses.bandits.BanditsListResponse;
+import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import horse.wtf.nzyme.rest.responses.bandits.identifiers.IdentifierTypesResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,6 +66,8 @@ public class BanditsResource {
                 continue;
             }
 
+            List<ContactResponse> contacts = buildContactsResponse(x);
+
             bandits.add(BanditResponse.create(
                     x.uuid(),
                     x.databaseId(),
@@ -73,7 +75,10 @@ public class BanditsResource {
                     x.description(),
                     x.createdAt(),
                     x.updatedAt(),
-                    buildIdentifiersResponse(x)
+                    findLastContact(contacts),
+                    anyActiveContact(contacts),
+                    buildIdentifiersResponse(x),
+                    contacts
             ));
         }
 
@@ -104,6 +109,8 @@ public class BanditsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        List<ContactResponse> contacts = buildContactsResponse(bandit);
+
         return Response.ok(BanditResponse.create(
                 bandit.uuid(),
                 bandit.databaseId(),
@@ -111,7 +118,10 @@ public class BanditsResource {
                 bandit.description(),
                 bandit.createdAt(),
                 bandit.updatedAt(),
-                buildIdentifiersResponse(bandit)
+                findLastContact(contacts),
+                anyActiveContact(contacts),
+                buildIdentifiersResponse(bandit),
+                contacts
         )).build();
     }
 
@@ -241,6 +251,48 @@ public class BanditsResource {
         }
 
         return response.build();
+    }
+
+    private List<ContactResponse> buildContactsResponse(Bandit bandit) {
+        ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
+
+        for (Contact contact : nzyme.getContactIdentifier().findContactsOfBandit(bandit)) {
+            response.add(ContactResponse.create(
+                    contact.uuid(),
+                    contact.frameCount(),
+                    contact.firstSeen(),
+                    contact.lastSeen(),
+                    contact.isActive()
+            ));
+        }
+
+        return response.build();
+    }
+
+    private DateTime findLastContact(List<ContactResponse> contacts) {
+        if (contacts.isEmpty()) {
+            return null;
+        }
+
+        DateTime last = contacts.get(0).lastSeen();
+
+        for (ContactResponse contact : contacts) {
+            if (contact.lastSeen().isAfter(last)) {
+                last = contact.lastSeen();
+            }
+        }
+
+        return last;
+    }
+
+    private boolean anyActiveContact(List<ContactResponse> contacts) {
+        for (ContactResponse contact : contacts) {
+            if (contact.isActive()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

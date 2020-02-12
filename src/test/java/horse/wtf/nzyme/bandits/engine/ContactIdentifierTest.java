@@ -17,7 +17,6 @@ import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import org.joda.time.DateTime;
-import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -82,7 +81,7 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         assertEquals(i.getBandits().size(), 0);
-        assertEquals(i.getContacts().size(), 0);
+        assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
@@ -90,7 +89,7 @@ public class ContactIdentifierTest {
         i.registerContact(Contact.create( UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
         assertEquals(i.getBandits().size(), 1);
-        assertEquals(i.getContacts().size(), 1);
+        assertEquals(i.findContacts().size(), 1);
 
         UUID bandit2UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
@@ -98,7 +97,7 @@ public class ContactIdentifierTest {
         i.registerContact(Contact.create(UUID.randomUUID(), bandit2.databaseId(), bandit2, DateTime.now(), DateTime.now(), 0L));
 
         assertEquals(i.getBandits().size(), 2);
-        assertEquals(i.getContacts().size(), 2);
+        assertEquals(i.findContacts().size(), 2);
     }
 
     @Test
@@ -106,7 +105,7 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         assertEquals(i.getBandits().size(), 0);
-        assertEquals(i.getContacts().size(), 0);
+        assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
@@ -114,14 +113,14 @@ public class ContactIdentifierTest {
         i.registerContact(Contact.create(UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
         assertEquals(i.getBandits().size(), 1);
-        assertEquals(i.getContacts().size(), 1);
+        assertEquals(i.findContacts().size(), 1);
 
         UUID bandit2UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
         assertEquals(i.getBandits().size(), 2);
-        assertEquals(i.getContacts().size(), 1);
+        assertEquals(i.findContacts().size(), 1);
 
         assertTrue(i.banditHasActiveContact(bandit1));
         assertFalse(i.banditHasActiveContact(bandit2));
@@ -133,7 +132,7 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         assertEquals(i.getBandits().size(), 0);
-        assertEquals(i.getContacts().size(), 0);
+        assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
@@ -142,18 +141,18 @@ public class ContactIdentifierTest {
         i.registerContact(Contact.create(contact1UUID, bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
         assertEquals(i.getBandits().size(), 1);
-        assertEquals(i.getContacts().size(), 1);
+        assertEquals(i.findContacts().size(), 1);
 
-        assertEquals(i.getContacts().get(contact1UUID).frameCount().longValue(), 0);
+        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 0);
 
         i.registerContactFrame(bandit1, new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
-        assertEquals(i.getContacts().get(contact1UUID).frameCount().longValue(), 1);
+        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 1);
 
         i.registerContactFrame(bandit1, new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP));
-        assertEquals(i.getContacts().get(contact1UUID).frameCount().longValue(), 2);
+        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 2);
 
         i.registerContactFrame(bandit1, new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP));
-        assertEquals(i.getContacts().get(contact1UUID).frameCount().longValue(), 3);
+        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 3);
     }
 
     @Test

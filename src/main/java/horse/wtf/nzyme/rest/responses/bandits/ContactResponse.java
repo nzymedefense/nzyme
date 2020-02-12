@@ -15,69 +15,59 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.bandits;
+package horse.wtf.nzyme.rest.responses.bandits;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue
-public abstract class Contact {
+public abstract class ContactResponse {
 
+    @JsonProperty
     public abstract UUID uuid();
-    public abstract DateTime firstSeen();
-    public abstract DateTime lastSeen();
+
+    @JsonProperty("frame_count")
     public abstract Long frameCount();
 
-    @Nullable
-    public abstract Long banditId();
+    @JsonProperty("first_seen")
+    public abstract DateTime firstSeen();
 
-    @Nullable
-    public abstract Bandit bandit();
+    @JsonProperty("last_seen")
+    public abstract DateTime lastSeen();
 
-    public boolean isActive() {
-        return lastSeen().isAfter(DateTime.now().minusMinutes(ContactIdentifier.ACTIVE_MINUTES));
-    }
+    @JsonProperty("is_active")
+    public abstract Boolean isActive();
 
-    public boolean isStationary() {
-        // TODO
-        return true;
-    }
-
-    public static Contact create(UUID uuid, Long banditId, Bandit bandit, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
+    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive) {
         return builder()
                 .uuid(uuid)
-                .banditId(banditId)
-                .bandit(bandit)
+                .frameCount(frameCount)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
-                .frameCount(frameCount)
+                .isActive(isActive)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_Contact.Builder();
+        return new AutoValue_ContactResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder bandit(Bandit bandit);
+        public abstract Builder frameCount(Long frameCount);
 
         public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract Builder frameCount(Long frameCount);
+        public abstract Builder isActive(Boolean isActive);
 
-        public abstract Builder banditId(Long banditId);
-
-        public abstract Contact build();
+        public abstract ContactResponse build();
     }
+
 }

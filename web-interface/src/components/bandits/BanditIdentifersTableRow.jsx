@@ -5,24 +5,18 @@ import Routes from "../../util/Routes";
 
 class BanditIdentifersTableRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            identifier: this.props.identifier
-        }
-    }
-
     render() {
-        const identifier = this.state.identifier;
+        const identifier = this.props.identifier;
 
         return (
             <tr>
                 <td>{identifier.type}</td>
                 <td>{identifier.matches}</td>
                 <td>
-                    <a className="btn btn-sm btn-secondary">Edit</a>&nbsp;
-                    <a className="btn btn-sm btn-danger">Delete</a>
+                    <span className="float-right">
+                        <a className="btn btn-sm btn-secondary">Edit</a>&nbsp;
+                        <a className="btn btn-sm btn-danger">Delete</a>
+                    </span>
                 </td>
             </tr>
         );

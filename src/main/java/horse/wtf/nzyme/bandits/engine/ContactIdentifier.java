@@ -43,7 +43,7 @@ public class ContactIdentifier {
 
     private static final Logger LOG = LogManager.getLogger(ContactIdentifier.class);
 
-    private static final int ACTIVE_MINUTES = 10;
+    public static final int ACTIVE_MINUTES = 10;
 
     private final Nzyme nzyme;
 
@@ -214,8 +214,6 @@ public class ContactIdentifier {
         return count > 0;
     }
 
-    // TODO: this might lead to heavy cache invalidation and we might have to rethink caching in general.
-    //       same applies to fast UPDATES here
     public void registerContactFrame(Bandit bandit, Dot11Frame frame) {
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1, " +
                 "last_seen = (current_timestamp at time zone 'UTC') " +
@@ -224,10 +222,9 @@ public class ContactIdentifier {
                 .bind("bandit_id", bandit.databaseId())
                 .execute()
         );
-        this.contacts = null;
     }
 
-    public Map<UUID, Contact> getContacts() {
+    public Map<UUID, Contact> findContacts() {
         if (contacts != null) {
             return contacts;
         }
@@ -252,6 +249,15 @@ public class ContactIdentifier {
 
         this.contacts = result.build();
         return this.contacts;
+    }
+
+    public List<Contact> findContactsOfBandit(Bandit bandit) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM contacts WHERE bandit_id = :bandit_id ORDER BY last_seen DESC LIMIT 50")
+                        .bind("bandit_id", bandit.databaseId())
+                        .mapTo(Contact.class)
+                        .list()
+        );
     }
 
     public void identify(Dot11Frame frame) {
@@ -286,7 +292,7 @@ public class ContactIdentifier {
 
                 // If no identifier missed, this is a bandit frame.
                 if (!anyMissed) {
-                    // Create new contact if this is the first frame.s
+                    // Create new contact if this is the first frame.
                     if (!banditHasActiveContact(bandit)) {
                         LOG.debug("New contact for bandit [{}].", bandit);
                         DateTime now = DateTime.now();

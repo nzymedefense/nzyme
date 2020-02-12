@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import moment from "moment";
 import Routes from "../../util/Routes";
 
-class BanditRow extends Reflux.Component {
+class BanditsTableRow extends Reflux.Component {
 
     constructor(props) {
         super(props);
@@ -19,7 +19,10 @@ class BanditRow extends Reflux.Component {
         return (
             <tr>
                 <td><a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a></td>
-                <td>never</td>
+                <td>{bandit.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
+                <td title={bandit.last_contact ? moment(bandit.last_contact).format() : "never"}>
+                    {bandit.last_contact ? moment(bandit.last_contact).fromNow() : "never"}
+                </td>
                 <td title={moment(bandit.created_at).format()}>{moment(bandit.created_at).fromNow()}</td>
                 <td title={moment(bandit.updated_at).format()}>{moment(bandit.updated_at).fromNow()}</td>
                 <td>{bandit.uuid.substr(0, 8)}</td>
@@ -29,4 +32,4 @@ class BanditRow extends Reflux.Component {
 
 }
 
-export default BanditRow;
+export default BanditsTableRow;

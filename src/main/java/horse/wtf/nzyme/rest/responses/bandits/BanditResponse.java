@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,10 +46,20 @@ public abstract class BanditResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
+    @JsonProperty("last_contact")
+    @Nullable
+    public abstract DateTime lastContact();
+
+    @JsonProperty("is_active")
+    public abstract Boolean isActive();
+
     @JsonProperty
     public abstract List<BanditIdentifierResponse> identifiers();
 
-    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifierResponse> identifiers) {
+    @JsonProperty
+    public abstract List<ContactResponse> contacts();
+
+    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, DateTime lastContact, Boolean isActive, List<BanditIdentifierResponse> identifiers, List<ContactResponse> contacts) {
         return builder()
                 .uuid(uuid)
                 .databaseId(databaseId)
@@ -56,7 +67,10 @@ public abstract class BanditResponse {
                 .description(description)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
+                .lastContact(lastContact)
+                .isActive(isActive)
                 .identifiers(identifiers)
+                .contacts(contacts)
                 .build();
     }
 
@@ -78,7 +92,13 @@ public abstract class BanditResponse {
 
         public abstract Builder updatedAt(DateTime updatedAt);
 
+        public abstract Builder lastContact(DateTime lastContact);
+
+        public abstract Builder isActive(Boolean isActive);
+
         public abstract Builder identifiers(List<BanditIdentifierResponse> identifiers);
+
+        public abstract Builder contacts(List<ContactResponse> contacts);
 
         public abstract BanditResponse build();
     }

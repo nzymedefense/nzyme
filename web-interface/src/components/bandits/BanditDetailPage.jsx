@@ -6,6 +6,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Routes from "../../util/Routes";
 import BanditIdentifiersTable from "./BanditIdentifiersTable";
+import ContactsTable from "./ContactsTable";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -22,7 +23,12 @@ class BanditDetailPage extends Reflux.Component {
     }
 
     componentDidMount() {
-        BanditsActions.findOne(this.banditId);
+        const banditId = this.banditId
+        BanditsActions.findOne(banditId);
+
+        setInterval(function () {
+            BanditsActions.findOne(banditId);
+        }, 15000);
     }
 
     render() {
@@ -95,7 +101,19 @@ class BanditDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <BanditIdentifiersTable bandit={bandit}/>
+                        <BanditIdentifiersTable bandit={bandit} />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <h3>Contacts <small>last 50</small></h3>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <ContactsTable bandit={bandit} />
                     </div>
                 </div>
             </div>

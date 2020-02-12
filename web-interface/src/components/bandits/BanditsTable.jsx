@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
 import BanditsActions from "../../actions/BanditsActions";
 import BanditsStore from "../../stores/BanditsStore";
-import BanditRow from "./BanditRow";
+import BanditsTableRow from "./BanditsTableRow";
 import Routes from "../../util/Routes";
 
 class BanditsTable extends Reflux.Component {
@@ -44,6 +44,7 @@ class BanditsTable extends Reflux.Component {
                         <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Active</th>
                             <th>Last Contact</th>
                             <th>Created</th>
                             <th>Last Updated</th>
@@ -51,7 +52,7 @@ class BanditsTable extends Reflux.Component {
                         </tr>
                         </thead>
                         {Object.keys(bandits).map(function (key,i) {
-                            return <BanditRow bandit={bandits[key]} />
+                            return <BanditsTableRow bandit={bandits[key]} />
                         })}
                         <tbody>
                         </tbody>
