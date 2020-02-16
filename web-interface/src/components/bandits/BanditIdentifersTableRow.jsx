@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import moment from "moment";
 import Routes from "../../util/Routes";
 
-class BanditIdentifersTableRow extends Reflux.Component {
+class BanditIdentifiersTableRow extends Reflux.Component {
 
     render() {
         const identifier = this.props.identifier;
@@ -15,7 +15,7 @@ class BanditIdentifersTableRow extends Reflux.Component {
                 <td>
                     <span className="float-right">
                         <a className="btn btn-sm btn-secondary">Edit</a>&nbsp;
-                        <a className="btn btn-sm btn-danger">Delete</a>
+                        <a className="btn btn-sm btn-danger" onClick={() => this.props.onDelete(identifier)}>Delete</a>
                     </span>
                 </td>
             </tr>
@@ -24,4 +24,4 @@ class BanditIdentifersTableRow extends Reflux.Component {
 
 }
 
-export default BanditIdentifersTableRow;
+export default BanditIdentifiersTableRow;

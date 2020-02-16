@@ -19,16 +19,29 @@ class BanditDetailPage extends Reflux.Component {
 
         this.state = {
             bandit: undefined
-        }
+        };
+
+        this._loadBandit = this._loadBandit.bind(this);
+        this._invalidateIdentifiers = this._invalidateIdentifiers.bind(this);
     }
 
     componentDidMount() {
-        const banditId = this.banditId
-        BanditsActions.findOne(banditId);
+        const self = this;
+        self._loadBandit();
 
         setInterval(function () {
-            BanditsActions.findOne(banditId);
+            self._loadBandit();
         }, 15000);
+    }
+
+    _invalidateIdentifiers() {
+        this.setState({bandit: undefined});
+        this._loadBandit();
+    }
+
+
+    _loadBandit() {
+        BanditsActions.findOne(this.banditId);
     }
 
     render() {
@@ -101,7 +114,7 @@ class BanditDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <BanditIdentifiersTable bandit={bandit} />
+                        <BanditIdentifiersTable bandit={bandit} onInvalidateIdentifiers={this._invalidateIdentifiers} />
                     </div>
                 </div>
 

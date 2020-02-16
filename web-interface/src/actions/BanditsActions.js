@@ -6,7 +6,8 @@ const BanditsActions = Reflux.createActions([
     "createBandit",
     "updateBandit",
     "findAllIdentifierTypes",
-    "createIdentifier"
+    "createIdentifier",
+    "deleteIdentifier"
 ]);
 
 export default BanditsActions;

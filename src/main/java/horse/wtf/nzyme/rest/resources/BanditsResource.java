@@ -206,7 +206,7 @@ public class BanditsResource {
 
         Optional<Bandit> bandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
         if (!bandit.isPresent()) {
-            LOG.warn("Bandit with UUID <{}> found.", banditUUID);
+            LOG.warn("Bandit with UUID <{}> not found.", banditUUID);
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -231,6 +231,34 @@ public class BanditsResource {
         }
 
         nzyme.getContactIdentifier().registerIdentifier(bandit.get(), identifier);
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/show/{banditUUID}/identifiers/{identifierUUID}")
+    public Response deleteIdentifier(@PathParam("banditUUID") String bUUID, @PathParam("identifierUUID") String iUUID) {
+        if (Strings.isNullOrEmpty(bUUID) || Strings.isNullOrEmpty(iUUID)) {
+            LOG.warn("UUID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID banditUUID;
+        UUID identifierUUID;
+        try {
+            banditUUID = UUID.fromString(bUUID);
+            identifierUUID = UUID.fromString(iUUID);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid UUID", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (!nzyme.getContactIdentifier().findBanditByUUID(banditUUID).isPresent()) {
+            LOG.warn("Bandit with UUID <{}> not found.", banditUUID);
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getContactIdentifier().removeIdentifier(identifierUUID);
+
         return Response.ok().build();
     }
 

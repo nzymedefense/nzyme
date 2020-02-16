@@ -1,11 +1,33 @@
 import React from 'react';
 import Reflux from 'reflux';
 import Routes from "../../util/Routes";
-import BanditIdentifersTableRow from "./BanditIdentifersTableRow";
+import BanditIdentifiersTableRow from "./BanditIdentifersTableRow";
+import BanditsStore from "../../stores/BanditsStore";
+import BanditsActions from "../../actions/BanditsActions";
+import {notify} from "react-notify-toast";
 
 class BanditIdentifiersTable extends Reflux.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.store = BanditsStore;
+
+        this._onDeleteIdentifier = this._onDeleteIdentifier.bind(this);
+    }
+
+
+    _onDeleteIdentifier(identifier) {
+        const self = this;
+        BanditsActions.deleteIdentifier(this.props.bandit.uuid, identifier.uuid, function() {
+            notify.show("Identifier deleted.", "success");
+            self.props.onInvalidateIdentifiers();
+        });
+    }
+
     render() {
+        const self = this;
+
         const bandit = this.props.bandit;
         const identifiers = bandit.identifiers;
 
@@ -29,7 +51,7 @@ class BanditIdentifiersTable extends Reflux.Component {
                         </tr>
                         </thead>
                         {Object.keys(identifiers).map(function (key,i) {
-                            return <BanditIdentifersTableRow identifier={identifiers[key]} />
+                            return <BanditIdentifiersTableRow identifier={identifiers[key]} onDelete={self._onDeleteIdentifier} />
                         })}
                         <tbody>
                         </tbody>

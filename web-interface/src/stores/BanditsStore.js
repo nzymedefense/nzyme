@@ -63,6 +63,15 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
+    onDeleteIdentifier(banditUUID, identifierUUID, successCallback) {
+        const self = this;
+
+        RESTClient.delete("/bandits/show/" + banditUUID + "/identifiers/" + identifierUUID, successCallback, function() {
+            self.setState({submitting: false, submitted: false});
+            notify.show("Could not delete identifier. Please check nzyme log file.", "error");
+        });
+    }
+
 }
 
 export default BanditsStore;

@@ -132,6 +132,12 @@ public class ContactIdentifier {
         this.bandits = null;
     }
 
+    public void removeIdentifier(UUID uuid) {
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandit_identifiers WHERE identifier_uuid = ?", uuid));
+        this.bandits = null;
+
+    }
+
     public Map<UUID, Bandit> getBandits() {
         // Return the cached bandits if they have not been invalidated by a writing function.
         if (bandits != null) {
@@ -209,8 +215,6 @@ public class ContactIdentifier {
                 .bind("bandit_id", bandit.databaseId())
                 .mapTo(Long.class)
                 .first());
-
-        this.contacts = null;
         return count > 0;
     }
 
