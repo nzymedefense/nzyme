@@ -54,8 +54,8 @@ class SignalStrengthIdentifierForm extends Reflux.Component {
 
         this.props.configurationUpdate({
             configuration: {
-                from: parseInt(from),
-                to: parseInt(to)
+                from: parseInt(from, 10),
+                to: parseInt(to, 10)
             },
             explanation: explanation,
             ready: true
@@ -64,7 +64,7 @@ class SignalStrengthIdentifierForm extends Reflux.Component {
 
     render() {
         return (
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                     <label htmlFor="from">From</label>
                     <input type="number" className="form-control" id="from" value={this.state.from} onChange={this._handleFromUpdate} required />

@@ -1,7 +1,5 @@
 import React from 'react';
 import Reflux from 'reflux';
-import moment from "moment";
-import Routes from "../../util/Routes";
 
 class BanditIdentifiersTableRow extends Reflux.Component {
 

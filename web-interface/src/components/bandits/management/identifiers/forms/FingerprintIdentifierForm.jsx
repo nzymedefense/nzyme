@@ -37,7 +37,7 @@ class FingerprintIdentifierForm extends Reflux.Component {
 
     render() {
         return (
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                     <label htmlFor="fingerprint">Fingerprint</label>
                     <input type="text" className="form-control" id="fingerprint" placeholder="Enter the fingerprint of the bandit"

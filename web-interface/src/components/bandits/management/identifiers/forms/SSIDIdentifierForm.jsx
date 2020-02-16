@@ -32,7 +32,7 @@ class SSIDIdentifierForm extends Reflux.Component {
 
     render() {
         return (
-            <form>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                     <label htmlFor="ssids">SSIDs</label>
                     <input type="text" className="form-control" id="ssids" placeholder="Enter the SSID (separate multiple SSIDs with a comma)"
