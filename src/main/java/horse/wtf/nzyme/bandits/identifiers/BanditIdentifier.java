@@ -30,7 +30,8 @@ public abstract class BanditIdentifier {
     public enum TYPE {
         FINGERPRINT,
         SSID,
-        SIGNAL_STRENGTH
+        SIGNAL_STRENGTH,
+        PWNAGOTCHI
     }
 
     public abstract BanditIdentifierDescriptor descriptor();

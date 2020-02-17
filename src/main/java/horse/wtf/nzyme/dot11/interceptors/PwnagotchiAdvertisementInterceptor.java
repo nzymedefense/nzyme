@@ -83,7 +83,7 @@ public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor
                     break;
                 }
             } catch (Exception e) {
-                LOG.debug("Could not parse 802.11 tagged parameters for pwnagotchi avertisement detection.", e);
+                LOG.debug("Could not parse 802.11 tagged parameters for pwnagotchi advertisement detection.", e);
             }
         }
 

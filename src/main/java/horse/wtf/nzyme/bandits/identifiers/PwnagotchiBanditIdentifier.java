@@ -20,25 +20,37 @@ package horse.wtf.nzyme.bandits.identifiers;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import horse.wtf.nzyme.notifications.FieldNames;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public class PwnagotchiBanditIdentifier extends BanditIdentifier {
 
-    public PwnagotchiBanditIdentifier(Long databaseID, UUID uuid) {
+    private final String name;
+
+    public PwnagotchiBanditIdentifier(String name, Long databaseID, UUID uuid) {
         super(databaseID, uuid);
+
+        this.name = name;
     }
 
     @Override
     public BanditIdentifierDescriptor descriptor() {
-        return null;
+        return BanditIdentifierDescriptor.create(
+                TYPE.PWNAGOTCHI,
+                "Matches if the frame is a Pwnagotchi advertisement for the expected Pwnagotchi name.",
+                "frame.pwnagotchi_name == \"" + name + "\""
+        );
     }
 
     @Override
     public Map<String, Object> configuration() {
-        return null;
+        return new HashMap<String, Object>(){{
+            put(FieldNames.NAME, name);
+        }};
     }
 
     @Override
@@ -48,7 +60,7 @@ public class PwnagotchiBanditIdentifier extends BanditIdentifier {
 
     @Override
     public Optional<Boolean> matches(Dot11BeaconFrame frame) {
-        return Optional.empty();
+        // TODO: extract pwnagotchi advertisement extractor into a class, tests, run here and in interceptor
     }
 
     @Override

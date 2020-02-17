@@ -22,7 +22,7 @@ class ContactsTable extends Reflux.Component {
                     <table className="table table-sm table-hover table-striped">
                         <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Track</th>
                             <th>Active</th>
                             <th>Frame Count</th>
                             <th>First Seen</th>
