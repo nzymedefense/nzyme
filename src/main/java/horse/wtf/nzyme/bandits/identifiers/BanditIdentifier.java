@@ -31,7 +31,7 @@ public abstract class BanditIdentifier {
         FINGERPRINT,
         SSID,
         SIGNAL_STRENGTH,
-        PWNAGOTCHI
+        PWNAGOTCHI_IDENTITY
     }
 
     public abstract BanditIdentifierDescriptor descriptor();
