@@ -23,8 +23,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntry;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
 import horse.wtf.nzyme.notifications.FieldNames;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -36,7 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Alert {
-
+    
     public enum TYPE_WIDE {
         UNEXPECTED_BSSID,
         UNEXPECTED_SSID,
@@ -312,20 +315,21 @@ public abstract class Alert {
                         db.firstSeen(),
                         (String) fields.get(FieldNames.SSID),
                         (String) fields.get(FieldNames.BSSID),
-                        (Float) fields.get(FieldNames.BEACON_RATE),
+                        (Double) fields.get(FieldNames.BEACON_RATE),
                         (Integer) fields.get(FieldNames.BEACON_RATE_THRESHOLD)
                 );
                 break;
             case PROBE_RESPONSE_TRAP_1:
                 throw new RuntimeException("NOT IMPLEMENTED.");
             case MULTIPLE_SIGNAL_TRACKS:
-                return MultipleTrackAlert.create(
+                alert = MultipleTrackAlert.create(
                         db.firstSeen(),
                         (String) fields.get(FieldNames.SSID),
                         (String) fields.get(FieldNames.BSSID),
                         (Integer) fields.get(FieldNames.CHANNEL),
                         (Integer) fields.get(FieldNames.TRACK_COUNT)
                 );
+                break;
             case PWNAGOTCHI_ADVERTISEMENT:
                 alert = PwnagotchiAdvertisementAlert.create(
                         db.firstSeen(),
@@ -349,6 +353,7 @@ public abstract class Alert {
 
         alert.setLastSeen(db.lastSeen());
         alert.setUUID(db.uuid());
+
         return alert;
     }
 
