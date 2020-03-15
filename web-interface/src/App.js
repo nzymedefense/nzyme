@@ -66,8 +66,8 @@ class App extends Reflux.Component {
         }, 10000);
 
         if(App._isAuthenticated()) {
-            AlertsActions.findActive(1);
-            setInterval(AlertsActions.findActive, 5000);
+            AlertsActions.findActiveCount();
+            setInterval(AlertsActions.findActiveCount, 5000);
         }
     }
 
@@ -90,7 +90,7 @@ class App extends Reflux.Component {
                 return (
                     <Router>
                         <div className="nzyme">
-                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts.length > 0} />
+                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
 
                             <div className="container">
                                 <Notifications/>

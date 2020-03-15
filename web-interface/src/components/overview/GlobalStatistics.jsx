@@ -29,11 +29,14 @@ class GlobalStatistics extends Reflux.Component {
   }
 
   componentDidMount() {
+    this._loadData();
+
+    setInterval(this._loadData, 5000);
+  }
+
+  _loadData() {
     StatisticsActions.findGlobal();
     AlertsActions.findActive(GlobalStatistics.ALERT_LIMIT);
-
-    setInterval(StatisticsActions.findGlobal, 5000);
-    setInterval(AlertsActions.findActive, 5000);
   }
 
   render() {

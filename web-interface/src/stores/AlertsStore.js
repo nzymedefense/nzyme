@@ -18,6 +18,14 @@ class AlertsStore extends Reflux.Store {
     });
   }
 
+  onFindActiveCount() {
+    let self = this;
+
+    RESTClient.get("/alerts/active", {limit: 9999}, function(response) {
+      self.setState({active_alerts_count: response.data.alerts.length});
+    });
+  }
+
   onFindOne(id) {
     let self = this;
 
