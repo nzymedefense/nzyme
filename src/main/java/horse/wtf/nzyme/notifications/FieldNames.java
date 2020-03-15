@@ -54,7 +54,9 @@ public class FieldNames {
     public static final String ANTENNA_SIGNAL = "antenna_signal";
     public static final String TRACK_COUNT = "track_count";
 
+    public static final String BANDIT_UUID = "bandit_uuid";
     public static final String BANDIT_NAMES = "bandit_names";
+    public static final String BANDIT_NAME = "bandit_name";
     public static final String BANDIT_FINGERPRINT = "bandit_fingerprint";
 
     public static final String ENCOUNTERED_SECURITY = "encountered_security";

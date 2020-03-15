@@ -32,6 +32,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,7 +71,8 @@ public abstract class Alert {
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
-        PWNAGOTCHI_ADVERTISEMENT
+        PWNAGOTCHI_ADVERTISEMENT,
+        BANDIT_CONTACT
     }
 
     private final Subsystem subsystem;
@@ -344,6 +346,14 @@ public abstract class Alert {
                         (Integer) fields.get(FieldNames.CHANNEL),
                         (Integer) fields.get(FieldNames.FREQUENCY),
                         (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
+                        db.frameCount()
+                );
+                break;
+            case BANDIT_CONTACT:
+                alert = BanditContactAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.BANDIT_NAME),
+                        (String) fields.get(FieldNames.BANDIT_UUID),
                         db.frameCount()
                 );
                 break;
