@@ -63,6 +63,16 @@ public class BanditIdentifierFactory {
                 } catch(Exception e) {
                     throw new MappingException(config.toString(), e);
                 }
+            case PWNAGOTCHI_IDENTITY:
+                if (!config.containsKey(FieldNames.IDENTITY)) {
+                    throw new MappingException(config.toString());
+                }
+
+                try {
+                    return new PwnagotchiBanditIdentifier((String) config.get(FieldNames.IDENTITY), databaseID, uuid);
+                } catch(Exception e) {
+                    throw new MappingException(config.toString(), e);
+                }
             default:
                 throw new NoSerializerException();
         }

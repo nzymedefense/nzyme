@@ -3,6 +3,7 @@ import Reflux from 'reflux';
 import FingerprintIdentifierForm from "./FingerprintIdentifierForm";
 import SignalStrengthIdentifierForm from "./SignalStrengthIdentifierForm";
 import SSIDIdentifierForm from "./SSIDIdentifierForm";
+import PwnagotchiIdentityForm from "./PwnagotchiIdentityForm";
 
 class IdentifierFormProxy extends Reflux.Component {
 
@@ -23,6 +24,12 @@ class IdentifierFormProxy extends Reflux.Component {
         if (formType === "SSID") {
             return (
                 <SSIDIdentifierForm configurationUpdate={this.props.configurationUpdate} />
+            )
+        }
+
+        if (formType === "PWNAGOTCHI_IDENTITY") {
+            return (
+                <PwnagotchiIdentityForm configurationUpdate={this.props.configurationUpdate} />
             )
         }
 
