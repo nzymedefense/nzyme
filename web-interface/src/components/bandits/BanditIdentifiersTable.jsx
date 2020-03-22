@@ -18,6 +18,10 @@ class BanditIdentifiersTable extends Reflux.Component {
 
 
     _onDeleteIdentifier(identifier) {
+        if (!window.confirm("Delete identifier?")) {
+            return;
+        }
+
         const self = this;
         BanditsActions.deleteIdentifier(this.props.bandit.uuid, identifier.uuid, function() {
             notify.show("Identifier deleted.", "success");

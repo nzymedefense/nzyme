@@ -12,8 +12,7 @@ class BanditIdentifiersTableRow extends Reflux.Component {
                 <td>{identifier.matches}</td>
                 <td>
                     <span className="float-right">
-                        <a className="btn btn-sm btn-secondary">Edit</a>&nbsp;
-                        <a className="btn btn-sm btn-danger" onClick={() => this.props.onDelete(identifier)}>Delete</a>
+                        <button className="btn btn-sm btn-danger" onClick={() => this.props.onDelete(identifier)}>Delete</button>
                     </span>
                 </td>
             </tr>

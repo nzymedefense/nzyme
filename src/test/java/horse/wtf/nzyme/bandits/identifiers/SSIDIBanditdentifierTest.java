@@ -25,7 +25,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.SSID,
                 "Matches if the SSID advertised by frame is one of the configured SSIDs. (multiple SSIDs can be entered, separated by comma)",
-                "frame.ssid IN [WTF]"
+                "frame.ssid IN [\"WTF\"]"
         ));
     }
 
@@ -39,7 +39,7 @@ public class SSIDIBanditdentifierTest extends BanditIdentifierTest {
         assertEquals(id.descriptor(), BanditIdentifierDescriptor.create(
                 BanditIdentifier.TYPE.SSID,
                 "Matches if the SSID advertised by frame is one of the configured SSIDs. (multiple SSIDs can be entered, separated by comma)",
-                "frame.ssid IN [WTF,foo]"
+                "frame.ssid IN [\"WTF\",\"foo\"]"
         ));
     }
 

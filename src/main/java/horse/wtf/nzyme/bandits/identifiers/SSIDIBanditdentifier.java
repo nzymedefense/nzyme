@@ -24,6 +24,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SSIDIBanditdentifier extends BanditIdentifier {
 
@@ -34,7 +35,9 @@ public class SSIDIBanditdentifier extends BanditIdentifier {
         super(databaseID, uuid);
 
         this.ssids = ssids;
-        this.listDescription = Joiner.on(",").join(ssids);
+        this.listDescription = ssids.stream()
+                .map(s -> "\"" + s + "\"" )
+                .collect(Collectors.joining(","));
     }
 
     @Override
