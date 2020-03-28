@@ -80,9 +80,10 @@ public class ContactIdentifier {
                         throw new RuntimeException(e);
                     }
 
-                    handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_type, configuration, created_at, updated_at) " +
-                            "VALUES(:bandit_id, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+                    handle.createUpdate("INSERT INTO bandit_identifiers(bandit_id, identifier_uuid, identifier_type, configuration, created_at, updated_at) " +
+                            "VALUES(:bandit_id, :identifier_uuid, :identifier_type, :configuration, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
                             .bind("bandit_id", banditId.get())
+                            .bind("identifier_uuid", identifier.getUuid())
                             .bind("identifier_type", identifier.descriptor().type())
                             .bind("configuration", configuration)
                             .execute();
@@ -152,6 +153,9 @@ public class ContactIdentifier {
         );
 
         ImmutableMap.Builder<UUID, Bandit> result = new ImmutableMap.Builder<>();
+
+        // Add default bandits.
+
 
         for (Bandit x : bandits) {
             List<BanditIdentifier> identifiers = nzyme.getDatabase().withHandle(handle ->
@@ -227,6 +231,9 @@ public class ContactIdentifier {
                 .bind("bandit_id", bandit.databaseId())
                 .execute()
         );
+
+        // TODO: this will cause way too many queries. find a better way.
+        this.contacts = null;
     }
 
     public Map<UUID, Contact> findContacts() {
