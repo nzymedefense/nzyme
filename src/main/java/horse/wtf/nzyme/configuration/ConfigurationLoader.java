@@ -95,7 +95,6 @@ public class ConfigurationLoader {
                 parseDot11Alerts(),
                 parseAlertingRetentionPeriodMinutes(),
                 parseAlertingTrainingPeriodSeconds(),
-                parseKnownBanditFingerprints(),
                 parseGraylogUplinks()
         );
     }
@@ -275,20 +274,6 @@ public class ConfigurationLoader {
             LOG.debug(e);
             return null;
         }
-    }
-
-    private Map<String, BanditFingerprintDefinition> parseKnownBanditFingerprints() {
-        ImmutableMap.Builder<String, BanditFingerprintDefinition> fingerprints = new ImmutableMap.Builder<>();
-
-        for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(ConfigurationKeys.FINGERPRINT);
-            fingerprints.put(
-                    fingerprint,
-                    BanditFingerprintDefinition.create(fingerprint, def.getStringList(ConfigurationKeys.BANDIT_NAMES)))
-            ;
-        }
-
-        return fingerprints.build();
     }
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {

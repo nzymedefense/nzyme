@@ -46,7 +46,6 @@ public abstract class Alert {
         UNEXPECTED_SSID,
         CRYPTO_CHANGE,
         UNEXPECTED_CHANNEL,
-        KNOWN_BANDIT_FINGERPRINT,
         UNEXPECTED_FINGERPRINT,
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
@@ -64,8 +63,6 @@ public abstract class Alert {
         CRYPTO_CHANGE_PROBERESP,
         UNEXPECTED_CHANNEL_BEACON,
         UNEXPECTED_CHANNEL_PROBERESP,
-        KNOWN_BANDIT_FINGERPRINT_BEACON,
-        KNOWN_BANDIT_FINGERPRINT_PROBERESP,
         UNEXPECTED_FINGERPRINT_BEACON,
         UNEXPECTED_FINGERPRINT_PROBERESP,
         BEACON_RATE_ANOMALY,
@@ -254,32 +251,6 @@ public abstract class Alert {
             case UNEXPECTED_CHANNEL_PROBERESP:
                 alert = UnexpectedChannelProbeRespAlert.create(
                         db.firstSeen(),
-                        (String) fields.get(FieldNames.SSID),
-                        (String) fields.get(FieldNames.BSSID),
-                        (Integer) fields.get(FieldNames.CHANNEL),
-                        (Integer) fields.get(FieldNames.FREQUENCY),
-                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
-                        db.frameCount()
-                );
-                break;
-            case KNOWN_BANDIT_FINGERPRINT_BEACON:
-                alert = KnownBanditFingerprintBeaconAlert.create(
-                        db.firstSeen(),
-                        Splitter.on(",").splitToList((String) fields.get(FieldNames.BANDIT_NAMES)),
-                        (String) fields.get(FieldNames.BANDIT_FINGERPRINT),
-                        (String) fields.get(FieldNames.SSID),
-                        (String) fields.get(FieldNames.BSSID),
-                        (Integer) fields.get(FieldNames.CHANNEL),
-                        (Integer) fields.get(FieldNames.FREQUENCY),
-                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
-                        db.frameCount()
-                );
-                break;
-            case KNOWN_BANDIT_FINGERPRINT_PROBERESP:
-                alert = KnownBanditFingerprintProbeRespAlert.create(
-                        db.firstSeen(),
-                        Splitter.on(",").splitToList((String) fields.get(FieldNames.BANDIT_NAMES)),
-                        (String) fields.get(FieldNames.BANDIT_FINGERPRINT),
                         (String) fields.get(FieldNames.SSID),
                         (String) fields.get(FieldNames.BSSID),
                         (Integer) fields.get(FieldNames.CHANNEL),

@@ -43,7 +43,6 @@ public abstract class Configuration {
     public abstract List<Alert.TYPE_WIDE> dot11Alerts();
     public abstract int alertingRetentionPeriodMinutes();
     public abstract int alertingTrainingPeriodSeconds();
-    public abstract Map<String, BanditFingerprintDefinition> knownBanditFingerprints();
 
     public abstract List<GraylogAddress> graylogUplinks();
 
@@ -84,7 +83,6 @@ public abstract class Configuration {
                                        List<Alert.TYPE_WIDE> dot11Alerts,
                                        int alertingRetentionPeriodMinutes,
                                        int alertingTrainingPeriodSeconds,
-                                       Map<String, BanditFingerprintDefinition> knownBanditFingerprints,
                                        List<GraylogAddress> graylogUplinks) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
@@ -107,7 +105,6 @@ public abstract class Configuration {
                 .dot11Alerts(dot11Alerts)
                 .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
-                .knownBanditFingerprints(knownBanditFingerprints)
                 .graylogUplinks(graylogUplinks)
                 .build();
     }
@@ -157,8 +154,6 @@ public abstract class Configuration {
         public abstract Builder alertingRetentionPeriodMinutes(int alertingRetentionPeriodMinutes);
 
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
-
-        public abstract Builder knownBanditFingerprints(Map<String, BanditFingerprintDefinition> knownBanditFingerprints);
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
 
