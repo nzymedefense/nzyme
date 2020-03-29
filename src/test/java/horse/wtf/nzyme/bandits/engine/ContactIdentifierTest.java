@@ -41,12 +41,12 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         UUID uuid1 = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, uuid1, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
-        assertEquals(i.getBandits().size(), 1);
+        i.registerBandit(Bandit.create(null, uuid1, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
 
         UUID uuid2 = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, uuid2, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
-        assertEquals(i.getBandits().size(), 2);
+        i.registerBandit(Bandit.create(null, uuid2, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
 
         assertNotNull(i.getBandits().get(uuid1));
         assertNotNull(i.getBandits().get(uuid2));
@@ -56,22 +56,22 @@ public class ContactIdentifierTest {
     public void testRemoveBandit() {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
-        assertEquals(i.getBandits().size(), 0);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
 
         UUID uuid1 = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, uuid1, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
-        assertEquals(i.getBandits().size(), 1);
+        i.registerBandit(Bandit.create(null, uuid1, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
 
         UUID uuid2 = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, uuid2, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
-        assertEquals(i.getBandits().size(), 2);
+        i.registerBandit(Bandit.create(null, uuid2, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
 
         assertNotNull(i.getBandits().get(uuid1));
         assertNotNull(i.getBandits().get(uuid2));
 
         i.removeBandit(uuid1);
 
-        assertEquals(i.getBandits().size(), 1);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertNull(i.getBandits().get(uuid1));
         assertNotNull(i.getBandits().get(uuid2));
     }
@@ -80,23 +80,23 @@ public class ContactIdentifierTest {
     public void testRegisterContact() throws Exception {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
-        assertEquals(i.getBandits().size(), 0);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
         i.registerContact(Contact.create( UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
-        assertEquals(i.getBandits().size(), 1);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
 
         UUID bandit2UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
         i.registerContact(Contact.create(UUID.randomUUID(), bandit2.databaseId(), bandit2, DateTime.now(), DateTime.now(), 0L));
 
-        assertEquals(i.getBandits().size(), 2);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 2);
     }
 
@@ -104,43 +104,43 @@ public class ContactIdentifierTest {
     public void testBanditHasActiveContact() throws Exception {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
-        assertEquals(i.getBandits().size(), 0);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
         i.registerContact(Contact.create(UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
-        assertEquals(i.getBandits().size(), 1);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
 
         UUID bandit2UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
-        assertEquals(i.getBandits().size(), 2);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 1);
 
         assertTrue(i.banditHasActiveContact(bandit1));
         assertFalse(i.banditHasActiveContact(bandit2));
-        assertFalse(i.banditHasActiveContact(Bandit.create(null, UUID.randomUUID(), "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList())));
+        assertFalse(i.banditHasActiveContact(Bandit.create(null, UUID.randomUUID(), "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList())));
     }
 
     @Test
     public void testRegisterContactFrames() throws Exception, MalformedFrameException {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
-        assertEquals(i.getBandits().size(), 0);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
 
         UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), Lists.newArrayList()));
+        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         UUID contact1UUID = UUID.randomUUID();
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
         i.registerContact(Contact.create(contact1UUID, bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
 
-        assertEquals(i.getBandits().size(), 1);
+        assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
 
         assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 0);
@@ -160,7 +160,7 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
+        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
             add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, UUID.randomUUID()));
         }}));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
@@ -176,7 +176,7 @@ public class ContactIdentifierTest {
         ContactIdentifier i = new ContactIdentifier(new MockNzyme());
 
         UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
+        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
             add(new FingerprintBanditIdentifier("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b", null, UUID.randomUUID()));
             add(new SSIDIBanditdentifier(new ArrayList<String>(){{
                 add("WTF");
@@ -186,7 +186,7 @@ public class ContactIdentifierTest {
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
         UUID bandit2UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
+        i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
             add(new SignalStrengthBanditIdentifier(-15, -25, null, UUID.randomUUID()));
         }}));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);

@@ -46,6 +46,9 @@ public abstract class BanditResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
+    @JsonProperty("read_only")
+    public abstract Boolean readOnly();
+
     @JsonProperty("last_contact")
     @Nullable
     public abstract DateTime lastContact();
@@ -59,7 +62,7 @@ public abstract class BanditResponse {
     @JsonProperty
     public abstract List<ContactResponse> contacts();
 
-    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, DateTime lastContact, Boolean isActive, List<BanditIdentifierResponse> identifiers, List<ContactResponse> contacts) {
+    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, Boolean readOnly, DateTime lastContact, Boolean isActive, List<BanditIdentifierResponse> identifiers, List<ContactResponse> contacts) {
         return builder()
                 .uuid(uuid)
                 .databaseId(databaseId)
@@ -67,6 +70,7 @@ public abstract class BanditResponse {
                 .description(description)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
+                .readOnly(readOnly)
                 .lastContact(lastContact)
                 .isActive(isActive)
                 .identifiers(identifiers)
@@ -91,6 +95,8 @@ public abstract class BanditResponse {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder updatedAt(DateTime updatedAt);
+
+        public abstract Builder readOnly(Boolean readOnly);
 
         public abstract Builder lastContact(DateTime lastContact);
 

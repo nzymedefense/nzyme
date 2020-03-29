@@ -56,16 +56,20 @@ public class ContactIdentifier {
     public ContactIdentifier(Nzyme nzyme) {
         this.nzyme = nzyme;
         this.timing = nzyme.getMetrics().timer(MetricNames.CONTACT_IDENTIFIER_TIMING);
+
+        // Register default bandits.
+        DefaultBandits.seed(this);
     }
 
     public long registerBandit(Bandit bandit) {
         AtomicReference<Long> banditId = new AtomicReference<>();
         nzyme.getDatabase().useHandle(x -> x.inTransaction(handle -> {
-            ResultBearing result = handle.createUpdate("INSERT INTO bandits(bandit_uuid, name, description, created_at, updated_at) " +
-                    "VALUES(:bandit_uuid, :name, :description, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+            ResultBearing result = handle.createUpdate("INSERT INTO bandits(bandit_uuid, name, description, read_only, created_at, updated_at) " +
+                    "VALUES(:bandit_uuid, :name, :description, :read_only, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
                     .bind("bandit_uuid", bandit.uuid())
                     .bind("name", bandit.name())
                     .bind("description", bandit.description())
+                    .bind("read_only", bandit.readOnly())
                     .executeAndReturnGeneratedKeys("id");
 
             banditId.set(result.mapTo(Long.class).first());
@@ -154,9 +158,6 @@ public class ContactIdentifier {
 
         ImmutableMap.Builder<UUID, Bandit> result = new ImmutableMap.Builder<>();
 
-        // Add default bandits.
-
-
         for (Bandit x : bandits) {
             List<BanditIdentifier> identifiers = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT * FROM bandit_identifiers WHERE bandit_id = :bandit_id")
@@ -170,6 +171,7 @@ public class ContactIdentifier {
                     x.uuid(),
                     x.name(),
                     x.description(),
+                    x.readOnly(),
                     x.createdAt(),
                     x.updatedAt(),
                     identifiers

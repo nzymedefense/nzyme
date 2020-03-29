@@ -7,6 +7,7 @@ import moment from "moment";
 import Routes from "../../util/Routes";
 import BanditIdentifiersTable from "./BanditIdentifiersTable";
 import ContactsTable from "./ContactsTable";
+import {Redirect} from "react-router-dom";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -21,6 +22,8 @@ class BanditDetailPage extends Reflux.Component {
             bandit: undefined
         };
 
+        this._deleteBandit = this._deleteBandit.bind(this);
+        this._editBandit = this._editBandit.bind(this);
         this._loadBandit = this._loadBandit.bind(this);
         this._invalidateIdentifiers = this._invalidateIdentifiers.bind(this);
     }
@@ -39,12 +42,38 @@ class BanditDetailPage extends Reflux.Component {
         this._loadBandit();
     }
 
+    _editBandit(e) {
+        if (this.state.bandit.read_only) {
+            alert("Cannot edit a built-in bandit.");
+            e.preventDefault();
+        }
+    }
+
+    _deleteBandit() {
+        if (this.state.bandit.read_only) {
+            alert("Cannot delete a built-in bandit.");
+            return;
+        }
+
+        if (!window.confirm("Delete bandit?")) {
+            return;
+        }
+
+        const self = this;
+        BanditsActions.deleteBandit(this.banditId, function () {
+            self.setState({deleted:true})
+        })
+    }
 
     _loadBandit() {
         BanditsActions.findOne(this.banditId);
     }
 
     render() {
+        if (this.state.deleted) {
+            return <Redirect to={Routes.BANDITS.INDEX} />;
+        }
+
         if (!this.state.bandit) {
             return <LoadingSpinner />
         }
@@ -77,7 +106,8 @@ class BanditDetailPage extends Reflux.Component {
                     <div className="col-md-6">
                         <span className="float-right">
                             <a href={Routes.BANDITS.INDEX} className="btn btn-dark">Back</a>&nbsp;
-                            <a href={Routes.BANDITS.EDIT(this.banditId)} className="btn btn-primary">Edit Bandit</a>
+                            <button className="btn btn-danger" onClick={this._deleteBandit}>Delete Bandit</button>&nbsp;
+                            <a href={Routes.BANDITS.EDIT(this.banditId)} className="btn btn-primary" onClick={this._editBandit}>Edit Bandit</a>
                         </span>
                     </div>
                 </div>

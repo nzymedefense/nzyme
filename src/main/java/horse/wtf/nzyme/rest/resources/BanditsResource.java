@@ -75,6 +75,7 @@ public class BanditsResource {
                     x.description(),
                     x.createdAt(),
                     x.updatedAt(),
+                    x.readOnly(),
                     findLastContact(contacts),
                     anyActiveContact(contacts),
                     buildIdentifiersResponse(x),
@@ -118,6 +119,7 @@ public class BanditsResource {
                 bandit.description(),
                 bandit.createdAt(),
                 bandit.updatedAt(),
+                bandit.readOnly(),
                 findLastContact(contacts),
                 anyActiveContact(contacts),
                 buildIdentifiersResponse(bandit),
@@ -140,6 +142,7 @@ public class BanditsResource {
                 UUID.randomUUID(),
                 request.name(),
                 request.description(),
+                false,
                 null,
                 null,
                 null
@@ -148,8 +151,39 @@ public class BanditsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @Path("/show/{uuid}")
+    public Response delete(@PathParam("uuid") String id) {
+        if (Strings.isNullOrEmpty(id)) {
+            LOG.warn("Bandit ID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(id);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid Bandit UUID", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        if (!optionalBandit.isPresent()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (optionalBandit.get().readOnly()) {
+            LOG.warn("Bandit [{}] is read only.", uuid);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getContactIdentifier().removeBandit(uuid);
+
+        return Response.status(Response.Status.OK).build();
+    }
+
     @PUT
-    @Path("/update/{uuid}")
+    @Path("/show/{uuid}")
     public Response update(@PathParam("uuid") String id, UpdateBanditRequest request) {
         if (Strings.isNullOrEmpty(id)) {
             LOG.warn("Bandit ID was null or empty.");
@@ -169,6 +203,16 @@ public class BanditsResource {
         }
 
         if (Strings.isNullOrEmpty(request.name()) || Strings.isNullOrEmpty(request.description())) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        if (!optionalBandit.isPresent()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (optionalBandit.get().readOnly()) {
+            LOG.warn("Bandit [{}] is read only.", uuid);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -208,6 +252,10 @@ public class BanditsResource {
         if (!bandit.isPresent()) {
             LOG.warn("Bandit with UUID <{}> not found.", banditUUID);
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if (bandit.get().readOnly()) {
+            LOG.warn("Bandit [{}] is read only.", uuid);
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         if (request == null) {
@@ -252,9 +300,14 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        if (!nzyme.getContactIdentifier().findBanditByUUID(banditUUID).isPresent()) {
-            LOG.warn("Bandit with UUID <{}> not found.", banditUUID);
+        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(banditUUID);
+        if (!optionalBandit.isPresent()) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (optionalBandit.get().readOnly()) {
+            LOG.warn("Bandit [{}] is read only.", banditUUID);
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         nzyme.getContactIdentifier().removeIdentifier(identifierUUID);

@@ -36,6 +36,8 @@ public abstract class Bandit {
     public abstract String name();
     public abstract String description();
 
+    public abstract Boolean readOnly();
+
     @Nullable
     public abstract DateTime createdAt();
 
@@ -45,12 +47,13 @@ public abstract class Bandit {
     @Nullable
     public abstract List<BanditIdentifier> identifiers();
 
-    public static Bandit create(Long databaseId, UUID uuid, @NotEmpty String name, @NotEmpty String description, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
+    public static Bandit create(Long databaseId, UUID uuid, String name, String description, Boolean readOnly, DateTime createdAt, DateTime updatedAt, List<BanditIdentifier> identifiers) {
         return builder()
                 .databaseId(databaseId)
                 .uuid(uuid)
                 .name(name)
                 .description(description)
+                .readOnly(readOnly)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .identifiers(identifiers)
@@ -63,11 +66,15 @@ public abstract class Bandit {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder databaseId(Long databaseId);
+
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder readOnly(Boolean readOnly);
 
         public abstract Builder createdAt(DateTime createdAt);
 
@@ -75,9 +82,7 @@ public abstract class Bandit {
 
         public abstract Builder identifiers(List<BanditIdentifier> identifiers);
 
-        public abstract Builder databaseId(Long databaseId);
-
         public abstract Bandit build();
     }
-
+    
 }

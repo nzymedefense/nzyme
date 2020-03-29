@@ -42,7 +42,7 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
 
         UUID bandit1UUID = UUID.randomUUID();
         nzyme.getContactIdentifier().registerBandit(Bandit.create(
-                null, bandit1UUID, "foo", "foo", DateTime.now(), DateTime.now(),
+                null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(),
                 new ArrayList<BanditIdentifier>() {{
                     add(new SSIDIBanditdentifier(new ArrayList<String>(){{ add("WTF"); }}, null, UUID.randomUUID()));
                 }}
@@ -50,7 +50,7 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
 
         UUID bandit2UUID = UUID.randomUUID();
         nzyme.getContactIdentifier().registerBandit(Bandit.create(
-                null, bandit2UUID, "foo", "foo", DateTime.now(), DateTime.now(),
+                null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(),
                 new ArrayList<BanditIdentifier>() {{
                     add(new SignalStrengthBanditIdentifier(-80, -90, null, UUID.randomUUID()));
                 }}

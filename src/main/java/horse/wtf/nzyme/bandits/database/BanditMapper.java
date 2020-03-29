@@ -43,6 +43,7 @@ public class BanditMapper implements RowMapper<Bandit> {
                 UUID.fromString(rs.getString("bandit_uuid")),
                 rs.getString("name"),
                 rs.getString("description"),
+                rs.getBoolean("read_only"),
                 DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER),
                 DateTime.parse(rs.getString("updated_at"), Database.DATE_TIME_FORMATTER),
                 null

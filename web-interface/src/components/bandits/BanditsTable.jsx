@@ -51,10 +51,10 @@ class BanditsTable extends Reflux.Component {
                             <th>ID</th>
                         </tr>
                         </thead>
-                        {Object.keys(bandits).map(function (key,i) {
-                            return <BanditsTableRow bandit={bandits[key]} />
-                        })}
                         <tbody>
+                        {Object.keys(bandits).map(function (key,i) {
+                            return <BanditsTableRow key={"bandit-"+key} bandit={bandits[key]} />
+                        })}
                         </tbody>
                     </table>
                 </div>

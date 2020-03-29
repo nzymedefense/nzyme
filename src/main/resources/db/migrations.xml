@@ -419,4 +419,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="17" author="lennartkoopmann">
+        <addColumn tableName="bandits">
+            <column name="read_only" type="boolean" defaultValue="false">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

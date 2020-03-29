@@ -161,13 +161,6 @@ graylog_uplinks: [
 # Fingerprints of known bad devices.
 known_bandit_fingerprints: [
 
-    {
-      fingerprint: ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c,
-      bandit_names: [
-        "WiFi Pineapple Nano or Tetra (PineAP)"
-        "esp8266_deauther (attack frames)"
-      ]
-    }
 
     {
       fingerprint: 535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83

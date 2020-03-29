@@ -36,10 +36,18 @@ class BanditsStore extends Reflux.Store {
     }
 
     onUpdateBandit(id, name, description, successCallback, errorCallback) {
-        RESTClient.put("/bandits/update/" + id, {name: name, description: description}, function() {
+        RESTClient.put("/bandits/show/" + id, {name: name, description: description}, function() {
             successCallback();
         }, function() {
             errorCallback();
+        });
+    }
+
+    onDeleteBandit(banditUUID, successCallback) {
+        RESTClient.delete("/bandits/show/" + banditUUID, function () {
+            successCallback();
+        }, function() {
+            notify.show("Could not delete bandit. Please check nzyme log file.", "error");
         });
     }
 
