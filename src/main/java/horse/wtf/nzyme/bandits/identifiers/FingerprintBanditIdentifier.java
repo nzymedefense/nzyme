@@ -64,10 +64,6 @@ public class FingerprintBanditIdentifier extends BanditIdentifier {
 
     @Override
     public Optional<Boolean> matches(Dot11BeaconFrame frame) {
-        if("getoffmylawn_tetra2".equals(frame.ssid())) {
-            System.out.println(frame.transmitterFingerprint());
-        }
-
         return match(frame.transmitterFingerprint());
     }
 

@@ -6,6 +6,7 @@ import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.DefaultBandits;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.SSIDIBanditdentifier;

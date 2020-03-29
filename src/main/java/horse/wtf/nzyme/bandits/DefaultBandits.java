@@ -15,9 +15,9 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.bandits.engine;
+package horse.wtf.nzyme.bandits;
 
-import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
 import org.apache.logging.log4j.LogManager;

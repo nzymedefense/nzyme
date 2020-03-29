@@ -25,7 +25,6 @@ class BanditsTableRow extends Reflux.Component {
                 </td>
                 <td title={moment(bandit.created_at).format()}>{moment(bandit.created_at).fromNow()}</td>
                 <td title={moment(bandit.updated_at).format()}>{moment(bandit.updated_at).fromNow()}</td>
-                <td>{bandit.uuid.substr(0, 8)}</td>
             </tr>
         );
     }

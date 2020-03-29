@@ -21,7 +21,7 @@ class BanditsPage extends Reflux.Component {
                             You can use bandit definitions to track and detect rogue actors who use mutating attributes in
                             frames (different MAC addresses, advertised SSIDs, etc.) by focusing on selected attributes that
                             do not change. The tracking mode of nzyme can be used to physically locate rogue devices identified
-                            as contacts.
+                            as contacts. Active tracks expire after 10 minutes.
                         </p>
                     </div>
 

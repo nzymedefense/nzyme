@@ -48,7 +48,6 @@ class BanditsTable extends Reflux.Component {
                             <th>Last Contact</th>
                             <th>Created</th>
                             <th>Last Updated</th>
-                            <th>ID</th>
                         </tr>
                         </thead>
                         <tbody>

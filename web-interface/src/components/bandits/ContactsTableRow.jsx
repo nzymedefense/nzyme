@@ -2,6 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 import numeral from "numeral";
 import moment from "moment";
+import Timespan from "../misc/Timespan";
 
 class ContactsTableRow extends Reflux.Component {
 
@@ -14,7 +15,7 @@ class ContactsTableRow extends Reflux.Component {
                 <td>{contact.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
                 <td>{numeral(contact.frame_count).format('0,0')}</td>
                 <td>
-                    {Math.round(moment.duration(moment(contact.last_seen).diff(moment(contact.first_seen))).asMinutes())} min
+                    <Timespan from={contact.first_seen} to={contact.last_seen} />
                 </td>
                 <td title={moment(contact.first_seen).format()}>
                     {moment(contact.first_seen).format("M/D/YYYY hh:mm:ss a")} ({moment(contact.first_seen).fromNow()})

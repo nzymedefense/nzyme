@@ -24,6 +24,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.DefaultBandits;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
@@ -282,31 +283,35 @@ public class ContactIdentifier {
 
             // Run all identifiers.
             if(bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
-                boolean anyMissed = false;
+                boolean match = false;
                 for (BanditIdentifier identifier : bandit.identifiers()) {
-                    Optional<Boolean> identified = Optional.empty();
-
                     if (frame instanceof Dot11BeaconFrame) {
-                        identified = identifier.matches((Dot11BeaconFrame) frame);
+                        Optional<Boolean> matches = identifier.matches((Dot11BeaconFrame) frame);
+                        if (matches.isPresent() && matches.get()) {
+                            match = true;
+                            break;
+                        }
                     }
 
                     if (frame instanceof Dot11ProbeResponseFrame) {
-                        identified = identifier.matches((Dot11ProbeResponseFrame) frame);
+                        Optional<Boolean> matches = identifier.matches((Dot11ProbeResponseFrame) frame);
+                        if (matches.isPresent() && matches.get()) {
+                            match = true;
+                            break;
+                        }
                     }
 
                     if (frame instanceof Dot11DeauthenticationFrame) {
-                        identified = identifier.matches((Dot11DeauthenticationFrame) frame);
-                    }
-
-                    if (identified.isPresent()) {
-                        if (!identified.get()) {
-                            anyMissed = true;
+                        Optional<Boolean> matches = identifier.matches((Dot11DeauthenticationFrame) frame);
+                        if (matches.isPresent() && matches.get()) {
+                            match = true;
+                            break;
                         }
                     }
                 }
 
                 // If no identifier missed, this is a bandit frame.
-                if (!anyMissed) {
+                if (match) {
                     // Create new contact if this is the first frame.
                     if (!banditHasActiveContact(bandit)) {
                         LOG.debug("New contact for bandit [{}].", bandit);
