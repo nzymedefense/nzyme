@@ -48,7 +48,7 @@ public class DefaultBandits {
                 "WiFi Pineapple Nano or Tetra (PineAP), esp8266_deauther",
                 "[Built-in bandit definition]\n\nDetects WiFi Pineapple PineAP frames and esp8266_deauther frames, " +
                         "which appear to be cloned from Pineapple frames because they have the same fingerprint.\n\n" +
-                        "Pineapple Nano v2.0.2, v2.5.2 and Tetra v1.1.2, v2.5.2, but other firmware versions might match, too.",
+                        "Pineapple Nano v2.0.2, v2.5.2 and Tetra v1.1.2, v2.5.2, v2.7.0 but other firmware versions might match, too.",
                 true,
                 new DateTime("2020-03-29T00:00:00+0000"),
                 new DateTime("2020-03-29T00:00:00+0000"),
@@ -188,6 +188,20 @@ public class DefaultBandits {
                 }})
         );
 
+        add(Bandit.create(null, UUID.fromString("47caa181-2afa-4e2c-8094-1a3d1fe5400c"),
+                "WiFi Pineapple Tetra (public access point)",
+                "[Built-in bandit definition] Pineapple Tetra v2.7.0, but other firmware versions might match, too.",
+                true,
+                new DateTime("2020-03-29T00:00:00+0000"),
+                new DateTime("2020-03-29T00:00:00+0000"),
+                new ArrayList<BanditIdentifier>(){{
+                    add(new FingerprintBanditIdentifier(
+                            "e6679e0fb62c0efd80f1e39c1cbb7f239edc0d7f601fbb9a22d14f2eb31c0266",
+                            null,
+                            UUID.fromString("56105c5a-3011-423a-b785-8175833fa1d1")));
+                }})
+        );
+
         add(Bandit.create(null, UUID.fromString("54bf66f1-37cf-4f96-93ed-449791458a80"),
                 "WiFi Pineapple Tetra (management access point)",
                 "[Built-in bandit definition] Pineapple Tetra v2.5.2, but other firmware versions might match, too.",
@@ -199,6 +213,20 @@ public class DefaultBandits {
                             "e643cd336d483cdfb7e3c0912e262dd21e6bbbc67a72bccd47214f67373d8ab4",
                             null,
                             UUID.fromString("bca7bbe2-23cf-4c15-86a9-7a4bd956dc77")));
+                }})
+        );
+
+        add(Bandit.create(null, UUID.fromString("21fefae6-aecf-41b7-b086-e6cd13dcb220"),
+                "WiFi Pineapple Tetra (management access point)",
+                "[Built-in bandit definition] Pineapple Tetra v2.7.0, but other firmware versions might match, too.",
+                true,
+                new DateTime("2020-03-29T00:00:00+0000"),
+                new DateTime("2020-03-29T00:00:00+0000"),
+                new ArrayList<BanditIdentifier>(){{
+                    add(new FingerprintBanditIdentifier(
+                            "8265dd9864d2b9a35c2742d8e9180db7c520169ab4e06977ae7651f3a574331a",
+                            null,
+                            UUID.fromString("37791b52-13cc-41dd-948b-c3fd62f4a171")));
                 }})
         );
 
