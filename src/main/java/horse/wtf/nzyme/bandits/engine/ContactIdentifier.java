@@ -20,6 +20,7 @@ package horse.wtf.nzyme.bandits.engine;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
@@ -324,7 +325,9 @@ public class ContactIdentifier {
                     registerContactFrame(bandit, frame);
 
                     // Register/refresh alert.
-                    nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), 1L));
+                    if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {
+                        nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), 1L));
+                    }
                 }
             }
         }

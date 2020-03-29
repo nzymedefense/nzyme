@@ -51,7 +51,8 @@ public abstract class Alert {
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
-        PWNAGOTCHI_ADVERTISEMENT
+        PWNAGOTCHI_ADVERTISEMENT,
+        BANDIT_CONTACT
     }
 
     public enum TYPE {

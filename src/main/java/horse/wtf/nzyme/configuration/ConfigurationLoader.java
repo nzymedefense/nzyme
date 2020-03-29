@@ -294,7 +294,6 @@ public class ConfigurationLoader {
         expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
         expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
-        expect(root, ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS, "<root>", List.class);
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)
         if (parseAdminPasswordHash().length() != 64) {
@@ -450,17 +449,6 @@ public class ConfigurationLoader {
                 }
                 bssids.add(bssid.address());
             }
-        }
-
-        // Known bandit fingerprints: Each fingerprint is unique.
-        List<String> usedFingerprints = Lists.newArrayList();
-        for (Config def : root.getConfigList(ConfigurationKeys.KNOWN_BANDIT_FINGERPRINTS)) {
-            String fingerprint = def.getString(ConfigurationKeys.FINGERPRINT);
-            if (usedFingerprints.contains(fingerprint)) {
-                throw new InvalidConfigurationException("Duplicate Known Bandit Fingerprint [" + fingerprint + "].");
-            }
-
-            usedFingerprints.add(fingerprint);
         }
 
         // TODO: No trap device is used multiple times or as a monitor.

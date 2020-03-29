@@ -28,7 +28,6 @@ public class ConfigurationKeys {
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAPS = "802_11_traps";
-    public static final String KNOWN_BANDIT_FINGERPRINTS = "known_bandit_fingerprints";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
