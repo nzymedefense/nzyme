@@ -1,6 +1,7 @@
 .idea
 *.iml
 nzyme.conf
+nzyme-tracker-*.conf
 dependency-reduced-pom.xml
 
 .DS_Store

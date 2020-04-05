@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -50,7 +50,7 @@ public interface Nzyme {
     void notifyUplinksOfAlert(Alert alert);
 
     Statistics getStatistics();
-    Configuration getConfiguration();
+    LeaderConfiguration getConfiguration();
 
     MetricRegistry getMetrics();
 

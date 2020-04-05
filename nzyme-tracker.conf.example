@@ -1,0 +1,7 @@
+# General nzyme configuration.
+general: {
+  role: TRACKER
+
+  # The ID or name of this nzyme tracker. Must be unique.
+  id: nzyme-tracker-01
+}

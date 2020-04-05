@@ -81,6 +81,7 @@ public class ContactIdentifier {
                     String configuration;
 
                     try {
+                        LOG.info(nzyme.getObjectMapper());
                         configuration = nzyme.getObjectMapper().writeValueAsString(identifier.configuration());
                     } catch(Exception e) {
                         throw new RuntimeException(e);

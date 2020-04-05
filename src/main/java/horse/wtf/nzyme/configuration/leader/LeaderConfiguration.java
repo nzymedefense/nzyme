@@ -1,19 +1,21 @@
-package horse.wtf.nzyme.configuration;
+package horse.wtf.nzyme.configuration.leader;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
+import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 @AutoValue
-public abstract class Configuration {
+public abstract class LeaderConfiguration {
 
     public abstract boolean versionchecksEnabled();
     public abstract boolean fetchOuis();
@@ -52,6 +54,32 @@ public abstract class Configuration {
         return ssids.build();
     }
 
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks) {
+        return builder()
+                .versionchecksEnabled(versionchecksEnabled)
+                .fetchOuis(fetchOuis)
+                .role(role)
+                .nzymeId(nzymeId)
+                .adminPasswordHash(adminPasswordHash)
+                .databasePath(databasePath)
+                .pythonExecutable(pythonExecutable)
+                .pythonScriptDirectory(pythonScriptDirectory)
+                .pythonScriptPrefix(pythonScriptPrefix)
+                .restListenUri(restListenUri)
+                .httpExternalUri(httpExternalUri)
+                .useTls(useTls)
+                .tlsCertificatePath(tlsCertificatePath)
+                .tlsKeyPath(tlsKeyPath)
+                .dot11Monitors(dot11Monitors)
+                .dot11Networks(dot11Networks)
+                .dot11TrapDevices(dot11TrapDevices)
+                .dot11Alerts(dot11Alerts)
+                .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
+                .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
+                .graylogUplinks(graylogUplinks)
+                .build();
+    }
+
     @Nullable
     public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
         for (Dot11NetworkDefinition network : dot11Networks()) {
@@ -63,54 +91,8 @@ public abstract class Configuration {
         return null;
     }
 
-    public static Configuration create(boolean versionchecksEnabled,
-                                       boolean fetchOuis,
-                                       Role role,
-                                       String nzymeId,
-                                       String adminPasswordHash,
-                                       String databasePath,
-                                       String pythonExecutable,
-                                       String pythonScriptDirectory,
-                                       String pythonScriptPrefix,
-                                       boolean useTls,
-                                       Path tlsCertificatePath,
-                                       Path tlsKeyPath,
-                                       URI restListenUri,
-                                       URI httpExternalUri,
-                                       List<Dot11MonitorDefinition> dot11Monitors,
-                                       List<Dot11NetworkDefinition> dot11Networks,
-                                       List<Dot11TrapDeviceDefinition> dot11TrapDevices,
-                                       List<Alert.TYPE_WIDE> dot11Alerts,
-                                       int alertingRetentionPeriodMinutes,
-                                       int alertingTrainingPeriodSeconds,
-                                       List<GraylogAddress> graylogUplinks) {
-        return builder()
-                .versionchecksEnabled(versionchecksEnabled)
-                .fetchOuis(fetchOuis)
-                .role(role)
-                .nzymeId(nzymeId)
-                .adminPasswordHash(adminPasswordHash)
-                .databasePath(databasePath)
-                .pythonExecutable(pythonExecutable)
-                .pythonScriptDirectory(pythonScriptDirectory)
-                .pythonScriptPrefix(pythonScriptPrefix)
-                .useTls(useTls)
-                .tlsCertificatePath(tlsCertificatePath)
-                .tlsKeyPath(tlsKeyPath)
-                .restListenUri(restListenUri)
-                .httpExternalUri(httpExternalUri)
-                .dot11Monitors(dot11Monitors)
-                .dot11Networks(dot11Networks)
-                .dot11TrapDevices(dot11TrapDevices)
-                .dot11Alerts(dot11Alerts)
-                .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
-                .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
-                .graylogUplinks(graylogUplinks)
-                .build();
-    }
-
     public static Builder builder() {
-        return new AutoValue_Configuration.Builder();
+        return new AutoValue_LeaderConfiguration.Builder();
     }
 
     @AutoValue.Builder
@@ -157,7 +139,6 @@ public abstract class Configuration {
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
 
-        public abstract Configuration build();
+        public abstract LeaderConfiguration build();
     }
-
 }

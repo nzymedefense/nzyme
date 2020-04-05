@@ -20,8 +20,12 @@ package horse.wtf.nzyme;
 import com.beust.jcommander.JCommander;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.configuration.CLIArguments;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.configuration.ConfigurationLoader;
+import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.configuration.base.BaseConfiguration;
+import horse.wtf.nzyme.configuration.base.BaseConfigurationLoader;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
@@ -46,21 +50,6 @@ public class Main {
                 .build()
                 .parse(argv);
 
-        // Parse configuration.
-        Configuration configuration = null;
-        try {
-            configuration = new ConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
-        } catch (ConfigurationLoader.InvalidConfigurationException | ConfigException e) {
-            LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
-            System.exit(FAILURE);
-        } catch (ConfigurationLoader.IncompleteConfigurationException e) {
-            LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
-            System.exit(FAILURE);
-        } catch (FileNotFoundException e) {
-            LOG.error("Could not read configuration file.", e);
-            System.exit(FAILURE);
-        }
-
         // Override log level if requested.
         if(cliArguments.isDebugMode()) {
             Logging.setRootLoggerLevel(Level.DEBUG);
@@ -70,22 +59,59 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
-        // Database.
-        Database database = new Database(configuration);
+        // Parse configuration.
+        BaseConfiguration baseConfiguration = null;
         try {
-            database.initializeAndMigrate();
-        } catch (LiquibaseException e) {
-            LOG.fatal("Error during database initialization and migration.", e);
+            baseConfiguration = new BaseConfigurationLoader(new File(cliArguments.getConfigFilePath())).get();
+        } catch (InvalidConfigurationException | ConfigException e) {
+            LOG.error("Invalid baseconfiguration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (IncompleteConfigurationException e) {
+            LOG.error("Incomplete base configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (FileNotFoundException e) {
+            LOG.error("Could not read configuration file.", e);
             System.exit(FAILURE);
         }
 
-        Nzyme nzyme = new NzymeImpl(configuration, database);
-        nzyme.initialize();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Thread.currentThread().setName("shutdown-hook");
-            nzyme.shutdown();
-        }));
+        switch (baseConfiguration.mode()) {
+            case LEADER:
+                LeaderConfiguration configuration = null;
+                try {
+                    configuration = new LeaderConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+                } catch (InvalidConfigurationException | ConfigException e) {
+                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (IncompleteConfigurationException e) {
+                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (FileNotFoundException e) {
+                    LOG.error("Could not read configuration file.", e);
+                    System.exit(FAILURE);
+                }
+
+
+                // Database.
+                Database database = new Database(configuration);
+                try {
+                    database.initializeAndMigrate();
+                } catch (LiquibaseException e) {
+                    LOG.fatal("Error during database initialization and migration.", e);
+                    System.exit(FAILURE);
+                }
+
+                Nzyme nzyme = new NzymeImpl(configuration, database);
+                nzyme.initialize();
+
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    Thread.currentThread().setName("shutdown-hook");
+                    nzyme.shutdown();
+                }));
+                break;
+            case TRACKER:
+                LOG.info("Starting trackkkkkkkkkker.");
+        }
 
         while(true) {
             // https://www.youtube.com/watch?v=Vmb1tqYqyII#t=47s

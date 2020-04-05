@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import com.google.common.collect.ImmutableMap;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class ProbeRequest extends Bluff {
     private final String ssid;
     private final String mac;
 
-    public ProbeRequest(Configuration configuration, String interfaceName, String ssid, String mac) {
+    public ProbeRequest(LeaderConfiguration configuration, String interfaceName, String ssid, String mac) {
         super(configuration);
 
         this.interfaceName = interfaceName;

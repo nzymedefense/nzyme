@@ -4,7 +4,7 @@ import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
 import horse.wtf.nzyme.bandits.database.BanditIdentifierMapper;
 import horse.wtf.nzyme.bandits.database.BanditMapper;
 import horse.wtf.nzyme.bandits.database.ContactMapper;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
@@ -34,11 +34,11 @@ public class Database {
             .appendPattern("yyyy-MM-dd HH:mm:ss")
             .toFormatter().withZoneUTC();
 
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
 
     private Jdbi jdbi;
 
-    public Database(Configuration configuration) {
+    public Database(LeaderConfiguration configuration) {
         this.configuration = configuration;
     }
 

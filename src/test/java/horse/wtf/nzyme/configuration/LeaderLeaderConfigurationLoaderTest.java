@@ -4,29 +4,28 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.ResourcesAccessingTest;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.testng.Assert.*;
 
-public class ConfigurationLoaderTest extends ResourcesAccessingTest {
+public class LeaderLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test(expectedExceptions = FileNotFoundException.class)
-    public void testGetConfigWithNonExistentFile() throws ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException, FileNotFoundException {
-        new ConfigurationLoader(new File("idontexist.conf"), false).get();
+    public void testGetConfigWithNonExistentFile() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+        new LeaderConfigurationLoader(new File("idontexist.conf"), false).get();
     }
 
     @Test
-    public void testGetValidConfig() throws ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException, FileNotFoundException {
-        Configuration c = new ConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
+    public void testGetValidConfig() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+        LeaderConfiguration c = new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
 
         assertEquals(c.role(), Role.LEADER);
         assertEquals(c.nzymeId(), "nzyme-testng");
@@ -101,9 +100,9 @@ public class ConfigurationLoaderTest extends ResourcesAccessingTest {
         }});
     }
 
-    @Test(expectedExceptions = ConfigurationLoader.IncompleteConfigurationException.class)
-    public void testGetInvalidConfigIncomplete() throws ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException, FileNotFoundException {
-        new ConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf"), false).get();
+    @Test(expectedExceptions = IncompleteConfigurationException.class)
+    public void testGetInvalidConfigIncomplete() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+        new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf"), false).get();
     }
 
 }

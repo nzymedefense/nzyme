@@ -1,13 +1,14 @@
 package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import horse.wtf.nzyme.Role;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.configuration.ConfigurationLoader;
+import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import org.testng.annotations.Test;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +17,8 @@ import static org.testng.Assert.*;
 
 public class BluffTest {
 
-    private static Configuration buildConfiguration(String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix) {
-        return Configuration.create(
+    private static LeaderConfiguration buildConfiguration(String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix) {
+        return LeaderConfiguration.create(
                 false,
                 false,
                 Role.LEADER,
@@ -27,11 +28,11 @@ public class BluffTest {
                 pythonExecutable,
                 pythonScriptDirectory,
                 pythonScriptPrefix,
+                URI.create("http://localhost:23444"),
+                URI.create("http://localhost:23444"),
                 false,
                 new File("").toPath(),
                 new File("").toPath(),
-                URI.create("http://localhost:23444"),
-                URI.create("http://localhost:23444"),
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
@@ -42,10 +43,10 @@ public class BluffTest {
         );
     }
 
-    private static final Configuration STANDARD_CONFIG = buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_");
+    private static final LeaderConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_");
 
     @Test
-    public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -53,7 +54,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -61,7 +62,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/var/tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -69,7 +70,7 @@ public class BluffTest {
     }
 
     @Test
-    public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/tmp", "nzymeTEST_"), "mock");
         mock.execute();
 
@@ -77,13 +78,13 @@ public class BluffTest {
     }
 
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
-    public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(STANDARD_CONFIG, "param & /usr/bin/FOOKED");
         mock.execute();
     }
 
     @Test(expectedExceptions = Bluff.InsecureParametersException.class)
-    public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException, ConfigurationLoader.InvalidConfigurationException, ConfigurationLoader.IncompleteConfigurationException {
+    public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException, InvalidConfigurationException, IncompleteConfigurationException {
         Bluff mock = new MockBluff(STANDARD_CONFIG, "mock");
         ((MockBluff) mock).setParameterKey("-i foo & /usr/bin/fooked &");
         mock.execute();
@@ -95,7 +96,7 @@ public class BluffTest {
 
         private String parameterKey = "--test";
 
-        public MockBluff(Configuration configuration, String testParam) {
+        public MockBluff(LeaderConfiguration configuration, String testParam) {
             super(configuration);
 
             this.testParam = testParam;

@@ -28,6 +28,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.configuration.*;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -96,7 +97,7 @@ public class NzymeImpl implements Nzyme {
 
     private final Version version;
 
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
     private final Database database;
     private final ExecutorService probeExecutor;
     private final Statistics statistics;
@@ -121,7 +122,7 @@ public class NzymeImpl implements Nzyme {
 
     private HttpServer httpServer;
 
-    public NzymeImpl(Configuration configuration, Database database) {
+    public NzymeImpl(LeaderConfiguration configuration, Database database) {
         this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
@@ -419,7 +420,7 @@ public class NzymeImpl implements Nzyme {
     }
 
     @Override
-    public Configuration getConfiguration() {
+    public LeaderConfiguration getConfiguration() {
         return configuration;
     }
 

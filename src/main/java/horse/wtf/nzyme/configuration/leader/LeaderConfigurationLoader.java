@@ -15,19 +15,19 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.configuration;
+package horse.wtf.nzyme.configuration.leader;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import org.apache.logging.log4j.LogManager;
@@ -40,9 +40,8 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
-public class ConfigurationLoader {
+public class LeaderConfigurationLoader {
 
     private static final Logger LOG = LogManager.getLogger(Nzyme.class);
 
@@ -52,7 +51,7 @@ public class ConfigurationLoader {
     private final Config python;
     private final Config alerting;
 
-    public ConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+    public LeaderConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
             throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
         }
@@ -73,8 +72,8 @@ public class ConfigurationLoader {
         }
     }
 
-    public Configuration get() {
-        return Configuration.create(
+    public LeaderConfiguration get() {
+        return LeaderConfiguration.create(
                 parseVersionchecksEnabled(),
                 parseFetchOUIsEnabled(),
                 parseRole(),
@@ -84,11 +83,11 @@ public class ConfigurationLoader {
                 parsePythonExecutable(),
                 parsePythonScriptDirectory(),
                 parsePythonScriptPrefix(),
+                parseRestListenUri(),
+                parseHttpExternalUri(),
                 parseUseTls(),
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
-                parseRestListenUri(),
-                parseHttpExternalUri(),
                 parseDot11Monitors(),
                 parseDot11Networks(),
                 parseDot11TrapDeviceDefinitions(),
@@ -278,22 +277,22 @@ public class ConfigurationLoader {
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
-        expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
-        expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
-        expect(general, ConfigurationKeys.ADMIN_PASSWORD_HASH, ConfigurationKeys.GENERAL, String.class);
-        expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
-        expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
-        expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
-        expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        expect(alerting, ConfigurationKeys.CLEAN_AFTER_MINUTES, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
-        expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
-        expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
-        expect(interfaces, ConfigurationKeys.HTTP_EXTERNAL_URI, ConfigurationKeys.INTERFACES, String.class);
-        expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
-        expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
-        expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
+        ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.ADMIN_PASSWORD_HASH, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
+        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
+        ConfigurationValidator.expect(alerting, ConfigurationKeys.CLEAN_AFTER_MINUTES, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
+        ConfigurationValidator.expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
+        ConfigurationValidator.expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
+        ConfigurationValidator.expect(interfaces, ConfigurationKeys.HTTP_EXTERNAL_URI, ConfigurationKeys.INTERFACES, String.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)
         if (parseAdminPasswordHash().length() != 64) {
@@ -304,10 +303,10 @@ public class ConfigurationLoader {
         int i = 0;
         for (Config c : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
             String where = ConfigurationKeys.DOT11_MONITORS + "." + "#" + i;
-            expect(c, ConfigurationKeys.DEVICE, where, String.class);
-            expect(c, ConfigurationKeys.CHANNELS, where, List.class);
-            expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
-            expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.DEVICE, where, String.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, List.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
             i++;
         }
 
@@ -315,18 +314,18 @@ public class ConfigurationLoader {
         i = 0;
         for (Config c : root.getConfigList(ConfigurationKeys.DOT11_TRAPS)) {
             String where = ConfigurationKeys.DOT11_TRAPS + ".#" + i;
-            expect(c, ConfigurationKeys.DEVICE_SENDER, where, String.class);
-            expect(c, ConfigurationKeys.CHANNELS, where, List.class);
-            expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
-            expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
-            expect(c, ConfigurationKeys.TRAPS, where, List.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.DEVICE_SENDER, where, String.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, List.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.TRAPS, where, List.class);
 
             int y = 0;
             for (Config trap : c.getConfigList(ConfigurationKeys.TRAPS)) {
                 String trapWhere = where + ".#" + y;
 
                 // Make sure trap type exists and is set to an existing trap type.
-                expect(trap, ConfigurationKeys.TYPE, trapWhere, String.class);
+                ConfigurationValidator.expect(trap, ConfigurationKeys.TYPE, trapWhere, String.class);
                 String trapType = trap.getString(ConfigurationKeys.TYPE);
                 try {
                     Trap.Type.valueOf(trapType);
@@ -478,84 +477,6 @@ public class ConfigurationLoader {
                 x++;
             }
         }
-    }
-
-    private void expect(Config c, String key, String where, Class clazz) throws IncompleteConfigurationException, InvalidConfigurationException {
-        boolean incomplete = false;
-        boolean invalid = false;
-
-        try {
-            // String.
-            if (clazz.equals(String.class)) {
-                incomplete = Strings.isNullOrEmpty(c.getString(key));
-            }
-
-            // Boolean.
-            if (clazz.equals(Boolean.class)) {
-                c.getBoolean(key);
-            }
-
-            // List
-            if (clazz.equals(List.class)) {
-                c.getList(key);
-            }
-
-            if (clazz.equals(Integer.class)) {
-                c.getInt(key);
-            }
-        } catch(ConfigException.Missing e) {
-            LOG.error(e);
-            incomplete = true;
-        } catch(ConfigException.WrongType e) {
-            LOG.error(e);
-            invalid = true;
-        } catch (ConfigException e) {
-            LOG.error(e);
-            throw new InvalidConfigurationException("Parsing error for parameter [" + key + "] in section [" + where + "].");
-        }
-
-        if (incomplete) {
-            throw new IncompleteConfigurationException("Missing parameter [" + key + "] in section [" + where + "].");
-        }
-
-        if (invalid) {
-            throw new InvalidConfigurationException("Invalid value for parameter [" + key + "] in section [" + where + "].");
-        }
-    }
-
-    private void expectEnum(Config c, String key, String where, Class enumClazz) throws InvalidConfigurationException, IncompleteConfigurationException {
-        try {
-            c.getEnum(enumClazz, key);
-        } catch(ConfigException.Missing e) {
-            throw new IncompleteConfigurationException("Missing parameter [" + key + "] in section [" + where + "].");
-        } catch(ConfigException.BadValue e) {
-            LOG.error(e);
-            throw new InvalidConfigurationException("Invalid value for parameter [" + key + "] in section [" + where + "].");
-        }
-    }
-
-    public class InvalidConfigurationException extends Exception {
-
-        public InvalidConfigurationException(String msg) {
-            super(msg);
-        }
-
-        public InvalidConfigurationException(String msg, Throwable e) {
-            super(msg, e);
-        }
-
-    }
-
-    public class IncompleteConfigurationException extends Exception {
-
-        public IncompleteConfigurationException(String msg) {
-            super(msg);
-        }
-
-        public IncompleteConfigurationException(String msg, Throwable t) {
-            super(msg, t);
-        }
-
     }
 
 }

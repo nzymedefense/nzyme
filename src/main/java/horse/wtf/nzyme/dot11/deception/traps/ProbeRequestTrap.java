@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.deception.traps;
 
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.dot11.deception.bluffs.ProbeRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,9 +34,9 @@ public class ProbeRequestTrap extends Trap {
     private final int delaySeconds;
     private final int framesPerExecution;
 
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
 
-    public ProbeRequestTrap(Configuration configuration, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
+    public ProbeRequestTrap(LeaderConfiguration configuration, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
         this.interfaceName = interfaceName;
         this.ssids = ssids;
         this.transmitter = transmitter;
