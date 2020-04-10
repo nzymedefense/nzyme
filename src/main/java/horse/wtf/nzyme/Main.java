@@ -26,6 +26,8 @@ import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.base.BaseConfigurationLoader;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
@@ -77,9 +79,9 @@ public class Main {
 
         switch (baseConfiguration.mode()) {
             case LEADER:
-                LeaderConfiguration configuration = null;
+                LeaderConfiguration leaderConfiguration = null;
                 try {
-                    configuration = new LeaderConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+                    leaderConfiguration = new LeaderConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
                 } catch (InvalidConfigurationException | ConfigException e) {
                     LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
                     System.exit(FAILURE);
@@ -93,7 +95,7 @@ public class Main {
 
 
                 // Database.
-                Database database = new Database(configuration);
+                Database database = new Database(leaderConfiguration);
                 try {
                     database.initializeAndMigrate();
                 } catch (LiquibaseException e) {
@@ -101,7 +103,7 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-                Nzyme nzyme = new NzymeImpl(configuration, database);
+                Nzyme nzyme = new NzymeImpl(leaderConfiguration, database);
                 nzyme.initialize();
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -110,7 +112,22 @@ public class Main {
                 }));
                 break;
             case TRACKER:
-                LOG.info("Starting trackkkkkkkkkker.");
+                TrackerConfiguration trackerConfiguration = null;
+                try {
+                    trackerConfiguration = new TrackerConfigurationLoader(new File(cliArguments.getConfigFilePath())).get();
+                } catch (InvalidConfigurationException | ConfigException e) {
+                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (IncompleteConfigurationException e) {
+                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (FileNotFoundException e) {
+                    LOG.error("Could not read configuration file.", e);
+                    System.exit(FAILURE);
+                }
+
+                NzymeTracker tracker = new NzymeTrackerImpl(trackerConfiguration);
+                tracker.initialize();
         }
 
         while(true) {

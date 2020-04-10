@@ -17,15 +17,23 @@
 
 package horse.wtf.nzyme.bandits.trackers.devices;
 
+import horse.wtf.nzyme.bandits.trackers.TrackerMessageReceiver;
+import jssc.SerialPortException;
+
 public interface TrackerDevice {
 
+    enum TYPE {
+        SX126X_LORA
+    }
+
     void initialize() throws TrackerDeviceInitializationException;
+    void stop();
 
     String getTypeDescription();
-    String getModeDescription();
 
-    void transmit(String message);
-    void onMessageReceived(Runnable runnable);
+    void readLoop();
+    void transmit(byte[] message) throws SerialPortException;
+    void onMessageReceived(TrackerMessageReceiver receiver);
 
     class TrackerDeviceInitializationException extends Exception {
 

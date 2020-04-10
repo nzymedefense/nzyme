@@ -2,6 +2,6 @@ package horse.wtf.nzyme;
 
 public enum Role {
 
-    LEADER, TRACKER
+    LEADER, DRONE, TRACKER
 
 }

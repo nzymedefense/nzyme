@@ -157,3 +157,7 @@ graylog_uplinks: [
     ]
   }
 ]
+
+# Optional: A tracker device to track down physical location of bandits. Please read more in the documentation.
+tracker_device {
+}

@@ -7,6 +7,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
+import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
@@ -48,13 +49,16 @@ public abstract class LeaderConfiguration {
 
     public abstract List<GraylogAddress> graylogUplinks();
 
+    @Nullable
+    public abstract TrackerDeviceConfiguration trackerDevice();
+
     public List<String> ourSSIDs() {
         ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
         dot11Networks().forEach(n -> ssids.add(n.ssid()));
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -77,6 +81,7 @@ public abstract class LeaderConfiguration {
                 .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .graylogUplinks(graylogUplinks)
+                .trackerDevice(trackerDevice)
                 .build();
     }
 
@@ -138,6 +143,8 @@ public abstract class LeaderConfiguration {
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
+
+        public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 
         public abstract LeaderConfiguration build();
     }

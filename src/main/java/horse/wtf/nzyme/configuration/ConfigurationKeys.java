@@ -28,6 +28,7 @@ public class ConfigurationKeys {
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAPS = "802_11_traps";
+    public static final String TRACKER_DEVICE = "tracker_device";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -67,5 +68,8 @@ public class ConfigurationKeys {
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";
+
+    public static final String PARAMETERS = "parameters";
+    public static final String SERIAL_PORT = "serial_port";
 
 }

@@ -15,11 +15,12 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.bandits.trackers;
 
-public interface NzymeTracker {
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 
-    void initialize();
-    void shutdown();
+public interface TrackerMessageReceiver {
+
+    void handleMessage(TrackerMessage.Wrapper message);
 
 }

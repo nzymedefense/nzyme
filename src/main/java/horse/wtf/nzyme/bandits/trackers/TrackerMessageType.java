@@ -15,11 +15,10 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.bandits.trackers;
 
-public interface NzymeTracker {
+public enum TrackerMessageType {
 
-    void initialize();
-    void shutdown();
+    BROADCAST
 
 }

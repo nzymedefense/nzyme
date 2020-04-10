@@ -17,5 +17,52 @@
 
 package horse.wtf.nzyme;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.Executors;
+
 public class NzymeTrackerImpl implements NzymeTracker {
+
+    private static final Logger LOG = LogManager.getLogger(NzymeTrackerImpl.class);
+
+    private final Version version;
+
+    private final TrackerConfiguration configuration;
+
+    private final GroundStation groundStation;
+
+    public NzymeTrackerImpl(TrackerConfiguration configuration) {
+        this.version = new Version();
+        this.configuration = configuration;
+
+        try {
+            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), configuration.trackerDevice());
+        } catch(Exception e) {
+            throw new RuntimeException("Tracker Device configuration failed.", e);
+        }
+    }
+
+    @Override
+    public void initialize() {
+        LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
+
+        // TODO: groundStation.onPingReceived();
+
+        Executors.newSingleThreadExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("ground-station-%d")
+                        .build())
+                .submit(groundStation);
+    }
+
+    @Override
+    public void shutdown() {
+        this.groundStation.stop();
+    }
+
 }

@@ -19,12 +19,10 @@ package horse.wtf.nzyme.configuration.leader;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Enums;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
-import horse.wtf.nzyme.Nzyme;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.*;
@@ -43,13 +41,14 @@ import java.util.List;
 
 public class LeaderConfigurationLoader {
 
-    private static final Logger LOG = LogManager.getLogger(Nzyme.class);
+    private static final Logger LOG = LogManager.getLogger(LeaderConfigurationLoader.class);
 
     private final Config root;
     private final Config general;
     private final Config interfaces;
     private final Config python;
     private final Config alerting;
+    private final Config trackerDevice;
 
     public LeaderConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
@@ -63,6 +62,7 @@ public class LeaderConfigurationLoader {
             this.python = general.getConfig(ConfigurationKeys.PYTHON);
             this.alerting = general.getConfig(ConfigurationKeys.ALERTING);
             this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
+            this.trackerDevice = root.getConfig(ConfigurationKeys.TRACKER_DEVICE);
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -94,7 +94,8 @@ public class LeaderConfigurationLoader {
                 parseDot11Alerts(),
                 parseAlertingRetentionPeriodMinutes(),
                 parseAlertingTrainingPeriodSeconds(),
-                parseGraylogUplinks()
+                parseGraylogUplinks(),
+                parseTrackerDevice()
         );
     }
 
@@ -275,6 +276,18 @@ public class LeaderConfigurationLoader {
         }
     }
 
+    @Nullable
+    private TrackerDeviceConfiguration parseTrackerDevice() {
+        if(trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
+            return TrackerDeviceConfiguration.create(
+                    trackerDevice.getString(ConfigurationKeys.TYPE),
+                    trackerDevice.getConfig(ConfigurationKeys.PARAMETERS)
+            );
+        } else {
+            return null;
+        }
+    }
+
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
@@ -293,6 +306,12 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
+
+        if(trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
+            ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
+            ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+        }
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)
         if (parseAdminPasswordHash().length() != 64) {

@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option java_outer_classname = "TrackerMessage";
+option java_package = "horse.wtf.nzyme.bandits.trackers.protobuf";
+
+/*
+ * Because we are writing all message types across the same transport, we need to be able to de-serialize
+ * a wrapper message and then decide on the type of the message for parsing.
+ */
+message Wrapper {
+    oneof content {
+        Ping ping = 1;
+        Bandit bandit = 2;
+        TrackRequest trackRequest = 3;
+        Contact contact = 4;
+    }
+}
+
+message Ping {
+
+    enum NodeType {
+        LEADER = 0;
+        DRONE = 1;
+        TRACKER = 2;
+    }
+
+    string source = 1;
+    NodeType nodeType = 2;
+    int64 timestamp = 3;
+
+}
+
+message Bandit {
+
+    string uuid = 1;
+    string name = 2;
+    string identifiers = 3;
+    int64 timestamp = 4;
+
+}
+
+message TrackRequest {
+
+    string receiver = 1;
+    string uuid = 2;
+    int64 timestamp= 3;
+
+}
+
+message Contact {
+
+    string source = 1;
+    string uuid = 2;
+    int32 frames = 3;
+    sint32 rssi = 4;
+    int64 timestamp = 5;
+
+}

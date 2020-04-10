@@ -5,3 +5,12 @@ general: {
   # The ID or name of this nzyme tracker. Must be unique.
   id: nzyme-tracker-01
 }
+
+# Please consult the nzyme documentation to find out supported tracker devices.
+tracker_device {
+  type: SX126X_LORA
+  secret: 8FTn82tMCP2nd6d2JriWCaE0SHyK2QCfrnyLYRdRBhNIlWLa4htBO35CVbzk7gCLXcVjRcOkNceSidb2PlF15diI7n6q7W9b
+  parameters: {
+    serial_port: /dev/ttyUSB0
+  }
+}

@@ -27,6 +27,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
+import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
@@ -81,6 +84,7 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -117,6 +121,8 @@ public class NzymeImpl implements Nzyme {
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
     private final ContactIdentifier contactIdentifier;
+
+    private GroundStation groundStation;
 
     private final List<Alert.TYPE_WIDE> configuredAlerts;
 
@@ -270,6 +276,23 @@ public class NzymeImpl implements Nzyme {
             throw new RuntimeException("Could not start REST API.", e);
         }
 
+        // Ground Station.
+        if (configuration.trackerDevice() != null) {
+            try {
+                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), configuration.trackerDevice());
+            } catch(Exception e) {
+                throw new RuntimeException("Tracker Device configuration failed.", e);
+            }
+
+            Executors.newSingleThreadExecutor(
+                    new ThreadFactoryBuilder()
+                            .setDaemon(true)
+                            .setNameFormat("ground-station-%d")
+                            .build())
+                    .submit(() -> groundStation.run());
+        }
+
+        // Initialize probes.
         initializeProbes();
     }
 
@@ -283,6 +306,11 @@ public class NzymeImpl implements Nzyme {
         if (httpServer != null) {
             LOG.info("Stopping REST API.");
             httpServer.shutdownNow();
+        }
+
+        if (this.groundStation != null) {
+            LOG.info("Stopping Ground Station.");
+            this.groundStation.stop();
         }
 
         LOG.info("Shutdown complete.");

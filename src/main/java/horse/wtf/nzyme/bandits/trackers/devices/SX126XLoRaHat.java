@@ -18,35 +18,27 @@
 package horse.wtf.nzyme.bandits.trackers.devices;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Charsets;
+import com.google.protobuf.InvalidProtocolBufferException;
+import horse.wtf.nzyme.bandits.trackers.TrackerMessageReceiver;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.util.Tools;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public class SX126XLoRaHat implements TrackerDevice {
-
-    public enum ParityBit {
-        PB_8N1,
-        PB_8O1,
-        PB_8E1
-    }
-
-    public enum TransmitMode {
-        TRANSPARENT,
-        P2P
-    }
 
     private static final Logger LOG = LogManager.getLogger(SX126XLoRaHat.class);
 
     private final String portName;
 
     private SerialPort serialPort;
-
-    private int channel = 0;
-    private Speeds speeds = null;
-    private short transmitPower = 0;
-    private ModeSettings modeSettings = null;
+    private TrackerMessageReceiver messageReceiver = null;
 
     private boolean initialized = false;
 
@@ -56,34 +48,81 @@ public class SX126XLoRaHat implements TrackerDevice {
 
     @Override
     public void initialize() throws TrackerDeviceInitializationException {
-        // TODO can we find out if we are in register mode or not?
-        /*try {
-            LOG.info("Setting [{}] registers to our default values.", getTypeDescription());
-            writeChannel(18);
-            writeDefaultSpeeds();
-            writeDefaultModes();
-            writeDefaultTransmitPower();
-        } catch (SerialPortException e) {
-            throw new TrackerDeviceInitializationException("Could not write initial configuration.", e);
+        if (this.messageReceiver == null) {
+            throw new TrackerDeviceInitializationException("No message receiver registered.");
         }
 
-        LOG.info("START");
         try {
-            channel = readChannel();
-            speeds = readSpeeds();
-            transmitPower = readTransmitPower();
-            modeSettings = readModeSettings();
+            // Build an initial handle.
+            handle();
         } catch (SerialPortException e) {
-            throw new TrackerDeviceInitializationException("Could not read initial configuration.", e);
+            throw new TrackerDeviceInitializationException("Could not connect to serial port.", e);
         }
-        LOG.info("DONE");*/
 
         initialized = true;
-
-        //LOG.info(getModeDescription());
         LOG.info("Fully initialized [{}].", getTypeDescription());
+    }
 
-        readLoop(); // TODO start outside, pass to callback
+    @Override
+    public void stop() {
+        if (this.serialPort != null && this.serialPort.isOpened()) {
+            try {
+                this.serialPort.closePort();
+            } catch (SerialPortException e) {
+                LOG.warn("Could not close serial port.", e);
+            }
+        }
+    }
+
+    @Override
+    public void readLoop() {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        short nulCount = 0;
+        while(true) {
+            try {
+                byte[] b = handle().readBytes();
+
+                if (b != null) {
+                    if (b[0] == 0x00) {
+                        // Our frames end with three NULL bytes. Register but don't handle further because it's not part of the payload.
+                        nulCount++;
+
+                        // Message is complete!
+                        if (nulCount == 2) {
+                            nulCount = 0;
+                            try {
+                                messageReceiver.handleMessage(TrackerMessage.Wrapper.parseFrom(buffer.toByteArray()));
+                            } catch (InvalidProtocolBufferException e) {
+                                LOG.error("Skipping invalid protobuf message.", e);
+                            }
+                            buffer.reset();
+
+                        }
+
+                        continue;
+                    }
+
+                    if (nulCount > 0) {
+                        // Reset NULL bytes if the three bytes are not in order. Reset counter but handle further because it's part of payload.
+                        nulCount = 0;
+                    }
+
+                    try {
+                        buffer.write(b);
+                    } catch (IOException e) {
+                        LOG.warn("Could not write to buffer.", e);
+                        buffer.reset();
+                        break;
+                    }
+                }
+            } catch(SerialPortException e) {
+                LOG.warn("Error in read loop.", e);
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) { }
+            }
+        }
     }
 
     private SerialPort handle() throws SerialPortException {
@@ -96,296 +135,29 @@ public class SX126XLoRaHat implements TrackerDevice {
         return serialPort;
     }
 
-    private void readLoop() {
-        while(true) {
-            try {
-                byte[] b = handle().readBytes();
-
-                if (b != null) {
-                    LOG.info("RECEIVED: {}", new String(b));
-                }
-            } catch(SerialPortException e) {
-                LOG.warn("Error in read loop.", e);
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) { }
-            }
-        }
-    }
-
-    private int readChannel() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc1, (byte) 0x05, (byte) 0x01});
-        byte[] reply = serialPort.readBytes(4);
-
-        LOG.debug("readChannel() reply: {}", Tools.byteArrayToHexPrettyPrint(reply));
-
-        if (reply.length != 4) {
-            throw new RuntimeException("Unexpected reply: " + Tools.byteArrayToHexPrettyPrint(reply));
-        }
-
-        return reply[3];
-    }
-
-    private Speeds readSpeeds() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc1, (byte) 0x03, (byte) 0x01});
-        byte[] reply = serialPort.readBytes(4);
-
-        LOG.debug("readAirSpeed() reply: {}", Tools.byteArrayToHexPrettyPrint(reply));
-
-        if (reply.length != 4) {
-            throw new RuntimeException("Unexpected reply: " + Tools.byteArrayToHexPrettyPrint(reply));
-        }
-
-        int airSpeed;
-        switch(reply[3] & 0b11100000) {
-            case 0b00000000:
-                airSpeed = 300;
-                break;
-            case 0b00100000:
-                airSpeed = 1200;
-                break;
-            case 0b01000000:
-                airSpeed = 2400;
-                break;
-            case 0b01100000:
-                airSpeed = 4800;
-                break;
-            case 0b10000000:
-                airSpeed = 9600;
-                break;
-            case 0b10100000:
-                airSpeed = 19200;
-                break;
-            case 0b11000000:
-                airSpeed = 38400;
-                break;
-            case 0b11100000:
-                airSpeed = 62500;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected air speed value");
-        }
-
-        ParityBit parityBit;
-        switch(reply[3] & 0b00011000) {
-            case 0b00000000:
-            case 0b00011000:
-                parityBit = ParityBit.PB_8N1;
-                break;
-            case 0b00001000:
-                parityBit = ParityBit.PB_8O1;
-                break;
-            case 0b00010000:
-                parityBit = ParityBit.PB_8E1;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected parity bit value");
-        }
-
-        int baudRate;
-        switch(reply[3] & 0b00000111) {
-            case 0b00000000:
-                baudRate = 1200;
-                break;
-            case 0b00000001:
-                baudRate = 2400;
-                break;
-            case 0b00000010:
-                baudRate = 4800;
-                break;
-            case 0b00000011:
-                baudRate = 9600;
-                break;
-            case 0b00000100:
-                baudRate = 19200;
-                break;
-            case 0b00000101:
-                baudRate = 38400;
-                break;
-            case 0b00000110:
-                baudRate = 57600;
-                break;
-            case 0b00000111:
-                baudRate = 115200;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected baud rate value");
-        }
-
-        return Speeds.create(airSpeed, parityBit, baudRate);
-    }
-
-    public short readTransmitPower() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc1, (byte) 0x04, (byte) 0x01});
-        byte[] reply = serialPort.readBytes(4);
-
-        LOG.debug("readTransmitPower() reply: {}", Tools.byteArrayToHexPrettyPrint(reply));
-
-        if (reply.length != 4) {
-            throw new RuntimeException("Unexpected reply: " + Tools.byteArrayToHexPrettyPrint(reply));
-        }
-
-        switch(reply[3] & 0b11000000) {
-            case 0b00000000:
-                return 22;
-            case 0b01000000:
-                return 17;
-            case 0b10000000:
-                return 12;
-            case 0b11000000:
-                return 10;
-            default:
-                throw new IllegalStateException("Unexpected transmit power value");
-        }
-    }
-
-    public ModeSettings readModeSettings() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc1, (byte) 0x06, (byte) 0x01});
-        byte[] reply = serialPort.readBytes(4);
-
-        LOG.debug("readModeSettings() reply: {}", Tools.byteArrayToHexPrettyPrint(reply));
-
-        if (reply.length != 4) {
-            throw new RuntimeException("Unexpected reply: " + Tools.byteArrayToHexPrettyPrint(reply));
-        }
-
-        boolean rssiByteEnabled;
-        switch(reply[3] & 0b00000001) {
-            case 0b00000000:
-                rssiByteEnabled = false;
-                break;
-            case 0b00000001:
-                rssiByteEnabled = true;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected RSSI byte value");
-        }
-
-        TransmitMode transmitMode;
-        switch(reply[3] & 0b00000010) {
-            case 0b00000000:
-                transmitMode = TransmitMode.TRANSPARENT;
-                break;
-            case 0b00000010:
-                transmitMode = TransmitMode.P2P;
-                break;
-            default:
-                throw new IllegalStateException("Unexpected transmit mode value");
-        }
-
-        return ModeSettings.create(rssiByteEnabled, transmitMode);
-    }
-
-    public void writeChannel(int channel) throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc0, (byte) 0x05, (byte) 0x01, (byte) channel});
-        serialPort.readBytes(4);
-    }
-
-    public void writeDefaultSpeeds() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc0, (byte) 0x03, (byte) 0x01, (byte) 0b00100011});
-        serialPort.readBytes(4);
-    }
-
-    public void writeDefaultModes() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc0, (byte) 0x06, (byte) 0x01, (byte) 0b00000001});
-        serialPort.readBytes(4);
-    }
-
-    public void writeDefaultTransmitPower() throws SerialPortException {
-        handle().writeBytes(new byte[]{(byte) 0xc0, (byte) 0x04, (byte) 0x01, (byte) 0b00000000});
-        serialPort.readBytes(4);
-    }
-
     @Override
     public String getTypeDescription() {
         return "Waveshare SX126X LoRa HAT";
     }
 
     @Override
-    public String getModeDescription() {
-        if (!initialized) {
-            return "not initialized";
+    public void transmit(byte[] message) throws SerialPortException {
+        try {
+            ByteArrayOutputStream payload = new ByteArrayOutputStream();
+            payload.write(message);
+            payload.write(0x00);
+            payload.write(0x00);
+            payload.write(0x00);
+
+            handle().writeBytes(payload.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String sb = "Channel " + channel + ", " +
-                speeds.airSpeed() / 1000.0 + "K air speed, " +
-                transmitPower + "dBm, " +
-                modeSettings.transmitMode() + ", " +
-                (modeSettings.rssiByteEnabled() ? "RSSI byte, " : "" ) +
-                speeds.baudRate() + "bps UART, " +
-                speeds.parityBit();
-
-        return sb;
     }
 
     @Override
-    public void transmit(String message) {
-
-    }
-
-    @Override
-    public void onMessageReceived(Runnable runnable) {
-        runnable.run();
-    }
-
-    @AutoValue
-    public static abstract class Speeds {
-
-        public abstract int airSpeed();
-        public abstract ParityBit parityBit();
-        public abstract int baudRate();
-
-        public static Speeds create(int airSpeed, ParityBit parityBit, int baudRate) {
-            return builder()
-                    .airSpeed(airSpeed)
-                    .parityBit(parityBit)
-                    .baudRate(baudRate)
-                    .build();
-        }
-
-        public static Builder builder() {
-            return new AutoValue_SX126XLoRaHat_Speeds.Builder();
-        }
-
-        @AutoValue.Builder
-        public abstract static class Builder {
-            public abstract Builder airSpeed(int airSpeed);
-
-            public abstract Builder parityBit(ParityBit parityBit);
-
-            public abstract Builder baudRate(int baudRate);
-
-            public abstract Speeds build();
-        }
-    }
-
-    @AutoValue
-    public static abstract class ModeSettings {
-
-        public abstract boolean rssiByteEnabled();
-        public abstract TransmitMode transmitMode();
-
-        public static ModeSettings create(boolean rssiByteEnabled, TransmitMode transmitMode) {
-            return builder()
-                    .rssiByteEnabled(rssiByteEnabled)
-                    .transmitMode(transmitMode)
-                    .build();
-        }
-
-        public static Builder builder() {
-            return new AutoValue_SX126XLoRaHat_ModeSettings.Builder();
-        }
-
-        @AutoValue.Builder
-        public abstract static class Builder {
-            public abstract Builder rssiByteEnabled(boolean rssiByteEnabled);
-
-            public abstract Builder transmitMode(TransmitMode transmitMode);
-
-            public abstract ModeSettings build();
-        }
-
+    public void onMessageReceived(TrackerMessageReceiver receiver) {
+        this.messageReceiver = receiver;
     }
 
 }
