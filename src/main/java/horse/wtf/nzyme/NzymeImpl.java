@@ -28,6 +28,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
@@ -61,10 +62,7 @@ import horse.wtf.nzyme.rest.InjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
-import horse.wtf.nzyme.rest.resources.AlertsResource;
-import horse.wtf.nzyme.rest.resources.BanditsResource;
-import horse.wtf.nzyme.rest.resources.NetworksResource;
-import horse.wtf.nzyme.rest.resources.PingResource;
+import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
@@ -121,6 +119,7 @@ public class NzymeImpl implements Nzyme {
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
     private final ContactIdentifier contactIdentifier;
+    private final TrackerManager trackerManager;
 
     private GroundStation groundStation;
 
@@ -161,6 +160,8 @@ public class NzymeImpl implements Nzyme {
         this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
         this.contactIdentifier = new ContactIdentifier(this);
+
+        this.trackerManager = new TrackerManager();
 
         // Disable TRAINING status when training period is over.
         LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
@@ -236,6 +237,7 @@ public class NzymeImpl implements Nzyme {
         resourceConfig.register(AlertsResource.class);
         resourceConfig.register(BanditsResource.class);
         resourceConfig.register(ProbesResource.class);
+        resourceConfig.register(TrackersResource.class);
         resourceConfig.register(MetricsResource.class);
         resourceConfig.register(StatisticsResource.class);
         resourceConfig.register(NetworksResource.class);
@@ -279,7 +281,8 @@ public class NzymeImpl implements Nzyme {
         // Ground Station.
         if (configuration.trackerDevice() != null) {
             try {
-                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), configuration.trackerDevice());
+                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), version.getVersion().toString(), configuration.trackerDevice());
+                this.groundStation.onPingReceived(this.trackerManager::registerTrackerPing);
             } catch(Exception e) {
                 throw new RuntimeException("Tracker Device configuration failed.", e);
             }
@@ -425,6 +428,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public ContactIdentifier getContactIdentifier() {
         return contactIdentifier;
+    }
+
+    @Override
+    public TrackerManager getTrackerManager() {
+        return trackerManager;
     }
 
     @Override

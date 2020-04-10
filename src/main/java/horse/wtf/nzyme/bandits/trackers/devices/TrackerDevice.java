@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.bandits.trackers.devices;
 
-import horse.wtf.nzyme.bandits.trackers.TrackerMessageReceiver;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.WrapperMessageHandler;
 import jssc.SerialPortException;
 
 public interface TrackerDevice {
@@ -33,7 +33,7 @@ public interface TrackerDevice {
 
     void readLoop();
     void transmit(byte[] message) throws SerialPortException;
-    void onMessageReceived(TrackerMessageReceiver receiver);
+    void onMessageReceived(WrapperMessageHandler receiver);
 
     class TrackerDeviceInitializationException extends Exception {
 

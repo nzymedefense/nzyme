@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
@@ -181,6 +182,11 @@ public class MockNzyme implements Nzyme {
     @Override
     public ContactIdentifier getContactIdentifier() {
         return contactIdentifier;
+    }
+
+    @Override
+    public TrackerManager getTrackerManager() {
+        return null;
     }
 
     @Override

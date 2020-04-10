@@ -23,6 +23,7 @@ import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.PingMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
@@ -41,16 +42,14 @@ public class GroundStation implements Runnable {
     private static final Logger LOG = LogManager.getLogger(GroundStation.class);
 
     private final TrackerDevice trackerDevice;
-    private final Role nzymeRole;
-    private final String nzymeId;
 
     private final Queue<byte[]> transmitQueue;
 
-    public GroundStation(Role nzymeRole, String nzymeId, TrackerDeviceConfiguration config) throws ConfigException {
+    private PingMessageHandler pingHandler;
+
+    public GroundStation(Role nzymeRole, String nzymeId, String nzymeVersion, TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
         this.transmitQueue = EvictingQueue.create(100);
-        this.nzymeRole = nzymeRole;
-        this.nzymeId = nzymeId;
 
         TrackerDevice.TYPE deviceType;
         try {
@@ -68,11 +67,15 @@ public class GroundStation implements Runnable {
                 throw new IllegalStateException("Unexpected value: " + deviceType);
         }
 
-        this.trackerDevice.onMessageReceived(new TrackerMessageReceiver() {
-            @Override
-            public void handleMessage(TrackerMessage.Wrapper message) {
-                // SWITCH between types here and handle according to GS config.
+        // Handle incoming messages.
+        this.trackerDevice.onMessageReceived(message -> {
+            if (message.hasPing()) {
+                if (pingHandler != null) {
+                    pingHandler.handle(message.getPing());
+                }
             }
+
+            // TODO implement all types
         });
 
         // Send our pings.
@@ -80,18 +83,21 @@ public class GroundStation implements Runnable {
                 .setDaemon(true)
                 .setNameFormat("groundstation-pings-%d")
                 .build())
-                .scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        transmit(TrackerMessage.Wrapper.newBuilder()
-                                .setPing(TrackerMessage.Ping.newBuilder()
-                                        .setSource(nzymeId)
-                                        .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
-                                        .setTimestamp(DateTime.now().getMillis())
-                                        .build())
-                                .build());
-                    }
-                }, 0, 5, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(() -> transmit(TrackerMessage.Wrapper.newBuilder()
+                        .setPing(TrackerMessage.Ping.newBuilder()
+                                .setSource(nzymeId)
+                                .setVersion(nzymeVersion)
+                                .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
+                                .setTimestamp(DateTime.now().getMillis())
+                                .build())
+                        .build()), 0, 5, TimeUnit.SECONDS);
+
+        // Listen for messages.
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("groundstation-listener-%d")
+                .build())
+                .submit(trackerDevice::readLoop);
 
         LOG.info("Ground Station is online.");
     }
@@ -119,6 +125,10 @@ public class GroundStation implements Runnable {
 
     public void transmit(@NotNull TrackerMessage.Wrapper message) {
         transmitQueue.add(message.toByteArray());
+    }
+
+    public void onPingReceived(PingMessageHandler pingHandler) {
+        this.pingHandler = pingHandler;
     }
 
 }

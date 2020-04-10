@@ -40,7 +40,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
         this.configuration = configuration;
 
         try {
-            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), configuration.trackerDevice());
+            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), version.getVersion().toString(), configuration.trackerDevice());
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }
@@ -50,7 +50,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
     public void initialize() {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
 
-        // TODO: groundStation.onPingReceived();
+        groundStation.onPingReceived(ping -> LOG.info("Received Ping!"));
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

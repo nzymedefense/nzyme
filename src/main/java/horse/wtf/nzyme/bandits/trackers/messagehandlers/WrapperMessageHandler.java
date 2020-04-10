@@ -15,10 +15,12 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.bandits.trackers;
+package horse.wtf.nzyme.bandits.trackers.messagehandlers;
 
-public enum TrackerMessageType {
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 
-    BROADCAST
+public interface WrapperMessageHandler {
+
+    void handle(TrackerMessage.Wrapper message);
 
 }

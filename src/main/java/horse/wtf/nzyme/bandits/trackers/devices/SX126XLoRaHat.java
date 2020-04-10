@@ -17,12 +17,9 @@
 
 package horse.wtf.nzyme.bandits.trackers.devices;
 
-import com.google.auto.value.AutoValue;
-import com.google.common.base.Charsets;
 import com.google.protobuf.InvalidProtocolBufferException;
-import horse.wtf.nzyme.bandits.trackers.TrackerMessageReceiver;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.WrapperMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
-import horse.wtf.nzyme.util.Tools;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import org.apache.logging.log4j.LogManager;
@@ -38,9 +35,7 @@ public class SX126XLoRaHat implements TrackerDevice {
     private final String portName;
 
     private SerialPort serialPort;
-    private TrackerMessageReceiver messageReceiver = null;
-
-    private boolean initialized = false;
+    private WrapperMessageHandler messageHandler = null;
 
     public SX126XLoRaHat(String portName) {
         this.portName = portName;
@@ -48,7 +43,7 @@ public class SX126XLoRaHat implements TrackerDevice {
 
     @Override
     public void initialize() throws TrackerDeviceInitializationException {
-        if (this.messageReceiver == null) {
+        if (this.messageHandler == null) {
             throw new TrackerDeviceInitializationException("No message receiver registered.");
         }
 
@@ -59,7 +54,6 @@ public class SX126XLoRaHat implements TrackerDevice {
             throw new TrackerDeviceInitializationException("Could not connect to serial port.", e);
         }
 
-        initialized = true;
         LOG.info("Fully initialized [{}].", getTypeDescription());
     }
 
@@ -91,7 +85,7 @@ public class SX126XLoRaHat implements TrackerDevice {
                         if (nulCount == 2) {
                             nulCount = 0;
                             try {
-                                messageReceiver.handleMessage(TrackerMessage.Wrapper.parseFrom(buffer.toByteArray()));
+                                messageHandler.handle(TrackerMessage.Wrapper.parseFrom(buffer.toByteArray()));
                             } catch (InvalidProtocolBufferException e) {
                                 LOG.error("Skipping invalid protobuf message.", e);
                             }
@@ -156,8 +150,8 @@ public class SX126XLoRaHat implements TrackerDevice {
     }
 
     @Override
-    public void onMessageReceived(TrackerMessageReceiver receiver) {
-        this.messageReceiver = receiver;
+    public void onMessageReceived(WrapperMessageHandler receiver) {
+        this.messageHandler = receiver;
     }
 
 }

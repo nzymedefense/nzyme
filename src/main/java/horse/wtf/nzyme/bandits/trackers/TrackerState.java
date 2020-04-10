@@ -17,10 +17,8 @@
 
 package horse.wtf.nzyme.bandits.trackers;
 
-import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+public enum TrackerState {
 
-public interface TrackerMessageReceiver {
-
-    void handleMessage(TrackerMessage.Wrapper message);
+    ONLINE, DARK
 
 }
