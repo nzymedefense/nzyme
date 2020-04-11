@@ -1,0 +1,6 @@
+Requires Python 3.
+
+Make sure to use the right serial Python module:
+
+pip3 uninstall serial
+pip3 install pyserial
