@@ -123,7 +123,7 @@ public class SX126XLoRaHat implements TrackerDevice {
         if (serialPort == null || !serialPort.isOpened()) {
             serialPort = new SerialPort(this.portName);
             serialPort.openPort();
-            serialPort.setParams(2400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serialPort.setParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         }
 
         return serialPort;
