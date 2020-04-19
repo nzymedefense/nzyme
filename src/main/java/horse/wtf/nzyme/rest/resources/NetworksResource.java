@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
@@ -62,7 +62,7 @@ public class NetworksResource {
             "ORDER BY bucket ASC";
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @Inject
     private ObjectMapper om;

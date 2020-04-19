@@ -18,10 +18,9 @@
 package horse.wtf.nzyme.rest.resources.system;
 
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.metrics.GaugeResponse;
 import horse.wtf.nzyme.rest.responses.metrics.MeterResponse;
@@ -35,7 +34,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.OutputStream;
 import java.util.Map;
 
 @Path("/api/system/metrics")
@@ -44,7 +42,7 @@ import java.util.Map;
 public class MetricsResource {
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     public Response all() {

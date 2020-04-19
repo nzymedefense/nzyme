@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
@@ -38,7 +39,7 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import java.security.Key;
 import java.util.List;
 
-public interface Nzyme {
+public interface NzymeLeader {
 
     void initialize();
     void shutdown();
@@ -64,6 +65,7 @@ public interface Nzyme {
     ContactIdentifier getContactIdentifier();
 
     TrackerManager getTrackerManager();
+    GroundStation getGroundStation();
 
     SystemStatus getSystemStatus();
 

@@ -20,7 +20,7 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 
 import java.util.ArrayList;
@@ -55,7 +55,7 @@ public abstract class Channel {
         }
     }
 
-    public static Channel create(Nzyme nzyme,
+    public static Channel create(NzymeLeader nzyme,
                                  int channelNumber,
                                  String bssid,
                                  String ssid,

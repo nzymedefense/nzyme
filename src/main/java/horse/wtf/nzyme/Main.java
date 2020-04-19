@@ -103,7 +103,7 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-                Nzyme nzyme = new NzymeImpl(leaderConfiguration, database);
+                NzymeLeader nzyme = new NzymeLeaderImpl(leaderConfiguration, database);
                 nzyme.initialize();
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {

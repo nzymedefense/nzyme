@@ -32,7 +32,7 @@ public class SSIDIBanditdentifier extends BanditIdentifier {
     private final String listDescription;
 
     public SSIDIBanditdentifier(List<String> ssids, Long databaseID, UUID uuid) {
-        super(databaseID, uuid);
+        super(databaseID, uuid, TYPE.SSID);
 
         this.ssids = ssids;
         this.listDescription = ssids.stream()

@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.networks.beaconrate;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.util.Tools;
@@ -30,7 +30,7 @@ public class BeaconRateManager {
     private final Database database;
     private final SystemStatus systemStatus;
 
-    public BeaconRateManager(Nzyme nzyme) {
+    public BeaconRateManager(NzymeLeader nzyme) {
         this.database = nzyme.getDatabase();
         this.systemStatus = nzyme.getSystemStatus();
     }

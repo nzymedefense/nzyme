@@ -36,7 +36,7 @@ public class PwnagotchiBanditIdentifier extends BanditIdentifier {
     private final PwnagotchiAdvertisementExtractor extractor;
 
     public PwnagotchiBanditIdentifier(String identity, Long databaseID, UUID uuid) {
-        super(databaseID, uuid);
+        super(databaseID, uuid, TYPE.PWNAGOTCHI_IDENTITY);
 
         this.extractor = new PwnagotchiAdvertisementExtractor();
         this.identity = identity;

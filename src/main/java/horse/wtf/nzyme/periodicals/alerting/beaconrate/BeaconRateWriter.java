@@ -17,10 +17,9 @@
 
 package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.networks.BSSID;
-import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.periodicals.Periodical;
@@ -34,7 +33,7 @@ public class BeaconRateWriter extends Periodical {
     private final Networks networks;
     private final Database database;
 
-    public BeaconRateWriter(Nzyme nzyme) {
+    public BeaconRateWriter(NzymeLeader nzyme) {
         this.networks = nzyme.getNetworks();
         this.database = nzyme.getDatabase();
     }

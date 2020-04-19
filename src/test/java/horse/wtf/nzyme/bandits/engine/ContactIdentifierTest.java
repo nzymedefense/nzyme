@@ -3,7 +3,7 @@ package horse.wtf.nzyme.bandits.engine;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.DefaultBandits;
@@ -33,7 +33,7 @@ public class ContactIdentifierTest {
 
     @BeforeMethod
     public void cleanDatabase() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits"));
     }
 

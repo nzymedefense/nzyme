@@ -41,12 +41,18 @@ public abstract class BanditIdentifier {
     public abstract Optional<Boolean> matches(Dot11BeaconFrame frame);
     public abstract Optional<Boolean> matches(Dot11ProbeResponseFrame frame);
 
-    private Long databaseID;
-    private UUID uuid;
+    private final Long databaseID;
+    private final UUID uuid;
+    private final TYPE type;
 
-    public BanditIdentifier(Long databaseID, UUID uuid) {
+    public BanditIdentifier(Long databaseID, UUID uuid, TYPE type) {
         this.databaseID = databaseID;
         this.uuid = uuid;
+        this.type = type;
+    }
+
+    public TYPE getType() {
+        return type;
     }
 
     public long getDatabaseID() {

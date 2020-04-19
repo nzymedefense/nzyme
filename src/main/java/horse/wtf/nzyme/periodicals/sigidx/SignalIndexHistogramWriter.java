@@ -2,7 +2,7 @@ package horse.wtf.nzyme.periodicals.sigidx;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
@@ -14,10 +14,10 @@ public class SignalIndexHistogramWriter extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(SignalIndexHistogramWriter.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
     private final ObjectMapper om;
 
-    public SignalIndexHistogramWriter(Nzyme nzyme) {
+    public SignalIndexHistogramWriter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
         this.om = new ObjectMapper();
     }

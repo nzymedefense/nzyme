@@ -2,11 +2,10 @@ package horse.wtf.nzyme.dot11.handlers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeRequestFrameParser;
-import horse.wtf.nzyme.dot11.parsers.Dot11ProbeRequestFrameParserTest;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -22,7 +21,7 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -44,7 +43,7 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleBroadcastFrame() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);

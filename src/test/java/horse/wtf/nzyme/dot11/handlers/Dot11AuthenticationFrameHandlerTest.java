@@ -2,7 +2,7 @@ package horse.wtf.nzyme.dot11.handlers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
@@ -21,7 +21,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleOpenSystemSeq1() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -45,7 +45,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleOpenSystemSeq2() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -71,7 +71,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleSharedKmySeq1() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -95,7 +95,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleSharedKmySeq2() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -119,7 +119,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleSharedKmySeq4() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -145,7 +145,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandleSharedKmySeq4Failure() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);

@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
@@ -45,7 +45,7 @@ public class TrackersResource {
     private static final int DARK_TIMEOUT_SECONDS = 15;
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     public Response findAll() {

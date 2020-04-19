@@ -33,7 +33,7 @@ public class SignalStrengthBanditIdentifier extends BanditIdentifier {
     private final int to;
 
     public SignalStrengthBanditIdentifier(int from, int to, Long databaseId, UUID uuid) {
-        super(databaseId, uuid);
+        super(databaseId, uuid, TYPE.SIGNAL_STRENGTH);
 
         if (from > 0 || to < -100 || from <= to) {
             throw new IllegalArgumentException();

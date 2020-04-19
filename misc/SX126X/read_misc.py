@@ -7,12 +7,12 @@ def read_reply(s):
       time.sleep(0.1)
       buf = s.read(s.inWaiting())
       if len(buf) == 4:
-        print("Current Speeds: " + str(buf[3]))
+        print("Current misc settings: " + str(buf[3]))
         break
 
 # CONFIG
-serial_port = "/dev/ttyUSB0"
-speeds = 101 # Decimal representation of the configuration bitmask.
+serial_port =  "/dev/ttyUSB0"
+#iscs = 18
 # CONFIG END
 
 print("!!!!! MAKE SURE TO SET THE BOARD TO CONFIGURATION MODE. M0 = short, M1 = open. Timeout? Possibly an incorrect serial baud rate.")
@@ -22,16 +22,9 @@ s.flushInput()
 time.sleep(0.1)
 
 print("Connected to serial port.")
-print("Reading current speeds configuration...")
+print("Reading current misc configuration...")
 
-s.write(b'\xC1\x03\x01')
-read_reply(s)
-
-print("Setting speeds...")
-
-command = bytearray(b'\xC0\x03\x01')
-command.append(speeds)
-s.write(command)
+s.write(b'\xC1\x06\x01')
 read_reply(s)
 
 print("Complete.")

@@ -20,7 +20,7 @@ package horse.wtf.nzyme.alerts.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,9 +38,9 @@ public class AlertsService {
     private static final String ACTIVE_ALERTS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '10 minutes') " +
             "ORDER BY alert_uuid";
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public AlertsService(Nzyme nzyme) {
+    public AlertsService(NzymeLeader nzyme) {
         this(
                 nzyme,
                 30,
@@ -50,7 +50,7 @@ public class AlertsService {
         );
     }
 
-    public AlertsService(Nzyme nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionDuration, TimeUnit retentionDurationTimeUnit) {
+    public AlertsService(NzymeLeader nzyme, int retentionCheckInterval, TimeUnit retentionCheckTimeUnit, int retentionDuration, TimeUnit retentionDurationTimeUnit) {
         this.nzyme = nzyme;
 
         // Retention cleaner.

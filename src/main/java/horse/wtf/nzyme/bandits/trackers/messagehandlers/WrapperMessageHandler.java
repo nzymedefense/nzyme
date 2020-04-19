@@ -21,6 +21,6 @@ import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 
 public interface WrapperMessageHandler {
 
-    void handle(TrackerMessage.Wrapper message);
+    void handle(TrackerMessage.Wrapper message, int rssi);
 
 }

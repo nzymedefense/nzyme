@@ -19,8 +19,8 @@ package horse.wtf.nzyme.bandits.trackers.messagehandlers;
 
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 
-public interface PingMessageHandler {
+public interface BanditBroadcastMessageHandler {
 
-    void handle(TrackerMessage.Ping ping, int rssi);
+    void handle(TrackerMessage.BanditBroadcast broadcast);
 
 }

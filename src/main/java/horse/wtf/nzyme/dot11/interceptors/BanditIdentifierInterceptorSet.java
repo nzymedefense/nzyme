@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
@@ -32,9 +32,9 @@ import java.util.List;
 
 public class BanditIdentifierInterceptorSet {
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public BanditIdentifierInterceptorSet(Nzyme nzyme) {
+    public BanditIdentifierInterceptorSet(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

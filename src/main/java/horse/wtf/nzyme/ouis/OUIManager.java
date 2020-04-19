@@ -23,7 +23,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.util.MetricNames;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,11 +47,11 @@ public class OUIManager {
 
     private ImmutableMap<String, String> ouis;
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     private final Timer lookupTimer;
 
-    public OUIManager(Nzyme nzyme) {
+    public OUIManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.ouis = ImmutableMap.<String, String>builder().build();

@@ -19,7 +19,7 @@ package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.alerts.BeaconRateAnomalyAlert;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
@@ -44,7 +44,7 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
 
     private final Timer timer;
 
-    public BeaconRateAnomalyAlertMonitor(Nzyme nzyme) {
+    public BeaconRateAnomalyAlertMonitor(NzymeLeader nzyme) {
         this.networks = nzyme.getNetworks();
         this.configuration = nzyme.getConfiguration();
         this.alertsService = nzyme.getAlertsService();

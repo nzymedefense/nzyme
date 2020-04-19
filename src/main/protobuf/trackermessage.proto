@@ -10,7 +10,7 @@ option java_package = "horse.wtf.nzyme.bandits.trackers.protobuf";
 message Wrapper {
     oneof content {
         Ping ping = 1;
-        Bandit bandit = 2;
+        BanditBroadcast banditBroadcast = 2;
         TrackRequest trackRequest = 3;
         Contact contact = 4;
     }
@@ -31,12 +31,10 @@ message Ping {
 
 }
 
-message Bandit {
+message BanditBroadcast {
 
-    string uuid = 1;
-    string name = 2;
-    string identifiers = 3;
-    int64 timestamp = 4;
+    string bandit = 1;
+    int64 timestamp = 2;
 
 }
 

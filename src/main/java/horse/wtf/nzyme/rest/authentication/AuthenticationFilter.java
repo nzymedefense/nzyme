@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.rest.authentication;
 
 import com.google.common.net.HttpHeaders;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
@@ -42,11 +42,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     private static final Logger LOG = LogManager.getLogger(AuthenticationFilter.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    public AuthenticationFilter(Nzyme nzyme) {
+    public AuthenticationFilter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

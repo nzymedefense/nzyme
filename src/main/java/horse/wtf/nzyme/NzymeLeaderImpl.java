@@ -27,10 +27,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
-import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
-import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
@@ -82,7 +81,6 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -93,9 +91,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-public class NzymeImpl implements Nzyme {
+public class NzymeLeaderImpl implements NzymeLeader {
 
-    private static final Logger LOG = LogManager.getLogger(NzymeImpl.class);
+    private static final Logger LOG = LogManager.getLogger(NzymeLeaderImpl.class);
 
     private final Version version;
 
@@ -127,7 +125,7 @@ public class NzymeImpl implements Nzyme {
 
     private HttpServer httpServer;
 
-    public NzymeImpl(LeaderConfiguration configuration, Database database) {
+    public NzymeLeaderImpl(LeaderConfiguration configuration, Database database) {
         this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
@@ -283,6 +281,8 @@ public class NzymeImpl implements Nzyme {
             try {
                 this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), version.getVersion().toString(), configuration.trackerDevice());
                 this.groundStation.onPingReceived(this.trackerManager::registerTrackerPing);
+
+                new BanditListBroadcaster(this).initialize();
             } catch(Exception e) {
                 throw new RuntimeException("Tracker Device configuration failed.", e);
             }
@@ -433,6 +433,11 @@ public class NzymeImpl implements Nzyme {
     @Override
     public TrackerManager getTrackerManager() {
         return trackerManager;
+    }
+
+    @Override
+    public GroundStation getGroundStation() {
+        return groundStation;
     }
 
     @Override

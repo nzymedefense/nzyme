@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +29,7 @@ public class BeaconRateCleaner extends Periodical {
 
     private final Database database;
 
-    public BeaconRateCleaner(Nzyme nzyme) {
+    public BeaconRateCleaner(NzymeLeader nzyme) {
         this.database = nzyme.getDatabase();
     }
 

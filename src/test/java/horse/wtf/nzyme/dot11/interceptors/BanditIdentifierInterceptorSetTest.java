@@ -2,7 +2,7 @@ package horse.wtf.nzyme.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.SSIDIBanditdentifier;
@@ -30,13 +30,13 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
 
     @BeforeMethod
     public void cleanDatabase() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits"));
     }
 
     @Test
     public void testGetInterceptors() throws MalformedFrameException, Exception {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 

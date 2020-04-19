@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.authentication;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateSessionRequest;
 import horse.wtf.nzyme.rest.responses.authentication.SessionInformationResponse;
@@ -47,7 +47,7 @@ public class AuthenticationResource {
     private static final Logger LOG = LogManager.getLogger(AuthenticationResource.class);
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @Context
     SecurityContext securityContext;

@@ -18,10 +18,9 @@
 package horse.wtf.nzyme.dot11.networks.signalstrength.tracks;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
 import horse.wtf.nzyme.dot11.networks.SSID;
@@ -42,9 +41,9 @@ public class SignalWaterfallHistogramLoader {
             "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval <lookback>) " +
             "ORDER BY created_at ASC";
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public SignalWaterfallHistogramLoader(Nzyme nzyme) {
+    public SignalWaterfallHistogramLoader(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

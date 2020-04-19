@@ -2,7 +2,7 @@ package horse.wtf.nzyme.dot11.handlers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
@@ -21,7 +21,7 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);

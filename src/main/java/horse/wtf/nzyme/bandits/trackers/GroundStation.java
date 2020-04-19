@@ -23,11 +23,11 @@ import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.PingMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
-import jssc.SerialPortException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -46,6 +46,7 @@ public class GroundStation implements Runnable {
     private final Queue<byte[]> transmitQueue;
 
     private PingMessageHandler pingHandler;
+    private BanditBroadcastMessageHandler banditBroadcastHandler;
 
     public GroundStation(Role nzymeRole, String nzymeId, String nzymeVersion, TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
@@ -68,10 +69,16 @@ public class GroundStation implements Runnable {
         }
 
         // Handle incoming messages.
-        this.trackerDevice.onMessageReceived(message -> {
+        this.trackerDevice.onMessageReceived((message, rssi) -> {
             if (message.hasPing()) {
                 if (pingHandler != null) {
-                    pingHandler.handle(message.getPing());
+                    pingHandler.handle(message.getPing(), rssi);
+                }
+            }
+
+            if (message.hasBanditBroadcast()) {
+                if (banditBroadcastHandler != null) {
+                    banditBroadcastHandler.handle(message.getBanditBroadcast());
                 }
             }
 
@@ -83,14 +90,20 @@ public class GroundStation implements Runnable {
                 .setDaemon(true)
                 .setNameFormat("groundstation-pings-%d")
                 .build())
-                .scheduleAtFixedRate(() -> transmit(TrackerMessage.Wrapper.newBuilder()
-                        .setPing(TrackerMessage.Ping.newBuilder()
-                                .setSource(nzymeId)
-                                .setVersion(nzymeVersion)
-                                .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
-                                .setTimestamp(DateTime.now().getMillis())
-                                .build())
-                        .build()), 0, 5, TimeUnit.SECONDS);
+                .scheduleAtFixedRate(() -> {
+                    try {
+                        transmit(TrackerMessage.Wrapper.newBuilder()
+                                .setPing(TrackerMessage.Ping.newBuilder()
+                                        .setSource(nzymeId)
+                                        .setVersion(nzymeVersion)
+                                        .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
+                                        .setTimestamp(DateTime.now().getMillis())
+                                        .build())
+                                .build());
+                    } catch(Exception e) {
+                        LOG.error("Could not send Ground Station ping.", e);
+                    }
+                }, 0, 5, TimeUnit.SECONDS);
 
         // Listen for messages.
         Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
@@ -107,9 +120,10 @@ public class GroundStation implements Runnable {
         while(true) {
             try {
                 while(transmitQueue.peek() != null) {
-                    trackerDevice.transmit(transmitQueue.poll());
+                    byte[] msg = transmitQueue.poll();
+                    trackerDevice.transmit(msg);
                 }
-            } catch (SerialPortException e) {
+            } catch (Exception e) {
                 LOG.error("Could not transmit message to trackers.", e);
             }
 
@@ -129,6 +143,10 @@ public class GroundStation implements Runnable {
 
     public void onPingReceived(PingMessageHandler pingHandler) {
         this.pingHandler = pingHandler;
+    }
+
+    public void onBanditBroadcastReceived(BanditBroadcastMessageHandler banditBroadcastHandler) {
+        this.banditBroadcastHandler = banditBroadcastHandler;
     }
 
 }

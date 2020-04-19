@@ -17,12 +17,17 @@
 
 package horse.wtf.nzyme;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
+import horse.wtf.nzyme.bandits.trackers.payloads.BanditBroadcast;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.concurrent.Executors;
 
 public class NzymeTrackerImpl implements NzymeTracker {
@@ -50,7 +55,18 @@ public class NzymeTrackerImpl implements NzymeTracker {
     public void initialize() {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
 
-        groundStation.onPingReceived(ping -> LOG.info("Received Ping!"));
+        groundStation.onPingReceived((ping, rssi) -> LOG.info("Received Ping! {}", rssi));
+        groundStation.onBanditBroadcastReceived(new BanditBroadcastMessageHandler() {
+            @Override
+            public void handle(TrackerMessage.BanditBroadcast broadcast) {
+                try {
+                    BanditBroadcast msg = new ObjectMapper().readValue(broadcast.getBandit(), BanditBroadcast.class);
+                    LOG.info(msg.name());
+                } catch (IOException e) {
+                    LOG.error(e);
+                }
+            }
+        });
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

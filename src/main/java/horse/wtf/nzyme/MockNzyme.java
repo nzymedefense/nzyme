@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
@@ -49,7 +50,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
-public class MockNzyme implements Nzyme {
+public class MockNzyme implements NzymeLeader {
 
     private File loadFromResourceFile(String name) {
         URL resource = getClass().getClassLoader().getResource(name);
@@ -186,6 +187,11 @@ public class MockNzyme implements Nzyme {
 
     @Override
     public TrackerManager getTrackerManager() {
+        return null;
+    }
+
+    @Override
+    public GroundStation getGroundStation() {
         return null;
     }
 

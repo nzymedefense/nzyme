@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -34,7 +34,7 @@ public abstract class Dot11Probe {
 
     private final Dot11ProbeConfiguration configuration;
     private final Statistics statistics;
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     protected final MetricRegistry metrics;
 
@@ -48,7 +48,7 @@ public abstract class Dot11Probe {
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
     public abstract List<Dot11FrameInterceptor> getInterceptors();
 
-    public Dot11Probe(Dot11ProbeConfiguration configuration, Nzyme nzyme) {
+    public Dot11Probe(Dot11ProbeConfiguration configuration, NzymeLeader nzyme) {
         this.nzyme = nzyme;
         this.statistics = nzyme.getStatistics();
         this.configuration = configuration;

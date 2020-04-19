@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -33,7 +33,7 @@ public class InterceptorSetTest {
 
     protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
 
-    protected Dot11MockProbe buildMockProbe(Nzyme nzyme) {
+    protected Dot11MockProbe buildMockProbe(NzymeLeader nzyme) {
         return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
                 "test-probe-1",
                 Collections.emptyList(),

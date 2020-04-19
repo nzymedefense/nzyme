@@ -32,7 +32,7 @@ public class FingerprintBanditIdentifier extends BanditIdentifier {
     private final String fingerprint;
 
     public FingerprintBanditIdentifier(String fingerprint, Long databaseID, UUID uuid) {
-        super(databaseID, uuid);
+        super(databaseID, uuid, TYPE.FINGERPRINT);
 
         this.fingerprint = fingerprint;
     }

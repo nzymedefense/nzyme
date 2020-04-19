@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
@@ -54,7 +54,7 @@ public class BanditsResource {
     private static final Logger LOG = LogManager.getLogger(BanditsResource.class);
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     public Response findAll() {

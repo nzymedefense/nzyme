@@ -19,7 +19,7 @@ package horse.wtf.nzyme.bandits.engine;
 
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.Bandit;
@@ -48,14 +48,14 @@ public class ContactIdentifier {
 
     public static final int ACTIVE_MINUTES = 10;
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     private ImmutableMap<UUID, Contact> contacts;
     private ImmutableMap<UUID, Bandit> bandits;
 
     private final Timer timing;
 
-    public ContactIdentifier(Nzyme nzyme) {
+    public ContactIdentifier(NzymeLeader nzyme) {
         this.nzyme = nzyme;
         this.timing = nzyme.getMetrics().timer(MetricNames.CONTACT_IDENTIFIER_TIMING);
 
