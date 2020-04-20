@@ -60,7 +60,6 @@ public class TrackerManager {
     }
 
     public void registerTrackerPing(TrackerMessage.Ping ping, int rssi) {
-        LOG.info(rssi);
         // Check for time drift.
         long drift = new DateTime(ping.getTimestamp()).minus(DateTime.now().getMillis()).getMillis();
         if (drift > 5000 || drift < -5000) {

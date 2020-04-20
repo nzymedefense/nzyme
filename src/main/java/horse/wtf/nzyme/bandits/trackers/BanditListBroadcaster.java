@@ -67,10 +67,11 @@ public class BanditListBroadcaster {
                                     BanditBroadcast.create(bandit.uuid(), bandit.name(), bandit.description(), identifiers)
                             );
 
-                            LOG.info("Broadcasting bandit [{}] via GroundStation.", bandit.uuid());
+                            LOG.debug("Broadcasting bandit [{}] via GroundStation.", bandit.uuid());
                             nzyme.getGroundStation().transmit(
                                     TrackerMessage.Wrapper.newBuilder().setBanditBroadcast(
                                             TrackerMessage.BanditBroadcast.newBuilder()
+                                                    .setSource(nzyme.getConfiguration().nzymeId())
                                                     .setTimestamp(DateTime.now().getMillis())
                                                     .setBandit(payload)
                                                     .build()

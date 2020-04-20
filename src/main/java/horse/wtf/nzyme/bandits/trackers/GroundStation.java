@@ -18,11 +18,13 @@
 package horse.wtf.nzyme.bandits.trackers;
 
 import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.PingMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
@@ -33,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,9 +51,12 @@ public class GroundStation implements Runnable {
     private PingMessageHandler pingHandler;
     private BanditBroadcastMessageHandler banditBroadcastHandler;
 
+    private final List<TrackerHID> hids;
+
     public GroundStation(Role nzymeRole, String nzymeId, String nzymeVersion, TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
         this.transmitQueue = EvictingQueue.create(100);
+        this.hids = Lists.newArrayList();
 
         TrackerDevice.TYPE deviceType;
         try {
@@ -74,11 +80,30 @@ public class GroundStation implements Runnable {
                 if (pingHandler != null) {
                     pingHandler.handle(message.getPing(), rssi);
                 }
+
+                for (TrackerHID hid : hids) {
+                    switch (message.getPing().getNodeType()) {
+                        case LEADER:
+                            hid.onPingFromLeaderReceived(message.getPing(), rssi);
+                            break;
+                        case TRACKER:
+                            hid.onPingFromTrackerReceived(message.getPing(), rssi);
+                            break;
+                        case UNRECOGNIZED:
+                        case DRONE:
+                            // Currently not handled.
+                            break;
+                    }
+                }
             }
 
             if (message.hasBanditBroadcast()) {
                 if (banditBroadcastHandler != null) {
                     banditBroadcastHandler.handle(message.getBanditBroadcast());
+                }
+
+                for (TrackerHID hid : hids) {
+                    hid.onBanditReceived(message.getBanditBroadcast());
                 }
             }
 
@@ -147,6 +172,10 @@ public class GroundStation implements Runnable {
 
     public void onBanditBroadcastReceived(BanditBroadcastMessageHandler banditBroadcastHandler) {
         this.banditBroadcastHandler = banditBroadcastHandler;
+    }
+
+    public void registerHID(TrackerHID hid) {
+        hids.add(hid);
     }
 
 }
