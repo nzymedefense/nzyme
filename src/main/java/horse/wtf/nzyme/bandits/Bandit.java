@@ -17,13 +17,11 @@
 
 package horse.wtf.nzyme.bandits;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.UUID;
 

@@ -15,15 +15,12 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.bandits;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 
-public interface NzymeTracker {
+public interface BanditListProvider {
 
-    void initialize();
-    void shutdown();
-
-    ObjectMapper getObjectMapper();
+    List<Bandit> getBanditList();
 
 }

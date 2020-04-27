@@ -27,7 +27,9 @@ message Ping {
     string source = 1;
     NodeType nodeType = 2;
     string version = 3;
-    int64 timestamp = 4;
+    string banditHash = 4;
+    int32 banditCount = 5;
+    int64 timestamp = 6;
 
 }
 

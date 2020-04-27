@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,11 +51,15 @@ public class BanditListBroadcaster {
                 .setNameFormat("bandit-broadcaster-%d")
                 .build())
                 .scheduleWithFixedDelay(() -> {
-                    for (Bandit bandit : nzyme.getContactIdentifier().getBandits().values()) {
+                    List<Bandit> shuffledBandits = Lists.newArrayList(nzyme.getContactIdentifier().getBandits().values());
+                    Collections.shuffle(shuffledBandits);
+
+                    for (Bandit bandit : shuffledBandits) {
                         List<BanditIdentifierBroadcast> identifiers = Lists.newArrayList();
                         if (bandit.identifiers() != null) {
                             for (BanditIdentifier identifier : bandit.identifiers()) {
                                 identifiers.add(BanditIdentifierBroadcast.create(
+                                        identifier.getUuid(),
                                         identifier.getType(),
                                         identifier.configuration())
                                 );
@@ -67,7 +72,7 @@ public class BanditListBroadcaster {
                                     BanditBroadcast.create(bandit.uuid(), bandit.name(), bandit.description(), identifiers)
                             );
 
-                            LOG.debug("Broadcasting bandit [{}] via GroundStation.", bandit.uuid());
+                            LOG.debug("Broadcasting bandit [{}/{}] via GroundStation.", bandit.uuid(), bandit.name());
                             nzyme.getGroundStation().transmit(
                                     TrackerMessage.Wrapper.newBuilder().setBanditBroadcast(
                                             TrackerMessage.BanditBroadcast.newBuilder()

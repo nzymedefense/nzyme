@@ -23,9 +23,13 @@ import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 
 import java.util.Map;
+import java.util.UUID;
 
 @AutoValue
 public abstract class BanditIdentifierBroadcast {
+
+    @JsonProperty
+    public abstract UUID uuid();
 
     @JsonProperty
     public abstract BanditIdentifier.TYPE type();
@@ -34,9 +38,11 @@ public abstract class BanditIdentifierBroadcast {
     public abstract Map<String, Object> configuration();
 
     @JsonCreator
-    public static BanditIdentifierBroadcast create(@JsonProperty("type") BanditIdentifier.TYPE type,
+    public static BanditIdentifierBroadcast create(@JsonProperty("uuid") UUID uuid,
+                                                   @JsonProperty("type") BanditIdentifier.TYPE type,
                                                    @JsonProperty("configuration") Map<String, Object> configuration) {
         return builder()
+                .uuid(uuid)
                 .type(type)
                 .configuration(configuration)
                 .build();
@@ -48,6 +54,8 @@ public abstract class BanditIdentifierBroadcast {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder uuid(UUID uuid);
+
         public abstract Builder type(BanditIdentifier.TYPE type);
 
         public abstract Builder configuration(Map<String, Object> configuration);

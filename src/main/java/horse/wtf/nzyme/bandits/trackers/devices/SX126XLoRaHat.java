@@ -75,7 +75,7 @@ public class SX126XLoRaHat implements TrackerDevice {
     public void readLoop() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         short nulCount = 0;
-        short byteCount = 0;
+        short chunkByteCount = 0;
 
         while(true) {
             try {
@@ -88,9 +88,10 @@ public class SX126XLoRaHat implements TrackerDevice {
                     continue;
                 }
 
-                byteCount++;
-                if(byteCount == 241) {
+                chunkByteCount++;
+                if(chunkByteCount == 241) {
                     // This is the first byte of a new chunk and it's the RSSI byte again, messing up our payload. Ignore it.
+                    chunkByteCount = 0;
                     continue;
                 }
 
@@ -113,10 +114,11 @@ public class SX126XLoRaHat implements TrackerDevice {
                             messageHandler.handle(TrackerMessage.Wrapper.parseFrom(message), rssi);
                         } catch (InvalidProtocolBufferException e) {
                             LOG.debug("Skipping invalid protobuf message.", e);
+                            LOG.debug("Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()));
                             continue;
                         } finally {
                             nulCount = 0;
-                            byteCount = 0;
+                            chunkByteCount = 0;
                             buffer.reset();
                         }
                     }
@@ -134,7 +136,7 @@ public class SX126XLoRaHat implements TrackerDevice {
                 } catch (IOException e) {
                     LOG.warn("Could not write to buffer.", e);
                     buffer.reset();
-                    byteCount = 0;
+                    chunkByteCount = 0;
                     continue;
                 }
             } catch(Exception e) {
@@ -166,7 +168,7 @@ public class SX126XLoRaHat implements TrackerDevice {
     public synchronized void transmit(byte[] message) {
         // Spread out message sending to not overload LoRa band and reduce change of receive errors.
         try {
-            Thread.sleep(500);
+            Thread.sleep(750);
         } catch (InterruptedException ignored) {
         }
 

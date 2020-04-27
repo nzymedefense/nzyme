@@ -26,12 +26,18 @@ public class Tracker {
     private String version;
     private long drift;
     private DateTime lastSeen;
+    private String banditHash;
+    private int banditCount;
+    private int rssi;
 
-    public Tracker(String name, DateTime lastSeen, String version, long drift) {
+    public Tracker(String name, DateTime lastSeen, String version, String banditHash, int banditCount, long drift, int rssi) {
         this.name = name;
         this.version = version;
         this.drift = drift;
+        this.banditHash = banditHash;
+        this.banditCount = banditCount;
         this.lastSeen = lastSeen;
+        this.rssi = rssi;
     }
 
     public String getName() {
@@ -52,6 +58,30 @@ public class Tracker {
 
     public void setDrift(long drift) {
         this.drift = drift;
+    }
+
+    public String getBanditHash() {
+        return banditHash;
+    }
+
+    public void setBanditHash(String banditHash) {
+        this.banditHash = banditHash;
+    }
+
+    public int getBanditCount() {
+        return banditCount;
+    }
+
+    public void setBanditCount(int banditCount) {
+        this.banditCount = banditCount;
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    public void setRssi(int rssi) {
+        this.rssi = rssi;
     }
 
     public DateTime getLastSeen() {

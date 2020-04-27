@@ -19,12 +19,11 @@ package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
@@ -40,8 +39,6 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackersResource {
 
-    private static final Logger LOG = LogManager.getLogger(TrackersResource.class);
-
     private static final int DARK_TIMEOUT_SECONDS = 15;
 
     @Inject
@@ -56,12 +53,26 @@ public class TrackersResource {
                     tracker.getVersion(),
                     tracker.getDrift(),
                     tracker.getLastSeen(),
-                    tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(DARK_TIMEOUT_SECONDS))
-                            ? TrackerState.DARK : TrackerState.ONLINE
+                    tracker.getBanditHash(),
+                    tracker.getBanditCount(),
+                    decideTrackerState(tracker),
+                    tracker.getRssi()
             ));
         }
 
         return Response.ok(trackers).build();
+    }
+
+    private TrackerState decideTrackerState(Tracker tracker) {
+        if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(DARK_TIMEOUT_SECONDS))) {
+            return TrackerState.DARK;
+        } else {
+            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(nzyme.getContactIdentifier().getBanditList()))) {
+                return TrackerState.ONLINE;
+            } else {
+                return TrackerState.OUT_OF_SYNC;
+            }
+        }
     }
 
 }

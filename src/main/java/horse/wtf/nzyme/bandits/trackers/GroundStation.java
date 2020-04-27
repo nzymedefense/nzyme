@@ -22,6 +22,9 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.BanditHashCalculator;
+import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
@@ -53,7 +56,7 @@ public class GroundStation implements Runnable {
 
     private final List<TrackerHID> hids;
 
-    public GroundStation(Role nzymeRole, String nzymeId, String nzymeVersion, TrackerDeviceConfiguration config) throws ConfigException {
+    public GroundStation(Role nzymeRole, String nzymeId, String nzymeVersion, BanditListProvider bandits, TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
         this.transmitQueue = EvictingQueue.create(100);
         this.hids = Lists.newArrayList();
@@ -76,6 +79,7 @@ public class GroundStation implements Runnable {
 
         // Handle incoming messages.
         this.trackerDevice.onMessageReceived((message, rssi) -> {
+            // Ping.
             if (message.hasPing()) {
                 if (pingHandler != null) {
                     pingHandler.handle(message.getPing(), rssi);
@@ -97,6 +101,7 @@ public class GroundStation implements Runnable {
                 }
             }
 
+            // Bandit broadcast.
             if (message.hasBanditBroadcast()) {
                 if (banditBroadcastHandler != null) {
                     banditBroadcastHandler.handle(message.getBanditBroadcast());
@@ -117,11 +122,15 @@ public class GroundStation implements Runnable {
                 .build())
                 .scheduleAtFixedRate(() -> {
                     try {
+                        List<Bandit> banditList = bandits.getBanditList();
+
                         transmit(TrackerMessage.Wrapper.newBuilder()
                                 .setPing(TrackerMessage.Ping.newBuilder()
                                         .setSource(nzymeId)
                                         .setVersion(nzymeVersion)
                                         .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
+                                        .setBanditHash(BanditHashCalculator.calculate(banditList))
+                                        .setBanditCount(banditList.size())
                                         .setTimestamp(DateTime.now().getMillis())
                                         .build())
                                 .build());

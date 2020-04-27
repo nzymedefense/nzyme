@@ -17,9 +17,14 @@
 
 package horse.wtf.nzyme;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.bandits.trackers.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,13 +40,22 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final TrackerConfiguration configuration;
 
     private final GroundStation groundStation;
+    private final TrackerBanditManager banditManager;
+
+    private final ObjectMapper om;
 
     public NzymeTrackerImpl(TrackerConfiguration configuration) {
         this.version = new Version();
         this.configuration = configuration;
 
+        this.om = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        this.banditManager = new TrackerBanditManager(this);
+
         try {
-            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), version.getVersion().toString(), configuration.trackerDevice());
+            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), version.getVersion().toString(), banditManager, configuration.trackerDevice());
             this.groundStation.registerHID(new LogHID());
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
@@ -51,6 +65,13 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
+
+        this.groundStation.onBanditBroadcastReceived(new BanditBroadcastMessageHandler() {
+            @Override
+            public void handle(TrackerMessage.BanditBroadcast broadcast) {
+                banditManager.registerBandit(broadcast);
+            }
+        });
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()
@@ -63,6 +84,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public void shutdown() {
         this.groundStation.stop();
+    }
+
+    @Override
+    public ObjectMapper getObjectMapper() {
+        return this.om;
     }
 
 }

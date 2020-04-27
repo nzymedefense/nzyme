@@ -60,6 +60,7 @@ public class DefaultBandits {
                 }})
         );
 
+
         add(Bandit.create(null, UUID.fromString("b21855a1-ddd2-4a27-911a-1efc046d9334"),
                 "WiFi Pineapple Tetra (PineAP)",
                 "[Built-in bandit definition] Pineapple Tetra v2.5.2, but other firmware versions might match, too.",
@@ -73,8 +74,6 @@ public class DefaultBandits {
                             UUID.fromString("45c51f60-14d7-4b3f-a64e-353bfbe22163")));
                 }})
         );
-
-
 
         add(Bandit.create(null, UUID.fromString("94abd8f9-8f75-4098-a2d7-78714639a47f"),
                 "WiFi Pineapple Nano (management access point)",

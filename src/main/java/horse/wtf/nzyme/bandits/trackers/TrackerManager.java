@@ -69,12 +69,28 @@ public class TrackerManager {
 
         if (!activeTrackers.get().containsKey(ping.getSource())) {
             // Register new tracker.
-            activeTrackers.get().put(ping.getSource(), new Tracker(ping.getSource(), DateTime.now(), ping.getVersion(), drift));
+            activeTrackers.get().put(
+                    ping.getSource(),
+                    new Tracker(
+                            ping.getSource(),
+                            DateTime.now(),
+                            ping.getVersion(),
+                            ping.getBanditHash(),
+                            ping.getBanditCount(),
+                            drift,
+                            rssi
+                    )
+            );
+
         } else {
             // Update existing tracker.
             Tracker tracker = activeTrackers.get().get(ping.getSource());
             tracker.setLastSeen(DateTime.now());
             tracker.setVersion(ping.getVersion());
+            tracker.setBanditHash(ping.getBanditHash());
+            tracker.setBanditCount(ping.getBanditCount());
+            tracker.setRssi(rssi);
+
             tracker.setDrift(drift);
         }
     }

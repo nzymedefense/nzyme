@@ -23,6 +23,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.DefaultBandits;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
@@ -36,13 +37,10 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultBearing;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ContactIdentifier {
+public class ContactIdentifier implements BanditListProvider {
 
     private static final Logger LOG = LogManager.getLogger(ContactIdentifier.class);
 
@@ -184,6 +182,11 @@ public class ContactIdentifier {
 
         this.bandits = result.build();
         return this.bandits;
+    }
+
+    @Override
+    public List<Bandit> getBanditList() {
+        return new ArrayList<>(getBandits().values());
     }
 
     public Optional<Bandit> findBanditByDatabaseId(Long id) {

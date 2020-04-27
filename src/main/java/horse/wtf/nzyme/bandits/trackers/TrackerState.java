@@ -19,6 +19,6 @@ package horse.wtf.nzyme.bandits.trackers;
 
 public enum TrackerState {
 
-    ONLINE, DARK
+    ONLINE, DARK, OUT_OF_SYNC
 
 }

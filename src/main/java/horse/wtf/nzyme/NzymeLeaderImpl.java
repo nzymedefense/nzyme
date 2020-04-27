@@ -280,7 +280,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Ground Station.
         if (configuration.trackerDevice() != null) {
             try {
-                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), version.getVersion().toString(), configuration.trackerDevice());
+                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), version.getVersion().toString(), contactIdentifier, configuration.trackerDevice());
                 this.groundStation.onPingReceived(this.trackerManager::registerTrackerPing);
                 this.groundStation.registerHID(new LogHID());
 

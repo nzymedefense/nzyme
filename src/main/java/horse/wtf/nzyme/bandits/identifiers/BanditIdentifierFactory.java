@@ -19,13 +19,14 @@ package horse.wtf.nzyme.bandits.identifiers;
 
 import horse.wtf.nzyme.notifications.FieldNames;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class BanditIdentifierFactory {
 
-    public static BanditIdentifier create(BanditIdentifier.TYPE type, Map<String, Object> config, Long databaseID, UUID uuid) throws NoSerializerException, MappingException {
+    public static BanditIdentifier create(BanditIdentifier.TYPE type, Map<String, Object> config, @Nullable Long databaseID, UUID uuid) throws NoSerializerException, MappingException {
         switch (type) {
             case FINGERPRINT:
                 if (!config.containsKey(FieldNames.FINGERPRINT)) {

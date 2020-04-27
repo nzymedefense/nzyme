@@ -22,7 +22,6 @@ import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import org.joda.time.DateTime;
 
-
 @AutoValue
 public abstract class TrackerResponse {
 
@@ -38,16 +37,28 @@ public abstract class TrackerResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
+    @JsonProperty("bandit_hash")
+    public abstract String banditHash();
+
+    @JsonProperty("bandit_count")
+    public abstract int banditCount();
+
     @JsonProperty
     public abstract TrackerState state();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, TrackerState state) {
+    @JsonProperty
+    public abstract int rssi();
+
+    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
                 .drift(drift)
                 .lastSeen(lastSeen)
+                .banditHash(banditHash)
+                .banditCount(banditCount)
                 .state(state)
+                .rssi(rssi)
                 .build();
     }
 
@@ -65,7 +76,13 @@ public abstract class TrackerResponse {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
+        public abstract Builder banditHash(String banditHash);
+
+        public abstract Builder banditCount(int banditCount);
+
         public abstract Builder state(TrackerState state);
+
+        public abstract Builder rssi(int rssi);
 
         public abstract TrackerResponse build();
     }
