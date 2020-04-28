@@ -2,6 +2,7 @@ import React from 'react';
 import Reflux from 'reflux';
 import BanditsTable from "./BanditsTable";
 import Routes from "../../util/Routes";
+import TrackersTable from "./trackers/TrackersTable";
 
 class BanditsPage extends Reflux.Component {
 
@@ -37,6 +38,17 @@ class BanditsPage extends Reflux.Component {
                 <div className="row">
                     <div className="col-md-12">
                         <BanditsTable />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <h1>Trackers</h1>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-12">
+                        <TrackersTable />
                     </div>
                 </div>
 
