@@ -17,18 +17,24 @@
 
 package horse.wtf.nzyme.bandits.trackers.hid;
 
-import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class LogHID implements TrackerHID {
+import java.io.IOException;
 
-    private static final Logger LOG = LogManager.getLogger(GroundStation.class);
+public class RPIWiringPiHID implements TrackerHID {
+
+    private static final Logger LOG = LogManager.getLogger(RPIWiringPiHID.class);
 
     @Override
     public void initialize() {
-
+        try {
+            Runtime.getRuntime().exec("/usr/bin/gpio mode 0 out");
+            Runtime.getRuntime().exec("/usr/bin/gpio write 0 1");
+        } catch (IOException e) {
+            LOG.error(e);
+        }
     }
 
     @Override
@@ -53,12 +59,19 @@ public class LogHID implements TrackerHID {
 
     @Override
     public void onPingFromLeaderReceived(TrackerMessage.Ping ping, int rssi) {
-        LOG.info("Received ping from Leader [{} (v{})] with RSSI <{}>.", ping.getSource(), ping.getVersion(), rssi);
+        try {
+            Runtime.getRuntime().exec("/usr/bin/gpio write 0 0");
+            Runtime.getRuntime().exec("/usr/bin/gpio write 0 1");
+            Thread.sleep(250);
+            Runtime.getRuntime().exec("/usr/bin/gpio write 0 0");
+        } catch (IOException | InterruptedException e) {
+            LOG.error(e);
+        }
     }
 
     @Override
     public void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi) {
-        LOG.info("Received ping from Tracker [{} (v{})] with RSSI <{}>.", ping.getSource(), ping.getVersion(), rssi);
+
     }
 
     @Override
@@ -68,7 +81,7 @@ public class LogHID implements TrackerHID {
 
     @Override
     public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
-        LOG.info("Received bandit information from [{}].", bandit.getSource());
+
     }
 
 }

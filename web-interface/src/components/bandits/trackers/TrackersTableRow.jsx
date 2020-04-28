@@ -17,6 +17,7 @@ class TrackersTableRow extends Reflux.Component {
             <tr>
                 <td>{tracker.name}</td>
                 <td><TrackerStatus status={tracker.state}/></td>
+                <td>{tracker.bandit_count} / {this.props.totalBandits}</td>
                 <td title={moment(tracker.last_seen).format()}>
                     {moment(tracker.last_seen).fromNow()}
                 </td>

@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.bandits.trackers.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
+import horse.wtf.nzyme.bandits.trackers.hid.RPIWiringPiHID;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
@@ -56,7 +57,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
         try {
             this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), version.getVersion().toString(), banditManager, configuration.trackerDevice());
+            RPIWiringPiHID rpihid = new RPIWiringPiHID();
+            rpihid.initialize();
+
             this.groundStation.registerHID(new LogHID());
+            this.groundStation.registerHID(rpihid);
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }

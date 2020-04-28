@@ -24,6 +24,8 @@ public interface TrackerHID {
     // BUILD TO WHERE YOU CAN RUN IT ON A PI THAT SHOWS RECEIVED PACKETS, SIGNAL STRENGTH AND PARSED PINGS USING LEDS
     // start with local STDOUT HID
 
+    void initialize();
+
     void onConnectionStateChange();
     void onContactStateChange();
 

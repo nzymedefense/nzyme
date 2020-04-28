@@ -251,6 +251,16 @@
             <version>${jaxb.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-gpio-extension</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.pi4j</groupId>
+            <artifactId>pi4j-device</artifactId>
+            <version>1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
