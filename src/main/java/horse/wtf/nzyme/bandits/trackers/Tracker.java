@@ -28,15 +28,17 @@ public class Tracker {
     private DateTime lastSeen;
     private String banditHash;
     private int banditCount;
+    private String trackingMode;
     private int rssi;
 
-    public Tracker(String name, DateTime lastSeen, String version, String banditHash, int banditCount, long drift, int rssi) {
+    public Tracker(String name, DateTime lastSeen, String version, String banditHash, int banditCount, long drift, String trackingMode, int rssi) {
         this.name = name;
         this.version = version;
         this.drift = drift;
         this.banditHash = banditHash;
         this.banditCount = banditCount;
         this.lastSeen = lastSeen;
+        this.trackingMode = trackingMode;
         this.rssi = rssi;
     }
 
@@ -90,6 +92,14 @@ public class Tracker {
 
     public void setLastSeen(DateTime lastSeen) {
         this.lastSeen = lastSeen;
+    }
+
+    public String getTrackingMode() {
+        return trackingMode;
+    }
+
+    public void setTrackingMode(String trackingMode) {
+        this.trackingMode = trackingMode;
     }
 
 }

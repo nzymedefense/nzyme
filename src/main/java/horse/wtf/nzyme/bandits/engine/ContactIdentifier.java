@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultBearing;
 import org.joda.time.DateTime;
 
+import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -187,6 +188,13 @@ public class ContactIdentifier implements BanditListProvider {
     @Override
     public List<Bandit> getBanditList() {
         return new ArrayList<>(getBandits().values());
+    }
+
+    @Override
+    @Null
+    public Bandit getCurrentlyTrackedBandit() {
+        // Only relevant for tracker implementations.
+        return null;
     }
 
     public Optional<Bandit> findBanditByDatabaseId(Long id) {

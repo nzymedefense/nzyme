@@ -23,16 +23,16 @@ import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 
 @Path("/api/trackers")
 @Secured
@@ -56,11 +56,48 @@ public class TrackersResource {
                     tracker.getBanditHash(),
                     tracker.getBanditCount(),
                     decideTrackerState(tracker),
+                    tracker.getTrackingMode(),
                     tracker.getRssi()
             ));
         }
 
         return Response.ok(trackers).build();
+    }
+
+    @GET
+    @Path("/api/trackers/show/{name}")
+    public Response findTracker(@PathParam("name") String name) {
+        Map<String, Tracker> trackers = nzyme.getTrackerManager().getTrackers();
+        if (trackers.containsKey(name)) {
+            Tracker tracker = trackers.get(name);
+
+            return Response.ok(TrackerResponse.create(
+                tracker.getName(),
+                tracker.getVersion(),
+                tracker.getDrift(),
+                tracker.getLastSeen(),
+                tracker.getBanditHash(),
+                tracker.getBanditCount(),
+                decideTrackerState(tracker),
+                tracker.getTrackingMode(),
+                tracker.getRssi()
+            )).build();
+        } else {
+            return Response.status(404).build();
+        }
+    }
+
+    @POST
+    @Path("/show/{uuid}/command/track_request")
+    public Response issueTrackRequest(BanditTrackRequest trackRequest) {
+        // Check if tracker exists.
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackRequest.trackerName())) {
+            return Response.status(404).build();
+        }
+
+        nzyme.getGroundStation().startTrackRequest(trackRequest.trackerName(), trackRequest.banditUUID());
+
+        return Response.accepted().build();
     }
 
     private TrackerState decideTrackerState(Tracker tracker) {

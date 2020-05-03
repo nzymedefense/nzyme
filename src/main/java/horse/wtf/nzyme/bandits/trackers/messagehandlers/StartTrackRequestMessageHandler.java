@@ -15,20 +15,12 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.bandits.trackers.messagehandlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.bandits.trackers.GroundStation;
-import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 
-public interface NzymeTracker {
+public interface StartTrackRequestMessageHandler {
 
-    void initialize();
-    void shutdown();
-
-    ObjectMapper getObjectMapper();
-
-    GroundStation getGroundStation();
-    TrackerBanditManager getBanditManager();
+    void handle(TrackerMessage.StartTrackRequest startTrackRequest);
 
 }

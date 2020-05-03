@@ -17,58 +17,88 @@
 
 package horse.wtf.nzyme.bandits.trackers.hid;
 
-import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
+
 public class LogHID implements TrackerHID {
 
-    private static final Logger LOG = LogManager.getLogger(GroundStation.class);
+    private static final Logger LOG = LogManager.getLogger(LogHID.class);
 
     @Override
     public void initialize() {
-
+        LOG.info("LOG HID initialized.");
     }
 
     @Override
-    public void onConnectionStateChange() {
-
+    public void onConnectionStateChange(List<TrackerState> connectionState) {
+        LOG.info("Connection state changed: {}.", connectionState);
     }
 
     @Override
-    public void onContactStateChange() {
-
+    public void onTrackingStartRequestReceived(TrackerMessage.StartTrackRequest request) {
+        LOG.info("Received request to start tracking bandit [{}].", request.getUuid());
     }
 
     @Override
-    public void onContactRSSIChange() {
-
+    public void onTrackingAbortRequestReceived(TrackerMessage.CancelTrackRequest request) {
+        LOG.info("Received request to abort tracking bandit [{}].");
     }
 
     @Override
-    public void onLeaderRSSIChange() {
+    public void onInitialContactWithTrackedBandit(Bandit bandit) {
+        LOG.info("Made initial contact with tracked bandit [{}].", bandit);
+    }
 
+    @Override
+    public void onBanditTrace(int rssi) {
+        LOG.info("Bandit trace at RSSI <{}>.", rssi);
+    }
+
+    @Override
+    public void onChannelSwitch(int newChannel) {
+        LOG.info("Switching channel to [{}].", newChannel);
+    }
+
+    @Override
+    public void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels) {
+        String word;
+        switch (direction) {
+            case WIDE:
+                word = "Widening";
+                break;
+            case NARROW:
+                word = "Narrowing";
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        LOG.info("{} channel width to [{}].", word, activeChannels);
     }
 
     @Override
     public void onPingFromLeaderReceived(TrackerMessage.Ping ping, int rssi) {
-        LOG.info("Received ping from Leader [{} (v{})] with RSSI <{}>.", ping.getSource(), ping.getVersion(), rssi);
+        LOG.info("Received ping from leader [{}] at RSSI <{}>.", ping.getSource(), rssi);
     }
 
     @Override
     public void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi) {
-        LOG.info("Received ping from Tracker [{} (v{})] with RSSI <{}>.", ping.getSource(), ping.getVersion(), rssi);
-    }
-
-    @Override
-    public void onTrackRequestReceived(TrackerMessage.TrackRequest request) {
-
+        LOG.info("Received ping from tracker [{}] at RSSI <{}>.", ping.getSource(), rssi);
     }
 
     @Override
     public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
-        LOG.info("Received bandit information from [{}].", bandit.getSource());
+        LOG.info("Received bandit definition from leader.");
+    }
+
+    @Override
+    public void onContactRequestReceived() {
+        LOG.info("Received contact request from leader.");
     }
 
 }

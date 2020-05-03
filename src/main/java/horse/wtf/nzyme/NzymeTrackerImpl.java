@@ -20,16 +20,16 @@ package horse.wtf.nzyme;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.bandits.trackers.TrackerBanditManager;
-import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
-import horse.wtf.nzyme.bandits.trackers.hid.RPIWiringPiHID;
-import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
-import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.UUID;
 import java.util.concurrent.Executors;
 
 public class NzymeTrackerImpl implements NzymeTracker {
@@ -56,12 +56,21 @@ public class NzymeTrackerImpl implements NzymeTracker {
         this.banditManager = new TrackerBanditManager(this);
 
         try {
-            this.groundStation = new GroundStation(Role.TRACKER, configuration.nzymeId(), version.getVersion().toString(), banditManager, configuration.trackerDevice());
-            RPIWiringPiHID rpihid = new RPIWiringPiHID();
-            rpihid.initialize();
+            this.groundStation = new GroundStation(
+                    Role.TRACKER,
+                    configuration.nzymeId(),
+                    version.getVersion().toString(),
+                    banditManager,
+                    null,
+                    configuration.trackerDevice()
+            );
+            AudioHID audioHID = new AudioHID();
+            audioHID.initialize();
+            LogHID logHid = new LogHID();
+            logHid.initialize();
 
-            this.groundStation.registerHID(new LogHID());
-            this.groundStation.registerHID(rpihid);
+            this.groundStation.registerHID(audioHID);
+            this.groundStation.registerHID(logHid);
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }
@@ -71,12 +80,14 @@ public class NzymeTrackerImpl implements NzymeTracker {
     public void initialize() {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
 
-        this.groundStation.onBanditBroadcastReceived(new BanditBroadcastMessageHandler() {
-            @Override
-            public void handle(TrackerMessage.BanditBroadcast broadcast) {
-                banditManager.registerBandit(broadcast);
-            }
-        });
+        TrackerStateWatchdog trackerStateWatchdog = new TrackerStateWatchdog(this);
+        trackerStateWatchdog.initialize();
+
+        this.groundStation.onPingReceived(trackerStateWatchdog::registerPing);
+        this.groundStation.onBanditBroadcastReceived(banditManager::registerBandit);
+        this.groundStation.onStartTrackRequestReceived((startTrackRequest ->
+                banditManager.setCurrentlyTrackedBandit(UUID.fromString(startTrackRequest.getUuid())))
+        );
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()
@@ -94,6 +105,16 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public ObjectMapper getObjectMapper() {
         return this.om;
+    }
+
+    @Override
+    public GroundStation getGroundStation() {
+        return groundStation;
+    }
+
+    @Override
+    public TrackerBanditManager getBanditManager() {
+        return banditManager;
     }
 
 }

@@ -15,7 +15,7 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.bandits.trackers;
+package horse.wtf.nzyme.bandits.trackers.trackerlogic;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -25,6 +25,7 @@ import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
+import horse.wtf.nzyme.bandits.trackers.BanditManagerEntry;
 import horse.wtf.nzyme.bandits.trackers.payloads.BanditBroadcast;
 import horse.wtf.nzyme.bandits.trackers.payloads.BanditIdentifierBroadcast;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
@@ -32,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,7 @@ public class TrackerBanditManager implements BanditListProvider {
     private final NzymeTracker nzyme;
 
     private Map<UUID, BanditManagerEntry> bandits;
+    private Bandit currentlyTrackedBandit;
 
     private final Object mutex = new Object();
 
@@ -86,6 +89,12 @@ public class TrackerBanditManager implements BanditListProvider {
         }
     }
 
+    @Override
+    @Nullable
+    public Bandit getCurrentlyTrackedBandit() {
+        return currentlyTrackedBandit;
+    }
+
     public void registerBandit(TrackerMessage.BanditBroadcast broadcast) {
         try {
             BanditBroadcast payload = nzyme.getObjectMapper().readValue(broadcast.getBandit(), BanditBroadcast.class);
@@ -105,6 +114,16 @@ public class TrackerBanditManager implements BanditListProvider {
         } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException e) {
             LOG.error("Invalid bandit identifier payload in bandit broadcast.", e);
         }
+    }
+
+    public void setCurrentlyTrackedBandit(UUID banditUUID) {
+        if (!bandits.containsKey(banditUUID)) {
+            LOG.error("Cannot track bandit [{}]. Bandit not found in local list of bandits.", banditUUID);
+            return;
+        }
+
+        LOG.info("Setting currently tracked bandit to [{}].", banditUUID);
+        this.currentlyTrackedBandit = bandits.get(banditUUID).bandit();
     }
 
     public void registerBandit(Bandit bandit) {

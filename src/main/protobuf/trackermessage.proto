@@ -11,8 +11,9 @@ message Wrapper {
     oneof content {
         Ping ping = 1;
         BanditBroadcast banditBroadcast = 2;
-        TrackRequest trackRequest = 3;
-        Contact contact = 4;
+        StartTrackRequest startTrackRequest = 3;
+        CancelTrackRequest cancelTrackRequest = 4;
+        Contact contact = 5;
     }
 }
 
@@ -29,7 +30,8 @@ message Ping {
     string version = 3;
     string banditHash = 4;
     int32 banditCount = 5;
-    int64 timestamp = 6;
+    string trackingMode = 6;
+    int64 timestamp = 7;
 
 }
 
@@ -41,12 +43,20 @@ message BanditBroadcast {
 
 }
 
-message TrackRequest {
+message StartTrackRequest {
 
     string source = 1;
     string receiver = 2;
     string uuid = 3;
-    int64 timestamp= 4;
+    int64 timestamp = 4;
+
+}
+
+message CancelTrackRequest {
+
+    string source = 1;
+    string receiver = 2;
+    int64 timestamp = 3;
 
 }
 

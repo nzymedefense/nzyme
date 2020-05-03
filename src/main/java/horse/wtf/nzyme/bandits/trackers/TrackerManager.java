@@ -78,6 +78,7 @@ public class TrackerManager {
                             ping.getBanditHash(),
                             ping.getBanditCount(),
                             drift,
+                            ping.getTrackingMode(),
                             rssi
                     )
             );
@@ -89,6 +90,7 @@ public class TrackerManager {
             tracker.setVersion(ping.getVersion());
             tracker.setBanditHash(ping.getBanditHash());
             tracker.setBanditCount(ping.getBanditCount());
+            tracker.setTrackingMode(ping.getTrackingMode());
             tracker.setRssi(rssi);
 
             tracker.setDrift(drift);

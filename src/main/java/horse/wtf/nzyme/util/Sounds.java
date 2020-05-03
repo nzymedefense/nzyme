@@ -15,20 +15,31 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.bandits.trackers.GroundStation;
-import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
+import java.io.File;
 
-public interface NzymeTracker {
+public class Sounds {
 
-    void initialize();
-    void shutdown();
+    private static final String PATH = "/usr/share/nzyme/sounds/";  // TODO make path configurable
 
-    ObjectMapper getObjectMapper();
+    public static File getSound(String name) throws SoundNotFoundException {
+        String path = PATH + name + ".wav";
+        File file = new File(path);
 
-    GroundStation getGroundStation();
-    TrackerBanditManager getBanditManager();
+        if (!file.exists()) {
+            throw new SoundNotFoundException("Sound [" + name + "] not found at [" + path + "].");
+        }
+
+        return file;
+    }
+
+    private static class SoundNotFoundException extends Exception {
+
+        SoundNotFoundException(String msg) {
+            super(msg);
+        }
+
+    }
 
 }

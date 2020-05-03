@@ -5,4 +5,4 @@ Priority: low
 Architecture: all
 Description: [[description]]
 Maintainer: Lennart Koopmann <lennart@0x58ed.com>
-Depends: openjdk-8-jre-headless | java8-runtime
+Depends: openjdk-11-jre-headless | java11-runtime

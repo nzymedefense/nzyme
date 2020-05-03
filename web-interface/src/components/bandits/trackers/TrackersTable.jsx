@@ -54,8 +54,8 @@ class TrackersTable extends Reflux.Component {
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
-                            <th>Bandit Sync</th>
-                            <th>Last Contact</th>
+                            <th>Tracking Mode</th>
+                            <th>Last Ping</th>
                             <th>Signal Strength</th>
                         </tr>
                         </thead>

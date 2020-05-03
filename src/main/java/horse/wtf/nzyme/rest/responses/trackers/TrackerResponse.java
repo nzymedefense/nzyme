@@ -46,10 +46,13 @@ public abstract class TrackerResponse {
     @JsonProperty
     public abstract TrackerState state();
 
+    @JsonProperty("tracking_mode")
+    public abstract String trackingMode();
+
     @JsonProperty
     public abstract int rssi();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, int rssi) {
+    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
@@ -58,6 +61,7 @@ public abstract class TrackerResponse {
                 .banditHash(banditHash)
                 .banditCount(banditCount)
                 .state(state)
+                .trackingMode(trackingMode)
                 .rssi(rssi)
                 .build();
     }
@@ -81,6 +85,8 @@ public abstract class TrackerResponse {
         public abstract Builder banditCount(int banditCount);
 
         public abstract Builder state(TrackerState state);
+
+        public abstract Builder trackingMode(String trackingMode);
 
         public abstract Builder rssi(int rssi);
 

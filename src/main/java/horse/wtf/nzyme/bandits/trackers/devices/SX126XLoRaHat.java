@@ -168,7 +168,7 @@ public class SX126XLoRaHat implements TrackerDevice {
     public synchronized void transmit(byte[] message) {
         // Spread out message sending to not overload LoRa band and reduce change of receive errors.
         try {
-            Thread.sleep(750);
+            Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
 

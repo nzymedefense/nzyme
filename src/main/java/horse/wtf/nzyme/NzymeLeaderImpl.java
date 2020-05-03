@@ -30,7 +30,6 @@ import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
-import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
@@ -280,9 +279,15 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Ground Station.
         if (configuration.trackerDevice() != null) {
             try {
-                this.groundStation = new GroundStation(Role.LEADER, configuration.nzymeId(), version.getVersion().toString(), contactIdentifier, configuration.trackerDevice());
+                this.groundStation = new GroundStation(
+                        Role.LEADER,
+                        configuration.nzymeId(),
+                        version.getVersion().toString(),
+                        contactIdentifier,
+                        trackerManager,
+                        configuration.trackerDevice()
+                );
                 this.groundStation.onPingReceived(this.trackerManager::registerTrackerPing);
-                this.groundStation.registerHID(new LogHID());
 
                 new BanditListBroadcaster(this).initialize();
             } catch(Exception e) {

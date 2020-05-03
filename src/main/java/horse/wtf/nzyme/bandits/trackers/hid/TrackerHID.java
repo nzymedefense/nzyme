@@ -17,24 +17,35 @@
 
 package horse.wtf.nzyme.bandits.trackers.hid;
 
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+
+import java.util.List;
 
 public interface TrackerHID {
 
-    // BUILD TO WHERE YOU CAN RUN IT ON A PI THAT SHOWS RECEIVED PACKETS, SIGNAL STRENGTH AND PARSED PINGS USING LEDS
-    // start with local STDOUT HID
+    enum ChannelWidthChangeDirection {
+        WIDE, NARROW
+    }
 
     void initialize();
 
-    void onConnectionStateChange();
-    void onContactStateChange();
-
-    void onContactRSSIChange();
-    void onLeaderRSSIChange();
+    void onConnectionStateChange(List<TrackerState> connectionState);
 
     void onPingFromLeaderReceived(TrackerMessage.Ping ping, int rssi);
     void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi);
-    void onTrackRequestReceived(TrackerMessage.TrackRequest request);
     void onBanditReceived(TrackerMessage.BanditBroadcast bandit);
+
+    // TODO:s
+    void onTrackingStartRequestReceived(TrackerMessage.StartTrackRequest request);
+    void onTrackingAbortRequestReceived(TrackerMessage.CancelTrackRequest request);
+
+    void onInitialContactWithTrackedBandit(Bandit bandit);
+    void onBanditTrace(int rssi);
+    void onChannelSwitch(int newChannel);
+    void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels);
+
+    void onContactRequestReceived();
 
 }

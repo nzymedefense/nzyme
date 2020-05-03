@@ -22,5 +22,6 @@ import java.util.List;
 public interface BanditListProvider {
 
     List<Bandit> getBanditList();
+    Bandit getCurrentlyTrackedBandit();
 
 }
