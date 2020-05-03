@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.bandits.trackers;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -29,6 +30,7 @@ import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.CancelTrackRequestMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.PingMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.StartTrackRequestMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
@@ -57,6 +59,7 @@ public class GroundStation implements Runnable {
     private PingMessageHandler pingHandler;
     private BanditBroadcastMessageHandler banditBroadcastHandler;
     private StartTrackRequestMessageHandler startTrackRequestMessageHandler;
+    private CancelTrackRequestMessageHandler cancelTrackRequestMessageHandler;
 
     private List<BanditTrackRequest> outstandingStartBanditTrackRequests;
     private List<BanditTrackRequest> outstandingCancelBanditTrackRequests;
@@ -74,6 +77,7 @@ public class GroundStation implements Runnable {
         this.hids = Lists.newArrayList();
 
         this.outstandingStartBanditTrackRequests = Lists.newArrayList();
+        this.outstandingCancelBanditTrackRequests = Lists.newArrayList();
 
         TrackerDevice.TYPE deviceType;
         try {
@@ -88,7 +92,7 @@ public class GroundStation implements Runnable {
                 this.trackerDevice = new SX126XLoRaHat(config.parameters().getString(ConfigurationKeys.SERIAL_PORT));
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + deviceType);
+                throw new IllegalStateException("Unexpected device type: " + deviceType);
         }
 
         // Handle incoming messages.
@@ -138,9 +142,24 @@ public class GroundStation implements Runnable {
                 }
 
                 for (TrackerHID hid : hids) {
-                    hid.onTrackingStartRequestReceived(message.getStartTrackRequest());
+                    hid.onStartTrackingRequestReceived(message.getStartTrackRequest());
+                }
+            }
+
+            // Cancel tracking request.
+            if (message.hasCancelTrackRequest()) {
+                TrackerMessage.CancelTrackRequest request = message.getCancelTrackRequest();
+                if (!request.getReceiver().equals(nzymeId)) {
+                    LOG.debug("Ignoring cancel tracking request for other tracker [{}].", request.getReceiver());
                 }
 
+                if (cancelTrackRequestMessageHandler != null) {
+                    cancelTrackRequestMessageHandler.handle(message.getCancelTrackRequest());
+                }
+
+                for (TrackerHID hid : hids) {
+                    hid.onCancelTrackingRequestReceived(message.getCancelTrackRequest());
+                }
             }
 
             // TODO implement all types
@@ -187,8 +206,9 @@ public class GroundStation implements Runnable {
                     .build())
                     .scheduleAtFixedRate(() -> {
                         try {
+                            // Send outstanding start track requests.
                             for (BanditTrackRequest banditTrackRequest : Lists.newArrayList(outstandingStartBanditTrackRequests)) {
-                                LOG.debug("Sending track request for [{}] to [{}]", banditTrackRequest.banditUUID(), banditTrackRequest.trackerName());
+                                LOG.debug("Sending start track request for [{}] to [{}]", banditTrackRequest.banditUUID(), banditTrackRequest.trackerName());
 
                                 transmit(TrackerMessage.Wrapper.newBuilder()
                                         .setStartTrackRequest(TrackerMessage.StartTrackRequest.newBuilder()
@@ -201,21 +221,47 @@ public class GroundStation implements Runnable {
                                 );
                             }
 
+                            // Send outstanding cancel track requests.
+                            for (BanditTrackRequest banditTrackRequest : Lists.newArrayList(outstandingCancelBanditTrackRequests)) {
+                                LOG.debug("Sending cancel track requests to [{}].", banditTrackRequest.trackerName());
+
+                                transmit(TrackerMessage.Wrapper.newBuilder()
+                                        .setCancelTrackRequest(TrackerMessage.CancelTrackRequest.newBuilder()
+                                                .setSource(nzymeId)
+                                                .setReceiver(banditTrackRequest.trackerName())
+                                                .setTimestamp(DateTime.now().getMillis())
+                                                .build()
+                                        ).build()
+                                );
+                            }
+
+
                             // Check if we can remove a track request.
-                            List<BanditTrackRequest> newTrackRequests = Lists.newArrayList();
+                            List<BanditTrackRequest> newStartTrackRequests = Lists.newArrayList();
+                            List<BanditTrackRequest> newCancelTrackRequests = Lists.newArrayList();
                             for (Tracker tracker : trackerManager.getTrackers().values()) {
                                 for (BanditTrackRequest banditTrackRequest : Lists.newArrayList(outstandingStartBanditTrackRequests)) {
                                     if (tracker.getName().equals(banditTrackRequest.trackerName())
                                             && tracker.getTrackingMode().equals(banditTrackRequest.banditUUID().toString())) {
-                                        LOG.info("Removing track request [{}] from list of outstanding track requests because tracker acknowledged receipt.",
+                                        LOG.info("Removing start track request [{}] from list of outstanding requests because tracker acknowledged receipt.",
                                                 banditTrackRequest);
                                     } else {
-                                        newTrackRequests.add(banditTrackRequest);
+                                        newStartTrackRequests.add(banditTrackRequest);
+                                    }
+                                }
+
+                                for (BanditTrackRequest banditTrackRequest : Lists.newArrayList(outstandingCancelBanditTrackRequests)) {
+                                    if (tracker.getName().equals(banditTrackRequest.trackerName()) && Strings.isNullOrEmpty(tracker.getTrackingMode())) {
+                                        LOG.info("Removing cancel track request [{}] from list of outstanding requests because tracker acknowledged receipt.",
+                                                banditTrackRequest);
+                                    } else {
+                                        newCancelTrackRequests.add(banditTrackRequest);
                                     }
                                 }
                             }
-                            outstandingStartBanditTrackRequests = newTrackRequests;
 
+                            outstandingStartBanditTrackRequests = newStartTrackRequests;
+                            outstandingCancelBanditTrackRequests = newCancelTrackRequests;
                         } catch (Exception e) {
                             LOG.error("Could not send track request.", e);
                         }
@@ -293,6 +339,10 @@ public class GroundStation implements Runnable {
 
     public void onStartTrackRequestReceived(StartTrackRequestMessageHandler startTrackRequestMessageHandler) {
         this.startTrackRequestMessageHandler = startTrackRequestMessageHandler;
+    }
+
+    public void onCancelTrackRequestReceived(CancelTrackRequestMessageHandler cancelTrackRequestMessageHandler) {
+        this.cancelTrackRequestMessageHandler = cancelTrackRequestMessageHandler;
     }
 
     public void handleTrackerConnectionStateChange(List<TrackerState> states) {

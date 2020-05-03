@@ -88,6 +88,9 @@ public class NzymeTrackerImpl implements NzymeTracker {
         this.groundStation.onStartTrackRequestReceived((startTrackRequest ->
                 banditManager.setCurrentlyTrackedBandit(UUID.fromString(startTrackRequest.getUuid())))
         );
+        this.groundStation.onCancelTrackRequestReceived((cancelTrackRequest ->
+                banditManager.cancelTracking()
+        ));
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

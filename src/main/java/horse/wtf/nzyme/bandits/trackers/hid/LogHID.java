@@ -40,12 +40,12 @@ public class LogHID implements TrackerHID {
     }
 
     @Override
-    public void onTrackingStartRequestReceived(TrackerMessage.StartTrackRequest request) {
+    public void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request) {
         LOG.info("Received request to start tracking bandit [{}].", request.getUuid());
     }
 
     @Override
-    public void onTrackingAbortRequestReceived(TrackerMessage.CancelTrackRequest request) {
+    public void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request) {
         LOG.info("Received request to abort tracking bandit [{}].");
     }
 

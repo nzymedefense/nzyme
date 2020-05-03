@@ -126,6 +126,15 @@ public class TrackerBanditManager implements BanditListProvider {
         this.currentlyTrackedBandit = bandits.get(banditUUID).bandit();
     }
 
+    public void cancelTracking() {
+        if (this.currentlyTrackedBandit == null) {
+            return;
+        }
+
+        LOG.info("Canceling tracking of bandit.");
+        this.currentlyTrackedBandit = null;
+    }
+
     public void registerBandit(Bandit bandit) {
         synchronized (mutex) {
             // We either override an existing bandit (and by that update it's receive time) or create a new one.

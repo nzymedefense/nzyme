@@ -88,14 +88,27 @@ public class TrackersResource {
     }
 
     @POST
-    @Path("/show/{uuid}/command/track_request")
-    public Response issueTrackRequest(BanditTrackRequest trackRequest) {
+    @Path("/show/{uuid}/command/start_track_request")
+    public Response issueStartTrackRequest(BanditTrackRequest trackRequest) {
         // Check if tracker exists.
         if (!nzyme.getTrackerManager().getTrackers().containsKey(trackRequest.trackerName())) {
             return Response.status(404).build();
         }
 
         nzyme.getGroundStation().startTrackRequest(trackRequest.trackerName(), trackRequest.banditUUID());
+
+        return Response.accepted().build();
+    }
+
+    @POST
+    @Path("/show/{uuid}/command/cancel_track_request")
+    public Response issueCancelTrackRequest(BanditTrackRequest trackRequest) {
+        // Check if tracker exists.
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackRequest.trackerName())) {
+            return Response.status(404).build();
+        }
+
+        nzyme.getGroundStation().cancelTrackRequest(trackRequest.trackerName(), trackRequest.banditUUID());
 
         return Response.accepted().build();
     }

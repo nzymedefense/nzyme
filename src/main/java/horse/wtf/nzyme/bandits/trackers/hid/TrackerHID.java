@@ -37,10 +37,10 @@ public interface TrackerHID {
     void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi);
     void onBanditReceived(TrackerMessage.BanditBroadcast bandit);
 
-    // TODO:s
-    void onTrackingStartRequestReceived(TrackerMessage.StartTrackRequest request);
-    void onTrackingAbortRequestReceived(TrackerMessage.CancelTrackRequest request);
+    void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request);
+    void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request);
 
+    // TODO implement
     void onInitialContactWithTrackedBandit(Bandit bandit);
     void onBanditTrace(int rssi);
     void onChannelSwitch(int newChannel);
