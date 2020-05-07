@@ -20,6 +20,7 @@ package horse.wtf.nzyme.bandits.trackers.devices;
 import com.google.protobuf.InvalidProtocolBufferException;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.WrapperMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.security.transport.TransportEncryption;
 import horse.wtf.nzyme.util.Tools;
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -28,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class SX126XLoRaHat implements TrackerDevice {
 
@@ -40,8 +42,16 @@ public class SX126XLoRaHat implements TrackerDevice {
     private SerialPort serialPort;
     private WrapperMessageHandler messageHandler = null;
 
+    TransportEncryption encryption;
+
     public SX126XLoRaHat(String portName) {
         this.portName = portName;
+
+        try {
+            this.encryption = new TransportEncryption("Phaithou7iedeibieh0ae1laeHukaeya");
+        } catch(Exception e) {
+            throw new RuntimeException("Could not initialize transport encryption.", e);
+        }
     }
 
     @Override
@@ -96,11 +106,11 @@ public class SX126XLoRaHat implements TrackerDevice {
                 }
 
                 if (b[0] == 0x00) {
-                    // Our frames end with NULL bytes. Register but don't handle further because it's not part of the payload.
+                    // Our frames end with NULL bytes.
                     nulCount++;
 
-                    // Message is complete!
                     if (nulCount == NULL_BYTE_SEQUENCE_COUNT) {
+                        // Message is complete!
                         try {
                             byte[] message = buffer.toByteArray();
                             byte[] rssiChunk = handle().readBytes(1);
@@ -111,10 +121,13 @@ public class SX126XLoRaHat implements TrackerDevice {
 
                             int rssi = rssiChunk[0] & 0xFF;
                             LOG.debug("Received <{}> bytes: {}", message.length, Tools.byteArrayToHexPrettyPrint(message));
-                            messageHandler.handle(TrackerMessage.Wrapper.parseFrom(message), rssi);
-                        } catch (InvalidProtocolBufferException e) {
-                            LOG.debug("Skipping invalid protobuf message.", e);
-                            LOG.debug("Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()));
+                            messageHandler.handle(
+                                    TrackerMessage.Wrapper.parseFrom(encryption.decrypt(message)),
+                                    rssi
+                            );
+                        } catch (InvalidProtocolBufferException | javax.crypto.AEADBadTagException e) {
+                            LOG.debug("Skipping invalid message.", e);
+                            LOG.info("Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()));
                             continue;
                         } finally {
                             nulCount = 0;
@@ -127,7 +140,10 @@ public class SX126XLoRaHat implements TrackerDevice {
                 }
 
                 if (nulCount > 0) {
-                    // Reset NULL bytes if the NULL bytes are not in order. Go on to handle because the NULL was part of the payload.
+                    for(int i = 0; i < nulCount; i++) {
+                        buffer.write(0x00);
+                    }
+
                     nulCount = 0;
                 }
 
@@ -136,6 +152,7 @@ public class SX126XLoRaHat implements TrackerDevice {
                 } catch (IOException e) {
                     LOG.warn("Could not write to buffer.", e);
                     buffer.reset();
+                    nulCount = 0;
                     chunkByteCount = 0;
                     continue;
                 }
@@ -167,14 +184,20 @@ public class SX126XLoRaHat implements TrackerDevice {
     @Override
     public synchronized void transmit(byte[] message) {
         // Spread out message sending to not overload LoRa band and reduce change of receive errors.
+        // TODO do this dynamically (find out size and calculate how much time we'll have to wait - consider waiting for free slot - up to two seconds)
+        // TODO collect metrics in/out
         try {
-            Thread.sleep(1000);
+            Thread.sleep(1250);
         } catch (InterruptedException ignored) {
         }
 
         try {
             ByteArrayOutputStream payload = new ByteArrayOutputStream();
-            payload.write(message);
+            byte[] encrypted = encryption.encrypt(message);
+
+            LOG.debug("Sending payload: {}", Tools.byteArrayToHexPrettyPrint(encrypted));
+
+            payload.write(encrypted);
 
             for (short i = 0; i < NULL_BYTE_SEQUENCE_COUNT; i++) {
                 payload.write(0x00);

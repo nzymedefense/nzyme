@@ -36,15 +36,14 @@ import horse.wtf.nzyme.bandits.trackers.messagehandlers.StartTrackRequestMessage
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
+import horse.wtf.nzyme.security.transport.TransportEncryption;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +53,7 @@ public class GroundStation implements Runnable {
 
     private final TrackerDevice trackerDevice;
 
-    private final Queue<byte[]> transmitQueue;
+    private final Deque<byte[]> transmitQueue;
 
     private PingMessageHandler pingHandler;
     private BanditBroadcastMessageHandler banditBroadcastHandler;
@@ -73,7 +72,7 @@ public class GroundStation implements Runnable {
                          @Nullable TrackerManager trackerManager,
                          TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
-        this.transmitQueue = EvictingQueue.create(100);
+        this.transmitQueue = new ArrayDeque(100);
         this.hids = Lists.newArrayList();
 
         this.outstandingStartBanditTrackRequests = Lists.newArrayList();
@@ -283,8 +282,7 @@ public class GroundStation implements Runnable {
         while(true) {
             try {
                 while(transmitQueue.peek() != null) {
-                    byte[] msg = transmitQueue.poll();
-                    trackerDevice.transmit(msg);
+                    trackerDevice.transmit(transmitQueue.poll());
                 }
             } catch (Exception e) {
                 LOG.error("Could not transmit message to trackers.", e);
@@ -301,7 +299,12 @@ public class GroundStation implements Runnable {
     }
 
     public void transmit(@NotNull TrackerMessage.Wrapper message) {
-        transmitQueue.add(message.toByteArray());
+        if (message.hasPing()) {
+            // Pings have priority.
+            transmitQueue.addFirst(message.toByteArray());
+        } else {
+            transmitQueue.addLast(message.toByteArray());
+        }
     }
 
     public void startTrackRequest(String trackerName, UUID banditUUID) {
