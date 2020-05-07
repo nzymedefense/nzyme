@@ -126,8 +126,7 @@ public class SX126XLoRaHat implements TrackerDevice {
                                     rssi
                             );
                         } catch (InvalidProtocolBufferException | javax.crypto.AEADBadTagException e) {
-                            LOG.debug("Skipping invalid message.", e);
-                            LOG.info("Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()));
+                            LOG.debug("Skipping invalid message. Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()), e);
                             continue;
                         } finally {
                             nulCount = 0;
