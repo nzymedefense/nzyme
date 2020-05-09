@@ -34,7 +34,7 @@ public class BanditHashCalculator {
         sortedBandits.sort(Comparator.comparing(Bandit::uuid));
 
         for (Bandit bandit : sortedBandits) {
-            x.append(bandit.uuid().toString()).append(bandit.name()).append(bandit.description());
+            x.append(bandit.uuid().toString());
 
             if (bandit.identifiers() != null) {
                 List<BanditIdentifier> sortedIdentifiers = new ArrayList<>(bandit.identifiers());

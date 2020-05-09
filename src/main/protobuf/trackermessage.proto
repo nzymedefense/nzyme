@@ -38,8 +38,16 @@ message Ping {
 message BanditBroadcast {
 
     string source = 1;
-    string bandit = 2;
-    int64 timestamp = 3;
+    string uuid = 2;
+    repeated ContactIdentifier identifier = 3;
+
+}
+
+message ContactIdentifier {
+
+    string type = 1;
+    string uuid = 2;
+    repeated string configuration = 3;
 
 }
 
@@ -48,7 +56,6 @@ message StartTrackRequest {
     string source = 1;
     string receiver = 2;
     string uuid = 3;
-    int64 timestamp = 4;
 
 }
 
@@ -56,7 +63,6 @@ message CancelTrackRequest {
 
     string source = 1;
     string receiver = 2;
-    int64 timestamp = 3;
 
 }
 
@@ -66,6 +72,5 @@ message Contact {
     string uuid = 2;
     int32 frames = 3;
     sint32 rssi = 4;
-    int64 timestamp = 5;
 
 }

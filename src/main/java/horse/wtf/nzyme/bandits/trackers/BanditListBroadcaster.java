@@ -17,21 +17,19 @@
 
 package horse.wtf.nzyme.bandits.trackers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
-import horse.wtf.nzyme.bandits.trackers.payloads.BanditBroadcast;
-import horse.wtf.nzyme.bandits.trackers.payloads.BanditIdentifierBroadcast;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -51,41 +49,45 @@ public class BanditListBroadcaster {
                 .setNameFormat("bandit-broadcaster-%d")
                 .build())
                 .scheduleWithFixedDelay(() -> {
-                    List<Bandit> shuffledBandits = Lists.newArrayList(nzyme.getContactIdentifier().getBandits().values());
-                    Collections.shuffle(shuffledBandits);
+                    try {
+                        List<Bandit> shuffledBandits = Lists.newArrayList(nzyme.getContactIdentifier().getBandits().values());
+                        Collections.shuffle(shuffledBandits);
 
-                    for (Bandit bandit : shuffledBandits) {
-                        List<BanditIdentifierBroadcast> identifiers = Lists.newArrayList();
-                        if (bandit.identifiers() != null) {
-                            for (BanditIdentifier identifier : bandit.identifiers()) {
-                                identifiers.add(BanditIdentifierBroadcast.create(
-                                        identifier.getUuid(),
-                                        identifier.getType(),
-                                        identifier.configuration())
-                                );
-                            }
-                        }
-
-                        String payload;
-                        try {
-                            payload = nzyme.getObjectMapper().writeValueAsString(
-                                    BanditBroadcast.create(bandit.uuid(), bandit.name(), bandit.description(), identifiers)
-                            );
-
+                        for (Bandit bandit : shuffledBandits) {
                             LOG.debug("Broadcasting bandit [{}/{}] via GroundStation.", bandit.uuid(), bandit.name());
+                            TrackerMessage.BanditBroadcast.Builder builder = TrackerMessage.BanditBroadcast.newBuilder()
+                                    .setSource(nzyme.getConfiguration().nzymeId())
+                                    .setUuid(bandit.uuid().toString());
+
+                            if (bandit.identifiers() != null) {
+                                for (BanditIdentifier identifier : bandit.identifiers()) {
+                                    TrackerMessage.ContactIdentifier.Builder idBuilder = TrackerMessage.ContactIdentifier.newBuilder()
+                                            .setType(identifier.getType().toString())
+                                            .setUuid(identifier.getUuid().toString());
+
+                                    for (Map.Entry<String, Object> config : identifier.configuration().entrySet()) {
+                                        Object value;
+                                        if (config.getValue() instanceof List) {
+                                            value = "nzl:" + nzyme.getObjectMapper().writeValueAsString(config.getValue());
+                                        } else if(config.getValue() instanceof Map) {
+                                            value = "nzm:" + nzyme.getObjectMapper().writeValueAsString(config.getValue());
+                                        } else {
+                                            value = config.getValue();
+                                        }
+                                        String configRep = config.getKey() + ":\"" + value + "\"";
+                                        idBuilder.addConfiguration(configRep);
+                                    }
+
+                                    builder.addIdentifier(idBuilder.build());
+                                }
+                            }
+
                             nzyme.getGroundStation().transmit(
-                                    TrackerMessage.Wrapper.newBuilder().setBanditBroadcast(
-                                            TrackerMessage.BanditBroadcast.newBuilder()
-                                                    .setSource(nzyme.getConfiguration().nzymeId())
-                                                    .setTimestamp(DateTime.now().getMillis())
-                                                    .setBandit(payload)
-                                                    .build()
-                                    ).build()
+                                    TrackerMessage.Wrapper.newBuilder().setBanditBroadcast(builder.build()).build()
                             );
-                        } catch (JsonProcessingException e) {
-                            LOG.error("Could not build bandit list for broadcast.", e);
-                            return;
                         }
+                    } catch(Exception e) {
+                        LOG.error("Could not broadcast bandit.", e);
                     }
                 }, 0, 1, TimeUnit.MINUTES);
     }

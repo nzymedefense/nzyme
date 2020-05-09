@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.bandits.trackers.trackerlogic;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -26,8 +27,6 @@ import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.BanditManagerEntry;
-import horse.wtf.nzyme.bandits.trackers.payloads.BanditBroadcast;
-import horse.wtf.nzyme.bandits.trackers.payloads.BanditIdentifierBroadcast;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,21 +96,36 @@ public class TrackerBanditManager implements BanditListProvider {
 
     public void registerBandit(TrackerMessage.BanditBroadcast broadcast) {
         try {
-            BanditBroadcast payload = nzyme.getObjectMapper().readValue(broadcast.getBandit(), BanditBroadcast.class);
-
             List<BanditIdentifier> identifiers = Lists.newArrayList();
-            for (BanditIdentifierBroadcast broadcastedIdentifier : payload.contactIdentifiers()) {
+            for (TrackerMessage.ContactIdentifier broadcastedIdentifier : broadcast.getIdentifierList()) {
+                Map<String, Object> parsedConfiguration = Maps.newHashMap();
+                for (String s : broadcastedIdentifier.getConfigurationList()) {
+                    int cPos = s.indexOf(":");
+                    String key = s.substring(0, cPos);
+                    String value = s.substring(cPos+2, s.length()-1);
+                    if (value.startsWith("nzl:")) {
+                        String json = value.substring(4);
+                        parsedConfiguration.put(key, nzyme.getObjectMapper().readValue(json, List.class));
+                    } else if(value.startsWith("nzm:")) {
+                        String json = value.substring(4);
+                        parsedConfiguration.put(key, nzyme.getObjectMapper().readValue(json, Map.class));
+                    } else {
+                        parsedConfiguration.put(key, value);
+                    }
+                }
+
                 identifiers.add(BanditIdentifierFactory.create(
-                        broadcastedIdentifier.type(), broadcastedIdentifier.configuration(),null, broadcastedIdentifier.uuid()
+                        BanditIdentifier.TYPE.valueOf(broadcastedIdentifier.getType()),
+                        parsedConfiguration,
+                        null,
+                        UUID.fromString(broadcastedIdentifier.getUuid())
                 ));
             }
 
             registerBandit(Bandit.create(
-                    null, payload.uuid(), payload.name(), payload.description(), false, DateTime.now(), DateTime.now(), identifiers
+                    null, UUID.fromString(broadcast.getUuid()), "n/a", "n/a", false, DateTime.now(), DateTime.now(), identifiers
             ));
-        } catch (IOException e) {
-            LOG.error("Could not decode bandit broadcast message payload.", e);
-        } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException e) {
+        } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException | IOException e) {
             LOG.error("Invalid bandit identifier payload in bandit broadcast.", e);
         }
     }

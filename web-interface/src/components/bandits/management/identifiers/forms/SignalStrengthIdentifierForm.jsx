@@ -7,7 +7,7 @@ class SignalStrengthIdentifierForm extends Reflux.Component {
         super(props);
 
         this.state = {
-            from: 0,
+            from: -1,
             to: -100,
             errorMessage: "",
         };
@@ -44,7 +44,7 @@ class SignalStrengthIdentifierForm extends Reflux.Component {
     }
 
     _handleUpdate(from, to) {
-        if (from >= to) {
+        if (from <= to) {
             this.setState({errorMessage: "Invalid. The 'from' value must be larger than the 'to' value."});
             this.props.configurationUpdate({ready: false});
             return;

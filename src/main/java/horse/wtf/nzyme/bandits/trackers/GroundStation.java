@@ -18,11 +18,9 @@
 package horse.wtf.nzyme.bandits.trackers;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
-import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
@@ -233,7 +231,6 @@ public class GroundStation implements Runnable {
                                                 .setSource(nzymeId)
                                                 .setReceiver(banditTrackRequest.trackerName())
                                                 .setUuid(banditTrackRequest.banditUUID().toString())
-                                                .setTimestamp(DateTime.now().getMillis())
                                                 .build()
                                         ).build()
                                 );
@@ -247,7 +244,6 @@ public class GroundStation implements Runnable {
                                         .setCancelTrackRequest(TrackerMessage.CancelTrackRequest.newBuilder()
                                                 .setSource(nzymeId)
                                                 .setReceiver(banditTrackRequest.trackerName())
-                                                .setTimestamp(DateTime.now().getMillis())
                                                 .build()
                                         ).build()
                                 );

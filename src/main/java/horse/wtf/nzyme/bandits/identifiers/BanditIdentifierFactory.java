@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.bandits.identifiers;
 
 import horse.wtf.nzyme.notifications.FieldNames;
+import horse.wtf.nzyme.util.Tools;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -56,8 +57,8 @@ public class BanditIdentifierFactory {
 
                 try {
                     return new SignalStrengthBanditIdentifier(
-                            (int) config.get(FieldNames.FROM),
-                            (int) config.get(FieldNames.TO),
+                            Tools.getInteger(config.get(FieldNames.FROM)),
+                            Tools.getInteger(config.get(FieldNames.TO)),
                             databaseID,
                             uuid
                     );
