@@ -12,7 +12,7 @@ def read_reply(s):
 
 # CONFIG
 serial_port = "/dev/ttyUSB0"
-speeds = 102 # Decimal representation of the configuration bitmask.
+speeds = 99 # Decimal representation of the configuration bitmask.
 # CONFIG END
 
 print("!!!!! MAKE SURE TO SET THE BOARD TO CONFIGURATION MODE. M0 = short, M1 = open. Timeout? Possibly an incorrect serial baud rate.")

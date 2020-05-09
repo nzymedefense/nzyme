@@ -220,7 +220,7 @@ public class SX126XLoRaHat implements TrackerDevice {
 
             // Spread out message sending to not overload LoRa bands or UART connection buffer.
             try {
-                Thread.sleep(1250);
+                Thread.sleep(2000);
             } catch (InterruptedException ignored) {
             }
         } catch (Exception e) {
