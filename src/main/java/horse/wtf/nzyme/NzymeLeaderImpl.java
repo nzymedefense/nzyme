@@ -283,6 +283,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         Role.LEADER,
                         configuration.nzymeId(),
                         version.getVersion().toString(),
+                        metrics,
                         contactIdentifier,
                         trackerManager,
                         configuration.trackerDevice()

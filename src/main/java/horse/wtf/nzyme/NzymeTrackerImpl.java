@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -43,11 +44,15 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final GroundStation groundStation;
     private final TrackerBanditManager banditManager;
 
+    private final MetricRegistry metrics;
+
     private final ObjectMapper om;
 
     public NzymeTrackerImpl(TrackerConfiguration configuration) {
         this.version = new Version();
         this.configuration = configuration;
+
+        this.metrics = new MetricRegistry();
 
         this.om = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
@@ -60,6 +65,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     Role.TRACKER,
                     configuration.nzymeId(),
                     version.getVersion().toString(),
+                    metrics,
                     banditManager,
                     null,
                     configuration.trackerDevice()

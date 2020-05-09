@@ -17,6 +17,10 @@
 
 package horse.wtf.nzyme.bandits.trackers;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
 import com.google.common.collect.EvictingQueue;
 import com.google.common.collect.Lists;
@@ -37,6 +41,7 @@ import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
 import horse.wtf.nzyme.security.transport.TransportEncryption;
+import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -65,15 +70,24 @@ public class GroundStation implements Runnable {
 
     private final List<TrackerHID> hids;
 
+    private final Counter rxCounter;
+    private final Counter txCounter;
+    private final Timer encryptionTimer;
+
     public GroundStation(Role nzymeRole,
                          String nzymeId,
                          String nzymeVersion,
+                         MetricRegistry metrics,
                          BanditListProvider bandits,
                          @Nullable TrackerManager trackerManager,
                          TrackerDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
         this.transmitQueue = new ArrayDeque(100);
         this.hids = Lists.newArrayList();
+
+        this.rxCounter = metrics.counter(MetricNames.GROUNDSTATION_RX);
+        this.txCounter = metrics.counter(MetricNames.GROUNDSTATION_TX);
+        this.encryptionTimer = metrics.timer(MetricNames.GROUNDSTATION_ENCRYPTION_TIMING);
 
         this.outstandingStartBanditTrackRequests = Lists.newArrayList();
         this.outstandingCancelBanditTrackRequests = Lists.newArrayList();
@@ -88,7 +102,12 @@ public class GroundStation implements Runnable {
 
         switch (deviceType) {
             case SX126X_LORA:
-                this.trackerDevice = new SX126XLoRaHat(config.parameters().getString(ConfigurationKeys.SERIAL_PORT));
+                this.trackerDevice = new SX126XLoRaHat(
+                        config.parameters().getString(ConfigurationKeys.SERIAL_PORT),
+                        rxCounter,
+                        txCounter,
+                        encryptionTimer
+                );
                 break;
             default:
                 throw new IllegalStateException("Unexpected device type: " + deviceType);

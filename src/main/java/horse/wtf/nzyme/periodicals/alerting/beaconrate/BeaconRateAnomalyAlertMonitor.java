@@ -49,7 +49,7 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
         this.configuration = nzyme.getConfiguration();
         this.alertsService = nzyme.getAlertsService();
 
-        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BEACON_RATE_MONITOR_TIMER));
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BEACON_RATE_MONITOR_TIMING));
     }
 
     @Override

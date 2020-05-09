@@ -47,7 +47,7 @@ public class SignalTrackMonitor extends Periodical {
     public SignalTrackMonitor(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
-        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMER));
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMING));
     }
 
 

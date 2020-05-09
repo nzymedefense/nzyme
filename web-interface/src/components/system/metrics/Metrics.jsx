@@ -57,6 +57,17 @@ class Metrics extends Reflux.Component {
                                         </dd>
                                     </dl>
                                 </div>
+
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Ground Station Traffic:</dt>
+                                        <dd>
+                                            {numeral(this.state.systemMetrics.groundstation_rx.count).format("0.0b")} RX
+                                            &nbsp;/&nbsp;
+                                            {numeral(this.state.systemMetrics.groundstation_tx.count).format("0.0b")} TX
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
 
                             <div className="row">
@@ -82,6 +93,7 @@ class Metrics extends Reflux.Component {
                                             <TimerRow title="OUI Lookup" timer={this.state.systemMetrics.oui_lookup_timing}/>
                                             <TimerRow title="Signal Tables Mutex Acquisition" timer={this.state.systemMetrics.signaltables_mutex_wait}/>
                                             <TimerRow title="Signal Track Monitor Executions" timer={this.state.systemMetrics.signaltrack_monitor_timing}/>
+                                            <TimerRow title="Ground Station Frame Encryption" timer={this.state.systemMetrics.groundstation_encryption_timing}/>
                                         </tbody>
                                     </table>
                                 </div>

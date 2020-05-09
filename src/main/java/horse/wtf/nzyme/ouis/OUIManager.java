@@ -55,7 +55,7 @@ public class OUIManager {
         this.nzyme = nzyme;
 
         this.ouis = ImmutableMap.<String, String>builder().build();
-        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMER));
+        this.lookupTimer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.OUI_LOOKUP_TIMING));
     }
 
     @Nullable

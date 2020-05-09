@@ -17,15 +17,13 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.Secured;
-import horse.wtf.nzyme.rest.responses.metrics.GaugeResponse;
-import horse.wtf.nzyme.rest.responses.metrics.MeterResponse;
-import horse.wtf.nzyme.rest.responses.metrics.MetricsListResponse;
-import horse.wtf.nzyme.rest.responses.metrics.TimerResponse;
+import horse.wtf.nzyme.rest.responses.metrics.*;
 import horse.wtf.nzyme.util.MetricNames;
 
 import javax.inject.Inject;
@@ -60,17 +58,17 @@ public class MetricsResource {
 
         metrics.put(
                 "oui_lookup_timing",
-                TimerResponse.fromTimer(getTimer(MetricNames.OUI_LOOKUP_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.OUI_LOOKUP_TIMING))
         );
 
         metrics.put(
                 "tagged_params_parse_timing",
-                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_PARSE_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_PARSE_TIMING))
         );
 
         metrics.put(
                 "tagged_params_fingerprint_timing",
-                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMING))
         );
 
         metrics.put(
@@ -115,7 +113,7 @@ public class MetricsResource {
 
         metrics.put(
                 "beaconrate_monitor_timing",
-                TimerResponse.fromTimer(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.BEACON_RATE_MONITOR_TIMING))
         );
 
         metrics.put(
@@ -125,7 +123,7 @@ public class MetricsResource {
 
         metrics.put(
                 "signaltrack_monitor_timing",
-                TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TRACK_MONITOR_TIMER))
+                TimerResponse.fromTimer(getTimer(MetricNames.SIGNAL_TRACK_MONITOR_TIMING))
         );
 
         metrics.put(
@@ -133,23 +131,37 @@ public class MetricsResource {
                 TimerResponse.fromTimer(getTimer(MetricNames.CONTACT_IDENTIFIER_TIMING))
         );
 
+        metrics.put(
+                "groundstation_rx",
+                CounterResponse.fromCounter(getCounter(MetricNames.GROUNDSTATION_RX))
+        );
+
+        metrics.put(
+                "groundstation_tx",
+                CounterResponse.fromCounter(getCounter(MetricNames.GROUNDSTATION_TX))
+        );
+
+        metrics.put(
+                "groundstation_encryption_timing",
+                TimerResponse.fromTimer(getTimer(MetricNames.GROUNDSTATION_ENCRYPTION_TIMING))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
     private Meter getMeter(String name) {
-        if (nzyme.getMetrics().getMeters().get(name) != null) {
-            return nzyme.getMetrics().getMeters().get(name);
-        } else {
-            return new Meter();
-        }
+        Meter meter = nzyme.getMetrics().getMeters().get(name);
+        return meter == null ? new Meter() : meter;
     }
 
     private Timer getTimer(String name) {
-        if (nzyme.getMetrics().getTimers().get(name) != null) {
-            return nzyme.getMetrics().getTimers().get(name);
-        } else {
-            return new Timer();
-        }
+        Timer timer = nzyme.getMetrics().getTimers().get(name);
+        return timer == null ? new Timer() : timer;
+    }
+
+    private Counter getCounter(String name) {
+        Counter counter = nzyme.getMetrics().getCounters().get(name);
+        return counter == null ? new Counter() : counter;
     }
 
 }

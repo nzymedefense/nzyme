@@ -73,8 +73,8 @@ public class Dot11TaggedParameters {
         this.params = Maps.newTreeMap();
         this.vendorSpecificParams = Maps.newTreeMap();
 
-        this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMER));
-        this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER));
+        this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMING));
+        this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMING));
 
         Timer.Context time = this.parserTimer.time();
         int position = startPosition;

@@ -17,6 +17,9 @@
 
 package horse.wtf.nzyme.bandits.trackers.devices;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
 import com.google.protobuf.InvalidProtocolBufferException;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.WrapperMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
@@ -34,6 +37,7 @@ import java.security.GeneralSecurityException;
 public class SX126XLoRaHat implements TrackerDevice {
 
     private static final Logger LOG = LogManager.getLogger(SX126XLoRaHat.class);
+    private static final int BAUD = 9600;
 
     private static final short NULL_BYTE_SEQUENCE_COUNT = 3;
 
@@ -44,11 +48,19 @@ public class SX126XLoRaHat implements TrackerDevice {
 
     TransportEncryption encryption;
 
-    public SX126XLoRaHat(String portName) {
+    private final Counter rxCounter;
+    private final Counter txCounter;
+    private final Timer encryptionTimer;
+
+    public SX126XLoRaHat(String portName, Counter rxCounter, Counter txCounter, Timer encryptionTimer) {
         this.portName = portName;
 
+        this.rxCounter = rxCounter;
+        this.txCounter = txCounter;
+        this.encryptionTimer = encryptionTimer;
+
         try {
-            this.encryption = new TransportEncryption("Phaithou7iedeibieh0ae1laeHukaeya");
+            this.encryption = new TransportEncryption("Phaithou7iedeibieh0ae1laeHukaeya"); // TODO make configurable
         } catch(Exception e) {
             throw new RuntimeException("Could not initialize transport encryption.", e);
         }
@@ -121,10 +133,13 @@ public class SX126XLoRaHat implements TrackerDevice {
 
                             int rssi = rssiChunk[0] & 0xFF;
                             LOG.debug("Received <{}> bytes: {}", message.length, Tools.byteArrayToHexPrettyPrint(message));
+                            byte[] decrypted = encryption.decrypt(message);
                             messageHandler.handle(
-                                    TrackerMessage.Wrapper.parseFrom(encryption.decrypt(message)),
+                                    TrackerMessage.Wrapper.parseFrom(decrypted),
                                     rssi
                             );
+
+                            rxCounter.inc(decrypted.length);
                         } catch (InvalidProtocolBufferException | javax.crypto.AEADBadTagException e) {
                             LOG.debug("Skipping invalid message. Payload was: [{}]", Tools.byteArrayToHexPrettyPrint(buffer.toByteArray()), e);
                             continue;
@@ -169,7 +184,7 @@ public class SX126XLoRaHat implements TrackerDevice {
         if (serialPort == null || !serialPort.isOpened()) {
             serialPort = new SerialPort(this.portName);
             serialPort.openPort();
-            serialPort.setParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serialPort.setParams(BAUD, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         }
 
         return serialPort;
@@ -183,8 +198,6 @@ public class SX126XLoRaHat implements TrackerDevice {
     @Override
     public synchronized void transmit(byte[] message) {
         // Spread out message sending to not overload LoRa band and reduce change of receive errors.
-        // TODO do this dynamically (find out size and calculate how much time we'll have to wait - consider waiting for free slot - up to two seconds)
-        // TODO collect metrics in/out
         try {
             Thread.sleep(1250);
         } catch (InterruptedException ignored) {
@@ -192,7 +205,10 @@ public class SX126XLoRaHat implements TrackerDevice {
 
         try {
             ByteArrayOutputStream payload = new ByteArrayOutputStream();
+
+            Timer.Context time = encryptionTimer.time();
             byte[] encrypted = encryption.encrypt(message);
+            time.stop();
 
             LOG.debug("Sending payload: {}", Tools.byteArrayToHexPrettyPrint(encrypted));
 
@@ -204,7 +220,9 @@ public class SX126XLoRaHat implements TrackerDevice {
             byte[] buf = payload.toByteArray();
 
             LOG.debug("Transmitting <{}> bytes: {}", buf.length, Tools.byteArrayToHexPrettyPrint(buf));
+
             handle().writeBytes(buf);
+            txCounter.inc(buf.length);
         } catch (Exception e) {
             LOG.error("Could not transmit message.", e);
         }
