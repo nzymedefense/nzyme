@@ -2,6 +2,7 @@ package horse.wtf.nzyme.configuration.leader;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
@@ -50,6 +51,9 @@ public abstract class LeaderConfiguration {
     public abstract List<GraylogAddress> graylogUplinks();
 
     @Nullable
+    public abstract Config debugConfig();
+
+    @Nullable
     public abstract TrackerDeviceConfiguration trackerDevice();
 
     public List<String> ourSSIDs() {
@@ -58,7 +62,18 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, TrackerDeviceConfiguration trackerDevice) {
+    @Nullable
+    public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
+        for (Dot11NetworkDefinition network : dot11Networks()) {
+            if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
+                return network;
+            }
+        }
+
+        return null;
+    }
+
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -81,19 +96,9 @@ public abstract class LeaderConfiguration {
                 .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .graylogUplinks(graylogUplinks)
+                .debugConfig(debugConfig)
                 .trackerDevice(trackerDevice)
                 .build();
-    }
-
-    @Nullable
-    public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
-        for (Dot11NetworkDefinition network : dot11Networks()) {
-            if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
-                return network;
-            }
-        }
-
-        return null;
     }
 
     public static Builder builder() {
@@ -143,6 +148,8 @@ public abstract class LeaderConfiguration {
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
+
+        public abstract Builder debugConfig(Config debugConfig);
 
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 
