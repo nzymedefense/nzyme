@@ -21,6 +21,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 
 import java.io.File;
@@ -77,5 +78,29 @@ public class TrackerConfigurationLoader {
         // Tracker config.
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+
+        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
+        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+
+        // Validate parameters of SX126X LoRa HAT.
+        if (trackerDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
+            Config loraConfig = trackerDevice.getConfig(ConfigurationKeys.PARAMETERS);
+
+            // Serial port must exist.
+            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+            String serialPortPath = loraConfig.getString(ConfigurationKeys.SERIAL_PORT);
+            if (!new File(serialPortPath).exists()) {
+                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                        + ConfigurationKeys.SERIAL_PORT + " does not point to an existing serial port path at [" + serialPortPath + "].");
+            }
+
+            // Encryption key must exist and be exactly 32 characters.
+            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+            String encryptionKey = loraConfig.getString(ConfigurationKeys.ENCRYPTION_KEY);
+            if (encryptionKey.length() != 32) {
+                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                        + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
+            }
+        }
     }
 }

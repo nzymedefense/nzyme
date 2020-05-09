@@ -9,8 +9,13 @@ general: {
 # Please consult the nzyme documentation to find out supported tracker devices.
 tracker_device {
   type: SX126X_LORA
-  secret: 8FTn82tMCP2nd6d2JriWCaE0SHyK2QCfrnyLYRdRBhNIlWLa4htBO35CVbzk7gCLXcVjRcOkNceSidb2PlF15diI7n6q7W9b
   parameters: {
+    # Set the encryption key to your own 32 character string of letters and numbers.
+    # Must be the same on all trackers and nzyme nodes or communication will fail.
+    encryption_key: ep1aeNu2Iesoh3oxeiphae2gietati5i
+
+    # Will usually be /dev/ttyUSB0 except if you have multiple devices connected.
+    # You can find out by looking at `dmesg` after plugging it in.
     serial_port: /dev/ttyUSB0
   }
 }

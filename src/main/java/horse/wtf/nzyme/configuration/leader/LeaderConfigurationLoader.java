@@ -25,6 +25,7 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
@@ -34,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.module.Configuration;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -276,6 +278,7 @@ public class LeaderConfigurationLoader {
         }
     }
 
+
     @Nullable
     private TrackerDeviceConfiguration parseTrackerDevice() {
         if(trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
@@ -311,11 +314,32 @@ public class LeaderConfigurationLoader {
         if(trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
             ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
             ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+
+            // Validate parameters of SX126X LoRa HAT.
+            if (trackerDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
+                Config loraConfig = trackerDevice.getConfig(ConfigurationKeys.PARAMETERS);
+
+                // Serial port must exist.
+                ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+                String serialPortPath = loraConfig.getString(ConfigurationKeys.SERIAL_PORT);
+                if (!new File(serialPortPath).exists()) {
+                    throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                            + ConfigurationKeys.SERIAL_PORT + " does not point to an existing serial port path at [" + serialPortPath + "].");
+                }
+
+                // Encryption key must exist and be exactly 32 characters.
+                ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+                String encryptionKey = loraConfig.getString(ConfigurationKeys.ENCRYPTION_KEY);
+                if (encryptionKey.length() != 32) {
+                    throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                            + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
+                }
+            }
         }
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)
         if (parseAdminPasswordHash().length() != 64) {
-            throw new InvalidConfigurationException("Parameter [general." + ConfigurationKeys.ADMIN_PASSWORD_HASH + "] must be 64 characters long (a SHA256 hash).");
+            throw new InvalidConfigurationException("Parameter [" + ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ADMIN_PASSWORD_HASH + "] must be 64 characters long (a SHA256 hash).");
         }
 
         // 802.11 Monitors.

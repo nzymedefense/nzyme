@@ -40,7 +40,6 @@ import horse.wtf.nzyme.bandits.trackers.messagehandlers.StartTrackRequestMessage
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
-import horse.wtf.nzyme.security.transport.TransportEncryption;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -104,6 +103,7 @@ public class GroundStation implements Runnable {
             case SX126X_LORA:
                 this.trackerDevice = new SX126XLoRaHat(
                         config.parameters().getString(ConfigurationKeys.SERIAL_PORT),
+                        config.parameters().getString(ConfigurationKeys.ENCRYPTION_KEY),
                         rxCounter,
                         txCounter,
                         encryptionTimer
@@ -318,6 +318,10 @@ public class GroundStation implements Runnable {
     }
 
     public void transmit(@NotNull TrackerMessage.Wrapper message) {
+        if (transmitQueue.size() > 50) {
+            LOG.warn("Transmit queue size is unusually large at <{}> entries.", transmitQueue.size());
+        }
+
         if (message.hasPing()) {
             // Pings have priority.
             transmitQueue.addFirst(message.toByteArray());

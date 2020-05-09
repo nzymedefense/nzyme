@@ -52,7 +52,7 @@ public class SX126XLoRaHat implements TrackerDevice {
     private final Counter txCounter;
     private final Timer encryptionTimer;
 
-    public SX126XLoRaHat(String portName, Counter rxCounter, Counter txCounter, Timer encryptionTimer) {
+    public SX126XLoRaHat(String portName, String encryptionKey, Counter rxCounter, Counter txCounter, Timer encryptionTimer) {
         this.portName = portName;
 
         this.rxCounter = rxCounter;
@@ -60,7 +60,7 @@ public class SX126XLoRaHat implements TrackerDevice {
         this.encryptionTimer = encryptionTimer;
 
         try {
-            this.encryption = new TransportEncryption("Phaithou7iedeibieh0ae1laeHukaeya"); // TODO make configurable
+            this.encryption = new TransportEncryption(encryptionKey);
         } catch(Exception e) {
             throw new RuntimeException("Could not initialize transport encryption.", e);
         }
@@ -197,12 +197,6 @@ public class SX126XLoRaHat implements TrackerDevice {
 
     @Override
     public synchronized void transmit(byte[] message) {
-        // Spread out message sending to not overload LoRa band and reduce change of receive errors.
-        try {
-            Thread.sleep(1250);
-        } catch (InterruptedException ignored) {
-        }
-
         try {
             ByteArrayOutputStream payload = new ByteArrayOutputStream();
 
@@ -223,6 +217,12 @@ public class SX126XLoRaHat implements TrackerDevice {
 
             handle().writeBytes(buf);
             txCounter.inc(buf.length);
+
+            // Spread out message sending to not overload LoRa bands or UART connection buffer.
+            try {
+                Thread.sleep(1250);
+            } catch (InterruptedException ignored) {
+            }
         } catch (Exception e) {
             LOG.error("Could not transmit message.", e);
         }

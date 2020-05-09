@@ -71,5 +71,6 @@ public class ConfigurationKeys {
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";
+    public static final String ENCRYPTION_KEY = "encryption_key";
 
 }

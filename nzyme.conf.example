@@ -159,5 +159,16 @@ graylog_uplinks: [
 ]
 
 # Optional: A tracker device to track down physical location of bandits. Please read more in the documentation.
+# Please consult the nzyme documentation to find out supported tracker devices.
 tracker_device {
+  type: SX126X_LORA
+  parameters: {
+    # Set the encryption key to your own 32 character string of letters and numbers.
+    # Must be the same on all trackers and nzyme nodes or communication will fail.
+    encryption_key: ep1aeNu2Iesoh3oxeiphae2gietati5i
+
+    # Will usually be /dev/ttyUSB0 except if you have multiple devices connected.
+    # You can find out by looking at `dmesg` after plugging it in.
+    serial_port: /dev/ttyUSB0
+  }
 }
