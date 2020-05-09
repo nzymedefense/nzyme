@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
@@ -38,8 +39,6 @@ import java.util.Map;
 @Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackersResource {
-
-    private static final int DARK_TIMEOUT_SECONDS = 15;
 
     @Inject
     private NzymeLeader nzyme;
@@ -114,7 +113,7 @@ public class TrackersResource {
     }
 
     private TrackerState decideTrackerState(Tracker tracker) {
-        if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(DARK_TIMEOUT_SECONDS))) {
+        if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
             return TrackerState.DARK;
         } else {
             if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(nzyme.getContactIdentifier().getBanditList()))) {

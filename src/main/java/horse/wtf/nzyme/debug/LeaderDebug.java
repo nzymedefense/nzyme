@@ -22,10 +22,12 @@ import com.typesafe.config.Config;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.debug.trackers.SignalStrengthLink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +71,7 @@ public class LeaderDebug {
 
                                 Tracker tracker = nzyme.getTrackerManager().getTrackers()
                                         .get(trackerName);
-                                if (tracker == null) {
+                                if (tracker == null || tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
                                     body += "offline.";
                                 } else {
                                     body += "at RSSI <" + tracker.getRssi() + "> (" + (Math.round(tracker.getRssi() / 255.0 * 100)) + "%) "

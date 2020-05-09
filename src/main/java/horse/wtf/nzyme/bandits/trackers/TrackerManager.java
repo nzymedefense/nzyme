@@ -34,6 +34,7 @@ public class TrackerManager {
 
     private static final Logger LOG = LogManager.getLogger(TrackerManager.class);
 
+    public static final int DARK_TIMEOUT_SECONDS = 15;
     private static final int RETENTION_MINUTES = 60;
 
     private final AtomicReference<Map<String, Tracker>> activeTrackers;
