@@ -43,4 +43,8 @@ jobs:
     - name: Build and Test
       run: mvn -B test
       env:
-        TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres
+        TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres 
+      
+    - name: Upload Code Coverage
+        - uses: actions/checkout@master
+        - uses: codecov/codecov-action@v1
