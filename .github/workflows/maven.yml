@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Create Database
-      run: createdb nzyme-java-tests
+      run: createdb --host=localhost --port=5432 --username=postgres --password=postgres nzyme-java-tests
 
     - name: Set up JDK 11
       uses: actions/setup-java@v1
