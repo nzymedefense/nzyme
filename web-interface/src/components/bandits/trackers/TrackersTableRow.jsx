@@ -7,10 +7,6 @@ import TrackingMode from "./TrackingMode";
 
 class TrackersTableRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-    }
-
     render() {
         const tracker = this.props.tracker;
 

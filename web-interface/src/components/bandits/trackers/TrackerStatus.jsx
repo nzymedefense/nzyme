@@ -10,9 +10,9 @@ class TrackerStatus extends React.Component {
                 return <span className="badge badge-warning">OUT OF SYNC ({this.props.banditCount}/{this.props.totalBandits})</span>;
             case "DARK":
                 return <span className="badge badge-danger">DARK</span>;
+            default:
+                return this.props.status;
         }
-
-        return this.props.status;
     }
 
 }

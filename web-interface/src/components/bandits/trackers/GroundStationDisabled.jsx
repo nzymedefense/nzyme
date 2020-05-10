@@ -10,7 +10,7 @@ class GroundStationDisabled extends Reflux.Component {
                 show up here.</p>
 
                 <p>Trackers are devices you can use to physically locate bandits. Read more about this feature in
-                    the <a href="https://go.nzyme.org/bandits-and-trackers" target="_blank">documentation</a>.
+                    the <a href="https://go.nzyme.org/bandits-and-trackers" target="_blank" rel="noopener noreferrer">documentation</a>.
                 </p>
             </div>
         )
