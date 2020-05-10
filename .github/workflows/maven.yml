@@ -43,4 +43,4 @@ jobs:
     - name: Build and Test
       run: mvn -B test
       env:
-        TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests
+        TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres
