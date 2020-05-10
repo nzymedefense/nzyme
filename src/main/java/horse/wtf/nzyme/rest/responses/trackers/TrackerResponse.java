@@ -69,7 +69,7 @@ public abstract class TrackerResponse {
     public static Builder builder() {
         return new AutoValue_TrackerResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
@@ -92,5 +92,4 @@ public abstract class TrackerResponse {
 
         public abstract TrackerResponse build();
     }
-
 }

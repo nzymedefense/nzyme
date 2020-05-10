@@ -6,6 +6,7 @@ import TrackersStore from "../../../stores/TrackersStore";
 import TrackersTableRow from "./TrackersTableRow";
 import BanditsActions from "../../../actions/BanditsActions";
 import BanditsStore from "../../../stores/BanditsStore";
+import GroundStationDisabled from "./GroundStationDisabled";
 
 class TrackersTable extends Reflux.Component {
 
@@ -16,7 +17,8 @@ class TrackersTable extends Reflux.Component {
 
         this.state = {
             trackers: undefined,
-            bandits: undefined
+            bandits: undefined,
+            groundstationEnabled: undefined
         }
     }
 
@@ -33,6 +35,10 @@ class TrackersTable extends Reflux.Component {
     render() {
         if (!this.state.trackers || !this.state.bandits) {
             return <LoadingSpinner />
+        }
+
+        if (!this.state.groundstationEnabled) {
+            return <GroundStationDisabled />;
         }
 
         const trackers = this.state.trackers;

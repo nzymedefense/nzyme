@@ -14,7 +14,7 @@ class TrackersStore extends Reflux.Store {
         const self = this;
 
         RESTClient.get("/trackers", {}, function(response) {
-            self.setState({trackers: response.data});
+            self.setState({trackers: response.data.trackers, groundstationEnabled: response.data.groundstation_enabled});
         });
     }
 

@@ -26,6 +26,7 @@ import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
+import horse.wtf.nzyme.rest.responses.trackers.TrackersListResponse;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
@@ -60,7 +61,11 @@ public class TrackersResource {
             ));
         }
 
-        return Response.ok(trackers).build();
+        return Response.ok(TrackersListResponse.create(
+                nzyme.getGroundStation() != null,
+                trackers.size(),
+                trackers
+        )).build();
     }
 
     @GET
