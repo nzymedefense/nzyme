@@ -33,6 +33,7 @@ import CreateBanditPage from "./components/bandits/management/CreateBanditPage";
 import BanditDetailPage from "./components/bandits/BanditDetailPage";
 import EditBanditPage from "./components/bandits/management/EditBanditPage";
 import CreateIdentifierPage from "./components/bandits/management/identifiers/CreateIdentifierPage";
+import TrackerDetailPage from "./components/bandits/trackers/TrackerDetailPage";
 
 class App extends Reflux.Component {
 
@@ -115,6 +116,9 @@ class App extends Reflux.Component {
                                     <Route exact path={Routes.BANDITS.SHOW(":id")} component={BanditDetailPage} />
                                     <Route exact path={Routes.BANDITS.EDIT(":id")} component={EditBanditPage} />
                                     <Route exact path={Routes.BANDITS.NEW_IDENTIFIER(":banditUUID")} component={CreateIdentifierPage} />
+
+                                    { /* Trackers. */ }
+                                    <Route exact path={Routes.TRACKERS.SHOW(":name")} component={TrackerDetailPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

@@ -27,6 +27,8 @@ import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackersListResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
@@ -40,6 +42,8 @@ import java.util.Map;
 @Secured
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackersResource {
+
+    private static final Logger LOG = LogManager.getLogger(TrackersResource.class);
 
     @Inject
     private NzymeLeader nzyme;
@@ -69,7 +73,7 @@ public class TrackersResource {
     }
 
     @GET
-    @Path("/api/trackers/show/{name}")
+    @Path("/show/{name}")
     public Response findTracker(@PathParam("name") String name) {
         Map<String, Tracker> trackers = nzyme.getTrackerManager().getTrackers();
         if (trackers.containsKey(name)) {
@@ -87,6 +91,7 @@ public class TrackersResource {
                 tracker.getRssi()
             )).build();
         } else {
+            LOG.info("Tracker [{}] not found.", name);
             return Response.status(404).build();
         }
     }

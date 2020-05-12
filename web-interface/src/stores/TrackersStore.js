@@ -18,6 +18,13 @@ class TrackersStore extends Reflux.Store {
         });
     }
 
+    onFindOne(trackerName) {
+        const self = this;
+        RESTClient.get("/trackers/show/" + trackerName, {}, function(response) {
+            self.setState({tracker: response.data});
+        });
+    }
+
 }
 
 export default TrackersStore;

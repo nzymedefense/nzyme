@@ -1,7 +1,8 @@
 import Reflux from 'reflux';
 
 const TrackersActions = Reflux.createActions([
-    "findAll"
+    "findAll",
+    "findOne"
 ]);
 
 export default TrackersActions;

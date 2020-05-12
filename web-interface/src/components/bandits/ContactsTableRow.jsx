@@ -12,16 +12,17 @@ class ContactsTableRow extends Reflux.Component {
         return (
             <tr>
                 <td>{contact.uuid.substr(0, 8)}</td>
+                <td>tracker/leader/drone</td>
                 <td>{contact.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
                 <td>{numeral(contact.frame_count).format('0,0')}</td>
                 <td>
                     <Timespan from={contact.first_seen} to={contact.last_seen} />
                 </td>
                 <td title={moment(contact.first_seen).format()}>
-                    {moment(contact.first_seen).format("M/D/YYYY hh:mm:ss a")} ({moment(contact.first_seen).fromNow()})
+                    {moment(contact.first_seen).format("M/D/YY hh:mm a")} ({moment(contact.first_seen).fromNow()})
                 </td>
                 <td title={moment(contact.last_seen).format()}>
-                    {moment(contact.last_seen).format("M/D/YYYY hh:mm:ss a")} ({moment(contact.last_seen).fromNow()})
+                    {moment(contact.last_seen).format("M/D/YY hh:mm a")} ({moment(contact.last_seen).fromNow()})
                 </td>
             </tr>
         );

@@ -4,6 +4,7 @@ import moment from "moment";
 import {round} from "lodash";
 import TrackerStatus from "./TrackerStatus";
 import TrackingMode from "./TrackingMode";
+import Routes from "../../../util/Routes";
 
 class TrackersTableRow extends Reflux.Component {
 
@@ -12,7 +13,7 @@ class TrackersTableRow extends Reflux.Component {
 
         return (
             <tr>
-                <td>{tracker.name}</td>
+                <td><a href={Routes.TRACKERS.SHOW(tracker.name)}>{tracker.name}</a></td>
                 <td><TrackerStatus status={tracker.state} banditCount={tracker.bandit_count} totalBandits={this.props.totalBandits}/></td>
                 <td><TrackingMode mode={tracker.tracking_mode} /></td>
                 <td title={moment(tracker.last_seen).format()}>

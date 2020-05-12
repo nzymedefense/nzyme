@@ -20,6 +20,7 @@ class BanditsTableRow extends Reflux.Component {
             <tr>
                 <td><a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a></td>
                 <td>{bandit.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
+                <td>???</td>
                 <td title={bandit.last_contact ? moment(bandit.last_contact).format() : "never"}>
                     {bandit.last_contact ? moment(bandit.last_contact).fromNow() : "never"}
                 </td>
