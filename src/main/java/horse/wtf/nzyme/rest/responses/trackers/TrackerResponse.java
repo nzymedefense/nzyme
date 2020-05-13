@@ -49,10 +49,13 @@ public abstract class TrackerResponse {
     @JsonProperty("tracking_mode")
     public abstract String trackingMode();
 
+    @JsonProperty("has_pending_tracking_requests")
+    public abstract boolean hasPendingTrackingRequests();
+
     @JsonProperty
     public abstract int rssi();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, int rssi) {
+    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, boolean hasPendingTrackingRequests, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
@@ -62,6 +65,7 @@ public abstract class TrackerResponse {
                 .banditCount(banditCount)
                 .state(state)
                 .trackingMode(trackingMode)
+                .hasPendingTrackingRequests(hasPendingTrackingRequests)
                 .rssi(rssi)
                 .build();
     }
@@ -69,7 +73,7 @@ public abstract class TrackerResponse {
     public static Builder builder() {
         return new AutoValue_TrackerResponse.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
@@ -88,8 +92,11 @@ public abstract class TrackerResponse {
 
         public abstract Builder trackingMode(String trackingMode);
 
+        public abstract Builder hasPendingTrackingRequests(boolean hasPendingTrackingRequests);
+
         public abstract Builder rssi(int rssi);
 
         public abstract TrackerResponse build();
     }
+
 }

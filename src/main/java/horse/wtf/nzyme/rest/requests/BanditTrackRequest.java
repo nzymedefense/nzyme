@@ -26,17 +26,12 @@ import java.util.UUID;
 @AutoValue
 public abstract class BanditTrackRequest {
 
-    @JsonProperty("tracker_name")
-    public abstract String trackerName();
-
     @JsonProperty("bandit_uuid")
     public abstract UUID banditUUID();
 
     @JsonCreator
-    public static BanditTrackRequest create(@JsonProperty("tracker_name") String trackerName,
-                                            @JsonProperty("bandit_uuid") UUID banditUUID) {
+    public static BanditTrackRequest create(@JsonProperty("bandit_uuid") UUID banditUUID) {
         return builder()
-                .trackerName(trackerName)
                 .banditUUID(banditUUID)
                 .build();
     }
@@ -47,8 +42,6 @@ public abstract class BanditTrackRequest {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder trackerName(String trackerName);
-
         public abstract Builder banditUUID(UUID banditUUID);
 
         public abstract BanditTrackRequest build();

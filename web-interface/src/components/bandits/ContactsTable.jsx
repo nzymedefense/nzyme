@@ -31,10 +31,10 @@ class ContactsTable extends Reflux.Component {
                             <th>Last Seen</th>
                         </tr>
                         </thead>
-                        {Object.keys(contacts).map(function (key,i) {
-                            return <ContactsTableRow contact={contacts[key]}/>
-                        })}
                         <tbody>
+                        {Object.keys(contacts).map(function (key,i) {
+                            return <ContactsTableRow key={contacts[key].uuid} contact={contacts[key]}/>
+                        })}
                         </tbody>
                     </table>
                 </div>

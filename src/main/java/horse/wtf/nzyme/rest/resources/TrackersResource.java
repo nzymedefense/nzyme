@@ -61,6 +61,7 @@ public class TrackersResource {
                     tracker.getBanditCount(),
                     decideTrackerState(tracker),
                     tracker.getTrackingMode(),
+                    nzyme.getGroundStation().trackerHasPendingTrackingRequest(tracker.getName()),
                     tracker.getRssi()
             ));
         }
@@ -88,6 +89,7 @@ public class TrackersResource {
                 tracker.getBanditCount(),
                 decideTrackerState(tracker),
                 tracker.getTrackingMode(),
+                nzyme.getGroundStation().trackerHasPendingTrackingRequest(tracker.getName()),
                 tracker.getRssi()
             )).build();
         } else {
@@ -97,27 +99,27 @@ public class TrackersResource {
     }
 
     @POST
-    @Path("/show/{uuid}/command/start_track_request")
-    public Response issueStartTrackRequest(BanditTrackRequest trackRequest) {
+    @Path("/show/{name}/command/start_track_request")
+    public Response issueStartTrackRequest(@PathParam("name") String name, BanditTrackRequest trackRequest) {
         // Check if tracker exists.
-        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackRequest.trackerName())) {
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(name)) {
             return Response.status(404).build();
         }
 
-        nzyme.getGroundStation().startTrackRequest(trackRequest.trackerName(), trackRequest.banditUUID());
+        nzyme.getGroundStation().startTrackRequest(name, trackRequest.banditUUID());
 
         return Response.accepted().build();
     }
 
     @POST
-    @Path("/show/{uuid}/command/cancel_track_request")
-    public Response issueCancelTrackRequest(BanditTrackRequest trackRequest) {
+    @Path("/show/{name}/command/cancel_track_request")
+    public Response issueCancelTrackRequest(@PathParam("name") String name, BanditTrackRequest trackRequest) {
         // Check if tracker exists.
-        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackRequest.trackerName())) {
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(name)) {
             return Response.status(404).build();
         }
 
-        nzyme.getGroundStation().cancelTrackRequest(trackRequest.trackerName(), trackRequest.banditUUID());
+        nzyme.getGroundStation().cancelTrackRequest(name, trackRequest.banditUUID());
 
         return Response.accepted().build();
     }

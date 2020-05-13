@@ -12,7 +12,7 @@ class ContactsTableRow extends Reflux.Component {
         return (
             <tr>
                 <td>{contact.uuid.substr(0, 8)}</td>
-                <td>tracker/leader/drone</td>
+                <td>nzyme-leader-01</td>
                 <td>{contact.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
                 <td>{numeral(contact.frame_count).format('0,0')}</td>
                 <td>

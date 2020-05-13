@@ -7,6 +7,7 @@ import TrackersTableRow from "./TrackersTableRow";
 import BanditsActions from "../../../actions/BanditsActions";
 import BanditsStore from "../../../stores/BanditsStore";
 import GroundStationDisabled from "./GroundStationDisabled";
+import {notify} from "react-notify-toast";
 
 class TrackersTable extends Reflux.Component {
 
@@ -14,6 +15,8 @@ class TrackersTable extends Reflux.Component {
         super(props);
 
         this.stores = [TrackersStore, BanditsStore];
+
+        this._onTrackingStartButtonClicked = this._onTrackingStartButtonClicked.bind(this);
 
         this.state = {
             trackers: undefined,
@@ -32,6 +35,16 @@ class TrackersTable extends Reflux.Component {
         }, 5000);
     }
 
+    _onTrackingStartButtonClicked(e, trackerName) {
+        e.preventDefault();
+        const self = this;
+
+        TrackersActions.issueTrackingRequest(trackerName, this.state.bandit.uuid, function() {
+            notify.show("Issued tracking request for this bandit to tracker device.", "success");
+            self.setState({ state: this.state });
+        })
+    }
+
     render() {
         if (!this.state.trackers || !this.state.bandits) {
             return <LoadingSpinner />
@@ -43,6 +56,9 @@ class TrackersTable extends Reflux.Component {
 
         const trackers = this.state.trackers;
         const bandits = this.state.bandits;
+        const forBandit = this.props.forBandit;
+
+        const self = this;
 
         if (trackers.length === 0) {
             return (
@@ -63,11 +79,17 @@ class TrackersTable extends Reflux.Component {
                             <th>Tracking Mode</th>
                             <th>Last Ping</th>
                             <th>Signal Strength</th>
+                            <th>&nbsp;</th>
                         </tr>
                         </thead>
                         <tbody>
                         {Object.keys(trackers).map(function (key,i) {
-                            return <TrackersTableRow key={"tracker-"+key} tracker={trackers[key]} totalBandits={bandits.length} />
+                            return <TrackersTableRow
+                                key={"tracker-"+key}
+                                tracker={trackers[key]}
+                                totalBandits={bandits.length}
+                                forBandit={forBandit}
+                                onTrackingStartButtonClicked={self._onTrackingStartButtonClicked} />
                         })}
                         </tbody>
                     </table>

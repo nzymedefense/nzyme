@@ -54,10 +54,10 @@ class BanditIdentifiersTable extends Reflux.Component {
                             <th>&nbsp;</th>
                         </tr>
                         </thead>
-                        {Object.keys(identifiers).map(function (key,i) {
-                            return <BanditIdentifiersTableRow identifier={identifiers[key]} onDelete={self._onDeleteIdentifier} />
-                        })}
                         <tbody>
+                        {Object.keys(identifiers).map(function (key,i) {
+                            return <BanditIdentifiersTableRow key={identifiers[key].uuid} identifier={identifiers[key]} onDelete={self._onDeleteIdentifier} />
+                        })}
                         </tbody>
                     </table>
                 </div>

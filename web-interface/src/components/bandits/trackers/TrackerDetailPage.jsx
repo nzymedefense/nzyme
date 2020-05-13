@@ -108,7 +108,10 @@ class TrackerDetailPage extends Reflux.Component {
                     </div>
 
                     <div className="col-md-6">
-                        <TrackingModeCard mode={tracker.tracking_mode} status={tracker.state} />
+                        <TrackingModeCard
+                            mode={tracker.tracking_mode}
+                            status={tracker.state}
+                            pendingRequests={tracker.has_pending_tracking_requests} />
                     </div>
                 </div>
 
@@ -120,7 +123,7 @@ class TrackerDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <h2>Commands</h2>
+                        <h3>Commands</h3>
                     </div>
                 </div>
 
@@ -138,7 +141,7 @@ class TrackerDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <h2>Contacts</h2>
+                        <h3>Contacts</h3>
                     </div>
                 </div>
 

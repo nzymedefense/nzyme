@@ -2,6 +2,7 @@ import Reflux from 'reflux';
 
 import RESTClient from "../util/RESTClient";
 import TrackersActions from "../actions/TrackersActions";
+import {notify} from "react-notify-toast";
 
 class TrackersStore extends Reflux.Store {
 
@@ -23,6 +24,12 @@ class TrackersStore extends Reflux.Store {
         RESTClient.get("/trackers/show/" + trackerName, {}, function(response) {
             self.setState({tracker: response.data});
         });
+    }
+
+    onIssueTrackingRequest(trackerName, banditUUID, successCallback) {
+        RESTClient.post("/trackers/show/" + trackerName + "/command/start_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
+            notify.show("Could not issue tracking request. Please check nzyme log file.", "error");
+        })
     }
 
 }

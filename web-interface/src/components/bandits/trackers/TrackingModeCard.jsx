@@ -11,6 +11,11 @@ class TrackingModeCard extends React.Component {
             color = "bg-danger";
         }
 
+        if (this.props.pendingRequests) {
+            mode = "Pending CMD Receipt";
+            color = "bg-warning";
+        }
+
         return (
             <div className={"card text-white " + color}>
                 <div className="card-body text-center">

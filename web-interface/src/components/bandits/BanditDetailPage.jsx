@@ -8,6 +8,9 @@ import Routes from "../../util/Routes";
 import BanditIdentifiersTable from "./BanditIdentifiersTable";
 import ContactsTable from "./ContactsTable";
 import {Redirect} from "react-router-dom";
+import TrackersStore from "../../stores/TrackersStore";
+import TrackersActions from "../../actions/TrackersActions";
+import BanditTracking from "./BanditTracking";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -16,10 +19,12 @@ class BanditDetailPage extends Reflux.Component {
 
         this.banditId = decodeURIComponent(props.match.params.id);
 
-        this.store = BanditsStore;
+        this.stores = [BanditsStore, TrackersStore];
 
         this.state = {
-            bandit: undefined
+            bandit: undefined,
+            trackers: undefined,
+            groundstationEnabled: undefined
         };
 
         this._deleteBandit = this._deleteBandit.bind(this);
@@ -31,9 +36,11 @@ class BanditDetailPage extends Reflux.Component {
     componentDidMount() {
         const self = this;
         self._loadBandit();
+        self._loadTrackers();
 
         setInterval(function () {
             self._loadBandit();
+            self._loadTrackers();
         }, 15000);
     }
 
@@ -69,12 +76,16 @@ class BanditDetailPage extends Reflux.Component {
         BanditsActions.findOne(this.banditId);
     }
 
+    _loadTrackers() {
+        TrackersActions.findAll();
+    }
+
     render() {
         if (this.state.deleted) {
             return <Redirect to={Routes.BANDITS.INDEX} />;
         }
 
-        if (!this.state.bandit) {
+        if (!this.state.bandit || !this.state.trackers) {
             return <LoadingSpinner />
         }
 
@@ -145,6 +156,18 @@ class BanditDetailPage extends Reflux.Component {
                 <div className="row">
                     <div className="col-md-12">
                         <BanditIdentifiersTable bandit={bandit} onInvalidateIdentifiers={this._invalidateIdentifiers} />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-9">
+                        <h3>Tracking / Physical Location</h3>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <BanditTracking groundstationEnabled={this.state.groundstationEnabled} bandit={bandit} />
                     </div>
                 </div>
 
