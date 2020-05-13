@@ -84,7 +84,12 @@ class TrackerDetailPage extends Reflux.Component {
                     <div className="col-md-2">
                         <dl>
                             <dt>Bandits:</dt>
-                            <dd><TrackerBanditCount trackerBanditCount={tracker.bandit_count} totalBanditCount={bandits.length} /></dd>
+                            <dd>
+                                <TrackerBanditCount
+                                    trackerBanditCount={tracker.bandit_count}
+                                    totalBanditCount={bandits.length}
+                                    status={tracker.state} />
+                            </dd>
                         </dl>
                     </div>
 
