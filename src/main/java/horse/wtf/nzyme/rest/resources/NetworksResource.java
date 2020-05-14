@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
@@ -63,9 +62,6 @@ public class NetworksResource {
 
     @Inject
     private NzymeLeader nzyme;
-
-    @Inject
-    private ObjectMapper om;
 
     @GET
     @Path("/bssids")
@@ -112,8 +108,66 @@ public class NetworksResource {
     }
 
     @GET
+    @Path("/ssids/{ssid}")
+    public Response ssid(@PathParam("ssid") @NotNull String ssidS) {
+        String ssidNameSafe = "";
+        boolean ssidNameHumanReadable = false;
+        List<SSIDSecurityResponse> security = Lists.newArrayList();
+        long totalFrames = 0;
+        List<String> bssids = Lists.newArrayList();
+
+        boolean anyNotMonitored = false;
+        boolean found = false;
+        for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
+            bssids.add(bssid.bssid());
+
+            for (SSID ssid : bssid.ssids().values()) {
+                if (ssid.name().equals(ssidS)) {
+                    found = true;
+                    ssidNameSafe = ssid.nameSafe();
+                    ssidNameHumanReadable = ssid.isHumanReadable();
+
+                    // Monitoring status.
+                    if(findNetworkDefinition(bssid, ssid).isEmpty()) {
+                        anyNotMonitored = true;
+                    }
+
+                    // Total Frames.s
+                    for (Channel channel : ssid.channels().values()) {
+                        totalFrames += channel.totalFrames().get();
+                    }
+
+                    // Security.
+                    for (Dot11SecurityConfiguration sec : ssid.getSecurity()) {
+                        SSIDSecurityResponse x = SSIDSecurityResponse.create(
+                                sec.wpaMode(), sec.keyManagementModes(), sec.encryptionModes(), sec.asString()
+                        );
+
+                        if (!security.contains(x)) {
+                            security.add(x);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!found) {
+            return Response.status(404).build();
+        }
+
+        return Response.ok(GlobalSSIDResponse.create(
+                ssidNameHumanReadable,
+                ssidNameSafe,
+                !anyNotMonitored,
+                security,
+                totalFrames,
+                bssids
+        )).build();
+    }
+
+    @GET
     @Path("/bssids/{bssid}/ssids/{ssid}")
-    public Response ssid(@PathParam("bssid") @NotNull String bssid,
+    public Response ssidOfBssid(@PathParam("bssid") @NotNull String bssid,
                          @PathParam("ssid") @NotNull String ssid,
                          @QueryParam("include_history") @DefaultValue("false") boolean includeHistory,
                          @QueryParam("history_seconds") @DefaultValue("10800") int historySeconds) {
@@ -213,8 +267,6 @@ public class NetworksResource {
     }
 
     private List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {
-        DateTime yesterday = DateTime.now().minusDays(1);
-
         List<AverageBeaconRate> beaconRateHistory = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(BEACON_RATE_AVERAGE_QUERY)
                         .bind(0, b.bssid())
@@ -222,6 +274,12 @@ public class NetworksResource {
                         .mapTo(AverageBeaconRate.class)
                         .list()
         );
+
+        return buildBeaconRateHistory(beaconRateHistory);
+    }
+
+    private  List<AverageBeaconRate> buildBeaconRateHistory(List<AverageBeaconRate> beaconRateHistory) {
+        DateTime yesterday = DateTime.now().minusDays(1);
 
         // Always have charts go from now to -24h.
         if (!beaconRateHistory.isEmpty()) {
@@ -233,7 +291,7 @@ public class NetworksResource {
 
         return beaconRateHistory;
     }
-    
+
     private Optional<Dot11NetworkDefinition> findNetworkDefinition(BSSID b, SSID s) {
         for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
             if (dot11Network.allBSSIDAddresses().contains(b.bssid()) && dot11Network.ssid().equals(s.name())) {
@@ -243,22 +301,19 @@ public class NetworksResource {
 
         return Optional.empty();
     }
-    
-    private Optional<Dot11BSSIDDefinition> findBSSIDDefinition(BSSID b, SSID s) {
-        Optional<Dot11NetworkDefinition> network = findNetworkDefinition(b, s);
-        if (network.isPresent()) {
-            for (Dot11BSSIDDefinition bssid : network.get().bssids()) {
-                if (bssid.address().equals(b.bssid())) {
-                    return Optional.of(bssid);
-                }
+
+    private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
+        return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
+    }
+
+    private Optional<Integer> findBeaconRateThresholdOfNetwork(String ssidName) {
+        for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
+            if (dot11Network.ssid().equals(ssidName)) {
+                return Optional.of(dot11Network.beaconRate());
             }
         }
 
         return Optional.empty();
-    }
-
-    private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
-        return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
     }
 
 }

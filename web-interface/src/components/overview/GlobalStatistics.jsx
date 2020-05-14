@@ -64,21 +64,6 @@ class GlobalStatistics extends Reflux.Component {
             <div className="col-md-4">
               <div className="card bg-success text-center overview-statistic">
                 <div className="card-body">
-                  <p>802.11 Clients</p>
-                  <span>{numeral(this.state.global_statistics.current_probing_devices.length).format('0,0')}</span>
-                </div>
-              </div>
-
-              <SimpleLineChart
-                  title="802.11 Clients"
-                  width={335}
-                  height={150}
-                  data={this.state.global_statistics.histogram_probing_devices} />
-            </div>
-
-            <div className="col-md-4">
-              <div className="card bg-success text-center overview-statistic">
-                <div className="card-body">
                   <p>802.11 Access points</p>
                   <span>{numeral(this.state.global_statistics.current_bssids.length).format('0,0')}</span>
                 </div>

@@ -106,6 +106,7 @@ class App extends Reflux.Component {
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
                                     <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
                                            component={NetworkDetailsPage}/>
+                                    <Route exact path={Routes.NETWORKS.DASHBOARD(":ssid")} />
 
                                     { /* Alerts. */}
                                     <Route exact path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>

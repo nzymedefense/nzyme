@@ -57,8 +57,6 @@ public class SignalStrengthTable {
     public void retentionClean(int seconds) {
         DateTime cutoff = DateTime.now().minusSeconds(seconds);
 
-        // TODO ZSCORE record total retention clean time here
-
         List<SignalStrength> newList = newEmptyTable();
 
         Timer.Context timer = mutexTimer.time();
