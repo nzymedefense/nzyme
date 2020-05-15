@@ -29,6 +29,7 @@ import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.util.Dot11CryptoComparator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -39,8 +40,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CryptoChangeInterceptorSet {
-
-    private static final Logger LOG = LogManager.getLogger(CryptoChangeInterceptorSet.class);
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
     private final Dot11Probe probe;
@@ -64,7 +63,7 @@ public class CryptoChangeInterceptorSet {
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.ssid().equals(frame.ssid())) {
                         // One of our networks. Compare security configuration.
-                        if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
+                        if (!Dot11CryptoComparator.compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
                                     CryptoChangeProbeRespAlert.create(
                                             DateTime.now(),
@@ -106,7 +105,7 @@ public class CryptoChangeInterceptorSet {
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.ssid().equals(frame.ssid())) {
                         // One of our networks. Compare security configuration.
-                        if (!compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
+                        if (!Dot11CryptoComparator.compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
                             probe.raiseAlert(
                                     CryptoChangeBeaconAlert.create(
                                             DateTime.now(),
@@ -138,35 +137,6 @@ public class CryptoChangeInterceptorSet {
         });
 
         return interceptors.build();
-    }
-
-    private boolean compareSecurity(List<String> encountered, List<String> expected) {
-        if (expected.size() != encountered.size()) {
-            LOG.debug("Unexpected security settings: expected size <{}> does not match encountered size <{}>.", expected.size(), encountered.size());
-            return false;
-        }
-
-        final AtomicBoolean result = new AtomicBoolean(true);
-        List<String> seen = Lists.newArrayList();
-        encountered.forEach((e) -> {
-            if(seen.contains(e)) {
-                LOG.warn("Unexpected security settings: Encountered contains duplicate security [{}]. This is not 802.11 compliant and highly unusual.", e);
-                result.set(false);
-            }
-        });
-
-        if(!result.get()) {
-            return false;
-        }
-
-        expected.forEach((e) -> {
-            if (!encountered.contains(e)) {
-                LOG.debug("Unexpected security settings: Expected security [{}] not in encountered [{}].", e, encountered);
-                result.set(false);
-            }
-        });
-
-        return result.get();
     }
 
 }

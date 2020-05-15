@@ -20,6 +20,7 @@ package horse.wtf.nzyme.rest.responses.networks;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @AutoValue
@@ -34,7 +35,7 @@ public abstract class GlobalSSIDResponse {
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    @JsonProperty
+    @JsonProperty("security")
     public abstract List<SSIDSecurityResponse> security();
 
     @JsonProperty("total_frames")

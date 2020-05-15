@@ -37,6 +37,15 @@ button:disabled {
     cursor: not-allowed;
 }
 
+.blink{
+    text-decoration: blink;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-timing-function:ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
 .container-login {
     height: 100%;
     align-content: center;
@@ -125,11 +134,18 @@ i.monitored-network {
     to {opacity: 0.4;}
 }
 
-.blink{
-    text-decoration: blink;
-    -webkit-animation-name: blinker;
-    -webkit-animation-duration: 0.5s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function:ease-in-out;
-    -webkit-animation-direction: alternate;
+div.dashboard-card {
+    height: 150px;
+    text-align: center;
+}
+
+div.dashboard-card div.dashboard-align {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+div.dashboard-card span.dashboard-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px;
+    text-transform: uppercase;
 }

@@ -34,6 +34,7 @@ import BanditDetailPage from "./components/bandits/BanditDetailPage";
 import EditBanditPage from "./components/bandits/management/EditBanditPage";
 import CreateIdentifierPage from "./components/bandits/management/identifiers/CreateIdentifierPage";
 import TrackerDetailPage from "./components/bandits/trackers/TrackerDetailPage";
+import NetworkDashboardPage from "./components/networks/dashboard/NetworkDashboardPage";
 
 class App extends Reflux.Component {
 
@@ -86,6 +87,8 @@ class App extends Reflux.Component {
         document.body.classList.remove('login-page');
         document.body.style.backgroundImage = "";
 
+        const fullWidth = document.location.pathname.startsWith("/networks/dashboard/");
+
         if(this.state.apiConnected) {
             if (this.state.authenticated) {
                 return (
@@ -93,7 +96,7 @@ class App extends Reflux.Component {
                         <div className="nzyme">
                             <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
 
-                            <div className="container">
+                            <div className={fullWidth ? "container-fluid" : "container"}>
                                 <Notifications/>
 
                                 <Switch>
@@ -106,7 +109,7 @@ class App extends Reflux.Component {
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
                                     <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
                                            component={NetworkDetailsPage}/>
-                                    <Route exact path={Routes.NETWORKS.DASHBOARD(":ssid")} />
+                                    <Route exact path={Routes.NETWORKS.DASHBOARD(":ssid")} component={NetworkDashboardPage} />
 
                                     { /* Alerts. */}
                                     <Route exact path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>

@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.rest.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
@@ -119,10 +118,10 @@ public class NetworksResource {
         boolean anyNotMonitored = false;
         boolean found = false;
         for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
-            bssids.add(bssid.bssid());
-
             for (SSID ssid : bssid.ssids().values()) {
                 if (ssid.name().equals(ssidS)) {
+                    bssids.add(bssid.bssid());
+
                     found = true;
                     ssidNameSafe = ssid.nameSafe();
                     ssidNameHumanReadable = ssid.isHumanReadable();
@@ -130,6 +129,11 @@ public class NetworksResource {
                     // Monitoring status.
                     if(findNetworkDefinition(bssid, ssid).isEmpty()) {
                         anyNotMonitored = true;
+                    }
+
+                    List<String> crypto = Lists.newArrayList();
+                    for (Dot11SecurityConfiguration sec : ssid.getSecurity()) {
+                        crypto.add(sec.asString());
                     }
 
                     // Total Frames.s
