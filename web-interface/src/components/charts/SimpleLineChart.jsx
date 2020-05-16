@@ -70,8 +70,20 @@ class SimpleLineChart extends React.Component {
                 },
                 barmode: "stack",
                 boxgap: 0,
-                xaxis: { fixedrange: true, title: this.props.xaxistitle },
-                yaxis: { fixedrange: true, title: this.props.yaxistitle },
+                xaxis: {
+                    fixedrange: true,
+                    title: this.props.xaxistitle,
+                    zerolinecolor: "#1f2134",
+                    linecolor: "#11121f",
+                    gridcolor: "#1f2134"
+                },
+                yaxis: {
+                    fixedrange: true,
+                    title: this.props.yaxistitle,
+                    zerolinecolor: "#1f2134",
+                    linecolor: "#11121f",
+                    gridcolor: "#1f2134"
+                },
                 shapes: this.props.shapes
             }}
             config={{

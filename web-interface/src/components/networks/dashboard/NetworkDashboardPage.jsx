@@ -7,6 +7,8 @@ import numeral from "numeral";
 import AlertsStore from "../../../stores/AlertsStore";
 import AlertsActions from "../../../actions/AlertsActions";
 import SimpleLineChart from "../../charts/SimpleLineChart";
+import StatisticsActions from "../../../actions/StatisticsActions";
+import StatisticsStore from "../../../stores/StatisticsStore";
 
 class NetworkDashboardPage extends Reflux.Component {
 
@@ -15,7 +17,7 @@ class NetworkDashboardPage extends Reflux.Component {
 
         this.ssidParam = decodeURIComponent(props.match.params.ssid);
 
-        this.stores = [NetworksStore, AlertsStore];
+        this.stores = [NetworksStore, AlertsStore, StatisticsStore];
 
         this.state = {
             ssid: undefined,
@@ -38,6 +40,7 @@ class NetworkDashboardPage extends Reflux.Component {
     _loadFull() {
         NetworksActions.findSSID(this.ssidParam);
         AlertsActions.findActive();
+        StatisticsActions.findGlobal();
     }
 
     _formatBeaconRateHistory(data) {
@@ -117,7 +120,7 @@ class NetworkDashboardPage extends Reflux.Component {
             )
         }
 
-        if (!this.state.ssid || !this.state.active_alerts) {
+        if (!this.state.ssid || !this.state.active_alerts || !this.state.global_statistics) {
             return <LoadingSpinner />;
         }
 
@@ -181,7 +184,25 @@ class NetworkDashboardPage extends Reflux.Component {
 
                 <div className="row lower-row">
                     <div className="col-md-6">
+                        <div className="card dashboard-card dashboard-card-high bg-dark">
+                            <div className="dashboard-manual-align">
+                                <h4>Global Frame Throughput</h4>
 
+                                <div className="dashboard-chart">
+                                    <SimpleLineChart
+                                        height={235}
+                                        customMarginLeft={20}
+                                        customMarginRight={20}
+                                        customMarginTop={1}
+                                        customMarginBottom={15}
+                                        backgroundColor="#32334a"
+                                        textColor="#ffffff"
+                                        disableHover={true}
+                                        data={this.state.global_statistics.histogram_frame_throughput}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="col-md-6">
@@ -208,7 +229,6 @@ class NetworkDashboardPage extends Reflux.Component {
                                 </div>
                             </div>
                         </div>
-
                     </div>
 
                 </div>
