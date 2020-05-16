@@ -114,6 +114,7 @@ public class NetworksResource {
         List<SSIDSecurityResponse> security = Lists.newArrayList();
         long totalFrames = 0;
         List<String> bssids = Lists.newArrayList();
+        Map<String, List<AverageBeaconRate>> beaconRates = Maps.newHashMap();
 
         boolean anyNotMonitored = false;
         boolean found = false;
@@ -125,6 +126,9 @@ public class NetworksResource {
                     found = true;
                     ssidNameSafe = ssid.nameSafe();
                     ssidNameHumanReadable = ssid.isHumanReadable();
+
+                    // Beacon rate.
+                    beaconRates.put(bssid.bssid(), buildBeaconRateHistory(bssid, ssid, false));
 
                     // Monitoring status.
                     if(findNetworkDefinition(bssid, ssid).isEmpty()) {
@@ -165,7 +169,8 @@ public class NetworksResource {
                 !anyNotMonitored,
                 security,
                 totalFrames,
-                bssids
+                bssids,
+                beaconRates
         )).build();
     }
 
@@ -238,7 +243,7 @@ public class NetworksResource {
                         channels,
                         fingerprints,
                         s.beaconRate(),
-                        includeHistory ? buildBeaconRateHistory(b, s) : null,
+                        includeHistory ? buildBeaconRateHistory(b, s, true) : null,
                         findBeaconRateThresholdOfNetwork(b, s).orElse(null),
                         findNetworkDefinition(b, s).isPresent()
                 )).build();
@@ -270,7 +275,7 @@ public class NetworksResource {
         return AverageBeaconRate.create(0.0F, at);
     }
 
-    private List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s) {
+    private List<AverageBeaconRate> buildBeaconRateHistory(BSSID b, SSID s, boolean gap) {
         List<AverageBeaconRate> beaconRateHistory = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(BEACON_RATE_AVERAGE_QUERY)
                         .bind(0, b.bssid())
@@ -279,19 +284,21 @@ public class NetworksResource {
                         .list()
         );
 
-        return buildBeaconRateHistory(beaconRateHistory);
+        return buildBeaconRateHistory(beaconRateHistory, gap);
     }
 
-    private  List<AverageBeaconRate> buildBeaconRateHistory(List<AverageBeaconRate> beaconRateHistory) {
+    private  List<AverageBeaconRate> buildBeaconRateHistory(List<AverageBeaconRate> beaconRateHistory, boolean gap) {
         DateTime yesterday = DateTime.now().minusDays(1);
 
-        // Always have charts go from now to -24h.
-        if (!beaconRateHistory.isEmpty()) {
-            beaconRateHistory.set(0, createEmptyAverageBeaconRate(yesterday));
-        } else {
-            beaconRateHistory.add(createEmptyAverageBeaconRate(yesterday));
+        if (gap) {
+            // Always have charts go from now to -24h.
+            if (!beaconRateHistory.isEmpty()) {
+                beaconRateHistory.set(0, createEmptyAverageBeaconRate(yesterday));
+            } else {
+                beaconRateHistory.add(createEmptyAverageBeaconRate(yesterday));
+            }
+            beaconRateHistory.add(createEmptyAverageBeaconRate(DateTime.now()));
         }
-        beaconRateHistory.add(createEmptyAverageBeaconRate(DateTime.now()));
 
         return beaconRateHistory;
     }
@@ -308,16 +315,6 @@ public class NetworksResource {
 
     private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
         return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
-    }
-
-    private Optional<Integer> findBeaconRateThresholdOfNetwork(String ssidName) {
-        for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
-            if (dot11Network.ssid().equals(ssidName)) {
-                return Optional.of(dot11Network.beaconRate());
-            }
-        }
-
-        return Optional.empty();
     }
 
 }

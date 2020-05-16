@@ -19,9 +19,11 @@ package horse.wtf.nzyme.rest.responses.networks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.dot11.networks.beaconrate.AverageBeaconRate;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class GlobalSSIDResponse {
@@ -44,7 +46,10 @@ public abstract class GlobalSSIDResponse {
     @JsonProperty("bssids")
     public abstract List<String> bssids();
 
-    public static GlobalSSIDResponse create(boolean humanReadable, String name, boolean isMonitored, List<SSIDSecurityResponse> security, long totalFrames, List<String> bssids) {
+    @JsonProperty("beacon_rates")
+    public abstract Map<String, List<AverageBeaconRate>> beaconRates();
+
+    public static GlobalSSIDResponse create(boolean humanReadable, String name, boolean isMonitored, List<SSIDSecurityResponse> security, long totalFrames, List<String> bssids, Map<String, List<AverageBeaconRate>> beaconRates) {
         return builder()
                 .humanReadable(humanReadable)
                 .name(name)
@@ -52,6 +57,7 @@ public abstract class GlobalSSIDResponse {
                 .security(security)
                 .totalFrames(totalFrames)
                 .bssids(bssids)
+                .beaconRates(beaconRates)
                 .build();
     }
 
@@ -72,6 +78,8 @@ public abstract class GlobalSSIDResponse {
         public abstract Builder totalFrames(long totalFrames);
 
         public abstract Builder bssids(List<String> bssids);
+
+        public abstract Builder beaconRates(Map<String, List<AverageBeaconRate>> beaconRates);
 
         public abstract GlobalSSIDResponse build();
     }

@@ -134,18 +134,30 @@ i.monitored-network {
     to {opacity: 0.4;}
 }
 
-div.dashboard-card {
+div.dashboard div.dashboard-card {
     height: 150px;
     text-align: center;
 }
 
-div.dashboard-card div.dashboard-align {
+div.dashboard div.dashboard-card-high {
+    height: 300px;
+}
+
+div.dashboard div.dashboard-card div.dashboard-align {
     margin-top: auto;
     margin-bottom: auto;
 }
 
-div.dashboard-card span.dashboard-value {
+div.dashboard div.dashboard-card div.dashboard-manual-align {
+    margin-top: 10px;
+}
+
+div.dashboard div.dashboard-card span.dashboard-value {
     font-family: 'Share Tech Mono', monospace;
     font-size: 32px;
     text-transform: uppercase;
+}
+
+div.dashboard div.lower-row {
+    margin-top: 30px;
 }

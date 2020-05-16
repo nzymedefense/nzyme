@@ -39,11 +39,15 @@ class HeatmapWaterfallChart extends React.Component {
 
         return (
             <Plot
+                style={{ width: '100%', height: '100%' }}
                 data={finalData}
                 layout={{
-                    width: 1100,
                     height: 400,
-                    font: { family: "'Inconsolata', monospace", size: 10 },
+                    font: {
+                        family: "'Inconsolata', monospace",
+                        size: 10,
+                        color: this.props.textColor ? this.props.textColor : "#ffffff"
+                    },
                     margin: { l: 60, r: 60, b: 50, t: 25, pad: 0 },
                     title: { text: this.props.title },
                     paper_bgcolor: "#0c0d16",
@@ -57,7 +61,9 @@ class HeatmapWaterfallChart extends React.Component {
                     annotations: this.props.layers.annotations
                 }}
                 config={{
-                    displayModeBar: false
+                    displayModeBar: false,
+                    autosize: true,
+                    responsive: true
                 }}
             />
         );

@@ -62,7 +62,12 @@ class NetworksStore extends Reflux.Store {
     onFindSSID(ssid) {
         let self = this;
         RESTClient.get("/networks/ssids/" + encodeURIComponent(ssid), {}, function(response) {
-            self.setState({ssid: response.data});
+            self.setState({ssid: response.data, notFound: false});
+        }, function(error) {
+            if (error.response && error.response.status === 404) {
+                console.log("error 404");
+                self.setState({ssid: undefined, notFound: true});
+            }
         });
     }
 

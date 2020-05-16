@@ -241,7 +241,6 @@ class ChannelDetails extends Reflux.Component {
                     <div className="col-md-12">
                         <SimpleLineChart
                             title={"Signal Strength Distribution (last " + self.state.channel.signal_index_distribution_minutes + " minutes)"}
-                            width={1100}
                             height={200}
                             xaxistitle="Signal Strength (dBm)"
                             yaxistitle="Signal Count"
