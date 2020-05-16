@@ -219,6 +219,7 @@ public class NetworksResource {
                             b.bssid(),
                             s.nameSafe(),
                             c.totalFrames().get(),
+                            c.getTotalFramesRecent().get(),
                             c.fingerprints(),
                             c.signalStrengthTable().getSignalDistributionHistogram(),
                             SignalStrengthTable.RETENTION_MINUTES,
@@ -247,7 +248,8 @@ public class NetworksResource {
                         s.beaconRate(),
                         includeHistory ? buildBeaconRateHistory(b, s, true) : null,
                         findBeaconRateThresholdOfNetwork(b, s).orElse(null),
-                        findNetworkDefinition(b, s).isPresent()
+                        findNetworkDefinition(b, s).isPresent(),
+                        findMostActiveChannel(s)
                 )).build();
             } else {
                 LOG.debug("Could not find requested SSID [{}] on BSSID [{}].", ssid, bssid);
@@ -289,7 +291,7 @@ public class NetworksResource {
         return buildBeaconRateHistory(beaconRateHistory, gap);
     }
 
-    private  List<AverageBeaconRate> buildBeaconRateHistory(List<AverageBeaconRate> beaconRateHistory, boolean gap) {
+    private List<AverageBeaconRate> buildBeaconRateHistory(List<AverageBeaconRate> beaconRateHistory, boolean gap) {
         DateTime yesterday = DateTime.now().minusDays(1);
 
         if (gap) {
@@ -327,6 +329,19 @@ public class NetworksResource {
         }
 
         return Optional.empty();
+    }
+
+    private Integer findMostActiveChannel(SSID ssid) {
+        long highestFrameCount = 0;
+        int mostActiveChannel = 0;
+        for (Channel channel : Lists.newArrayList(ssid.channels().values())) {
+            if (channel.getTotalFramesRecent().get() > highestFrameCount) {
+                highestFrameCount = channel.getTotalFramesRecent().get();
+                mostActiveChannel = channel.channelNumber();
+            }
+        }
+
+        return mostActiveChannel;
     }
 
 }

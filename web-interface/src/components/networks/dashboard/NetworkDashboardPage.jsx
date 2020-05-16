@@ -9,6 +9,7 @@ import AlertsActions from "../../../actions/AlertsActions";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import StatisticsActions from "../../../actions/StatisticsActions";
 import StatisticsStore from "../../../stores/StatisticsStore";
+import HeatmapWaterfallChart from "../../charts/HeatmapWaterfallChart";
 
 class NetworkDashboardPage extends Reflux.Component {
 
@@ -20,25 +21,75 @@ class NetworkDashboardPage extends Reflux.Component {
         this.stores = [NetworksStore, AlertsStore, StatisticsStore];
 
         this.state = {
+            globalSSID: undefined,
             ssid: undefined,
             active_alerts: undefined,
-            notFound: false
+            notFound: false,
+            width: undefined,
+            height: undefined,
+            fillHeight: 0,
+            doubleColumnWidth: 0,
+            cycleCount: 0,
+            currentBSSID: undefined
         }
 
+        this.lastRow = React.createRef();
+        this.doubleColumn = React.createRef();
+
         this._loadFull = this._loadFull.bind(this);
+        this._updateDynamicSizes = this._updateDynamicSizes.bind(this);
     }
 
     componentDidMount() {
         const self = this;
 
+        setInterval(this._updateDynamicSizes, 1000);
+
         self._loadFull();
         setInterval(function () {
             self._loadFull();
-        }, 15000);
+        }, 60000);
+    }
+
+    _updateDynamicSizes() {
+        let fillHeight;
+        if (this.lastRow.current) {
+            fillHeight = this.state.height-this.lastRow.current.getBoundingClientRect().top-20;
+        } else {
+            fillHeight = 0;
+        }
+
+        let doubleColumnWidth;
+        if (this.doubleColumn.current) {
+            doubleColumnWidth = this.doubleColumn.current.getBoundingClientRect().width;
+        } else {
+            doubleColumnWidth = 0;
+        }
+
+        this.setState({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            fillHeight: fillHeight,
+            doubleColumnWidth: doubleColumnWidth
+        });
     }
 
     _loadFull() {
-        NetworksActions.findSSID(this.ssidParam);
+        const self = this;
+        const ssid = this.ssidParam;
+        NetworksActions.findSSID(ssid, function (response) {
+            const nextCycleCount = self.state.cycleCount < response.data.bssids.length-1 ? self.state.cycleCount+1 : 0;
+            const currentBSSID = response.data.bssids[self.state.cycleCount];
+            self.setState({
+                globalSSID: response.data,
+                notFound: false,
+                currentBSSID: currentBSSID,
+                cycleCount: nextCycleCount
+            });
+
+            NetworksActions.findSSIDOnBSSID(currentBSSID, ssid, true, 86400);
+        });
+
         AlertsActions.findActive();
         StatisticsActions.findGlobal();
     }
@@ -93,6 +144,133 @@ class NetworkDashboardPage extends Reflux.Component {
         ];
     }
 
+    _formatSignalIndexHeatmap(data) {
+        const yDates = [];
+
+        Object.keys(data.y).forEach(function(point) {
+            yDates.push(new Date(data.y[point]));
+        });
+
+        return {
+            "z": data.z,
+            "x": data.x,
+            "y": yDates
+        };
+    }
+
+    _buildSignalIndexHeatmapTracks(data, tracks) {
+        const shapes = [];
+        const annotations = [];
+
+        const firstDate = new Date(data.y[0]);
+        const lastDate = new Date(data.y[data.y.length-1]);
+
+        // Tracks.
+        if(tracks) {
+            Object.keys(tracks).forEach(function(t) {
+                const track = tracks[t];
+
+                // Left.
+                shapes.push(
+                    {
+                        type: "line",
+                        visible: true,
+                        x0: track.min_signal,
+                        x1: track.min_signal,
+                        y0: new Date(track.start),
+                        y1: new Date(track.end),
+                        line: {
+                            color: "#ff0000",
+                            dash: "dashdot",
+                            width: 3,
+                        }
+                    }
+                );
+
+                // Right.
+                shapes.push(
+                    {
+                        type: "line",
+                        visible: true,
+                        x0: track.max_signal,
+                        x1: track.max_signal,
+                        y0: new Date(track.start),
+                        y1: new Date(track.end),
+                        line: {
+                            color: "#ff0000",
+                            dash: "dashdot",
+                            width: 3,
+                        }
+                    }
+                );
+
+                // Top.
+                let topComplete = false;
+                if (new Date(track.end).getTime() !== lastDate.getTime()) {
+                    topComplete = true;
+                    shapes.push(
+                        {
+                            type: "line",
+                            visible: true,
+                            x0: track.min_signal,
+                            x1: track.max_signal,
+                            y0: new Date(track.end),
+                            y1: new Date(track.end),
+                            line: {
+                                color: "#ff0000",
+                                dash: "dashdot",
+                                width: 3,
+                            }
+                        }
+                    );
+                }
+
+                // Bottom.
+                let bottomComplete = false;
+                if (new Date(track.start).getTime() !== firstDate.getTime()) {
+                    bottomComplete = true;
+                    shapes.push(
+                        {
+                            type: "line",
+                            visible: true,
+                            x0: track.min_signal,
+                            x1: track.max_signal,
+                            y0: new Date(track.start),
+                            y1: new Date(track.start),
+                            line: {
+                                color: "#ff0000",
+                                dash: "dashdot",
+                                width: 3,
+                            }
+                        }
+                    );
+                }
+
+                // Annotations.
+                if (topComplete && bottomComplete) {
+                    annotations.push(
+                        {
+                            type: "text",
+                            align: "left",
+                            font: {
+                                color: "#ff0000"
+                            },
+                            text: "track<br>" + track.id,
+                            showarrow: false,
+                            x: track.max_signal,
+                            y: new Date(track.end),
+                            xshift: 25,
+                            yshift: -10,
+                        }
+                    )
+                }
+            });
+        }
+
+
+        return {shapes: shapes, annotations: annotations};
+    }
+
     render() {
         /*
          * Handling 404's a little more specific to work better on wall-mounted screens.
@@ -120,7 +298,7 @@ class NetworkDashboardPage extends Reflux.Component {
             )
         }
 
-        if (!this.state.ssid || !this.state.active_alerts || !this.state.global_statistics) {
+        if (!this.state.globalSSID || !this.state.active_alerts || !this.state.global_statistics || !this.state.ssid) {
             return <LoadingSpinner />;
         }
 
@@ -128,18 +306,18 @@ class NetworkDashboardPage extends Reflux.Component {
             <div className="dashboard">
                 <div className="row">
                     <div className="col-md-12">
-                        <h1>Network <em>{this.state.ssid.name}</em></h1>
+                        <h1>Network <em>{this.state.globalSSID.name}</em></h1>
                     </div>
                 </div>
 
                 <div className="row">
                     <div className="col-md-3">
-                        <div className={"card dashboard-card " + (this.state.ssid.is_monitored ? "bg-success" : "bg-warning")}>
+                        <div className={"card dashboard-card " + (this.state.globalSSID.is_monitored ? "bg-success" : "bg-warning")}>
                             <div className="dashboard-align">
                                 <h4>Monitoring</h4>
 
                                 <span className="dashboard-value">
-                                    {this.state.ssid.is_monitored ? "monitored" : "not monitored"}
+                                    {this.state.globalSSID.is_monitored ? "monitored" : "not monitored"}
                                 </span>
                             </div>
                         </div>
@@ -151,7 +329,7 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <h4>Total Frames</h4>
 
                                 <span className="dashboard-value">
-                                    {numeral(this.state.ssid.total_frames).format('0,0')}
+                                    {numeral(this.state.globalSSID.total_frames).format('0,0')}
                                 </span>
                             </div>
                         </div>
@@ -163,7 +341,7 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <h4>Access Points</h4>
 
                                 <span className="dashboard-value">
-                                    {numeral(this.state.ssid.bssids.length).format('0,0')}
+                                    {numeral(this.state.globalSSID.bssids.length).format('0,0')}
                                 </span>
                             </div>
                         </div>
@@ -191,8 +369,8 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <div className="dashboard-chart">
                                     <SimpleLineChart
                                         height={235}
-                                        customMarginLeft={20}
-                                        customMarginRight={20}
+                                        customMarginLeft={30}
+                                        customMarginRight={30}
                                         customMarginTop={1}
                                         customMarginBottom={15}
                                         backgroundColor="#32334a"
@@ -213,24 +391,52 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <div className="dashboard-chart">
                                     <SimpleLineChart
                                         height={235}
-                                        customMarginLeft={20}
-                                        customMarginRight={20}
+                                        customMarginLeft={30}
+                                        customMarginRight={30}
                                         customMarginTop={1}
                                         customMarginBottom={15}
                                         backgroundColor="#32334a"
                                         textColor="#ffffff"
                                         disableHover={true}
-                                        finalData={this._formatBeaconRateHistory(this.state.ssid.beacon_rates)}
+                                        finalData={this._formatBeaconRateHistory(this.state.globalSSID.beacon_rates)}
                                         shapes={this._buildBeaconRateHistoryShapes(
-                                            this.state.ssid.beacon_rates,
-                                            this.state.ssid.beacon_rate_threshold
+                                            this.state.globalSSID.beacon_rates,
+                                            this.state.globalSSID.beacon_rate_threshold
                                         )}
                                     />
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <div className="row lower-row" ref={this.lastRow} style={{display: (this.state.height > 900 && this.state.fillHeight > 0) ? "block" : "none"}}>
+                    <div className="col-md-6">
+                        <div className="card dashboard-card bg-dark" ref={this.doubleColumn} style={{height:this.state.fillHeight}}>
+                            <div className="dashboard-manual-align">
+                                <h4>BSSID: {this.state.currentBSSID} <small>({this.state.cycleCount+1}/{this.state.globalSSID.bssids.length})</small>,
+                                    Channel: {this.state.ssid.most_active_channel}</h4>
+
+                                <div className="dashboard-chart">
+                                    <HeatmapWaterfallChart
+                                        hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
+                                        backgroundColor="#32334a"
+                                        height={this.state.fillHeight-60}
+                                        width={this.state.doubleColumnWidth-5}
+                                        customMarginTop={10}
+                                        customMarginBottom={20}
+                                        customMarginLeft={50}
+                                        customMarginRight={5}
+                                        data={this._formatSignalIndexHeatmap(this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_history)}
+                                        layers={this._buildSignalIndexHeatmapTracks(
+                                            this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_history,
+                                            this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_tracks)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

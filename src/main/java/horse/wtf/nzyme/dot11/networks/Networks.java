@@ -93,6 +93,22 @@ public class Networks {
                 }
             }
         }, 10, 10, TimeUnit.SECONDS); // TODO ZSCORE make configurable
+
+        // Cycle recent frame counters.
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("channel-recent-frames-cleaner-%d")
+                        .build()
+        ).scheduleAtFixedRate(() -> {
+            for (BSSID bssid : bssids.values()) {
+                for (SSID ssid : bssid.ssids().values()) {
+                    for (Channel channel : ssid.channels().values()) {
+                        channel.cycleRecentFrames();
+                    }
+                }
+            }
+        }, 1, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
@@ -162,6 +178,7 @@ public class Networks {
                 // Update channel statistics.
                 Channel channel = ssid.channels().get(channelNumber);
                 channel.totalFrames().incrementAndGet();
+                channel.totalFramesRecent().incrementAndGet();
 
                 // Add fingerprint.
                 if (transmitterFingerprint != null) {
@@ -184,6 +201,7 @@ public class Networks {
                         channelNumber,
                         bssid.bssid(),
                         ssid.name(),
+                        new AtomicLong(1),
                         new AtomicLong(1),
                         transmitterFingerprint
                 );

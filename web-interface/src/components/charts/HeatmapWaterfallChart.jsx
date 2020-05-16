@@ -16,6 +16,15 @@ class HeatmapWaterfallChart extends React.Component {
         this.setState({ data: nextProps.data });
     }
 
+    hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    }
+
     render() {
         const data = this.state.data;
 
@@ -28,7 +37,7 @@ class HeatmapWaterfallChart extends React.Component {
                 hovertemplate: this.props.hovertemplate,
                 showscale: false,
                 colorscale: [
-                    [0, 'rgb(12,13,22)'], [0.125, 'rgb(0,109,44)'],
+                    [0, this.hexToRgb(this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16")], [0.125, 'rgb(0,109,44)'],
                     [0.25, 'rgb(35,139,69)'], [0.375, 'rgb(65,171,93)'],
                     [0.5, 'rgb(116,196,118)'], [0.625, 'rgb(161,217,155)'],
                     [0.75, 'rgb(199,233,192)'], [0.875, 'rgb(229,245,224)'],
@@ -37,21 +46,27 @@ class HeatmapWaterfallChart extends React.Component {
             }
         ];
 
+        let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 60;
+        let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 60;
+        let marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25;
+        let marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50;
+
         return (
             <Plot
-                style={{ width: '100%', height: '100%' }}
+                style={{ width: '100%' }}
                 data={finalData}
                 layout={{
-                    height: 400,
+                    height: this.props.height,
+                    width: this.props.width,
                     font: {
                         family: "'Inconsolata', monospace",
                         size: 10,
                         color: this.props.textColor ? this.props.textColor : "#ffffff"
                     },
-                    margin: { l: 60, r: 60, b: 50, t: 25, pad: 0 },
+                    margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
                     title: { text: this.props.title },
-                    paper_bgcolor: "#0c0d16",
-                    plot_bgcolor: "#0c0d16",
+                    paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
+                    plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
                     showlegend: false,
                     dragmode: false,
                     clickmode: "none",

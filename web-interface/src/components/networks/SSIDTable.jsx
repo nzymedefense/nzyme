@@ -59,7 +59,7 @@ class SSIDTableRow extends Reflux.Component {
                             <tr>
                                 <th>SSID</th>
                                 <th>Channel</th>
-                                <th>Frames</th>
+                                <th title="Frames per Second">FPS</th>
                                 <th>Security</th>
                             </tr>
                         </thead>
