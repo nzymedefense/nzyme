@@ -49,7 +49,11 @@ public abstract class GlobalSSIDResponse {
     @JsonProperty("beacon_rates")
     public abstract Map<String, List<AverageBeaconRate>> beaconRates();
 
-    public static GlobalSSIDResponse create(boolean humanReadable, String name, boolean isMonitored, List<SSIDSecurityResponse> security, long totalFrames, List<String> bssids, Map<String, List<AverageBeaconRate>> beaconRates) {
+    @JsonProperty("beacon_rate_threshold")
+    @Nullable
+    public abstract Integer beaconRateThreshold();
+
+    public static GlobalSSIDResponse create(boolean humanReadable, String name, boolean isMonitored, List<SSIDSecurityResponse> security, long totalFrames, List<String> bssids, Map<String, List<AverageBeaconRate>> beaconRates, Integer beaconRateThreshold) {
         return builder()
                 .humanReadable(humanReadable)
                 .name(name)
@@ -58,6 +62,7 @@ public abstract class GlobalSSIDResponse {
                 .totalFrames(totalFrames)
                 .bssids(bssids)
                 .beaconRates(beaconRates)
+                .beaconRateThreshold(beaconRateThreshold)
                 .build();
     }
 
@@ -80,6 +85,8 @@ public abstract class GlobalSSIDResponse {
         public abstract Builder bssids(List<String> bssids);
 
         public abstract Builder beaconRates(Map<String, List<AverageBeaconRate>> beaconRates);
+
+        public abstract Builder beaconRateThreshold(Integer beaconRateThreshold);
 
         public abstract GlobalSSIDResponse build();
     }

@@ -66,6 +66,30 @@ class NetworkDashboardPage extends Reflux.Component {
         return result;
     }
 
+    _buildBeaconRateHistoryShapes(data, threshold) {
+        const beaconRateData = Object.values(data)[0];
+
+        if (!threshold || !beaconRateData) {
+            return [];
+        }
+
+        return [
+            {
+                type: "line",
+                visible: true,
+                x0: new Date(beaconRateData[0].created_at),
+                x1: new Date(beaconRateData[beaconRateData.length-1].created_at),
+                y0: threshold,
+                y1: threshold,
+                line: {
+                    color: "#d50000",
+                    dash: "dash",
+                    width: 1,
+                }
+            }
+        ];
+    }
+
     render() {
         /*
          * Handling 404's a little more specific to work better on wall-mounted screens.
@@ -176,6 +200,10 @@ class NetworkDashboardPage extends Reflux.Component {
                                         textColor="#ffffff"
                                         disableHover={true}
                                         finalData={this._formatBeaconRateHistory(this.state.ssid.beacon_rates)}
+                                        shapes={this._buildBeaconRateHistoryShapes(
+                                            this.state.ssid.beacon_rates,
+                                            this.state.ssid.beacon_rate_threshold
+                                        )}
                                     />
                                 </div>
                             </div>

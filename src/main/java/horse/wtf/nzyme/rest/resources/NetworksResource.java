@@ -115,6 +115,7 @@ public class NetworksResource {
         long totalFrames = 0;
         List<String> bssids = Lists.newArrayList();
         Map<String, List<AverageBeaconRate>> beaconRates = Maps.newHashMap();
+        Integer beaconRateThreshold = findBeaconRateThresholdOfNetwork(ssidS).orElse(null);
 
         boolean anyNotMonitored = false;
         boolean found = false;
@@ -170,7 +171,8 @@ public class NetworksResource {
                 security,
                 totalFrames,
                 bssids,
-                beaconRates
+                beaconRates,
+                beaconRateThreshold
         )).build();
     }
 
@@ -315,6 +317,16 @@ public class NetworksResource {
 
     private Optional<Integer> findBeaconRateThresholdOfNetwork(BSSID b, SSID s) {
         return findNetworkDefinition(b, s).map(Dot11NetworkDefinition::beaconRate);
+    }
+
+    private Optional<Integer> findBeaconRateThresholdOfNetwork(String ssid) {
+        for (Dot11NetworkDefinition dot11Network : nzyme.getConfiguration().dot11Networks()) {
+            if (dot11Network.ssid().equals(ssid)) {
+                return Optional.of(dot11Network.beaconRate());
+            }
+        }
+
+        return Optional.empty();
     }
 
 }
