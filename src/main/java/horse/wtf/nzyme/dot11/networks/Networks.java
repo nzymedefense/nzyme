@@ -101,12 +101,16 @@ public class Networks {
                         .setNameFormat("channel-recent-frames-cleaner-%d")
                         .build()
         ).scheduleAtFixedRate(() -> {
-            for (BSSID bssid : bssids.values()) {
-                for (SSID ssid : bssid.ssids().values()) {
-                    for (Channel channel : ssid.channels().values()) {
-                        channel.cycleRecentFrames();
+            try {
+                for (BSSID bssid : bssids.values()) {
+                    for (SSID ssid : bssid.ssids().values()) {
+                        for (Channel channel : ssid.channels().values()) {
+                            channel.cycleRecentFrames();
+                        }
                     }
                 }
+            } catch(Exception e) {
+                LOG.error("Could not cycle recent channel frames.", e);
             }
         }, 1, 1, TimeUnit.MINUTES);
     }

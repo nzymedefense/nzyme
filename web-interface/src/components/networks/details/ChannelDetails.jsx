@@ -255,6 +255,7 @@ class ChannelDetails extends Reflux.Component {
                     <div className="col-md-12">
                         <HeatmapWaterfallChart
                             title={"Signal Strength Waterfall (last " + self.state.historyHours + " hours)"}
+                            height={450}
                             xaxistitle="Signal Strength (dBm)"
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"

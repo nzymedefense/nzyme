@@ -75,6 +75,10 @@ public abstract class Channel {
 
     @JsonIgnore
     public void cycleRecentFrames() {
+        if (this.previousTotalFramesRecent == null) {
+            this.previousTotalFramesRecent = new AtomicLong(0);
+        }
+        
         this.previousTotalFramesRecent.set(this.totalFramesRecent().get());
         this.totalFramesRecent().set(0);
     }

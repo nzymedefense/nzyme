@@ -53,7 +53,7 @@ class HeatmapWaterfallChart extends React.Component {
 
         return (
             <Plot
-                style={{ width: '100%' }}
+                style={{ width: '100%', height: this.props.height }}
                 data={finalData}
                 layout={{
                     height: this.props.height,
