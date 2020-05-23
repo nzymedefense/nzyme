@@ -87,7 +87,7 @@ class App extends Reflux.Component {
         document.body.classList.remove('login-page');
         document.body.style.backgroundImage = "";
 
-        const fullWidth = document.location.pathname.startsWith("/networks/dashboard/");
+        const dashboard = document.location.pathname.startsWith("/networks/dashboard/");
 
         if(this.state.apiConnected) {
             if (this.state.authenticated) {
@@ -96,7 +96,7 @@ class App extends Reflux.Component {
                         <div className="nzyme">
                             <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
 
-                            <div className={fullWidth ? "container-fluid" : "container"}>
+                            <div className={dashboard ? "container-fluid" : "container"}>
                                 <Notifications/>
 
                                 <Switch>
@@ -129,7 +129,7 @@ class App extends Reflux.Component {
                                     <Route path="*" component={NotFoundPage}/> { /* Catch-all.  */}
                                 </Switch>
 
-                                <Footer/>
+                                { dashboard ? undefined : <Footer /> }
                             </div>
                         </div>
                     </Router>

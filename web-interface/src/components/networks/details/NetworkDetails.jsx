@@ -173,6 +173,7 @@ class NetworkDetails extends Reflux.Component {
                             <SimpleLineChart
                                 title="Beacon Rate"
                                 height={200}
+                                width={1140}
                                 customMarginLeft={60}
                                 customMarginRight={60}
                                 finalData={this._formatBeaconRateHistory(ssid.beacon_rate_history)}
@@ -186,6 +187,7 @@ class NetworkDetails extends Reflux.Component {
                             <SimpleLineChart
                                 title={"Signal Strength Distribution by Channel (last " + this._findSignalIndexDistributionHistoryMinutes(ssid.channels) + " minutes)"}
                                 height={200}
+                                width={1140}
                                 customMarginLeft={60}
                                 customMarginRight={60}
                                 finalData={this._formatSignalIndexDistribution(ssid.channels)}

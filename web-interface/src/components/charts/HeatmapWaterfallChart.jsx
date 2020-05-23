@@ -70,6 +70,7 @@ class HeatmapWaterfallChart extends React.Component {
                     showlegend: false,
                     dragmode: false,
                     clickmode: "none",
+                    hovermode: this.props.disableHover ? false : "x",
                     xaxis: { visible: true, title: this.props.xaxistitle },
                     yaxis: { visible: true, title: this.props.yaxistitle },
                     shapes: this.props.layers.shapes,

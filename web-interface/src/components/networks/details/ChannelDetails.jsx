@@ -48,18 +48,6 @@ class ChannelDetails extends Reflux.Component {
         return result;
     }
 
-    _findHighestSignalCount(data) {
-        let x = 0;
-
-        Object.keys(data).forEach(function(point) {
-           if (data[point] > x) {
-               x = data[point];
-           }
-        });
-
-        return x;
-    }
-
     _formatSignalIndexHeatmap(data) {
         const yDates = [];
 
@@ -242,6 +230,7 @@ class ChannelDetails extends Reflux.Component {
                         <SimpleLineChart
                             title={"Signal Strength Distribution (last " + self.state.channel.signal_index_distribution_minutes + " minutes)"}
                             height={200}
+                            width={1140}
                             xaxistitle="Signal Strength (dBm)"
                             yaxistitle="Signal Count"
                             customMarginLeft={60}
@@ -256,6 +245,7 @@ class ChannelDetails extends Reflux.Component {
                         <HeatmapWaterfallChart
                             title={"Signal Strength Waterfall (last " + self.state.historyHours + " hours)"}
                             height={450}
+                            width={1140}
                             xaxistitle="Signal Strength (dBm)"
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"

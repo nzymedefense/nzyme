@@ -44,13 +44,13 @@ class SimpleLineChart extends React.Component {
     let marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25;
     let marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50;
 
-
       return (
         <Plot
             style={{ width: '100%', height: '100%' }}
             data={finalData}
             layout={{
                 height: this.props.height,
+                width: this.props.width,
                 font: {
                     family: "'Inconsolata', monospace",
                     size: 10,

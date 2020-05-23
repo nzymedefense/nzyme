@@ -66,6 +66,7 @@ class NetworkDashboardPage extends Reflux.Component {
             doubleColumnWidth = 0;
         }
 
+
         this.setState({
             width: window.innerWidth,
             height: window.innerHeight,
@@ -271,6 +272,36 @@ class NetworkDashboardPage extends Reflux.Component {
         return {shapes: shapes, annotations: annotations};
     }
 
+    _formatSignalIndexDistribution(channels) {
+        const result = [];
+
+        Object.keys(channels).forEach(function(channelNumber) {
+            const data = channels[channelNumber].signal_index_distribution;
+
+            const distribution = {
+                x: [],
+                y: [],
+                type: "bar",
+                name: "Channel " + channelNumber
+            };
+
+            // We want a static scale from -100 to 0.
+            distribution["x"].push(-100);
+            distribution["y"].push(0);
+            distribution["x"].push(0);
+            distribution["y"].push(0);
+
+            Object.keys(data).forEach(function(point) {
+                distribution["x"].push(point);
+                distribution["y"].push(data[point]);
+            });
+
+            result.push(distribution);
+        });
+
+        return result;
+    }
+
     render() {
         /*
          * Handling 404's a little more specific to work better on wall-mounted screens.
@@ -369,6 +400,7 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <div className="dashboard-chart">
                                     <SimpleLineChart
                                         height={235}
+                                        width={this.state.doubleColumnWidth-5}
                                         customMarginLeft={30}
                                         customMarginRight={30}
                                         customMarginTop={1}
@@ -391,6 +423,7 @@ class NetworkDashboardPage extends Reflux.Component {
                                 <div className="dashboard-chart">
                                     <SimpleLineChart
                                         height={235}
+                                        width={this.state.doubleColumnWidth-5}
                                         customMarginLeft={30}
                                         customMarginRight={30}
                                         customMarginTop={1}
@@ -410,11 +443,11 @@ class NetworkDashboardPage extends Reflux.Component {
                     </div>
                 </div>
 
-                <div className="row lower-row" ref={this.lastRow} style={{display: (this.state.height > 900 && this.state.fillHeight > 0) ? "block" : "none"}}>
+                <div className="row lower-row" ref={this.lastRow} style={{display: (this.state.height > 900 && this.state.fillHeight > 0) ? undefined : "none"}}>
                     <div className="col-md-6">
                         <div className="card dashboard-card bg-dark" ref={this.doubleColumn} style={{height:this.state.fillHeight}}>
                             <div className="dashboard-manual-align">
-                                <h4>BSSID: {this.state.currentBSSID} <small>({this.state.cycleCount+1}/{this.state.globalSSID.bssids.length})</small>,
+                                <h4>Waterfall - BSSID: {this.state.currentBSSID} <small>({this.state.cycleCount+1}/{this.state.globalSSID.bssids.length})</small>,
                                     Channel: {this.state.ssid.most_active_channel}</h4>
 
                                 <div className="dashboard-chart">
@@ -427,11 +460,35 @@ class NetworkDashboardPage extends Reflux.Component {
                                         customMarginBottom={20}
                                         customMarginLeft={50}
                                         customMarginRight={5}
+                                        disableHover={true}
                                         data={this._formatSignalIndexHeatmap(this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_history)}
                                         layers={this._buildSignalIndexHeatmapTracks(
                                             this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_history,
                                             this.state.ssid.channels[this.state.ssid.most_active_channel].signal_index_tracks)
                                         }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-md-6">
+                        <div className="card dashboard-card bg-dark" ref={this.doubleColumn} style={{height:this.state.fillHeight}}>
+                            <div className="dashboard-manual-align">
+                                <h4>Signals - BSSID: {this.state.currentBSSID} <small>({this.state.cycleCount+1}/{this.state.globalSSID.bssids.length})</small></h4>
+
+                                <div className="dashboard-chart">
+                                    <SimpleLineChart
+                                        height={this.state.fillHeight-60}
+                                        width={this.state.doubleColumnWidth-5}
+                                        customMarginLeft={30}
+                                        customMarginRight={30}
+                                        customMarginTop={1}
+                                        customMarginBottom={15}
+                                        backgroundColor="#32334a"
+                                        textColor="#ffffff"
+                                        disableHover={true}
+                                        finalData={this._formatSignalIndexDistribution(this.state.ssid.channels)}
                                     />
                                 </div>
                             </div>
