@@ -6,7 +6,7 @@ class BanditTrackingStatus extends React.Component {
         const bandit = this.props.bandit;
 
         if (bandit.tracked_by.length > 0) {
-            return <span className="badge badge-success">tracked</span>;
+            return <span className="badge badge-success blink">tracked</span>;
         }
 
         return (<span />);

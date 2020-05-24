@@ -17,7 +17,7 @@ class TrackingMode extends React.Component {
             color = "danger";
         }
 
-        if (this.props.bandit && this.props.mode) {
+        if (this.props.bandit && this.props.mode && this.props.status !== "DARK") {
            if (this.props.bandit.uuid === this.props.mode) {
                 mode = "Tracking This Bandit";
                 color = "success";

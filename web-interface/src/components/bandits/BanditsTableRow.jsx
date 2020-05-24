@@ -7,16 +7,8 @@ import BanditTrackingStatus from "./BanditTrackingStatus";
 
 class BanditsTableRow extends Reflux.Component {
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            bandit: this.props.bandit
-        }
-    }
-
     render() {
-        const bandit = this.state.bandit;
+        const bandit = this.props.bandit;
 
         return (
             <tr>

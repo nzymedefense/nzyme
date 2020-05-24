@@ -26,6 +26,7 @@ import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
@@ -383,8 +384,13 @@ public class BanditsResource {
         List<UUID> trackedBy = Lists.newArrayList();
 
         for (Tracker tracker : nzyme.getTrackerManager().getTrackers().values()) {
-            if (tracker.getTrackingMode().equals(bandit.uuid().toString())) {
-                trackedBy.add(UUID.fromString(tracker.getTrackingMode()));
+            if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
+                // Tracker is dark.
+                continue;
+            } else {
+                if (tracker.getTrackingMode().equals(bandit.uuid().toString())) {
+                    trackedBy.add(UUID.fromString(tracker.getTrackingMode()));
+                }
             }
         }
 

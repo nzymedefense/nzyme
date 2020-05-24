@@ -20,6 +20,11 @@ class BanditsTable extends Reflux.Component {
 
     componentDidMount() {
         BanditsActions.findAll();
+
+        setInterval(function () {
+            console.log("REFRESH");
+            BanditsActions.findAll();
+        }, 5000);
     }
 
     render() {
@@ -27,9 +32,7 @@ class BanditsTable extends Reflux.Component {
             return <LoadingSpinner />
         }
 
-        const bandits = this.state.bandits;
-
-        if (bandits.length === 0) {
+        if (this.state.bandits.length === 0) {
             return (
                 <div className="alert alert-info">
                     No bandits defined yet. <a href={Routes.BANDITS.NEW} className="text-dark"><u>Create a new bandit</u></a>
@@ -37,6 +40,7 @@ class BanditsTable extends Reflux.Component {
             )
         }
 
+        const self = this;
         return (
             <div className="row">
                 <div className="col-md-12">
@@ -51,8 +55,8 @@ class BanditsTable extends Reflux.Component {
                         </tr>
                         </thead>
                         <tbody>
-                        {Object.keys(bandits).map(function (key,i) {
-                            return <BanditsTableRow key={"bandit-"+key} bandit={bandits[key]} />
+                        {Object.keys(this.state.bandits).map(function (key,i) {
+                            return <BanditsTableRow key={"bandit-"+i} bandit={self.state.bandits[key]} />
                         })}
                         </tbody>
                     </table>
