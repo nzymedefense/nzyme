@@ -7,21 +7,23 @@ class TrackBanditButton extends Reflux.Component {
         const bandit = this.props.bandit;
         const tracker = this.props.tracker;
 
-        let disabled;
+        let tracking;
         if (tracker.state === "DARK" || tracker.has_pending_tracking_requests) {
-            disabled = true;
+            tracking = true;
         } else {
             if (tracker.tracking_mode) {
-                disabled = true;
+                tracking = true;
             } else {
-                disabled = false;
+                tracking = false;
             }
         }
 
         if (bandit) {
-            return (
-                <button className="btn btn-sm btn-primary" disabled={disabled} onClick={this.props.onClick}>Track this bandit</button>
-            )
+            if (!tracking) {
+                return <button className="btn btn-sm btn-primary" disabled={tracker.has_pending_tracking_requests} onClick={this.props.onStartTrackingClick}>Track This Bandit</button>
+            } else {
+                return <button className="btn btn-sm btn-warning" disabled={tracker.has_pending_tracking_requests} onClick={this.props.onCancelTrackingClick}>Cancel Tracking</button>
+            }
         } else {
             return <span />
         }

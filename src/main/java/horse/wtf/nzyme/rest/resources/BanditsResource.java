@@ -388,6 +388,11 @@ public class BanditsResource {
                 // Tracker is dark.
                 continue;
             } else {
+                // Is there an outstanding request to cancel tracking?
+                if (nzyme.getGroundStation().trackerHasPendingCancelTrackingRequest(tracker.getName())) {
+                    continue;
+                }
+
                 if (tracker.getTrackingMode().equals(bandit.uuid().toString())) {
                     trackedBy.add(UUID.fromString(tracker.getTrackingMode()));
                 }

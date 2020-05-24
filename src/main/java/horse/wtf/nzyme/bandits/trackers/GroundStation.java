@@ -163,7 +163,7 @@ public class GroundStation implements Runnable {
             }
 
             // Cancel tracking request.
-            /*if (message.hasCancelTrackRequest()) {
+            if (message.hasCancelTrackRequest()) {
                 TrackerMessage.CancelTrackRequest request = message.getCancelTrackRequest();
                 if (!request.getReceiver().equals(nzymeId)) {
                     LOG.debug("Ignoring cancel tracking request for other tracker [{}].", request.getReceiver());
@@ -177,7 +177,7 @@ public class GroundStation implements Runnable {
                 for (TrackerHID hid : hids) {
                     hid.onCancelTrackingRequestReceived(message.getCancelTrackRequest());
                 }
-            }*/ // TODO: delete no longer pending cancel track requests like the start requests
+            }
         });
 
         // Send our pings.
@@ -257,19 +257,37 @@ public class GroundStation implements Runnable {
                                     Tracker tracker = trackerManager.getTrackers().get(outstandingRequest.trackerName());
 
                                     if (tracker == null) {
-                                        LOG.info("Removing bandit track request [{}] from list of outstanding requests. Reason: Tracker has disappeared.",
+                                        LOG.info("Removing start bandit track request [{}] from list of outstanding requests. Reason: Tracker has disappeared.",
                                                 outstandingRequest);
+                                        continue;
                                     }
 
                                     if (!outstandingRequest.banditUUID().toString().equals(tracker.getTrackingMode())) {
                                         // Tracker is still alive and not currently reporting as tracking the bandit from our request. Keep request outstanding.
                                         newStartTrackRequests.add(outstandingRequest);
                                     } else {
-                                        LOG.info("Removing bandit track request [{}] from list of outstanding requests. Reason: Tracker has confirmed receipt.",
+                                        LOG.info("Removing start bandit track request [{}] from list of outstanding requests. Reason: Tracker has confirmed receipt.",
                                                 outstandingRequest);
                                     }
                                 }
 
+                                for (BanditTrackRequest outstandingRequest : new ArrayList<>(pendingCancelBanditTrackRequests)) {
+                                    Tracker tracker = trackerManager.getTrackers().get(outstandingRequest.trackerName());
+
+                                    if (tracker == null) {
+                                        LOG.info("Removing cancel bandit track request [{}] from list of outstanding requests. Reason: Tracker has disappeared.",
+                                                outstandingRequest);
+                                        continue;
+                                    }
+
+                                    if (outstandingRequest.banditUUID().toString().equals(tracker.getTrackingMode())) {
+                                        // Tracker is still alive and currently reporting as tracking the bandit from our request. Keep request outstanding.
+                                        newCancelTrackRequests.add(outstandingRequest);
+                                    } else {
+                                        LOG.info("Removing cancel bandit track request [{}] from list of outstanding requests. Reason: Tracker has confirmed receipt.",
+                                                outstandingRequest);
+                                    }
+                                }
 
                                 pendingStartBanditTrackRequests = newStartTrackRequests;
                                 pendingCancelBanditTrackRequests = newCancelTrackRequests;
@@ -380,13 +398,17 @@ public class GroundStation implements Runnable {
         hids.add(hid);
     }
 
-    public boolean trackerHasPendingTrackingRequest(String trackerName) {
+    public boolean trackerHasPendingStartTrackingRequest(String trackerName) {
         for (BanditTrackRequest outstandingRequest : new ArrayList<>(pendingStartBanditTrackRequests)) {
             if (outstandingRequest.trackerName().equals(trackerName)) {
                 return true;
             }
         }
 
+        return false;
+    }
+
+    public boolean trackerHasPendingCancelTrackingRequest(String trackerName) {
         for (BanditTrackRequest outstandingRequest : new ArrayList<>(pendingCancelBanditTrackRequests)) {
             if (outstandingRequest.trackerName().equals(trackerName)) {
                 return true;
@@ -394,6 +416,10 @@ public class GroundStation implements Runnable {
         }
 
         return false;
+    }
+
+    public boolean trackerHasPendingAnyTrackingRequest(String trackerName) {
+        return trackerHasPendingStartTrackingRequest(trackerName) || trackerHasPendingCancelTrackingRequest(trackerName);
     }
 
 }

@@ -31,7 +31,8 @@ class TrackersTableRow extends Reflux.Component {
                     <TrackBanditButton
                         bandit={this.props.forBandit}
                         tracker={tracker}
-                        onClick={(e) => { this.props.onTrackingStartButtonClicked(e, tracker.name) }}
+                        onStartTrackingClick={(e) => { this.props.onTrackingStartButtonClicked(e, tracker.name) }}
+                        onCancelTrackingClick={(e) => { this.props.onTrackingCancelButtonClicked(e, tracker.name) }}
                     />
                 </td>
             </tr>

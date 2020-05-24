@@ -3,7 +3,8 @@ import Reflux from 'reflux';
 const TrackersActions = Reflux.createActions([
     "findAll",
     "findOne",
-    "issueTrackingRequest"
+    "issueStartTrackingRequest",
+    "issueCancelTrackingRequest"
 ]);
 
 export default TrackersActions;

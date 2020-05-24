@@ -17,6 +17,9 @@ class TrackersTable extends Reflux.Component {
         this.stores = [TrackersStore, BanditsStore];
 
         this._onTrackingStartButtonClicked = this._onTrackingStartButtonClicked.bind(this);
+        this._onTrackingCancelButtonClicked = this._onTrackingCancelButtonClicked.bind(this);
+
+        this._loadAll = this._loadAll.bind(this);
 
         this.state = {
             trackers: undefined,
@@ -26,22 +29,36 @@ class TrackersTable extends Reflux.Component {
     }
 
     componentDidMount() {
+        this._loadAll()
+
+        const self = this;
+        setInterval(function () {
+            self._loadAll();
+        }, 5000);
+    }
+
+    _loadAll() {
         TrackersActions.findAll();
         BanditsActions.findAll();
-
-        setInterval(function () {
-            TrackersActions.findAll();
-            BanditsActions.findAll();
-        }, 5000);
     }
 
     _onTrackingStartButtonClicked(e, trackerName) {
         e.preventDefault();
         const self = this;
 
-        TrackersActions.issueTrackingRequest(trackerName, this.state.bandit.uuid, function() {
-            notify.show("Issued tracking request for this bandit to tracker device.", "success");
-            self.setState({ state: this.state });
+        TrackersActions.issueStartTrackingRequest(trackerName, this.state.bandit.uuid, function() {
+            notify.show("Issued start tracking request for this bandit to tracker device.", "success");
+            self._loadAll()
+        })
+    }
+
+    _onTrackingCancelButtonClicked(e, trackerName) {
+        e.preventDefault();
+        const self = this;
+
+        TrackersActions.issueCancelTrackingRequest(trackerName, this.state.bandit.uuid, function() {
+            notify.show("Issued cancel tracking request for this bandit to tracker device.", "success");
+            self._loadAll()
         })
     }
 
@@ -89,7 +106,9 @@ class TrackersTable extends Reflux.Component {
                                 tracker={trackers[key]}
                                 totalBandits={bandits.length}
                                 forBandit={forBandit}
-                                onTrackingStartButtonClicked={self._onTrackingStartButtonClicked} />
+                                onTrackingStartButtonClicked={self._onTrackingStartButtonClicked}
+                                onTrackingCancelButtonClicked={self._onTrackingCancelButtonClicked}
+                            />
                         })}
                         </tbody>
                     </table>

@@ -26,9 +26,15 @@ class TrackersStore extends Reflux.Store {
         });
     }
 
-    onIssueTrackingRequest(trackerName, banditUUID, successCallback) {
+    onIssueStartTrackingRequest(trackerName, banditUUID, successCallback) {
         RESTClient.post("/trackers/show/" + trackerName + "/command/start_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
-            notify.show("Could not issue tracking request. Please check nzyme log file.", "error");
+            notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
+        })
+    }
+
+    onIssueCancelTrackingRequest(trackerName, banditUUID, successCallback) {
+        RESTClient.post("/trackers/show/" + trackerName + "/command/cancel_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
+            notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
         })
     }
 

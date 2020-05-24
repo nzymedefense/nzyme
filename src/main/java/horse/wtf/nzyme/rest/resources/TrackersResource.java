@@ -61,7 +61,7 @@ public class TrackersResource {
                     tracker.getBanditCount(),
                     decideTrackerState(tracker),
                     tracker.getTrackingMode(),
-                    nzyme.getGroundStation().trackerHasPendingTrackingRequest(tracker.getName()),
+                    nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
                     tracker.getRssi()
             ));
         }
@@ -89,7 +89,7 @@ public class TrackersResource {
                 tracker.getBanditCount(),
                 decideTrackerState(tracker),
                 tracker.getTrackingMode(),
-                nzyme.getGroundStation().trackerHasPendingTrackingRequest(tracker.getName()),
+                nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
                 tracker.getRssi()
             )).build();
         } else {
