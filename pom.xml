@@ -30,7 +30,7 @@
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.6.5</autovalue.version>
         <metrics.version>4.1.2</metrics.version>
-        <jersey.version>2.29</jersey.version>
+        <jersey.version>2.31</jersey.version>
         <typesafeconfig.version>1.3.4</typesafeconfig.version>
         <jdbi.version>3.9.1</jdbi.version>
         <liquibase.version>3.6.3</liquibase.version>
