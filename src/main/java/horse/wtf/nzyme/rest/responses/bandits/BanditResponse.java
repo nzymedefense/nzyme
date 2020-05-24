@@ -56,13 +56,16 @@ public abstract class BanditResponse {
     @JsonProperty("is_active")
     public abstract Boolean isActive();
 
+    @JsonProperty("tracked_by")
+    public abstract List<UUID> trackedBy();
+
     @JsonProperty
     public abstract List<BanditIdentifierResponse> identifiers();
 
     @JsonProperty
     public abstract List<ContactResponse> contacts();
 
-    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, Boolean readOnly, DateTime lastContact, Boolean isActive, List<BanditIdentifierResponse> identifiers, List<ContactResponse> contacts) {
+    public static BanditResponse create(UUID uuid, long databaseId, String name, String description, DateTime createdAt, DateTime updatedAt, Boolean readOnly, DateTime lastContact, Boolean isActive, List<UUID> trackedBy, List<BanditIdentifierResponse> identifiers, List<ContactResponse> contacts) {
         return builder()
                 .uuid(uuid)
                 .databaseId(databaseId)
@@ -73,6 +76,7 @@ public abstract class BanditResponse {
                 .readOnly(readOnly)
                 .lastContact(lastContact)
                 .isActive(isActive)
+                .trackedBy(trackedBy)
                 .identifiers(identifiers)
                 .contacts(contacts)
                 .build();
@@ -101,6 +105,8 @@ public abstract class BanditResponse {
         public abstract Builder lastContact(DateTime lastContact);
 
         public abstract Builder isActive(Boolean isActive);
+
+        public abstract Builder trackedBy(List<UUID> trackedBy);
 
         public abstract Builder identifiers(List<BanditIdentifierResponse> identifiers);
 

@@ -2,6 +2,8 @@ import React from 'react';
 import Reflux from 'reflux';
 import moment from "moment";
 import Routes from "../../util/Routes";
+import BanditContactStatus from "./BanditContactStatus";
+import BanditTrackingStatus from "./BanditTrackingStatus";
 
 class BanditsTableRow extends Reflux.Component {
 
@@ -19,8 +21,9 @@ class BanditsTableRow extends Reflux.Component {
         return (
             <tr>
                 <td><a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a></td>
-                <td>{bandit.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
-                <td>???</td>
+                <td>
+                    <BanditContactStatus bandit={bandit} /> <BanditTrackingStatus bandit={bandit} />
+                </td>
                 <td title={bandit.last_contact ? moment(bandit.last_contact).format() : "never"}>
                     {bandit.last_contact ? moment(bandit.last_contact).fromNow() : "never"}
                 </td>
