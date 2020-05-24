@@ -20,7 +20,6 @@ package horse.wtf.nzyme.dot11.networks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
 
@@ -98,7 +97,7 @@ public abstract class Channel {
         }};
 
         return builder()
-                .signalStrengthTable(new SignalStrengthTable(nzyme.getMetrics()))
+                .signalStrengthTable(new SignalStrengthTable(bssid, ssid, channelNumber, nzyme.getMetrics()))
                 .bssid(bssid)
                 .ssid(ssid)
                 .channelNumber(channelNumber)

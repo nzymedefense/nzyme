@@ -38,10 +38,18 @@ public class SignalStrengthTable {
 
     private List<SignalStrength> table;
 
+    private final String bssid;
+    private final String ssid;
+    private final int channelNumber;
+
     private final Timer mutexTimer;
 
-    public SignalStrengthTable(MetricRegistry metrics) {
+    public SignalStrengthTable(String bssid, String ssid, int channelNumber, MetricRegistry metrics) {
         this.table = newEmptyTable();
+
+        this.bssid = bssid;
+        this.ssid = ssid;
+        this.channelNumber = channelNumber;
 
         this.mutexTimer = metrics.timer(MetricNames.SIGNAL_TABLES_MUTEX_WAIT);
     }
@@ -89,17 +97,7 @@ public class SignalStrengthTable {
         return histogram;
     }
 
-    public int getAverageSiqnalStrength() {
-        List<Integer> values = copyOfAllValues();
-
-        if (values.isEmpty()) {
-            return -100;
-        }
-
-        return (int) Math.round(Stats.meanOf(values));
-    }
-
-    private List<Integer> copyOfAllValues() {
+    public List<Integer> copyOfAllValues() {
         List<SignalStrength> copy = copyOfTable();
         List<Integer> values = Lists.newArrayList();
 
