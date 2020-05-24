@@ -28,7 +28,7 @@ public class ConfigurationKeys {
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAPS = "802_11_traps";
-    public static final String KNOWN_BANDIT_FINGERPRINTS = "known_bandit_fingerprints";
+    public static final String TRACKER_DEVICE = "tracker_device";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -68,5 +68,19 @@ public class ConfigurationKeys {
     public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";
+
+    public static final String PARAMETERS = "parameters";
+    public static final String SERIAL_PORT = "serial_port";
+    public static final String ENCRYPTION_KEY = "encryption_key";
+
+    public static final String DEBUG = "debug";
+    public static final String TWILIO_ACCOUNT_SID = "twilio_account_sid";
+    public static final String TWILIO_TOKEN = "twilio_token";
+    public static final String SIGNAL_LINK = "signal_link";
+    public static final String ENABLED = "enabled";
+    public static final String TRACKER_NAME = "tracker_name";
+    public static final String PHONE_FROM = "phone_from";
+    public static final String PHONE_TO = "phone_to";
+
 
 }

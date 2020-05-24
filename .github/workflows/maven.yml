@@ -1,0 +1,50 @@
+name: Build and Test
+
+on: [push, pull_request]
+  
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Database
+      run: createdb --host=localhost --port=5432 --username=postgres nzyme-java-tests
+      env:
+        PGPASSWORD: postgres
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+        java-package: jdk
+        architecture: x64
+    
+    - name: Cache Maven packages
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Build and Test
+      run: mvn -B test
+      env:
+        TEST_DATABASE_URL: postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=postgres 
+      
+    - name: Upload Code Coverage
+      uses: codecov/codecov-action@v1

@@ -22,7 +22,7 @@ import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
 @AutoValue
-public abstract class Dot11DisassociationFrame {
+public abstract class Dot11DisassociationFrame extends Dot11Frame {
 
     public abstract String destination();
     public abstract String transmitter();

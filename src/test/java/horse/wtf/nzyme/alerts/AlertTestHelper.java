@@ -19,38 +19,19 @@ package horse.wtf.nzyme.alerts;
 
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.configuration.BanditFingerprintDefinition;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.statistics.Statistics;
 
 import java.util.*;
 
-
 public class AlertTestHelper {
 
     public static final String CLEAR_QUERY = "DELETE FROM alerts";
 
-    protected static final Map<String, BanditFingerprintDefinition> BANDITS_STANDARD = new HashMap<String, BanditFingerprintDefinition>(){{
-        put("ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
-                BanditFingerprintDefinition.create(
-                        "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
-                        new ArrayList<String>(){{
-                            add("WiFi Pineapple Nano or Tetra (PineAP)");
-                            add("spacehuhn/esp8266_deauther (attack frames)");
-                        }}));
-        put("535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
-                BanditFingerprintDefinition.create(
-                        "535afea1f1656375a991e28ce919d412fd9863a01f1b0b94fcff8a83ed8fcb83",
-                        new ArrayList<String>(){{
-                            add("WiFi Pineapple Nano or Tetra (PineAP)");
-                        }}));
-    }};
-
-    protected Dot11MockProbe buildMockProbe(Map<String, BanditFingerprintDefinition> bandits, MockNzyme nzyme) {
+    protected Dot11MockProbe buildMockProbe(MockNzyme nzyme) {
         return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
                 "test-probe-1",
                 Collections.emptyList(),
@@ -76,8 +57,7 @@ public class AlertTestHelper {
                             }}, 0)
                     );
                 }},
-                Collections.emptyList(),
-                BANDITS_STANDARD
+                Collections.emptyList()
         ), new Statistics(nzyme));
     }
 
@@ -90,8 +70,7 @@ public class AlertTestHelper {
             1,
             "foo",
             Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyMap()
+            Collections.emptyList()
     );
 
 

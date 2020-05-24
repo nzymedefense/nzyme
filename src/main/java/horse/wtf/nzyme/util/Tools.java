@@ -97,4 +97,16 @@ public class Tools {
         return x.replaceAll("[^A-Za-z0-9]", "");
     }
 
+    public static Integer getInteger(Object value) {
+        if (value instanceof String) {
+            return Integer.parseInt((String) value);
+        }
+
+        if (value instanceof Integer) {
+            return (Integer) value;
+        }
+
+        throw new RuntimeException("Cannot cast object of type [" + value.getClass().getCanonicalName() + "] to Integer.");
+    }
+
 }

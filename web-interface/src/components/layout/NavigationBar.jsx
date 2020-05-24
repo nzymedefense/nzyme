@@ -21,6 +21,8 @@ class NavigationBar extends Reflux.Component {
               &nbsp;
               <NavigationLink href={Routes.NETWORKS.INDEX} title="Networks" />
               &nbsp;
+              <NavigationLink href={Routes.BANDITS.INDEX} title="Bandits" />
+              &nbsp;
               <NavigationLink href={Routes.SYSTEM_STATUS} title="System Status" />
               &nbsp;
               <AlertsButton hasAlerts={this.props.hasAlerts} />

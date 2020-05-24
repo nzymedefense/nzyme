@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.ouis;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,9 +28,9 @@ public class OUIUpdater extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(OUIUpdater.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public OUIUpdater(Nzyme nzyme) {
+    public OUIUpdater(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

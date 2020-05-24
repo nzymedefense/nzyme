@@ -17,7 +17,7 @@ class NetworksList extends Reflux.Component {
         this.state = {
             bssids: undefined,
             filter: ""
-        }
+        };
 
         this.filterInput = React.createRef();
 

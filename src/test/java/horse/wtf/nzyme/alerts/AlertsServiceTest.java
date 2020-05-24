@@ -3,7 +3,7 @@ package horse.wtf.nzyme.alerts;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.MockNzyme;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -26,13 +26,13 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @BeforeMethod
     public void cleanAlerts() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute(CLEAR_QUERY));
     }
 
     @Test
     public void testRetentionCleaning() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
 
         AlertsService as = new AlertsService(
                 nzyme,
@@ -75,7 +75,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testSameAlertsAreNotDuplicatedAndLastSeenIsUpdated() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
 
         AlertsService as = new AlertsService(
                 nzyme,
@@ -130,7 +130,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testGetActiveAlertsReturnsImmutableCopyPut() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
 
         new AlertsService(nzyme).getActiveAlerts().put(UUID.randomUUID(), UnexpectedSSIDBeaconAlert.create(
                 DateTime.now(),
@@ -150,7 +150,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testSetsUUID() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
 
         AlertsService as = new AlertsService(nzyme);
 
@@ -171,7 +171,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testUplinkConnection() {
-        Nzyme nzyme = new MockNzyme();
+        NzymeLeader nzyme = new MockNzyme();
 
         Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();

@@ -54,7 +54,9 @@ public class FieldNames {
     public static final String ANTENNA_SIGNAL = "antenna_signal";
     public static final String TRACK_COUNT = "track_count";
 
+    public static final String BANDIT_UUID = "bandit_uuid";
     public static final String BANDIT_NAMES = "bandit_names";
+    public static final String BANDIT_NAME = "bandit_name";
     public static final String BANDIT_FINGERPRINT = "bandit_fingerprint";
 
     public static final String ENCOUNTERED_SECURITY = "encountered_security";
@@ -67,5 +69,13 @@ public class FieldNames {
     public static final String UPTIME = "uptime";
     public static final String PWND_THIS_RUN = "pwnd_this_run";
     public static final String PWND_TOTAL = "pwnd_total";
+
+    public static final String IDENTIFIER_UUID = "identifier_uuid";
+    public static final String SSIDS = "ssids";
+    public static final String FROM = "from";
+    public static final String TO = "to";
+    public static final String FINGERPRINT = "fingerprint";
+
+    public static final String ID = "id";
 
 }

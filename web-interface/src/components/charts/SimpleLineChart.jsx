@@ -41,34 +41,55 @@ class SimpleLineChart extends React.Component {
 
     let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25;
     let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0;
+    let marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25;
+    let marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50;
 
-    return (
+      return (
         <Plot
+            style={{ width: '100%', height: '100%' }}
             data={finalData}
             layout={{
-                width: this.props.width,
                 height: this.props.height,
-                font: { family: "'Inconsolata', monospace", size: 10 },
-                margin: { l: marginLeft, r: marginRight, b: 50, t: 25, pad: 0 },
+                width: this.props.width,
+                font: {
+                    family: "'Inconsolata', monospace",
+                    size: 10,
+                    color: this.props.textColor ? this.props.textColor : "#ffffff"
+                },
+                margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
                 title: { text: this.props.title },
-                paper_bgcolor: "#0c0d16",
-                plot_bgcolor: "#0c0d16",
+                paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
+                plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
                 showlegend: false,
                 dragmode: false,
                 clickmode: "none",
-                hovermode: "x",
+                hovermode: this.props.disableHover ? false : "x",
                 hoverlabel: {
                     font: { size: 11 },
                     namelength: -1
                 },
                 barmode: "stack",
                 boxgap: 0,
-                xaxis: { fixedrange: true, title: this.props.xaxistitle },
-                yaxis: { fixedrange: true, title: this.props.yaxistitle },
+                xaxis: {
+                    fixedrange: true,
+                    title: this.props.xaxistitle,
+                    zerolinecolor: "#1f2134",
+                    linecolor: "#11121f",
+                    gridcolor: "#1f2134"
+                },
+                yaxis: {
+                    fixedrange: true,
+                    title: this.props.yaxistitle,
+                    zerolinecolor: "#1f2134",
+                    linecolor: "#11121f",
+                    gridcolor: "#1f2134"
+                },
                 shapes: this.props.shapes
             }}
             config={{
-                displayModeBar: false
+                displayModeBar: false,
+                autosize: true,
+                responsive: true
             }}
         />
     )

@@ -1,6 +1,6 @@
 package horse.wtf.nzyme.periodicals.sigidx;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +12,7 @@ public class SignalIndexHistogramCleaner extends Periodical {
 
     private final Database database;
 
-    public SignalIndexHistogramCleaner(Nzyme nzyme) {
+    public SignalIndexHistogramCleaner(NzymeLeader nzyme) {
         this.database = nzyme.getDatabase();
     }
 

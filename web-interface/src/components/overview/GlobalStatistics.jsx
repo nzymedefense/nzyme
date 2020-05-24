@@ -6,7 +6,6 @@ import StatisticsActions from "../../actions/StatisticsActions";
 import AlertsStore from "../../stores/AlertsStore";
 import AlertsActions from "../../actions/AlertsActions"
 import ProbesStore from "../../stores/ProbesStore";
-import ProbesActions from "../../actions/ProbesActions"
 import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsList from "../alerts/AlertsList";
 
@@ -30,11 +29,14 @@ class GlobalStatistics extends Reflux.Component {
   }
 
   componentDidMount() {
+    this._loadData();
+
+    setInterval(this._loadData, 5000);
+  }
+
+  _loadData() {
     StatisticsActions.findGlobal();
     AlertsActions.findActive(GlobalStatistics.ALERT_LIMIT);
-
-    setInterval(StatisticsActions.findGlobal, 5000);
-    setInterval(AlertsActions.findActive, 5000);
   }
 
   render() {
@@ -57,21 +59,6 @@ class GlobalStatistics extends Reflux.Component {
                   width={335}
                   height={150}
                   data={this.state.global_statistics.histogram_frame_throughput}/>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card bg-success text-center overview-statistic">
-                <div className="card-body">
-                  <p>802.11 Clients</p>
-                  <span>{numeral(this.state.global_statistics.current_probing_devices.length).format('0,0')}</span>
-                </div>
-              </div>
-
-              <SimpleLineChart
-                  title="802.11 Clients"
-                  width={335}
-                  height={150}
-                  data={this.state.global_statistics.histogram_probing_devices} />
             </div>
 
             <div className="col-md-4">

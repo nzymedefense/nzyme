@@ -17,19 +17,18 @@
 
 package horse.wtf.nzyme.periodicals.measurements;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
 public class MeasurementsCleaner extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(MeasurementsCleaner.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public MeasurementsCleaner(Nzyme nzyme) {
+    public MeasurementsCleaner(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme.util;
 
+import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
@@ -42,12 +44,16 @@ public class MetricNames {
     // Custom.
     public static final String FRAME_COUNT = name(Dot11MonitorProbe.class, "frames");
     public static final String FRAME_TIMER = name(Dot11MonitorProbe.class, "timing");
-    public static final String OUI_LOOKUP_TIMER = name(OUIManager.class, "lookup-timing");
-    public static final String TAGGED_PARAMS_PARSE_TIMER = name(Dot11TaggedParameters.class, "parse-timing");
-    public static final String TAGGED_PARAMS_FINGERPRINT_TIMER = name(Dot11TaggedParameters.class, "fingerprint-timing");
-    public static final String BEACON_RATE_MONITOR_TIMER = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
+    public static final String OUI_LOOKUP_TIMING = name(OUIManager.class, "lookup-timing");
+    public static final String TAGGED_PARAMS_PARSE_TIMING = name(Dot11TaggedParameters.class, "parse-timing");
+    public static final String TAGGED_PARAMS_FINGERPRINT_TIMING = name(Dot11TaggedParameters.class, "fingerprint-timing");
+    public static final String BEACON_RATE_MONITOR_TIMING = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
     public static final String NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS = name(Networks.class, "signal-strength-measurements");
     public static final String SIGNAL_TABLES_MUTEX_WAIT = name(SignalStrengthTable.class, "mutex-wait");
-    public static final String SIGNAL_TRACK_MONITOR_TIMER = name(SignalTrackMonitor.class, "monitor-timing");
+    public static final String SIGNAL_TRACK_MONITOR_TIMING = name(SignalTrackMonitor.class, "monitor-timing");
+    public static final String CONTACT_IDENTIFIER_TIMING = name(ContactIdentifier.class, "timing");
+    public static final String GROUNDSTATION_TX = name(GroundStation.class, "tx");
+    public static final String GROUNDSTATION_RX = name(GroundStation.class, "rx");
+    public static final String GROUNDSTATION_ENCRYPTION_TIMING = name(GroundStation.class, "encryption-timing");
 
 }

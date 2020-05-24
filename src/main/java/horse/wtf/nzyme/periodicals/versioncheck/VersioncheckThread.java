@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Registry;
 import horse.wtf.nzyme.Version;
 import horse.wtf.nzyme.periodicals.Periodical;
@@ -48,10 +48,10 @@ public class VersioncheckThread extends Periodical {
 
     private final OkHttpClient httpClient;
     private final Version version;
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
     private final ObjectMapper om;
 
-    public VersioncheckThread(Version version, Nzyme nzyme) {
+    public VersioncheckThread(Version version, NzymeLeader nzyme) {
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)

@@ -23,12 +23,16 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntry;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
 import horse.wtf.nzyme.notifications.FieldNames;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,19 +40,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class Alert {
-
+    
     public enum TYPE_WIDE {
         UNEXPECTED_BSSID,
         UNEXPECTED_SSID,
         CRYPTO_CHANGE,
         UNEXPECTED_CHANNEL,
-        KNOWN_BANDIT_FINGERPRINT,
         UNEXPECTED_FINGERPRINT,
         SIGNAL_ANOMALY,
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
-        PWNAGOTCHI_ADVERTISEMENT
+        PWNAGOTCHI_ADVERTISEMENT,
+        BANDIT_CONTACT
     }
 
     public enum TYPE {
@@ -60,14 +64,13 @@ public abstract class Alert {
         CRYPTO_CHANGE_PROBERESP,
         UNEXPECTED_CHANNEL_BEACON,
         UNEXPECTED_CHANNEL_PROBERESP,
-        KNOWN_BANDIT_FINGERPRINT_BEACON,
-        KNOWN_BANDIT_FINGERPRINT_PROBERESP,
         UNEXPECTED_FINGERPRINT_BEACON,
         UNEXPECTED_FINGERPRINT_PROBERESP,
         BEACON_RATE_ANOMALY,
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
-        PWNAGOTCHI_ADVERTISEMENT
+        PWNAGOTCHI_ADVERTISEMENT,
+        BANDIT_CONTACT
     }
 
     private final Subsystem subsystem;
@@ -257,32 +260,6 @@ public abstract class Alert {
                         db.frameCount()
                 );
                 break;
-            case KNOWN_BANDIT_FINGERPRINT_BEACON:
-                alert = KnownBanditFingerprintBeaconAlert.create(
-                        db.firstSeen(),
-                        Splitter.on(",").splitToList((String) fields.get(FieldNames.BANDIT_NAMES)),
-                        (String) fields.get(FieldNames.BANDIT_FINGERPRINT),
-                        (String) fields.get(FieldNames.SSID),
-                        (String) fields.get(FieldNames.BSSID),
-                        (Integer) fields.get(FieldNames.CHANNEL),
-                        (Integer) fields.get(FieldNames.FREQUENCY),
-                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
-                        db.frameCount()
-                );
-                break;
-            case KNOWN_BANDIT_FINGERPRINT_PROBERESP:
-                alert = KnownBanditFingerprintProbeRespAlert.create(
-                        db.firstSeen(),
-                        Splitter.on(",").splitToList((String) fields.get(FieldNames.BANDIT_NAMES)),
-                        (String) fields.get(FieldNames.BANDIT_FINGERPRINT),
-                        (String) fields.get(FieldNames.SSID),
-                        (String) fields.get(FieldNames.BSSID),
-                        (Integer) fields.get(FieldNames.CHANNEL),
-                        (Integer) fields.get(FieldNames.FREQUENCY),
-                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
-                        db.frameCount()
-                );
-                break;
             case UNEXPECTED_FINGERPRINT_BEACON:
                 alert = UnexpectedFingerprintBeaconAlert.create(
                         db.firstSeen(),
@@ -312,20 +289,21 @@ public abstract class Alert {
                         db.firstSeen(),
                         (String) fields.get(FieldNames.SSID),
                         (String) fields.get(FieldNames.BSSID),
-                        (Float) fields.get(FieldNames.BEACON_RATE),
+                        (Double) fields.get(FieldNames.BEACON_RATE),
                         (Integer) fields.get(FieldNames.BEACON_RATE_THRESHOLD)
                 );
                 break;
             case PROBE_RESPONSE_TRAP_1:
                 throw new RuntimeException("NOT IMPLEMENTED.");
             case MULTIPLE_SIGNAL_TRACKS:
-                return MultipleTrackAlert.create(
+                alert = MultipleTrackAlert.create(
                         db.firstSeen(),
                         (String) fields.get(FieldNames.SSID),
                         (String) fields.get(FieldNames.BSSID),
                         (Integer) fields.get(FieldNames.CHANNEL),
                         (Integer) fields.get(FieldNames.TRACK_COUNT)
                 );
+                break;
             case PWNAGOTCHI_ADVERTISEMENT:
                 alert = PwnagotchiAdvertisementAlert.create(
                         db.firstSeen(),
@@ -343,12 +321,21 @@ public abstract class Alert {
                         db.frameCount()
                 );
                 break;
+            case BANDIT_CONTACT:
+                alert = BanditContactAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.BANDIT_NAME),
+                        (String) fields.get(FieldNames.BANDIT_UUID),
+                        db.frameCount()
+                );
+                break;
             default:
                 throw new RuntimeException("Cannot serialize persisted alert of type [" + db.type() + "].");
         }
 
         alert.setLastSeen(db.lastSeen());
         alert.setUUID(db.uuid());
+
         return alert;
     }
 

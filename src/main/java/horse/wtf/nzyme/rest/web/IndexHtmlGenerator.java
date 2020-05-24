@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.web;
 import com.floreysoft.jmte.Engine;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.rest.RestTools;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -34,13 +34,13 @@ import static java.util.Objects.requireNonNull;
 public class IndexHtmlGenerator {
 
     private final String template;
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
     private final Engine templateEngine;
 
     private final List<String> jsFiles;
     private final List<String> cssFiles;
 
-    public IndexHtmlGenerator(final Configuration configuration, AssetManifest assetManifest) throws IOException {
+    public IndexHtmlGenerator(final LeaderConfiguration configuration, AssetManifest assetManifest) throws IOException {
         this(
                 Resources.toString(Resources.getResource("web-interface/index.html.template"), StandardCharsets.UTF_8),
                 assetManifest.getJsFiles(),
@@ -54,7 +54,7 @@ public class IndexHtmlGenerator {
                                final List<String> jsFiles,
                                final List<String> cssFiles,
                                final Engine templateEngine,
-                               final Configuration configuration) throws IOException {
+                               final LeaderConfiguration configuration) throws IOException {
         this.template = requireNonNull(template, "template");
         this.jsFiles = requireNonNull(jsFiles, "jsFiles");
         this.cssFiles = requireNonNull(cssFiles, "cssFiles");

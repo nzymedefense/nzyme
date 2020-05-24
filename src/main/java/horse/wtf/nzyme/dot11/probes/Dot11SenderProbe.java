@@ -19,11 +19,10 @@ package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Joiner;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
-import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -38,7 +37,7 @@ public class Dot11SenderProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
     private PcapHandle pcap;
     private final Dot11ProbeConfiguration configuration;
 
@@ -47,7 +46,7 @@ public class Dot11SenderProbe extends Dot11Probe {
 
     private long totalFrames;
 
-    public Dot11SenderProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, Trap trap, MetricRegistry metrics) {
+    public Dot11SenderProbe(NzymeLeader nzyme, Dot11ProbeConfiguration configuration, Trap trap, MetricRegistry metrics) {
         super(configuration, nzyme);
 
         this.trap = trap;

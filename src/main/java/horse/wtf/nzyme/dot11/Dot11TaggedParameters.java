@@ -73,14 +73,19 @@ public class Dot11TaggedParameters {
         this.params = Maps.newTreeMap();
         this.vendorSpecificParams = Maps.newTreeMap();
 
-        this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMER));
-        this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMER));
+        this.parserTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_PARSE_TIMING));
+        this.fingerprintTimer = metrics.timer(MetricRegistry.name(MetricNames.TAGGED_PARAMS_FINGERPRINT_TIMING));
 
         Timer.Context time = this.parserTimer.time();
         int position = startPosition;
         while (true) {
             try {
                 int tag = 0xFF & payload[position];
+
+                if (payload.length <= position+1 ) {
+                    break;
+                }
+
                 int length = 0xFF & payload[position + 1];
 
                 byte[] tagPayload;
@@ -114,6 +119,7 @@ public class Dot11TaggedParameters {
                     break;
                 }
             } catch (Exception e) {
+                LOG.info("Malformed 802.11 tagged parameters: {}", Tools.byteArrayToHexPrettyPrint(payload));
                 throw new MalformedFrameException("Could not parse 802.11 tagged parameters.", e);
             }
         }

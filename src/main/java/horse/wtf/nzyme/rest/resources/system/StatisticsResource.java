@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources.system;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.measurements.Measurement;
 import horse.wtf.nzyme.measurements.MeasurementType;
@@ -47,7 +47,7 @@ public class StatisticsResource {
     private static final String MEASUREMENTS_QUERY = "SELECT * FROM measurements WHERE measurement_type = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') ORDER BY created_at ASC;";
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     @Path("global")

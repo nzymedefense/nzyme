@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.periodicals.measurements;
 
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.measurements.MeasurementType;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
@@ -27,9 +27,9 @@ public class MeasurementsWriter extends Periodical  {
 
     private static final Logger LOG = LogManager.getLogger(MeasurementsWriter.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public MeasurementsWriter(Nzyme nzyme) {
+    public MeasurementsWriter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 

@@ -23,7 +23,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
 
 @AutoValue
-public abstract class Dot11AuthenticationFrame {
+public abstract class Dot11AuthenticationFrame extends Dot11Frame {
 
     public abstract Dot11AuthenticationFrameParser.ALGORITHM_TYPE algorithm();
     public abstract Short statusCode();

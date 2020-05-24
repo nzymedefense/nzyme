@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 
@@ -36,8 +35,7 @@ public class FrameHandlerTest {
             1,
             "foo",
             Collections.emptyList(),
-            Collections.emptyList(),
-            Collections.emptyMap()
+            Collections.emptyList()
     );
 
 }

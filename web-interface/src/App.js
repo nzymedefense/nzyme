@@ -28,6 +28,13 @@ import AuthenticationStore from "./stores/AuthenticationStore";
 import AuthenticationActions from "./actions/AuthenticationActions";
 import AlertsActions from "./actions/AlertsActions";
 import AlertsStore from "./stores/AlertsStore";
+import BanditsPage from "./components/bandits/BanditsPage";
+import CreateBanditPage from "./components/bandits/management/CreateBanditPage";
+import BanditDetailPage from "./components/bandits/BanditDetailPage";
+import EditBanditPage from "./components/bandits/management/EditBanditPage";
+import CreateIdentifierPage from "./components/bandits/management/identifiers/CreateIdentifierPage";
+import TrackerDetailPage from "./components/bandits/trackers/TrackerDetailPage";
+import NetworkDashboardPage from "./components/networks/dashboard/NetworkDashboardPage";
 
 class App extends Reflux.Component {
 
@@ -61,8 +68,8 @@ class App extends Reflux.Component {
         }, 10000);
 
         if(App._isAuthenticated()) {
-            AlertsActions.findActive(1);
-            setInterval(AlertsActions.findActive, 5000);
+            AlertsActions.findActiveCount();
+            setInterval(AlertsActions.findActiveCount, 5000);
         }
     }
 
@@ -80,14 +87,16 @@ class App extends Reflux.Component {
         document.body.classList.remove('login-page');
         document.body.style.backgroundImage = "";
 
+        const dashboard = document.location.pathname.startsWith("/networks/dashboard/");
+
         if(this.state.apiConnected) {
             if (this.state.authenticated) {
                 return (
                     <Router>
                         <div className="nzyme">
-                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts.length > 0} />
+                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
 
-                            <div className="container">
+                            <div className={dashboard ? "container-fluid" : "container"}>
                                 <Notifications/>
 
                                 <Switch>
@@ -98,20 +107,29 @@ class App extends Reflux.Component {
 
                                     { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
-
-                                    { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
                                            component={NetworkDetailsPage}/>
+                                    <Route exact path={Routes.NETWORKS.DASHBOARD(":ssid")} component={NetworkDashboardPage} />
 
                                     { /* Alerts. */}
-                                    <Route path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
+                                    <Route exact path={Routes.ALERTS.SHOW(":id")} component={AlertDetailsPage}/>
+
+                                    { /* Bandits. */}
+                                    <Route exact path={Routes.BANDITS.INDEX} component={BanditsPage}/>
+                                    <Route exact path={Routes.BANDITS.NEW} component={CreateBanditPage}/>
+                                    <Route exact path={Routes.BANDITS.SHOW(":id")} component={BanditDetailPage} />
+                                    <Route exact path={Routes.BANDITS.EDIT(":id")} component={EditBanditPage} />
+                                    <Route exact path={Routes.BANDITS.NEW_IDENTIFIER(":banditUUID")} component={CreateIdentifierPage} />
+
+                                    { /* Trackers. */ }
+                                    <Route exact path={Routes.TRACKERS.SHOW(":name")} component={TrackerDetailPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>
                                     <Route path="*" component={NotFoundPage}/> { /* Catch-all.  */}
                                 </Switch>
 
-                                <Footer/>
+                                { dashboard ? undefined : <Footer /> }
                             </div>
                         </div>
                     </Router>

@@ -61,7 +61,10 @@ public abstract class SSIDResponse {
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold, boolean isMonitored) {
+    @JsonProperty("most_active_channel")
+    public abstract Integer mostActiveChannel();
+
+    public static SSIDResponse create(List<SSIDSecurityResponse> security, String bssid, boolean humanReadable, String name, Map<Integer, ChannelResponse> channels, List<String> fingerprints, BeaconRate beaconRate, List<AverageBeaconRate> beaconRateHistory, Integer beaconRateThreshold, boolean isMonitored, Integer mostActiveChannel) {
         return builder()
                 .security(security)
                 .bssid(bssid)
@@ -73,6 +76,7 @@ public abstract class SSIDResponse {
                 .beaconRateHistory(beaconRateHistory)
                 .beaconRateThreshold(beaconRateThreshold)
                 .isMonitored(isMonitored)
+                .mostActiveChannel(mostActiveChannel)
                 .build();
     }
 
@@ -101,6 +105,8 @@ public abstract class SSIDResponse {
         public abstract Builder beaconRateThreshold(Integer beaconRateThreshold);
 
         public abstract Builder isMonitored(boolean isMonitored);
+
+        public abstract Builder mostActiveChannel(Integer mostActiveChannel);
 
         public abstract SSIDResponse build();
     }

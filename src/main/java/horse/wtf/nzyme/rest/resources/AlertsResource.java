@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.alerts.AlertConfigurationResponse;
@@ -45,7 +45,7 @@ public class AlertsResource {
     private static final Logger LOG = LogManager.getLogger(AlertsResource.class);
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     @Path("/configuration")
@@ -82,6 +82,7 @@ public class AlertsResource {
             i++;
 
             Alert alert = entry.getValue();
+            alert.setUUID(entry.getKey());
             details.add(AlertDetailsResponse.fromAlert(alert));
         }
 

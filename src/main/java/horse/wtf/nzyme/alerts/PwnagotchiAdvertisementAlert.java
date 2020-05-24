@@ -34,8 +34,6 @@ import java.util.Map;
 
 public class PwnagotchiAdvertisementAlert extends Alert {
 
-    private static final Logger LOG = LogManager.getLogger(PwnagotchiAdvertisementAlert.class);
-
     private static final String DESCRIPTION = "A pwnagotchi beacon advertisement frame was detected. The pwnagotchi is a " +
             "popular and mostly automated WiFi attack platform. It uses a parasitic protocol embedded in 802.11 beacon frames " +
             "to advertise it's own existence to other pwnagotchis in range and nzyme is able to detect those advertisement frames.";

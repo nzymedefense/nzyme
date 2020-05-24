@@ -16,7 +16,7 @@ class LoginPage extends Reflux.Component {
 
         this.state = {
             loggingIn: false
-        }
+        };
 
         this._submitLoginForm = this._submitLoginForm.bind(this);
     }

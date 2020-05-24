@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.rest.resources.system;
 
 import com.beust.jcommander.internal.Lists;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Registry;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
@@ -40,7 +40,7 @@ import java.util.List;
 public class SystemResource {
 
     @Inject
-    private Nzyme nzyme;
+    private NzymeLeader nzyme;
 
     @GET
     @Path("/status")

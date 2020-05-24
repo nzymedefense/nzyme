@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.security.sessions;
 
 import com.google.common.hash.Hashing;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ public class StaticHashAuthenticator {
 
     private final String hash;
 
-    public StaticHashAuthenticator(Configuration configuration) {
+    public StaticHashAuthenticator(LeaderConfiguration configuration) {
         this.hash = configuration.adminPasswordHash();
     }
 

@@ -266,5 +266,165 @@
         <dropColumn tableName="alerts" columnName="frequency" />
     </changeSet>
 
+    <changeSet id="11" author="lennartkoopmann">
+        <createTable tableName="bandits">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bandit_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="name" type="varchar(75)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="identifiers" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="bandits_standard_lookup" tableName="bandits" unique="false">
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="bandits_indiv_lookup" tableName="bandits" unique="false">
+            <column name="bandit_uuid" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="12" author="lennartkoopmann">
+        <dropColumn tableName="bandits" columnName="identifiers" />
+
+        <createTable tableName="bandit_identifiers">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="identifier_type" type="varchar(75)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bandit_id" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="configuration" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="bandits_identifiers_linked_lookup" tableName="bandit_identifiers" unique="false">
+            <column name="bandit_id" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_bandits2identifiers"
+                                    baseTableName="bandit_identifiers"
+                                    baseColumnNames="bandit_id"
+                                    referencedTableName="bandits"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
+    </changeSet>
+
+    <changeSet id="13" author="lennartkoopmann">
+        <createTable tableName="contacts">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="contact_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="bandit_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="contacts_linked_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_bandits2contacts"
+                                    baseTableName="contacts"
+                                    baseColumnNames="bandit_id"
+                                    referencedTableName="bandits"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
+
+    </changeSet>
+
+    <changeSet id="14" author="lennartkoopmann">
+        <modifyDataType tableName="measurements" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="measurements" columnName="measurement_value" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="beacon_rate" newDataType="bigint" />
+        <modifyDataType tableName="sigidx_histogram_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="frame_count" newDataType="bigint" />
+        <modifyDataType tableName="bandits" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="bandit_id" newDataType="bigint" />
+    </changeSet>
+
+    <changeSet id="15" author="lennartkoopmann">
+        <createIndex indexName="contacts_active_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="16" author="lennartkoopmann">
+        <addColumn tableName="bandit_identifiers">
+            <column name="identifier_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="17" author="lennartkoopmann">
+        <addColumn tableName="bandits">
+            <column name="read_only" type="boolean" defaultValue="false">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

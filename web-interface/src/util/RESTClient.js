@@ -30,7 +30,7 @@ const RESTClient = {
     return stableRoot + stableUri;
   },
 
-  get(uri, params, successCallback) {
+  get(uri, params, successCallback, errorCallback = undefined) {
     axios.get(this.buildUri(uri), { params: params, headers: this.getAuthHeaders() })
       .then(function (response) {
         successCallback(response);
@@ -42,7 +42,11 @@ const RESTClient = {
           }
 
           if (error.response.status !== 401) {
-            notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+            if (errorCallback) {
+              errorCallback(error);
+            } else {
+              notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+            }
           }
         } else {
           notify.show("REST call failed. No response. Is nzyme running?", "error");
@@ -57,7 +61,25 @@ const RESTClient = {
       })
       .catch(function (error) {
         if(errorCallback) {
-          errorCallback();
+          errorCallback(error);
+        }
+
+        if (error.response) {
+          notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+        } else {
+          notify.show("REST call failed. No response. Is nzyme running?", "error");
+        }
+      });
+  },
+
+  put(uri, data, successCallback,  errorCallback = undefined) {
+    axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
+      .then(function(response) {
+        successCallback(response);
+      })
+      .catch(function (error) {
+        if(errorCallback) {
+          errorCallback(error);
         } else {
           if (error.response) {
             notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
@@ -68,20 +90,23 @@ const RESTClient = {
       });
   },
 
-  put(uri, data, successCallback) {
-    axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
-      .then(function(response) {
-        successCallback(response);
-      })
-      .catch(function (error) {
-        console.log(error);
-        if (error.response) {
-          notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
-        } else {
-          notify.show("REST call failed. No response. Is nzyme running?", "error");
-        }
-      });
-  },
+  delete(uri, successCallback, errorCallback = undefined) {
+    axios.delete(this.buildUri(uri), {headers: this.getAuthHeaders() })
+        .then(function (response) {
+          successCallback(response);
+        })
+        .catch(function (error) {
+          if(errorCallback) {
+            errorCallback(error);
+          } else {
+            if (error.response) {
+              notify.show("REST call failed. (HTTP " + error.response.status + ")", "error");
+            } else {
+              notify.show("REST call failed. No response. Is nzyme running?", "error");
+            }
+          }
+        });
+  }
 
 };
 

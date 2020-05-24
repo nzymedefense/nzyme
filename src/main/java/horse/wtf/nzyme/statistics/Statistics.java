@@ -19,15 +19,13 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.Nzyme;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 
 import java.util.Map;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -42,11 +40,11 @@ public class Statistics {
     private final Map<Integer, AtomicLong> channelCounts;
     private final Map<Integer, AtomicLong> channelMalformedCounts;
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     // Remember to reset these in resetStats()
 
-    public Statistics(Nzyme nzyme) {
+    public Statistics(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.frameCount = new AtomicLong(0);

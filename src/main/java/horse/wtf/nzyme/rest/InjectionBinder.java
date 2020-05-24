@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.web.AssetManifest;
 import horse.wtf.nzyme.rest.web.IndexHtmlGenerator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -28,15 +28,15 @@ import java.io.IOException;
 
 public class InjectionBinder extends AbstractBinder {
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
-    public InjectionBinder(Nzyme nzmye) {
+    public InjectionBinder(NzymeLeader nzmye) {
         this.nzyme = nzmye;
     }
 
     @Override
     protected void configure() {
-        bind(nzyme).to(Nzyme.class);
+        bind(nzyme).to(NzymeLeader.class);
         bind(new MimetypesFileTypeMap()).to(MimetypesFileTypeMap.class);
         bind(nzyme.getObjectMapper()).to(ObjectMapper.class);
 

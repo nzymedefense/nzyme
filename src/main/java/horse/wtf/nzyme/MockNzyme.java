@@ -22,8 +22,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.configuration.ConfigurationLoader;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.TrackerManager;
+import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -45,7 +50,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
-public class MockNzyme implements Nzyme {
+public class MockNzyme implements NzymeLeader {
 
     private File loadFromResourceFile(String name) {
         URL resource = getClass().getClassLoader().getResource(name);
@@ -57,13 +62,14 @@ public class MockNzyme implements Nzyme {
     }
 
     private final Statistics statistics;
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
     private final SystemStatus systemStatus;
     private final Networks networks;
     private final Clients clients;
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
+    private final ContactIdentifier contactIdentifier;
     private final Key signingKey;
     private final ObjectMapper objectMapper;
     private final Registry registry;
@@ -76,8 +82,8 @@ public class MockNzyme implements Nzyme {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
-            this.configuration = new ConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
-        } catch (ConfigurationLoader.InvalidConfigurationException | ConfigurationLoader.IncompleteConfigurationException | FileNotFoundException e) {
+            this.configuration = new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
+        } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
 
@@ -99,6 +105,7 @@ public class MockNzyme implements Nzyme {
         this.ouiManager = new OUIManager(this);
         this.alertsService = new AlertsService(this);
         this.objectMapper = new ObjectMapper();
+        this.contactIdentifier = new ContactIdentifier(this);
     }
 
     @Override
@@ -144,7 +151,7 @@ public class MockNzyme implements Nzyme {
     }
 
     @Override
-    public Configuration getConfiguration() {
+    public LeaderConfiguration getConfiguration() {
         return configuration;
     }
 
@@ -171,6 +178,21 @@ public class MockNzyme implements Nzyme {
     @Override
     public AlertsService getAlertsService() {
         return alertsService;
+    }
+
+    @Override
+    public ContactIdentifier getContactIdentifier() {
+        return contactIdentifier;
+    }
+
+    @Override
+    public TrackerManager getTrackerManager() {
+        return null;
+    }
+
+    @Override
+    public GroundStation getGroundStation() {
+        return null;
     }
 
     @Override

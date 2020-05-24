@@ -22,7 +22,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
@@ -52,7 +52,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
     private final Dot11ProbeConfiguration configuration;
 
     private PcapHandle pcap;
@@ -78,7 +78,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    public Dot11MonitorProbe(Nzyme nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
+    public Dot11MonitorProbe(NzymeLeader nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
         super(configuration, nzyme);
 
         this.nzyme = nzyme;

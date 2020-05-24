@@ -19,7 +19,7 @@ package horse.wtf.nzyme.periodicals.alerting.tracks;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.MultipleTrackAlert;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.networks.BSSID;
@@ -40,14 +40,14 @@ public class SignalTrackMonitor extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(SignalTrackMonitor.class);
 
-    private final Nzyme nzyme;
+    private final NzymeLeader nzyme;
 
     private final Timer timer;
 
-    public SignalTrackMonitor(Nzyme nzyme) {
+    public SignalTrackMonitor(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
-        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMER));
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMING));
     }
 
 

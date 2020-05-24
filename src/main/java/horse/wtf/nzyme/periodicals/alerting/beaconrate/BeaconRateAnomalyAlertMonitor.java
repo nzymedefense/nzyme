@@ -19,10 +19,10 @@ package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import horse.wtf.nzyme.Nzyme;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.alerts.BeaconRateAnomalyAlert;
-import horse.wtf.nzyme.configuration.Configuration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -39,17 +39,17 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
     private static final Logger LOG = LogManager.getLogger(BeaconRateAnomalyAlertMonitor.class);
 
     private final Networks networks;
-    private final Configuration configuration;
+    private final LeaderConfiguration configuration;
     private final AlertsService alertsService;
 
     private final Timer timer;
 
-    public BeaconRateAnomalyAlertMonitor(Nzyme nzyme) {
+    public BeaconRateAnomalyAlertMonitor(NzymeLeader nzyme) {
         this.networks = nzyme.getNetworks();
         this.configuration = nzyme.getConfiguration();
         this.alertsService = nzyme.getAlertsService();
 
-        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BEACON_RATE_MONITOR_TIMER));
+        this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.BEACON_RATE_MONITOR_TIMING));
     }
 
     @Override
