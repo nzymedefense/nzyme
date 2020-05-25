@@ -17,7 +17,8 @@
 
 package horse.wtf.nzyme.util;
 
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifierEngine;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -51,7 +52,7 @@ public class MetricNames {
     public static final String NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS = name(Networks.class, "signal-strength-measurements");
     public static final String SIGNAL_TABLES_MUTEX_WAIT = name(SignalStrengthTable.class, "mutex-wait");
     public static final String SIGNAL_TRACK_MONITOR_TIMING = name(SignalTrackMonitor.class, "monitor-timing");
-    public static final String CONTACT_IDENTIFIER_TIMING = name(ContactIdentifier.class, "timing");
+    public static final String CONTACT_IDENTIFIER_TIMING = name(ContactIdentifierEngine.class, "timing");
     public static final String GROUNDSTATION_TX = name(GroundStation.class, "tx");
     public static final String GROUNDSTATION_RX = name(GroundStation.class, "rx");
     public static final String GROUNDSTATION_ENCRYPTION_TIMING = name(GroundStation.class, "encryption-timing");

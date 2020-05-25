@@ -49,7 +49,7 @@ public class BanditListBroadcaster {
                 .build())
                 .scheduleWithFixedDelay(() -> {
                     try {
-                        List<Bandit> shuffledBandits = Lists.newArrayList(nzyme.getContactIdentifier().getBandits().values());
+                        List<Bandit> shuffledBandits = Lists.newArrayList(nzyme.getContactManager().getBandits().values());
                         Collections.shuffle(shuffledBandits);
 
                         for (Bandit bandit : shuffledBandits) {

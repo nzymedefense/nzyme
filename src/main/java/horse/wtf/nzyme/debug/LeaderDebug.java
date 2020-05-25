@@ -75,7 +75,7 @@ public class LeaderDebug {
                                     body += "offline.";
                                 } else {
                                     body += "at RSSI <" + tracker.getRssi() + "> (" + (Math.round(tracker.getRssi() / 255.0 * 100)) + "%) "
-                                            + "[" + tracker.getBanditCount() + "/" + nzyme.getContactIdentifier().getBanditList().size() + " bandits].";
+                                            + "[" + tracker.getBanditCount() + "/" + nzyme.getContactManager().getBanditList().size() + " bandits].";
                                 }
 
                                 LOG.info("Sending signal link debug message: [{}]", body);

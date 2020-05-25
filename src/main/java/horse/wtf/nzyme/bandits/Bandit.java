@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 @AutoValue
-public abstract class Bandit {
+public abstract class Bandit implements Identifiable {
 
     @Nullable
     public abstract Long databaseId();

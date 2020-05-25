@@ -13,7 +13,6 @@ import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
-import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -29,11 +28,10 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
     @Test
     public void testGetInterceptors() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11MockProbe probe = buildMockProbe(nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        UnexpectedChannelInterceptorSet set = new UnexpectedChannelInterceptorSet(probe);
+        UnexpectedChannelInterceptorSet set = new UnexpectedChannelInterceptorSet(nzyme.getAlertsService(), nzyme.getConfiguration().dot11Networks());
         assertEquals(set.getInterceptors().size(), 2);
 
         for (Dot11FrameInterceptor interceptor : set.getInterceptors()) {

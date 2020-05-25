@@ -22,14 +22,14 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AssociationRequestFrame frame = new Dot11AssociationRequestFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationRequestFrameHandler(probe).handle(frame);
+        new Dot11AssociationRequestFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -44,7 +44,7 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11AssociationRequestFrameHandler(null).getName(), "assoc-req");
+        assertEquals(new Dot11AssociationRequestFrameHandler(null, new MockNzyme()).getName(), "assoc-req");
     }
 
 }

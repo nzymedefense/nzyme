@@ -21,7 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
@@ -39,7 +39,7 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import java.security.Key;
 import java.util.List;
 
-public interface NzymeLeader {
+public interface NzymeLeader extends UplinkHandler {
 
     void initialize();
     void shutdown();
@@ -48,8 +48,6 @@ public interface NzymeLeader {
     Clients getClients();
 
     void registerUplink(Uplink uplink);
-    void notifyUplinks(Notification notification, Dot11MetaInformation meta);
-    void notifyUplinksOfAlert(Alert alert);
 
     Statistics getStatistics();
     LeaderConfiguration getConfiguration();
@@ -62,7 +60,7 @@ public interface NzymeLeader {
 
     List<Dot11Probe> getProbes();
     AlertsService getAlertsService();
-    ContactIdentifier getContactIdentifier();
+    ContactManager getContactManager();
 
     TrackerManager getTrackerManager();
     GroundStation getGroundStation();

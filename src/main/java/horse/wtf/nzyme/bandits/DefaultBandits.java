@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.bandits;
 
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.FingerprintBanditIdentifier;
 import org.apache.logging.log4j.LogManager;
@@ -258,7 +258,7 @@ public class DefaultBandits {
         );
     }};
 
-    public static void seed(ContactIdentifier contactIdentifier) {
+    public static void seed(ContactManager contactIdentifier) {
         for (Bandit bandit : BANDITS) {
             Optional<Bandit> x = contactIdentifier.findBanditByUUID(bandit.uuid());
             if (!x.isPresent()) {

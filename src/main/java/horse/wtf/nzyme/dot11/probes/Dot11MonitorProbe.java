@@ -23,6 +23,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
@@ -33,6 +34,7 @@ import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.handlers.*;
 import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import horse.wtf.nzyme.dot11.parsers.*;
+import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,11 +54,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
 
-    private final NzymeLeader nzyme;
     private final Dot11ProbeConfiguration configuration;
 
     private PcapHandle pcap;
     private final ChannelHopper channelHopper;
+
+    private final Statistics statistics;
 
     // Interceptors.
     private final List<Dot11FrameInterceptor> frameInterceptors;
@@ -78,10 +81,11 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    public Dot11MonitorProbe(NzymeLeader nzyme, Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
-        super(configuration, nzyme);
+    public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics) {
+        super(configuration, statistics, metrics);
 
-        this.nzyme = nzyme;
+        this.statistics = statistics;
+
         this.configuration = configuration;
         this.frameInterceptors = Lists.newArrayList();
 
@@ -96,9 +100,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
         deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics);
 
         // Metrics.
-        this.globalFrameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
-        this.globalFrameTimer = nzyme.getMetrics().timer(MetricNames.FRAME_TIMER);
-        this.localFrameMeter = nzyme.getMetrics().meter(MetricRegistry.name(this.getClass(), this.getName(), "frameCount"));
+        this.globalFrameMeter = metrics.meter(MetricNames.FRAME_COUNT);
+        this.globalFrameTimer = metrics.timer(MetricNames.FRAME_TIMER);
+        this.localFrameMeter = metrics.meter(MetricRegistry.name(this.getClass(), this.getName(), "frameCount"));
 
         channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
@@ -200,7 +204,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
                             if (meta.isMalformed()) {
                                 LOG.trace("Bad checksum. Skipping malformed packet.");
-                                this.nzyme.getStatistics().tickMalformedCountAndNotify(meta);
+                                statistics.tickMalformedCountAndNotify(meta);
                                 continue;
                             }
 
@@ -247,7 +251,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                 }
                             }
 
-                            this.nzyme.getStatistics().tickFrameCount(meta);
+                            statistics.tickFrameCount(meta);
                             time.stop();
                         }
                     } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
@@ -289,9 +293,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
         return frameInterceptors;
     }
 
-    public static void configureAsBroadMonitor(final Dot11MonitorProbe probe) {
+    public static void configureAsBroadMonitor(final Dot11MonitorProbe probe, UplinkHandler uplink) {
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationRequestFrame>() {
-            private final Dot11FrameHandler<Dot11AssociationRequestFrame> handler = new Dot11AssociationRequestFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11AssociationRequestFrame> handler = new Dot11AssociationRequestFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11AssociationRequestFrame frame) {
@@ -310,7 +314,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationResponseFrame>() {
-            private final Dot11FrameHandler<Dot11AssociationResponseFrame> handler = new Dot11AssociationResponseFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11AssociationResponseFrame> handler = new Dot11AssociationResponseFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11AssociationResponseFrame frame) {
@@ -329,7 +333,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11ProbeRequestFrame>() {
-            private final Dot11FrameHandler<Dot11ProbeRequestFrame> handler = new Dot11ProbeRequestFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11ProbeRequestFrame> handler = new Dot11ProbeRequestFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11ProbeRequestFrame frame) {
@@ -348,7 +352,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
-            private final Dot11FrameHandler<Dot11ProbeResponseFrame> handler = new Dot11ProbeResponseFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11ProbeResponseFrame> handler = new Dot11ProbeResponseFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11ProbeResponseFrame frame) {
@@ -367,7 +371,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
-            private final Dot11FrameHandler<Dot11BeaconFrame> handler = new Dot11BeaconFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11BeaconFrame> handler = new Dot11BeaconFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11BeaconFrame frame) {
@@ -386,7 +390,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DisassociationFrame>() {
-            private final Dot11FrameHandler<Dot11DisassociationFrame> handler = new Dot11DisassociationFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11DisassociationFrame> handler = new Dot11DisassociationFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11DisassociationFrame frame) {
@@ -405,7 +409,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AuthenticationFrame>() {
-            private final Dot11FrameHandler<Dot11AuthenticationFrame> handler = new Dot11AuthenticationFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11AuthenticationFrame> handler = new Dot11AuthenticationFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11AuthenticationFrame frame) {
@@ -424,7 +428,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         });
 
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
-            private final Dot11FrameHandler<Dot11DeauthenticationFrame> handler = new Dot11DeauthenticationFrameHandler(probe);
+            private final Dot11FrameHandler<Dot11DeauthenticationFrame> handler = new Dot11DeauthenticationFrameHandler(probe, uplink);
 
             @Override
             public void intercept(Dot11DeauthenticationFrame frame) {
@@ -441,8 +445,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
                 return Collections.emptyList();
             }
         });
-
-        probe.addFrameInterceptors(new ProbeRequestTrapResponseInterceptorSet(probe).getInterceptors());
     }
 
 }

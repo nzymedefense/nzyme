@@ -20,17 +20,28 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
+import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NzymeTrackerImpl implements NzymeTracker {
@@ -40,18 +51,22 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final Version version;
 
     private final TrackerConfiguration configuration;
-
+    private final ExecutorService probeExecutor;
     private final GroundStation groundStation;
     private final TrackerBanditManager banditManager;
+    private final Statistics statistics;
 
+    private final List<Dot11Probe> probes;
     private final MetricRegistry metrics;
-
     private final ObjectMapper om;
 
     public NzymeTrackerImpl(TrackerConfiguration configuration) {
         this.version = new Version();
         this.configuration = configuration;
 
+        this.probes = Lists.newArrayList();
+
+        this.statistics = new Statistics(this);
         this.metrics = new MetricRegistry();
 
         this.om = new ObjectMapper()
@@ -80,6 +95,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }
+
+        probeExecutor = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("probe-loop-%d")
+                .build());
     }
 
     @Override
@@ -104,6 +124,27 @@ public class NzymeTrackerImpl implements NzymeTracker {
                         .setNameFormat("ground-station-%d")
                         .build())
                 .submit(groundStation);
+
+        // Probes.
+        for (Dot11MonitorDefinition m : configuration.dot11Monitors()) {
+            Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
+                    "broad-monitor-" + m.device(),
+                    null,
+                    configuration.nzymeId(),
+                    m.device(),
+                    m.channels(),
+                    m.channelHopInterval(),
+                    m.channelHopCommand(),
+                    null,
+                    null
+            ), metrics, statistics);
+
+            // Bandit identifier.
+            ///////probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(this).getInterceptors());
+
+            probeExecutor.submit(probe.loop());
+            this.probes.add(probe);
+        }
     }
 
     @Override
@@ -126,4 +167,18 @@ public class NzymeTrackerImpl implements NzymeTracker {
         return banditManager;
     }
 
+    @Override
+    public MetricRegistry getMetrics() {
+        return metrics;
+    }
+
+    @Override
+    public void notifyUplinks(Notification notification, Dot11MetaInformation meta) {
+        // ignored for tracker
+    }
+
+    @Override
+    public void notifyUplinksOfAlert(Alert alert) {
+        // ignored for tracker
+    }
 }

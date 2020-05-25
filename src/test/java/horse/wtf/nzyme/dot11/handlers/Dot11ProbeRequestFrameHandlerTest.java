@@ -22,14 +22,14 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
                 .parse(Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP);
 
-        new Dot11ProbeRequestFrameHandler(probe).handle(frame);
+        new Dot11ProbeRequestFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -44,14 +44,14 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleBroadcastFrame() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
                 .parse(Frames.PROBE_REQ_BROADCAST_1_PAYLOAD, Frames.PROBE_REQ_BROADCAST_1_HEADER, META_NO_WEP);
 
-        new Dot11ProbeRequestFrameHandler(probe).doHandle(frame);
+        new Dot11ProbeRequestFrameHandler(probe, nzyme).doHandle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -65,7 +65,7 @@ public class Dot11ProbeRequestFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11ProbeRequestFrameHandler(null).getName(), "probe-req");
+        assertEquals(new Dot11ProbeRequestFrameHandler(null, new MockNzyme()).getName(), "probe-req");
     }
 
 }

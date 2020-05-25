@@ -5,13 +5,13 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedFingerprintBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedFingerprintProbeRespAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -21,11 +21,12 @@ import java.util.List;
 public class UnexpectedFingerprintInterceptorSet {
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
-    private final Dot11Probe probe;
 
-    public UnexpectedFingerprintInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredNetworks = probe.getConfiguration().getDot11Networks();
+    private final AlertsService alerts;
+
+    public UnexpectedFingerprintInterceptorSet(AlertsService alerts, List<Dot11NetworkDefinition> configuredNetworks) {
+        this.alerts = alerts;
+        this.configuredNetworks = configuredNetworks;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -45,7 +46,7 @@ public class UnexpectedFingerprintInterceptorSet {
                         if (!Strings.isNullOrEmpty(frame.transmitterFingerprint())
                                 && frame.transmitter().equals(bssid.address())
                                 && !bssid.fingerprints().contains(frame.transmitterFingerprint())) {
-                            probe.raiseAlert(UnexpectedFingerprintProbeRespAlert.create(
+                            alerts.handle(UnexpectedFingerprintProbeRespAlert.create(
                                     DateTime.now(),
                                     frame.ssid(),
                                     frame.transmitterFingerprint(),
@@ -87,7 +88,7 @@ public class UnexpectedFingerprintInterceptorSet {
                         if (!Strings.isNullOrEmpty(frame.transmitterFingerprint())
                                 && frame.transmitter().equals(bssid.address())
                                 && !bssid.fingerprints().contains(frame.transmitterFingerprint())) {
-                            probe.raiseAlert(UnexpectedFingerprintBeaconAlert.create(
+                            alerts.handle(UnexpectedFingerprintBeaconAlert.create(
                                     DateTime.now(),
                                     frame.ssid(),
                                     frame.transmitterFingerprint(),

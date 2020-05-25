@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.bandits.engine;
 
-import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Role;
@@ -28,11 +27,7 @@ import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.DefaultBandits;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
-import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
-import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
-import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultBearing;
@@ -42,9 +37,9 @@ import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ContactIdentifier implements BanditListProvider {
+public class ContactManager implements BanditListProvider {
 
-    private static final Logger LOG = LogManager.getLogger(ContactIdentifier.class);
+    private static final Logger LOG = LogManager.getLogger(ContactManager.class);
 
     public static final int ACTIVE_MINUTES = 10;
 
@@ -53,12 +48,12 @@ public class ContactIdentifier implements BanditListProvider {
     private ImmutableMap<UUID, Contact> contacts;
     private ImmutableMap<UUID, Bandit> bandits;
 
-    private final Timer timing;
+    private final ContactIdentifierEngine identifierEngine;
 
-    public ContactIdentifier(NzymeLeader nzyme) {
+    public ContactManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
-        this.timing = nzyme.getMetrics().timer(MetricNames.CONTACT_IDENTIFIER_TIMING);
 
+        this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
         // Register default bandits.
         DefaultBandits.seed(this);
     }
@@ -293,41 +288,13 @@ public class ContactIdentifier implements BanditListProvider {
     }
 
     public void identify(Dot11Frame frame) {
-        Timer.Context timer = this.timing.time();
         for (Map.Entry<UUID, Bandit> x : getBandits().entrySet()) {
             Bandit bandit = x.getValue();
 
             // Run all identifiers.
             if(bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
-                boolean match = false;
-                for (BanditIdentifier identifier : bandit.identifiers()) {
-                    if (frame instanceof Dot11BeaconFrame) {
-                        Optional<Boolean> matches = identifier.matches((Dot11BeaconFrame) frame);
-                        if (matches.isPresent() && matches.get()) {
-                            match = true;
-                            break;
-                        }
-                    }
-
-                    if (frame instanceof Dot11ProbeResponseFrame) {
-                        Optional<Boolean> matches = identifier.matches((Dot11ProbeResponseFrame) frame);
-                        if (matches.isPresent() && matches.get()) {
-                            match = true;
-                            break;
-                        }
-                    }
-
-                    if (frame instanceof Dot11DeauthenticationFrame) {
-                        Optional<Boolean> matches = identifier.matches((Dot11DeauthenticationFrame) frame);
-                        if (matches.isPresent() && matches.get()) {
-                            match = true;
-                            break;
-                        }
-                    }
-                }
-
                 // If no identifier missed, this is a bandit frame.
-                if (match) {
+                if (identifierEngine.identify(frame, bandit)) {
                     // Create new contact if this is the first frame.
                     if (!banditHasActiveContact(bandit)) {
                         LOG.debug("New contact for bandit [{}].", bandit);
@@ -354,8 +321,6 @@ public class ContactIdentifier implements BanditListProvider {
                 }
             }
         }
-
-        timer.stop();
     }
 
 }

@@ -173,7 +173,6 @@ public class AlertsServiceTest extends AlertTestHelper {
     public void testUplinkConnection() {
         NzymeLeader nzyme = new MockNzyme();
 
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 

@@ -21,12 +21,12 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedBSSIDBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedBSSIDProbeRespAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -36,11 +36,12 @@ import java.util.List;
 public class UnexpectedBSSIDInterceptorSet {
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
-    private final Dot11Probe probe;
 
-    public UnexpectedBSSIDInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredNetworks = probe.getConfiguration().getDot11Networks();
+    private final AlertsService alerts;
+
+    public UnexpectedBSSIDInterceptorSet(AlertsService alerts, List<Dot11NetworkDefinition> networks) {
+        this.alerts = alerts;
+        this.configuredNetworks = networks;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -59,7 +60,7 @@ public class UnexpectedBSSIDInterceptorSet {
                     if (network.ssid().equals(frame.ssid())) {
                         // Frame advertising our network. Check if it comes from an allowed BSSID.
                         if (!network.allBSSIDAddresses().contains(frame.transmitter())) {
-                            probe.raiseAlert(UnexpectedBSSIDProbeRespAlert.create(
+                            alerts.handle(UnexpectedBSSIDProbeRespAlert.create(
                                     DateTime.now(),
                                     frame.ssid(),
                                     frame.transmitter(),
@@ -100,7 +101,7 @@ public class UnexpectedBSSIDInterceptorSet {
                     if (network.ssid().equals(frame.ssid())) {
                         // Frame advertising our network. Check if it comes from an allowed BSSID.
                         if (!network.allBSSIDAddresses().contains(frame.transmitter())) {
-                            probe.raiseAlert(UnexpectedBSSIDBeaconAlert.create(
+                            alerts.handle(UnexpectedBSSIDBeaconAlert.create(
                                     DateTime.now(),
                                     frame.ssid(),
                                     frame.transmitter(),

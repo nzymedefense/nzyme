@@ -21,12 +21,12 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedSSIDBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedSSIDProbeRespAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -36,11 +36,12 @@ import java.util.List;
 public class UnexpectedSSIDInterceptorSet {
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
-    private final Dot11Probe probe;
 
-    public UnexpectedSSIDInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredNetworks = probe.getConfiguration().getDot11Networks();
+    private final AlertsService alerts;
+
+    public UnexpectedSSIDInterceptorSet(AlertsService alerts, List<Dot11NetworkDefinition> networks) {
+        this.alerts = alerts;
+        this.configuredNetworks = networks;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -57,7 +58,7 @@ public class UnexpectedSSIDInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
-                        probe.raiseAlert(UnexpectedSSIDProbeRespAlert.create(
+                        alerts.handle(UnexpectedSSIDProbeRespAlert.create(
                                 DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),
@@ -94,7 +95,7 @@ public class UnexpectedSSIDInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.allBSSIDAddresses().contains(frame.transmitter()) && !network.ssid().equals(frame.ssid())) {
-                        probe.raiseAlert(UnexpectedSSIDBeaconAlert.create(
+                        alerts.handle(UnexpectedSSIDBeaconAlert.create(
                                 DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),

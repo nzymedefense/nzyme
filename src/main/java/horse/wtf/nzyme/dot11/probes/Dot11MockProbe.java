@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.probes;
 
+import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -26,8 +27,8 @@ import java.util.List;
 
 public class Dot11MockProbe extends Dot11Probe {
 
-    public Dot11MockProbe(NzymeLeader nzyme, Dot11ProbeConfiguration configuration, Statistics statistics) {
-        super(configuration, nzyme);
+    public Dot11MockProbe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
+        super(configuration, statistics, metrics);
     }
 
     @Override

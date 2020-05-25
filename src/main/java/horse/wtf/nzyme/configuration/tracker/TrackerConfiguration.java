@@ -19,7 +19,11 @@ package horse.wtf.nzyme.configuration.tracker;
 
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
+
+import java.util.List;
 
 @AutoValue
 public abstract class TrackerConfiguration {
@@ -29,11 +33,16 @@ public abstract class TrackerConfiguration {
 
     public abstract TrackerDeviceConfiguration trackerDevice();
 
-    public static TrackerConfiguration create(Role role, String nzymeId, TrackerDeviceConfiguration trackerDevice) {
+    public abstract List<Dot11MonitorDefinition> dot11Monitors();
+    public abstract List<Dot11NetworkDefinition> dot11Networks();
+
+    public static TrackerConfiguration create(Role role, String nzymeId, TrackerDeviceConfiguration trackerDevice, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks) {
         return builder()
                 .role(role)
                 .nzymeId(nzymeId)
                 .trackerDevice(trackerDevice)
+                .dot11Monitors(dot11Monitors)
+                .dot11Networks(dot11Networks)
                 .build();
     }
 
@@ -48,6 +57,10 @@ public abstract class TrackerConfiguration {
         public abstract Builder nzymeId(String nzymeId);
 
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
+
+        public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
+
+        public abstract Builder dot11Networks(List<Dot11NetworkDefinition> dot11Networks);
 
         public abstract TrackerConfiguration build();
     }

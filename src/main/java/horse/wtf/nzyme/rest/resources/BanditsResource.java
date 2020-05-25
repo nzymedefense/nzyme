@@ -62,7 +62,7 @@ public class BanditsResource {
     public Response findAll() {
         List<BanditResponse> bandits = Lists.newArrayList();
 
-        for (Bandit x : nzyme.getContactIdentifier().getBandits().values()) {
+        for (Bandit x : nzyme.getContactManager().getBandits().values()) {
             if (x.databaseId() == null) {
                 LOG.error("Uninitialized bandit in BanditIdentifier. Skipping.");
                 continue;
@@ -108,7 +108,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Bandit bandit = nzyme.getContactIdentifier().getBandits().get(uuid);
+        Bandit bandit = nzyme.getContactManager().getBandits().get(uuid);
         if (bandit == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -141,7 +141,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        nzyme.getContactIdentifier().registerBandit(Bandit.create(
+        nzyme.getContactManager().registerBandit(Bandit.create(
                 null,
                 UUID.randomUUID(),
                 request.name(),
@@ -171,7 +171,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        Optional<Bandit> optionalBandit = nzyme.getContactManager().findBanditByUUID(uuid);
         if (!optionalBandit.isPresent()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -181,7 +181,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        nzyme.getContactIdentifier().removeBandit(uuid);
+        nzyme.getContactManager().removeBandit(uuid);
 
         return Response.status(Response.Status.OK).build();
     }
@@ -210,7 +210,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        Optional<Bandit> optionalBandit = nzyme.getContactManager().findBanditByUUID(uuid);
         if (!optionalBandit.isPresent()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -220,7 +220,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        nzyme.getContactIdentifier().updateBandit(uuid, request.description(), request.name());
+        nzyme.getContactManager().updateBandit(uuid, request.description(), request.name());
 
         return Response.status(Response.Status.OK).build();
     }
@@ -252,7 +252,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Optional<Bandit> bandit = nzyme.getContactIdentifier().findBanditByUUID(uuid);
+        Optional<Bandit> bandit = nzyme.getContactManager().findBanditByUUID(uuid);
         if (!bandit.isPresent()) {
             LOG.warn("Bandit with UUID <{}> not found.", banditUUID);
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -282,7 +282,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        nzyme.getContactIdentifier().registerIdentifier(bandit.get(), identifier);
+        nzyme.getContactManager().registerIdentifier(bandit.get(), identifier);
         return Response.ok().build();
     }
 
@@ -304,7 +304,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        Optional<Bandit> optionalBandit = nzyme.getContactIdentifier().findBanditByUUID(banditUUID);
+        Optional<Bandit> optionalBandit = nzyme.getContactManager().findBanditByUUID(banditUUID);
         if (!optionalBandit.isPresent()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -314,7 +314,7 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        nzyme.getContactIdentifier().removeIdentifier(identifierUUID);
+        nzyme.getContactManager().removeIdentifier(identifierUUID);
 
         return Response.ok().build();
     }
@@ -341,7 +341,7 @@ public class BanditsResource {
     private List<ContactResponse> buildContactsResponse(Bandit bandit) {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
-        for (Contact contact : nzyme.getContactIdentifier().findContactsOfBandit(bandit)) {
+        for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
             response.add(ContactResponse.create(
                     contact.uuid(),
                     contact.frameCount(),

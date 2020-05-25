@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.dot11.handlers;
 
 import com.google.common.collect.Maps;
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -32,8 +33,12 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
 
     private static final Logger LOG = LogManager.getLogger(Dot11AuthenticationFrameHandler.class);
 
-    public Dot11AuthenticationFrameHandler(Dot11Probe probe) {
+    private final UplinkHandler uplink;
+
+    public Dot11AuthenticationFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
         super(probe);
+
+        this.uplink = uplink;
     }
 
     @Override
@@ -83,15 +88,13 @@ public class Dot11AuthenticationFrameHandler extends Dot11FrameHandler<Dot11Auth
                 break;
         }
 
-        Notification notification = new Notification(message, frame.meta().getChannel())
+        uplink.notifyUplinks(new Notification(message, frame.meta().getChannel())
                 .addField(FieldNames.TRANSMITTER, frame.transmitter())
                 .addField(FieldNames.DESTINATION, frame.destination())
                 .addField(FieldNames.AUTH_ALGORITHM, frame.algorithm().toString().toLowerCase())
                 .addField(FieldNames.TRANSACTION_SEQUENCE_NUMBER, frame.transactionSequence())
                 .addField(FieldNames.SUBTYPE, "auth")
-                .addFields(additionalFields);
-
-        probe.notifyUplinksOfFrame(notification, frame.meta());
+                .addFields(additionalFields), frame.meta());
 
         LOG.debug(message);
     }

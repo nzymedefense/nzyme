@@ -44,7 +44,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
             public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
-                nzyme.getContactIdentifier().identify(frame);
+                nzyme.getContactManager().identify(frame);
             }
 
             @Override
@@ -61,7 +61,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
             public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
-                nzyme.getContactIdentifier().identify(frame);
+                nzyme.getContactManager().identify(frame);
             }
 
             @Override
@@ -78,7 +78,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
             @Override
             public void intercept(Dot11DeauthenticationFrame frame) throws IllegalRawDataException {
-                nzyme.getContactIdentifier().identify(frame);
+                nzyme.getContactManager().identify(frame);
             }
 
             @Override

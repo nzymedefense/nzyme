@@ -22,14 +22,14 @@ public class Dot11DisassociationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11DisassociationFrame frame = new Dot11DisassociationFrameParser(new MetricRegistry())
                 .parse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
 
-        new Dot11DisassociationFrameHandler(probe).handle(frame);
+        new Dot11DisassociationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
         
@@ -45,7 +45,7 @@ public class Dot11DisassociationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11DisassociationFrameHandler(null).getName(), "disassoc");
+        assertEquals(new Dot11DisassociationFrameHandler(null, new MockNzyme()).getName(), "disassoc");
     }
 
 }

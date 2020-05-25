@@ -40,7 +40,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testRegisterBandit() {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         UUID uuid1 = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, uuid1, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
@@ -56,7 +56,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testRemoveBandit() {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
 
@@ -80,7 +80,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testRegisterContact() throws Exception {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
@@ -104,7 +104,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testBanditHasActiveContact() throws Exception {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
@@ -131,7 +131,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testRegisterContactFrames() throws Exception, MalformedFrameException {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
@@ -159,7 +159,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testIdentifyMatchesSimple() throws MalformedFrameException, Exception {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
@@ -175,7 +175,7 @@ public class ContactIdentifierTest {
 
     @Test
     public void testIdentifyMatchesMultiple() throws MalformedFrameException, Exception {
-        ContactIdentifier i = new ContactIdentifier(new MockNzyme());
+        ContactManager i = new ContactManager(new MockNzyme());
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{

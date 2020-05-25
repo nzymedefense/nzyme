@@ -18,35 +18,31 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.CryptoChangeBeaconAlert;
 import horse.wtf.nzyme.alerts.CryptoChangeProbeRespAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
-import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.util.Dot11CryptoComparator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CryptoChangeInterceptorSet {
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
-    private final Dot11Probe probe;
 
-    public CryptoChangeInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredNetworks = probe.getConfiguration().getDot11Networks();
+    private final AlertsService alerts;
+
+    public CryptoChangeInterceptorSet(AlertsService alerts, List<Dot11NetworkDefinition> configuredNetworks) {
+        this.alerts = alerts;
+        this.configuredNetworks = configuredNetworks;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -64,7 +60,7 @@ public class CryptoChangeInterceptorSet {
                     if (network.ssid().equals(frame.ssid())) {
                         // One of our networks. Compare security configuration.
                         if (!Dot11CryptoComparator.compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
-                            probe.raiseAlert(
+                            alerts.handle(
                                     CryptoChangeProbeRespAlert.create(
                                             DateTime.now(),
                                             frame.ssid(),
@@ -106,7 +102,7 @@ public class CryptoChangeInterceptorSet {
                     if (network.ssid().equals(frame.ssid())) {
                         // One of our networks. Compare security configuration.
                         if (!Dot11CryptoComparator.compareSecurity(frame.taggedParameters().getSecurityStrings(), network.security())) {
-                            probe.raiseAlert(
+                            alerts.handle(
                                     CryptoChangeBeaconAlert.create(
                                             DateTime.now(),
                                             frame.ssid(),

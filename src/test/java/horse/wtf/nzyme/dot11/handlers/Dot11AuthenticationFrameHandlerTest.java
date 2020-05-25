@@ -22,14 +22,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleOpenSystemSeq1() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_SUCCESS_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_1_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -46,14 +46,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleOpenSystemSeq2() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_SUCCESS_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_2_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -72,14 +72,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleSharedKmySeq1() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_1_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -96,14 +96,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleSharedKmySeq2() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_2_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -120,14 +120,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleSharedKmySeq4() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_4_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_4_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -146,14 +146,14 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleSharedKmySeq4Failure() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.AUTH_FAILED_WEP_STAGE_4_PAYLOAD, Frames.AUTH_FAILED_WEP_STAGE_4_HEADER, META_NO_WEP);
 
-        new Dot11AuthenticationFrameHandler(probe).handle(frame);
+        new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -171,7 +171,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11AuthenticationFrameHandler(null).getName(), "auth");
+        assertEquals(new Dot11AuthenticationFrameHandler(null, new MockNzyme()).getName(), "auth");
     }
 
 }

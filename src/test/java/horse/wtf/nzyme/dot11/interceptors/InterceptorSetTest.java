@@ -34,7 +34,7 @@ public class InterceptorSetTest {
     protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
 
     protected Dot11MockProbe buildMockProbe(NzymeLeader nzyme) {
-        return new Dot11MockProbe(nzyme, Dot11ProbeConfiguration.create(
+        return new Dot11MockProbe(Dot11ProbeConfiguration.create(
                 "test-probe-1",
                 Collections.emptyList(),
                 "nzyme-testng-1",
@@ -60,7 +60,7 @@ public class InterceptorSetTest {
                     );
                 }},
                 Collections.emptyList()
-        ), new Statistics(nzyme));
+        ), new Statistics(nzyme), nzyme.getMetrics());
     }
 
 }

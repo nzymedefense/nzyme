@@ -128,7 +128,7 @@ public class TrackersResource {
         if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
             return TrackerState.DARK;
         } else {
-            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(nzyme.getContactIdentifier().getBanditList()))) {
+            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(nzyme.getContactManager().getBanditList()))) {
                 return TrackerState.ONLINE;
             } else {
                 return TrackerState.OUT_OF_SYNC;

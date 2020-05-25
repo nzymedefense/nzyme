@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11.interceptors;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.ProbeRequestTrapResponseAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.Dot11TrapConfiguration;
 import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
@@ -27,7 +28,6 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -37,11 +37,12 @@ import java.util.List;
 public class ProbeRequestTrapResponseInterceptorSet {
 
     private final List<Dot11TrapDeviceDefinition> configuredTraps;
-    private final Dot11Probe probe;
 
-    public ProbeRequestTrapResponseInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredTraps = probe.getConfiguration().getDot11TrapDevices();
+    private final AlertsService alerts;
+
+    public ProbeRequestTrapResponseInterceptorSet(AlertsService alerts, List<Dot11TrapDeviceDefinition> configuredTraps) {
+        this.alerts = alerts;
+        this.configuredTraps = configuredTraps;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -60,7 +61,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
                         List<String> ssids = trap.configuration().getStringList(ConfigurationKeys.SSIDS);
                         for (String ssid : ssids) {
                             if (ssid.equals(frame.ssid())) {
-                                probe.raiseAlert(ProbeRequestTrapResponseAlert.create(
+                                alerts.handle(ProbeRequestTrapResponseAlert.create(
                                         DateTime.now(),
                                         ssid,
                                         frame.transmitter(),
@@ -101,7 +102,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
                         List<String> ssids = trap.configuration().getStringList(ConfigurationKeys.SSIDS);
                         for (String ssid : ssids) {
                             if (ssid.equals(frame.ssid())) {
-                                probe.raiseAlert(ProbeRequestTrapResponseAlert.create(
+                                alerts.handle(ProbeRequestTrapResponseAlert.create(
                                         DateTime.now(),
                                         ssid,
                                         frame.transmitter(),

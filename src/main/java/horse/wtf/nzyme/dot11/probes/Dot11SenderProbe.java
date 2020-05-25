@@ -23,6 +23,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
+import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.pcap4j.core.*;
@@ -37,7 +38,6 @@ public class Dot11SenderProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    private final NzymeLeader nzyme;
     private PcapHandle pcap;
     private final Dot11ProbeConfiguration configuration;
 
@@ -46,12 +46,11 @@ public class Dot11SenderProbe extends Dot11Probe {
 
     private long totalFrames;
 
-    public Dot11SenderProbe(NzymeLeader nzyme, Dot11ProbeConfiguration configuration, Trap trap, MetricRegistry metrics) {
-        super(configuration, nzyme);
+    public Dot11SenderProbe(Dot11ProbeConfiguration configuration, Trap trap, Statistics statistics, MetricRegistry metrics) {
+        super(configuration, statistics, metrics);
 
         this.trap = trap;
         this.configuration = configuration;
-        this.nzyme = nzyme;
 
         this.totalFrames = 0;
 

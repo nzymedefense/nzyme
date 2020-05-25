@@ -34,7 +34,6 @@ public abstract class Dot11Probe {
 
     private final Dot11ProbeConfiguration configuration;
     private final Statistics statistics;
-    private final NzymeLeader nzyme;
 
     protected final MetricRegistry metrics;
 
@@ -48,11 +47,10 @@ public abstract class Dot11Probe {
     public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
     public abstract List<Dot11FrameInterceptor> getInterceptors();
 
-    public Dot11Probe(Dot11ProbeConfiguration configuration, NzymeLeader nzyme) {
-        this.nzyme = nzyme;
-        this.statistics = nzyme.getStatistics();
+    public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
+        this.statistics = statistics;
         this.configuration = configuration;
-        this.metrics = nzyme.getMetrics();
+        this.metrics = metrics;
     }
 
     public void addFrameInterceptors(@NotNull List<Dot11FrameInterceptor> interceptors) {
@@ -71,22 +69,6 @@ public abstract class Dot11Probe {
 
     public String getName() {
         return configuration.probeName();
-    }
-
-    public void raiseAlert(Alert alert) {
-        this.nzyme.getAlertsService().handle(alert);
-    }
-
-    public Networks getNetworks() {
-        return nzyme.getNetworks();
-    }
-
-    public SystemStatus getSystemStatus() {
-        return nzyme.getSystemStatus();
-    }
-
-    public void notifyUplinksOfFrame(Notification notification, Dot11MetaInformation meta) {
-        this.nzyme.notifyUplinks(notification, meta);
     }
 
 }

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
@@ -69,7 +69,7 @@ public class MockNzyme implements NzymeLeader {
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
-    private final ContactIdentifier contactIdentifier;
+    private final ContactManager contactManager;
     private final Key signingKey;
     private final ObjectMapper objectMapper;
     private final Registry registry;
@@ -105,7 +105,7 @@ public class MockNzyme implements NzymeLeader {
         this.ouiManager = new OUIManager(this);
         this.alertsService = new AlertsService(this);
         this.objectMapper = new ObjectMapper();
-        this.contactIdentifier = new ContactIdentifier(this);
+        this.contactManager = new ContactManager(this);
     }
 
     @Override
@@ -181,8 +181,8 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
-    public ContactIdentifier getContactIdentifier() {
-        return contactIdentifier;
+    public ContactManager getContactManager() {
+        return contactManager;
     }
 
     @Override

@@ -19,7 +19,7 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
 
+    private final UplinkHandler uplink;
+
     private final AtomicLong frameCount;
     private final AtomicLong recentFrameCount;
     private final AtomicLong recentFrameCountTemp;
@@ -40,12 +42,10 @@ public class Statistics {
     private final Map<Integer, AtomicLong> channelCounts;
     private final Map<Integer, AtomicLong> channelMalformedCounts;
 
-    private final NzymeLeader nzyme;
-
     // Remember to reset these in resetStats()
 
-    public Statistics(NzymeLeader nzyme) {
-        this.nzyme = nzyme;
+    public Statistics(UplinkHandler uplink) {
+        this.uplink = uplink;
 
         this.frameCount = new AtomicLong(0);
         this.recentFrameCount = new AtomicLong(0);
@@ -88,7 +88,7 @@ public class Statistics {
             tickInMap(meta.getChannel(), channelCounts);
         }
 
-        nzyme.notifyUplinks(
+        uplink.notifyUplinks(
                 new Notification("Malformed frame received.", channel)
                         .addField(FieldNames.SUBTYPE, "malformed"), meta);
 

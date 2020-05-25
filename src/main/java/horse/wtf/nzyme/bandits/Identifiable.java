@@ -15,27 +15,14 @@
  *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package horse.wtf.nzyme.alerts;
+package horse.wtf.nzyme.bandits;
 
-import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 
-import java.util.*;
+import java.util.List;
 
-public class AlertTestHelper {
+public interface Identifiable {
 
-    public static final String CLEAR_QUERY = "DELETE FROM alerts";
-
-    protected static final Dot11ProbeConfiguration CONFIG_STANDARD = Dot11ProbeConfiguration.create(
-            "mockProbe1",
-            Collections.emptyList(),
-            "test1",
-            "wlan0",
-            Collections.emptyList(),
-            1,
-            "foo",
-            Collections.emptyList(),
-            Collections.emptyList()
-    );
-
+    List<BanditIdentifier> identifiers();
 
 }

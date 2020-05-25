@@ -19,7 +19,7 @@ package horse.wtf.nzyme.bandits;
 
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.Role;
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -42,7 +42,7 @@ public abstract class Contact {
     public abstract Bandit bandit();
 
     public boolean isActive() {
-        return lastSeen().isAfter(DateTime.now().minusMinutes(ContactIdentifier.ACTIVE_MINUTES));
+        return lastSeen().isAfter(DateTime.now().minusMinutes(ContactManager.ACTIVE_MINUTES));
     }
 
     public boolean isStationary() {

@@ -21,12 +21,12 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.UnexpectedChannelBeaconAlert;
 import horse.wtf.nzyme.alerts.UnexpectedChannelProbeRespAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -36,11 +36,12 @@ import java.util.List;
 public class UnexpectedChannelInterceptorSet {
 
     private final List<Dot11NetworkDefinition> configuredNetworks;
-    private final Dot11Probe probe;
 
-    public UnexpectedChannelInterceptorSet(Dot11Probe probe) {
-        this.probe = probe;
-        this.configuredNetworks = probe.getConfiguration().getDot11Networks();
+    private final AlertsService alerts;
+
+    public UnexpectedChannelInterceptorSet(AlertsService alerts, List<Dot11NetworkDefinition> configuredNetworks) {
+        this.alerts = alerts;
+        this.configuredNetworks = configuredNetworks;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -56,7 +57,7 @@ public class UnexpectedChannelInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.ssid().equals(frame.ssid()) && !network.channels().contains(frame.meta().getChannel())) {
-                        probe.raiseAlert(UnexpectedChannelProbeRespAlert.create(
+                        alerts.handle(UnexpectedChannelProbeRespAlert.create(
                                 DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),
@@ -92,7 +93,7 @@ public class UnexpectedChannelInterceptorSet {
 
                 for (Dot11NetworkDefinition network : configuredNetworks) {
                     if (network.ssid().equals(frame.ssid()) && !network.channels().contains(frame.meta().getChannel())) {
-                        probe.raiseAlert(UnexpectedChannelBeaconAlert.create(
+                        alerts.handle(UnexpectedChannelBeaconAlert.create(
                                 DateTime.now(),
                                 frame.ssid(),
                                 frame.transmitter(),

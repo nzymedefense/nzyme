@@ -34,12 +34,16 @@ public class TrackerConfigurationLoader {
     private final Config general;
     private final Config trackerDevice;
 
+    private final BaseDot11ConfigurationLoader baseDot11ConfigurationLoader;
+
     public TrackerConfigurationLoader(File configFile) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
             throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
         }
 
         this.root = ConfigFactory.parseFile(configFile).resolve();
+
+        this.baseDot11ConfigurationLoader = new BaseDot11ConfigurationLoader(root);
 
         try {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
@@ -52,7 +56,13 @@ public class TrackerConfigurationLoader {
     }
 
     public TrackerConfiguration get() {
-        return TrackerConfiguration.create(parseRole(), parseNzymeId(), parseTrackerDevice());
+        return TrackerConfiguration.create(
+                parseRole(),
+                parseNzymeId(),
+                parseTrackerDevice(),
+                baseDot11ConfigurationLoader.parseDot11Monitors(),
+                baseDot11ConfigurationLoader.parseDot11Networks()
+        );
     }
 
     private Role parseRole() {
@@ -102,5 +112,8 @@ public class TrackerConfigurationLoader {
                         + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
             }
         }
+
+        // Validate shared/base 802.11 config.
+        baseDot11ConfigurationLoader.validate();
     }
 }

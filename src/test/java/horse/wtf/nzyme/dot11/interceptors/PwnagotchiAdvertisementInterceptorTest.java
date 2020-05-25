@@ -8,7 +8,6 @@ import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
-import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -22,10 +21,9 @@ public class PwnagotchiAdvertisementInterceptorTest extends InterceptorSetTest {
     @Test
     public void testInterceptor() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11MockProbe probe = buildMockProbe(nzyme);
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
-        PwnagotchiAdvertisementInterceptor interceptor = new PwnagotchiAdvertisementInterceptor(probe);
+        PwnagotchiAdvertisementInterceptor interceptor = new PwnagotchiAdvertisementInterceptor(nzyme.getAlertsService());
 
         assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{ add(PwnagotchiAdvertisementAlert.class); }});
         interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(

@@ -26,7 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
+import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
@@ -34,7 +34,6 @@ import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.debug.LeaderDebug;
-import horse.wtf.nzyme.debug.trackers.SignalStrengthLink;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
@@ -118,7 +117,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
-    private final ContactIdentifier contactIdentifier;
+    private final ContactManager contactManager;
     private final TrackerManager trackerManager;
 
     private GroundStation groundStation;
@@ -159,7 +158,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
-        this.contactIdentifier = new ContactIdentifier(this);
+        this.contactManager = new ContactManager(this);
 
         this.trackerManager = new TrackerManager();
 
@@ -286,7 +285,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         configuration.nzymeId(),
                         version.getVersion().toString(),
                         metrics,
-                        contactIdentifier,
+                        contactManager,
                         trackerManager,
                         configuration.trackerDevice()
                 );
@@ -335,7 +334,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private void initializeProbes() {
         // Broad monitor probes.
         for (Dot11MonitorDefinition m : configuration.dot11Monitors()) {
-            Dot11MonitorProbe probe = new Dot11MonitorProbe(this, Dot11ProbeConfiguration.create(
+            Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     configuration.graylogUplinks(),
                     configuration.nzymeId(),
@@ -345,29 +344,29 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channelHopCommand(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
-            ), getMetrics());
+            ), metrics, statistics);
 
             // Add standard interceptors for broad channel monitoring.
-            Dot11MonitorProbe.configureAsBroadMonitor(probe);
+            Dot11MonitorProbe.configureAsBroadMonitor(probe, this);
 
             // Add alerting interceptors.
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
-                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
-                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_CHANGE)) {
-                probe.addFrameInterceptors(new CryptoChangeInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new CryptoChangeInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
-                probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_FINGERPRINT)) {
-                probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(probe).getInterceptors());
+                probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
             }
             if (configuredAlerts.contains(Alert.TYPE_WIDE.PWNAGOTCHI_ADVERTISEMENT)) {
-                probe.addFrameInterceptor(new PwnagotchiAdvertisementInterceptor(probe));
+                probe.addFrameInterceptor(new PwnagotchiAdvertisementInterceptor(alerts));
             }
 
             // Networks manager interceptors.
@@ -410,7 +409,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         continue;
                 }
 
-                Dot11SenderProbe probe = new Dot11SenderProbe(this,
+                Dot11SenderProbe probe = new Dot11SenderProbe(
                         Dot11ProbeConfiguration.create(
                                 "trap-sender-" + td.deviceSender() + "-" + tc.type() + "-" + i,
                                 configuration.graylogUplinks(),
@@ -421,7 +420,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                                 td.channelHopCommand(),
                                 configuration.dot11Networks(),
                                 configuration.dot11TrapDevices()
-                        ), trap, getMetrics());
+                        ), trap, statistics, metrics);
 
                 probeExecutor.submit(probe.loop());
                 probes.add(probe);
@@ -439,8 +438,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
-    public ContactIdentifier getContactIdentifier() {
-        return contactIdentifier;
+    public ContactManager getContactManager() {
+        return contactManager;
     }
 
     @Override

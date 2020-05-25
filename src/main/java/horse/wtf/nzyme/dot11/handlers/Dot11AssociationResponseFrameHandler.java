@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -28,8 +29,12 @@ public class Dot11AssociationResponseFrameHandler extends Dot11FrameHandler<Dot1
 
     private static final Logger LOG = LogManager.getLogger(Dot11AssociationResponseFrameHandler.class);
 
-    public Dot11AssociationResponseFrameHandler(Dot11Probe probe) {
+    private final UplinkHandler uplink;
+
+    public Dot11AssociationResponseFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
         super(probe);
+
+        this.uplink = uplink;
     }
 
     @Override
@@ -37,7 +42,7 @@ public class Dot11AssociationResponseFrameHandler extends Dot11FrameHandler<Dot1
         String message = frame.transmitter() + " answered association request from " + frame.destination()
                 + ". Response: " + frame.response().toUpperCase() + " (" + frame.responseCode() + ")";
 
-        probe.notifyUplinksOfFrame(
+        uplink.notifyUplinks(
                 new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())

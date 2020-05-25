@@ -22,14 +22,14 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleSuccessResponse() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AssociationResponseFrame frame = new Dot11AssociationResponseFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_RESP_SUCCESS_1_PAYLOAD, Frames.ASSOC_RESP_SUCCESS_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationResponseFrameHandler(probe).handle(frame);
+        new Dot11AssociationResponseFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -46,14 +46,14 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandleFailResponse() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11AssociationResponseFrame frame = new Dot11AssociationResponseFrameParser(new MetricRegistry())
                 .parse(Frames.ASSOC_RESP_FAILED_1_PAYLOAD, Frames.ASSOC_RESP_FAILED_1_HEADER, META_NO_WEP);
 
-        new Dot11AssociationResponseFrameHandler(probe).handle(frame);
+        new Dot11AssociationResponseFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -69,7 +69,7 @@ public class Dot11AssociationResponseFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11AssociationResponseFrameHandler(null).getName(), "assoc-resp");
+        assertEquals(new Dot11AssociationResponseFrameHandler(null, new MockNzyme()).getName(), "assoc-resp");
     }
 
 }

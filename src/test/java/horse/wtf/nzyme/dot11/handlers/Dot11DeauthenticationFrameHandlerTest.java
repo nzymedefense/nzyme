@@ -22,14 +22,14 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
     @Test
     public void testDoHandle() throws MalformedFrameException, IllegalRawDataException {
         NzymeLeader nzyme = new MockNzyme();
-        Dot11Probe probe = new Dot11MockProbe(nzyme, CONFIG_STANDARD, new Statistics(nzyme));
+        Dot11Probe probe = new Dot11MockProbe(CONFIG_STANDARD, new Statistics(nzyme), nzyme.getMetrics());
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
         Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry())
                 .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
 
-        new Dot11DeauthenticationFrameHandler(probe).handle(frame);
+        new Dot11DeauthenticationFrameHandler(probe, nzyme).handle(frame);
 
         Notification n = loopback.getLastNotification();
 
@@ -46,7 +46,7 @@ public class Dot11DeauthenticationFrameHandlerTest extends FrameHandlerTest {
 
     @Test
     public void testGetName() {
-        assertEquals(new Dot11DeauthenticationFrameHandler(null).getName(), "deauth");
+        assertEquals(new Dot11DeauthenticationFrameHandler(null, new MockNzyme()).getName(), "deauth");
     }
 
 }

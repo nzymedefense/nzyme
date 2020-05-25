@@ -19,11 +19,11 @@ package horse.wtf.nzyme.dot11.interceptors;
 
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.misc.PwnagotchiAdvertisementExtractor;
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
@@ -32,18 +32,18 @@ import java.util.List;
 
 public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor<Dot11BeaconFrame> {
 
-    private final Dot11Probe probe;
-
     private final PwnagotchiAdvertisementExtractor extractor;
 
-    public PwnagotchiAdvertisementInterceptor(Dot11Probe probe) {
-        this.probe = probe;
+    private final AlertsService alerts;
+
+    public PwnagotchiAdvertisementInterceptor(AlertsService alerts) {
+        this.alerts = alerts;
         this.extractor = new PwnagotchiAdvertisementExtractor();
     }
 
     @Override
     public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
-        extractor.extract(frame).ifPresent(advertisement -> probe.raiseAlert(PwnagotchiAdvertisementAlert.create(
+        extractor.extract(frame).ifPresent(advertisement -> alerts.handle(PwnagotchiAdvertisementAlert.create(
                 DateTime.now(),
                 advertisement,
                 frame.meta().getChannel(),

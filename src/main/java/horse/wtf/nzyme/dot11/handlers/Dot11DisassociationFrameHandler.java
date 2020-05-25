@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -28,15 +29,19 @@ public class Dot11DisassociationFrameHandler extends Dot11FrameHandler<Dot11Disa
 
     private static final Logger LOG = LogManager.getLogger(Dot11DisassociationFrameHandler.class);
 
-    public Dot11DisassociationFrameHandler(Dot11Probe probe) {
+    private final UplinkHandler uplink;
+
+    public Dot11DisassociationFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
         super(probe);
+
+        this.uplink = uplink;
     }
 
     @Override
     protected void doHandle(Dot11DisassociationFrame frame) {
         String message = frame.transmitter() + " is disassociating from " + frame.destination() + " (" + frame.reasonString() + ")";
 
-        probe.notifyUplinksOfFrame(
+        uplink.notifyUplinks(
                 new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())

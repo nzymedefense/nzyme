@@ -17,11 +17,12 @@
 
 package horse.wtf.nzyme;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 
-public interface NzymeTracker {
+public interface NzymeTracker extends UplinkHandler  {
 
     void initialize();
     void shutdown();
@@ -30,5 +31,7 @@ public interface NzymeTracker {
 
     GroundStation getGroundStation();
     TrackerBanditManager getBanditManager();
+
+    MetricRegistry getMetrics();
 
 }
