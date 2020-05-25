@@ -6,7 +6,7 @@ class BanditContactStatus extends React.Component {
         const bandit = this.props.bandit;
 
         if (bandit.is_active) {
-            return <span className="badge badge-warning">active</span>;
+            return <span className="badge badge-danger">active</span>;
         } else {
             return <span className='badge badge-primary'>not active</span>;
         }
