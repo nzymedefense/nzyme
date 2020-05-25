@@ -11,6 +11,7 @@ import TrackerStatusCard from "./TrackerStatusCard";
 import BanditsActions from "../../../actions/BanditsActions";
 import BanditsStore from "../../../stores/BanditsStore";
 import TrackerBanditCount from "./TrackerBanditCount";
+import {round} from "lodash";
 
 class TrackerDetailPage extends Reflux.Component {
 
@@ -58,7 +59,7 @@ class TrackerDetailPage extends Reflux.Component {
                 </div>
 
                 <div className="row">
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <dl>
                             <dt>Last Ping:</dt>
                             <dd>
@@ -67,17 +68,17 @@ class TrackerDetailPage extends Reflux.Component {
                         </dl>
                     </div>
 
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <dl>
-                            <dt>Time Drift:</dt>
-                            <dd><TrackerTimeDrift drift={tracker.drift} status={tracker.state} /></dd>
+                            <dt>Signal Strength:</dt>
+                            <dd>{round(tracker.rssi/255*100)}%</dd>
                         </dl>
                     </div>
 
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <dl>
-                            <dt>Version:</dt>
-                            <dd>{tracker.version}</dd>
+                            <dt>Time Drift:</dt>
+                            <dd><TrackerTimeDrift drift={tracker.drift} status={tracker.state} /></dd>
                         </dl>
                     </div>
 
@@ -90,6 +91,13 @@ class TrackerDetailPage extends Reflux.Component {
                                     totalBanditCount={bandits.length}
                                     status={tracker.state} />
                             </dd>
+                        </dl>
+                    </div>
+
+                    <div className="col-md-3">
+                        <dl>
+                            <dt>Version:</dt>
+                            <dd>{tracker.version}</dd>
                         </dl>
                     </div>
 
@@ -134,7 +142,7 @@ class TrackerDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        tbd: outstanding commands. send contact request.
+                        You can issue tracking commands to this tracker from a bandit detail page.
                     </div>
                 </div>
 
