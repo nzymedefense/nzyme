@@ -17,9 +17,8 @@
 
 package horse.wtf.nzyme.bandits;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifier;
 import org.joda.time.DateTime;
 
@@ -33,6 +32,8 @@ public abstract class Contact {
     public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
     public abstract Long frameCount();
+    public abstract Role sourceRole();
+    public abstract String sourceName();
 
     @Nullable
     public abstract Long banditId();
@@ -49,14 +50,16 @@ public abstract class Contact {
         return true;
     }
 
-    public static Contact create(UUID uuid, Long banditId, Bandit bandit, DateTime firstSeen, DateTime lastSeen, Long frameCount) {
+    public static Contact create(UUID uuid, DateTime firstSeen, DateTime lastSeen, Long frameCount, Role sourceRole, String sourceName, Long banditId, Bandit bandit) {
         return builder()
                 .uuid(uuid)
-                .banditId(banditId)
-                .bandit(bandit)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .frameCount(frameCount)
+                .sourceRole(sourceRole)
+                .sourceName(sourceName)
+                .banditId(banditId)
+                .bandit(bandit)
                 .build();
     }
 
@@ -68,16 +71,21 @@ public abstract class Contact {
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder bandit(Bandit bandit);
-
         public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder frameCount(Long frameCount);
 
+        public abstract Builder sourceRole(Role sourceRole);
+
+        public abstract Builder sourceName(String sourceName);
+
         public abstract Builder banditId(Long banditId);
+
+        public abstract Builder bandit(Bandit bandit);
 
         public abstract Contact build();
     }
+
 }

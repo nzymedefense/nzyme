@@ -20,6 +20,7 @@ package horse.wtf.nzyme.bandits.engine;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.Bandit;
@@ -218,10 +219,12 @@ public class ContactIdentifier implements BanditListProvider {
 
     public void registerContact(Contact contact) {
         //noinspection ConstantConditions
-        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("INSERT INTO contacts(contact_uuid, bandit_id, frame_count, first_seen, last_seen) " +
-                "VALUES(:contact_uuid, :bandit_id, 0, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("INSERT INTO contacts(contact_uuid, source_role, source_name, bandit_id, frame_count, first_seen, last_seen) " +
+                "VALUES(:contact_uuid, :source_role, :source_name, :bandit_id, 0, (current_timestamp at time zone 'UTC'), (current_timestamp at time zone 'UTC'))")
                 .bind("contact_uuid", contact.uuid())
                 .bind("bandit_id", contact.bandit().databaseId())
+                .bind("source_role", contact.sourceRole())
+                .bind("source_name", contact.sourceName())
                 .execute()
         );
         this.contacts = null;
@@ -266,11 +269,13 @@ public class ContactIdentifier implements BanditListProvider {
         for (Contact x : contacts) {
             result.put(x.uuid(), Contact.create(
                     x.uuid(),
-                    x.banditId(),
-                    findBanditByDatabaseId(x.banditId()).orElse(null),
                     x.firstSeen(),
                     x.lastSeen(),
-                    x.frameCount()
+                    x.frameCount(),
+                    x.sourceRole(),
+                    x.sourceName(),
+                    x.banditId(),
+                    findBanditByDatabaseId(x.banditId()).orElse(null)
             ));
         }
 
@@ -329,11 +334,13 @@ public class ContactIdentifier implements BanditListProvider {
                         DateTime now = DateTime.now();
                         registerContact(Contact.create(
                                 UUID.randomUUID(),
+                                now,
+                                now,
+                                1L,
+                                Role.LEADER,
+                                nzyme.getConfiguration().nzymeId(),
                                 null,
-                                bandit,
-                                now,
-                                now,
-                                1L
+                                bandit
                         ));
                     }
 

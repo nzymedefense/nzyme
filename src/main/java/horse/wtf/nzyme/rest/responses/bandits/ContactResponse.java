@@ -41,13 +41,21 @@ public abstract class ContactResponse {
     @JsonProperty("is_active")
     public abstract Boolean isActive();
 
-    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive) {
+    @JsonProperty("source_role")
+    public abstract String sourceRole();
+
+    @JsonProperty("source_name")
+    public abstract String sourceName();
+
+    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, String sourceRole, String sourceName) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
                 .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .isActive(isActive)
+                .sourceRole(sourceRole)
+                .sourceName(sourceName)
                 .build();
     }
 
@@ -66,6 +74,10 @@ public abstract class ContactResponse {
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder isActive(Boolean isActive);
+
+        public abstract Builder sourceRole(String sourceRole);
+
+        public abstract Builder sourceName(String sourceName);
 
         public abstract ContactResponse build();
     }

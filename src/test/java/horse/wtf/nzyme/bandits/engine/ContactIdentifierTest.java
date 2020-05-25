@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.DefaultBandits;
@@ -87,7 +88,7 @@ public class ContactIdentifierTest {
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create( UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -95,7 +96,7 @@ public class ContactIdentifierTest {
         UUID bandit2UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), bandit2.databaseId(), bandit2, DateTime.now(), DateTime.now(), 0L));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit2.databaseId(), bandit2));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 2);
@@ -111,7 +112,7 @@ public class ContactIdentifierTest {
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -139,7 +140,7 @@ public class ContactIdentifierTest {
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         UUID contact1UUID = UUID.randomUUID();
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(contact1UUID, bandit1.databaseId(), bandit1, DateTime.now(), DateTime.now(), 0L));
+        i.registerContact(Contact.create(contact1UUID, DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);

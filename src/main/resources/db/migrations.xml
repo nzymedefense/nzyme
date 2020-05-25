@@ -427,4 +427,18 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="18" author="lennartkoopmann">
+        <addColumn tableName="contacts">
+            <column name="source_role" type="varchar(75)" defaultValue="LEADER" >
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="contacts">
+            <column name="source_name" type="varchar(255)" defaultValue="unknown/migrated">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

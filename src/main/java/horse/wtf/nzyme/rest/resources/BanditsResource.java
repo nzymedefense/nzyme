@@ -347,7 +347,9 @@ public class BanditsResource {
                     contact.frameCount(),
                     contact.firstSeen(),
                     contact.lastSeen(),
-                    contact.isActive()
+                    contact.isActive(),
+                    contact.sourceRole().toString(),
+                    contact.sourceName()
             ));
         }
 
