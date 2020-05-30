@@ -9,6 +9,7 @@ import BeaconRate from "./BeaconRate";
 import HelpBubble from "../../misc/HelpBubble";
 import ChannelSwitcher from "./ChannelSwitcher";
 import NetworkMonitoredAlert from "./NetworkMonitoredAlert";
+import Routes from "../../../util/Routes";
 
 class NetworkDetails extends Reflux.Component {
 
@@ -159,6 +160,10 @@ class NetworkDetails extends Reflux.Component {
                                 <dt>Current Beacon Rate</dt>
                                 <dd><BeaconRate rate={ssid.beacon_rate} /></dd>
                             </dl>
+                        </div>
+
+                        <div className="col-md-3 text-right">
+                            <a href={Routes.NETWORKS.DASHBOARD(ssid.name)} className="btn btn-primary">Open SSID Dashboard</a>
                         </div>
                     </div>
 
