@@ -35,6 +35,7 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
         assertEquals(set.getInterceptors().size(), 2);
 
         for (Dot11FrameInterceptor interceptor : set.getInterceptors()) {
+            reset(loopback, nzyme);
             if (interceptor.forSubtype() == Dot11FrameSubtype.BEACON) {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>() {{
                     add(UnexpectedChannelBeaconAlert.class);
@@ -45,12 +46,14 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Beacon from a wrong channel but different network. Should not trigger.
                 interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP_CHANNEL_3
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Unexpected beacon.
                 interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
@@ -58,9 +61,8 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
                 ));
                 assertNotNull(loopback.getLastAlert());
                 assertEquals(UnexpectedChannelBeaconAlert.class, loopback.getLastAlert().getClass());
+                reset(loopback, nzyme);
             }
-
-            loopback.clear();
 
             if (interceptor.forSubtype() == Dot11FrameSubtype.PROBE_RESPONSE) {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>() {{
@@ -72,12 +74,14 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
                         Frames.PROBE_RESP_2_PAYLOAD, Frames.PROBE_RESP_3_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Probe-resp from a wrong channel but different network. Should not trigger.
                 interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
                         Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP_CHANNEL_3
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Unexpected probe-resp.
                 interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
@@ -85,9 +89,8 @@ public class UnexpectedChannelInterceptorSetTest extends InterceptorSetTest {
                 ));
                 assertNotNull(loopback.getLastAlert());
                 assertEquals(UnexpectedChannelProbeRespAlert.class, loopback.getLastAlert().getClass());
+                reset(loopback, nzyme);
             }
-
-            loopback.clear();
         }
     }
 

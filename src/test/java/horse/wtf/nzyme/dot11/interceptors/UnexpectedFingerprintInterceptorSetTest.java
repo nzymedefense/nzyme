@@ -33,6 +33,7 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
         assertEquals(set.getInterceptors().size(), 2);
 
         for (Dot11FrameInterceptor interceptor : set.getInterceptors()) {
+            reset(loopback, nzyme);
             if (interceptor.forSubtype() == Dot11FrameSubtype.BEACON) {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{
                     add(UnexpectedFingerprintBeaconAlert.class);
@@ -43,12 +44,14 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Beacon with a wrong fingerprint but different BSSID. Should not trigger.
                 interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // TODO: Unexpected fingerprint.
                 interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
@@ -56,9 +59,8 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                 ));
                 assertNotNull(loopback.getLastAlert());
                 assertEquals(UnexpectedFingerprintBeaconAlert.class, loopback.getLastAlert().getClass());
+                reset(loopback, nzyme);
             }
-
-            loopback.clear();
 
             if (interceptor.forSubtype() == Dot11FrameSubtype.PROBE_RESPONSE) {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>() {{
@@ -77,6 +79,7 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         META_NO_WEP)
                 );
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
                 // Probe-resp with a wrong fingerprint but different BSSID. Should not trigger.
                 interceptor.intercept(Dot11ProbeResponseFrame.create(
@@ -88,8 +91,9 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         META_NO_WEP)
                 );
                 assertNull(loopback.getLastAlert());
+                reset(loopback, nzyme);
 
-                // Unexpected fingerprint/
+                // Unexpected fingerprint.
                 interceptor.intercept(Dot11ProbeResponseFrame.create(
                         "WTF",
                         "ff:ff:ff:ff:ff:ff",
@@ -100,9 +104,8 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                 );
                 assertNotNull(loopback.getLastAlert());
                 assertEquals(UnexpectedFingerprintProbeRespAlert.class, loopback.getLastAlert().getClass());
+                reset(loopback, nzyme);
             }
-
-            loopback.clear();
         }
 
     }

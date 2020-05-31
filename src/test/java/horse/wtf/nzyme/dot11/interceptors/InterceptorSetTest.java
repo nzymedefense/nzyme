@@ -17,50 +17,17 @@
 
 package horse.wtf.nzyme.dot11.interceptors;
 
-import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
-import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
-import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
-import horse.wtf.nzyme.statistics.Statistics;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 
 public class InterceptorSetTest {
 
     protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
 
-    protected Dot11MockProbe buildMockProbe(NzymeLeader nzyme) {
-        return new Dot11MockProbe(Dot11ProbeConfiguration.create(
-                "test-probe-1",
-                Collections.emptyList(),
-                "nzyme-testng-1",
-                "foo",
-                Collections.emptyList(),
-                0,
-                "foo",
-                new ArrayList<Dot11NetworkDefinition>(){{
-                    add(Dot11NetworkDefinition.create(
-                            "WTF",
-                            new ArrayList<Dot11BSSIDDefinition>(){{
-                                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b", ImmutableList.of("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b")));
-                            }},
-                            new ArrayList<Integer>() {{
-                                add(1);
-                                add(6);
-                                add(11);
-                            }},
-                            new ArrayList<String>() {{
-                                add("WPA1-EAM-PSK-CCMP");
-                                add("WPA2-EAM-PSK-CCMP");
-                            }}, 0)
-                    );
-                }},
-                Collections.emptyList()
-        ), new Statistics(nzyme), nzyme.getMetrics());
+    protected void reset(LoopbackUplink loopback, NzymeLeader nzyme) {
+        loopback.clear();
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts"));
     }
 
 }
