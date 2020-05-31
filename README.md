@@ -43,10 +43,10 @@ The problem is, that many adapter/driver/operating system combinations do not su
 
 The internet is full of compatibility information but here are the adapters I run nzyme with on a Raspberry Pi 3 Model B:
 
-* [ALFA AWUS036NH](https://amzn.to/2YV89bA) - 2.4Ghz and 5Ghz
-* [ALFA AWUS036NEH](https://amzn.to/2GVnRgF) - 2.4Ghz
-* [Panda PAU05](https://amzn.to/31u8pjc) - 2.4Ghz
-* [Panda PAU06](https://amzn.to/2yNHIK8) - 2.4Ghz
+* [ALFA AWUS036NH](https://amzn.to/2XgM2P4) - 2.4Ghz and 5Ghz
+* [ALFA AWUS036NEH](https://amzn.to/2XOpHaG) - 2.4Ghz
+* [Panda PAU05](https://amzn.to/2zDsgEH) - 2.4Ghz
+* [Panda PAU06](https://amzn.to/3et6TEK) - 2.4Ghz
 
 If you have another one that supports monitor mode, you can use that one. Nzyme does not require any specific hardware.
 
