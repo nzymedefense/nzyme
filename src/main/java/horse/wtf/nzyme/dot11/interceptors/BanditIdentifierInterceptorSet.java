@@ -18,8 +18,8 @@
 package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
-import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifierProcess;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
@@ -32,10 +32,10 @@ import java.util.List;
 
 public class BanditIdentifierInterceptorSet {
 
-    private final NzymeLeader nzyme;
+    private ContactIdentifierProcess ci;
 
-    public BanditIdentifierInterceptorSet(NzymeLeader nzyme) {
-        this.nzyme = nzyme;
+    public BanditIdentifierInterceptorSet(ContactIdentifierProcess ci) {
+        this.ci = ci;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -44,7 +44,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
             public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
-                nzyme.getContactManager().identify(frame);
+                ci.identify(frame);
             }
 
             @Override
@@ -61,7 +61,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
             public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
-                nzyme.getContactManager().identify(frame);
+                ci.identify(frame);
             }
 
             @Override
@@ -78,7 +78,7 @@ public class BanditIdentifierInterceptorSet {
         interceptors.add(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
             @Override
             public void intercept(Dot11DeauthenticationFrame frame) throws IllegalRawDataException {
-                nzyme.getContactManager().identify(frame);
+                ci.identify(frame);
             }
 
             @Override

@@ -31,6 +31,7 @@ import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.interceptors.BanditIdentifierInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
@@ -139,8 +140,8 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     null
             ), metrics, statistics);
 
-            // Bandit identifier.
-            ///////probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(this).getInterceptors());
+            // Register the bandit interceptor.
+            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(getBanditManager()).getInterceptors());
 
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);

@@ -37,7 +37,7 @@ import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ContactManager implements BanditListProvider {
+public class ContactManager implements BanditListProvider, ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(ContactManager.class);
 
@@ -287,6 +287,7 @@ public class ContactManager implements BanditListProvider {
         );
     }
 
+    @Override
     public void identify(Dot11Frame frame) {
         for (Map.Entry<UUID, Bandit> x : getBandits().entrySet()) {
             Bandit bandit = x.getValue();

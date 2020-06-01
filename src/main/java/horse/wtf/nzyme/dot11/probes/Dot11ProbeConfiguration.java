@@ -24,7 +24,6 @@ import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 @AutoValue
 public abstract class Dot11ProbeConfiguration {
@@ -40,18 +39,13 @@ public abstract class Dot11ProbeConfiguration {
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
 
+    @Nullable
     public abstract List<Dot11NetworkDefinition> getDot11Networks();
+
+    @Nullable
     public abstract List<Dot11TrapDeviceDefinition> getDot11TrapDevices();
 
-    public static Dot11ProbeConfiguration create(String probeName,
-                                                 List<GraylogAddress> graylogAddresses,
-                                                 String nzymeId,
-                                                 String networkInterfaceName,
-                                                 List<Integer> channels,
-                                                 Integer channelHopInterval,
-                                                 String channelHopCommand,
-                                                 List<Dot11NetworkDefinition> getDot11Networks,
-                                                 List<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
+    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks, List<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
         return builder()
                 .probeName(probeName)
                 .graylogAddresses(graylogAddresses)

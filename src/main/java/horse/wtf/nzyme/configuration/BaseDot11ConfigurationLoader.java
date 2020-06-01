@@ -85,7 +85,12 @@ public class BaseDot11ConfigurationLoader {
         return result.build();
     }
 
-    public void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
+    public void validate() throws InvalidConfigurationException, IncompleteConfigurationException {
+        validateMonitors();
+        validateNetworks();
+    }
+
+    public void validateMonitors() throws IncompleteConfigurationException, InvalidConfigurationException {
         // 802.11 Monitors.
         int i = 0;
         for (Config c : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
@@ -119,7 +124,9 @@ public class BaseDot11ConfigurationLoader {
             }
             devices.add(monitor.device());
         }
+    }
 
+    public void validateNetworks() throws IncompleteConfigurationException, InvalidConfigurationException {
         // 802_11 networks: SSID is unique.
         List<String> ssids = Lists.newArrayList();
         for (Dot11NetworkDefinition net : parseDot11Networks()) {

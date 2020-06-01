@@ -61,7 +61,7 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
         assertFalse(nzyme.getContactManager().banditHasActiveContact(bandit1));
         assertFalse(nzyme.getContactManager().banditHasActiveContact(bandit2));
 
-        BanditIdentifierInterceptorSet set = new BanditIdentifierInterceptorSet(nzyme);
+        BanditIdentifierInterceptorSet set = new BanditIdentifierInterceptorSet(nzyme.getContactManager());
         assertEquals(set.getInterceptors().size(), 3);
 
         for (Dot11FrameInterceptor interceptor : set.getInterceptors()) {

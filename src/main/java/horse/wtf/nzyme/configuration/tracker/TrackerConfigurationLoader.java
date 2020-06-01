@@ -60,8 +60,7 @@ public class TrackerConfigurationLoader {
                 parseRole(),
                 parseNzymeId(),
                 parseTrackerDevice(),
-                baseDot11ConfigurationLoader.parseDot11Monitors(),
-                baseDot11ConfigurationLoader.parseDot11Networks()
+                baseDot11ConfigurationLoader.parseDot11Monitors()
         );
     }
 
@@ -114,6 +113,6 @@ public class TrackerConfigurationLoader {
         }
 
         // Validate shared/base 802.11 config.
-        baseDot11ConfigurationLoader.validate();
+        baseDot11ConfigurationLoader.validateMonitors();
     }
 }

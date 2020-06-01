@@ -17,17 +17,18 @@
 
 package horse.wtf.nzyme.bandits.trackers.trackerlogic;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.BanditListProvider;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifierProcess;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.BanditManagerEntry;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -41,7 +42,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class TrackerBanditManager implements BanditListProvider {
+public class TrackerBanditManager implements BanditListProvider, ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(TrackerBanditManager.class);
 
@@ -153,6 +154,18 @@ public class TrackerBanditManager implements BanditListProvider {
         synchronized (mutex) {
             // We either override an existing bandit (and by that update it's receive time) or create a new one.
             bandits.put(bandit.uuid(), BanditManagerEntry.create(bandit, DateTime.now()));
+        }
+    }
+
+    @Override
+    public void identify(Dot11Frame frame) {
+        for (Bandit bandit : getBanditList()) {
+            // Run all identifiers.
+            if (bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
+                if (identifierEngine.identify(frame, bandit)) {
+                    LOG.info("CONTACT: {}", frame);
+                }
+            }
         }
     }
 

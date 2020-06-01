@@ -18,7 +18,6 @@
 package horse.wtf.nzyme.util;
 
 import horse.wtf.nzyme.bandits.engine.ContactIdentifierEngine;
-import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.networks.Networks;

@@ -373,7 +373,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
             probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
 
             // Bandit identifier.
-            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(this).getInterceptors());
+            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(getContactManager()).getInterceptors());
 
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);

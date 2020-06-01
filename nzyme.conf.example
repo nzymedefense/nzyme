@@ -63,9 +63,8 @@ graylog_uplinks: [
 ]
 
 # 802.11/Wifi adapters that are designated to read traffic.
-# Traffic recorded by monitor interfaces will be written to Graylog for analytics/forensics and also be used for alerting.
 # The more monitors you have listening on different channels, the more traffic will be picked up and the more
-# traffic will be available as the basis for alerts.
+# traffic will be available as the basis for alerts and analysis.
 802_11_monitors: [
   {
     # The 802.11/WiFi adapter name. (from ifconfig)
