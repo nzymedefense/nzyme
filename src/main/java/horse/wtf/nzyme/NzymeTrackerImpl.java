@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
+import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class NzymeTrackerImpl implements NzymeTracker {
 
@@ -90,9 +92,12 @@ public class NzymeTrackerImpl implements NzymeTracker {
             audioHID.initialize();
             LogHID logHid = new LogHID();
             logHid.initialize();
+            TextGUIHID textGUIHID = new TextGUIHID();
+            textGUIHID.initialize();
 
             this.groundStation.registerHID(audioHID);
             this.groundStation.registerHID(logHid);
+            this.groundStation.registerHID(textGUIHID);
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }
@@ -118,6 +123,15 @@ public class NzymeTrackerImpl implements NzymeTracker {
         this.groundStation.onCancelTrackRequestReceived((cancelTrackRequest ->
                 banditManager.cancelTracking()
         ));
+
+        // Send contact tracks.
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setNameFormat("contact-sender-%d").build())
+                .scheduleAtFixedRate(() -> {
+                    if (banditManager.isCurrentlyTracking() && banditManager.hasActiveTrack()) {
+                        //groundStation.transmit(); // TODO
+                    }
+                }, 0, 10, TimeUnit.SECONDS);
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

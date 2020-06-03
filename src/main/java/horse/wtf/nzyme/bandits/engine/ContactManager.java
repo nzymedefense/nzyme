@@ -22,10 +22,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
-import horse.wtf.nzyme.bandits.Bandit;
-import horse.wtf.nzyme.bandits.BanditListProvider;
-import horse.wtf.nzyme.bandits.Contact;
-import horse.wtf.nzyme.bandits.DefaultBandits;
+import horse.wtf.nzyme.bandits.*;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
@@ -40,8 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ContactManager implements BanditListProvider, ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(ContactManager.class);
-
-    public static final int ACTIVE_MINUTES = 10;
 
     private final NzymeLeader nzyme;
 
@@ -229,7 +224,7 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         long count = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM contacts " +
                         "WHERE bandit_id = :bandit_id " +
-                        "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + ACTIVE_MINUTES + " minutes')")
+                        "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
                 .bind("bandit_id", bandit.databaseId())
                 .mapTo(Long.class)
                 .first());
@@ -240,7 +235,7 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1, " +
                 "last_seen = (current_timestamp at time zone 'UTC') " +
                 "WHERE bandit_id = :bandit_id " +
-                "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + ACTIVE_MINUTES + " minutes')")
+                "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
                 .bind("bandit_id", bandit.databaseId())
                 .execute()
         );

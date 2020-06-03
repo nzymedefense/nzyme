@@ -13,7 +13,7 @@ message Wrapper {
         BanditBroadcast banditBroadcast = 2;
         StartTrackRequest startTrackRequest = 3;
         CancelTrackRequest cancelTrackRequest = 4;
-        Contact contact = 5;
+        ContactStatus contactStatus = 5;
     }
 }
 
@@ -66,11 +66,12 @@ message CancelTrackRequest {
 
 }
 
-message Contact {
+message ContactStatus {
 
     string source = 1;
     string uuid = 2;
-    int32 frames = 3;
-    sint32 rssi = 4;
+    sint32 rssi = 5;
+    int64 lastSeen = 3;
+    int32 frames = 4;
 
 }

@@ -44,6 +44,7 @@
         <jaxb.version>2.3.1</jaxb.version>
         <tink.version>1.3.0</tink.version>
         <twilio.version>7.50.0</twilio.version>
+        <lanterna.version>3.0.3</lanterna.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -262,6 +263,11 @@
             <groupId>com.twilio.sdk</groupId>
             <artifactId>twilio</artifactId>
             <version>${twilio.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.lanterna</groupId>
+            <artifactId>lanterna</artifactId>
+            <version>${lanterna.version}</version>
         </dependency>
     </dependencies>
 

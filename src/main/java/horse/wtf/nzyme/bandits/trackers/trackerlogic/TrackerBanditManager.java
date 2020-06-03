@@ -23,10 +23,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.BanditListProvider;
+import horse.wtf.nzyme.bandits.TrackTimeout;
+import horse.wtf.nzyme.bandits.engine.ContactIdentifierEngine;
 import horse.wtf.nzyme.bandits.engine.ContactIdentifierProcess;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.BanditManagerEntry;
+import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
@@ -51,11 +54,19 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
     private Map<UUID, BanditManagerEntry> bandits;
     private Bandit currentlyTrackedBandit;
 
+    private final ContactIdentifierEngine identifierEngine;
+
     private final Object mutex = new Object();
+
+    private UUID currentTrack;
+    private long currentTrackFrameCount = 0;
+    private DateTime currentTrackLastContact;
 
     public TrackerBanditManager(NzymeTracker nzyme) {
         this.nzyme = nzyme;
         this.bandits = Maps.newHashMap();
+
+        this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
 
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -65,7 +76,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                     synchronized (mutex) {
                         Map<UUID, BanditManagerEntry> newBandits = Maps.newHashMap();
                         for (Map.Entry<UUID, BanditManagerEntry> bandit : bandits.entrySet()) {
-                            if (bandit.getValue().receivedAt().isAfter(DateTime.now().minusMinutes(3))) { ;
+                            if (bandit.getValue().receivedAt().isAfter(DateTime.now().minusMinutes(3))) {
                                 newBandits.put(bandit.getKey(), bandit.getValue());
                             } else {
                                 LOG.info("Retention cleaning outdated bandit <{}/{}>",
@@ -73,6 +84,17 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                             }
                         }
                         bandits = newBandits;
+                    }
+                }, 10, 10, TimeUnit.SECONDS);
+
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("contact-retention-%d")
+                .build())
+                .scheduleWithFixedDelay(() -> {
+                    if (isCurrentlyTracking() && currentTrackLastContact.isBefore(DateTime.now().minusMinutes(TrackTimeout.MINUTES))) {
+                        LOG.info("Track timeout exceeded. Resetting.");
+                        resetCurrentTrack();
                     }
                 }, 10, 10, TimeUnit.SECONDS);
     }
@@ -93,6 +115,24 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
     @Nullable
     public Bandit getCurrentlyTrackedBandit() {
         return currentlyTrackedBandit;
+    }
+
+    public void setCurrentlyTrackedBandit(UUID banditUUID) {
+        if (!bandits.containsKey(banditUUID)) {
+            LOG.error("Cannot track bandit [{}]. Bandit not found in local list of bandits.", banditUUID);
+            return;
+        }
+
+        if (currentlyTrackedBandit != null && currentlyTrackedBandit.uuid().equals(banditUUID)) {
+            LOG.info("Already tracking bandit [{}].", banditUUID);
+        }
+
+        LOG.info("Setting currently tracked bandit to [{}].", banditUUID);
+        this.currentlyTrackedBandit = bandits.get(banditUUID).bandit();
+    }
+
+    public boolean isCurrentlyTracking() {
+        return currentlyTrackedBandit != null;
     }
 
     public void registerBandit(TrackerMessage.BanditBroadcast broadcast) {
@@ -131,23 +171,15 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
         }
     }
 
-    public void setCurrentlyTrackedBandit(UUID banditUUID) {
-        if (!bandits.containsKey(banditUUID)) {
-            LOG.error("Cannot track bandit [{}]. Bandit not found in local list of bandits.", banditUUID);
-            return;
-        }
-
-        LOG.info("Setting currently tracked bandit to [{}].", banditUUID);
-        this.currentlyTrackedBandit = bandits.get(banditUUID).bandit();
-    }
-
     public void cancelTracking() {
-        if (this.currentlyTrackedBandit == null) {
+        if (!isCurrentlyTracking()) {
             return;
         }
 
         LOG.info("Canceling tracking of bandit.");
         this.currentlyTrackedBandit = null;
+
+        resetCurrentTrack();
     }
 
     public void registerBandit(Bandit bandit) {
@@ -157,15 +189,44 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
         }
     }
 
+    private void resetCurrentTrack() {
+        LOG.info("Resetting current track.");
+        this.currentTrack = null;
+        this.currentTrackFrameCount = 0;
+        this.currentTrackLastContact = null;
+    }
+
     @Override
     public void identify(Dot11Frame frame) {
-        for (Bandit bandit : getBanditList()) {
-            // Run all identifiers.
-            if (bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
-                if (identifierEngine.identify(frame, bandit)) {
-                    LOG.info("CONTACT: {}", frame);
+        if (!isCurrentlyTracking()) {
+            return;
+        }
+
+        Bandit bandit = getCurrentlyTrackedBandit();
+        if (bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
+            if (identifierEngine.identify(frame, bandit)) {
+                if (currentTrack == null) {
+                    // New track!
+                    currentTrack = UUID.randomUUID();
+                    LOG.info("Initial contact with tracked bandit. Starting track [{}].", currentTrack.toString().substring(0,6));
                 }
+
+                currentTrackFrameCount++;
+                currentTrackLastContact = DateTime.now();
             }
+        }
+    }
+
+    public boolean hasActiveTrack() {
+        return isCurrentlyTracking() && currentTrack != null;
+    }
+
+    @Nullable
+    public TrackerTrackSummary getTrackSummary() {
+        if (!hasActiveTrack()) {
+            return null;
+        } else {
+            return TrackerTrackSummary.create(currentTrack, currentTrackLastContact, currentTrackFrameCount);
         }
     }
 

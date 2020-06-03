@@ -42,7 +42,7 @@ public abstract class Contact {
     public abstract Bandit bandit();
 
     public boolean isActive() {
-        return lastSeen().isAfter(DateTime.now().minusMinutes(ContactManager.ACTIVE_MINUTES));
+        return lastSeen().isAfter(DateTime.now().minusMinutes(TrackTimeout.MINUTES));
     }
 
     public boolean isStationary() {
