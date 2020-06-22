@@ -59,6 +59,7 @@ public class TrackerConfigurationLoader {
         return TrackerConfiguration.create(
                 parseRole(),
                 parseNzymeId(),
+                parseDataDirectory(),
                 parseTrackerDevice(),
                 baseDot11ConfigurationLoader.parseDot11Monitors()
         );
@@ -72,6 +73,10 @@ public class TrackerConfigurationLoader {
         return general.getString(ConfigurationKeys.ID);
     }
 
+    private String parseDataDirectory() {
+        return general.getString(ConfigurationKeys.DATA_DIRECTORY);
+    }
+
     private TrackerDeviceConfiguration parseTrackerDevice() {
         return TrackerDeviceConfiguration.create(
                 trackerDevice.getString(ConfigurationKeys.TYPE),
@@ -82,7 +87,22 @@ public class TrackerConfigurationLoader {
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.DATA_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
+
+        // Data directory exists and is readable?
+        File dataDirectory = new File(parseDataDirectory());
+        if (!dataDirectory.exists()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] does not exist.");
+        }
+
+        if (!dataDirectory.isDirectory()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] is not a directory.");
+        }
+
+        if (!dataDirectory.canWrite()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] is not writable.");
+        }
 
         // Tracker config.
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);

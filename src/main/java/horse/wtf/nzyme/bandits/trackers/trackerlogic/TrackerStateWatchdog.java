@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TrackerStateWatchdog {
@@ -43,6 +44,8 @@ public class TrackerStateWatchdog {
     private final AtomicReference<Optional<Integer>> lastRSSIReceived;
     private final AtomicReference<Optional<String>> lastBanditHashReceived;
 
+    private final AtomicReference<Optional<Integer>> leaderBanditCount;
+
     public TrackerStateWatchdog(NzymeTracker nzyme) {
         this.nzyme = nzyme;
 
@@ -50,6 +53,8 @@ public class TrackerStateWatchdog {
             add(TrackerState.DARK);
             add(TrackerState.OUT_OF_SYNC);
         }});
+
+        this.leaderBanditCount = new AtomicReference<>(Optional.empty());
 
         this.lastPingReceived = new AtomicReference<>(Optional.empty());
         this.lastRSSIReceived = new AtomicReference<>(Optional.empty());
@@ -110,9 +115,15 @@ public class TrackerStateWatchdog {
             return;
         }
 
+        this.leaderBanditCount.set(Optional.of(ping.getBanditCount()));
+
         this.lastPingReceived.set(Optional.of(new DateTime(ping.getTimestamp())));
         this.lastRSSIReceived.set(Optional.of(rssi));
         this.lastBanditHashReceived.set(Optional.of(ping.getBanditHash()));
+    }
+
+    public Optional<Integer> getLeaderBanditCount() {
+        return leaderBanditCount.get();
     }
 
     private void stateChanged() {

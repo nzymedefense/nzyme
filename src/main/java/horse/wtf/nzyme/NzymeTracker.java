@@ -21,6 +21,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+
+import java.util.List;
 
 public interface NzymeTracker extends UplinkHandler  {
 
@@ -29,8 +34,13 @@ public interface NzymeTracker extends UplinkHandler  {
 
     ObjectMapper getObjectMapper();
 
+    TrackerConfiguration getConfiguration();
+
     GroundStation getGroundStation();
     TrackerBanditManager getBanditManager();
+    TrackerStateWatchdog getStateWatchdog();
+
+    List<Dot11Probe> getProbes();
 
     MetricRegistry getMetrics();
 

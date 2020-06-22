@@ -29,6 +29,7 @@ public class ConfigurationKeys {
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
     public static final String DOT11_TRAPS = "802_11_traps";
     public static final String TRACKER_DEVICE = "tracker_device";
+    public static final String DATA_DIRECTORY = "data_directory";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";

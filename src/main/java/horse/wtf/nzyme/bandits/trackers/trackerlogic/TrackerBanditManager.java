@@ -17,8 +17,10 @@
 
 package horse.wtf.nzyme.bandits.trackers.trackerlogic;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.Bandit;
@@ -31,12 +33,16 @@ import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.BanditManagerEntry;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.banditfile.BanditFile;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.banditfile.BanditFileIdentifierRecord;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.banditfile.BanditFileRecord;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +54,8 @@ import java.util.concurrent.TimeUnit;
 public class TrackerBanditManager implements BanditListProvider, ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(TrackerBanditManager.class);
+
+    private static final String BANDITFILE_NAME = "banditfile";
 
     private final NzymeTracker nzyme;
 
@@ -61,10 +69,13 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
     private UUID currentTrack;
     private long currentTrackFrameCount = 0;
     private DateTime currentTrackLastContact;
+    private int currentTrackSignal = 0;
 
     public TrackerBanditManager(NzymeTracker nzyme) {
         this.nzyme = nzyme;
         this.bandits = Maps.newHashMap();
+
+        loadFromBanditFile();
 
         this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
 
@@ -97,6 +108,90 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                         resetCurrentTrack();
                     }
                 }, 10, 10, TimeUnit.SECONDS);
+
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("banditfile-writer-%d")
+                .build())
+                .scheduleWithFixedDelay(this::writeBanditFile, 10, 10, TimeUnit.SECONDS);
+    }
+
+    private void writeBanditFile() {
+        if (getBanditList().isEmpty()) {
+            return;
+        }
+
+        List<BanditFileRecord> banditFileRecords = Lists.newArrayList();
+
+        for (Bandit bandit : getBanditList()) {
+            List<BanditFileIdentifierRecord> identifiers = Lists.newArrayList();
+
+            if (bandit.identifiers() != null) {
+                for (BanditIdentifier identifier : bandit.identifiers()) {
+                    identifiers.add(BanditFileIdentifierRecord.create(
+                            identifier.getUuid().toString(),
+                            identifier.getType().toString(),
+                            identifier.configuration()
+                    ));
+                }
+            }
+
+            banditFileRecords.add(BanditFileRecord.create(
+                    bandit.uuid().toString(),
+                    identifiers
+            ));
+        }
+
+
+        BanditFile banditFile = BanditFile.create(
+                DateTime.now().toString(),
+                banditFileRecords
+        );
+
+        try {
+            //noinspection UnstableApiUsage
+            Files.write(
+                    nzyme.getObjectMapper().writeValueAsBytes(banditFile),
+                    new File(nzyme.getConfiguration().dataDirectory() + "/" + BANDITFILE_NAME)
+            );
+        } catch(Exception e) {
+            LOG.error("Could not write banditfile.", e);
+        }
+    }
+
+    private void loadFromBanditFile() {
+        File banditFile = new File(nzyme.getConfiguration().dataDirectory() + "/" + BANDITFILE_NAME);
+
+        if (!banditFile.exists()) {
+            LOG.info("No banditfile found.");
+            return;
+        }
+
+        try {
+            //noinspection UnstableApiUsage
+            String content = new String(Files.toByteArray(banditFile), Charsets.UTF_8);
+
+            BanditFile parsed = nzyme.getObjectMapper().readValue(content, BanditFile.class);
+            LOG.info("Replaying banditfile from [{}]", parsed.createdAt());
+
+            for (BanditFileRecord bandit : parsed.bandits()) {
+                List<BanditIdentifier> identifiers = Lists.newArrayList();
+                for (BanditFileIdentifierRecord identifier : bandit.identifiers()) {
+                    identifiers.add(BanditIdentifierFactory.create(
+                            BanditIdentifier.TYPE.valueOf(identifier.type()),
+                            identifier.configuration(),
+                            null,
+                            UUID.fromString(identifier.uuid())
+                    ));
+                }
+
+                registerBandit(buildBandit(UUID.fromString(bandit.uuid()), identifiers));
+            }
+
+        } catch (Exception e) {
+            LOG.error("Banditfile exists but failed to parse.", e);
+            return;
+        }
     }
 
     @Override
@@ -163,12 +258,16 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                 ));
             }
 
-            registerBandit(Bandit.create(
-                    null, UUID.fromString(broadcast.getUuid()), "n/a", "n/a", false, DateTime.now(), DateTime.now(), identifiers
-            ));
+            registerBandit(buildBandit(UUID.fromString(broadcast.getUuid()), identifiers));
         } catch (BanditIdentifierFactory.NoSerializerException | BanditIdentifierFactory.MappingException | IOException e) {
             LOG.error("Invalid bandit identifier payload in bandit broadcast.", e);
         }
+    }
+
+    private Bandit buildBandit(UUID uuid, List<BanditIdentifier> identifiers) {
+        return Bandit.create(
+                null, uuid, "n/a", "n/a", false, DateTime.now(), DateTime.now(), identifiers
+        );
     }
 
     public void cancelTracking() {
@@ -212,6 +311,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                 }
 
                 currentTrackFrameCount++;
+                currentTrackSignal = frame.meta().getAntennaSignal();
                 currentTrackLastContact = DateTime.now();
             }
         }
@@ -226,7 +326,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
         if (!hasActiveTrack()) {
             return null;
         } else {
-            return TrackerTrackSummary.create(currentTrack, currentTrackLastContact, currentTrackFrameCount);
+            return TrackerTrackSummary.create(currentTrack, currentTrackLastContact, currentTrackSignal, currentTrackFrameCount);
         }
     }
 

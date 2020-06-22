@@ -27,12 +27,14 @@ public abstract class TrackerTrackSummary {
 
     public abstract UUID track();
     public abstract DateTime lastContact();
+    public abstract int lastSignal();
     public abstract long frameCount();
 
-    public static TrackerTrackSummary create(UUID track, DateTime lastContact, long frameCount) {
+    public static TrackerTrackSummary create(UUID track, DateTime lastContact, int lastSignal, long frameCount) {
         return builder()
                 .track(track)
                 .lastContact(lastContact)
+                .lastSignal(lastSignal)
                 .frameCount(frameCount)
                 .build();
     }
@@ -46,6 +48,8 @@ public abstract class TrackerTrackSummary {
         public abstract Builder track(UUID track);
 
         public abstract Builder lastContact(DateTime lastContact);
+
+        public abstract Builder lastSignal(int lastSignal);
 
         public abstract Builder frameCount(long frameCount);
 

@@ -17,5 +17,10 @@
 
 package horse.wtf.nzyme.dot11.frames;
 
-public class Dot11Frame {
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+
+public interface Dot11Frame {
+
+    Dot11MetaInformation meta();
+
 }

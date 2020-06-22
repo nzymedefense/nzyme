@@ -24,7 +24,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import javax.annotation.Nullable;
 
 @AutoValue
-public abstract class Dot11AssociationRequestFrame extends Dot11Frame {
+public abstract class Dot11AssociationRequestFrame implements Dot11Frame {
 
     @Nullable
     public abstract String ssid();

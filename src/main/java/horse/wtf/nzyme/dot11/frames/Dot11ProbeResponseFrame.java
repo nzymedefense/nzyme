@@ -25,7 +25,7 @@ import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import javax.annotation.Nullable;
 
 @AutoValue
-public abstract class Dot11ProbeResponseFrame extends Dot11Frame {
+public abstract class Dot11ProbeResponseFrame implements Dot11Frame {
 
     @Nullable
     public abstract String ssid();

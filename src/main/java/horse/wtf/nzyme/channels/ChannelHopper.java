@@ -57,6 +57,7 @@ public class ChannelHopper {
         ).scheduleWithFixedDelay(() -> {
             try {
                 if (!this.probe.isInLoop()) {
+                    LOG.debug("Not hopping channel. Probe [{}] not in loop.", probeConfiguration.networkInterfaceName());
                     return;
                 }
 

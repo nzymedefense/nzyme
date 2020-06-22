@@ -57,6 +57,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final ExecutorService probeExecutor;
     private final GroundStation groundStation;
     private final TrackerBanditManager banditManager;
+    private final TrackerStateWatchdog trackerStateWatchdog;
     private final Statistics statistics;
 
     private final List<Dot11Probe> probes;
@@ -78,6 +79,9 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
         this.banditManager = new TrackerBanditManager(this);
 
+        trackerStateWatchdog = new TrackerStateWatchdog(this);
+        trackerStateWatchdog.initialize();
+
         try {
             this.groundStation = new GroundStation(
                     Role.TRACKER,
@@ -92,7 +96,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
             audioHID.initialize();
             LogHID logHid = new LogHID();
             logHid.initialize();
-            TextGUIHID textGUIHID = new TextGUIHID();
+            TextGUIHID textGUIHID = new TextGUIHID(this);
             textGUIHID.initialize();
 
             this.groundStation.registerHID(audioHID);
@@ -111,9 +115,6 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
-
-        TrackerStateWatchdog trackerStateWatchdog = new TrackerStateWatchdog(this);
-        trackerStateWatchdog.initialize();
 
         this.groundStation.onPingReceived(trackerStateWatchdog::registerPing);
         this.groundStation.onBanditBroadcastReceived(banditManager::registerBandit);
@@ -173,6 +174,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
     }
 
     @Override
+    public TrackerConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    @Override
     public GroundStation getGroundStation() {
         return groundStation;
     }
@@ -180,6 +186,16 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public TrackerBanditManager getBanditManager() {
         return banditManager;
+    }
+
+    @Override
+    public TrackerStateWatchdog getStateWatchdog() {
+        return trackerStateWatchdog;
+    }
+
+    @Override
+    public List<Dot11Probe> getProbes() {
+        return probes;
     }
 
     @Override
