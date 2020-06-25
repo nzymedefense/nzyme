@@ -27,6 +27,7 @@ import horse.wtf.nzyme.configuration.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
+import java.util.List;
 
 public class TrackerConfigurationLoader {
 
@@ -134,5 +135,12 @@ public class TrackerConfigurationLoader {
 
         // Validate shared/base 802.11 config.
         baseDot11ConfigurationLoader.validateMonitors();
+
+        // Require at least one monitor.
+        List<Dot11MonitorDefinition> monitors = baseDot11ConfigurationLoader.parseDot11Monitors();
+        if (monitors.isEmpty()) {
+            throw new IncompleteConfigurationException("No 802.11 monitors configured. The tracker needs at least one monitor to work. " +
+                    "Configure in nzyme configuration file at [802_11_monitors].");
+        }
     }
 }
