@@ -9,7 +9,7 @@ hs_err_*.log
 
 logs/
 target/
-banditfile
+/banditfile
 
 web-interface/node
 
