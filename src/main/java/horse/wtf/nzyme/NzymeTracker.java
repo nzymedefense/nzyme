@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
@@ -41,6 +42,8 @@ public interface NzymeTracker extends UplinkHandler  {
     TrackerStateWatchdog getStateWatchdog();
 
     List<Dot11Probe> getProbes();
+
+    List<TrackerHID> getHIDs();
 
     MetricRegistry getMetrics();
 

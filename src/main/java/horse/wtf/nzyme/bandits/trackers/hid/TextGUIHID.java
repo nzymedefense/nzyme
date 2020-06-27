@@ -31,19 +31,14 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
-import horse.wtf.nzyme.Logging;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -291,26 +286,17 @@ public class TextGUIHID implements TrackerHID {
 
     @Override
     public void onInitialContactWithTrackedBandit(Bandit bandit) {
-
-    }
-
-    @Override
-    public void onBanditTrace(int rssi) {
-
-    }
-
-    @Override
-    public void onChannelSwitch(int newChannel) {
         // no-op
     }
 
     @Override
-    public void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels) {
-        // TODO
+    public void onBanditTrace(Bandit bandit, int rssi) {
+        // no-op
     }
 
     @Override
-    public void onContactRequestReceived() {
+    public void onChannelSwitch(int previousChannel, int newChannel) {
+        // no-op
     }
 
     private void updateSyncCount() {

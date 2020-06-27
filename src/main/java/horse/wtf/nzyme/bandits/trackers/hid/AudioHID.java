@@ -133,17 +133,12 @@ public class AudioHID implements TrackerHID {
     }
 
     @Override
-    public void onBanditTrace(int rssi) {
+    public void onBanditTrace(Bandit bandit, int rssi) {
 
     }
 
     @Override
-    public void onChannelSwitch(int newChannel) {
-
-    }
-
-    @Override
-    public void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels) {
+    public void onChannelSwitch(int previousChannel, int newChannel) {
 
     }
 
@@ -159,11 +154,6 @@ public class AudioHID implements TrackerHID {
 
     @Override
     public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
-
-    }
-
-    @Override
-    public void onContactRequestReceived() {
 
     }
 

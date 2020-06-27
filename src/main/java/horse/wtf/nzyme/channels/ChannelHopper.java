@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.channels;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -36,14 +38,17 @@ public class ChannelHopper {
     private final Dot11Probe probe;
     private final Dot11ProbeConfiguration probeConfiguration;
 
-    private int currentChannel = 0;
+    private final List<ChannelSwitchHandler> channelSwitchHandlers;
 
+    private int currentChannel = 0;
     private int currentChannelIndex = 0;
 
     public ChannelHopper(Dot11Probe probe, Dot11ProbeConfiguration probeConfiguration) {
         if(probeConfiguration.channels() == null || probeConfiguration.channels().isEmpty()) {
             throw new RuntimeException("Channels empty or NULL. You need to configure at least one channel.");
         }
+
+        this.channelSwitchHandlers = Lists.newArrayList();
 
         this.probe = probe;
         this.probeConfiguration = probeConfiguration;
@@ -81,6 +86,7 @@ public class ChannelHopper {
 
     private void changeToChannel(Integer channel) {
         try {
+            int previousChannel = currentChannel;
             String networkInterface = Tools.safeAlphanumericString(probeConfiguration.networkInterfaceName());
 
             String command = probeConfiguration.channelHopCommand()
@@ -101,6 +107,10 @@ public class ChannelHopper {
             } else {
                 currentChannel = channel;
                 LOG.debug("Channel change successful.");
+                for (ChannelSwitchHandler handler : channelSwitchHandlers) {
+                    handler.handle(previousChannel, currentChannel);
+                }
+
             }
         } catch(Exception e) {
             LOG.error("Could not hop to channel <{}>.", channel, e);
@@ -109,6 +119,14 @@ public class ChannelHopper {
 
     public Integer getCurrentChannel() {
         return currentChannel;
+    }
+
+    public void onChannelSwitch(ChannelSwitchHandler handler) {
+        this.channelSwitchHandlers.add(handler);
+    }
+
+    public interface ChannelSwitchHandler {
+        void handle(int previousChannel, int newChannel);
     }
 
 }

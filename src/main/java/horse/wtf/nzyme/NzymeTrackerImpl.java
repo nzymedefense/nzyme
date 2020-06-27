@@ -23,12 +23,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
+import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -64,11 +67,14 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final MetricRegistry metrics;
     private final ObjectMapper om;
 
+    private final List<TrackerHID> hids;
+
     public NzymeTrackerImpl(TrackerConfiguration configuration) {
         this.version = new Version();
         this.configuration = configuration;
 
         this.probes = Lists.newArrayList();
+        this.hids = Lists.newArrayList();
 
         this.statistics = new Statistics(this);
         this.metrics = new MetricRegistry();
@@ -94,14 +100,19 @@ public class NzymeTrackerImpl implements NzymeTracker {
             );
             AudioHID audioHID = new AudioHID();
             audioHID.initialize();
+            hids.add(audioHID);
+
             LogHID logHid = new LogHID();
             logHid.initialize();
+            hids.add(logHid);
+
             TextGUIHID textGUIHID = new TextGUIHID(this);
             textGUIHID.initialize();
+            hids.add(textGUIHID);
 
-            this.groundStation.registerHID(audioHID);
-            this.groundStation.registerHID(logHid);
-            this.groundStation.registerHID(textGUIHID);
+            for (TrackerHID hid : hids) {
+                this.groundStation.registerHID(hid);
+            }
         } catch(Exception e) {
             throw new RuntimeException("Tracker Device configuration failed.", e);
         }
@@ -124,6 +135,18 @@ public class NzymeTrackerImpl implements NzymeTracker {
         this.groundStation.onCancelTrackRequestReceived((cancelTrackRequest ->
                 banditManager.cancelTracking()
         ));
+
+        this.banditManager.onInitialTrack(bandit -> {
+            for (TrackerHID hid : hids) {
+                hid.onInitialContactWithTrackedBandit(bandit);
+            }
+        });
+
+        this.banditManager.onBanditTrace((bandit,rssi) -> {
+            for (TrackerHID hid : hids) {
+                hid.onBanditTrace(bandit,rssi);
+            }
+        });
 
         // Send contact tracks.
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
@@ -154,6 +177,13 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     null,
                     null
             ), metrics, statistics);
+
+            probe.onChannelSwitch((previousChannel, newChannel) -> {
+                for (TrackerHID hid : hids) {
+                    hid.onChannelSwitch(previousChannel, newChannel);
+                }
+
+            });
 
             // Register the bandit interceptor.
             probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(getBanditManager()).getInterceptors());
@@ -196,6 +226,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public List<Dot11Probe> getProbes() {
         return probes;
+    }
+
+    @Override
+    public List<TrackerHID> getHIDs() {
+        return hids;
     }
 
     @Override

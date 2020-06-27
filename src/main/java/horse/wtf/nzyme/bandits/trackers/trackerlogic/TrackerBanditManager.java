@@ -64,6 +64,9 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
 
     private final ContactIdentifierEngine identifierEngine;
 
+    private final List<InitialTrackHandler> initialTrackHandlers;
+    private final List<BanditTraceHandler> traceHandlers;
+
     private final Object mutex = new Object();
 
     private UUID currentTrack;
@@ -74,6 +77,9 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
     public TrackerBanditManager(NzymeTracker nzyme) {
         this.nzyme = nzyme;
         this.bandits = Maps.newHashMap();
+
+        this.initialTrackHandlers = Lists.newArrayList();
+        this.traceHandlers = Lists.newArrayList();
 
         loadFromBanditFile();
 
@@ -307,12 +313,21 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                 if (currentTrack == null) {
                     // New track!
                     currentTrack = UUID.randomUUID();
+
+                    for (InitialTrackHandler handler : initialTrackHandlers) {
+                        handler.handle(bandit);
+                    }
+
                     LOG.info("Initial contact with tracked bandit. Starting track [{}].", currentTrack.toString().substring(0,6));
                 }
 
                 currentTrackFrameCount++;
                 currentTrackSignal = frame.meta().getAntennaSignal();
                 currentTrackLastContact = DateTime.now();
+
+                for (BanditTraceHandler handler : traceHandlers) {
+                    handler.handle(bandit, frame.meta().getAntennaSignal());
+                }
             }
         }
     }
@@ -330,4 +345,19 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
         }
     }
 
+    public void onInitialTrack(InitialTrackHandler handler) {
+        this.initialTrackHandlers.add(handler);
+    }
+
+    public void onBanditTrace(BanditTraceHandler handler) {
+        this.traceHandlers.add(handler);
+    }
+
+    public interface InitialTrackHandler {
+        void handle(Bandit bandit);
+    }
+
+    public interface BanditTraceHandler {
+        void handle(Bandit bandit, int rssi);
+    }
 }

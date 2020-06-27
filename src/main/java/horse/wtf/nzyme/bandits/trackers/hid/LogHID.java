@@ -46,39 +46,22 @@ public class LogHID implements TrackerHID {
 
     @Override
     public void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request) {
-        LOG.info("Received request to abort tracking bandit [{}].");
+        LOG.info("Received request to abort tracking bandit.");
     }
 
     @Override
     public void onInitialContactWithTrackedBandit(Bandit bandit) {
-        LOG.info("Made initial contact with tracked bandit [{}].", bandit);
+        LOG.info("Made initial contact with tracked bandit [{}].", bandit.uuid());
     }
 
     @Override
-    public void onBanditTrace(int rssi) {
+    public void onBanditTrace(Bandit bandit, int rssi) {
         LOG.info("Bandit trace at RSSI <{}>.", rssi);
     }
 
     @Override
-    public void onChannelSwitch(int newChannel) {
-        LOG.info("Switching channel to [{}].", newChannel);
-    }
-
-    @Override
-    public void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels) {
-        String word;
-        switch (direction) {
-            case WIDE:
-                word = "Widening";
-                break;
-            case NARROW:
-                word = "Narrowing";
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-
-        LOG.info("{} channel width to [{}].", word, activeChannels);
+    public void onChannelSwitch(int previousChannel, int newChannel) {
+        LOG.info("Switching channel from [{}] to [{}].", previousChannel, newChannel);
     }
 
     @Override
@@ -94,11 +77,6 @@ public class LogHID implements TrackerHID {
     @Override
     public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
         LOG.info("Received bandit definition from leader.");
-    }
-
-    @Override
-    public void onContactRequestReceived() {
-        LOG.info("Received contact request from leader.");
     }
 
 }

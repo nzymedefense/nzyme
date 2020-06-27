@@ -106,6 +106,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
         channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
+
     }
 
     @Override
@@ -291,6 +292,10 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public List<Dot11FrameInterceptor> getInterceptors() {
         return frameInterceptors;
+    }
+
+    public void onChannelSwitch(ChannelHopper.ChannelSwitchHandler handler) {
+        channelHopper.onChannelSwitch(handler);
     }
 
     public static void configureAsBroadMonitor(final Dot11MonitorProbe probe, UplinkHandler uplink) {

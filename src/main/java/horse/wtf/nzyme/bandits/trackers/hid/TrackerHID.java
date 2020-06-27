@@ -25,10 +25,6 @@ import java.util.List;
 
 public interface TrackerHID {
 
-    enum ChannelWidthChangeDirection {
-        WIDE, NARROW
-    }
-
     void initialize();
 
     void onConnectionStateChange(List<TrackerState> connectionState);
@@ -40,12 +36,9 @@ public interface TrackerHID {
     void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request);
     void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request);
 
-    // TODO implement
     void onInitialContactWithTrackedBandit(Bandit bandit);
-    void onBanditTrace(int rssi);
-    void onChannelSwitch(int newChannel);
-    void onChannelWidthChange(ChannelWidthChangeDirection direction, List<Integer> activeChannels);
+    void onBanditTrace(Bandit bandit, int rssi);
 
-    void onContactRequestReceived();
+    void onChannelSwitch(int previousChannel, int newChannel);
 
 }
