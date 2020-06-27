@@ -8,6 +8,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 
 import moment from "moment";
 import FrameCount from "./FrameCount";
+import AlertField from "./AlertField";
 
 class AlertDetailsPage extends Reflux.Component {
 
@@ -27,15 +28,6 @@ class AlertDetailsPage extends Reflux.Component {
         const alertId = this.alertId;
         AlertsActions.findOne(alertId);
         setInterval(function() { AlertsActions.findOne(alertId) }, 5000);
-    }
-
-    static _buildField(key, value) {
-        return (
-            <React.Fragment>
-                <dt>{key}</dt>
-                <dd>{value}</dd>
-            </React.Fragment>
-        )
     }
 
     render() {
@@ -73,7 +65,7 @@ class AlertDetailsPage extends Reflux.Component {
 
                                 <dl>
                                     {Object.keys(this.state.alert.fields).map(function (key) {
-                                        return (AlertDetailsPage._buildField(key, self.state.alert.fields[key]))
+                                        return <AlertField fieldKey={key} value={self.state.alert.fields[key]} fields={self.state.alert.fields} />
                                     })}
                                 </dl>
                             </p>
