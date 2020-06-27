@@ -7,8 +7,12 @@ class TrackBanditButton extends Reflux.Component {
         const bandit = this.props.bandit;
         const tracker = this.props.tracker;
 
+        if (tracker.state === "DARK") {
+            return <span />;
+        }
+
         let tracking;
-        if (tracker.state === "DARK" || tracker.has_pending_tracking_requests) {
+        if (tracker.has_pending_tracking_requests) {
             tracking = true;
         } else {
             if (tracker.tracking_mode) {

@@ -59,7 +59,7 @@ public class TrackersResource {
                     tracker.getLastSeen(),
                     tracker.getBanditHash(),
                     tracker.getBanditCount(),
-                    decideTrackerState(tracker),
+                    TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
                     tracker.getTrackingMode(),
                     nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
                     tracker.getRssi()
@@ -87,7 +87,7 @@ public class TrackersResource {
                 tracker.getLastSeen(),
                 tracker.getBanditHash(),
                 tracker.getBanditCount(),
-                decideTrackerState(tracker),
+                TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
                 tracker.getTrackingMode(),
                 nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
                 tracker.getRssi()
@@ -122,18 +122,6 @@ public class TrackersResource {
         nzyme.getGroundStation().cancelTrackRequest(name, trackRequest.banditUUID());
 
         return Response.accepted().build();
-    }
-
-    private TrackerState decideTrackerState(Tracker tracker) {
-        if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
-            return TrackerState.DARK;
-        } else {
-            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(nzyme.getContactManager().getBanditList()))) {
-                return TrackerState.ONLINE;
-            } else {
-                return TrackerState.OUT_OF_SYNC;
-            }
-        }
     }
 
 }

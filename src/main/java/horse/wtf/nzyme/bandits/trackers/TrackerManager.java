@@ -19,6 +19,8 @@ package horse.wtf.nzyme.bandits.trackers;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.bandits.BanditHashCalculator;
+import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,6 +102,18 @@ public class TrackerManager {
 
     public Map<String, Tracker> getTrackers() {
         return new HashMap<>(activeTrackers.get());
+    }
+
+    public static TrackerState decideTrackerState(Tracker tracker, BanditListProvider banditListProvider) {
+        if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
+            return TrackerState.DARK;
+        } else {
+            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(banditListProvider.getBanditList()))) {
+                return TrackerState.ONLINE;
+            } else {
+                return TrackerState.OUT_OF_SYNC;
+            }
+        }
     }
 
 }

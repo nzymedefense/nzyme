@@ -256,7 +256,7 @@ public class GroundStation implements Runnable {
                                 for (BanditTrackRequest outstandingRequest : new ArrayList<>(pendingStartBanditTrackRequests)) {
                                     Tracker tracker = trackerManager.getTrackers().get(outstandingRequest.trackerName());
 
-                                    if (tracker == null) {
+                                    if (tracker == null || TrackerManager.decideTrackerState(tracker, bandits).equals(TrackerState.DARK)) {
                                         LOG.info("Removing start bandit track request [{}] from list of outstanding requests. Reason: Tracker has disappeared.",
                                                 outstandingRequest);
                                         continue;
@@ -274,7 +274,7 @@ public class GroundStation implements Runnable {
                                 for (BanditTrackRequest outstandingRequest : new ArrayList<>(pendingCancelBanditTrackRequests)) {
                                     Tracker tracker = trackerManager.getTrackers().get(outstandingRequest.trackerName());
 
-                                    if (tracker == null) {
+                                    if (tracker == null || TrackerManager.decideTrackerState(tracker, bandits).equals(TrackerState.DARK)) {
                                         LOG.info("Removing cancel bandit track request [{}] from list of outstanding requests. Reason: Tracker has disappeared.",
                                                 outstandingRequest);
                                         continue;
