@@ -25,7 +25,8 @@ class ContactsTable extends Reflux.Component {
                             <th>Track</th>
                             <th>By</th>
                             <th>Active</th>
-                            <th>Frame Count</th>
+                            <th>Signal</th>
+                            <th>Frames</th>
                             <th>Duration</th>
                             <th>First Seen</th>
                             <th>Last Seen</th>

@@ -441,4 +441,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="19" author="lennartkoopmann">
+        <addColumn tableName="contacts">
+            <column name="last_signal" type="bigint" defaultValue="0">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -146,25 +146,6 @@ class TrackerDetailPage extends Reflux.Component {
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-md-12">
-                        <hr />
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <h3>Contacts</h3>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        tbd: show if curretly in contact, at which signal level and contact tracks.
-                    </div>
-                </div>
-
-
             </div>
         )
     }

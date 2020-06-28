@@ -1,5 +1,6 @@
 import React from 'react';
 import Reflux from "reflux";
+import RSSI from "../misc/RSSI";
 
 class BSSIDTableRowTop extends Reflux.Component {
 
@@ -35,20 +36,6 @@ class BSSIDTableRowTop extends Reflux.Component {
         }
 
         return x;
-    }
-
-    _signalQualityColor(quality) {
-        if (quality >= -60) {
-            return "text-success";
-        }
-
-        if (quality >= -70) {
-            return "text-warning";
-        }
-
-        if (quality < -50) {
-            return "text-danger";
-        }
     }
 
     static _decideWPSStatus(status) {
@@ -95,11 +82,7 @@ class BSSIDTableRowTop extends Reflux.Component {
             <tr>
                 <td><a href={"#" + this.props.bssid.bssid} title={this.props.bssid.last_seen}
                        onClick={this._bssidClick}>{this.props.bssid.bssid}</a></td>
-                <td>
-                    <span className={this._signalQualityColor(this.props.bssid.signal_strength)}>
-                        {this.props.bssid.signal_strength} dBm
-                    </span>
-                </td>
+                <td><RSSI rssi={this.props.bssid.signal_strength} /></td>
                 <td title={this.props.bssid.last_seen}>{this._printSSIDs()}</td>
                 <td>{this.props.bssid.oui}</td>
                 <td>{this._printSecurity()}</td>

@@ -30,10 +30,7 @@ import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.trackers.devices.SX126XLoRaHat;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
-import horse.wtf.nzyme.bandits.trackers.messagehandlers.BanditBroadcastMessageHandler;
-import horse.wtf.nzyme.bandits.trackers.messagehandlers.CancelTrackRequestMessageHandler;
-import horse.wtf.nzyme.bandits.trackers.messagehandlers.PingMessageHandler;
-import horse.wtf.nzyme.bandits.trackers.messagehandlers.StartTrackRequestMessageHandler;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.*;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
@@ -60,6 +57,7 @@ public class GroundStation implements Runnable {
     private BanditBroadcastMessageHandler banditBroadcastHandler;
     private StartTrackRequestMessageHandler startTrackRequestMessageHandler;
     private CancelTrackRequestMessageHandler cancelTrackRequestMessageHandler;
+    private ContactStatusMessageHandler contactStatusMessageHandler;
 
     private List<BanditTrackRequest> pendingStartBanditTrackRequests;
     private List<BanditTrackRequest> pendingCancelBanditTrackRequests;
@@ -176,6 +174,13 @@ public class GroundStation implements Runnable {
 
                 for (TrackerHID hid : hids) {
                     hid.onCancelTrackingRequestReceived(message.getCancelTrackRequest());
+                }
+            }
+
+            // Contact Status.
+            if (message.hasContactStatus()) {
+                if (contactStatusMessageHandler != null) {
+                    contactStatusMessageHandler.handle(message.getContactStatus());
                 }
             }
         });
@@ -385,6 +390,10 @@ public class GroundStation implements Runnable {
 
     public void onCancelTrackRequestReceived(CancelTrackRequestMessageHandler cancelTrackRequestMessageHandler) {
         this.cancelTrackRequestMessageHandler = cancelTrackRequestMessageHandler;
+    }
+
+    public void onContactStatusReceived(ContactStatusMessageHandler contactStatusMessageHandler) {
+        this.contactStatusMessageHandler = contactStatusMessageHandler;
     }
 
     public void handleTrackerConnectionStateChange(List<TrackerState> states) {

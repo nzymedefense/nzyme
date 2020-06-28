@@ -24,6 +24,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.*;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -220,22 +221,68 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         this.contacts = null;
     }
 
-    public boolean banditHasActiveContact(Bandit bandit) {
+    public void registerTrackerContactStatus(TrackerMessage.ContactStatus status) {
+        Optional<Bandit> opt = findBanditByUUID(UUID.fromString(status.getUuid()));
+        if (opt.isEmpty()) {
+            LOG.info("Ignoring contact status for non-existent bandit [{}].", status.getUuid());
+            return;
+        }
+
+        Bandit bandit = opt.get();
+        if (banditHasActiveContactOnSource(bandit, status.getSource())) {
+            // Update existing contact.
+            updateContactFrames(bandit, status.getSource(), status.getFrames(), status.getRssi());
+        } else {
+            // First contact.
+            registerContact(Contact.create(
+                    UUID.randomUUID(),
+                    DateTime.now(),
+                    DateTime.now(),
+                    status.getFrames(),
+                    Role.TRACKER,
+                    status.getSource(),
+                    status.getRssi(),
+                    bandit.databaseId(),
+                    bandit
+            ));
+        }
+    }
+
+    public boolean banditHasActiveContactOnSource(Bandit bandit, String sourceName) {
         long count = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM contacts " +
-                        "WHERE bandit_id = :bandit_id " +
+                        "WHERE bandit_id = :bandit_id AND source_name = :source_name " +
                         "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
-                .bind("bandit_id", bandit.databaseId())
-                .mapTo(Long.class)
-                .first());
+                        .bind("bandit_id", bandit.databaseId())
+                        .bind("source_name", sourceName)
+                        .mapTo(Long.class)
+                        .first());
         return count > 0;
     }
 
-    public void registerContactFrame(Bandit bandit, Dot11Frame frame) {
+    public void registerContactFrame(Bandit bandit, String sourceName, int rssi) {
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1, " +
-                "last_seen = (current_timestamp at time zone 'UTC') " +
-                "WHERE bandit_id = :bandit_id " +
+                "last_seen = (current_timestamp at time zone 'UTC'), last_signal = :last_signal " +
+                "WHERE bandit_id = :bandit_id AND source_name = :source_name " +
                 "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
+                .bind("source_name", sourceName)
+                .bind("last_signal", rssi)
+                .bind("bandit_id", bandit.databaseId())
+                .execute()
+        );
+
+        // TODO: this will cause way too many queries. find a better way.
+        this.contacts = null;
+    }
+
+    public void updateContactFrames(Bandit bandit, String sourceName, long frameCount, int rssi) {
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = :frame_count, " +
+                "last_seen = (current_timestamp at time zone 'UTC'), last_signal = :last_signal " +
+                "WHERE bandit_id = :bandit_id AND source_name = :source_name " +
+                "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
+                .bind("frame_count", frameCount)
+                .bind("last_signal", rssi)
+                .bind("source_name", sourceName)
                 .bind("bandit_id", bandit.databaseId())
                 .execute()
         );
@@ -264,6 +311,7 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
                     x.frameCount(),
                     x.sourceRole(),
                     x.sourceName(),
+                    x.lastSignal(),
                     x.banditId(),
                     findBanditByDatabaseId(x.banditId()).orElse(null)
             ));
@@ -292,7 +340,7 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
                 // If no identifier missed, this is a bandit frame.
                 if (identifierEngine.identify(frame, bandit)) {
                     // Create new contact if this is the first frame.
-                    if (!banditHasActiveContact(bandit)) {
+                    if (!banditHasActiveContactOnSource(bandit, nzyme.getConfiguration().nzymeId())) {
                         LOG.debug("New contact for bandit [{}].", bandit);
                         DateTime now = DateTime.now();
                         registerContact(Contact.create(
@@ -302,13 +350,14 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
                                 1L,
                                 Role.LEADER,
                                 nzyme.getConfiguration().nzymeId(),
+                                frame.meta().getAntennaSignal(),
                                 null,
                                 bandit
                         ));
                     }
 
                     LOG.debug("Registering frame for existing bandit [{}]", bandit);
-                    registerContactFrame(bandit, frame);
+                    registerContactFrame(bandit, nzyme.getConfiguration().nzymeId(), frame.meta().getAntennaSignal());
 
                     // Register/refresh alert.
                     if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {

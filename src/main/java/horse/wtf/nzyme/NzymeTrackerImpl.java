@@ -24,9 +24,11 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
@@ -153,7 +155,17 @@ public class NzymeTrackerImpl implements NzymeTracker {
                 .setNameFormat("contact-sender-%d").build())
                 .scheduleAtFixedRate(() -> {
                     if (banditManager.isCurrentlyTracking() && banditManager.hasActiveTrack()) {
-                        //groundStation.transmit(); // TODO
+                        Bandit bandit = banditManager.getCurrentlyTrackedBandit();
+                        TrackerTrackSummary trackSummary = banditManager.getTrackSummary();
+                        groundStation.transmit(TrackerMessage.Wrapper.newBuilder().setContactStatus(
+                                TrackerMessage.ContactStatus.newBuilder()
+                                        .setSource(configuration.nzymeId())
+                                        .setUuid(bandit.uuid().toString())
+                                        .setRssi(trackSummary.lastSignal())
+                                        .setLastSeen(trackSummary.lastContact().getMillis())
+                                        .setFrames(trackSummary.frameCount())
+                                        .build()
+                        ).build());
                     }
                 }, 0, 10, TimeUnit.SECONDS);
 

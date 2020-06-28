@@ -34,6 +34,7 @@ public abstract class Contact {
     public abstract Long frameCount();
     public abstract Role sourceRole();
     public abstract String sourceName();
+    public abstract int lastSignal();
 
     @Nullable
     public abstract Long banditId();
@@ -45,12 +46,7 @@ public abstract class Contact {
         return lastSeen().isAfter(DateTime.now().minusMinutes(TrackTimeout.MINUTES));
     }
 
-    public boolean isStationary() {
-        // TODO
-        return true;
-    }
-
-    public static Contact create(UUID uuid, DateTime firstSeen, DateTime lastSeen, Long frameCount, Role sourceRole, String sourceName, Long banditId, Bandit bandit) {
+    public static Contact create(UUID uuid, DateTime firstSeen, DateTime lastSeen, Long frameCount, Role sourceRole, String sourceName, int lastSignal, Long banditId, Bandit bandit) {
         return builder()
                 .uuid(uuid)
                 .firstSeen(firstSeen)
@@ -58,6 +54,7 @@ public abstract class Contact {
                 .frameCount(frameCount)
                 .sourceRole(sourceRole)
                 .sourceName(sourceName)
+                .lastSignal(lastSignal)
                 .banditId(banditId)
                 .bandit(bandit)
                 .build();
@@ -81,11 +78,12 @@ public abstract class Contact {
 
         public abstract Builder sourceName(String sourceName);
 
+        public abstract Builder lastSignal(int lastSignal);
+
         public abstract Builder banditId(Long banditId);
 
         public abstract Builder bandit(Bandit bandit);
 
         public abstract Contact build();
     }
-
 }

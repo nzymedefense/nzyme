@@ -26,10 +26,14 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
+import horse.wtf.nzyme.bandits.trackers.messagehandlers.ContactStatusMessageHandler;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
@@ -82,11 +86,14 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -289,7 +296,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         trackerManager,
                         configuration.trackerDevice()
                 );
+
+                // Pings.
                 this.groundStation.onPingReceived(this.trackerManager::registerTrackerPing);
+
+                // Contact status updates.
+                this.groundStation.onContactStatusReceived(contactManager::registerTrackerContactStatus);
 
                 new BanditListBroadcaster(this).initialize();
             } catch(Exception e) {

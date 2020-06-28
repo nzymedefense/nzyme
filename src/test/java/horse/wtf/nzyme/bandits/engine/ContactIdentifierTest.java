@@ -88,7 +88,7 @@ public class ContactIdentifierTest {
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", 0, bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -96,7 +96,7 @@ public class ContactIdentifierTest {
         UUID bandit2UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit2UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit2.databaseId(), bandit2));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", 0,bandit2.databaseId(), bandit2));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 2);
@@ -104,7 +104,8 @@ public class ContactIdentifierTest {
 
     @Test
     public void testBanditHasActiveContact() throws Exception {
-        ContactManager i = new ContactManager(new MockNzyme());
+        MockNzyme nzyme = new MockNzyme();
+        ContactManager i = new ContactManager(nzyme);
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
@@ -112,7 +113,7 @@ public class ContactIdentifierTest {
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.LEADER, nzyme.getConfiguration().nzymeId(), 0,bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -124,14 +125,15 @@ public class ContactIdentifierTest {
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 1);
 
-        assertTrue(i.banditHasActiveContact(bandit1));
-        assertFalse(i.banditHasActiveContact(bandit2));
-        assertFalse(i.banditHasActiveContact(Bandit.create(null, UUID.randomUUID(), "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList())));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
+        assertFalse(i.banditHasActiveContactOnSource(Bandit.create(null, UUID.randomUUID(), "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()), nzyme.getConfiguration().nzymeId()));
     }
 
     @Test
     public void testRegisterContactFrames() throws Exception, MalformedFrameException {
-        ContactManager i = new ContactManager(new MockNzyme());
+        MockNzyme nzyme = new MockNzyme();
+        ContactManager i = new ContactManager(nzyme);
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
@@ -140,26 +142,27 @@ public class ContactIdentifierTest {
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         UUID contact1UUID = UUID.randomUUID();
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(contact1UUID, DateTime.now(), DateTime.now(), 0L, Role.LEADER, "nzyme-test", bandit1.databaseId(), bandit1));
+        i.registerContact(Contact.create(contact1UUID, DateTime.now(), DateTime.now(), 0L, Role.LEADER, nzyme.getConfiguration().nzymeId(), 0,bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
 
         assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 0);
 
-        i.registerContactFrame(bandit1, new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
+        i.registerContactFrame(bandit1, nzyme.getConfiguration().nzymeId(), 0);
         assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 1);
 
-        i.registerContactFrame(bandit1, new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP));
+        i.registerContactFrame(bandit1, nzyme.getConfiguration().nzymeId(), 0);
         assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 2);
 
-        i.registerContactFrame(bandit1, new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP));
+        i.registerContactFrame(bandit1, nzyme.getConfiguration().nzymeId(), 0);
         assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 3);
     }
 
     @Test
     public void testIdentifyMatchesSimple() throws MalformedFrameException, Exception {
-        ContactManager i = new ContactManager(new MockNzyme());
+        MockNzyme nzyme = new MockNzyme();
+        ContactManager i = new ContactManager(nzyme);
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
@@ -167,15 +170,16 @@ public class ContactIdentifierTest {
         }}));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
-        assertFalse(i.banditHasActiveContact(bandit1));
+        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
 
         i.identify(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
-        assertTrue(i.banditHasActiveContact(bandit1));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
     }
 
     @Test
     public void testIdentifyMatchesMultiple() throws MalformedFrameException, Exception {
-        ContactManager i = new ContactManager(new MockNzyme());
+        MockNzyme nzyme = new MockNzyme();
+        ContactManager i = new ContactManager(nzyme);
 
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), new ArrayList<BanditIdentifier>(){{
@@ -193,12 +197,12 @@ public class ContactIdentifierTest {
         }}));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
-        assertFalse(i.banditHasActiveContact(bandit1));
-        assertFalse(i.banditHasActiveContact(bandit2));
+        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
 
         i.identify(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
-        assertTrue(i.banditHasActiveContact(bandit1));
-        assertFalse(i.banditHasActiveContact(bandit2));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
     }
 
 }

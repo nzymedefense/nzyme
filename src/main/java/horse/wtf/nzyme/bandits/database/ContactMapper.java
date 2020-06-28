@@ -39,6 +39,7 @@ public class ContactMapper implements RowMapper<Contact> {
                 rs.getLong("frame_count"),
                 Role.valueOf(rs.getString("source_role")),
                 rs.getString("source_name"),
+                rs.getInt("last_signal"),
                 rs.getLong("bandit_id"),
                 null
         );

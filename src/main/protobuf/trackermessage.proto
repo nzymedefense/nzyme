@@ -72,6 +72,6 @@ message ContactStatus {
     string uuid = 2;
     sint32 rssi = 5;
     int64 lastSeen = 3;
-    int32 frames = 4;
+    int64 frames = 4;
 
 }
