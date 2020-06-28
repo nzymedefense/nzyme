@@ -110,8 +110,8 @@ public class TextGUIHID implements TrackerHID {
                         labelBandit.setForegroundColor(TextColor.ANSI.WHITE);
 
                         labelTrack.setText("  N/A  ");
-                        labelBandit.setForegroundColor(TextColor.ANSI.WHITE);
-                        labelBandit.setBackgroundColor(TextColor.ANSI.BLACK);
+                        labelTrack.setForegroundColor(TextColor.ANSI.WHITE);
+                        labelTrack.setBackgroundColor(TextColor.ANSI.BLACK);
 
                         labelTrackSignal.setText("    N/A");
                         labelTrackSignal.setForegroundColor(TextColor.ANSI.WHITE);
