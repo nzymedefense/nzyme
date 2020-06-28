@@ -15,7 +15,7 @@ class ContactsTableRow extends Reflux.Component {
                 <td>{contact.uuid.substr(0, 8)}</td>
                 <td>{contact.source_name} ({contact.source_role})</td>
                 <td>{contact.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
-                <td><RSSI rssi={contact.last_signal} /></td>
+                <td>{contact.is_active ? <RSSI rssi={contact.last_signal} /> : "n/a"}</td>
                 <td>{numeral(contact.frame_count).format('0,0')}</td>
                 <td>
                     <Timespan from={contact.first_seen} to={contact.last_seen} />
