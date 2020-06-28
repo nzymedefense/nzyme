@@ -20,7 +20,10 @@ package horse.wtf.nzyme.rest.responses.trackers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
+import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import org.joda.time.DateTime;
+
+import java.util.List;
 
 @AutoValue
 public abstract class TrackerResponse {
@@ -49,13 +52,16 @@ public abstract class TrackerResponse {
     @JsonProperty("tracking_mode")
     public abstract String trackingMode();
 
+    @JsonProperty("contacts")
+    public abstract List<ContactResponse> contacts();
+
     @JsonProperty("has_pending_tracking_requests")
     public abstract boolean hasPendingTrackingRequests();
 
     @JsonProperty
     public abstract int rssi();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, boolean hasPendingTrackingRequests, int rssi) {
+    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, List<ContactResponse> contacts, boolean hasPendingTrackingRequests, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
@@ -65,6 +71,7 @@ public abstract class TrackerResponse {
                 .banditCount(banditCount)
                 .state(state)
                 .trackingMode(trackingMode)
+                .contacts(contacts)
                 .hasPendingTrackingRequests(hasPendingTrackingRequests)
                 .rssi(rssi)
                 .build();
@@ -92,11 +99,12 @@ public abstract class TrackerResponse {
 
         public abstract Builder trackingMode(String trackingMode);
 
+        public abstract Builder contacts(List<ContactResponse> contacts);
+
         public abstract Builder hasPendingTrackingRequests(boolean hasPendingTrackingRequests);
 
         public abstract Builder rssi(int rssi);
 
         public abstract TrackerResponse build();
     }
-
 }

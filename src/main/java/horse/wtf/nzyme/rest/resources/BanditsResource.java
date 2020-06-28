@@ -349,6 +349,8 @@ public class BanditsResource {
                     contact.lastSeen(),
                     contact.isActive(),
                     contact.lastSignal(),
+                    bandit.uuid().toString(),
+                    bandit.name(),
                     contact.sourceRole().toString(),
                     contact.sourceName()
             ));

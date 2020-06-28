@@ -146,6 +146,25 @@ class TrackerDetailPage extends Reflux.Component {
                     </div>
                 </div>
 
+                <div className="row">
+                    <div className="col-md-12">
+                        <hr />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <h3>Contacts <small>Last 50</small></h3>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        TODO
+                    </div>
+                </div>
+
+
             </div>
         )
     }

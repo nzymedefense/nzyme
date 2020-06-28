@@ -19,17 +19,18 @@ package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.bandits.BanditHashCalculator;
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
-import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
+import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
+import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackersListResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Path("/api/trackers")
 @Secured
@@ -61,6 +63,7 @@ public class TrackersResource {
                     tracker.getBanditCount(),
                     TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
                     tracker.getTrackingMode(),
+                    buildContactList(nzyme.getContactManager().findContactsOfTracker(tracker)),
                     nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
                     tracker.getRssi()
             ));
@@ -81,21 +84,48 @@ public class TrackersResource {
             Tracker tracker = trackers.get(name);
 
             return Response.ok(TrackerResponse.create(
-                tracker.getName(),
-                tracker.getVersion(),
-                tracker.getDrift(),
-                tracker.getLastSeen(),
-                tracker.getBanditHash(),
-                tracker.getBanditCount(),
-                TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
-                tracker.getTrackingMode(),
-                nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
-                tracker.getRssi()
+                    tracker.getName(),
+                    tracker.getVersion(),
+                    tracker.getDrift(),
+                    tracker.getLastSeen(),
+                    tracker.getBanditHash(),
+                    tracker.getBanditCount(),
+                    TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
+                    tracker.getTrackingMode(),
+                    buildContactList(nzyme.getContactManager().findContactsOfTracker(tracker)),
+                    nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
+                    tracker.getRssi()
             )).build();
         } else {
             LOG.info("Tracker [{}] not found.", name);
             return Response.status(404).build();
         }
+    }
+
+    private List<ContactResponse> buildContactList(List<Contact> contacts) {
+        List<ContactResponse> result = Lists.newArrayList();
+        for (Contact contact : contacts) {
+            Optional<Bandit> opt = nzyme.getContactManager().findBanditByDatabaseId(contact.banditId());
+            if (opt.isEmpty()) {
+                continue;
+            }
+            Bandit bandit = opt.get();
+
+            result.add(ContactResponse.create(
+                    contact.uuid(),
+                    contact.frameCount(),
+                    contact.firstSeen(),
+                    contact.lastSeen(),
+                    contact.isActive(),
+                    contact.lastSignal(),
+                    bandit.uuid().toString(),
+                    bandit.name(),
+                    contact.sourceRole().toString(),
+                    contact.sourceName()
+            ));
+        }
+
+        return result;
     }
 
     @POST

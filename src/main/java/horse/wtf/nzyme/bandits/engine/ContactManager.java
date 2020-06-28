@@ -24,6 +24,7 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.BanditContactAlert;
 import horse.wtf.nzyme.bandits.*;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
+import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import org.apache.logging.log4j.LogManager;
@@ -325,6 +326,15 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM contacts WHERE bandit_id = :bandit_id ORDER BY last_seen DESC LIMIT 50")
                         .bind("bandit_id", bandit.databaseId())
+                        .mapTo(Contact.class)
+                        .list()
+        );
+    }
+
+    public List<Contact> findContactsOfTracker(Tracker tracker) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM contacts WHERE source_name = :source_name ORDER BY last_seen DESC LIMIT 50")
+                        .bind("source_name", tracker.getName())
                         .mapTo(Contact.class)
                         .list()
         );
