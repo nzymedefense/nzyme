@@ -103,7 +103,7 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-                NzymeLeader nzyme = new NzymeLeaderImpl(leaderConfiguration, database);
+                NzymeLeader nzyme = new NzymeLeaderImpl(baseConfiguration, leaderConfiguration, database);
                 nzyme.initialize();
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -126,7 +126,7 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-                NzymeTracker tracker = new NzymeTrackerImpl(trackerConfiguration);
+                NzymeTracker tracker = new NzymeTrackerImpl(baseConfiguration, trackerConfiguration);
                 tracker.initialize();
         }
 

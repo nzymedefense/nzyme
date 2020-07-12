@@ -35,8 +35,10 @@ import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
+import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.interceptors.BanditIdentifierInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -59,6 +61,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final Version version;
 
     private final TrackerConfiguration configuration;
+    private final BaseConfiguration baseConfiguration;
     private final ExecutorService probeExecutor;
     private final GroundStation groundStation;
     private final TrackerBanditManager banditManager;
@@ -69,11 +72,16 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final MetricRegistry metrics;
     private final ObjectMapper om;
 
+    private final Anonymizer anonymizer;
+
     private final List<TrackerHID> hids;
 
-    public NzymeTrackerImpl(TrackerConfiguration configuration) {
+    public NzymeTrackerImpl(BaseConfiguration baseConfiguration, TrackerConfiguration configuration) {
         this.version = new Version();
         this.configuration = configuration;
+        this.baseConfiguration = baseConfiguration;
+
+        this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
 
         this.probes = Lists.newArrayList();
         this.hids = Lists.newArrayList();
@@ -188,7 +196,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     m.channelHopCommand(),
                     null,
                     null
-            ), metrics, statistics);
+            ), metrics, statistics, anonymizer);
 
             probe.onChannelSwitch((previousChannel, newChannel) -> {
                 for (TrackerHID hid : hids) {
@@ -218,6 +226,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public TrackerConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public BaseConfiguration getBaseConfiguration() {
+        return baseConfiguration;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -11,7 +12,7 @@ public class Dot11DeauthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParse() throws IllegalRawDataException {
-        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry())
+        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "b0:93:5b:1d:c8:f1");
@@ -23,7 +24,7 @@ public class Dot11DeauthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseAntherReason() throws IllegalRawDataException {
-        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry())
+        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.DEAUTH_2_PAYLOAD, Frames.DEAUTH_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "c2:93:5b:1d:c8:f1");

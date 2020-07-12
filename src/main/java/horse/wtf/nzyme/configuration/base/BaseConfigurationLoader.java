@@ -51,15 +51,41 @@ public class BaseConfigurationLoader {
     }
 
     public BaseConfiguration get() {
-        return BaseConfiguration.create(parseRole());
+        return BaseConfiguration.create(parseRole(), parseDataDirectory(), parseAnonymize());
     }
 
     public Role parseRole() {
         return general.getEnum(Role.class, ConfigurationKeys.ROLE);
     }
 
+    private String parseDataDirectory() {
+        return general.getString(ConfigurationKeys.DATA_DIRECTORY);
+    }
+
+    public boolean parseAnonymize() {
+        if (!general.hasPath(ConfigurationKeys.ANONYMIZE)) {
+            return false;
+        } else {
+            return general.getBoolean(ConfigurationKeys.ANONYMIZE);
+        }
+    }
+
     public void validate() throws InvalidConfigurationException, IncompleteConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
+
+        // Data directory exists and is readable?
+        File dataDirectory = new File(parseDataDirectory());
+        if (!dataDirectory.exists()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] does not exist.");
+        }
+
+        if (!dataDirectory.isDirectory()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] is not a directory.");
+        }
+
+        if (!dataDirectory.canWrite()) {
+            throw new InvalidConfigurationException("Data directory [" + parseDataDirectory() + "] is not writable.");
+        }
     }
 
 

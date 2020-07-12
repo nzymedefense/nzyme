@@ -2,6 +2,7 @@ package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -12,7 +13,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseSuccessfulAuthStage1() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_SUCCESS_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.OPEN_SYSTEM);
@@ -25,7 +26,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseSuccessfulAuthStage2() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_SUCCESS_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.OPEN_SYSTEM);
@@ -38,7 +39,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseFailedAuth() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_FAILED_STAGE_1_PAYLOAD, Frames.AUTH_FAILED_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.OPEN_SYSTEM);
@@ -51,7 +52,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseInvalidResponse() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_INVALID_RESPONSE_STAGE_1_PAYLOAD, Frames.AUTH_INVALID_RESPONSE_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.OPEN_SYSTEM);
@@ -64,7 +65,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseSuccessfulAuthWEPStage1() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_SUCCESS_WEP_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY);
@@ -77,7 +78,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseSuccessfulAuthWEPStage2() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_SUCCESS_WEP_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY);
@@ -90,7 +91,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseSuccessfulAuthWEPStage4() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_SUCCESS_WEP_STAGE_4_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_4_HEADER, META_NO_WEP);
 
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY);
@@ -103,7 +104,7 @@ public class Dot11AuthenticationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseFailedAuthWEPStage4() throws MalformedFrameException, IllegalRawDataException {
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.AUTH_FAILED_WEP_STAGE_4_PAYLOAD, Frames.AUTH_FAILED_WEP_STAGE_4_HEADER, META_NO_WEP);
         
         assertEquals(frame.algorithm(), Dot11AuthenticationFrameParser.ALGORITHM_TYPE.SHARED_KEY);

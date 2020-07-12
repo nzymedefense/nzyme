@@ -19,13 +19,18 @@ package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.*;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeResponseFrame> {
 
-    public Dot11ProbeResponseFrameParser(MetricRegistry metrics) {
+    private final Anonymizer anonymizer;
+
+    public Dot11ProbeResponseFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -48,6 +53,12 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
         String transmitter = "";
         if (probeReponse.getHeader().getAddress2() != null) {
             transmitter = probeReponse.getHeader().getAddress2().toString();
+        }
+
+        if (anonymizer.isEnabled()) {
+            ssid = anonymizer.anonymizeSSID(ssid);
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
+            destination = anonymizer.anonymizeBSSID(destination);
         }
 
         return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);

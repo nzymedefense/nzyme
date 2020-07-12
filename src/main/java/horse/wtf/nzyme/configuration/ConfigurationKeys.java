@@ -82,6 +82,6 @@ public class ConfigurationKeys {
     public static final String TRACKER_NAME = "tracker_name";
     public static final String PHONE_FROM = "phone_from";
     public static final String PHONE_TO = "phone_to";
-
+    public static final String ANONYMIZE = "anonymize";
 
 }

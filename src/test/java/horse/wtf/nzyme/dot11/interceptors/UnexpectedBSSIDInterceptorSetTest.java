@@ -9,6 +9,7 @@ import horse.wtf.nzyme.alerts.UnexpectedBSSIDProbeRespAlert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
@@ -36,19 +37,19 @@ public class UnexpectedBSSIDInterceptorSetTest extends InterceptorSetTest {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{ add(UnexpectedBSSIDBeaconAlert.class); }});
 
                 // Expected beacon.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
 
                 // Beacon from a wrong BSSID but different network. Should not trigger.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
 
                 // Unexpected beacon.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_WTF_SPOOFED_MAC_PAYLOAD, Frames.BEACON_WTF_SPOOFED_MAC_HEADER, META_NO_WEP
                 ));
                 assertNotNull(loopback.getLastAlert());
@@ -61,19 +62,19 @@ public class UnexpectedBSSIDInterceptorSetTest extends InterceptorSetTest {
                 assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{ add(UnexpectedBSSIDProbeRespAlert.class); }});
 
                 // Expected probe-resp.
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_3_PAYLOAD, Frames.PROBE_RESP_3_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
 
                 // Probe-resp from a wrong BSSID but different network. Should not trigger.
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
 
                 // Unexpected probe-resp.
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_WTF_SPOOFED_MAC_PAYLOAD, Frames.PROBE_RESP_WTF_SPOOFED_MAC_HEADER, META_NO_WEP
                 ));
                 assertNotNull(loopback.getLastAlert());

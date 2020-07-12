@@ -6,6 +6,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
@@ -26,12 +27,12 @@ public class PwnagotchiAdvertisementInterceptorTest extends InterceptorSetTest {
         PwnagotchiAdvertisementInterceptor interceptor = new PwnagotchiAdvertisementInterceptor(nzyme.getAlertsService());
 
         assertEquals(interceptor.raisesAlerts(), new ArrayList<Class<? extends Alert>>(){{ add(PwnagotchiAdvertisementAlert.class); }});
-        interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
         ));
         assertNull(loopback.getLastAlert());
 
-        interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PWNAGOTCHI_ADVERTISEMENT_BEACON_1_PAYLOAD, Frames.PWNAGOTCHI_ADVERTISEMENT_BEACON_1_HEADER, META_NO_WEP
         ));
         assertNotNull(loopback.getLastAlert());

@@ -22,16 +22,18 @@ import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationRequestFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11AssociationRequestFrame> {
 
-    private static final int SSID_LENGTH_POSITION = 29;
-    private static final int SSID_POSITION = 30;
+    private final Anonymizer anonymizer;
 
-    public Dot11AssociationRequestFrameParser(MetricRegistry metrics) {
+    public Dot11AssociationRequestFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -54,6 +56,12 @@ public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11As
             ssid = taggedParameters.getSSID();
         } catch(Dot11TaggedParameters.NoSuchTaggedElementException e) {
             throw new IllegalRawDataException("No SSID in assoc-req frame. Not even empty SSID. This is a malformed frame.");
+        }
+
+        if (anonymizer.isEnabled()) {
+            ssid = anonymizer.anonymizeSSID(ssid);
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
+            destination = anonymizer.anonymizeBSSID(destination);
         }
 
         return Dot11AssociationRequestFrame.create(ssid, destination, transmitter, meta);

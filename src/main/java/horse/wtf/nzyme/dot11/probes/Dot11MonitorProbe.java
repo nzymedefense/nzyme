@@ -30,6 +30,7 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.handlers.*;
 import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
@@ -81,7 +82,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
 
-    public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics) {
+    public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics, Anonymizer anonymizer) {
         super(configuration, statistics, metrics);
 
         this.statistics = statistics;
@@ -90,14 +91,14 @@ public class Dot11MonitorProbe extends Dot11Probe {
         this.frameInterceptors = Lists.newArrayList();
 
         // Parsers.
-        beaconParser = new Dot11BeaconFrameParser(metrics);
-        associationRequestParser = new Dot11AssociationRequestFrameParser(metrics);
-        associationResponseParser = new Dot11AssociationResponseFrameParser(metrics);
-        probeRequestParser = new Dot11ProbeRequestFrameParser(metrics);
-        probeResponseFrameParser = new Dot11ProbeResponseFrameParser(metrics);
-        disassociationParser = new Dot11DisassociationFrameParser(metrics);
-        authenticationFrameParser = new Dot11AuthenticationFrameParser(metrics);
-        deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics);
+        beaconParser = new Dot11BeaconFrameParser(metrics, anonymizer);
+        associationRequestParser = new Dot11AssociationRequestFrameParser(metrics, anonymizer);
+        associationResponseParser = new Dot11AssociationResponseFrameParser(metrics, anonymizer);
+        probeRequestParser = new Dot11ProbeRequestFrameParser(metrics, anonymizer);
+        probeResponseFrameParser = new Dot11ProbeResponseFrameParser(metrics, anonymizer);
+        disassociationParser = new Dot11DisassociationFrameParser(metrics, anonymizer);
+        authenticationFrameParser = new Dot11AuthenticationFrameParser(metrics, anonymizer);
+        deauthenticationFrameParser = new Dot11DeauthenticationFrameParser(metrics, anonymizer);
 
         // Metrics.
         this.globalFrameMeter = metrics.meter(MetricNames.FRAME_COUNT);

@@ -2,6 +2,7 @@ package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -12,7 +13,7 @@ public class Dot11ProbeRequestFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParse() throws MalformedFrameException, IllegalRawDataException {
-        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
+        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "ATT6r8YXW9");
@@ -22,7 +23,7 @@ public class Dot11ProbeRequestFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseAnotherFrame() throws MalformedFrameException, IllegalRawDataException {
-        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
+        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.PROBE_REQ_2_PAYLOAD, Frames.PROBE_REQ_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "TMobileWingman");
@@ -32,7 +33,7 @@ public class Dot11ProbeRequestFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseBroadcast() throws MalformedFrameException, IllegalRawDataException {
-        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry())
+        Dot11ProbeRequestFrame frame = new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.PROBE_REQ_BROADCAST_1_PAYLOAD, Frames.PROBE_REQ_BROADCAST_1_HEADER, META_NO_WEP);
 
         assertNull(frame.ssid());

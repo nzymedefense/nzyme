@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Strings;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.util.Tools;
 import org.pcap4j.packet.Dot11ProbeRequestPacket;
@@ -30,8 +31,12 @@ import java.text.Normalizer;
 
 public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeRequestFrame> {
 
-    public Dot11ProbeRequestFrameParser(MetricRegistry metrics) {
+    private final Anonymizer anonymizer;
+
+    public Dot11ProbeRequestFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -61,6 +66,11 @@ public class Dot11ProbeRequestFrameParser extends Dot11FrameParser<Dot11ProbeReq
             requester = probeRequest.getHeader().getAddress2().toString();
         } else {
             throw new MalformedFrameException("Missing requester address.");
+        }
+
+        if (anonymizer.isEnabled()) {
+            ssid = anonymizer.anonymizeSSID(ssid);
+            requester = anonymizer.anonymizeBSSID(requester);
         }
 
         return Dot11ProbeRequestFrame.create(requester, ssid, broadcastProbe, meta);

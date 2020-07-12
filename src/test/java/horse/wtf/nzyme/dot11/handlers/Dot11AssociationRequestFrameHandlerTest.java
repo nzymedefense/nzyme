@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationRequestFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AssociationRequestFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
@@ -26,7 +27,7 @@ public class Dot11AssociationRequestFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AssociationRequestFrame frame = new Dot11AssociationRequestFrameParser(new MetricRegistry())
+        Dot11AssociationRequestFrame frame = new Dot11AssociationRequestFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP);
 
         new Dot11AssociationRequestFrameHandler(probe, nzyme).handle(frame);

@@ -3,6 +3,7 @@ package horse.wtf.nzyme.dot11.parsers;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -13,7 +14,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseWPA1WPA2EAMPSKCCMP() throws MalformedFrameException, IllegalRawDataException {
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "WTF");
@@ -25,7 +26,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseWPA1WPA2EAMPSKCCMPTKIP() throws MalformedFrameException, IllegalRawDataException {
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "WTF");
@@ -37,7 +38,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseNoSecurity() throws MalformedFrameException, IllegalRawDataException {
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "United_Wi-Fi");
@@ -49,7 +50,7 @@ public class Dot11BeaconFrameParserTest extends FrameParserTest {
 
     @Test
     public void testdoParseBroadcast() throws MalformedFrameException, IllegalRawDataException {
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP);
 
         assertNull(frame.ssid());

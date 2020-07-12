@@ -2,6 +2,7 @@ package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -12,7 +13,7 @@ public class Dot11ProbeResponseFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParse() throws MalformedFrameException, IllegalRawDataException {
-        Dot11ProbeResponseFrame frame = new Dot11ProbeResponseFrameParser(new MetricRegistry())
+        Dot11ProbeResponseFrame frame = new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "Home 5F48");
@@ -25,7 +26,7 @@ public class Dot11ProbeResponseFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseNoSecurity() throws MalformedFrameException, IllegalRawDataException {
-        Dot11ProbeResponseFrame frame = new Dot11ProbeResponseFrameParser(new MetricRegistry())
+        Dot11ProbeResponseFrame frame = new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.PROBE_RESP_NO_SECURITY_1_PAYLOAD, Frames.PROBE_RESP_NO_SECURITY_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.ssid(), "xfinitywifi");

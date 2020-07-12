@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AssociationRequestFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeRequestFrameParser;
@@ -21,7 +22,7 @@ public class ClientsTest {
     public void testRegisterProbeRequestFrame() throws MalformedFrameException, IllegalRawDataException {
         Clients c = new Clients(new MockNzyme());
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
         ));
 
@@ -36,11 +37,11 @@ public class ClientsTest {
     public void testRegisterProbeRequestFrameMultiple() throws MalformedFrameException, IllegalRawDataException {
         Clients c = new Clients(new MockNzyme());
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
         ));
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_2_PAYLOAD, Frames.PROBE_REQ_2_HEADER, META_NO_WEP
         ));
 
@@ -51,7 +52,7 @@ public class ClientsTest {
     public void testRegisterAssociationRequestFrame() throws MalformedFrameException, IllegalRawDataException {
         Clients c = new Clients(new MockNzyme());
 
-        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry()).parse(
+        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP
         ));
 
@@ -66,19 +67,19 @@ public class ClientsTest {
     public void testRegisterMutlipleTypesAndUpdates() throws MalformedFrameException, IllegalRawDataException {
         Clients c = new Clients(new MockNzyme());
 
-        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry()).parse(
+        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP
         ));
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
         ));
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_2_PAYLOAD, Frames.PROBE_REQ_2_HEADER, META_NO_WEP
         ));
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
         ));
 
@@ -101,11 +102,11 @@ public class ClientsTest {
     public void testRetentionClean() throws MalformedFrameException, IllegalRawDataException {
         Clients c = new Clients(new MockNzyme());
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
         ));
 
-        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+        c.registerProbeRequestFrame(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_REQ_2_PAYLOAD, Frames.PROBE_REQ_2_HEADER, META_NO_WEP
         ));
 
@@ -117,7 +118,7 @@ public class ClientsTest {
             Thread.sleep(2000);
         } catch (InterruptedException e) { fail("interrupted"); }
 
-        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry()).parse(
+        c.registerAssociationRequestFrame(new Dot11AssociationRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP
         ));
 

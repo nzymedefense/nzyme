@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationResponseFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.util.ByteArrays;
@@ -29,11 +30,15 @@ import java.nio.ByteOrder;
 
 public class Dot11AssociationResponseFrameParser extends Dot11FrameParser<Dot11AssociationResponseFrame> {
 
+    private final Anonymizer anonymizer;
+
     private static final int STATUS_CODE_POSITION = 26;
     private static final int STATUS_CODE_LENGTH = 2;
 
-    public Dot11AssociationResponseFrameParser(MetricRegistry metrics) {
+    public Dot11AssociationResponseFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -67,6 +72,11 @@ public class Dot11AssociationResponseFrameParser extends Dot11FrameParser<Dot11A
         String transmitter = "";
         if(associationResponse.getHeader().getAddress2() != null) {
             transmitter = associationResponse.getHeader().getAddress2().toString();
+        }
+
+        if (anonymizer.isEnabled()) {
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
+            destination = anonymizer.anonymizeBSSID(destination);
         }
 
         return Dot11AssociationResponseFrame.create(transmitter, destination, response, responseCode, meta);

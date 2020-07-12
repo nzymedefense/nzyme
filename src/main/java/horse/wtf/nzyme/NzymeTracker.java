@@ -23,6 +23,7 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
+import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 
@@ -36,6 +37,7 @@ public interface NzymeTracker extends UplinkHandler  {
     ObjectMapper getObjectMapper();
 
     TrackerConfiguration getConfiguration();
+    BaseConfiguration getBaseConfiguration();
 
     GroundStation getGroundStation();
     TrackerBanditManager getBanditManager();

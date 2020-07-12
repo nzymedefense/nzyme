@@ -35,10 +35,12 @@ import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.ContactStatusMessageHandler;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.*;
+import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.debug.LeaderDebug;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
@@ -127,13 +129,15 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final ContactManager contactManager;
     private final TrackerManager trackerManager;
 
+    private final Anonymizer anonymizer;
+
     private GroundStation groundStation;
 
     private final List<Alert.TYPE_WIDE> configuredAlerts;
 
     private HttpServer httpServer;
 
-    public NzymeLeaderImpl(LeaderConfiguration configuration, Database database) {
+    public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
         this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
@@ -148,6 +152,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.networks = new Networks(this);
         this.clients = new Clients(this);
         this.objectMapper = new ObjectMapper();
+
+        this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());
@@ -356,7 +362,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channelHopCommand(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
-            ), metrics, statistics);
+            ), metrics, statistics, anonymizer);
 
             // Add standard interceptors for broad channel monitoring.
             Dot11MonitorProbe.configureAsBroadMonitor(probe, this);

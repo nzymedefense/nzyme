@@ -5,6 +5,7 @@ import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.*;
 import horse.wtf.nzyme.dot11.probes.Dot11MockProbe;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
@@ -26,25 +27,25 @@ public class NetworksAndClientsInterceptorSetTest extends InterceptorSetTest {
 
         for (Dot11FrameInterceptor interceptor : set.getInterceptors()) {
             if (interceptor.forSubtype() == Dot11FrameSubtype.BEACON) {
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
             }
 
             if (interceptor.forSubtype() == Dot11FrameSubtype.PROBE_RESPONSE) {
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP
                 ));
             }
 
             if (interceptor.forSubtype() == Dot11FrameSubtype.PROBE_REQUEST) {
-                interceptor.intercept(new Dot11ProbeRequestFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_REQ_1_PAYLOAD, Frames.PROBE_REQ_1_HEADER, META_NO_WEP
                 ));
             }
 
             if (interceptor.forSubtype() == Dot11FrameSubtype.ASSOCIATION_REQUEST) {
-                interceptor.intercept(new Dot11AssociationRequestFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11AssociationRequestFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.ASSOC_REQ_1_PAYLOAD, Frames.ASSOC_REQ_1_HEADER, META_NO_WEP
                 ));
             }

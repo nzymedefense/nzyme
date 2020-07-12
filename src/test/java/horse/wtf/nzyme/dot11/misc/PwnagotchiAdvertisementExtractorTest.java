@@ -3,6 +3,7 @@ package horse.wtf.nzyme.dot11.misc;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
@@ -21,7 +22,7 @@ public class PwnagotchiAdvertisementExtractorTest {
     @Test
     public void testExtractAdvertisement() throws MalformedFrameException, IllegalRawDataException {
         PwnagotchiAdvertisementExtractor extractor = new PwnagotchiAdvertisementExtractor();
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry())
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.PWNAGOTCHI_ADVERTISEMENT_BEACON_1_PAYLOAD, Frames.PWNAGOTCHI_ADVERTISEMENT_BEACON_1_HEADER, META);
 
         Optional<PwnagotchiAdvertisement> extract = extractor.extract(frame);
@@ -39,7 +40,7 @@ public class PwnagotchiAdvertisementExtractorTest {
     @Test
     public void testExtractNonAdvertisement() throws MalformedFrameException, IllegalRawDataException {
         PwnagotchiAdvertisementExtractor extractor = new PwnagotchiAdvertisementExtractor();
-        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META);
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META);
 
         assertFalse(extractor.extract(frame).isPresent());
     }

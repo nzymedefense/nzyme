@@ -11,6 +11,7 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
@@ -69,13 +70,13 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
                 assertTrue(interceptor.raisesAlerts().isEmpty());
 
                 // Beacon for a different SSID.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
                 ));
                 assertFalse(nzyme.getContactManager().banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
 
                 // Beacon for bandit SSID.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
                 assertTrue(nzyme.getContactManager().banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
@@ -85,13 +86,13 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
                 assertTrue(interceptor.raisesAlerts().isEmpty());
 
                 // Probe-resp for a different SSID.
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_1_PAYLOAD, Frames.PROBE_RESP_1_HEADER, META_NO_WEP
                 ));
                 assertFalse(nzyme.getContactManager().banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
 
                 // Probe-resp for bandit SSID.
-                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.PROBE_RESP_2_PAYLOAD, Frames.PROBE_RESP_2_HEADER, META_NO_WEP
                 ));
                 assertTrue(nzyme.getContactManager().banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
@@ -101,13 +102,13 @@ public class BanditIdentifierInterceptorSetTest extends InterceptorSetTest {
                 assertTrue(interceptor.raisesAlerts().isEmpty());
 
                 // Probe-resp for a different SSID.
-                interceptor.intercept(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, new Dot11MetaInformation(false, -50, 1000, 9001, 0L, false)
                 ));
                 assertFalse(nzyme.getContactManager().banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
 
                 // Probe-resp for bandit SSID.
-                interceptor.intercept(new Dot11DeauthenticationFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, new Dot11MetaInformation(false, -85, 1000, 9001, 0L, false)
                 ));
                 assertTrue(nzyme.getContactManager().banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));

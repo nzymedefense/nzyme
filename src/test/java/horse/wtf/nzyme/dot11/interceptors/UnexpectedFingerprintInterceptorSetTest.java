@@ -10,6 +10,7 @@ import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
@@ -40,21 +41,21 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                 }});
 
                 // Expected beacon.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
                 reset(loopback, nzyme);
 
                 // Beacon with a wrong fingerprint but different BSSID. Should not trigger.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
                 ));
                 assertNull(loopback.getLastAlert());
                 reset(loopback, nzyme);
 
                 // TODO: Unexpected fingerprint.
-                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+                interceptor.intercept(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                         Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_PAYLOAD, META_NO_WEP
                 ));
                 assertNotNull(loopback.getLastAlert());

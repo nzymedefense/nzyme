@@ -6,6 +6,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
@@ -27,47 +28,47 @@ public class NetworksTest {
     public void testRegisterFrames() throws MalformedFrameException, IllegalRawDataException {
         Networks n = new Networks(new MockNzyme());
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, new Dot11MetaInformation(
                         false, -59, 2400, 1, 0L, false)
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, new Dot11MetaInformation(
                         false, -54, 2400, 1, 0L, false)
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, new Dot11MetaInformation(
                         false, -57, 2400, 6, 0L, false)
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, new Dot11MetaInformation(
                         false, -56, 2400, 6, 0L, false)
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, new Dot11MetaInformation(
                         false, -52, 2400, 6, 0L, false)
         ));
 
-        n.registerProbeResponseFrame(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+        n.registerProbeResponseFrame(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_RESP_2_PAYLOAD, Frames.PROBE_RESP_2_HEADER, new Dot11MetaInformation(
                         false, -72, 2400, 1, 0L, false)
         ));
 
-        n.registerProbeResponseFrame(new Dot11ProbeResponseFrameParser(new MetricRegistry()).parse(
+        n.registerProbeResponseFrame(new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.PROBE_RESP_2_PAYLOAD, Frames.PROBE_RESP_2_HEADER, new Dot11MetaInformation(
                         false, -51, 2400, 6, 0L, false)
         ));
 
         // Test that this broadcast frame is ignore.
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP
         ));
 
@@ -145,7 +146,7 @@ public class NetworksTest {
     public void testLastSeenUpdates() throws MalformedFrameException, IllegalRawDataException {
         Networks n = new Networks(new MockNzyme());
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
         ));
 
@@ -165,7 +166,7 @@ public class NetworksTest {
         assertTrue(n1.getLastSeen().isBefore(new DateTime()));
         assertFalse(n1.getLastSeen().isAfter(new DateTime().minusSeconds(2)));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
         ));
 
@@ -181,7 +182,7 @@ public class NetworksTest {
     public void testSecurityChangeIsRecorded() throws MalformedFrameException, IllegalRawDataException {
         Networks n = new Networks(new MockNzyme());
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
         ));
 
@@ -209,7 +210,7 @@ public class NetworksTest {
         ));
 
         // Same network, but advertising TKIP, too.
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_2_PAYLOAD, Frames.BEACON_2_HEADER, META_NO_WEP
         ));
 
@@ -242,11 +243,11 @@ public class NetworksTest {
     public void testRetentionCleaning() throws MalformedFrameException, IllegalRawDataException {
         Networks n = new Networks(new MockNzyme());
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP
         ));
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_3_PAYLOAD, Frames.BEACON_3_HEADER, META_NO_WEP
         ));
 
@@ -267,7 +268,7 @@ public class NetworksTest {
     public void testIgnoresBroadcastBeacon() throws MalformedFrameException, IllegalRawDataException {
         Networks n = new Networks(new MockNzyme());
 
-        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry()).parse(
+        n.registerBeaconFrame(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(
                 Frames.BEACON_4_PAYLOAD, Frames.BEACON_4_HEADER, META_NO_WEP
         ));
 

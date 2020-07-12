@@ -10,6 +10,7 @@ hs_err_*.log
 logs/
 target/
 /banditfile
+/anonfile
 
 web-interface/node
 

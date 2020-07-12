@@ -21,13 +21,18 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11LeavingReason;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 public class Dot11DisassociationFrameParser extends Dot11FrameParser<Dot11DisassociationFrame> {
 
-    public Dot11DisassociationFrameParser(MetricRegistry metrics) {
+    private final Anonymizer anonymizer;
+
+    public Dot11DisassociationFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -47,6 +52,11 @@ public class Dot11DisassociationFrameParser extends Dot11FrameParser<Dot11Disass
         // Reason.
         short reasonCode = Dot11LeavingReason.extract(payload, header);
         String reasonString = Dot11LeavingReason.lookup(reasonCode);
+
+        if (anonymizer.isEnabled()) {
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
+            destination = anonymizer.anonymizeBSSID(destination);
+        }
 
         return Dot11DisassociationFrame.create(destination, transmitter, reasonCode, reasonString, meta);
     }

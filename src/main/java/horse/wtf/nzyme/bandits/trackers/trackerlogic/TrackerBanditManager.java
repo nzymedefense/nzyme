@@ -158,7 +158,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
             //noinspection UnstableApiUsage
             Files.write(
                     nzyme.getObjectMapper().writeValueAsBytes(banditFile),
-                    new File(nzyme.getConfiguration().dataDirectory() + "/" + BANDITFILE_NAME)
+                    new File(nzyme.getBaseConfiguration().dataDirectory() + "/" + BANDITFILE_NAME)
             );
         } catch(Exception e) {
             LOG.error("Could not write banditfile.", e);
@@ -166,7 +166,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
     }
 
     private void loadFromBanditFile() {
-        File banditFile = new File(nzyme.getConfiguration().dataDirectory() + "/" + BANDITFILE_NAME);
+        File banditFile = new File(nzyme.getBaseConfiguration().dataDirectory() + "/" + BANDITFILE_NAME);
 
         if (!banditFile.exists()) {
             LOG.info("No banditfile found.");

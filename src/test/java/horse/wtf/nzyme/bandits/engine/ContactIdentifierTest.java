@@ -14,6 +14,7 @@ import horse.wtf.nzyme.bandits.identifiers.SSIDIBanditdentifier;
 import horse.wtf.nzyme.bandits.identifiers.SignalStrengthBanditIdentifier;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
@@ -172,7 +173,7 @@ public class ContactIdentifierTest {
 
         assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
 
-        i.identify(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
+        i.identify(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
         assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
     }
 
@@ -200,7 +201,7 @@ public class ContactIdentifierTest {
         assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
         assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
 
-        i.identify(new Dot11BeaconFrameParser(new MetricRegistry()).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
+        i.identify(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
         assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getConfiguration().nzymeId()));
         assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getConfiguration().nzymeId()));
     }

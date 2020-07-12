@@ -29,17 +29,15 @@ public abstract class TrackerConfiguration {
 
     public abstract Role role();
     public abstract String nzymeId();
-    public abstract String dataDirectory();
 
     public abstract TrackerDeviceConfiguration trackerDevice();
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
 
-    public static TrackerConfiguration create(Role role, String nzymeId, String dataDirectory, TrackerDeviceConfiguration trackerDevice, List<Dot11MonitorDefinition> dot11Monitors) {
+    public static TrackerConfiguration create(Role role, String nzymeId,TrackerDeviceConfiguration trackerDevice, List<Dot11MonitorDefinition> dot11Monitors) {
         return builder()
                 .role(role)
                 .nzymeId(nzymeId)
-                .dataDirectory(dataDirectory)
                 .trackerDevice(trackerDevice)
                 .dot11Monitors(dot11Monitors)
                 .build();
@@ -54,9 +52,7 @@ public abstract class TrackerConfiguration {
         public abstract Builder role(Role role);
 
         public abstract Builder nzymeId(String nzymeId);
-
-        public abstract Builder dataDirectory(String dataDirectory);
-
+        
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 
         public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);

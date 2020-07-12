@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
@@ -26,7 +27,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_SUCCESS_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_1_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
@@ -50,7 +51,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_SUCCESS_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_STAGE_2_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
@@ -76,7 +77,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_1_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_1_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
@@ -100,7 +101,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_2_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_2_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
@@ -124,7 +125,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_SUCCESS_WEP_STAGE_4_PAYLOAD, Frames.AUTH_SUCCESS_WEP_STAGE_4_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);
@@ -150,7 +151,7 @@ public class Dot11AuthenticationFrameHandlerTest extends FrameHandlerTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
-        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry())
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.AUTH_FAILED_WEP_STAGE_4_PAYLOAD, Frames.AUTH_FAILED_WEP_STAGE_4_HEADER, META_NO_WEP);
 
         new Dot11AuthenticationFrameHandler(probe, nzyme).handle(frame);

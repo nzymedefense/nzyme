@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.Dot11ManagementFrame;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11AuthenticationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.util.ByteArrays;
@@ -28,6 +29,8 @@ import org.pcap4j.util.ByteArrays;
 import java.nio.ByteOrder;
 
 public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11AuthenticationFrame> {
+
+    private final Anonymizer anonymizer;
 
     private final static int MAC_HEADER_LEN = 24;
 
@@ -40,8 +43,10 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
     private final static int STATUS_CODE_LENGTH = 2;
     private final static int STATUS_CODE_POSITION = MAC_HEADER_LEN + 4;
 
-    public Dot11AuthenticationFrameParser(MetricRegistry metrics) {
+    public Dot11AuthenticationFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     public enum ALGORITHM_TYPE {
@@ -101,6 +106,11 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
         String transmitter = "";
         if (auth.getHeader().getAddress2() != null) {
             transmitter = auth.getHeader().getAddress2().toString();
+        }
+
+        if (anonymizer.isEnabled()) {
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
+            destination = anonymizer.anonymizeBSSID(destination);
         }
 
         return Dot11AuthenticationFrame.create(algorithm, statusCode, status, transactionSequence, destination, transmitter, meta);

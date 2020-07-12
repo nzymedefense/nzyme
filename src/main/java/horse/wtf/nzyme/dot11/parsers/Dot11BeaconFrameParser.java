@@ -19,14 +19,19 @@ package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.dot11.*;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 
 
 public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
 
-    public Dot11BeaconFrameParser(MetricRegistry metrics) {
+    private final Anonymizer anonymizer;
+
+    public Dot11BeaconFrameParser(MetricRegistry metrics, Anonymizer anonymizer) {
         super(metrics);
+
+        this.anonymizer = anonymizer;
     }
 
     @Override
@@ -45,6 +50,11 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
         } catch(Dot11TaggedParameters.NoSuchTaggedElementException e) {
             // Broadcast/Wildcard beacon.
             ssid = null;
+        }
+
+        if (anonymizer.isEnabled()) {
+            ssid = anonymizer.anonymizeSSID(ssid);
+            transmitter = anonymizer.anonymizeBSSID(transmitter);
         }
 
         return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta, payload);

@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.dot11.parsers;
 
 import com.codahale.metrics.MetricRegistry;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -11,7 +12,7 @@ public class Dot11DisassociationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParse() throws IllegalRawDataException {
-        Dot11DisassociationFrame frame = new Dot11DisassociationFrameParser(new MetricRegistry())
+        Dot11DisassociationFrame frame = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "b4:fb:e4:41:f6:45");
@@ -22,7 +23,7 @@ public class Dot11DisassociationFrameParserTest extends FrameParserTest {
 
     @Test
     public void testDoParseAnotherFrame() throws IllegalRawDataException {
-        Dot11DisassociationFrame frame = new Dot11DisassociationFrameParser(new MetricRegistry())
+        Dot11DisassociationFrame frame = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .doParse(Frames.DISASSOC_2_PAYLOAD, Frames.DISASSOC_2_HEADER, META_NO_WEP);
 
         assertEquals(frame.transmitter(), "0c:54:a5:99:06:58");
