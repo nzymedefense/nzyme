@@ -37,7 +37,11 @@ public abstract class LeaderConfiguration {
     public abstract URI httpExternalUri();
 
     public abstract boolean useTls();
+
+    @Nullable
     public abstract Path tlsCertificatePath();
+
+    @Nullable
     public abstract Path tlsKeyPath();
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();

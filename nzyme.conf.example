@@ -55,8 +55,8 @@ interfaces: {
 
   # Use TLS? (HTTPS) See https://go.nzyme.org/docs-https
   use_tls: false
-  tls_certificate_path: none
-  tls_key_path: none
+  tls_certificate_path:
+  tls_key_path:
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)

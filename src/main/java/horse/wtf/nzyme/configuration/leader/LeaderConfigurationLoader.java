@@ -143,12 +143,22 @@ public class LeaderConfigurationLoader {
         return interfaces.getBoolean(ConfigurationKeys.USE_TLS);
     }
 
+    @Nullable
     private Path parseTlsCertificatePath() {
-        return new File(interfaces.getString(ConfigurationKeys.TLS_CERTIFICATE_PATH)).toPath();
+        if (interfaces.hasPath(ConfigurationKeys.TLS_CERTIFICATE_PATH)) {
+            return new File(interfaces.getString(ConfigurationKeys.TLS_CERTIFICATE_PATH)).toPath();
+        } else {
+            return null;
+        }
     }
 
+    @Nullable
     private Path parseTlsKeyPath() {
-        return new File(interfaces.getString(ConfigurationKeys.TLS_KEY_PATH)).toPath();
+        if (interfaces.hasPath(ConfigurationKeys.TLS_KEY_PATH)) {
+            return new File(interfaces.getString(ConfigurationKeys.TLS_KEY_PATH)).toPath();
+        } else {
+            return null;
+        }
     }
 
     private URI parseRestListenUri() {
@@ -281,7 +291,7 @@ public class LeaderConfigurationLoader {
 
         if (root.hasPath(ConfigurationKeys.TRACKER_DEVICE)) {
             Config trackerDevice = root.getConfig(ConfigurationKeys.TRACKER_DEVICE);
-            
+
             if (trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
                 ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
                 ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
@@ -402,7 +412,7 @@ public class LeaderConfigurationLoader {
                 throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] cannot be parsed into a path. Make sure it is correct.");
             }
         } else {
-            // URI schemes must be HTTP if TLS is DISABLED..
+            // URI schemes must be HTTP if TLS is disabled.
             if (!parseRestListenUri().getScheme().equals("http")) {
                 throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] is not configured to use HTTP. Do not use HTTPS.");
             }
