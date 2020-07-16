@@ -48,6 +48,24 @@ class EditBanditPage extends Reflux.Component {
             <div>
                 <div className="row">
                     <div className="col-md-12">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb">
+                                <li className="breadcrumb-item">
+                                    <a href={Routes.BANDITS.INDEX}>Bandits</a>
+                                </li>
+                                <li className="breadcrumb-item" aria-current="page">
+                                    <a href={Routes.BANDITS.SHOW(this.state.bandit.uuid)}>{this.state.bandit.name}</a>
+                                </li>
+                                <li className="breadcrumb-item active" aria-current="page">
+                                    Edit
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
                         <h1>Edit Bandit <em>{this.state.bandit.name}</em></h1>
                     </div>
                 </div>

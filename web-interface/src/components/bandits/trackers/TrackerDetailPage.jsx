@@ -54,6 +54,17 @@ class TrackerDetailPage extends Reflux.Component {
             <div>
                 <div className="row">
                     <div className="col-md-12">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb">
+                                <li className="breadcrumb-item"><a href={Routes.BANDITS.INDEX}>Bandits</a></li>
+                                <li className="breadcrumb-item active" aria-current="page">{tracker.name}</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
                         <h1>Tracker <em>{tracker.name}</em></h1>
                     </div>
                 </div>

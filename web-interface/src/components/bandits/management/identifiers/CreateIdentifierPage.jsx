@@ -24,7 +24,8 @@ class CreateIdentifierPage extends Reflux.Component {
             configuration: undefined,
             explanation: undefined,
             submitting: false,
-            submitted: false
+            submitted: false,
+            bandit: undefined
         };
 
         this._selectType = this._selectType.bind(this);
@@ -33,6 +34,7 @@ class CreateIdentifierPage extends Reflux.Component {
     }
 
     componentDidMount() {
+        BanditsActions.findOne(this.banditId);
         BanditsActions.findAllIdentifierTypes();
     }
 
@@ -54,12 +56,30 @@ class CreateIdentifierPage extends Reflux.Component {
             return ( <Redirect to={Routes.BANDITS.SHOW(this.banditId)} /> );
         }
 
-        if (!this.state.banditIdentifierTypes) {
+        if (!this.state.banditIdentifierTypes || !this.state.bandit) {
             return <LoadingSpinner />;
         }
 
         return (
             <div>
+                <div className="row">
+                    <div className="col-md-12">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb">
+                                <li className="breadcrumb-item">
+                                    <a href={Routes.BANDITS.INDEX}>Bandits</a>
+                                </li>
+                                <li className="breadcrumb-item" aria-current="page">
+                                    <a href={Routes.BANDITS.SHOW(this.state.bandit.uuid)}>{this.state.bandit.name}</a>
+                                </li>
+                                <li className="breadcrumb-item active" aria-current="page">
+                                    Create Identifier
+                                </li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
                 <div className="row">
                     <div className="col-md-12">
                         <h1>Create Identifier</h1>

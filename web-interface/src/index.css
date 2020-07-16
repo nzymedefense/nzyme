@@ -37,6 +37,14 @@ button:disabled {
     cursor: not-allowed;
 }
 
+ol.breadcrumb li.breadcrumb-item::before {
+    color: #0b5573;
+}
+
+ol.breadcrumb li.breadcrumb-item {
+    color: #999;
+}
+
 .blink{
     text-decoration: blink;
     -webkit-animation-name: blinker;
@@ -45,6 +53,8 @@ button:disabled {
     -webkit-animation-timing-function:ease-in-out;
     -webkit-animation-direction: alternate;
 }
+
+
 
 .container-login {
     height: 100%;
