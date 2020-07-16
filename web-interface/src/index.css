@@ -161,3 +161,9 @@ div.dashboard div.dashboard-card span.dashboard-value {
 div.dashboard div.lower-row {
     margin-top: 30px;
 }
+
+span.most-active-channel {
+    font-weight: bold;
+    border-top: 1px dotted #999;
+    border-bottom: 1px dotted #999;
+}

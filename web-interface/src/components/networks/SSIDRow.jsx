@@ -57,7 +57,9 @@ class SSIDRow extends Reflux.Component {
             <tr>
                 <td><SSID ssid={this.props.ssid} channel={c.channel_number}/></td>
                 <td><strong>{c.channel_number}</strong></td>
-                <td title="Frames per Second">{numeral(c.total_frames_recent/60).format('0.00')}</td>
+                <td title="Frames per Second"><span className={this.props.isMostActiveChannel ? "most-active-channel" : undefined}>
+                    {numeral(c.total_frames_recent/60).format('0.00')}
+                </span></td>
                 <td>{this._printSecurity()}</td>
             </tr>
         )

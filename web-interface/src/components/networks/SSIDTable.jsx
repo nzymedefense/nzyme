@@ -28,6 +28,22 @@ class SSIDTableRow extends Reflux.Component {
         }
     }
 
+    _findMostActiveChannel(channels) {
+        let mostActive = 0;
+
+        for(const x in channels) {
+            const channel = channels[x];
+
+            if(channel.total_frames_recent > mostActive) {
+                mostActive = channel.channel_number;
+            }
+        }
+
+        console.log(mostActive);
+
+        return mostActive;
+    }
+
     render() {
         const self = this;
 
@@ -51,6 +67,8 @@ class SSIDTableRow extends Reflux.Component {
             )
         }
 
+        const mostActiveChannel = this._findMostActiveChannel(this.state.ssid.channels);
+
         return (
             <tr>
                 <td colSpan="7">
@@ -65,7 +83,12 @@ class SSIDTableRow extends Reflux.Component {
                         </thead>
                         <tbody>
                         {Object.keys(this.state.ssid.channels).map(function (key,i) {
-                            return <SSIDRow key={"ssidrow-" + self.props.bssid + "-" + self.state.ssid.name + "-" + key} ssid={self.state.ssid} channel={self.state.ssid.channels[key]} />;
+                            return <SSIDRow
+                                key={"ssidrow-" + self.props.bssid + "-" + self.state.ssid.name + "-" + key}
+                                ssid={self.state.ssid}
+                                channel={self.state.ssid.channels[key]}
+                                isMostActiveChannel={mostActiveChannel === self.state.ssid.channels[key].channel_number}
+                            />;
                         })}
                         </tbody>
                     </table>
