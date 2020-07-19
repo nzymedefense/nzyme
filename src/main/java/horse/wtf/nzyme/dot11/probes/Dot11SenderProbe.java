@@ -19,15 +19,16 @@ package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Joiner;
-import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.statistics.Statistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.pcap4j.core.*;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,8 @@ public class Dot11SenderProbe extends Dot11Probe {
     private final Trap trap;
 
     private long totalFrames;
+
+    private DateTime mostRecentFrameTimestamp;
 
     public Dot11SenderProbe(Dot11ProbeConfiguration configuration, Trap trap, Statistics statistics, MetricRegistry metrics) {
         super(configuration, statistics, metrics);
@@ -117,6 +120,7 @@ public class Dot11SenderProbe extends Dot11Probe {
                     trap.run();
                     totalFrames += trap.framesPerExecution();
 
+                    mostRecentFrameTimestamp = DateTime.now();
                     inLoop.set(true);
                 } catch(Exception e) {
                     inLoop.set(false);
@@ -153,6 +157,12 @@ public class Dot11SenderProbe extends Dot11Probe {
     @Override
     public List<Dot11FrameInterceptor> getInterceptors() {
         return Collections.emptyList();
+    }
+
+    @Override
+    @Nullable
+    public DateTime getMostRecentFrameTimestamp() {
+        return mostRecentFrameTimestamp;
     }
 
 }

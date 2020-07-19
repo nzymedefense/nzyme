@@ -78,11 +78,11 @@ ol.breadcrumb li.breadcrumb-item {
     color: #757e86;
 }
 
-div.overview-statistic p {
+div.overview-card p {
     font-weight: 600;
 }
 
-div.overview-statistic span {
+div.overview-card span {
     font-size: 26px;
 }
 

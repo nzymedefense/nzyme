@@ -4,14 +4,20 @@ import numeral from "numeral";
 
 class ProbesTableRow extends Reflux.Component {
 
-    static _decideStatus(isInLoop) {
-        if (isInLoop) {
-            return (
-                <i className="fas fa-check-square text-success"></i>
-            )
+    static _decideStatus(probe) {
+        if (probe.is_in_loop) {
+            if (probe.is_active) {
+                return (
+                    <i className="fas fa-check-square text-success"/>
+                )
+            } else {
+                return (
+                    <i className="fas fa-exclamation-triangle text-danger" title="NOT ACTIVE! Check nzyme logs." />
+                )
+            }
         } else {
             return (
-                <i className="fas fa-exclamation-triangle text-danger" title="NOT RUNNING! Check nzyme logs."></i>
+                <i className="fas fa-exclamation-triangle text-danger" title="NOT RUNNING! Check nzyme logs." />
             )
         }
     }
@@ -31,7 +37,7 @@ class ProbesTableRow extends Reflux.Component {
         return (
             <tr>
                 <td>{probe.name}</td>
-                <td>{ProbesTableRow._decideStatus(probe.is_in_loop)}</td>
+                <td>{ProbesTableRow._decideStatus(probe)}</td>
                 <td>{probe.class_name}</td>
                 <td>{probe.network_interface}</td>
                 <td title={probe.channels.toString()}>{ProbesTableRow._printChannels(probe.channels)}</td>

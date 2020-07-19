@@ -95,7 +95,6 @@ public class LeaderConfigurationLoader {
                 baseDot11ConfigurationLoader.parseDot11Networks(),
                 parseDot11TrapDeviceDefinitions(),
                 parseDot11Alerts(),
-                parseAlertingRetentionPeriodMinutes(),
                 parseAlertingTrainingPeriodSeconds(),
                 parseGraylogUplinks(),
                 parseDebugConfig(),
@@ -167,10 +166,6 @@ public class LeaderConfigurationLoader {
 
     private URI parseHttpExternalUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.HTTP_EXTERNAL_URI));
-    }
-
-    private Integer parseAlertingRetentionPeriodMinutes() {
-        return alerting.getInt(ConfigurationKeys.CLEAN_AFTER_MINUTES);
     }
 
     private Integer parseAlertingTrainingPeriodSeconds() {
@@ -280,7 +275,6 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        ConfigurationValidator.expect(alerting, ConfigurationKeys.CLEAN_AFTER_MINUTES, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
         ConfigurationValidator.expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
         ConfigurationValidator.expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
         ConfigurationValidator.expect(interfaces, ConfigurationKeys.HTTP_EXTERNAL_URI, ConfigurationKeys.INTERFACES, String.class);

@@ -49,7 +49,6 @@ public abstract class LeaderConfiguration {
     public abstract List<Dot11TrapDeviceDefinition> dot11TrapDevices();
 
     public abstract List<Alert.TYPE_WIDE> dot11Alerts();
-    public abstract int alertingRetentionPeriodMinutes();
     public abstract int alertingTrainingPeriodSeconds();
 
     public abstract List<GraylogAddress> graylogUplinks();
@@ -77,7 +76,7 @@ public abstract class LeaderConfiguration {
         return null;
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingRetentionPeriodMinutes, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -97,7 +96,6 @@ public abstract class LeaderConfiguration {
                 .dot11Networks(dot11Networks)
                 .dot11TrapDevices(dot11TrapDevices)
                 .dot11Alerts(dot11Alerts)
-                .alertingRetentionPeriodMinutes(alertingRetentionPeriodMinutes)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .graylogUplinks(graylogUplinks)
                 .debugConfig(debugConfig)
@@ -146,8 +144,6 @@ public abstract class LeaderConfiguration {
         public abstract Builder dot11TrapDevices(List<Dot11TrapDeviceDefinition> dot11TrapDevices);
 
         public abstract Builder dot11Alerts(List<Alert.TYPE_WIDE> dot11Alerts);
-
-        public abstract Builder alertingRetentionPeriodMinutes(int alertingRetentionPeriodMinutes);
 
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
 

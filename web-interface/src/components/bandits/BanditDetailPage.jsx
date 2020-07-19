@@ -190,7 +190,7 @@ class BanditDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <ContactsTable bandit={bandit} />
+                        <ContactsTable contacts={bandit.contacts} />
                     </div>
                 </div>
             </div>

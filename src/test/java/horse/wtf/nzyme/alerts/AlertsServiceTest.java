@@ -31,59 +31,10 @@ public class AlertsServiceTest extends AlertTestHelper {
     }
 
     @Test
-    public void testRetentionCleaning() {
-        NzymeLeader nzyme = new MockNzyme();
-
-        AlertsService as = new AlertsService(
-                nzyme,
-                1,
-                TimeUnit.SECONDS,
-                2,
-                TimeUnit.SECONDS
-        );
-
-        as.handle(UnexpectedSSIDBeaconAlert.create(
-                DateTime.now(),
-                "wtf",
-                "00:c0:ca:95:68:3b",
-                1,
-                1000,
-                -50,
-                1
-        ));
-
-        assertEquals(as.getActiveAlerts().size(), 1);
-
-        as.handle(UnexpectedChannelBeaconAlert.create(
-                DateTime.now(),
-                "wtf",
-                "00:c0:ca:95:68:3b",
-                1,
-                1000,
-                -50,
-                1
-        ));
-
-        assertEquals(as.getActiveAlerts().size(), 2);
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {}
-
-        assertEquals(as.getActiveAlerts().size(), 0);
-    }
-
-    @Test
     public void testSameAlertsAreNotDuplicatedAndLastSeenIsUpdated() {
         NzymeLeader nzyme = new MockNzyme();
 
-        AlertsService as = new AlertsService(
-                nzyme,
-                30,
-                TimeUnit.SECONDS,
-                10,
-                TimeUnit.MINUTES
-        );
+        AlertsService as = new AlertsService(nzyme);
 
         as.handle(UnexpectedSSIDBeaconAlert.create(
                 DateTime.now(),
@@ -95,8 +46,8 @@ public class AlertsServiceTest extends AlertTestHelper {
                 1
         ));
 
-        assertEquals(as.getActiveAlerts().size(), 1);
-        Alert a1 = new ArrayList<>(as.getActiveAlerts().values()).get(0);
+        assertEquals(as.findActiveAlerts().size(), 1);
+        Alert a1 = new ArrayList<>(as.findActiveAlerts().values()).get(0);
         DateTime lastSeen = a1.getLastSeen();
         assertNotNull(lastSeen);
         
@@ -119,8 +70,8 @@ public class AlertsServiceTest extends AlertTestHelper {
             Thread.sleep(1500);
         } catch (InterruptedException e) {}
 
-        assertEquals(as.getActiveAlerts().size(), 1);
-        Alert a1a = new ArrayList<>(as.getActiveAlerts().values()).get(0);
+        assertEquals(as.findActiveAlerts().size(), 1);
+        Alert a1a = new ArrayList<>(as.findActiveAlerts().values()).get(0);
 
         assertEquals(a1.getUUID(), a1a.getUUID());
         assertEquals(a1.getFirstSeen(), a1a.getFirstSeen());
@@ -132,7 +83,7 @@ public class AlertsServiceTest extends AlertTestHelper {
     public void testGetActiveAlertsReturnsImmutableCopyPut() {
         NzymeLeader nzyme = new MockNzyme();
 
-        new AlertsService(nzyme).getActiveAlerts().put(UUID.randomUUID(), UnexpectedSSIDBeaconAlert.create(
+        new AlertsService(nzyme).findActiveAlerts().put(UUID.randomUUID(), UnexpectedSSIDBeaconAlert.create(
                 DateTime.now(),
                 "wtf",
                 "00:c0:ca:95:68:3b",
@@ -145,7 +96,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testGetActiveAlertsReturnsImmutableCopyRemove() {
-        new AlertsService(new MockNzyme()).getActiveAlerts().remove(UUID.randomUUID());
+        new AlertsService(new MockNzyme()).findActiveAlerts().remove(UUID.randomUUID());
     }
 
     @Test
@@ -164,7 +115,7 @@ public class AlertsServiceTest extends AlertTestHelper {
                 1
         ));
 
-        Alert alert = Lists.newArrayList(as.getActiveAlerts().values()).get(0);
+        Alert alert = Lists.newArrayList(as.findActiveAlerts().values()).get(0);
         assertNotNull(alert);
         assertFalse(Strings.isNullOrEmpty(alert.getUUID().toString()));
     }

@@ -5,8 +5,7 @@ import ContactsTableRow from "./ContactsTableRow";
 class ContactsTable extends Reflux.Component {
 
     render() {
-        const bandit = this.props.bandit;
-        const contacts = bandit.contacts;
+        const contacts = this.props.contacts;
 
         if (!contacts || contacts.length === 0) {
             return (

@@ -33,7 +33,6 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertEquals(c.pythonExecutable(), "/usr/bin/python2.7");
         assertEquals(c.pythonScriptDirectory(), "/tmp");
         assertEquals(c.pythonScriptPrefix(), "nzyme_");
-        assertEquals(c.alertingRetentionPeriodMinutes(), 15);
         assertEquals(c.alertingTrainingPeriodSeconds(), 300);
         assertTrue(c.fetchOuis());
         assertTrue(c.versionchecksEnabled());

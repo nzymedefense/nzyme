@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.service.AlertsService;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -39,6 +40,9 @@ public abstract class AlertDetailsResponse {
 
     @JsonProperty("id")
     public abstract UUID id();
+
+    @JsonProperty("is_active")
+    public abstract boolean isActive();
 
     @JsonProperty("message")
     public abstract String message();
@@ -70,6 +74,7 @@ public abstract class AlertDetailsResponse {
                 .subsystem(alert.getSubsystem())
                 .type(alert.getType())
                 .id(alert.getUUID())
+                .isActive(alert.getLastSeen().isAfter(DateTime.now().minusMinutes(AlertsService.EXPIRY_MINUTES)))
                 .message(alert.getMessage())
                 .fields(alert.getFields())
                 .firstSeen(alert.getFirstSeen())
@@ -93,6 +98,8 @@ public abstract class AlertDetailsResponse {
 
         public abstract Builder id(UUID id);
 
+        public abstract Builder isActive(boolean isActive);
+
         public abstract Builder message(String message);
 
         public abstract Builder fields(Map<String, Object> fields);
@@ -101,13 +108,13 @@ public abstract class AlertDetailsResponse {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
+        public abstract Builder frameCount(Long frameCount);
+
         public abstract Builder description(String description);
 
         public abstract Builder documentationLink(String documentationLink);
 
         public abstract Builder falsePositives(List<String> falsePositives);
-
-        public abstract Builder frameCount(Long frameCount);
 
         public abstract AlertDetailsResponse build();
     }

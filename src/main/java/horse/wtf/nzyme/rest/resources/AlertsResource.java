@@ -71,7 +71,7 @@ public class AlertsResource {
             limit = 25;
         }
 
-        Map<UUID, Alert> alerts = nzyme.getAlertsService().getActiveAlerts();
+        Map<UUID, Alert> alerts = nzyme.getAlertsService().findActiveAlerts();
 
         List<AlertDetailsResponse> details = Lists.newArrayList();
         int i = 0;
@@ -105,7 +105,7 @@ public class AlertsResource {
             return Response.status(401).build();
         }
 
-        Alert alert = nzyme.getAlertsService().getActiveAlerts().get(uuid);
+        Alert alert = nzyme.getAlertsService().findActiveAlerts().get(uuid);
         if (alert != null) {
             return Response.ok(AlertDetailsResponse.fromAlert(alert)).build();
         } else {

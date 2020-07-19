@@ -18,8 +18,11 @@
 package horse.wtf.nzyme.systemstatus;
 
 import com.google.common.collect.Sets;
+import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.Set;
 
@@ -34,7 +37,22 @@ public class SystemStatus {
         TRAINING
     }
 
+    public enum HEALTH {
+        GREEN,
+        RED
+    }
+
     private Set<TYPE> currentStatus;
+
+    public HEALTH decideHealth(NzymeLeader nzyme) {
+        for (Dot11Probe probe : nzyme.getProbes()) {
+            if (!probe.isInLoop() || !probe.isActive()) {
+                return HEALTH.RED;
+            }
+        }
+
+        return HEALTH.GREEN;
+    }
 
     public SystemStatus() {
         this.currentStatus = Sets.newHashSet();

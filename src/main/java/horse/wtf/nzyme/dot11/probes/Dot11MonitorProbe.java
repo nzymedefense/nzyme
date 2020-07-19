@@ -22,7 +22,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.channels.ChannelHopper;
@@ -33,18 +32,19 @@ import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.*;
 import horse.wtf.nzyme.dot11.handlers.*;
-import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import horse.wtf.nzyme.dot11.parsers.*;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.RadiotapPacket;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
 
+import javax.annotation.Nullable;
 import java.io.EOFException;
 import java.util.Collections;
 import java.util.List;
@@ -81,6 +81,8 @@ public class Dot11MonitorProbe extends Dot11Probe {
     private final Meter localFrameMeter;
 
     private final AtomicBoolean inLoop = new AtomicBoolean(false);
+
+    private DateTime mostRecentFrameTimestamp;
 
     public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics, Anonymizer anonymizer) {
         super(configuration, statistics, metrics);
@@ -214,6 +216,8 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                     (byte) (((payload[0] << 2) & 0x30) | ((payload[0] >> 4) & 0x0F))
                             );
 
+                            mostRecentFrameTimestamp = DateTime.now();
+
                             // Intercept and handle frame. TODO this looks fucked from a logic perspective
                             for (Dot11FrameInterceptor interceptor : frameInterceptors) {
                                 if (interceptor.forSubtype() == type.value()) {
@@ -293,6 +297,12 @@ public class Dot11MonitorProbe extends Dot11Probe {
     @Override
     public List<Dot11FrameInterceptor> getInterceptors() {
         return frameInterceptors;
+    }
+
+    @Override
+    @Nullable
+    public DateTime getMostRecentFrameTimestamp() {
+        return mostRecentFrameTimestamp;
     }
 
     public void onChannelSwitch(ChannelHopper.ChannelSwitchHandler handler) {

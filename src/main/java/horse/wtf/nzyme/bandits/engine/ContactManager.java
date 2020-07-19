@@ -293,12 +293,14 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
     }
 
     public Map<UUID, Contact> findContacts() {
-        if (contacts != null) {
-            return contacts;
-        }
+        return findContacts(Integer.MAX_VALUE, 0);
+    }
 
+    public Map<UUID, Contact> findContacts(int limit, int offset) {
         List<Contact> contacts = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM contacts")
+                handle.createQuery("SELECT * FROM contacts ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(Contact.class)
                         .list()
         );

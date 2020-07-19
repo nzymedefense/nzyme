@@ -22,7 +22,7 @@ class AlertsList extends Reflux.Component {
 
   static _buildAlertRow(key, alert) {
     return (
-      <tr key={key} className="text-danger">
+      <tr key={key} className={alert.is_active ? "text-danger" : "text-warning"}>
         <td>{alert.id}</td>
         <td>{alert.type}</td>
         <td>{moment(alert.first_seen).fromNow()}</td>
@@ -37,7 +37,7 @@ class AlertsList extends Reflux.Component {
     if (this.state.alerts.length === 0) {
       return (
         <tr>
-          <td colSpan={6} className="text-center text-success">No currently active alerts!</td>
+          <td colSpan={6} className="text-center text-success">No alerts found!</td>
         </tr>
       )
     } else {

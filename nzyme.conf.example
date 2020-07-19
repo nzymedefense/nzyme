@@ -32,9 +32,6 @@ general: {
   }
 
   alerting {
-    # How many minutes to keep alerts active?
-    clean_after_minutes: 5
-
     # Length of training period. Do not change this if you don't know what this means.
     training_period_seconds: 300
   }
@@ -118,6 +115,8 @@ graylog_uplinks: [
   signal_anomaly
   beacon_rate_anomaly
   multiple_signal_tracks
+  pwnagotchi_advertisement
+  bandit_contact
 ]
 
 # Deception. Simply delete all trap definitions if you don't want to use this feature for now or if you simply don't

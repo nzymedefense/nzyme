@@ -61,6 +61,7 @@ public class ProbesResource {
                     probe.getClass().getSimpleName(),
                     probe.getConfiguration().networkInterfaceName(),
                     probe.isInLoop(),
+                    probe.isActive(),
                     probe.getConfiguration().channels(),
                     probe.getCurrentChannel(),
                     probe.getTotalFrames(),

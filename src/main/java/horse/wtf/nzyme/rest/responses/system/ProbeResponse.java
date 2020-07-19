@@ -19,6 +19,7 @@ package horse.wtf.nzyme.rest.responses.system;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import org.joda.time.DateTime;
 
 import java.util.List;
 
@@ -37,6 +38,9 @@ public abstract class ProbeResponse {
     @JsonProperty("is_in_loop")
     public abstract boolean isInLoop();
 
+    @JsonProperty("is_active")
+    public abstract boolean isActive();
+
     @JsonProperty("channels")
     public abstract List<Integer> channels();
 
@@ -49,12 +53,13 @@ public abstract class ProbeResponse {
     @JsonProperty("raises_alerts")
     public abstract List<String> raisesAlerts();
 
-    public static ProbeResponse create(String name, String className, String networkInterfaceName, boolean isInLoop, List<Integer> channels, int currentChannel, long totalFrames, List<String> raisesAlerts) {
+    public static ProbeResponse create(String name, String className, String networkInterfaceName, boolean isInLoop, boolean isActive, List<Integer> channels, int currentChannel, long totalFrames, List<String> raisesAlerts) {
         return builder()
                 .name(name)
                 .className(className)
                 .networkInterfaceName(networkInterfaceName)
                 .isInLoop(isInLoop)
+                .isActive(isActive)
                 .channels(channels)
                 .currentChannel(currentChannel)
                 .totalFrames(totalFrames)
@@ -75,6 +80,8 @@ public abstract class ProbeResponse {
         public abstract Builder networkInterfaceName(String networkInterfaceName);
 
         public abstract Builder isInLoop(boolean isInLoop);
+
+        public abstract Builder isActive(boolean isActive);
 
         public abstract Builder channels(List<Integer> channels);
 

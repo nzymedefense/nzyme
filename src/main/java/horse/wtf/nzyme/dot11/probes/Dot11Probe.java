@@ -18,14 +18,9 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
-import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.dot11.networks.Networks;
-import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.statistics.Statistics;
-import horse.wtf.nzyme.systemstatus.SystemStatus;
+import org.joda.time.DateTime;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -59,6 +54,15 @@ public abstract class Dot11Probe {
         }
     }
 
+    public boolean isActive() {
+        DateTime ts = getMostRecentFrameTimestamp();
+        if (ts == null) {
+            return false;
+        }
+
+        return ts.isAfter(DateTime.now().minusMinutes(1));
+    }
+
     public Statistics getStatistics() {
         return statistics;
     }
@@ -71,4 +75,5 @@ public abstract class Dot11Probe {
         return configuration.probeName();
     }
 
+    public abstract DateTime getMostRecentFrameTimestamp();
 }
