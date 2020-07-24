@@ -18,8 +18,8 @@
 package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Contact;
@@ -37,6 +37,8 @@ import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -46,6 +48,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Path("/api/dashboard")
 @Secured
@@ -142,14 +145,20 @@ public class DashboardResource {
     }
 
     private Map<String, Long> buildMeasurementHistogram(List<Measurement> measurements) {
-        ImmutableMap.Builder<String, Long> clientCountHistogram = new ImmutableMap.Builder<>();
+        Map<String, Long> clientCountHistogram = new TreeMap<>();
+
+        // Always have an x-axis for full 24 hours to avoid weird diagonal connections.
+        for (int i = 0; i < 24*60; i++) {
+            clientCountHistogram.put(DateTime.now(DateTimeZone.UTC).minusMinutes(i).withSecondOfMinute(0).withMillisOfSecond(0).toString(), 0L);
+        }
+
         if (measurements != null && !measurements.isEmpty()) {
             for (Measurement measurement : measurements) {
-                clientCountHistogram.put(measurement.createdAt().toString(), measurement.value());
+                clientCountHistogram.put(measurement.createdAt().withZone(DateTimeZone.UTC).withSecondOfMinute(0).withMillisOfSecond(0).toString(), measurement.value());
             }
         }
 
-        return clientCountHistogram.build();
+        return clientCountHistogram;
     }
 
 }
