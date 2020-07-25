@@ -19,7 +19,6 @@ package horse.wtf.nzyme.rest.resources;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Contact;
@@ -148,7 +147,7 @@ public class DashboardResource {
         Map<String, Long> clientCountHistogram = new TreeMap<>();
 
         // Always have an x-axis for full 24 hours to avoid weird diagonal connections.
-        for (int i = 0; i < 24*60; i++) {
+        for (int i = 1; i < 24*60; i++) {
             clientCountHistogram.put(DateTime.now(DateTimeZone.UTC).minusMinutes(i).withSecondOfMinute(0).withMillisOfSecond(0).toString(), 0L);
         }
 
