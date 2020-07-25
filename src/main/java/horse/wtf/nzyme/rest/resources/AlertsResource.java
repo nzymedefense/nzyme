@@ -105,11 +105,16 @@ public class AlertsResource {
             return Response.status(401).build();
         }
 
-        Alert alert = nzyme.getAlertsService().findActiveAlerts().get(uuid);
-        if (alert != null) {
-            return Response.ok(AlertDetailsResponse.fromAlert(alert)).build();
-        } else {
-            return Response.status(404).build();
+        try {
+            Alert alert = nzyme.getAlertsService().findAlert(uuid);
+
+            if (alert != null) {
+                return Response.ok(AlertDetailsResponse.fromAlert(alert)).build();
+            } else {
+                return Response.status(404).build();
+            }
+        } catch(Exception e) {
+            return Response.status(500).build();
         }
     }
 

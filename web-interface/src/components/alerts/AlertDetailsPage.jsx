@@ -39,7 +39,18 @@ class AlertDetailsPage extends Reflux.Component {
                 <div>
                     <div className="row">
                         <div className="col-md-12">
-                            <h2>Alert <em>{this.state.alert.id}</em></h2>
+                            <h2>
+                                Alert <em>{this.state.alert.id}</em>
+
+                                <small>
+                                    &nbsp;
+                                    {this.state.alert.is_active ?
+                                        <span className="badge badge-danger pull-right">active/ongoing</span>
+                                        : <span className="badge badge-info">inactive</span>}
+                                </small>
+                            </h2>
+
+
 
                             <blockquote className={"text-danger"} style={{"font-weight":"bold"}}>{this.state.alert.message}</blockquote>
 

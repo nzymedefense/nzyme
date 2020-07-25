@@ -26,6 +26,7 @@ import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,6 +88,15 @@ public class AlertsService {
     public void registerCallback(AlertCallback callback) {
         LOG.info("Registering alert callback of type [{}].", callback.getClass().getCanonicalName());
         this.callbacks.add(callback);
+    }
+
+    public Alert findAlert(UUID id) throws IOException {
+        return Alert.serializeFromDatabase(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM alerts WHERE alert_uuid = :uuid")
+                .bind("uuid", id)
+                .mapTo(AlertDatabaseEntry.class)
+                .one()
+        ));
     }
 
     public Map<UUID, Alert> findAllAlerts(int limit, int offset) {
