@@ -46,6 +46,7 @@
         <twilio.version>7.50.0</twilio.version>
         <lanterna.version>3.0.3</lanterna.version>
         <simplejavamail.version>6.4.0</simplejavamail.version>
+        <freemarker.version>2.3.30</freemarker.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -274,6 +275,11 @@
             <groupId>org.simplejavamail</groupId>
             <artifactId>simple-java-mail</artifactId>
             <version>${simplejavamail.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>${freemarker.version}</version>
         </dependency>
     </dependencies>
 

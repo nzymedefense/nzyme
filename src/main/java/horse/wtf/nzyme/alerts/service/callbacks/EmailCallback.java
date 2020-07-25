@@ -19,7 +19,12 @@ package horse.wtf.nzyme.alerts.service.callbacks;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
 import com.typesafe.config.Config;
+import freemarker.template.Template;
+import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.ConfigurationValidator;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
@@ -34,9 +39,14 @@ import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.MailerBuilder;
 
+import javax.annotation.Nullable;
 import javax.mail.Message;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -49,6 +59,8 @@ public class EmailCallback implements AlertCallback {
     private final Configuration configuration;
     private final Mailer mailer;
 
+    private final freemarker.template.Configuration templateConfig;
+
     public EmailCallback(Configuration configuration) {
         this.configuration = configuration;
         this.mailer = MailerBuilder
@@ -56,6 +68,15 @@ public class EmailCallback implements AlertCallback {
                 .withTransportStrategy(configuration.transportStrategy())
                 .clearEmailAddressCriteria()
                 .buildMailer();
+
+        // Set up template engine.
+        this.templateConfig = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_30);
+        this.templateConfig.setClassForTemplateLoading(this.getClass(), "/");
+        this.templateConfig.setDefaultEncoding("UTF-8");
+        this.templateConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        this.templateConfig.setLogTemplateExceptions(false);
+        this.templateConfig.setWrapUncheckedExceptions(true);
+        this.templateConfig.setFallbackOnNullLoopVariable(false);
     }
 
     @Override
@@ -67,6 +88,8 @@ public class EmailCallback implements AlertCallback {
                     .from(configuration.from())
                     .withSubject(configuration.subjectPrefix() + " " + buildSubject(alert))
                     .withPlainText(buildPlainTextBody(alert))
+                    .withHTMLText(buildHTMLTextBody(alert))
+                    .withEmbeddedImage("nzyme_logo", loadLogoFile(), "image/png")
                     .buildEmail();
 
             mailer.sendMail(email);
@@ -91,6 +114,34 @@ public class EmailCallback implements AlertCallback {
         }
 
         return sb.toString();
+    }
+
+    @Nullable
+    private String buildHTMLTextBody(Alert alert) throws IOException {
+        try {
+            Map<String, Object> parameters = Maps.newHashMap();
+            parameters.put("title", "nzyme Alert");
+            parameters.put("alert_summary", alert.getMessage());
+            parameters.put("alert_description", alert.getDescription());
+            parameters.put("details_link", buildHTTPURI(alert));
+            parameters.put("fields", alert.getFields());
+
+            StringWriter out = new StringWriter();
+            Template template = this.templateConfig.getTemplate("email/template_basic.ftl");
+            template.process(parameters, out);
+            return out.toString();
+        } catch(Exception e) {
+            LOG.error("Could not build HTML text body.", e);
+            return null;
+        }
+    }
+
+    private byte[] loadLogoFile() throws IOException {
+        //noinspection UnstableApiUsage
+        URL resource = Resources.getResource("email/nzyme.png");
+
+        //noinspection UnstableApiUsage
+        return Files.toByteArray(new File(resource.getFile()));
     }
 
     private URI buildHTTPURI(Alert alert) throws URISyntaxException {
