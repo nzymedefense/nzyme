@@ -25,6 +25,8 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
+import horse.wtf.nzyme.alerts.service.callbacks.EmailCallback;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
@@ -97,6 +99,7 @@ public class LeaderConfigurationLoader {
                 parseDot11Alerts(),
                 parseAlertingTrainingPeriodSeconds(),
                 parseGraylogUplinks(),
+                parseAlertCallbacks(),
                 parseDebugConfig(),
                 parseTrackerDevice()
         );
@@ -236,6 +239,43 @@ public class LeaderConfigurationLoader {
         }
     }
 
+    private List<AlertCallback> parseAlertCallbacks() {
+        List<AlertCallback> callbacks = Lists.newArrayList();
+        if (!alerting.hasPath(ConfigurationKeys.CALLBACKS)) {
+            return callbacks;
+        }
+
+        List<? extends Config> cs;
+        try {
+            cs = alerting.getConfigList(ConfigurationKeys.CALLBACKS);
+
+            for (Config c : cs) {
+                if (!c.hasPath(ConfigurationKeys.TYPE) || !c.hasPath(ConfigurationKeys.ENABLED)) {
+                    LOG.error("Alert callback is missing type or enabled field. Please consult callback documentation.");
+                    continue;
+                }
+
+                String type = c.getString(ConfigurationKeys.TYPE);
+                if (!c.getBoolean(ConfigurationKeys.ENABLED)) {
+                    LOG.info("Skipping disabled alert callback of type [{}].", type);
+                    continue;
+                }
+
+                switch(type) {
+                    case "email":
+                        callbacks.add(new EmailCallback(EmailCallback.parseConfiguration(c, parseHttpExternalUri().toString())));
+                        break;
+                    default:
+                        LOG.error("Skipping unknown alert callback of type [{}].", type);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Could not parse alert callbacks", e);
+            return callbacks;
+        }
+
+        return callbacks;
+    }
 
     @Nullable
     private TrackerDeviceConfiguration parseTrackerDevice() {

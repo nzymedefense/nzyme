@@ -61,13 +61,12 @@ public class ConfigurationKeys {
     public static final String DEVICE_SENDER = "device_sender";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
-    public static final String BANDIT_NAMES = "bandit_names";
     public static final String ADDRESS = "address";
     public static final String TRANSMITTER = "transmitter";
     public static final String DELAY_SECONDS = "delay_seconds";
-    public static final String FINGERPRINT = "fingerprint";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";
+    public static final String CALLBACKS = "callbacks";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

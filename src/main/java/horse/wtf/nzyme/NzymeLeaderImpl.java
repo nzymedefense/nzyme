@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
+import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
@@ -164,6 +165,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
+        this.alerts.registerCallbacks(configuration.alertCallbacks());
         this.contactManager = new ContactManager(this);
 
         this.trackerManager = new TrackerManager();

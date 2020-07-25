@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
@@ -53,6 +54,8 @@ public abstract class LeaderConfiguration {
 
     public abstract List<GraylogAddress> graylogUplinks();
 
+    public abstract List<AlertCallback> alertCallbacks();
+
     @Nullable
     public abstract Config debugConfig();
 
@@ -65,18 +68,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    @Nullable
-    public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
-        for (Dot11NetworkDefinition network : dot11Networks()) {
-            if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
-                return network;
-            }
-        }
-
-        return null;
-    }
-
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, List<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -98,9 +90,21 @@ public abstract class LeaderConfiguration {
                 .dot11Alerts(dot11Alerts)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .graylogUplinks(graylogUplinks)
+                .alertCallbacks(alertCallbacks)
                 .debugConfig(debugConfig)
                 .trackerDevice(trackerDevice)
                 .build();
+    }
+
+    @Nullable
+    public Dot11NetworkDefinition findNetworkDefinition(String bssid, String ssid) {
+        for (Dot11NetworkDefinition network : dot11Networks()) {
+            if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
+                return network;
+            }
+        }
+
+        return null;
     }
 
     public static Builder builder() {
@@ -149,10 +153,13 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
 
+        public abstract Builder alertCallbacks(List<AlertCallback> alertCallbacks);
+
         public abstract Builder debugConfig(Config debugConfig);
 
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 
         public abstract LeaderConfiguration build();
     }
+
 }

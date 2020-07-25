@@ -39,6 +39,7 @@ public class BluffTest {
                 Collections.emptyList(),
                 30,
                 Collections.emptyList(),
+                Collections.emptyList(),
                 null,
                 null
         );

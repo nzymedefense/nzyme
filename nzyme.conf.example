@@ -32,6 +32,30 @@ general: {
   }
 
   alerting {
+    # Notifications and callbacks for triggered alerts.
+    callbacks: [
+      {
+        type: email
+        enabled: false
+
+        # One of: SMTP, SMTPS or SMTP_TLS
+        transport_strategy: SMTP_TLS
+
+        host: smtp.example.org
+        port: 587
+        username: "your_username"
+        password: "your_password"
+
+        from: "nzyme@example.org"
+        subject_prefix: "[NZYME]"
+
+        recipients: [
+          "Somebody <somebody@example.org>",
+          "Somebody Else <somebody.else@example.org>"
+        ]
+      }
+    ]
+
     # Length of training period. Do not change this if you don't know what this means.
     training_period_seconds: 300
   }

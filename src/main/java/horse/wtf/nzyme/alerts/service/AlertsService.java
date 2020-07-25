@@ -19,8 +19,10 @@ package horse.wtf.nzyme.alerts.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,8 +43,11 @@ public class AlertsService {
 
     private final NzymeLeader nzyme;
 
+    private final List<AlertCallback> callbacks;
+
     public AlertsService(NzymeLeader nzyme) {
         this.nzyme = nzyme;
+        this.callbacks = Lists.newArrayList();
     }
 
     public void handle(Alert alert) {
@@ -60,10 +65,28 @@ public class AlertsService {
         UUID uuid = UUID.randomUUID();
         alert.setUUID(uuid);
 
-        // Notify uplinks
+        // Notify uplinks.
         nzyme.notifyUplinksOfAlert(alert);
 
+        // Notify callbacks.
+        for (AlertCallback callback : callbacks) {
+            LOG.info("Triggering alert callback type [{}]", callback.getClass().getCanonicalName());
+            callback.call(alert);
+        }
+
         writeAlert(alert);
+    }
+
+    public void registerCallbacks(List<AlertCallback> callbacks) {
+        for (AlertCallback callback : callbacks) {
+            registerCallback(callback);
+        }
+
+    }
+
+    public void registerCallback(AlertCallback callback) {
+        LOG.info("Registering alert callback of type [{}].", callback.getClass().getCanonicalName());
+        this.callbacks.add(callback);
     }
 
     public Map<UUID, Alert> findAllAlerts(int limit, int offset) {
