@@ -46,7 +46,7 @@ general: {
         username: "your_username"
         password: "your_password"
 
-        from: "nzyme@example.org"
+        from: "nzyme <nzyme@example.org>"
         subject_prefix: "[NZYME]"
 
         recipients: [
@@ -56,7 +56,7 @@ general: {
       }
     ]
 
-    # Length of training period. Do not change this if you don't know what this means.
+    # Length of the training period. Do not change this if you don't know what this means.
     training_period_seconds: 300
   }
 
@@ -76,15 +76,11 @@ interfaces: {
 
   # Use TLS? (HTTPS) See https://go.nzyme.org/docs-https
   use_tls: false
-  tls_certificate_path:
-  tls_key_path:
 }
 
 # List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)
 # See https://go.nzyme.org/docs-wifi-threat-hunting
-graylog_uplinks: [
-  "graylog.example.org:13999"
-]
+graylog_uplinks: []
 
 # 802.11/Wifi adapters that are designated to read traffic.
 # The more monitors you have listening on different channels, the more traffic will be picked up and the more
@@ -128,7 +124,7 @@ graylog_uplinks: [
   }
 ]
 
-# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it.
+# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it. TODO ADD DOCS LINK
 802_11_alerts: [
   unexpected_bssid
   unexpected_ssid
@@ -143,57 +139,9 @@ graylog_uplinks: [
   bandit_contact
 ]
 
-# Deception. Simply delete all trap definitions if you don't want to use this feature for now or if you simply don't
-# have another WiFi adapter available.
-802_11_traps: [
-  {
-    # The name of the 802.11/WiFi adapter that should be used to send data.
-    device_sender: wlx00c0ca971216
-
-    # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
-    channels: [6]
-
-    # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux are in the documentation.
-    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
-
-    # Channel hop interval in seconds. Leave at default if you don't know what this is.
-    channel_hop_interval: 1
-
-    # Which types of traps to set.
-    traps: [
-      {
-        # Sends crafted probe-requests for a non-existent network that an attacker might want to target. Any probe-response
-        # to it is considered malicious and will cause an alert.
-        type: PROBE_REQUEST_1
-
-        # Transmitter address for crafted probe-requests. This example looks like it's an Apple iPhone. (E0:33:8E)
-        transmitter: "E0:33:8E:36:AC:FA"
-
-        # The SSIDs to use in the crafted probe-requests.
-        ssids: [
-          ECorp_Omaha,
-          CenturyLink8683
-        ]
-
-        # How often to send the probe-requests, in seconds.
-        delay_seconds: 30
-      }
-    ]
-  }
-]
+# Optional: Traps to set up. See TODO ADD DOCS LINK
+802_11_traps: []
 
 # Optional: A tracker device to track down physical location of bandits. Please read more in the documentation.
-# Please consult the nzyme documentation to find out supported tracker devices.
-tracker_device {
-  type: SX126X_LORA
-  parameters: {
-    # Set the encryption key to your own 32 character string of letters and numbers.
-    # Must be the same on all trackers and nzyme nodes or communication will fail.
-    encryption_key: ep1aeNu2Iesoh3oxeiphae2gietati5i
-
-    # Will usually be /dev/ttyUSB0 except if you have multiple devices connected.
-    # You can find out by looking at `dmesg` after plugging it in.
-    serial_port: /dev/ttyUSB0
-  }
-}
+# Please consult the nzyme documentation to find out supported tracker devices. TODO ADD DOCS LINK
+tracker_device {}
