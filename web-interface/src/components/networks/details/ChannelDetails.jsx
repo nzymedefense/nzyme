@@ -6,6 +6,7 @@ import SimpleLineChart from "../../charts/SimpleLineChart";
 import HeatmapWaterfallChart from "../../charts/HeatmapWaterfallChart";
 import HelpBubble from "../../misc/HelpBubble";
 import TimerangeSwitcher from "./TimerangeSwitcher";
+import SignalLegendHelper from "../../charts/SignalLegendHelper";
 
 class ChannelDetails extends Reflux.Component {
 
@@ -64,7 +65,6 @@ class ChannelDetails extends Reflux.Component {
 
     _buildSignalIndexHeatmapTracks(data, tracks) {
         const shapes = [];
-        const annotations = [];
 
         const firstDate = new Date(data.y[0]);
         const lastDate = new Date(data.y[data.y.length-1]);
@@ -109,9 +109,7 @@ class ChannelDetails extends Reflux.Component {
                 );
 
                 // Top.
-                let topComplete = false;
                 if (new Date(track.end).getTime() !== lastDate.getTime()) {
-                    topComplete = true;
                     shapes.push(
                         {
                             type: "line",
@@ -130,9 +128,7 @@ class ChannelDetails extends Reflux.Component {
                 }
 
                 // Bottom.
-                let bottomComplete = false;
                 if (new Date(track.start).getTime() !== firstDate.getTime()) {
-                    bottomComplete = true;
                     shapes.push(
                         {
                             type: "line",
@@ -149,30 +145,11 @@ class ChannelDetails extends Reflux.Component {
                         }
                     );
                 }
-
-                // Annotations.
-                if (topComplete && bottomComplete) {
-                    annotations.push(
-                        {
-                            type: "text",
-                            align: "left",
-                            font: {
-                                color: "#ff0000"
-                            },
-                            text: "track<br>" + track.id,
-                            showarrow: false,
-                            x: track.max_signal,
-                            y: new Date(track.end),
-                            xshift: 25,
-                            yshift: -10,
-                        }
-                    )
-                }
             });
         }
 
 
-        return {shapes: shapes, annotations: annotations};
+        return {shapes: shapes};
     }
 
     componentWillReceiveProps(newProps) {
@@ -235,12 +212,13 @@ class ChannelDetails extends Reflux.Component {
                             yaxistitle="Signal Count"
                             customMarginLeft={60}
                             customMarginRight={60}
+                            annotations={SignalLegendHelper.DEFAULT}
                             finalData={this._formatSignalIndexDistribution(self.state.channel.signal_index_distribution)}
                         />
                     </div>
                 </div>
 
-                <div className="row">
+                <div className="row mt-md-3">
                     <div className="col-md-12">
                         <HeatmapWaterfallChart
                             title={"Signal Strength Waterfall (last " + self.state.historyHours + " hours)"}
@@ -249,6 +227,7 @@ class ChannelDetails extends Reflux.Component {
                             xaxistitle="Signal Strength (dBm)"
                             yaxistitle="Time"
                             hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
+                            annotations={SignalLegendHelper.DEFAULT}
                             data={this._formatSignalIndexHeatmap(self.state.channel.signal_index_history)}
                             layers={this._buildSignalIndexHeatmapTracks(self.state.channel.signal_index_history, self.state.channel.signal_index_tracks)}
                         />
@@ -269,8 +248,7 @@ class ChannelDetails extends Reflux.Component {
                         <button
                             className="text-muted small btn-outline-dark"
                             style={{"cursor":"pointer", "display": this.state.showRawHistogramData ? "none" : "inline"}}
-                            onClick={this._showRawHistogramData}
-                        >
+                            onClick={this._showRawHistogramData}>
                             debug
                         </button>
                     </div>

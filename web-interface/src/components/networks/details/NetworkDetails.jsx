@@ -10,6 +10,7 @@ import HelpBubble from "../../misc/HelpBubble";
 import ChannelSwitcher from "./ChannelSwitcher";
 import NetworkMonitoredAlert from "./NetworkMonitoredAlert";
 import Routes from "../../../util/Routes";
+import SignalLegendHelper from "../../charts/SignalLegendHelper";
 
 class NetworkDetails extends Reflux.Component {
 
@@ -195,6 +196,9 @@ class NetworkDetails extends Reflux.Component {
                                 width={1140}
                                 customMarginLeft={60}
                                 customMarginRight={60}
+                                annotations={SignalLegendHelper.DEFAULT}
+                                xaxistitle="Signal Strength (dBm)"
+                                yaxistitle="Signal Count"
                                 finalData={this._formatSignalIndexDistribution(ssid.channels)}
                             />
                         </div>

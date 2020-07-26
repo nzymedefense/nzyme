@@ -74,7 +74,7 @@ class HeatmapWaterfallChart extends React.Component {
                     xaxis: { visible: true, title: this.props.xaxistitle },
                     yaxis: { visible: true, title: this.props.yaxistitle },
                     shapes: this.props.layers.shapes,
-                    annotations: this.props.layers.annotations
+                    annotations: this.props.annotations ? this.props.annotations : [],
                 }}
                 config={{
                     displayModeBar: false,

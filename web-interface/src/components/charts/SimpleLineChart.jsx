@@ -84,6 +84,7 @@ class SimpleLineChart extends React.Component {
                     linecolor: "#11121f",
                     gridcolor: "#1f2134"
                 },
+                annotations: this.props.annotations ? this.props.annotations : [],
                 shapes: this.props.shapes
             }}
             config={{
