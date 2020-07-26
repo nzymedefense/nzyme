@@ -177,3 +177,8 @@ span.most-active-channel {
     border-top: 1px dotted #999;
     border-bottom: 1px dotted #999;
 }
+
+i.built-in-bandit {
+    color: #292b40;
+    margin-left: 10px;
+}

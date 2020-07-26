@@ -12,7 +12,10 @@ class BanditsTableRow extends Reflux.Component {
 
         return (
             <tr>
-                <td><a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a></td>
+                <td>
+                    <a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a>
+                    {bandit.read_only && <i className="fas fa-shield-alt built-in-bandit" title="Built-in bandit"/>}
+                </td>
                 <td>
                     <BanditContactStatus bandit={bandit} /> <BanditTrackingStatus bandit={bandit} />
                 </td>

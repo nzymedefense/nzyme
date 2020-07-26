@@ -114,7 +114,7 @@ class BanditDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <h1>Bandit <em>{bandit.name}</em></h1>
+                        <h1>Bandit <em>{bandit.name}</em> {bandit.read_only && <i className="fas fa-shield-alt built-in-bandit" title="Built-in bandit"/>}</h1>
                     </div>
                 </div>
 
