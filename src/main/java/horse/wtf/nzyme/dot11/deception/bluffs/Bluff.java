@@ -152,6 +152,7 @@ public abstract class Bluff {
      * @throws IOException
      */
     private File ensureScript() throws IOException {
+        // TODO if this doesn't work packaged, use resourceAsStream like EmailCallback does.
         URL url = Resources.getResource("bluffs/" + scriptCategory() + "/" + scriptName());
         String text = Resources.toString(url, Charsets.UTF_8);
         File target = new File("/" + configuration.pythonScriptDirectory() + "/" + configuration.pythonScriptPrefix() + this.getClass().getSimpleName());

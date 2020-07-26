@@ -43,6 +43,7 @@ import javax.annotation.Nullable;
 import javax.mail.Message;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -138,10 +139,13 @@ public class EmailCallback implements AlertCallback {
 
     private byte[] loadLogoFile() throws IOException {
         //noinspection UnstableApiUsage
-        URL resource = Resources.getResource("email/nzyme.png");
+        InputStream resource = getClass().getClassLoader().getResourceAsStream("email/nzyme.png");
+        if (resource == null) {
+            throw new RuntimeException("Couldn't load nzyme logo file.");
+        }
 
         //noinspection UnstableApiUsage
-        return Files.toByteArray(new File(resource.getFile()));
+        return resource.readAllBytes();
     }
 
     private URI buildHTTPURI(Alert alert) throws URISyntaxException {
