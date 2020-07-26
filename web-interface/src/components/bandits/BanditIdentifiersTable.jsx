@@ -17,7 +17,13 @@ class BanditIdentifiersTable extends Reflux.Component {
     }
 
 
-    _onDeleteIdentifier(identifier) {
+    _onDeleteIdentifier(e, identifier) {
+        if (this.props.bandit.read_only) {
+            alert("Cannot delete identifier of a built-in bandit.");
+            e.preventDefault();
+            return;
+        }
+
         if (!window.confirm("Delete identifier?")) {
             return;
         }

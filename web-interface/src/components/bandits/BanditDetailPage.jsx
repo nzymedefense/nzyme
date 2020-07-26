@@ -31,6 +31,7 @@ class BanditDetailPage extends Reflux.Component {
         this._editBandit = this._editBandit.bind(this);
         this._loadBandit = this._loadBandit.bind(this);
         this._invalidateIdentifiers = this._invalidateIdentifiers.bind(this);
+        this._createIdentifier = this._createIdentifier.bind(this);
     }
 
     componentDidMount() {
@@ -70,6 +71,13 @@ class BanditDetailPage extends Reflux.Component {
         BanditsActions.deleteBandit(this.banditId, function () {
             self.setState({deleted:true})
         })
+    }
+
+    _createIdentifier(e) {
+        if (this.state.bandit.read_only) {
+            alert("Cannot create identifier for built-in bandit.");
+            e.preventDefault();
+        }
     }
 
     _loadBandit() {
@@ -160,7 +168,9 @@ class BanditDetailPage extends Reflux.Component {
                     </div>
 
                     <div className="col-md-3">
-                        <a href={Routes.BANDITS.NEW_IDENTIFIER(bandit.uuid)} className="btn btn-success float-right">Create Identifier</a>
+                        <a href={Routes.BANDITS.NEW_IDENTIFIER(bandit.uuid)} className="btn btn-success float-right" onClick={this._createIdentifier}>
+                            Create Identifier
+                        </a>
                     </div>
                 </div>
 
