@@ -9,6 +9,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import FrameCount from "./FrameCount";
 import AlertField from "./AlertField";
+import Routes from "../../util/Routes";
 
 class AlertDetailsPage extends Reflux.Component {
 
@@ -37,6 +38,21 @@ class AlertDetailsPage extends Reflux.Component {
         } else {
             return (
                 <div>
+                    <div className="row">
+                        <div className="col-md-12">
+                            <nav aria-label="breadcrumb">
+                                <ol className="breadcrumb">
+                                    <li className="breadcrumb-item">
+                                        <a href={Routes.ALERTS.INDEX}>Alerts</a>
+                                    </li>
+                                    <li className="breadcrumb-item" aria-current="page">
+                                        {this.alertId}
+                                    </li>
+                                </ol>
+                            </nav>
+                        </div>
+                    </div>
+
                     <div className="row">
                         <div className="col-md-12">
                             <h2>
