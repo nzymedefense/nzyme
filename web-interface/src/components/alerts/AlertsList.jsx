@@ -34,20 +34,12 @@ class AlertsList extends Reflux.Component {
   }
 
   _buildTableContent() {
-    if (this.state.alerts.length === 0) {
+    let self = this;
+    return Object.keys(this.state.alerts).map(function (key) {
       return (
-        <tr>
-          <td colSpan={6} className="text-center text-success">No alerts found!</td>
-        </tr>
+        AlertsList._buildAlertRow(key, self.state.alerts[key])
       )
-    } else {
-      let self = this;
-      return Object.keys(this.state.alerts).map(function (key) {
-        return (
-          AlertsList._buildAlertRow(key, self.state.alerts[key])
-        )
-      })
-    }
+    })
   }
 
   render() {
@@ -55,6 +47,14 @@ class AlertsList extends Reflux.Component {
     if (!this.state.alerts) {
       return <LoadingSpinner />;
     } else {
+      if (this.state.alerts.length === 0) {
+        return (
+            <div className="alert alert-info">
+              No alerts yet.
+            </div>
+        )
+      }
+
       return (
         <div className="row">
           <div className="col-md-12">

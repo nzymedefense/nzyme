@@ -9,8 +9,8 @@ class ContactsTable extends Reflux.Component {
 
         if (!contacts || contacts.length === 0) {
             return (
-                <div className="alert alert-warning">
-                    This bandit has had no contacts yet.
+                <div className="alert alert-info">
+                    No contacts yet.
                 </div>
             );
         }
