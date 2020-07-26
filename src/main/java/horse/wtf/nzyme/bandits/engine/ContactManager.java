@@ -145,7 +145,7 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         }
 
         List<Bandit> bandits = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM bandits")
+                handle.createQuery("SELECT * FROM bandits ORDER BY updated_at DESC;")
                         .mapTo(Bandit.class)
                         .list()
         );
