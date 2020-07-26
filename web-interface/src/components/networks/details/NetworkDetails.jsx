@@ -162,10 +162,6 @@ class NetworkDetails extends Reflux.Component {
                                 <dd><BeaconRate rate={ssid.beacon_rate} /></dd>
                             </dl>
                         </div>
-
-                        <div className="col-md-3 text-right">
-                            <a href={Routes.NETWORKS.DASHBOARD(ssid.name)} className="btn btn-primary">Open SSID Dashboard</a>
-                        </div>
                     </div>
 
                     <NetworkMonitoredAlert ssid={ssid} />
