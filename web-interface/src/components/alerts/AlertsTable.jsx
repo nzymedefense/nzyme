@@ -6,7 +6,7 @@ import moment from "moment";
 import Routes from "../../util/Routes";
 import FrameCount from "./FrameCount";
 
-class AlertsList extends Reflux.Component {
+class AlertsTable extends Reflux.Component {
 
   constructor(props) {
     super(props);
@@ -37,7 +37,7 @@ class AlertsList extends Reflux.Component {
     let self = this;
     return Object.keys(this.state.alerts).map(function (key) {
       return (
-        AlertsList._buildAlertRow(key, self.state.alerts[key])
+        AlertsTable._buildAlertRow(key, self.state.alerts[key])
       )
     })
   }
@@ -81,4 +81,4 @@ class AlertsList extends Reflux.Component {
 
 }
 
-export default AlertsList;
+export default AlertsTable;

@@ -44,6 +44,8 @@ public class AlertsResource {
 
     private static final Logger LOG = LogManager.getLogger(AlertsResource.class);
 
+    private static final int PAGE_SIZE = 25;
+
     @Inject
     private NzymeLeader nzyme;
 
@@ -62,6 +64,25 @@ public class AlertsResource {
         }
 
         return Response.ok(AlertConfigurationResponse.create(enabled.build(), disabled.build())).build();
+    }
+
+    @GET
+    @Path("/")
+    public Response all(@QueryParam("page") int page) {
+        if(page < 0) {
+            LOG.info("Invalid page parameter. Must be larger than 0.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        long total = nzyme.getAlertsService().countAllAlerts();
+        Map<UUID, Alert> alerts = nzyme.getAlertsService().findAllAlerts(PAGE_SIZE, PAGE_SIZE*page);
+
+        List<AlertDetailsResponse> result = Lists.newArrayList();
+        for (Alert alert : alerts.values()) {
+            result.add(AlertDetailsResponse.fromAlert(alert));
+        }
+
+        return Response.ok(AlertsListResponse.create(total, result)).build();
     }
 
     @GET

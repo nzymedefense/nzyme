@@ -8,7 +8,7 @@ import ActiveAlertsWidget from "./widgets/ActiveAlertsWidget";
 import ActiveContactsWidget from "./widgets/ActiveContactsWidget";
 import SystemStatusWidget from "./widgets/SystemStatusWidget";
 import FrameThroughputWidget from "./widgets/FrameThroughputWidget";
-import AlertsList from "../alerts/AlertsList";
+import AlertsTable from "../alerts/AlertsTable";
 import ContactsTable from "../bandits/ContactsTable";
 import ProbesList from "../system/ProbesList";
 
@@ -65,7 +65,7 @@ class Overview extends Reflux.Component {
                 <div className="row mt-md-3">
                     <div className="col-md-12">
                         <h4>Alerts (last 5)</h4>
-                        <AlertsList alerts={this.state.dashboard.alerts.alerts} />
+                        <AlertsTable alerts={this.state.dashboard.alerts.alerts} />
                     </div>
                 </div>
 

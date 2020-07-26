@@ -1,6 +1,6 @@
 import React from 'react';
 import Reflux from 'reflux';
-import LoadingSpinner from "../../alerts/AlertsList";
+import LoadingSpinner from "../../alerts/AlertsTable";
 import NetworksStore from "../../../stores/NetworksStore";
 import NetworksActions from "../../../actions/NetworksActions";
 import ChannelDetails from "./ChannelDetails";

@@ -117,6 +117,14 @@ public class AlertsService {
         ));
     }
 
+    public long countAllAlerts() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM alerts;")
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     private Map<UUID, Alert> buildAlertsMap(List<AlertDatabaseEntry> alertEntries) {
         ImmutableMap.Builder<UUID, Alert> alerts = new ImmutableMap.Builder<>();
 
