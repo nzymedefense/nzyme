@@ -67,7 +67,6 @@ public class AlertsResource {
     }
 
     @GET
-    @Path("/")
     public Response all(@QueryParam("page") int page) {
         if(page < 0) {
             LOG.info("Invalid page parameter. Must be larger than 0.");
