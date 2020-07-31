@@ -70,7 +70,6 @@ import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
-import horse.wtf.nzyme.rest.resources.system.StatisticsResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -246,7 +245,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(ProbesResource.class);
         resourceConfig.register(TrackersResource.class);
         resourceConfig.register(MetricsResource.class);
-        resourceConfig.register(StatisticsResource.class);
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
@@ -402,25 +400,22 @@ public class NzymeLeaderImpl implements NzymeLeader {
                 Trap trap;
 
                 // This part doesn't belong here but it's fine for now. REFACTOR.
-                switch (tc.type()) {
-                    case PROBE_REQUEST_1:
-                        // TODO validation
-                        try {
-                            trap = new ProbeRequestTrap(
-                                    configuration,
-                                    td.deviceSender(),
-                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
-                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
-                                    tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
-                            );
-                        } catch(Exception e) {
-                            LOG.error("Failed to construct trap of type [{}].", tc.type(), e);
-                            continue;
-                        }
-                        break;
-                    default:
-                        LOG.error("Cannot construct trap of type [{}]", tc.type());
+                if (tc.type() == Trap.Type.PROBE_REQUEST_1) {// TODO validation
+                    try {
+                        trap = new ProbeRequestTrap(
+                                configuration,
+                                td.deviceSender(),
+                                tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
+                        );
+                    } catch (Exception e) {
+                        LOG.error("Failed to construct trap of type [{}].", tc.type(), e);
                         continue;
+                    }
+                } else {
+                    LOG.error("Cannot construct trap of type [{}]", tc.type());
+                    continue;
                 }
 
                 Dot11SenderProbe probe = new Dot11SenderProbe(

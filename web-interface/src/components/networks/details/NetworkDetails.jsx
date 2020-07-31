@@ -9,7 +9,6 @@ import BeaconRate from "./BeaconRate";
 import HelpBubble from "../../misc/HelpBubble";
 import ChannelSwitcher from "./ChannelSwitcher";
 import NetworkMonitoredAlert from "./NetworkMonitoredAlert";
-import Routes from "../../../util/Routes";
 import SignalLegendHelper from "../../charts/SignalLegendHelper";
 
 class NetworkDetails extends Reflux.Component {
@@ -119,7 +118,6 @@ class NetworkDetails extends Reflux.Component {
         let minutes = 0;
         Object.keys(channels).forEach(function(channelNumber) {
            minutes = channels[channelNumber].signal_index_distribution_minutes;
-           return;
         });
 
         return minutes;
@@ -209,7 +207,7 @@ class NetworkDetails extends Reflux.Component {
                             </h3>
 
                             <ul>
-                                {Object.keys(ssid.fingerprints).map(function (key,i) {
+                                {Object.keys(ssid.fingerprints).map(function (key) {
                                     return <li key={"fp-" + ssid.fingerprints[key]}>{ssid.fingerprints[key]}</li>
                                 })}
                             </ul>
