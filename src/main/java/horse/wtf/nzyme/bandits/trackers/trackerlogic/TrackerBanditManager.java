@@ -93,7 +93,7 @@ public class TrackerBanditManager implements BanditListProvider, ContactIdentifi
                     synchronized (mutex) {
                         Map<UUID, BanditManagerEntry> newBandits = Maps.newHashMap();
                         for (Map.Entry<UUID, BanditManagerEntry> bandit : bandits.entrySet()) {
-                            if (bandit.getValue().receivedAt().isAfter(DateTime.now().minusMinutes(3))) {
+                            if (bandit.getValue().receivedAt().isAfter(DateTime.now().minusMinutes(30))) {
                                 newBandits.put(bandit.getKey(), bandit.getValue());
                             } else {
                                 LOG.info("Retention cleaning outdated bandit <{}/{}>",
