@@ -114,7 +114,7 @@ public class TextGUIHID implements TrackerHID {
                         labelWiFiStatus.setText(" ONLINE");
                         labelWiFiStatus.setForegroundColor(TextColor.ANSI.GREEN);
                     } else {
-                        labelWiFiStatus.setText("WARNING");
+                        labelWiFiStatus.setText("  WARN");
                         labelWiFiStatus.setForegroundColor(TextColor.ANSI.RED);
                     }
 
