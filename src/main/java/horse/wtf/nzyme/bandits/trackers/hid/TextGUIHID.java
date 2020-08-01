@@ -58,6 +58,7 @@ public class TextGUIHID implements TrackerHID {
     private final Label labelSignal = new Label(" ???").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelSync = new Label("  DARK").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelTime = new Label("");
+    private final Label labelWiFiStatus = new Label("");
     private final Label labelWiFiChannels = new Label("").setForegroundColor(TextColor.ANSI.WHITE);
 
     private final Label labelTask = new Label("");
@@ -100,6 +101,22 @@ public class TextGUIHID implements TrackerHID {
                 .scheduleWithFixedDelay(() -> {
                     labelTime.setText(DateTime.now().toString(DateTimeFormat.forPattern("HH:mm:ss")));
                     labelWiFiChannels.setText(wifiChannels());
+
+                    boolean allProbesLive = true;
+                    for (Dot11Probe probe : nzyme.getProbes()) {
+                        if (!probe.isInLoop() || !probe.isActive()) {
+                            allProbesLive = false;
+                            break;
+                        }
+                    }
+
+                    if (allProbesLive) {
+                        labelWiFiStatus.setText(" ONLINE");
+                        labelWiFiStatus.setForegroundColor(TextColor.ANSI.GREEN);
+                    } else {
+                        labelWiFiStatus.setText("WARNING");
+                        labelWiFiStatus.setForegroundColor(TextColor.ANSI.RED);
+                    }
 
                     if (!nzyme.getBanditManager().isCurrentlyTracking()) {
                         labelTask.setText(" NONE ");
@@ -179,12 +196,13 @@ public class TextGUIHID implements TrackerHID {
         Panel mainPanel = new Panel();
 
         // Top status.
-        Panel statusPanel = new Panel(new GridLayout(6));
+        Panel statusPanel = new Panel(new GridLayout(7));
         statusPanel.addComponent(labelConnection.withBorder(Borders.singleLine("CONN")));
         statusPanel.addComponent(labelSignal.withBorder(Borders.singleLine("SIG")));
         statusPanel.addComponent(labelSync.withBorder(Borders.singleLine("SYNCED")));
-        statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("802.11 Channel")));
-        statusPanel.addComponent(new EmptySpace(new TerminalSize(20, 3)));
+        statusPanel.addComponent(labelWiFiStatus.withBorder(Borders.singleLine("802.11")));
+        statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("Channel")));
+        statusPanel.addComponent(new EmptySpace(new TerminalSize(16, 3)));
         statusPanel.addComponent(labelTime.withBorder(Borders.singleLine("CLOCK")));
         mainPanel.addComponent(statusPanel);
 
@@ -322,7 +340,7 @@ public class TextGUIHID implements TrackerHID {
 
         String s = Joiner.on(",").join(channels);
 
-        return getCenterPadding(s, 16) + s;
+        return getCenterPadding(s, 9) + s;
     }
 
     private static String getCenterPadding(String string, int width) {
