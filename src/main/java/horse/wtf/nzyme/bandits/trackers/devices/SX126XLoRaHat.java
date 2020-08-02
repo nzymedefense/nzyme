@@ -52,6 +52,9 @@ public class SX126XLoRaHat implements TrackerDevice {
     private final Counter txCounter;
     private final Timer encryptionTimer;
 
+    private boolean healthyReceive = false;
+    private boolean healthyTransmit = false;
+
     public SX126XLoRaHat(String portName, String encryptionKey, Counter rxCounter, Counter txCounter, Timer encryptionTimer) {
         this.portName = portName;
 
@@ -94,6 +97,11 @@ public class SX126XLoRaHat implements TrackerDevice {
     }
 
     @Override
+    public boolean isHealthy() {
+        return this.serialPort != null && this.serialPort.isOpened() && healthyTransmit && healthyReceive;
+    }
+
+    @Override
     public void readLoop() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         short nulCount = 0;
@@ -102,6 +110,7 @@ public class SX126XLoRaHat implements TrackerDevice {
         while(true) {
             try {
                 byte[] b = handle().readBytes(1);
+                healthyReceive = true;
 
                 if (b == null) {
                     // Nothing to read. End of message.
@@ -175,6 +184,7 @@ public class SX126XLoRaHat implements TrackerDevice {
                 }
             } catch(Exception e) {
                 LOG.warn("Error in read loop.", e);
+                healthyReceive = false;
 
                 try {
                     Thread.sleep(1000);
@@ -221,6 +231,8 @@ public class SX126XLoRaHat implements TrackerDevice {
             handle().writeBytes(buf);
             txCounter.inc(buf.length);
 
+            healthyTransmit = true;
+
             // Spread out message sending to not overload LoRa bands or UART connection buffer.
             try {
                 Thread.sleep(1500);
@@ -228,6 +240,7 @@ public class SX126XLoRaHat implements TrackerDevice {
             }
         } catch (Exception e) {
             LOG.error("Could not transmit message.", e);
+            healthyTransmit = false;
         }
     }
 

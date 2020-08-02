@@ -306,6 +306,10 @@ public class GroundStation implements Runnable {
         trackerDevice.stop();
     }
 
+    public TrackerDevice getTrackerDevice() {
+        return this.trackerDevice;
+    }
+
     public void transmit(@NotNull TrackerMessage.Wrapper message) {
         if (transmitQueue.size() > 5) {
             LOG.warn("Transmit queue size is unusually large at <{}> entries.", transmitQueue.size());

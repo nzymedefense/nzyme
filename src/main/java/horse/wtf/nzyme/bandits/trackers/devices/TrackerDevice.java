@@ -29,6 +29,8 @@ public interface TrackerDevice {
     void initialize() throws TrackerDeviceInitializationException;
     void stop();
 
+    boolean isHealthy();
+
     String getTypeDescription();
 
     void readLoop();

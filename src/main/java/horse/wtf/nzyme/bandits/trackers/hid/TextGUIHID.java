@@ -57,6 +57,7 @@ public class TextGUIHID implements TrackerHID {
     private final Label labelConnection = new Label(" DARK").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelSignal = new Label(" ???").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelTime = new Label("");
+    private final Label labelTrackerStatus = new Label("");
     private final Label labelWiFiStatus = new Label("");
     private final Label labelWiFiChannels = new Label("").setForegroundColor(TextColor.ANSI.WHITE);
 
@@ -115,6 +116,14 @@ public class TextGUIHID implements TrackerHID {
                     } else {
                         labelWiFiStatus.setText("  WARN");
                         labelWiFiStatus.setForegroundColor(TextColor.ANSI.RED);
+                    }
+
+                    if (nzyme.getGroundStation().getTrackerDevice().isHealthy()) {
+                        labelTrackerStatus.setText("  ONLINE");
+                        labelTrackerStatus.setForegroundColor(TextColor.ANSI.GREEN);
+                    } else {
+                        labelTrackerStatus.setText("   WARN");
+                        labelTrackerStatus.setForegroundColor(TextColor.ANSI.RED);
                     }
 
                     if (!nzyme.getBanditManager().isCurrentlyTracking()) {
@@ -195,12 +204,13 @@ public class TextGUIHID implements TrackerHID {
         Panel mainPanel = new Panel();
 
         // Top status.
-        Panel statusPanel = new Panel(new GridLayout(6));
+        Panel statusPanel = new Panel(new GridLayout(7));
         statusPanel.addComponent(labelConnection.withBorder(Borders.singleLine("CONN")));
         statusPanel.addComponent(labelSignal.withBorder(Borders.singleLine("SIG")));
+        statusPanel.addComponent(labelTrackerStatus.withBorder(Borders.singleLine("LINK DVC")));
         statusPanel.addComponent(labelWiFiStatus.withBorder(Borders.singleLine("802.11")));
-        statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("Channel")));
-        statusPanel.addComponent(new EmptySpace(new TerminalSize(16, 3)));
+        statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("CHANNEL")));
+        statusPanel.addComponent(new EmptySpace(new TerminalSize(12, 3)));
         statusPanel.addComponent(labelTime.withBorder(Borders.singleLine("CLOCK")));
         mainPanel.addComponent(statusPanel);
 
