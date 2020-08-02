@@ -3,8 +3,6 @@ import Reflux from 'reflux';
 import Routes from "../../util/Routes";
 import BanditIdentifiersTableRow from "./BanditIdentifersTableRow";
 import BanditsStore from "../../stores/BanditsStore";
-import BanditsActions from "../../actions/BanditsActions";
-import {notify} from "react-notify-toast";
 
 class BanditIdentifiersTable extends Reflux.Component {
 
