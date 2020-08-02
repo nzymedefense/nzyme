@@ -24,7 +24,6 @@ public abstract class LeaderConfiguration {
     public abstract boolean fetchOuis();
 
     public abstract Role role();
-    public abstract String nzymeId();
 
     public abstract String adminPasswordHash();
 
@@ -68,12 +67,11 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String nzymeId, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, List<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, List<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
                 .role(role)
-                .nzymeId(nzymeId)
                 .adminPasswordHash(adminPasswordHash)
                 .databasePath(databasePath)
                 .pythonExecutable(pythonExecutable)
@@ -119,8 +117,6 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder role(Role role);
 
-        public abstract Builder nzymeId(String nzymeId);
-
         public abstract Builder adminPasswordHash(String adminPasswordHash);
 
         public abstract Builder databasePath(String databasePath);
@@ -161,5 +157,4 @@ public abstract class LeaderConfiguration {
 
         public abstract LeaderConfiguration build();
     }
-
 }

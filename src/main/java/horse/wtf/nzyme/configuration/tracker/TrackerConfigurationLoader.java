@@ -59,7 +59,6 @@ public class TrackerConfigurationLoader {
     public TrackerConfiguration get() {
         return TrackerConfiguration.create(
                 parseRole(),
-                parseNzymeId(),
                 parseTrackerDevice(),
                 baseDot11ConfigurationLoader.parseDot11Monitors()
         );
@@ -67,10 +66,6 @@ public class TrackerConfigurationLoader {
 
     private Role parseRole() {
         return general.getEnum(Role.class, ConfigurationKeys.ROLE);
-    }
-
-    private String parseNzymeId() {
-        return general.getString(ConfigurationKeys.ID);
     }
 
     private TrackerDeviceConfiguration parseTrackerDevice() {
@@ -82,7 +77,6 @@ public class TrackerConfigurationLoader {
 
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
-        ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.DATA_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
 

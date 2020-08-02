@@ -25,12 +25,14 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class BaseConfiguration {
 
+    public abstract String nodeId();
     public abstract Role mode();
     public abstract String dataDirectory();
     public abstract Boolean anonymize();
 
-    public static BaseConfiguration create(Role mode, String dataDirectory, Boolean anonymize) {
+    public static BaseConfiguration create(String nodeId, Role mode, String dataDirectory, Boolean anonymize) {
         return builder()
+                .nodeId(nodeId)
                 .mode(mode)
                 .dataDirectory(dataDirectory)
                 .anonymize(anonymize)
@@ -43,6 +45,8 @@ public abstract class BaseConfiguration {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder nodeId(String nodeId);
+
         public abstract Builder mode(Role mode);
 
         public abstract Builder dataDirectory(String dataDirectory);

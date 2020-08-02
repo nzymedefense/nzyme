@@ -2,7 +2,7 @@
 general: {
   role: TRACKER
 
-  # The ID or name of this nzyme tracker. Must be unique.
+  # The ID or name of this nzyme tracker. Must be unique and contain only alphanumeric characters, underscores and dashes.
   id: nzyme-tracker-01
 
   # Path to directory that the tracker will use to store some temporary information. (must be writable)s

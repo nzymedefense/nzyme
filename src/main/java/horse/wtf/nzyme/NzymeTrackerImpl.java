@@ -56,6 +56,8 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
     private final Version version;
 
+    private final String nodeID;
+
     private final TrackerConfiguration configuration;
     private final BaseConfiguration baseConfiguration;
     private final ExecutorService probeExecutor;
@@ -74,6 +76,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
     public NzymeTrackerImpl(BaseConfiguration baseConfiguration, TrackerConfiguration configuration) {
         this.version = new Version();
+        this.nodeID = baseConfiguration.nodeId();
         this.configuration = configuration;
         this.baseConfiguration = baseConfiguration;
 
@@ -97,7 +100,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
         try {
             this.groundStation = new GroundStation(
                     Role.TRACKER,
-                    configuration.nzymeId(),
+                    baseConfiguration.nodeId(),
                     version.getVersion().toString(),
                     metrics,
                     banditManager,
@@ -153,7 +156,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                         TrackerTrackSummary trackSummary = banditManager.getTrackSummary();
                         groundStation.transmit(TrackerMessage.Wrapper.newBuilder().setContactStatus(
                                 TrackerMessage.ContactStatus.newBuilder()
-                                        .setSource(configuration.nzymeId())
+                                        .setSource(baseConfiguration.nodeId())
                                         .setUuid(bandit.uuid().toString())
                                         .setRssi(trackSummary.lastSignal())
                                         .setLastSeen(trackSummary.lastContact().getMillis())
@@ -175,7 +178,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     null,
-                    configuration.nzymeId(),
+                    baseConfiguration.nodeId(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),
@@ -202,6 +205,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
     @Override
     public void shutdown() {
         this.groundStation.stop();
+    }
+
+    @Override
+    public String getNodeID() {
+        return nodeID;
     }
 
     @Override

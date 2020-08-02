@@ -44,6 +44,8 @@ public interface NzymeLeader extends UplinkHandler {
     void initialize();
     void shutdown();
 
+    String getNodeID();
+
     Networks getNetworks();
     Clients getClients();
 

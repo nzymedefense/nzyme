@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.regex.Pattern;
 
 public class Tools {
 
@@ -30,6 +31,8 @@ public class Tools {
             .or(CharMatcher.whitespace())
             .or(CharMatcher.anyOf("_.-/:"))
             .precomputed();
+
+    private static final Pattern SAFE_ID = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static boolean isValidUTF8( byte[] input ) {
         CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
@@ -84,6 +87,10 @@ public class Tools {
         }
 
         return SAFE_PARAMETER.matchesAllOf(x);
+    }
+
+    public static boolean isSafeID(String x) {
+        return SAFE_ID.matcher(x).matches();
     }
 
     public static String byteArrayToHexPrettyPrint(byte[] a) {

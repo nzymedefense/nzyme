@@ -221,7 +221,7 @@ public class TextGUIHID implements TrackerHID {
         eventsTable.setSelectedRow(-1);
         eventsTable.setVisibleRows(5);
         eventsTable.setSize(new TerminalSize(COLS, 8));
-        event(nzyme.getConfiguration().nzymeId(), "Initialized tracker.");
+        event(nzyme.getNodeID(), "Initialized tracker.");
         mainPanel.addComponent(eventsPanel);
 
         window.setComponent(mainPanel);

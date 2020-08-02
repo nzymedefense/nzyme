@@ -28,7 +28,6 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         LeaderConfiguration c = new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
 
         assertEquals(c.role(), Role.LEADER);
-        assertEquals(c.nzymeId(), "nzyme-testng");
         assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
         assertEquals(c.pythonExecutable(), "/usr/bin/python2.7");
         assertEquals(c.pythonScriptDirectory(), "/tmp");

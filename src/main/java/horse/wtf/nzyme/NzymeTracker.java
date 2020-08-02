@@ -34,6 +34,8 @@ public interface NzymeTracker extends UplinkHandler  {
     void initialize();
     void shutdown();
 
+    String getNodeID();
+
     ObjectMapper getObjectMapper();
 
     TrackerConfiguration getConfiguration();

@@ -25,6 +25,7 @@ import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.ConfigurationValidator;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.util.Tools;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,7 +52,11 @@ public class BaseConfigurationLoader {
     }
 
     public BaseConfiguration get() {
-        return BaseConfiguration.create(parseRole(), parseDataDirectory(), parseAnonymize());
+        return BaseConfiguration.create(parseNodeID(), parseRole(), parseDataDirectory(), parseAnonymize());
+    }
+
+    public String parseNodeID() {
+        return general.getString(ConfigurationKeys.ID);
     }
 
     public Role parseRole() {
@@ -72,6 +77,12 @@ public class BaseConfigurationLoader {
 
     public void validate() throws InvalidConfigurationException, IncompleteConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
+
+        // Node ID exists and is valid.
+        ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
+        if(!Tools.isSafeID(parseNodeID())) {
+            throw new InvalidConfigurationException("Node ID must only contain alphanumeric characters, underscores or dashes.");
+        }
 
         // Data directory exists and is readable?
         File dataDirectory = new File(parseDataDirectory());

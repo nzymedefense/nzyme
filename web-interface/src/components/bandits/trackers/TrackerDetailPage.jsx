@@ -11,6 +11,7 @@ import TrackerStatusCard from "./TrackerStatusCard";
 import BanditsActions from "../../../actions/BanditsActions";
 import BanditsStore from "../../../stores/BanditsStore";
 import {round} from "lodash";
+import ContactsTable from "../ContactsTable";
 
 class TrackerDetailPage extends Reflux.Component {
 
@@ -153,7 +154,7 @@ class TrackerDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        TODO
+                        <ContactsTable contacts={tracker.contacts} />
                     </div>
                 </div>
 

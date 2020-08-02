@@ -61,6 +61,8 @@ public class MockNzyme implements NzymeLeader {
         return new File(resource.getFile());
     }
 
+    private final String nodeID;
+
     private final Statistics statistics;
     private final LeaderConfiguration configuration;
     private final SystemStatus systemStatus;
@@ -86,6 +88,8 @@ public class MockNzyme implements NzymeLeader {
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
+
+        this.nodeID = "mocky-mock";
 
         this.uplinks = Lists.newArrayList();
 
@@ -114,6 +118,11 @@ public class MockNzyme implements NzymeLeader {
 
     @Override
     public void shutdown() {
+    }
+
+    @Override
+    public String getNodeID() {
+        return nodeID;
     }
 
     @Override

@@ -19,6 +19,6 @@ package horse.wtf.nzyme.bandits;
 
 public class TrackTimeout {
 
-    public static final int MINUTES = 10;
+    public static final int MINUTES = 5;
 
 }

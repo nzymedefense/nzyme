@@ -82,7 +82,6 @@ public class LeaderConfigurationLoader {
                 parseVersionchecksEnabled(),
                 parseFetchOUIsEnabled(),
                 parseRole(),
-                parseNzymeId(),
                 parseAdminPasswordHash(),
                 parseDatabasePath(),
                 parsePythonExecutable(),
@@ -107,10 +106,6 @@ public class LeaderConfigurationLoader {
 
     private Role parseRole() {
         return general.getEnum(Role.class, ConfigurationKeys.ROLE);
-    }
-
-    private String parseNzymeId() {
-        return general.getString(ConfigurationKeys.ID);
     }
 
     private String parseAdminPasswordHash() {
@@ -307,7 +302,6 @@ public class LeaderConfigurationLoader {
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
-        ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.ADMIN_PASSWORD_HASH, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);

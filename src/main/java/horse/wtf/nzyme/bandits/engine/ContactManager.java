@@ -351,7 +351,7 @@ public class ContactManager implements ContactIdentifierProcess {
                 // If no identifier missed, this is a bandit frame.
                 if (identifierEngine.identify(frame, bandit)) {
                     // Create new contact if this is the first frame.
-                    if (!banditHasActiveContactOnSource(bandit, nzyme.getConfiguration().nzymeId())) {
+                    if (!banditHasActiveContactOnSource(bandit, nzyme.getNodeID())) {
                         LOG.debug("New contact for bandit [{}].", bandit);
                         DateTime now = DateTime.now();
                         registerContact(Contact.create(
@@ -360,7 +360,7 @@ public class ContactManager implements ContactIdentifierProcess {
                                 now,
                                 1L,
                                 Role.LEADER,
-                                nzyme.getConfiguration().nzymeId(),
+                                nzyme.getNodeID(),
                                 frame.meta().getAntennaSignal(),
                                 null,
                                 bandit
@@ -368,7 +368,7 @@ public class ContactManager implements ContactIdentifierProcess {
                     }
 
                     LOG.debug("Registering frame for existing bandit [{}]", bandit);
-                    registerContactFrame(bandit, nzyme.getConfiguration().nzymeId(), frame.meta().getAntennaSignal());
+                    registerContactFrame(bandit, nzyme.getNodeID(), frame.meta().getAntennaSignal());
 
                     // Register/refresh alert.
                     if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {

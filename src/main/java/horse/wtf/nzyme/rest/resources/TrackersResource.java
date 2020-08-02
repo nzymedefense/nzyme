@@ -143,7 +143,7 @@ public class TrackersResource {
         }
 
         TrackerMessage.StartTrackRequest.Builder builder = TrackerMessage.StartTrackRequest.newBuilder()
-                .setSource(nzyme.getConfiguration().nzymeId())
+                .setSource(nzyme.getNodeID())
                 .setReceiver(trackerName)
                 .setUuid(bandit.uuid().toString());
 
@@ -188,7 +188,7 @@ public class TrackersResource {
         }
 
         nzyme.getGroundStation().cancelTrackRequest(TrackerMessage.CancelTrackRequest.newBuilder()
-                .setSource(nzyme.getConfiguration().nzymeId())
+                .setSource(nzyme.getNodeID())
                 .setReceiver(trackerName)
                 .build());
 

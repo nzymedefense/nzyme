@@ -26,7 +26,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
@@ -99,6 +98,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private final Version version;
 
+    private final String nodeId;
+
     private final LeaderConfiguration configuration;
     private final Database database;
     private final ExecutorService probeExecutor;
@@ -131,6 +132,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
         this.version = new Version();
+        this.nodeId = baseConfiguration.nodeId();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
@@ -200,7 +202,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         // Register configured Graylog uplinks.
         for (GraylogAddress graylogAddress : configuration.graylogUplinks()) {
-            registerUplink(new GraylogUplink(graylogAddress.host(), graylogAddress.port(), configuration.nzymeId()));
+            registerUplink(new GraylogUplink(graylogAddress.host(), graylogAddress.port(), getNodeID()));
         }
 
         // Periodicals.
@@ -288,7 +290,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
             try {
                 this.groundStation = new GroundStation(
                         Role.LEADER,
-                        configuration.nzymeId(),
+                        getNodeID(),
                         version.getVersion().toString(),
                         metrics,
                         contactManager,
@@ -346,7 +348,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     configuration.graylogUplinks(),
-                    configuration.nzymeId(),
+                    getNodeID(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),
@@ -419,7 +421,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         Dot11ProbeConfiguration.create(
                                 "trap-sender-" + td.deviceSender() + "-" + tc.type() + "-" + i,
                                 configuration.graylogUplinks(),
-                                configuration.nzymeId(),
+                                getNodeID(),
                                 td.deviceSender(),
                                 td.channels(),
                                 td.channelHopInterval(),
@@ -436,6 +438,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         // TODO: Trap interceptors on all monitors.
+    }
+
+    @Override
+    public String getNodeID() {
+        return nodeId;
     }
 
     @Override
