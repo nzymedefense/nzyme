@@ -87,7 +87,7 @@ graylog_uplinks: []
 # traffic will be available as the basis for alerts and analysis.
 802_11_monitors: [
   {
-    # The 802.11/WiFi adapter name. (from ifconfig)
+    # The 802.11/WiFi adapter name. (from `ifconfig` or `ip link`)
     device: wlx00c0ca971201
 
     # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.

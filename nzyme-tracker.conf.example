@@ -27,7 +27,7 @@ tracker_device {
 # These interfaces will be used to track bandits.
 802_11_monitors: [
   {
-    # The 802.11/WiFi adapter name. (from ifconfig)
+    # The 802.11/WiFi adapter name. (from `ifconfig` or `ip link`)
     device: wlx00c0ca971201
 
     # WiFi interface and 802.11 channels allowed to use. The nzyme leader decides which channels to tune into.
