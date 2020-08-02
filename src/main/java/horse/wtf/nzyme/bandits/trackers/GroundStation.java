@@ -307,16 +307,11 @@ public class GroundStation implements Runnable {
     }
 
     public void transmit(@NotNull TrackerMessage.Wrapper message) {
-        if (transmitQueue.size() > 50) {
+        if (transmitQueue.size() > 5) {
             LOG.warn("Transmit queue size is unusually large at <{}> entries.", transmitQueue.size());
         }
 
-        if (message.hasPing()) {
-            // Pings have highest priority.
-            transmitQueue.addFirst(message.toByteArray());
-        } else {
-            transmitQueue.addLast(message.toByteArray());
-        }
+        transmitQueue.addLast(message.toByteArray());
     }
 
     public void startTrackRequest(TrackerMessage.StartTrackRequest newRequest) {

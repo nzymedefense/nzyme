@@ -37,7 +37,7 @@ import java.security.GeneralSecurityException;
 public class SX126XLoRaHat implements TrackerDevice {
 
     private static final Logger LOG = LogManager.getLogger(SX126XLoRaHat.class);
-    private static final int BAUD = 9600;
+    private static final int BAUD = 2400;
 
     private static final short NULL_BYTE_SEQUENCE_COUNT = 3;
 
@@ -223,7 +223,7 @@ public class SX126XLoRaHat implements TrackerDevice {
 
             // Spread out message sending to not overload LoRa bands or UART connection buffer.
             try {
-                Thread.sleep(2000);
+                Thread.sleep(500);
             } catch (InterruptedException ignored) {
             }
         } catch (Exception e) {
