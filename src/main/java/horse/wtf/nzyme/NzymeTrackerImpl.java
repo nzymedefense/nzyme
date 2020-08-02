@@ -152,19 +152,22 @@ public class NzymeTrackerImpl implements NzymeTracker {
                 .setNameFormat("contact-sender-%d").build())
                 .scheduleAtFixedRate(() -> {
                     if (banditManager.isCurrentlyTracking() && banditManager.hasActiveTrack()) {
-                        Bandit bandit = banditManager.getCurrentlyTrackedBandit();
-                        TrackerTrackSummary trackSummary = banditManager.getTrackSummary();
-                        groundStation.transmit(TrackerMessage.Wrapper.newBuilder().setContactStatus(
-                                TrackerMessage.ContactStatus.newBuilder()
-                                        .setSource(baseConfiguration.nodeId())
-                                        .setUuid(bandit.uuid().toString())
-                                        .setRssi(trackSummary.lastSignal())
-                                        .setLastSeen(trackSummary.lastContact().getMillis())
-                                        .setFrames(trackSummary.frameCount())
-                                        .build()
-                        ).build());
+                        try {
+                            Bandit bandit = banditManager.getCurrentlyTrackedBandit();
+                            TrackerTrackSummary trackSummary = banditManager.getTrackSummary();
+                            groundStation.transmit(TrackerMessage.Wrapper.newBuilder().setContactStatus(
+                                    TrackerMessage.ContactStatus.newBuilder()
+                                            .setSource(baseConfiguration.nodeId())
+                                            .setUuid(bandit.uuid().toString())
+                                            .setRssi(trackSummary.lastSignal())
+                                            .setLastSeen(trackSummary.lastContact().getMillis())
+                                            .setFrames(trackSummary.frameCount())
+                                            .build()).build());
+                        } catch(Exception e) {
+                            LOG.error("Could not send contact status.", e);
+                        }
                     }
-                }, 0, 10, TimeUnit.SECONDS);
+                }, 2, 10, TimeUnit.SECONDS);
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

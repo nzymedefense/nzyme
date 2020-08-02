@@ -60,8 +60,8 @@ message ContactStatus {
 
     string source = 1;
     string uuid = 2;
-    sint32 rssi = 5;
-    int64 lastSeen = 3;
-    int64 frames = 4;
+    sint32 rssi = 3;
+    int64 lastSeen = 4;
+    int64 frames = 5;
 
 }
