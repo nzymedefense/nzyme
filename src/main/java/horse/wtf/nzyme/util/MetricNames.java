@@ -55,5 +55,6 @@ public class MetricNames {
     public static final String GROUNDSTATION_TX = name(GroundStation.class, "tx");
     public static final String GROUNDSTATION_RX = name(GroundStation.class, "rx");
     public static final String GROUNDSTATION_ENCRYPTION_TIMING = name(GroundStation.class, "encryption-timing");
+    public static final String GROUNDSTATION_QUEUE_SIZE = name(GroundStation.class, "queue_size");
 
 }

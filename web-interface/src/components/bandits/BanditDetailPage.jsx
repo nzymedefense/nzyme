@@ -11,6 +11,7 @@ import {Redirect} from "react-router-dom";
 import TrackersStore from "../../stores/TrackersStore";
 import TrackersActions from "../../actions/TrackersActions";
 import BanditTracking from "./BanditTracking";
+import {notify} from "react-notify-toast";
 
 class BanditDetailPage extends Reflux.Component {
 
@@ -27,11 +28,14 @@ class BanditDetailPage extends Reflux.Component {
             groundstationEnabled: undefined
         };
 
+        this._anyTrackerTrackingUs = this._anyTrackerTrackingUs.bind(this);
+
         this._deleteBandit = this._deleteBandit.bind(this);
         this._editBandit = this._editBandit.bind(this);
         this._loadBandit = this._loadBandit.bind(this);
         this._invalidateIdentifiers = this._invalidateIdentifiers.bind(this);
         this._createIdentifier = this._createIdentifier.bind(this);
+        this._deleteIdentifier = this._deleteIdentifier.bind(this);
     }
 
     componentDidMount() {
@@ -63,6 +67,11 @@ class BanditDetailPage extends Reflux.Component {
             return;
         }
 
+        if(this._anyTrackerTrackingUs()) {
+            alert("Cannot delete a bandit that is currently tracked by trackers. Please stop tracking first.");
+            return;
+        }
+
         if (!window.confirm("Delete bandit?")) {
             return;
         }
@@ -78,6 +87,52 @@ class BanditDetailPage extends Reflux.Component {
             alert("Cannot create identifier for built-in bandit.");
             e.preventDefault();
         }
+
+        if(this._anyTrackerTrackingUs()) {
+            alert("Cannot delete a bandit that is currently tracked by trackers. Please stop tracking first.");
+            e.preventDefault();
+        }
+    }
+
+    _deleteIdentifier(e, identifierUuid) {
+        if (this.state.bandit.read_only) {
+            alert("Cannot delete identifier of a built-in bandit.");
+            e.preventDefault();
+            return;
+        }
+
+        if(this._anyTrackerTrackingUs()) {
+            alert("Cannot delete a bandit that is currently tracked by trackers. Please stop tracking first.");
+            e.preventDefault();
+            return;
+        }
+
+        if (!window.confirm("Delete identifier?")) {
+            return;
+        }
+
+        const self = this;
+        BanditsActions.deleteIdentifier(this.state.bandit.uuid, identifierUuid, function() {
+            notify.show("Identifier deleted.", "success");
+            self._invalidateIdentifiers();
+        });
+    }
+
+    _anyTrackerTrackingUs() {
+        if (!this.state.trackers || !this.state.bandit) {
+            return false;
+        }
+
+        const bandit = this.state.bandit;
+
+        let result = false;
+        this.state.trackers.forEach(function(tracker) {
+            if (tracker.tracking_mode && tracker.tracking_mode === bandit.uuid) {
+                result = true;
+            }
+        });
+
+        return result;
     }
 
     _loadBandit() {
@@ -176,7 +231,7 @@ class BanditDetailPage extends Reflux.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <BanditIdentifiersTable bandit={bandit} onInvalidateIdentifiers={this._invalidateIdentifiers} />
+                        <BanditIdentifiersTable bandit={bandit} onDeleteIdentifier={this._deleteIdentifier} />
                     </div>
                 </div>
 

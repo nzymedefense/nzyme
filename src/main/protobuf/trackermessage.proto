@@ -10,10 +10,9 @@ option java_package = "horse.wtf.nzyme.bandits.trackers.protobuf";
 message Wrapper {
     oneof content {
         Ping ping = 1;
-        BanditBroadcast banditBroadcast = 2;
-        StartTrackRequest startTrackRequest = 3;
-        CancelTrackRequest cancelTrackRequest = 4;
-        ContactStatus contactStatus = 5;
+        StartTrackRequest startTrackRequest = 2;
+        CancelTrackRequest cancelTrackRequest = 3;
+        ContactStatus contactStatus = 4;
     }
 }
 
@@ -28,18 +27,8 @@ message Ping {
     string source = 1;
     NodeType nodeType = 2;
     string version = 3;
-    string banditHash = 4;
-    int32 banditCount = 5;
-    string trackingMode = 6;
-    int64 timestamp = 7;
-
-}
-
-message BanditBroadcast {
-
-    string source = 1;
-    string uuid = 2;
-    repeated ContactIdentifier identifier = 3;
+    string trackingMode = 4;
+    int64 timestamp = 5;
 
 }
 
@@ -56,6 +45,7 @@ message StartTrackRequest {
     string source = 1;
     string receiver = 2;
     string uuid = 3;
+    repeated ContactIdentifier identifier = 4;
 
 }
 

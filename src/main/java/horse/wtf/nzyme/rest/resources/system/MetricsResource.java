@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.rest.resources.system;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Maps;
@@ -146,6 +147,11 @@ public class MetricsResource {
                 TimerResponse.fromTimer(getTimer(MetricNames.GROUNDSTATION_ENCRYPTION_TIMING))
         );
 
+        metrics.put(
+                "groundstation_queue_size",
+                GaugeResponse.fromGauge(getGauge(MetricNames.GROUNDSTATION_QUEUE_SIZE))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
@@ -162,6 +168,11 @@ public class MetricsResource {
     private Counter getCounter(String name) {
         Counter counter = nzyme.getMetrics().getCounters().get(name);
         return counter == null ? new Counter() : counter;
+    }
+
+    private Gauge getGauge(String name) {
+        Gauge gauge = nzyme.getMetrics().getGauges().get(name);
+        return gauge == null ? (Gauge<String>) () -> "" : gauge;
     }
 
 }

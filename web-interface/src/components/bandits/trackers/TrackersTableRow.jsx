@@ -15,7 +15,7 @@ class TrackersTableRow extends Reflux.Component {
         return (
             <tr>
                 <td><a href={Routes.TRACKERS.SHOW(tracker.name)}>{tracker.name}</a></td>
-                <td><TrackerStatus status={tracker.state} banditCount={tracker.bandit_count} totalBandits={this.props.totalBandits}/></td>
+                <td><TrackerStatus status={tracker.state} /></td>
                 <td>
                     <TrackingMode
                         mode={tracker.tracking_mode}

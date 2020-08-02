@@ -19,8 +19,6 @@ package horse.wtf.nzyme.bandits.trackers;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.bandits.BanditHashCalculator;
-import horse.wtf.nzyme.bandits.BanditListProvider;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -78,8 +76,6 @@ public class TrackerManager {
                             ping.getSource(),
                             DateTime.now(),
                             ping.getVersion(),
-                            ping.getBanditHash(),
-                            ping.getBanditCount(),
                             drift,
                             ping.getTrackingMode(),
                             rssi
@@ -91,8 +87,6 @@ public class TrackerManager {
             Tracker tracker = activeTrackers.get().get(ping.getSource());
             tracker.setLastSeen(DateTime.now());
             tracker.setVersion(ping.getVersion());
-            tracker.setBanditHash(ping.getBanditHash());
-            tracker.setBanditCount(ping.getBanditCount());
             tracker.setTrackingMode(ping.getTrackingMode());
             tracker.setRssi(rssi);
 
@@ -104,15 +98,11 @@ public class TrackerManager {
         return new HashMap<>(activeTrackers.get());
     }
 
-    public static TrackerState decideTrackerState(Tracker tracker, BanditListProvider banditListProvider) {
+    public static TrackerState decideTrackerState(Tracker tracker) {
         if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
             return TrackerState.DARK;
         } else {
-            if (tracker.getBanditHash().equals(BanditHashCalculator.calculate(banditListProvider.getBanditList()))) {
-                return TrackerState.ONLINE;
-            } else {
-                return TrackerState.OUT_OF_SYNC;
-            }
+            return TrackerState.ONLINE;
         }
     }
 

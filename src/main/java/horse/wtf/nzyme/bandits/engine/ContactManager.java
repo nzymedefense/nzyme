@@ -36,7 +36,7 @@ import javax.validation.constraints.Null;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ContactManager implements BanditListProvider, ContactIdentifierProcess {
+public class ContactManager implements ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(ContactManager.class);
 
@@ -177,7 +177,6 @@ public class ContactManager implements BanditListProvider, ContactIdentifierProc
         return this.bandits;
     }
 
-    @Override
     public List<Bandit> getBanditList() {
         return new ArrayList<>(getBandits().values());
     }

@@ -56,7 +56,6 @@ public class TextGUIHID implements TrackerHID {
 
     private final Label labelConnection = new Label(" DARK").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelSignal = new Label(" ???").setForegroundColor(TextColor.ANSI.RED);
-    private final Label labelSync = new Label("  DARK").setForegroundColor(TextColor.ANSI.RED);
     private final Label labelTime = new Label("");
     private final Label labelWiFiStatus = new Label("");
     private final Label labelWiFiChannels = new Label("").setForegroundColor(TextColor.ANSI.WHITE);
@@ -196,10 +195,9 @@ public class TextGUIHID implements TrackerHID {
         Panel mainPanel = new Panel();
 
         // Top status.
-        Panel statusPanel = new Panel(new GridLayout(7));
+        Panel statusPanel = new Panel(new GridLayout(6));
         statusPanel.addComponent(labelConnection.withBorder(Borders.singleLine("CONN")));
         statusPanel.addComponent(labelSignal.withBorder(Borders.singleLine("SIG")));
-        statusPanel.addComponent(labelSync.withBorder(Borders.singleLine("SYNCED")));
         statusPanel.addComponent(labelWiFiStatus.withBorder(Borders.singleLine("802.11")));
         statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("Channel")));
         statusPanel.addComponent(new EmptySpace(new TerminalSize(16, 3)));
@@ -249,15 +247,10 @@ public class TextGUIHID implements TrackerHID {
             // We are online.
             labelConnection.setText("ONLINE");
             labelConnection.setForegroundColor(TextColor.ANSI.GREEN);
-
-            updateSyncCount();
-            labelSync.setForegroundColor(connectionState.contains(TrackerState.OUT_OF_SYNC) ? TextColor.ANSI.YELLOW : TextColor.ANSI.GREEN);
         } else {
             // We are offline.
             labelConnection.setText(" DARK");
             labelConnection.setForegroundColor(TextColor.ANSI.RED);
-            labelSync.setText("  DARK");
-            labelSync.setForegroundColor(TextColor.ANSI.RED);
         }
     }
 
@@ -288,11 +281,6 @@ public class TextGUIHID implements TrackerHID {
     }
 
     @Override
-    public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
-        updateSyncCount();
-    }
-
-    @Override
     public void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request) {
         event(request.getSource(), "Received request to track bandit.");
     }
@@ -315,21 +303,6 @@ public class TextGUIHID implements TrackerHID {
     @Override
     public void onChannelSwitch(int previousChannel, int newChannel) {
         // no-op
-    }
-
-    private void updateSyncCount() {
-        labelSync.setText(syncCount());
-    }
-
-    private String syncCount() {
-        Optional<Integer> leaderBanditCount = nzyme.getStateWatchdog().getLeaderBanditCount();
-        int banditCount = nzyme.getBanditManager().getBanditList().size();
-
-        String result = leaderBanditCount.map(integer -> banditCount + "/" + integer)
-                .orElse("0/???");
-
-
-        return getCenterPadding(result, 8) + result;
     }
 
     private String wifiChannels() {

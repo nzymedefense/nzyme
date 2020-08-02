@@ -25,15 +25,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
-import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
-import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
-import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
@@ -49,7 +46,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -108,13 +104,6 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     null,
                     configuration.trackerDevice()
             );
-            AudioHID audioHID = new AudioHID();
-            audioHID.initialize();
-            hids.add(audioHID);
-
-            LogHID logHid = new LogHID();
-            logHid.initialize();
-            hids.add(logHid);
 
             TextGUIHID textGUIHID = new TextGUIHID(this);
             textGUIHID.initialize();
@@ -138,10 +127,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
         LOG.info("Initializing nzyme tracker version: {}.", version.getVersionString());
 
         this.groundStation.onPingReceived(trackerStateWatchdog::registerPing);
-        this.groundStation.onBanditBroadcastReceived(banditManager::registerBandit);
-        this.groundStation.onStartTrackRequestReceived((startTrackRequest ->
-                banditManager.setCurrentlyTrackedBandit(UUID.fromString(startTrackRequest.getUuid())))
-        );
+        this.groundStation.onStartTrackRequestReceived(banditManager::setCurrentlyTrackedBandit);
         this.groundStation.onCancelTrackRequestReceived((cancelTrackRequest ->
                 banditManager.cancelTracking()
         ));

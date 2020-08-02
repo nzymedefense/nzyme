@@ -163,6 +163,14 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        // Is this bandit currently tracked by anyone?
+        for (Tracker tracker : nzyme.getTrackerManager().getTrackers().values()) {
+            if (tracker.getTrackingMode() != null && tracker.getTrackingMode().equals(id)) {
+                LOG.error("Cannot delete bandit that is currently actively tracked by trackers.");
+                return Response.status(401).build();
+            }
+        }
+
         UUID uuid;
         try {
             uuid = UUID.fromString(id);
@@ -244,6 +252,14 @@ public class BanditsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        // Is this bandit currently tracked?
+        for (Tracker tracker : nzyme.getTrackerManager().getTrackers().values()) {
+            if (tracker.getTrackingMode() != null && tracker.getTrackingMode().equals(banditUUID)) {
+                LOG.error("Cannot modify bandit that is currently actively tracked by trackers.");
+                return Response.status(401).build();
+            }
+        }
+
         UUID uuid;
         try {
             uuid = UUID.fromString(banditUUID);
@@ -292,6 +308,14 @@ public class BanditsResource {
         if (Strings.isNullOrEmpty(bUUID) || Strings.isNullOrEmpty(iUUID)) {
             LOG.warn("UUID was null or empty.");
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // Is this bandit currently tracked?
+        for (Tracker tracker : nzyme.getTrackerManager().getTrackers().values()) {
+            if (tracker.getTrackingMode() != null && tracker.getTrackingMode().equals(bUUID)) {
+                LOG.error("Cannot modify bandit that is currently actively tracked by trackers.");
+                return Response.status(401).build();
+            }
         }
 
         UUID banditUUID;

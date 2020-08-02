@@ -31,7 +31,6 @@ public interface TrackerHID {
 
     void onPingFromLeaderReceived(TrackerMessage.Ping ping, int rssi);
     void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi);
-    void onBanditReceived(TrackerMessage.BanditBroadcast bandit);
 
     void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request);
     void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request);

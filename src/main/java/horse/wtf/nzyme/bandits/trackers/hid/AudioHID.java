@@ -37,7 +37,6 @@ public class AudioHID implements TrackerHID {
     private static final Logger LOG = LogManager.getLogger(AudioHID.class);
 
     private boolean wasOffline = true;
-    private boolean wasOutOfSync = true;
 
     private final Queue<String> playbackQueue;
 
@@ -103,15 +102,6 @@ public class AudioHID implements TrackerHID {
             playClip("warning_leader_in_the_dark");
         }
 
-        if (wasOutOfSync && connectionState.contains(TrackerState.ONLINE) && !connectionState.contains(TrackerState.OUT_OF_SYNC)) {
-            wasOutOfSync = false;
-            playClip("synchronized");
-        }
-
-        if (connectionState.contains(TrackerState.OUT_OF_SYNC)) {
-            playClip("warning_out_of_sync");
-        }
-
         if (connectionState.contains(TrackerState.WEAK)) {
             playClip("warning_weak_connection");
         }
@@ -149,11 +139,6 @@ public class AudioHID implements TrackerHID {
 
     @Override
     public void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi) {
-
-    }
-
-    @Override
-    public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
 
     }
 

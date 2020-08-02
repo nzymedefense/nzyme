@@ -10,10 +10,6 @@ class TrackerStatusCard extends React.Component {
                 bg = "bg-success";
                 statusText = "Online";
                 break;
-            case "OUT_OF_SYNC":
-                bg = "bg-warning";
-                statusText = "Synchronizing";
-                break;
             case "DARK":
                 bg = "bg-danger";
                 statusText = "Dark";

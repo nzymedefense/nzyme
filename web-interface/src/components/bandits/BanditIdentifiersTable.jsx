@@ -12,27 +12,6 @@ class BanditIdentifiersTable extends Reflux.Component {
         super(props);
 
         this.store = BanditsStore;
-
-        this._onDeleteIdentifier = this._onDeleteIdentifier.bind(this);
-    }
-
-
-    _onDeleteIdentifier(e, identifier) {
-        if (this.props.bandit.read_only) {
-            alert("Cannot delete identifier of a built-in bandit.");
-            e.preventDefault();
-            return;
-        }
-
-        if (!window.confirm("Delete identifier?")) {
-            return;
-        }
-
-        const self = this;
-        BanditsActions.deleteIdentifier(this.props.bandit.uuid, identifier.uuid, function() {
-            notify.show("Identifier deleted.", "success");
-            self.props.onInvalidateIdentifiers();
-        });
     }
 
     render() {
@@ -62,7 +41,7 @@ class BanditIdentifiersTable extends Reflux.Component {
                         </thead>
                         <tbody>
                         {Object.keys(identifiers).map(function (key,i) {
-                            return <BanditIdentifiersTableRow key={identifiers[key].uuid} identifier={identifiers[key]} onDelete={self._onDeleteIdentifier} />
+                            return <BanditIdentifiersTableRow key={identifiers[key].uuid} identifier={identifiers[key]} onDelete={(e) => self.props.onDeleteIdentifier(e, identifiers[key].uuid)} />
                         })}
                         </tbody>
                     </table>

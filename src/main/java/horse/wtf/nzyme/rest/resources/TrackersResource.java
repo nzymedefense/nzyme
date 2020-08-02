@@ -21,8 +21,10 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
 import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
@@ -59,9 +61,7 @@ public class TrackersResource {
                     tracker.getVersion(),
                     tracker.getDrift(),
                     tracker.getLastSeen(),
-                    tracker.getBanditHash(),
-                    tracker.getBanditCount(),
-                    TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
+                    TrackerManager.decideTrackerState(tracker),
                     tracker.getTrackingMode(),
                     buildContactList(nzyme.getContactManager().findContactsOfTracker(tracker)),
                     nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
@@ -88,9 +88,7 @@ public class TrackersResource {
                     tracker.getVersion(),
                     tracker.getDrift(),
                     tracker.getLastSeen(),
-                    tracker.getBanditHash(),
-                    tracker.getBanditCount(),
-                    TrackerManager.decideTrackerState(tracker, nzyme.getContactManager()),
+                    TrackerManager.decideTrackerState(tracker),
                     tracker.getTrackingMode(),
                     buildContactList(nzyme.getContactManager().findContactsOfTracker(tracker)),
                     nzyme.getGroundStation().trackerHasPendingAnyTrackingRequest(tracker.getName()),
@@ -130,26 +128,69 @@ public class TrackersResource {
 
     @POST
     @Path("/show/{name}/command/start_track_request")
-    public Response issueStartTrackRequest(@PathParam("name") String name, BanditTrackRequest trackRequest) {
+    public Response issueStartTrackRequest(@PathParam("name") String trackerName, BanditTrackRequest trackRequest) {
         // Check if tracker exists.
-        if (!nzyme.getTrackerManager().getTrackers().containsKey(name)) {
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackerName)) {
+            LOG.warn("Tracker not found.");
             return Response.status(404).build();
         }
 
-        nzyme.getGroundStation().startTrackRequest(name, trackRequest.banditUUID());
+        // Check if bandit exists.
+        Bandit bandit = nzyme.getContactManager().getBandits().get(trackRequest.banditUUID());
+        if (bandit == null) {
+            LOG.warn("Bandit not found.");
+            return Response.status(404).build();
+        }
 
+        TrackerMessage.StartTrackRequest.Builder builder = TrackerMessage.StartTrackRequest.newBuilder()
+                .setSource(nzyme.getConfiguration().nzymeId())
+                .setReceiver(trackerName)
+                .setUuid(bandit.uuid().toString());
+
+        try {
+            if (bandit.identifiers() != null) {
+                for (BanditIdentifier identifier : bandit.identifiers()) {
+                    TrackerMessage.ContactIdentifier.Builder idBuilder = TrackerMessage.ContactIdentifier.newBuilder()
+                            .setType(identifier.getType().toString())
+                            .setUuid(identifier.getUuid().toString());
+
+                    for (Map.Entry<String, Object> config : identifier.configuration().entrySet()) {
+                        Object value;
+                        if (config.getValue() instanceof List) {
+                            value = "nzl:" + nzyme.getObjectMapper().writeValueAsString(config.getValue());
+                        } else if (config.getValue() instanceof Map) {
+                            value = "nzm:" + nzyme.getObjectMapper().writeValueAsString(config.getValue());
+                        } else {
+                            value = config.getValue();
+                        }
+                        String configRep = config.getKey() + ":\"" + value + "\"";
+                        idBuilder.addConfiguration(configRep);
+                    }
+
+                    builder.addIdentifier(idBuilder.build());
+                }
+            }
+        } catch(Exception e) {
+            LOG.error("Could not build bandit identifiers.", e);
+            return Response.status(500).build();
+        }
+
+        nzyme.getGroundStation().startTrackRequest(builder.build());
         return Response.accepted().build();
     }
 
     @POST
     @Path("/show/{name}/command/cancel_track_request")
-    public Response issueCancelTrackRequest(@PathParam("name") String name, BanditTrackRequest trackRequest) {
+    public Response issueCancelTrackRequest(@PathParam("name") String trackerName, BanditTrackRequest trackRequest) {
         // Check if tracker exists.
-        if (!nzyme.getTrackerManager().getTrackers().containsKey(name)) {
+        if (!nzyme.getTrackerManager().getTrackers().containsKey(trackerName)) {
             return Response.status(404).build();
         }
 
-        nzyme.getGroundStation().cancelTrackRequest(name, trackRequest.banditUUID());
+        nzyme.getGroundStation().cancelTrackRequest(TrackerMessage.CancelTrackRequest.newBuilder()
+                .setSource(nzyme.getConfiguration().nzymeId())
+                .setReceiver(trackerName)
+                .build());
 
         return Response.accepted().build();
     }

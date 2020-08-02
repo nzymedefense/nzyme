@@ -10,7 +10,6 @@ import TrackingModeCard from "./TrackingModeCard";
 import TrackerStatusCard from "./TrackerStatusCard";
 import BanditsActions from "../../../actions/BanditsActions";
 import BanditsStore from "../../../stores/BanditsStore";
-import TrackerBanditCount from "./TrackerBanditCount";
 import {round} from "lodash";
 
 class TrackerDetailPage extends Reflux.Component {
@@ -48,7 +47,6 @@ class TrackerDetailPage extends Reflux.Component {
         }
 
         const tracker = this.state.tracker;
-        const bandits = this.state.bandits;
 
         return (
             <div>
@@ -93,27 +91,11 @@ class TrackerDetailPage extends Reflux.Component {
                         </dl>
                     </div>
 
-                    <div className="col-md-2">
-                        <dl>
-                            <dt>Bandits:</dt>
-                            <dd>
-                                <TrackerBanditCount
-                                    trackerBanditCount={tracker.bandit_count}
-                                    totalBanditCount={bandits.length}
-                                    status={tracker.state} />
-                            </dd>
-                        </dl>
-                    </div>
-
                     <div className="col-md-3">
                         <dl>
                             <dt>Version:</dt>
                             <dd>{tracker.version}</dd>
                         </dl>
-                    </div>
-
-                    <div className="col-md-1 text-right">
-                        <a href={Routes.BANDITS.INDEX} className="btn btn-dark">Back</a>&nbsp;
                     </div>
                 </div>
 

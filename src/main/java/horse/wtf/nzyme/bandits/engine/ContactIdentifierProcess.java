@@ -17,10 +17,12 @@
 
 package horse.wtf.nzyme.bandits.engine;
 
+import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 
 public interface ContactIdentifierProcess {
 
+    Bandit getCurrentlyTrackedBandit();
     void identify(Dot11Frame frame);
 
 }

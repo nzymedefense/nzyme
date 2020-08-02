@@ -6,8 +6,6 @@ class TrackerStatus extends React.Component {
         switch(this.props.status) {
             case "ONLINE":
                 return <span className="badge badge-success">ONLINE</span>;
-            case "OUT_OF_SYNC":
-                return <span className="badge badge-warning">SYNCHRONIZING ({this.props.banditCount}/{this.props.totalBandits})</span>;
             case "DARK":
                 return <span className="badge badge-danger">DARK</span>;
             default:

@@ -20,7 +20,6 @@ package horse.wtf.nzyme.bandits.trackers.trackerlogic;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
-import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import org.joda.time.DateTime;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TrackerStateWatchdog {
@@ -42,23 +40,16 @@ public class TrackerStateWatchdog {
 
     private final AtomicReference<Optional<DateTime>> lastPingReceived;
     private final AtomicReference<Optional<Integer>> lastRSSIReceived;
-    private final AtomicReference<Optional<String>> lastBanditHashReceived;
-
-    private final AtomicReference<Optional<Integer>> leaderBanditCount;
 
     public TrackerStateWatchdog(NzymeTracker nzyme) {
         this.nzyme = nzyme;
 
         this.states = new AtomicReference<>(new ArrayList<>(){{
             add(TrackerState.DARK);
-            add(TrackerState.OUT_OF_SYNC);
         }});
-
-        this.leaderBanditCount = new AtomicReference<>(Optional.empty());
 
         this.lastPingReceived = new AtomicReference<>(Optional.empty());
         this.lastRSSIReceived = new AtomicReference<>(Optional.empty());
-        this.lastBanditHashReceived = new AtomicReference<>(Optional.empty());
     }
 
     public void initialize() {
@@ -85,14 +76,6 @@ public class TrackerStateWatchdog {
                                         result.add(TrackerState.WEAK);
                                     }
                                 });
-
-                                // Are we out of sync?
-                                lastBanditHashReceived.get().ifPresent(hash -> {
-                                    String ourHash = BanditHashCalculator.calculate(nzyme.getBanditManager().getBanditList());
-                                    if (!ourHash.equals(hash)) {
-                                        result.add(TrackerState.OUT_OF_SYNC);
-                                    }
-                                });
                             } else {
                                 // Last ping was too long ago.
                                 result.add(TrackerState.DARK);
@@ -115,15 +98,8 @@ public class TrackerStateWatchdog {
             return;
         }
 
-        this.leaderBanditCount.set(Optional.of(ping.getBanditCount()));
-
         this.lastPingReceived.set(Optional.of(new DateTime(ping.getTimestamp())));
         this.lastRSSIReceived.set(Optional.of(rssi));
-        this.lastBanditHashReceived.set(Optional.of(ping.getBanditHash()));
-    }
-
-    public Optional<Integer> getLeaderBanditCount() {
-        return leaderBanditCount.get();
     }
 
     private void stateChanged() {

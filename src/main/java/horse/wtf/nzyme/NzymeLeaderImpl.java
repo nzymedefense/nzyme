@@ -28,7 +28,6 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
-import horse.wtf.nzyme.bandits.trackers.BanditListBroadcaster;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.*;
@@ -302,8 +301,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
                 // Contact status updates.
                 this.groundStation.onContactStatusReceived(contactManager::registerTrackerContactStatus);
-
-                new BanditListBroadcaster(this).initialize();
             } catch(Exception e) {
                 throw new RuntimeException("Tracker Device configuration failed.", e);
             }

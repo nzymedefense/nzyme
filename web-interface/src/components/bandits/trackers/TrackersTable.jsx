@@ -72,7 +72,6 @@ class TrackersTable extends Reflux.Component {
         }
 
         const trackers = this.state.trackers;
-        const bandits = this.state.bandits;
         const forBandit = this.props.forBandit;
 
         const self = this;
@@ -104,7 +103,6 @@ class TrackersTable extends Reflux.Component {
                             return <TrackersTableRow
                                 key={"tracker-"+key}
                                 tracker={trackers[key]}
-                                totalBandits={bandits.length}
                                 forBandit={forBandit}
                                 onTrackingStartButtonClicked={self._onTrackingStartButtonClicked}
                                 onTrackingCancelButtonClicked={self._onTrackingCancelButtonClicked}

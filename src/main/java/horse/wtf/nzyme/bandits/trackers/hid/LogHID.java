@@ -74,9 +74,4 @@ public class LogHID implements TrackerHID {
         LOG.info("Received ping from tracker [{}] at RSSI <{}>.", ping.getSource(), rssi);
     }
 
-    @Override
-    public void onBanditReceived(TrackerMessage.BanditBroadcast bandit) {
-        LOG.info("Received bandit definition from leader.");
-    }
-
 }

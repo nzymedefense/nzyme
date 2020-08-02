@@ -20,7 +20,6 @@ package horse.wtf.nzyme.debug;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.Config;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.bandits.BanditHashCalculator;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
@@ -74,8 +73,7 @@ public class LeaderDebug {
                                 if (tracker == null || tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
                                     body += "offline.";
                                 } else {
-                                    body += "at RSSI <" + tracker.getRssi() + "> (" + (Math.round(tracker.getRssi() / 255.0 * 100)) + "%) "
-                                            + "[" + tracker.getBanditCount() + "/" + nzyme.getContactManager().getBanditList().size() + " bandits].";
+                                    body += "at RSSI <" + tracker.getRssi() + "> (" + (Math.round(tracker.getRssi() / 255.0 * 100)) + "%)";
                                 }
 
                                 LOG.info("Sending signal link debug message: [{}]", body);

@@ -3,7 +3,6 @@ import Reflux from 'reflux';
 import AlertsTable from "./AlertsTable";
 import AlertsStore from "../../stores/AlertsStore";
 import AlertsActions from "../../actions/AlertsActions";
-import LoadingSpinner from "../misc/LoadingSpinner";
 
 class AlertsPage extends Reflux.Component {
 

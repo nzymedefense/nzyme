@@ -68,6 +68,15 @@ class Metrics extends Reflux.Component {
                                         </dd>
                                     </dl>
                                 </div>
+
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Ground Station Transmit Queue:</dt>
+                                        <dd>
+                                            {numeral(this.state.systemMetrics.groundstation_queue_size.value).format("0,0")} entries
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
 
                             <div className="row">

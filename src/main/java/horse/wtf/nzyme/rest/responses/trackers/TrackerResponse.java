@@ -40,12 +40,6 @@ public abstract class TrackerResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    @JsonProperty("bandit_hash")
-    public abstract String banditHash();
-
-    @JsonProperty("bandit_count")
-    public abstract int banditCount();
-
     @JsonProperty
     public abstract TrackerState state();
 
@@ -61,14 +55,12 @@ public abstract class TrackerResponse {
     @JsonProperty
     public abstract int rssi();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, String banditHash, int banditCount, TrackerState state, String trackingMode, List<ContactResponse> contacts, boolean hasPendingTrackingRequests, int rssi) {
+    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, TrackerState state, String trackingMode, List<ContactResponse> contacts, boolean hasPendingTrackingRequests, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
                 .drift(drift)
                 .lastSeen(lastSeen)
-                .banditHash(banditHash)
-                .banditCount(banditCount)
                 .state(state)
                 .trackingMode(trackingMode)
                 .contacts(contacts)
@@ -91,10 +83,6 @@ public abstract class TrackerResponse {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract Builder banditHash(String banditHash);
-
-        public abstract Builder banditCount(int banditCount);
-
         public abstract Builder state(TrackerState state);
 
         public abstract Builder trackingMode(String trackingMode);
@@ -107,4 +95,5 @@ public abstract class TrackerResponse {
 
         public abstract TrackerResponse build();
     }
+
 }
