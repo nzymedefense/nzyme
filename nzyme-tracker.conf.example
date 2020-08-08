@@ -7,6 +7,9 @@ general: {
 
   # Path to directory that the tracker will use to store some temporary information. (must be writable)s
   data_directory: /usr/share/nzyme
+
+  # HIDs (human interface device) to run. Default is LogHID. The documentation lists all available HIDs.
+  hids: [ LOG ]
 }
 
 # Please consult the nzyme documentation to find out supported tracker devices.

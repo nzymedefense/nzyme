@@ -25,6 +25,12 @@ import java.util.List;
 
 public interface TrackerHID {
 
+    enum TYPE {
+        AUDIO,
+        LOG,
+        TEXTGUI
+    }
+
     void initialize();
 
     void onConnectionStateChange(List<TrackerState> connectionState);

@@ -25,6 +25,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
+import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
+import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
@@ -108,11 +110,26 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     configuration.trackerDevice()
             );
 
-            TextGUIHID textGUIHID = new TextGUIHID(this);
-            textGUIHID.initialize();
-            hids.add(textGUIHID);
 
-            for (TrackerHID hid : hids) {
+            // Register configured HIDs.
+            for (TrackerHID.TYPE type : this.configuration.hids()) {
+                TrackerHID hid;
+                switch (type) {
+                    case AUDIO:
+                        hid = new AudioHID();
+                        break;
+                    case LOG:
+                        hid = new LogHID();
+                        break;
+                    case TEXTGUI:
+                        hid = new TextGUIHID(this);
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown HID [" + type+ "]");
+                }
+
+                hid.initialize();
+                this.hids.add(hid);
                 this.groundStation.registerHID(hid);
             }
         } catch(Exception e) {

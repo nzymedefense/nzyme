@@ -67,6 +67,7 @@ public class ConfigurationKeys {
     public static final String FINGERPRINTS = "fingerprints";
     public static final String BEACON_RATE = "beacon_rate";
     public static final String CALLBACKS = "callbacks";
+    public static final String HIDS = "hids";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

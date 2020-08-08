@@ -19,6 +19,7 @@ package horse.wtf.nzyme.configuration.tracker;
 
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
 import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
 
@@ -30,13 +31,15 @@ public abstract class TrackerConfiguration {
     public abstract Role role();
 
     public abstract TrackerDeviceConfiguration trackerDevice();
+    public abstract List<TrackerHID.TYPE> hids();
 
     public abstract List<Dot11MonitorDefinition> dot11Monitors();
 
-    public static TrackerConfiguration create(Role role, TrackerDeviceConfiguration trackerDevice, List<Dot11MonitorDefinition> dot11Monitors) {
+    public static TrackerConfiguration create(Role role, TrackerDeviceConfiguration trackerDevice, List<TrackerHID.TYPE> hids, List<Dot11MonitorDefinition> dot11Monitors) {
         return builder()
                 .role(role)
                 .trackerDevice(trackerDevice)
+                .hids(hids)
                 .dot11Monitors(dot11Monitors)
                 .build();
     }
@@ -51,9 +54,11 @@ public abstract class TrackerConfiguration {
 
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 
+        public abstract Builder hids(List<TrackerHID.TYPE> hids);
+
         public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
 
         public abstract TrackerConfiguration build();
     }
-    
+
 }

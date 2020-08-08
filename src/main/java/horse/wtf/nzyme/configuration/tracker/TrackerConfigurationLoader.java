@@ -17,11 +17,13 @@
 
 package horse.wtf.nzyme.configuration.tracker;
 
+import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.configuration.*;
 
 import java.io.File;
@@ -60,6 +62,7 @@ public class TrackerConfigurationLoader {
         return TrackerConfiguration.create(
                 parseRole(),
                 parseTrackerDevice(),
+                parseHIDs(),
                 baseDot11ConfigurationLoader.parseDot11Monitors()
         );
     }
@@ -75,10 +78,20 @@ public class TrackerConfigurationLoader {
         );
     }
 
+    private List<TrackerHID.TYPE> parseHIDs() {
+        List<TrackerHID.TYPE> hids = Lists.newArrayList();
+        for (String hid : general.getStringList(ConfigurationKeys.HIDS)) {
+            hids.add(TrackerHID.TYPE.valueOf(hid.toUpperCase()));
+        }
+
+        return hids;
+    }
+
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.DATA_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.HIDS, ConfigurationKeys.GENERAL, List.class);
 
         // Tracker config.
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
@@ -86,6 +99,15 @@ public class TrackerConfigurationLoader {
 
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
         ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+
+        // HIDs.
+        for (String hid : general.getStringList(ConfigurationKeys.HIDS)) {
+            try {
+                TrackerHID.TYPE.valueOf(hid.toUpperCase());
+            } catch(Exception e) {
+                throw new InvalidConfigurationException("Invalid HID [" + hid + "] configured.", e);
+            }
+        }
 
         // Validate parameters of SX126X LoRa HAT.
         if (trackerDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
