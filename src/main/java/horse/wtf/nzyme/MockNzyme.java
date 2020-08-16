@@ -195,6 +195,16 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public List<String> getIgnoredFingerprints() {
+        return null;
+    }
+
+    @Override
+    public void registerIgnoredFingerprint(String fingerprint) {
+
+    }
+
+    @Override
     public TrackerManager getTrackerManager() {
         return null;
     }

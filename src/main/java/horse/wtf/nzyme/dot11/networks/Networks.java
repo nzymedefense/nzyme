@@ -116,12 +116,22 @@ public class Networks {
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
+        if (nzyme.getIgnoredFingerprints().contains(frame.transmitterFingerprint())) {
+            LOG.trace("Not registering ignored fingerprint [{}]", frame.transmitterFingerprint());
+            return;
+        }
+
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
             register(Dot11FrameSubtype.BEACON, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getAntennaSignal());
         }
     }
 
     public void registerProbeResponseFrame(Dot11ProbeResponseFrame frame) {
+        if (nzyme.getIgnoredFingerprints().contains(frame.transmitterFingerprint())) {
+            LOG.trace("Not registering ignored fingerprint [{}]", frame.transmitterFingerprint());
+            return;
+        }
+
         if (!Strings.isNullOrEmpty(frame.ssid())) { // Don't consider broadcast frames..
             register(Dot11FrameSubtype.PROBE_RESPONSE, frame.transmitter(), frame.transmitterFingerprint(), frame.taggedParameters(), frame.ssid(), frame.meta().getChannel(), frame.meta().getAntennaSignal());
         }

@@ -63,7 +63,9 @@ public class ConfigurationKeys {
     public static final String ADDRESS = "address";
     public static final String TRANSMITTER = "transmitter";
     public static final String DELAY_SECONDS = "delay_seconds";
+    public static final String DELAY_MILLISECONDS = "delay_milliseconds";
     public static final String FINGERPRINTS = "fingerprints";
+    public static final String FINGERPRINT = "fingerprint";
     public static final String BEACON_RATE = "beacon_rate";
     public static final String CALLBACKS = "callbacks";
     public static final String HIDS = "hids";

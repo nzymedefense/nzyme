@@ -22,6 +22,7 @@ import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
@@ -38,6 +39,7 @@ import horse.wtf.nzyme.debug.LeaderDebug;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.deception.traps.BeaconTrap;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.dot11.interceptors.*;
@@ -91,6 +93,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 public class NzymeLeaderImpl implements NzymeLeader {
@@ -110,6 +113,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final SystemStatus systemStatus;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
+
+    private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
 
     private final Networks networks;
     private final Clients clients;
@@ -138,6 +143,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.configuration = configuration;
         this.database = database;
         this.uplinks = Lists.newArrayList();
+
+        this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
         this.statistics = new Statistics(this);
         this.metrics = new MetricRegistry();
@@ -399,27 +406,39 @@ public class NzymeLeaderImpl implements NzymeLeader {
             for (Dot11TrapConfiguration tc : td.traps()) {
                 Trap trap;
 
-                // This part doesn't belong here but it's fine for now. REFACTOR.
-                if (tc.type() == Trap.Type.PROBE_REQUEST_1) {
-                    try {
-                        trap = new ProbeRequestTrap(
-                                this,
-                                td.device(),
-                                tc.configuration().getStringList(ConfigurationKeys.SSIDS),
-                                tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
-                                tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
-                        );
-
-                        trap.checkConfiguration();
-                    } catch(ConfigException e) {
-                        LOG.error("Invalid configuration for trap of type [{}]. Skipping.", tc.type(), e);
-                        continue;
-                    } catch (Exception e) {
-                        LOG.error("Failed to construct trap of type [{}]. Skipping.", tc.type(), e);
-                        continue;
+                // This part doesn't belong here but it's fine for now. TODO REFACTOR.
+                try {
+                    switch (tc.type()) {
+                        case PROBE_REQUEST_1:
+                            trap = new ProbeRequestTrap(
+                                    this,
+                                    td.device(),
+                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                    tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
+                            );
+                            break;
+                        case BEACON_1:
+                            trap = new BeaconTrap(
+                                    this,
+                                    td.device(),
+                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                    tc.configuration().getInt(ConfigurationKeys.DELAY_MILLISECONDS),
+                                    tc.configuration().getString(ConfigurationKeys.FINGERPRINT)
+                            );
+                            break;
+                        default:
+                            LOG.error("Cannot construct trap of type [{}]. Unknown type. Skipping.", tc.type());
+                            continue;
                     }
-                } else {
-                    LOG.error("Cannot construct trap of type [{}]. Unknown type. Skipping.", tc.type());
+
+                    trap.checkConfiguration();
+                } catch(ConfigException e) {
+                    LOG.error("Invalid configuration for trap of type [{}]. Skipping.", tc.type(), e);
+                    continue;
+                } catch (Exception e) {
+                    LOG.error("Failed to construct trap of type [{}]. Skipping.", tc.type(), e);
                     continue;
                 }
 
@@ -469,6 +488,21 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public ContactManager getContactManager() {
         return contactManager;
+    }
+
+    @Override
+    public List<String> getIgnoredFingerprints() {
+        return ignoredFingerprints.get();
+    }
+
+    @Override
+    public synchronized void registerIgnoredFingerprint(String fingerprint) {
+        ignoredFingerprints.set(
+                new ImmutableList.Builder<String>()
+                        .addAll(ignoredFingerprints.get())
+                        .add(fingerprint)
+                        .build()
+        );
     }
 
     @Override

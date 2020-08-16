@@ -130,7 +130,7 @@ public class Dot11SenderProbe extends Dot11Probe {
                     LOG.error("Could not set trap [{}].", this.trap.getClass().getCanonicalName(), e);
                 } finally {
                     try {
-                        Thread.sleep(trap.getDelaySeconds()*1000);
+                        Thread.sleep(trap.getDelayMilliseconds());
                     } catch (InterruptedException e) { }
                 }
             }

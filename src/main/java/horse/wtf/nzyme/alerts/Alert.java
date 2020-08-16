@@ -53,7 +53,8 @@ public abstract class Alert {
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
         PWNAGOTCHI_ADVERTISEMENT,
-        BANDIT_CONTACT
+        BANDIT_CONTACT,
+        BEACON_TRAP_1
     }
 
     public enum TYPE {
@@ -71,11 +72,13 @@ public abstract class Alert {
         PROBE_RESPONSE_TRAP_1,
         MULTIPLE_SIGNAL_TRACKS,
         PWNAGOTCHI_ADVERTISEMENT,
-        BANDIT_CONTACT
+        BANDIT_CONTACT,
+        BEACON_TRAP_1
     }
 
     public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
-            TYPE_WIDE.PROBE_RESPONSE_TRAP_1
+            TYPE_WIDE.PROBE_RESPONSE_TRAP_1,
+            TYPE_WIDE.BEACON_TRAP_1
     );
 
     private final Subsystem subsystem;
@@ -343,8 +346,19 @@ public abstract class Alert {
                         db.frameCount()
                 );
                 break;
+            case BEACON_TRAP_1:
+                alert = BeaconTrapResponseAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.SSID),
+                        (String) fields.get(FieldNames.BSSID),
+                        (Integer) fields.get(FieldNames.CHANNEL),
+                        (Integer) fields.get(FieldNames.FREQUENCY),
+                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
+                        db.frameCount()
+                );
+                break;
             default:
-                throw new RuntimeException("Cannot serialize persisted alert of type [" + db.type() + "].");
+                throw new RuntimeException("Cannot serialize persisted alert of type [" + db.type() + "]. Not implemented.");
         }
 
         alert.setLastSeen(db.lastSeen());

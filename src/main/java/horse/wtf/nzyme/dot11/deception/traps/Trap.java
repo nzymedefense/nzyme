@@ -51,13 +51,14 @@ import java.util.List;
 public abstract class Trap {
 
     public enum Type {
-        PROBE_REQUEST_1
+        PROBE_REQUEST_1,
+        BEACON_1
     }
 
     public abstract void checkConfiguration() throws InvalidConfigurationException;
 
     protected abstract boolean doRun();
-    public abstract int getDelaySeconds();
+    public abstract int getDelayMilliseconds();
     public abstract int framesPerExecution();
 
     public abstract List<Dot11FrameInterceptor> requestedInterceptors();

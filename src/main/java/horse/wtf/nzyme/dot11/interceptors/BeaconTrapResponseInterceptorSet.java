@@ -19,30 +19,34 @@ package horse.wtf.nzyme.dot11.interceptors;
 
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.BeaconTrapResponseAlert;
 import horse.wtf.nzyme.alerts.ProbeRequestTrapResponseAlert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
-import horse.wtf.nzyme.configuration.ConfigurationKeys;
-import horse.wtf.nzyme.configuration.Dot11TrapConfiguration;
-import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProbeRequestTrapResponseInterceptorSet {
+public class BeaconTrapResponseInterceptorSet {
+
+    private static final Logger LOG = LogManager.getLogger(BeaconTrapResponseInterceptorSet.class);
 
     private final List<String> trappedSSIDs;
+    private final String ourFingerprint;
 
     private final AlertsService alerts;
 
-    public ProbeRequestTrapResponseInterceptorSet(AlertsService alerts, List<String> trappedSSIDs) {
+    public BeaconTrapResponseInterceptorSet(AlertsService alerts, List<String> trappedSSIDs, String ourFingerprint) {
         this.alerts = alerts;
         this.trappedSSIDs = trappedSSIDs;
+        this.ourFingerprint = ourFingerprint;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -58,7 +62,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
 
                 for (String ssid : trappedSSIDs) {
                     if (ssid.equals(frame.ssid())) {
-                        alerts.handle(ProbeRequestTrapResponseAlert.create(
+                        alerts.handle(BeaconTrapResponseAlert.create(
                                 DateTime.now(),
                                 ssid,
                                 frame.transmitter(),
@@ -78,7 +82,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
 
             @Override
             public List<Class<? extends Alert>> raisesAlerts() {
-                return new ArrayList<Class<? extends Alert>>() {{
+                return new ArrayList<>() {{
                     add(ProbeRequestTrapResponseAlert.class);
                 }};
             }
@@ -92,9 +96,14 @@ public class ProbeRequestTrapResponseInterceptorSet {
                     return;
                 }
 
+                if (frame.transmitterFingerprint().equals(ourFingerprint)) {
+                    LOG.trace("Skipping frame with our own fingerprint [{}]", ourFingerprint);
+                    return;
+                }
+
                 for (String ssid : trappedSSIDs) {
                     if (ssid.equals(frame.ssid())) {
-                        alerts.handle(ProbeRequestTrapResponseAlert.create(
+                        alerts.handle(BeaconTrapResponseAlert.create(
                                 DateTime.now(),
                                 ssid,
                                 frame.transmitter(),
@@ -115,7 +124,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
             @Override
             public List<Class<? extends Alert>> raisesAlerts() {
                 return new ArrayList<>() {{
-                    add(ProbeRequestTrapResponseAlert.class);
+                    add(BeaconTrapResponseAlert.class);
                 }};
             }
         });

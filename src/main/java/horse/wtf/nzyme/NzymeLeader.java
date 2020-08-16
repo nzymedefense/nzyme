@@ -64,6 +64,9 @@ public interface NzymeLeader extends UplinkHandler {
     AlertsService getAlertsService();
     ContactManager getContactManager();
 
+    List<String> getIgnoredFingerprints();
+    void registerIgnoredFingerprint(String fingerprint);
+
     TrackerManager getTrackerManager();
     GroundStation getGroundStation();
 
