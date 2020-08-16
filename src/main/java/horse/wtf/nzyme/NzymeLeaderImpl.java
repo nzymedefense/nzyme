@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
@@ -399,30 +400,45 @@ public class NzymeLeaderImpl implements NzymeLeader {
                 Trap trap;
 
                 // This part doesn't belong here but it's fine for now. REFACTOR.
-                if (tc.type() == Trap.Type.PROBE_REQUEST_1) {// TODO validation
+                if (tc.type() == Trap.Type.PROBE_REQUEST_1) {
                     try {
                         trap = new ProbeRequestTrap(
-                                configuration,
-                                td.deviceSender(),
+                                this,
+                                td.device(),
                                 tc.configuration().getStringList(ConfigurationKeys.SSIDS),
                                 tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
                                 tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
                         );
+
+                        trap.checkConfiguration();
+                    } catch(ConfigException e) {
+                        LOG.error("Invalid configuration for trap of type [{}]. Skipping.", tc.type(), e);
+                        continue;
                     } catch (Exception e) {
-                        LOG.error("Failed to construct trap of type [{}].", tc.type(), e);
+                        LOG.error("Failed to construct trap of type [{}]. Skipping.", tc.type(), e);
                         continue;
                     }
                 } else {
-                    LOG.error("Cannot construct trap of type [{}]", tc.type());
+                    LOG.error("Cannot construct trap of type [{}]. Unknown type. Skipping.", tc.type());
                     continue;
                 }
 
+                // Register interceptors with all monitor probes.
+                for (Dot11Probe probe : getProbes()) {
+                    if (probe instanceof Dot11MonitorProbe) {
+                        LOG.info("Registering frame interceptors of [{}] on monitor probe [{}].",
+                                trap.getClass().getCanonicalName(), probe.getName());
+                        probe.addFrameInterceptors(trap.requestedInterceptors());
+                    }
+                }
+
+                // Start probe.
                 Dot11SenderProbe probe = new Dot11SenderProbe(
                         Dot11ProbeConfiguration.create(
-                                "trap-sender-" + td.deviceSender() + "-" + tc.type() + "-" + i,
+                                "trap-sender-" + td.device() + "-" + tc.type() + "-" + i,
                                 configuration.graylogUplinks(),
                                 getNodeID(),
-                                td.deviceSender(),
+                                td.device(),
                                 td.channels(),
                                 td.channelHopInterval(),
                                 td.channelHopCommand(),

@@ -43,15 +43,24 @@ package horse.wtf.nzyme.dot11.deception.traps;
  * : : : : : : : :¯''~~~~~~''' : : : : : : : : : : : : : : : : : : | : : : : : : : : :
  */
 
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
+
+import java.util.List;
+
 public abstract class Trap implements Runnable {
 
     public enum Type {
         PROBE_REQUEST_1
     }
 
+    public abstract void checkConfiguration() throws InvalidConfigurationException;
+
     protected abstract void doRun();
     public abstract int getDelaySeconds();
     public abstract int framesPerExecution();
+
+    public abstract List<Dot11FrameInterceptor> requestedInterceptors();
 
     @Override
     public void run() {

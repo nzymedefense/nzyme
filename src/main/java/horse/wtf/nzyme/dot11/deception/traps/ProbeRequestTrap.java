@@ -17,8 +17,15 @@
 
 package horse.wtf.nzyme.dot11.deception.traps;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.NzymeLeaderImpl;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.deception.bluffs.ProbeRequest;
+import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,15 +41,40 @@ public class ProbeRequestTrap extends Trap {
     private final int delaySeconds;
     private final int framesPerExecution;
 
-    private final LeaderConfiguration configuration;
+    private final NzymeLeader nzyme;
 
-    public ProbeRequestTrap(LeaderConfiguration configuration, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
+    public ProbeRequestTrap(NzymeLeader nzyme, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
+        this.nzyme = nzyme;
+
         this.interfaceName = interfaceName;
         this.ssids = ssids;
         this.transmitter = transmitter;
-        this.configuration = configuration;
         this.delaySeconds = delaySeconds;
         this.framesPerExecution = ssids.size();
+    }
+
+    @Override
+    public void checkConfiguration() throws InvalidConfigurationException {
+        if (Strings.isNullOrEmpty(interfaceName)) {
+            throw new InvalidConfigurationException("Interface name is empty.");
+        }
+
+        if (ssids == null || ssids.isEmpty()) {
+            throw new InvalidConfigurationException("SSIDs is null or empty.");
+        }
+
+        if (Strings.isNullOrEmpty(transmitter)) {
+            // TODO also check if valid MAC address
+            throw new InvalidConfigurationException("Transmitter is null or emtpy.");
+        }
+
+        if (delaySeconds <= 0) {
+            throw new InvalidConfigurationException("Delay seconds must be configured to a value larger than 0.");
+        }
+
+        if (framesPerExecution <= 0) {
+            throw new InvalidConfigurationException("Frames per execution must be configured to a value larger than 0.");
+        }
     }
 
     @Override
@@ -50,7 +82,7 @@ public class ProbeRequestTrap extends Trap {
         for (String ssid : ssids) {
             LOG.debug("Setting ProbeRequestTrap for SSID [{}].", ssid);
             try {
-                new ProbeRequest(configuration, interfaceName, ssid, transmitter).executeFailFast();
+                new ProbeRequest(nzyme.getConfiguration(), interfaceName, ssid, transmitter).executeFailFast();
             } catch(Exception e){
                 LOG.error("Could not set ProbeRequestTrap for SSID [{}].", ssid, e);
             }
@@ -65,6 +97,14 @@ public class ProbeRequestTrap extends Trap {
     @Override
     public int framesPerExecution() {
         return framesPerExecution;
+    }
+
+    @Override
+    public List<Dot11FrameInterceptor> requestedInterceptors() {
+        return new ProbeRequestTrapResponseInterceptorSet(
+                nzyme.getAlertsService(),
+                nzyme.getConfiguration().dot11TrapDevices()
+        ).getInterceptors();
     }
 
 }

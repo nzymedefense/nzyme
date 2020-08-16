@@ -22,7 +22,7 @@ general: {
   # We use Python to inject frames.
   python {
     # Path to python executable.
-    path: /usr/bin/python2.7
+    path: /usr/bin/python3.8
 
     # Script directory. This must be an existing and writable directory. We'll store some generated Python scripts here.
     script_directory: /tmp

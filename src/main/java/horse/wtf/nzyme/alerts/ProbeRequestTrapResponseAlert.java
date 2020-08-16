@@ -33,8 +33,8 @@ import java.util.Map;
 
 public class ProbeRequestTrapResponseAlert extends Alert {
 
-    private static final String DESCRIPTION = "A device responded to our probe request trap ( " + Trap.Type.PROBE_REQUEST_1 +  ". This " +
-            "clearly indicates that an attacker is trying to lure another device to connect to their rogue access point.)";
+    private static final String DESCRIPTION = "A device responded to our probe request trap (" + Trap.Type.PROBE_REQUEST_1 + "). This " +
+            "clearly indicates that an attacker is trying to lure another device to connect to their rogue access point.";
 
     private static final String DOC_LINK = "guidance-TRAP_PROBE_REQUEST_1";
 

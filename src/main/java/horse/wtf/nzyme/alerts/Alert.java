@@ -294,7 +294,16 @@ public abstract class Alert {
                 );
                 break;
             case PROBE_RESPONSE_TRAP_1:
-                throw new RuntimeException("NOT IMPLEMENTED.");
+                alert = ProbeRequestTrapResponseAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.SSID),
+                        (String) fields.get(FieldNames.BSSID),
+                        (Integer) fields.get(FieldNames.CHANNEL),
+                        (Integer) fields.get(FieldNames.FREQUENCY),
+                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
+                        db.frameCount()
+                );
+                break;
             case MULTIPLE_SIGNAL_TRACKS:
                 alert = MultipleTrackAlert.create(
                         db.firstSeen(),

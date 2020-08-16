@@ -27,30 +27,29 @@ import java.util.List;
 @AutoValue
 public abstract class Dot11TrapDeviceDefinition {
 
-    public abstract String deviceSender();
+    public abstract String device();
     public abstract List<Integer> channels();
     public abstract String channelHopCommand();
     public abstract int channelHopInterval();
     public abstract List<Dot11TrapConfiguration> traps();
 
-    @JsonIgnore
-    public static boolean checkConfig(Config c) {
-        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.DEVICE_SENDER))
-                && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
-                && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0
-                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
-                && c.getConfigList(ConfigurationKeys.TRAPS) != null && !c.getConfigList(ConfigurationKeys.TRAPS).isEmpty();
-    }
-
-
-    public static Dot11TrapDeviceDefinition create(String deviceSender, List<Integer> channels, String channelHopCommand, int channelHopInterval, List<Dot11TrapConfiguration> traps) {
+    public static Dot11TrapDeviceDefinition create(String device, List<Integer> channels, String channelHopCommand, int channelHopInterval, List<Dot11TrapConfiguration> traps) {
         return builder()
-                .deviceSender(deviceSender)
+                .device(device)
                 .channels(channels)
                 .channelHopCommand(channelHopCommand)
                 .channelHopInterval(channelHopInterval)
                 .traps(traps)
                 .build();
+    }
+
+    @JsonIgnore
+    public static boolean checkConfig(Config c) {
+        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.DEVICE))
+                && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
+                && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0
+                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
+                && c.getConfigList(ConfigurationKeys.TRAPS) != null && !c.getConfigList(ConfigurationKeys.TRAPS).isEmpty();
     }
 
     public static Builder builder() {
@@ -59,7 +58,7 @@ public abstract class Dot11TrapDeviceDefinition {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder deviceSender(String deviceSender);
+        public abstract Builder device(String device);
 
         public abstract Builder channels(List<Integer> channels);
 

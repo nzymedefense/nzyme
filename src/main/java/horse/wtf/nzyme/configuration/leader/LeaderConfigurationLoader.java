@@ -188,7 +188,7 @@ public class LeaderConfigurationLoader {
             }
 
             result.add(Dot11TrapDeviceDefinition.create(
-                    config.getString(ConfigurationKeys.DEVICE_SENDER),
+                    config.getString(ConfigurationKeys.DEVICE),
                     config.getIntList(ConfigurationKeys.CHANNELS),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
                     config.getInt(ConfigurationKeys.HOP_INTERVAL),
@@ -357,13 +357,16 @@ public class LeaderConfigurationLoader {
 
         // 802.11 Trap Pairs
         int i = 0;
+        List<String> trapDevices = Lists.newArrayList();
         for (Config c : root.getConfigList(ConfigurationKeys.DOT11_TRAPS)) {
             String where = ConfigurationKeys.DOT11_TRAPS + ".#" + i;
-            ConfigurationValidator.expect(c, ConfigurationKeys.DEVICE_SENDER, where, String.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.DEVICE, where, String.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, List.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.TRAPS, where, List.class);
+
+            String deviceName = c.getString(ConfigurationKeys.DEVICE);
 
             int y = 0;
             for (Config trap : c.getConfigList(ConfigurationKeys.TRAPS)) {
@@ -377,9 +380,20 @@ public class LeaderConfigurationLoader {
                 } catch(IllegalArgumentException e) {
                     throw new InvalidConfigurationException("Trap [" + trapWhere + "] is of invalid type [" + trapType + "].");
                 }
+
+                if (trapDevices.contains(deviceName)) {
+                    throw new InvalidConfigurationException("Trap ["+ trapWhere+"] is using already configured device [" + deviceName + "]. Devices can only be used once.");
+                }
+                trapDevices.add(deviceName);
+
+                for (Dot11MonitorDefinition monitor : baseDot11ConfigurationLoader.parseDot11Monitors()) {
+                    if (monitor.device().equals(deviceName)) {
+                        throw new InvalidConfigurationException("Trap ["+ trapWhere+"] is using already configured monitor device [" + deviceName + "]. Devices can only be used once.");
+                    }
+                }
+
                 y++;
             }
-
         }
 
         // Logical validity.
@@ -449,8 +463,6 @@ public class LeaderConfigurationLoader {
                 throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] is not configured to use HTTP. Do not use HTTPS.");
             }
         }
-
-        // TODO: No trap device is used multiple times or as a monitor.
     }
 
 }

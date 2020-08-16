@@ -151,8 +151,6 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     @Override
     public Runnable loop() {
-        final Dot11Probe probe = this;
-
         return () -> {
             LOG.info("Commencing 802.11 frame processing on [{}] ... (⌐■_■)–︻╦╤─ – – pew pew", configuration.networkInterfaceName());
 

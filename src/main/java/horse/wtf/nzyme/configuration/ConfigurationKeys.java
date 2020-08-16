@@ -58,7 +58,6 @@ public class ConfigurationKeys {
     public static final String BSSID = "bssid";
     public static final String FREQUENCY = "frequency";
     public static final String ANTENNA_SIGNAL = "antenna_signal";
-    public static final String DEVICE_SENDER = "device_sender";
     public static final String TRAPS = "traps";
     public static final String TYPE = "type";
     public static final String ADDRESS = "address";
