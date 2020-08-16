@@ -105,15 +105,6 @@ public abstract class Bluff {
         }
     }
 
-    public void executeFailFast() {
-        try {
-            execute();
-        } catch (BluffExecutionException | InsecureParametersException e) {
-            LOG.error("Could not execute bluff [{}].", this.getClass().getCanonicalName(), e);
-            LOG.info("Attempted command invocation: [{}]", this.getInvokedCommand());
-        }
-    }
-
     public void debug() {
         LOG.info("Bluff [{}]: Invoked command {{}}.", getClass().getCanonicalName(), getInvokedCommand());
 
@@ -170,7 +161,7 @@ public abstract class Bluff {
     public class InsecureParametersException extends Exception {
     }
 
-    public class BluffExecutionException extends Throwable {
+    public class BluffExecutionException extends Exception {
         public BluffExecutionException(String s) {
             super(s);
         }

@@ -117,11 +117,14 @@ public class Dot11SenderProbe extends Dot11Probe {
                 }
 
                 try {
-                    trap.run();
+                    inLoop.set(true);
+
+                    boolean status = trap.run();
                     totalFrames += trap.framesPerExecution();
 
-                    mostRecentFrameTimestamp = DateTime.now();
-                    inLoop.set(true);
+                    if (status) {
+                        mostRecentFrameTimestamp = DateTime.now();
+                    }
                 } catch(Exception e) {
                     inLoop.set(false);
                     LOG.error("Could not set trap [{}].", this.trap.getClass().getCanonicalName(), e);

@@ -24,6 +24,7 @@ import horse.wtf.nzyme.NzymeLeaderImpl;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
+import horse.wtf.nzyme.dot11.deception.bluffs.Bluff;
 import horse.wtf.nzyme.dot11.deception.bluffs.ProbeRequest;
 import horse.wtf.nzyme.dot11.interceptors.ProbeRequestTrapResponseInterceptorSet;
 import org.apache.logging.log4j.LogManager;
@@ -78,15 +79,19 @@ public class ProbeRequestTrap extends Trap {
     }
 
     @Override
-    protected void doRun() {
+    protected boolean doRun() {
         for (String ssid : ssids) {
             LOG.debug("Setting ProbeRequestTrap for SSID [{}].", ssid);
             try {
-                new ProbeRequest(nzyme.getConfiguration(), interfaceName, ssid, transmitter).executeFailFast();
+                new ProbeRequest(nzyme.getConfiguration(), interfaceName, ssid, transmitter).execute();
+                return true;
             } catch(Exception e){
                 LOG.error("Could not set ProbeRequestTrap for SSID [{}].", ssid, e);
+                return false;
             }
         }
+
+        return false;
     }
 
     @Override
