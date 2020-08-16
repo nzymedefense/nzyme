@@ -56,6 +56,11 @@ public class AlertsResource {
         ImmutableList.Builder<Alert.TYPE_WIDE> disabled = new ImmutableList.Builder<>();
 
         for (Alert.TYPE_WIDE type : Alert.TYPE_WIDE.values()) {
+            // Hide some alerts that are not manually enabled/disabled. For example traps.
+            if (Alert.HIDDEN_IN_UI.contains(type)) {
+                continue;
+            }
+
             if (nzyme.getConfiguration().dot11Alerts().contains(type)) {
                 enabled.add(type);
             } else {

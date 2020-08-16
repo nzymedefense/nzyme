@@ -20,6 +20,7 @@ package horse.wtf.nzyme.alerts;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntry;
@@ -72,6 +73,10 @@ public abstract class Alert {
         PWNAGOTCHI_ADVERTISEMENT,
         BANDIT_CONTACT
     }
+
+    public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
+            TYPE_WIDE.PROBE_RESPONSE_TRAP_1
+    );
 
     private final Subsystem subsystem;
     private final Map<String, Object> fields;
