@@ -139,7 +139,7 @@ graylog_uplinks: []
   bandit_contact
 ]
 
-# Optional: Traps to set up. See TODO ADD DOCS LINK
+# Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps
 802_11_traps: []
 
 # Optional: A tracker device to track down physical location of bandits. Please read more in the documentation.
