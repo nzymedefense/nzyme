@@ -31,17 +31,18 @@ public abstract class Dot11TrapDeviceDefinition {
     public abstract List<Integer> channels();
     public abstract String channelHopCommand();
     public abstract int channelHopInterval();
-    public abstract List<Dot11TrapConfiguration> traps();
+    public abstract Dot11TrapConfiguration trap();
 
-    public static Dot11TrapDeviceDefinition create(String device, List<Integer> channels, String channelHopCommand, int channelHopInterval, List<Dot11TrapConfiguration> traps) {
+    public static Dot11TrapDeviceDefinition create(String device, List<Integer> channels, String channelHopCommand, int channelHopInterval, Dot11TrapConfiguration trap) {
         return builder()
                 .device(device)
                 .channels(channels)
                 .channelHopCommand(channelHopCommand)
                 .channelHopInterval(channelHopInterval)
-                .traps(traps)
+                .trap(trap)
                 .build();
     }
+
 
     @JsonIgnore
     public static boolean checkConfig(Config c) {
@@ -49,7 +50,7 @@ public abstract class Dot11TrapDeviceDefinition {
                 && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
                 && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0
                 && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
-                && c.getConfigList(ConfigurationKeys.TRAPS) != null && !c.getConfigList(ConfigurationKeys.TRAPS).isEmpty();
+                && c.getConfig(ConfigurationKeys.TRAP) != null;
     }
 
     public static Builder builder() {
@@ -66,7 +67,7 @@ public abstract class Dot11TrapDeviceDefinition {
 
         public abstract Builder channelHopInterval(int channelHopInterval);
 
-        public abstract Builder traps(List<Dot11TrapConfiguration> traps);
+        public abstract Builder trap(Dot11TrapConfiguration trap);
 
         public abstract Dot11TrapDeviceDefinition build();
     }

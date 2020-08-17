@@ -179,20 +179,18 @@ public class LeaderConfigurationLoader {
                 continue;
             }
 
-            ImmutableList.Builder<Dot11TrapConfiguration> traps = new ImmutableList.Builder<>();
-            for (Config trapConfig : config.getConfigList(ConfigurationKeys.TRAPS)) {
-                traps.add(Dot11TrapConfiguration.create(
-                        Trap.Type.valueOf(trapConfig.getString(ConfigurationKeys.TYPE)),
-                        trapConfig
-                ));
-            }
+            Config trapConfig = config.getConfig(ConfigurationKeys.TRAP);
+            Dot11TrapConfiguration trap = Dot11TrapConfiguration.create(
+                    Trap.Type.valueOf(trapConfig.getString(ConfigurationKeys.TYPE)),
+                    trapConfig
+            );
 
             result.add(Dot11TrapDeviceDefinition.create(
                     config.getString(ConfigurationKeys.DEVICE),
                     config.getIntList(ConfigurationKeys.CHANNELS),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
                     config.getInt(ConfigurationKeys.HOP_INTERVAL),
-                    traps.build()
+                    trap
             ));
         }
 
@@ -364,35 +362,30 @@ public class LeaderConfigurationLoader {
             ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, List.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
-            ConfigurationValidator.expect(c, ConfigurationKeys.TRAPS, where, List.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.TRAP, where, Config.class);
 
             String deviceName = c.getString(ConfigurationKeys.DEVICE);
 
-            int y = 0;
-            for (Config trap : c.getConfigList(ConfigurationKeys.TRAPS)) {
-                String trapWhere = where + ".#" + y;
+            Config trap = c.getConfig(ConfigurationKeys.TRAP);
 
-                // Make sure trap type exists and is set to an existing trap type.
-                ConfigurationValidator.expect(trap, ConfigurationKeys.TYPE, trapWhere, String.class);
-                String trapType = trap.getString(ConfigurationKeys.TYPE);
-                try {
-                    Trap.Type.valueOf(trapType);
-                } catch(IllegalArgumentException e) {
-                    throw new InvalidConfigurationException("Trap [" + trapWhere + "] is of invalid type [" + trapType + "].");
+            // Make sure trap type exists and is set to an existing trap type.
+            ConfigurationValidator.expect(trap, ConfigurationKeys.TYPE, where, String.class);
+            String trapType = trap.getString(ConfigurationKeys.TYPE);
+            try {
+                Trap.Type.valueOf(trapType);
+            } catch(IllegalArgumentException e) {
+                throw new InvalidConfigurationException("Trap [" + where + "] is of invalid type [" + trapType + "].");
+            }
+
+            if (trapDevices.contains(deviceName)) {
+                throw new InvalidConfigurationException("Trap ["+ where+"] is using already configured device [" + deviceName + "]. Devices can only be used once.");
+            }
+            trapDevices.add(deviceName);
+
+            for (Dot11MonitorDefinition monitor : baseDot11ConfigurationLoader.parseDot11Monitors()) {
+                if (monitor.device().equals(deviceName)) {
+                    throw new InvalidConfigurationException("Trap ["+ where+"] is using already configured monitor device [" + deviceName + "]. Devices can only be used once.");
                 }
-
-                if (trapDevices.contains(deviceName)) {
-                    throw new InvalidConfigurationException("Trap ["+ trapWhere+"] is using already configured device [" + deviceName + "]. Devices can only be used once.");
-                }
-                trapDevices.add(deviceName);
-
-                for (Dot11MonitorDefinition monitor : baseDot11ConfigurationLoader.parseDot11Monitors()) {
-                    if (monitor.device().equals(deviceName)) {
-                        throw new InvalidConfigurationException("Trap ["+ trapWhere+"] is using already configured monitor device [" + deviceName + "]. Devices can only be used once.");
-                    }
-                }
-
-                y++;
             }
         }
 

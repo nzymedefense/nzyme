@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.deception.traps;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.NzymeLeader;
@@ -99,6 +100,16 @@ public class ProbeRequestTrap extends Trap {
     @Override
     public int framesPerExecution() {
         return framesPerExecution;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.PROBE_REQUEST_1;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Setting trap for SSIDs [" + Joiner.on(", ").join(ssids) + "] every " + getDelayMilliseconds() + "ms.";
     }
 
     @Override

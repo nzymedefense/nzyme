@@ -10,7 +10,7 @@ import SystemStatusWidget from "./widgets/SystemStatusWidget";
 import FrameThroughputWidget from "./widgets/FrameThroughputWidget";
 import AlertsTable from "../alerts/AlertsTable";
 import ContactsTable from "../bandits/ContactsTable";
-import ProbesList from "../system/ProbesList";
+import ProbesTable from "../system/ProbesTable";
 
 class Overview extends Reflux.Component {
 
@@ -79,7 +79,7 @@ class Overview extends Reflux.Component {
                 <div className="row mt-md-3">
                     <div className="col-md-12">
                         <h4>Probes</h4>
-                        <ProbesList probes={this.state.dashboard.probes.probes} />
+                        <ProbesTable probes={this.state.dashboard.probes.probes} />
                     </div>
                 </div>
             </div>

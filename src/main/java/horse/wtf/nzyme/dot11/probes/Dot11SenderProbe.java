@@ -152,6 +152,10 @@ public class Dot11SenderProbe extends Dot11Probe {
         return totalFrames;
     }
 
+    public Trap getTrap() {
+        return trap;
+    }
+
     @Override
     public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
         throw new RuntimeException("Sender probe cannot intercept frames.");

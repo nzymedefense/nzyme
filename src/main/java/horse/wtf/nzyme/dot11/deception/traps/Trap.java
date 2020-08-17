@@ -45,15 +45,20 @@ package horse.wtf.nzyme.dot11.deception.traps;
 
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
+import horse.wtf.nzyme.dot11.probes.Dot11SenderProbe;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public abstract class Trap {
+
 
     public enum Type {
         PROBE_REQUEST_1,
         BEACON_1
     }
+
+    private Dot11SenderProbe probe;
 
     public abstract void checkConfiguration() throws InvalidConfigurationException;
 
@@ -61,10 +66,22 @@ public abstract class Trap {
     public abstract int getDelayMilliseconds();
     public abstract int framesPerExecution();
 
+    public abstract Type getType();
+    public abstract String getDescription();
+
     public abstract List<Dot11FrameInterceptor> requestedInterceptors();
 
     public boolean run() {
         return doRun();
+    }
+
+    public void setProbe(Dot11SenderProbe probe) {
+        this.probe = probe;
+    }
+
+    @Nullable
+    public Dot11SenderProbe getProbe() {
+        return this.probe;
     }
 
 }

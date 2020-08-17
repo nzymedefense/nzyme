@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ProbeTableRow from "./ProbeTableRow";
 
-class ProbesList extends Reflux.Component {
+class ProbesTable extends Reflux.Component {
 
     render() {
         const self = this;
@@ -35,4 +35,4 @@ class ProbesList extends Reflux.Component {
 
 }
 
-export default ProbesList;
+export default ProbesTable;

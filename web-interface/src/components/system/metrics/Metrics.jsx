@@ -3,7 +3,7 @@ import Reflux from 'reflux';
 import SystemStore from "../../../stores/SystemStore";
 import SystemActions from "../../../actions/SystemActions";
 import TimerRow from "./TimerRow";
-import LoadingSpinner from "../ProbesList";
+import LoadingSpinner from "../ProbesTable";
 
 import numeral from "numeral";
 

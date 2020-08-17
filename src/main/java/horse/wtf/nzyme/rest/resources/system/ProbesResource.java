@@ -23,10 +23,13 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.dot11.probes.Dot11SenderProbe;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
+import horse.wtf.nzyme.rest.responses.system.TrapResponse;
+import horse.wtf.nzyme.rest.responses.system.TrapsListResponse;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -49,13 +52,6 @@ public class ProbesResource {
     public Response all() {
         List<ProbeResponse> response = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {
-            ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
-            for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
-                for (Object alertClass : interceptor.raisesAlerts()) {
-                    raisesAlerts.add(((Class) alertClass).getSimpleName());
-                }
-            }
-
             response.add(ProbeResponse.create(
                     probe.getName(),
                     probe.getClass().getSimpleName(),
@@ -65,11 +61,41 @@ public class ProbesResource {
                     probe.getConfiguration().channels(),
                     probe.getCurrentChannel(),
                     probe.getTotalFrames(),
-                    raisesAlerts.build()
+                    buildRaisedAlerts(probe)
             ));
         }
 
         return Response.ok(ProbesListResponse.create(response.size(), response)).build();
+    }
+
+    @GET
+    @Path("/traps")
+    public Response traps() {
+        List<TrapResponse> traps = Lists.newArrayList();
+        for (Dot11Probe probe : nzyme.getProbes()) {
+            if (probe instanceof Dot11SenderProbe) {
+
+                Dot11SenderProbe sender = (Dot11SenderProbe) probe;
+
+                traps.add(TrapResponse.create(
+                        ProbeResponse.create(
+                                probe.getName(),
+                                probe.getClass().getSimpleName(),
+                                probe.getConfiguration().networkInterfaceName(),
+                                probe.isInLoop(),
+                                probe.isActive(),
+                                probe.getConfiguration().channels(),
+                                probe.getCurrentChannel(),
+                                probe.getTotalFrames(),
+                                buildRaisedAlerts(probe)
+                        ),
+                        sender.getTrap().getType().toString(),
+                        sender.getTrap().getDescription()
+                ));
+            }
+        }
+
+        return Response.ok(TrapsListResponse.create(traps)).build();
     }
 
     @GET
@@ -85,6 +111,16 @@ public class ProbesResource {
         }
 
         return Response.ok(CurrentChannelsResponse.create(channels.build())).build();
+    }
+
+    private List<String> buildRaisedAlerts(Dot11Probe probe) {
+        ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
+        for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
+            for (Object alertClass : interceptor.raisesAlerts()) {
+                raisesAlerts.add(((Class) alertClass).getSimpleName());
+            }
+        }
+        return raisesAlerts.build();
     }
 
 }

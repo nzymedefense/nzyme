@@ -17,6 +17,13 @@ class ProbesStore extends Reflux.Store {
     });
   }
 
+  onFindAllTraps() {
+    let self = this;
+    RESTClient.get("/system/probes/traps", {}, function(response) {
+      self.setState({traps: response.data.traps});
+    });
+  }
+
   onFindCurrentChannels() {
     let self = this;
 

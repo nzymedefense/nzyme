@@ -402,77 +402,73 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         // Traps.
         for (Dot11TrapDeviceDefinition td : configuration.dot11TrapDevices()) {
-            int i = 0;
-            for (Dot11TrapConfiguration tc : td.traps()) {
-                Trap trap;
+            Dot11TrapConfiguration tc = td.trap();
 
-                // This part doesn't belong here but it's fine for now. TODO REFACTOR.
-                try {
-                    switch (tc.type()) {
-                        case PROBE_REQUEST_1:
-                            trap = new ProbeRequestTrap(
-                                    this,
-                                    td.device(),
-                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
-                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
-                                    tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
-                            );
-                            break;
-                        case BEACON_1:
-                            trap = new BeaconTrap(
-                                    this,
-                                    td.device(),
-                                    tc.configuration().getStringList(ConfigurationKeys.SSIDS),
-                                    tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
-                                    tc.configuration().getInt(ConfigurationKeys.DELAY_MILLISECONDS),
-                                    tc.configuration().getString(ConfigurationKeys.FINGERPRINT)
-                            );
-                            break;
-                        default:
-                            LOG.error("Cannot construct trap of type [{}]. Unknown type. Skipping.", tc.type());
-                            continue;
-                    }
-
-                    trap.checkConfiguration();
-                } catch(ConfigException e) {
-                    LOG.error("Invalid configuration for trap of type [{}]. Skipping.", tc.type(), e);
-                    continue;
-                } catch (Exception e) {
-                    LOG.error("Failed to construct trap of type [{}]. Skipping.", tc.type(), e);
-                    continue;
-                }
-
-                // Register interceptors with all monitor probes.
-                for (Dot11Probe probe : getProbes()) {
-                    if (probe instanceof Dot11MonitorProbe) {
-                        LOG.info("Registering frame interceptors of [{}] on monitor probe [{}].",
-                                trap.getClass().getCanonicalName(), probe.getName());
-                        probe.addFrameInterceptors(trap.requestedInterceptors());
-                    }
-                }
-
-                // Start probe.
-                Dot11SenderProbe probe = new Dot11SenderProbe(
-                        Dot11ProbeConfiguration.create(
-                                "trap-sender-" + td.device() + "-" + tc.type() + "-" + i,
-                                configuration.graylogUplinks(),
-                                getNodeID(),
+            // This part doesn't belong here but it's fine for now. Probably want a factory. TODO REFACTOR.
+            Trap trap;
+            try {
+                switch (tc.type()) {
+                    case PROBE_REQUEST_1:
+                        trap = new ProbeRequestTrap(
+                                this,
                                 td.device(),
-                                td.channels(),
-                                td.channelHopInterval(),
-                                td.channelHopCommand(),
-                                configuration.dot11Networks(),
-                                configuration.dot11TrapDevices()
-                        ), trap, statistics, metrics);
+                                tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                tc.configuration().getInt(ConfigurationKeys.DELAY_SECONDS)
+                        );
+                        break;
+                    case BEACON_1:
+                        trap = new BeaconTrap(
+                                this,
+                                td.device(),
+                                tc.configuration().getStringList(ConfigurationKeys.SSIDS),
+                                tc.configuration().getString(ConfigurationKeys.TRANSMITTER),
+                                tc.configuration().getInt(ConfigurationKeys.DELAY_MILLISECONDS),
+                                tc.configuration().getString(ConfigurationKeys.FINGERPRINT)
+                        );
+                        break;
+                    default:
+                        LOG.error("Cannot construct trap of type [{}]. Unknown type. Skipping.", tc.type());
+                        continue;
+                }
 
-                probeExecutor.submit(probe.loop());
-                probes.add(probe);
-
-                i++;
+                trap.checkConfiguration();
+            } catch(ConfigException e) {
+                LOG.error("Invalid configuration for trap of type [{}]. Skipping.", tc.type(), e);
+                continue;
+            } catch (Exception e) {
+                LOG.error("Failed to construct trap of type [{}]. Skipping.", tc.type(), e);
+                continue;
             }
-        }
 
-        // TODO: Trap interceptors on all monitors.
+            // Register interceptors with all monitor probes.
+            for (Dot11Probe probe : getProbes()) {
+                if (probe instanceof Dot11MonitorProbe) {
+                    LOG.info("Registering frame interceptors of [{}] on monitor probe [{}].",
+                            trap.getClass().getCanonicalName(), probe.getName());
+                    probe.addFrameInterceptors(trap.requestedInterceptors());
+                }
+            }
+
+            // Start probe.
+            Dot11SenderProbe probe = new Dot11SenderProbe(
+                    Dot11ProbeConfiguration.create(
+                            "trap-sender-" + td.device() + "-" + tc.type(),
+                            configuration.graylogUplinks(),
+                            getNodeID(),
+                            td.device(),
+                            td.channels(),
+                            td.channelHopInterval(),
+                            td.channelHopCommand(),
+                            configuration.dot11Networks(),
+                            configuration.dot11TrapDevices()
+                    ), trap, statistics, metrics);
+
+            trap.setProbe(probe);
+
+            probeExecutor.submit(probe.loop());
+            probes.add(probe);
+        }
     }
 
     @Override

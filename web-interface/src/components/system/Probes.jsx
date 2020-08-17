@@ -3,7 +3,8 @@ import Reflux from 'reflux';
 import ProbesStore from "../../stores/ProbesStore";
 import ProbesActions from "../../actions/ProbesActions";
 
-import ProbesList from "./ProbesList";
+import ProbesTable from "./ProbesTable";
+import TrapsTable from "./TrapsTable";
 
 class Probes extends Reflux.Component {
 
@@ -13,15 +14,24 @@ class Probes extends Reflux.Component {
         this.store = ProbesStore;
 
         this.state = {
-            probes: undefined
+            probes: undefined,
+            traps: undefined
         };
+
+        this._loadData = this._loadData.bind(this);
     }
 
     componentDidMount() {
-        ProbesActions.findAll();
+        const self = this;
+
         setInterval(function () {
-            ProbesActions.findAll();
+            self._loadData();
         }, 1000);
+    }
+
+    _loadData() {
+        ProbesActions.findAll();
+        ProbesActions.findAllTraps();
     }
 
     render() {
@@ -31,7 +41,15 @@ class Probes extends Reflux.Component {
                     <div className="col-md-12">
                         <h3>Probes</h3>
 
-                        <ProbesList probes={this.state.probes} />
+                        <ProbesTable probes={this.state.probes} />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <h3>Traps</h3>
+
+                        <TrapsTable traps={this.state.traps} />
                     </div>
                 </div>
             </div>

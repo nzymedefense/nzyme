@@ -2,7 +2,8 @@ import Reflux from 'reflux';
 
 const ProbesActions = Reflux.createActions([
     "findCurrentChannels",
-    "findAll"
+    "findAll",
+    "findAllTraps"
 ]);
 
 export default ProbesActions;
