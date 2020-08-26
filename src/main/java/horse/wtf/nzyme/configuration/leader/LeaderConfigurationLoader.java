@@ -437,15 +437,6 @@ public class LeaderConfigurationLoader {
                 LOG.error(e);
                 throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] cannot be parsed into a path. Make sure it is correct.");
             }
-        } else {
-            // URI schemes must be HTTP if TLS is disabled.
-            if (!parseRestListenUri().getScheme().equals("http")) {
-                throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] is not configured to use HTTP. Do not use HTTPS.");
-            }
-
-            if (!parseHttpExternalUri().getScheme().equals("http")) {
-                throw new InvalidConfigurationException("TLS is disabled but [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] is not configured to use HTTP. Do not use HTTPS.");
-            }
         }
     }
 
