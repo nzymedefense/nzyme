@@ -418,15 +418,6 @@ public class LeaderConfigurationLoader {
 
         // TLS, if TLS is enabled.
         if (parseUseTls()) {
-            // URI schemes must be HTTPS if TLS is enabled.
-            if (!parseRestListenUri().getScheme().equals("https")) {
-                throw new InvalidConfigurationException("TLS is enabled but [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] is not configured to use HTTPS.");
-            }
-
-            if (!parseHttpExternalUri().getScheme().equals("https")) {
-                throw new InvalidConfigurationException("TLS is enabled but [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] is not configured to use HTTPS.");
-            }
-
             try {
                 Path cert = parseTlsCertificatePath();
                 if (!cert.toFile().canRead()) {
