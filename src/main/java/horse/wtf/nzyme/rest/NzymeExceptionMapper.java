@@ -20,6 +20,7 @@ package horse.wtf.nzyme.rest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -31,6 +32,10 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable t) {
+        if (t instanceof NotFoundException) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         LOG.error("Error while handling REST call.", t);
         return Response.serverError().build();
     }
