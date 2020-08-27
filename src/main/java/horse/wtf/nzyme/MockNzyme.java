@@ -196,7 +196,7 @@ public class MockNzyme implements NzymeLeader {
 
     @Override
     public List<String> getIgnoredFingerprints() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
