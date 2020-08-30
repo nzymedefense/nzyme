@@ -31,7 +31,7 @@ class NetworksList extends React.Component {
 
         this.service.findAll(self.state.filter);
         setInterval(function () {
-            this.service.findAll(self.state.filter)
+            self.service.findAll(self.state.filter)
         }, 15000);
     }
 
