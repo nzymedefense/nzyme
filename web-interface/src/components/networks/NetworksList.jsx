@@ -17,13 +17,13 @@ class NetworksList extends React.Component {
 
         this.service = new NetworksService();
         this.service.findAll = this.service.findAll.bind(this);
-        this.service.resetFingerprints = this.service.resetFingerprints.bind(this);
+        this.service.resetNetworks = this.service.resetNetworks.bind(this);
 
         this.filterInput = React.createRef();
 
         this._applyFilter = this._applyFilter.bind(this);
         this._updateFilter = this._updateFilter.bind(this);
-        this._resetFingerprints = this._resetFingerprints.bind(this);
+        this._resetNetworks = this._resetNetworks.bind(this);
     }
 
     componentDidMount() {
@@ -47,11 +47,14 @@ class NetworksList extends React.Component {
         this.setState();
     }
 
-    _resetFingerprints(e) {
+    _resetNetworks(e) {
         e.preventDefault();
 
-        if (window.confirm("Reset Fingerprints? This can be necessary after a malicious device was detected but the threat is over and you no longer need the alert.")) {
-            this.service.resetFingerprints();
+        if (window.confirm("Reset Networks? This will remove current meta information about networks but not persisted data." +
+            " This can be useful after an attacker spammed a lot of network names and you don't want to wait for old networks" +
+            " to be retention cleaned.")) {
+            const self = this;
+            this.service.resetNetworks(function () {self.service.findAll(self.state.filter)});
         }
     }
 
@@ -70,8 +73,8 @@ class NetworksList extends React.Component {
                         </div>
 
                         <div className="col-md-6 text-right">
-                            <form onSubmit={this._resetFingerprints}>
-                                <input type="submit" value="Reset Fingerprints" />
+                            <form onSubmit={this._resetNetworks}>
+                                <input type="submit" value="Reset Networks" />
                             </form>
                         </div>
                     </div>

@@ -59,9 +59,10 @@ class NetworksService {
         });
     }
 
-    resetFingerprints() {
-        RESTClient.post("/networks/fingerprints/reset/", {}, function() {
-            notify.show("Fingerprints reset.", "success");
+    resetNetworks(successCallback) {
+        RESTClient.post("/networks/reset/", {}, function() {
+            successCallback();
+            notify.show("Networks have been reset.", "success");
         })
     }
 

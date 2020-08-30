@@ -1,5 +1,6 @@
 import React from 'react';
 import BSSIDTableRow from "./BSSIDTableRow";
+import Routes from "../../util/Routes";
 
 class BSSIDTable extends React.Component {
 
@@ -30,6 +31,22 @@ class BSSIDTable extends React.Component {
     }
 
     render() {
+        if (this.state.bssids.length === 0) {
+            return (
+                <div className="alert alert-warning">
+                    <p>
+                        No networks discovered yet. Check the <a href={Routes.SYSTEM_STATUS}>system page</a> page to make
+                        sure that all probes are configured correctly and up.
+                    </p>
+
+                    <p>
+                        You should also take a look at the <a href="https://go.nzyme.org/no-networks" target="_blank" rel="noopener noreferrer">
+                        documentation page that explains common reasons for no discovered networks</a>.
+                    </p>
+                </div>
+            )
+        }
+
         const self = this;
         return (
             <div className="row">

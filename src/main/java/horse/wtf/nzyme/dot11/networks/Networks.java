@@ -290,6 +290,10 @@ public class Networks {
         }
     }
 
+    public void reset() {
+        this.bssids.clear();
+    }
+
     public static class NoSuchNetworkException extends Exception {
     }
 

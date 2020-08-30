@@ -262,16 +262,9 @@ public class NetworksResource {
     }
 
     @POST
-    @Path(("/fingerprints/reset"))
-    public Response resetFingerprints() {
-        for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
-            for (SSID ssid : bssid.ssids().values()) {
-                for (Channel channel : ssid.channels().values()) {
-                    channel.fingerprints().clear();
-                }
-            }
-        }
-
+    @Path(("/reset"))
+    public Response reset() {
+        nzyme.getNetworks().reset();
         return Response.ok().build();
     }
 
