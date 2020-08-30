@@ -1,9 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import NetworkDetails from "./NetworkDetails";
 import Routes from "../../../util/Routes";
 
-class NetworkDetailsPage extends Reflux.Component {
+class NetworkDetailsPage extends React.Component {
 
     constructor(props) {
         super(props);

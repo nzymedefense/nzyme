@@ -1,32 +1,33 @@
 import React from 'react';
-import Reflux from 'reflux';
-import BanditsActions from "../../actions/BanditsActions";
-import BanditsStore from "../../stores/BanditsStore";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Routes from "../../util/Routes";
 import BanditIdentifiersTable from "./BanditIdentifiersTable";
 import ContactsTable from "./ContactsTable";
 import {Redirect} from "react-router-dom";
-import TrackersStore from "../../stores/TrackersStore";
-import TrackersActions from "../../actions/TrackersActions";
 import BanditTracking from "./BanditTracking";
 import {notify} from "react-notify-toast";
+import BanditsService from "../../services/BanditsService";
+import TrackersService from "../../services/TrackersService";
 
-class BanditDetailPage extends Reflux.Component {
+class BanditDetailPage extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.banditId = decodeURIComponent(props.match.params.id);
 
-        this.stores = [BanditsStore, TrackersStore];
-
         this.state = {
             bandit: undefined,
             trackers: undefined,
             groundstationEnabled: undefined
         };
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findOne = this.banditsService.findOne.bind(this);
+
+        this.trackersService = new TrackersService();
+        this.trackersService.findAll = this.trackersService.findAll.bind(this);
 
         this._anyTrackerTrackingUs = this._anyTrackerTrackingUs.bind(this);
 
@@ -77,7 +78,7 @@ class BanditDetailPage extends Reflux.Component {
         }
 
         const self = this;
-        BanditsActions.deleteBandit(this.banditId, function () {
+        this.banditsService.deleteBandit(this.banditId, function () {
             self.setState({deleted:true})
         })
     }
@@ -112,7 +113,7 @@ class BanditDetailPage extends Reflux.Component {
         }
 
         const self = this;
-        BanditsActions.deleteIdentifier(this.state.bandit.uuid, identifierUuid, function() {
+        this.banditsService.deleteIdentifier(this.state.bandit.uuid, identifierUuid, function() {
             notify.show("Identifier deleted.", "success");
             self._invalidateIdentifiers();
         });
@@ -136,11 +137,11 @@ class BanditDetailPage extends Reflux.Component {
     }
 
     _loadBandit() {
-        BanditsActions.findOne(this.banditId);
+        this.banditsService.findOne(this.banditId);
     }
 
     _loadTrackers() {
-        TrackersActions.findAll();
+        this.trackersService.findAll();
     }
 
     render() {

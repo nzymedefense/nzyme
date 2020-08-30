@@ -1,16 +1,8 @@
-import Reflux from 'reflux';
-
-import SystemActions from "../actions/SystemActions";
 import RESTClient from "../util/RESTClient";
 
-class SystemStore extends Reflux.Store {
+class SystemService {
 
-    constructor() {
-        super();
-        this.listenables = SystemActions;
-    }
-
-    onGetStatus() {
+    getStatus() {
         let self = this;
 
         RESTClient.get("/system/status", {}, function(response) {
@@ -18,7 +10,7 @@ class SystemStore extends Reflux.Store {
         });
     }
 
-    onGetMetrics() {
+    getMetrics() {
         let self = this;
 
         RESTClient.get("/system/metrics", {}, function(response) {
@@ -26,7 +18,7 @@ class SystemStore extends Reflux.Store {
         });
     }
 
-    onGetVersionInfo() {
+    getVersionInfo() {
         let self = this;
 
         RESTClient.get("/system/version", {}, function(response) {
@@ -36,4 +28,4 @@ class SystemStore extends Reflux.Store {
 
 }
 
-export default SystemStore;
+export default SystemService;

@@ -1,31 +1,35 @@
 import React from 'react';
-import Reflux from 'reflux';
-import TrackersStore from "../../../stores/TrackersStore";
-import TrackersActions from "../../../actions/TrackersActions";
+
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Routes from "../../../util/Routes";
 import moment from "moment";
 import TrackerTimeDrift from "./TrackerTimeDrift";
 import TrackingModeCard from "./TrackingModeCard";
 import TrackerStatusCard from "./TrackerStatusCard";
-import BanditsActions from "../../../actions/BanditsActions";
-import BanditsStore from "../../../stores/BanditsStore";
 import {round} from "lodash";
 import ContactsTable from "../ContactsTable";
+import BanditsService from "../../../services/BanditsService";
+import TrackersService from "../../../services/TrackersService";
 
-class TrackerDetailPage extends Reflux.Component {
+class TrackerDetailPage extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.trackerName = decodeURIComponent(props.match.params.name);
 
-        this.stores = [TrackersStore, BanditsStore];
-
         this.state = {
             tracker: undefined,
             bandits: undefined
         };
+
+        this._load = this._load.bind(this);
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findAll = this.banditsService.findAll.bind(this);
+
+        this.trackersService = new TrackersService();
+        this.trackersService.findOne = this.trackersService.findOne.bind(this);
     }
 
     componentDidMount() {
@@ -38,8 +42,8 @@ class TrackerDetailPage extends Reflux.Component {
     }
 
     _load() {
-        TrackersActions.findOne(this.trackerName);
-        BanditsActions.findAll();
+        this.trackersService.findOne(this.trackerName);
+        this.banditsService.findAll();
     }
 
     render() {

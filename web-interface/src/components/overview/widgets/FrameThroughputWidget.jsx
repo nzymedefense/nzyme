@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import SimpleLineChart from "../../charts/SimpleLineChart";
 
-class FrameThroughputWidget extends Reflux.Component {
+class FrameThroughputWidget extends React.Component {
 
     render() {
         return (

@@ -1,10 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import SSIDTable from "./SSIDTable";
 import BSSIDTableRowTop from "./BSSIDTableRowTop";
 
-class BSSIDTableRow extends Reflux.Component {
+class BSSIDTableRow extends React.Component {
 
     constructor(props) {
         super(props);

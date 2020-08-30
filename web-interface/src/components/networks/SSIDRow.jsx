@@ -1,33 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import numeral from "numeral";
 import SSID from "./SSID";
 
-class SSIDRow extends Reflux.Component {
-
-    _listFingerprints() {
-        const fingerprints = this.props.channel.fingerprints;
-
-        if (!fingerprints || fingerprints.length === 0) {
-            return "n/a";
-        }
-
-        let abbv = "";
-
-        let i = 0;
-        fingerprints.forEach(function(f) {
-            abbv += f;
-
-            if (i !== fingerprints.length-1) {
-                abbv += ", "
-            }
-
-            i++;
-        });
-
-        return abbv;
-    }
+class SSIDRow extends React.Component {
 
     _printSecurity() {
         let x = "";

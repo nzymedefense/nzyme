@@ -1,9 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ProbeTableRow from "./ProbeTableRow";
 
-class ProbesTable extends Reflux.Component {
+class ProbesTable extends React.Component {
 
     render() {
         const self = this;

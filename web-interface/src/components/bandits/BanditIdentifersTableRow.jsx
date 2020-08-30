@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class BanditIdentifiersTableRow extends Reflux.Component {
+class BanditIdentifiersTableRow extends React.Component {
 
     render() {
         const identifier = this.props.identifier;

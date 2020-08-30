@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import numeral from "numeral";
 
-class FormattedTiming extends Reflux.Component {
+class FormattedTiming extends React.Component {
 
     render() {
         return (

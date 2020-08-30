@@ -1,10 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import GroundStationDisabled from "./trackers/GroundStationDisabled";
 import TrackersTable from "./trackers/TrackersTable";
 
-class BanditTracking extends Reflux.Component {
+class BanditTracking extends React.Component {
 
     render() {
         if (!this.props.groundstationEnabled) {

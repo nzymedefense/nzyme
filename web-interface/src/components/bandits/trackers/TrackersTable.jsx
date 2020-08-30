@@ -1,20 +1,15 @@
 import React from 'react';
-import Reflux from 'reflux';
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import TrackersActions from "../../../actions/TrackersActions";
-import TrackersStore from "../../../stores/TrackersStore";
 import TrackersTableRow from "./TrackersTableRow";
-import BanditsActions from "../../../actions/BanditsActions";
-import BanditsStore from "../../../stores/BanditsStore";
 import GroundStationDisabled from "./GroundStationDisabled";
 import {notify} from "react-notify-toast";
+import BanditsService from "../../../services/BanditsService";
+import TrackersService from "../../../services/TrackersService";
 
-class TrackersTable extends Reflux.Component {
+class TrackersTable extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.stores = [TrackersStore, BanditsStore];
 
         this._onTrackingStartButtonClicked = this._onTrackingStartButtonClicked.bind(this);
         this._onTrackingCancelButtonClicked = this._onTrackingCancelButtonClicked.bind(this);
@@ -26,6 +21,14 @@ class TrackersTable extends Reflux.Component {
             bandits: undefined,
             groundstationEnabled: undefined
         }
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findAll = this.banditsService.findAll.bind(this);
+
+        this.trackersService = new TrackersService();
+        this.trackersService.findAll = this.trackersService.findAll.bind(this);
+        this.trackersService.issueStartTrackingRequest = this.trackersService.issueStartTrackingRequest.bind(this);
+        this.trackersService.issueCancelTrackingRequest = this.trackersService.issueCancelTrackingRequest.bind(this);
     }
 
     componentDidMount() {
@@ -38,15 +41,15 @@ class TrackersTable extends Reflux.Component {
     }
 
     _loadAll() {
-        TrackersActions.findAll();
-        BanditsActions.findAll();
+        this.trackersService.findAll();
+        this.banditsService.findAll();
     }
 
     _onTrackingStartButtonClicked(e, trackerName) {
         e.preventDefault();
         const self = this;
 
-        TrackersActions.issueStartTrackingRequest(trackerName, this.state.bandit.uuid, function() {
+        this.trackersService.issueStartTrackingRequest(trackerName, this.props.forBandit.uuid, function() {
             notify.show("Issued start tracking request for this bandit to tracker device.", "success");
             self._loadAll()
         })
@@ -56,7 +59,7 @@ class TrackersTable extends Reflux.Component {
         e.preventDefault();
         const self = this;
 
-        TrackersActions.issueCancelTrackingRequest(trackerName, this.state.bandit.uuid, function() {
+        this.trackersService.issueCancelTrackingRequest(trackerName, this.props.forBandit.uuid, function() {
             notify.show("Issued cancel tracking request for this bandit to tracker device.", "success");
             self._loadAll()
         })

@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class ActiveContactsWidget extends Reflux.Component {
+class ActiveContactsWidget extends React.Component {
 
     render() {
         return (

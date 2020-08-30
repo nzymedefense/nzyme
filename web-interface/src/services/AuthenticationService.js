@@ -1,17 +1,9 @@
-import Reflux from 'reflux';
-
-import AuthenticationActions from "../actions/AuthenticationActions";
 import RESTClient from "../util/RESTClient";
 import Store from "../util/Store";
 
-class AuthenticationStore extends Reflux.Store {
+class AuthenticationService {
 
-    constructor() {
-        super();
-        this.listenables = AuthenticationActions;
-    }
-
-    onCreateSession(username, password) {
+    createSession(username, password) {
         let self = this;
 
         RESTClient.post("/authentication/session", {username: username, password: password}, function(response) {
@@ -21,7 +13,7 @@ class AuthenticationStore extends Reflux.Store {
         });
     }
 
-    onCheckSession() {
+    checkSession() {
         RESTClient.get("/authentication/session/information", {}, function(response) {
             if(response.data.seconds_left_valid <= 60) {
                 Store.delete("api_token");
@@ -31,4 +23,4 @@ class AuthenticationStore extends Reflux.Store {
 
 }
 
-export default AuthenticationStore;
+export default AuthenticationService;

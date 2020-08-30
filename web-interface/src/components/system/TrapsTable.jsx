@@ -1,9 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
 import TrapTableRow from "./TrapTableRow";
 
-class TrapsTable extends Reflux.Component {
+class TrapsTable extends React.Component {
 
     render() {
         const self = this;

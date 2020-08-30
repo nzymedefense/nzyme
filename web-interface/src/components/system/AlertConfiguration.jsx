@@ -1,24 +1,23 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-import AlertsStore from "../../stores/AlertsStore";
-import AlertsActions from "../../actions/AlertsActions";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import AlertsService from "../../services/AlertsService";
 
-class AlertConfiguration extends Reflux.Component {
+class AlertConfiguration extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = AlertsStore;
-
         this.state = {
             alert_configuration: undefined
         };
+
+        this.alertsService = new AlertsService();
+        this.alertsService.getConfiguration = this.alertsService.getConfiguration.bind(this);
     }
 
     componentDidMount() {
-        AlertsActions.getConfiguration();
+        this.alertsService.getConfiguration();
     }
 
     render() {

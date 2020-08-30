@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class PwnagotchiIdentityForm extends Reflux.Component {
+class PwnagotchiIdentityForm extends React.Component {
 
     constructor(props) {
         super(props);

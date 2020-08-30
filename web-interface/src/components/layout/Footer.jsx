@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class Footer extends Reflux.Component {
+class Footer extends React.Component {
 
     render() {
         return (

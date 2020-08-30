@@ -1,22 +1,22 @@
 import React from 'react';
-import Reflux from 'reflux';
-import ProbesStore from "../../stores/ProbesStore";
-import ProbesActions from "../../actions/ProbesActions";
 
 import ProbesTable from "./ProbesTable";
 import TrapsTable from "./TrapsTable";
+import ProbesService from "../../services/ProbesService";
 
-class Probes extends Reflux.Component {
+class Probes extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.store = ProbesStore;
 
         this.state = {
             probes: undefined,
             traps: undefined
         };
+
+        this.probesService = new ProbesService();
+        this.probesService.findAll = this.probesService.findAll.bind(this);
+        this.probesService.findAllTraps = this.probesService.findAllTraps.bind(this);
 
         this._loadData = this._loadData.bind(this);
     }
@@ -30,8 +30,8 @@ class Probes extends Reflux.Component {
     }
 
     _loadData() {
-        ProbesActions.findAll();
-        ProbesActions.findAllTraps();
+        this.probesService.findAll();
+        this.probesService.findAllTraps();
     }
 
     render() {

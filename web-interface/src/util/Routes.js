@@ -12,13 +12,11 @@ const Routes = {
     },
     BANDITS: {
         INDEX: "/bandits",
+        SHOW_TRACKER: (name) => `/bandits/trackers/show/${name}`,
         SHOW: (uuid) => `/bandits/show/${uuid}`,
         NEW: "/bandits/new",
         EDIT: (uuid) => `/bandits/edit/${uuid}`,
         NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
-    },
-    TRACKERS: {
-        SHOW: (name) => `/trackers/show/${name}`,
     }
 };
 

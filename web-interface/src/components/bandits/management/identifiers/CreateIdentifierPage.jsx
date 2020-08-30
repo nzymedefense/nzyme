@@ -1,22 +1,19 @@
 import React from 'react';
-import Reflux from 'reflux';
-import BanditsStore from "../../../../stores/BanditsStore";
-import BanditsActions from "../../../../actions/BanditsActions";
+
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import IdentifierTypeSelector from "./IdentifierTypeSelector";
 import IdentifierFormProxy from "./forms/IdentifierFormProxy";
 import IdentifierExplanation from "./IdentifierExplanation";
 import Routes from "../../../../util/Routes";
 import Redirect from "react-router-dom/Redirect";
+import BanditsService from "../../../../services/BanditsService";
 
-class CreateIdentifierPage extends Reflux.Component {
+class CreateIdentifierPage extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.banditId = decodeURIComponent(props.match.params.banditUUID);
-
-        this.store = BanditsStore;
 
         this.state = {
             banditIdentifierTypes: undefined,
@@ -31,11 +28,16 @@ class CreateIdentifierPage extends Reflux.Component {
         this._selectType = this._selectType.bind(this);
         this._configurationUpdate = this._configurationUpdate.bind(this);
         this._submitForm = this._submitForm.bind(this);
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findOne = this.banditsService.findOne.bind(this);
+        this.banditsService.findAllIdentifierTypes = this.banditsService.findAllIdentifierTypes.bind(this);
+        this.banditsService.createIdentifier = this.banditsService.createIdentifier.bind(this);
     }
 
     componentDidMount() {
-        BanditsActions.findOne(this.banditId);
-        BanditsActions.findAllIdentifierTypes();
+        this.banditsService.findOne(this.banditId);
+        this.banditsService.findAllIdentifierTypes();
     }
 
     _selectType(value) {
@@ -48,7 +50,7 @@ class CreateIdentifierPage extends Reflux.Component {
 
     _submitForm(e) {
         e.preventDefault();
-        BanditsActions.createIdentifier(this.banditId, {type: this.state.selectedType, configuration: this.state.configuration});
+        this.banditsService.createIdentifier(this.banditId, {type: this.state.selectedType, configuration: this.state.configuration});
     }
 
     render() {

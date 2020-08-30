@@ -1,8 +1,4 @@
 import React from 'react';
-import Reflux from 'reflux';
-
-import AlertsStore from "../../stores/AlertsStore";
-import AlertsActions from "../../actions/AlertsActions"
 
 import LoadingSpinner from "../misc/LoadingSpinner";
 
@@ -10,15 +6,17 @@ import moment from "moment";
 import FrameCount from "./FrameCount";
 import AlertField from "./AlertField";
 import Routes from "../../util/Routes";
+import AlertsService from "../../services/AlertsService";
 
-class AlertDetailsPage extends Reflux.Component {
+class AlertDetailsPage extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = AlertsStore;
-
         this.alertId = props.match.params.id;
+
+        this.alertsService = new AlertsService();
+        this.alertsService.findOne = this.alertsService.findOne.bind(this);
 
         this.state = {
             alert: undefined
@@ -27,8 +25,8 @@ class AlertDetailsPage extends Reflux.Component {
 
     componentDidMount() {
         const alertId = this.alertId;
-        AlertsActions.findOne(alertId);
-        setInterval(function() { AlertsActions.findOne(alertId) }, 5000);
+        this.alertsService.findOne(alertId);
+        setInterval(function() { this.alertsService(alertId) }, 5000);
     }
 
     render() {

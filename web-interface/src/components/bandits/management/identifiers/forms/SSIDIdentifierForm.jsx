@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import {compact} from "lodash/array";
 
-class SSIDIdentifierForm extends Reflux.Component {
+class SSIDIdentifierForm extends React.Component {
 
     constructor(props) {
         super(props);

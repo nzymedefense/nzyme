@@ -1,28 +1,30 @@
 import React from 'react';
-import Reflux from 'reflux';
-import SystemStore from "../../../stores/SystemStore";
-import SystemActions from "../../../actions/SystemActions";
+
 import TimerRow from "./TimerRow";
 import LoadingSpinner from "../ProbesTable";
 
 import numeral from "numeral";
+import SystemService from "../../../services/SystemService";
 
-class Metrics extends Reflux.Component {
+class Metrics extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = SystemStore;
-
         this.state = {
             systemMetrics: undefined
         };
+
+        this.systemService = new SystemService();
+        this.systemService.getMetrics = this.systemService.getMetrics.bind(this);
     }
 
     componentDidMount() {
-        SystemActions.getMetrics();
+        const self = this;
+
+        this.systemService.getMetrics();
         setInterval(function () {
-            SystemActions.getMetrics();
+            self.systemService.getMetrics();
         }, 5000);
     }
 

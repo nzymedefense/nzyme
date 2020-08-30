@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class TrapTableRow extends Reflux.Component {
+class TrapTableRow extends React.Component {
 
     render() {
         const trap = this.props.trap;

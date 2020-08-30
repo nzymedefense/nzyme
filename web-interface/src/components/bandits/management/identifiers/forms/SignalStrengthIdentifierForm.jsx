@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class SignalStrengthIdentifierForm extends Reflux.Component {
+class SignalStrengthIdentifierForm extends React.Component {
 
     constructor(props) {
         super(props);

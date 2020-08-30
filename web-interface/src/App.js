@@ -1,5 +1,4 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import {
     BrowserRouter as Router,
@@ -8,9 +7,6 @@ import {
 } from 'react-router-dom';
 
 import Notifications from 'react-notify-toast';
-
-import PingStore from "./stores/PingStore";
-import PingActions from "./actions/PingActions";
 
 import NavigationBar from './components/layout/NavigationBar';
 import OverviewPage from "./components/overview/OverviewPage";
@@ -24,10 +20,6 @@ import NetworksPage from "./components/networks/NetworksPage";
 import NetworkDetailsPage from "./components/networks/details/NetworkDetailsPage";
 import LoginPage from "./components/authentication/LoginPage";
 import Store from "./util/Store";
-import AuthenticationStore from "./stores/AuthenticationStore";
-import AuthenticationActions from "./actions/AuthenticationActions";
-import AlertsActions from "./actions/AlertsActions";
-import AlertsStore from "./stores/AlertsStore";
 import BanditsPage from "./components/bandits/BanditsPage";
 import CreateBanditPage from "./components/bandits/management/CreateBanditPage";
 import BanditDetailPage from "./components/bandits/BanditDetailPage";
@@ -35,8 +27,11 @@ import EditBanditPage from "./components/bandits/management/EditBanditPage";
 import CreateIdentifierPage from "./components/bandits/management/identifiers/CreateIdentifierPage";
 import TrackerDetailPage from "./components/bandits/trackers/TrackerDetailPage";
 import AlertsPage from "./components/alerts/AlertsPage";
+import AlertsService from "./services/AlertsService";
+import AuthenticationService from "./services/AuthenticationService";
+import PingService from "./services/PingService";
 
-class App extends Reflux.Component {
+class App extends React.Component {
 
     constructor(props) {
         super(props);
@@ -47,29 +42,38 @@ class App extends Reflux.Component {
             active_alerts: []
         };
 
-        this.stores = [PingStore, AuthenticationStore, AlertsStore];
+        this.pingService = new PingService();
+        this.pingService.ping = this.pingService.ping.bind(this);
+
+        this.authenticationService = new AuthenticationService();
+        this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this);
+
+        this.alertsService = new AlertsService();
+        this.alertsService.findActiveCount = this.alertsService.findActiveCount.bind(this);
 
         App._handleLogout = App._handleLogout.bind(this);
     }
 
     componentDidMount() {
         const self = this;
-        PingActions.ping();
+        self.pingService.ping();
+        self.setState({authenticated: App._isAuthenticated()});
 
-        // Check if we are authenticated.
+        // Check if we are authenticated, ping.
         setInterval(function () {
+            self.pingService.ping();
             self.setState({authenticated: App._isAuthenticated()});
         }, 1000);
 
         // Check if session is about to expire and log out if so.
-        AuthenticationActions.checkSession();
+        this.authenticationService.checkSession();
         setInterval(function () {
-            AuthenticationActions.checkSession();
+            self.authenticationService.checkSession();
         }, 10000);
 
         if(App._isAuthenticated()) {
-            AlertsActions.findActiveCount();
-            setInterval(AlertsActions.findActiveCount, 5000);
+            self.alertsService.findActiveCount();
+            setInterval(self.alertsService.findActiveCount, 5000);
         }
     }
 
@@ -120,9 +124,7 @@ class App extends Reflux.Component {
                                     <Route exact path={Routes.BANDITS.SHOW(":id")} component={BanditDetailPage} />
                                     <Route exact path={Routes.BANDITS.EDIT(":id")} component={EditBanditPage} />
                                     <Route exact path={Routes.BANDITS.NEW_IDENTIFIER(":banditUUID")} component={CreateIdentifierPage} />
-
-                                    { /* Trackers. */ }
-                                    <Route exact path={Routes.TRACKERS.SHOW(":name")} component={TrackerDetailPage} />
+                                    <Route exact path={Routes.BANDITS.SHOW_TRACKER(":name")} component={TrackerDetailPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

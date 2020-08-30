@@ -1,12 +1,11 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Routes from "../../util/Routes";
 import FrameCount from "./FrameCount";
 
-class AlertsTable extends Reflux.Component {
+class AlertsTable extends React.Component {
 
   constructor(props) {
     super(props);

@@ -1,18 +1,9 @@
-import Reflux from 'reflux';
-
-import NetworksActions from "../actions/NetworksActions";
 import RESTClient from "../util/RESTClient";
-
 import {notify} from "react-notify-toast";
 
-class NetworksStore extends Reflux.Store {
+class NetworksService {
 
-    constructor() {
-        super();
-        this.listenables = NetworksActions;
-    }
-
-    onFindAll(filter) {
+    findAll(filter) {
         let self = this;
 
         RESTClient.get("/networks/bssids", {}, function(response) {
@@ -51,7 +42,7 @@ class NetworksStore extends Reflux.Store {
         });
     }
 
-    onFindSSIDOnBSSID(bssid, ssid, includeHistory = false, historySeconds = 10800) {
+    findSSIDOnBSSID(bssid, ssid, includeHistory = false, historySeconds = 10800) {
         let self = this;
 
         RESTClient.get("/networks/bssids/" + encodeURIComponent(bssid) + "/ssids/" + encodeURIComponent(ssid), {include_history: includeHistory, history_seconds: historySeconds}, function(response) {
@@ -68,7 +59,7 @@ class NetworksStore extends Reflux.Store {
         });
     }
 
-    onResetFingerprints() {
+    resetFingerprints() {
         RESTClient.post("/networks/fingerprints/reset/", {}, function() {
             notify.show("Fingerprints reset.", "success");
         })
@@ -76,4 +67,4 @@ class NetworksStore extends Reflux.Store {
 
 }
 
-export default NetworksStore;
+export default NetworksService;

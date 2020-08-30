@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class IdentifierExplanation extends Reflux.Component {
+class IdentifierExplanation extends React.Component {
 
     render() {
         if (!this.props.explanation) {

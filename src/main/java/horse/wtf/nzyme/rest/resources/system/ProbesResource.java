@@ -98,21 +98,6 @@ public class ProbesResource {
         return Response.ok(TrapsListResponse.create(traps)).build();
     }
 
-    @GET
-    @Secured
-    @Path("/channels")
-    public Response channels() {
-        ImmutableMap.Builder<String, Integer> channels = new ImmutableMap.Builder<>();
-
-        for (Dot11Probe probe : nzyme.getProbes()) {
-            if (probe.getCurrentChannel() != null) {
-                channels.put(probe.getName(), probe.getCurrentChannel());
-            }
-        }
-
-        return Response.ok(CurrentChannelsResponse.create(channels.build())).build();
-    }
-
     private List<String> buildRaisedAlerts(Dot11Probe probe) {
         ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
         for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {

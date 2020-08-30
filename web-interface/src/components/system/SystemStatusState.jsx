@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class SystemStatusState extends Reflux.Component {
+class SystemStatusState extends React.Component {
 
     render() {
         return (

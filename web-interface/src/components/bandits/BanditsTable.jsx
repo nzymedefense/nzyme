@@ -1,29 +1,29 @@
 import React from 'react';
-import Reflux from 'reflux';
 import LoadingSpinner from "../misc/LoadingSpinner";
-import BanditsActions from "../../actions/BanditsActions";
-import BanditsStore from "../../stores/BanditsStore";
 import BanditsTableRow from "./BanditsTableRow";
 import Routes from "../../util/Routes";
+import BanditsService from "../../services/BanditsService";
 
-class BanditsTable extends Reflux.Component {
+class BanditsTable extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = BanditsStore;
-
         this.state = {
             bandits: undefined
         }
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findAll = this.banditsService.findAll.bind(this);
     }
 
     componentDidMount() {
-        BanditsActions.findAll();
+        this.banditsService.findAll();
 
+        const self = this;
         setInterval(function () {
             console.log("REFRESH");
-            BanditsActions.findAll();
+            self.banditsService.findAll();
         }, 5000);
     }
 

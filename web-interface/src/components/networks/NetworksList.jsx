@@ -1,36 +1,37 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import LoadingSpinner from "../alerts/AlertsTable";
 
-import NetworksActions from "../../actions/NetworksActions";
-import NetworksStore from "../../stores/NetworksStore";
 import BSSIDTable from "./BSSIDTable";
+import NetworksService from "../../services/NetworksService";
 
-class NetworksList extends Reflux.Component {
+class NetworksList extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.store = NetworksStore;
 
         this.state = {
             bssids: undefined,
             filter: ""
         };
 
+        this.service = new NetworksService();
+        this.service.findAll = this.service.findAll.bind(this);
+        this.service.resetFingerprints = this.service.resetFingerprints.bind(this);
+
         this.filterInput = React.createRef();
 
         this._applyFilter = this._applyFilter.bind(this);
         this._updateFilter = this._updateFilter.bind(this);
+        this._resetFingerprints = this._resetFingerprints.bind(this);
     }
 
     componentDidMount() {
         const self = this;
 
-        NetworksActions.findAll(self.state.filter);
+        this.service.findAll(self.state.filter);
         setInterval(function () {
-            NetworksActions.findAll(self.state.filter)
+            this.service.findAll(self.state.filter)
         }, 15000);
     }
 
@@ -39,7 +40,7 @@ class NetworksList extends Reflux.Component {
 
         const value = this.filterInput.current.value;
         this.setState({filter: value});
-        NetworksActions.findAll(value);
+        this.service.findAll(value);
     }
 
     _updateFilter() {
@@ -50,7 +51,7 @@ class NetworksList extends Reflux.Component {
         e.preventDefault();
 
         if (window.confirm("Reset Fingerprints? This can be necessary after a malicious device was detected but the threat is over and you no longer need the alert.")) {
-            NetworksActions.resetFingerprints();
+            this.service.resetFingerprints();
         }
     }
 

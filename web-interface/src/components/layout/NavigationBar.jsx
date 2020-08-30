@@ -1,10 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 import Routes from "../../util/Routes";
 import NavigationLink from "./NavigationLink";
 import AlertsButton from "./AlertsButton";
 
-class NavigationBar extends Reflux.Component {
+class NavigationBar extends React.Component {
 
   render() {
     return (

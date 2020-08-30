@@ -1,5 +1,4 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import SystemStatus from "./SystemStatus";
 import Metrics from "./metrics/Metrics";
@@ -7,7 +6,7 @@ import Probes from "./Probes";
 import AlertConfiguration from "./AlertConfiguration";
 import Versioncheck from "./Versioncheck";
 
-class SystemPage extends Reflux.Component {
+class SystemPage extends React.Component {
 
     render() {
         return (

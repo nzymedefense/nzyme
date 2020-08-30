@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from "reflux";
 import RSSI from "../misc/RSSI";
 
-class BSSIDTableRowTop extends Reflux.Component {
+class BSSIDTableRowTop extends React.Component {
 
     constructor(props) {
         super(props);

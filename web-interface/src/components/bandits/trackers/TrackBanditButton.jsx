@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class TrackBanditButton extends Reflux.Component {
+class TrackBanditButton extends React.Component {
 
     render() {
         const bandit = this.props.bandit;

@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import ContactsTableRow from "./ContactsTableRow";
 
-class ContactsTable extends Reflux.Component {
+class ContactsTable extends React.Component {
 
     render() {
         const contacts = this.props.contacts;

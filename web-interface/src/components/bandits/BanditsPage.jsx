@@ -1,10 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 import BanditsTable from "./BanditsTable";
 import Routes from "../../util/Routes";
 import TrackersTable from "./trackers/TrackersTable";
 
-class BanditsPage extends Reflux.Component {
+class BanditsPage extends React.Component {
 
     render() {
         return (

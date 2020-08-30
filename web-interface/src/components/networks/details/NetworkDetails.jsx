@@ -1,8 +1,5 @@
 import React from 'react';
-import Reflux from 'reflux';
 import LoadingSpinner from "../../alerts/AlertsTable";
-import NetworksStore from "../../../stores/NetworksStore";
-import NetworksActions from "../../../actions/NetworksActions";
 import ChannelDetails from "./ChannelDetails";
 import SimpleLineChart from "../../charts/SimpleLineChart";
 import BeaconRate from "./BeaconRate";
@@ -10,18 +7,20 @@ import HelpBubble from "../../misc/HelpBubble";
 import ChannelSwitcher from "./ChannelSwitcher";
 import NetworkMonitoredAlert from "./NetworkMonitoredAlert";
 import SignalLegendHelper from "../../charts/SignalLegendHelper";
+import NetworksService from "../../../services/NetworksService";
 
-class NetworkDetails extends Reflux.Component {
+class NetworkDetails extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.store = NetworksStore;
 
         this.state = {
             channelNumber: props.channelNumber,
             historyHours: 4
         };
+
+        this.service = new NetworksService();
+        this.service.findSSIDOnBSSID = this.service.findSSIDOnBSSID.bind(this);
 
         this._loadChannel = this._loadChannel.bind(this);
         this._changeChannel = this._changeChannel.bind(this);
@@ -36,7 +35,7 @@ class NetworkDetails extends Reflux.Component {
     }
 
     _loadChannel() {
-        NetworksActions.findSSIDOnBSSID(this.props.bssid, this.props.ssid, true, this.state.historyHours*60*60);
+        this.service.findSSIDOnBSSID(this.props.bssid, this.props.ssid, true, this.state.historyHours*60*60);
     }
 
     _formatBeaconRateHistory(data) {

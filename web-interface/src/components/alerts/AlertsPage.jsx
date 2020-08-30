@@ -1,21 +1,20 @@
 import React from 'react';
-import Reflux from 'reflux';
 import AlertsTable from "./AlertsTable";
-import AlertsStore from "../../stores/AlertsStore";
-import AlertsActions from "../../actions/AlertsActions";
+import AlertsService from "../../services/AlertsService";
 
-class AlertsPage extends Reflux.Component {
+class AlertsPage extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.store = AlertsStore;
 
         this.state = {
             alerts: undefined,
             total_alerts: 0,
             page: 0
         }
+
+        this.alertsService = new AlertsService();
+        this.alertsService.findAll = this.alertsService.findAll.bind(this);
 
         this._loadData = this._loadData.bind(this);
         this._page = this._page.bind(this);
@@ -28,7 +27,7 @@ class AlertsPage extends Reflux.Component {
     }
 
     _loadData() {
-        AlertsActions.findAll(this.state.page);
+        this.alertsService.findAll(this.state.page);
     }
 
     _page(direction) {

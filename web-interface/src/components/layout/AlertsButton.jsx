@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import Routes from "../../util/Routes";
 
-class AlertsButton extends Reflux.Component {
+class AlertsButton extends React.Component {
 
     render() {
         if (this.props.hasAlerts) {

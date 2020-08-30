@@ -1,5 +1,4 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import numeral from "numeral";
 import SimpleLineChart from "../../charts/SimpleLineChart";
@@ -8,7 +7,7 @@ import HelpBubble from "../../misc/HelpBubble";
 import TimerangeSwitcher from "./TimerangeSwitcher";
 import SignalLegendHelper from "../../charts/SignalLegendHelper";
 
-class ChannelDetails extends Reflux.Component {
+class ChannelDetails extends React.Component {
 
     constructor(props) {
         super(props);

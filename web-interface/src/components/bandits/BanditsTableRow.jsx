@@ -1,11 +1,10 @@
 import React from 'react';
-import Reflux from 'reflux';
 import moment from "moment";
 import Routes from "../../util/Routes";
 import BanditContactStatus from "./BanditContactStatus";
 import BanditTrackingStatus from "./BanditTrackingStatus";
 
-class BanditsTableRow extends Reflux.Component {
+class BanditsTableRow extends React.Component {
 
     render() {
         const bandit = this.props.bandit;

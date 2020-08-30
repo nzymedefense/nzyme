@@ -1,9 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import numeral from "numeral";
 import FormattedTiming from "./FormattedTiming";
 
-class TimerRow extends Reflux.Component {
+class TimerRow extends React.Component {
 
     render() {
         return (

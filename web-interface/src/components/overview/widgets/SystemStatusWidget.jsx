@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class SystemStatusWidget extends Reflux.Component {
+class SystemStatusWidget extends React.Component {
 
     render() {
         return (

@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import numeral from "numeral";
 
-class ProbesTableRow extends Reflux.Component {
+class ProbesTableRow extends React.Component {
 
     static _decideStatus(probe) {
         if (probe.is_in_loop) {

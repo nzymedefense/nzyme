@@ -1,11 +1,10 @@
 import React from 'react';
-import Reflux from 'reflux';
 import numeral from "numeral";
 import moment from "moment";
 import Timespan from "../misc/Timespan";
 import RSSI from "../misc/RSSI";
 
-class ContactsTableRow extends Reflux.Component {
+class ContactsTableRow extends React.Component {
 
     render() {
         const contact = this.props.contact;

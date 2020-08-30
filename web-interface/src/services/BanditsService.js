@@ -1,17 +1,9 @@
-import Reflux from 'reflux';
-
 import RESTClient from "../util/RESTClient";
-import BanditsActions from "../actions/BanditsActions";
 import {notify} from "react-notify-toast";
 
-class BanditsStore extends Reflux.Store {
+class BanditsService {
 
-    constructor() {
-        super();
-        this.listenables = BanditsActions;
-    }
-
-    onFindAll() {
+    findAll() {
         const self = this;
 
         RESTClient.get("/bandits", {}, function(response) {
@@ -19,7 +11,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onFindOne(id) {
+    findOne(id) {
         const self = this;
 
         RESTClient.get("/bandits/show/" + id, {}, function(response) {
@@ -27,7 +19,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onCreateBandit(name, description, successCallback, errorCallback) {
+    createBandit(name, description, successCallback, errorCallback) {
         RESTClient.post("/bandits", {name: name, description: description}, function() {
             successCallback();
         }, function() {
@@ -35,7 +27,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onUpdateBandit(id, name, description, successCallback, errorCallback) {
+    updateBandit(id, name, description, successCallback, errorCallback) {
         RESTClient.put("/bandits/show/" + id, {name: name, description: description}, function() {
             successCallback();
         }, function() {
@@ -43,7 +35,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onDeleteBandit(banditUUID, successCallback) {
+    deleteBandit(banditUUID, successCallback) {
         RESTClient.delete("/bandits/show/" + banditUUID, function () {
             successCallback();
         }, function() {
@@ -51,7 +43,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onFindAllIdentifierTypes() {
+    findAllIdentifierTypes() {
         const self = this;
 
         RESTClient.get("/bandits/identifiers/types", {}, function(response) {
@@ -59,7 +51,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onCreateIdentifier(banditUUID, createRequest) {
+    createIdentifier(banditUUID, createRequest) {
         const self = this;
 
         RESTClient.post("/bandits/show/" + banditUUID + "/identifiers", createRequest, function() {
@@ -71,7 +63,7 @@ class BanditsStore extends Reflux.Store {
         });
     }
 
-    onDeleteIdentifier(banditUUID, identifierUUID, successCallback) {
+    deleteIdentifier(banditUUID, identifierUUID, successCallback) {
         const self = this;
 
         RESTClient.delete("/bandits/show/" + banditUUID + "/identifiers/" + identifierUUID, successCallback, function() {
@@ -82,4 +74,4 @@ class BanditsStore extends Reflux.Store {
 
 }
 
-export default BanditsStore;
+export default BanditsService;

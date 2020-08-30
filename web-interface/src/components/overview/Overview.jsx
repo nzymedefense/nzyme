@@ -1,8 +1,5 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-import DashboardStore from "../../stores/DashboardStore";
-import DashboardActions from "../../actions/DashboardActions";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ActiveAlertsWidget from "./widgets/ActiveAlertsWidget";
 import ActiveContactsWidget from "./widgets/ActiveContactsWidget";
@@ -11,17 +8,22 @@ import FrameThroughputWidget from "./widgets/FrameThroughputWidget";
 import AlertsTable from "../alerts/AlertsTable";
 import ContactsTable from "../bandits/ContactsTable";
 import ProbesTable from "../system/ProbesTable";
+import DashboardService from "../../services/DashboardService";
 
-class Overview extends Reflux.Component {
+class Overview extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = DashboardStore;
-
         this.state = {
             dashboard: undefined
         }
+
+
+        this.dashboardService = new DashboardService();
+        this.dashboardService.findAll = this.dashboardService.findAll.bind(this);
+
+        this._loadData = this._loadData.bind(this);
     }
 
     componentDidMount() {
@@ -31,7 +33,7 @@ class Overview extends Reflux.Component {
     }
 
     _loadData() {
-        DashboardActions.findAll();
+        this.dashboardService.findAll();
     }
 
     render() {

@@ -1,23 +1,27 @@
 import React from 'react';
-import Reflux from 'reflux';
 import BanditForm from "./BanditForm";
-import BanditsStore from "../../../stores/BanditsStore";
-import BanditsActions from "../../../actions/BanditsActions";
 import Routes from "../../../util/Routes";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
+import BanditsService from "../../../services/BanditsService";
 
-class EditBanditPage extends Reflux.Component {
+class EditBanditPage extends React.Component {
 
     constructor(props) {
-        super();
+        super(props);
 
-        this.banditId =  decodeURIComponent(props.match.params.id);
-        this.store = BanditsStore;
+        this.banditId = decodeURIComponent(props.match.params.id);
+
+        this.state = {
+            bandit: undefined
+        }
+
+        this.banditsService = new BanditsService();
+        this.banditsService.findOne = this.banditsService.findOne.bind(this);
     }
 
     componentDidMount() {
-        BanditsActions.findOne(this.banditId);
+        this.banditsService.findOne(this.banditId);
     }
 
     _editBandit(e) {
@@ -26,7 +30,7 @@ class EditBanditPage extends Reflux.Component {
         const self = this;
         this.setState({submitting: true});
 
-        BanditsActions.updateBandit(
+        this.banditsService.updateBandit(
             self.state.banditId, self.nameInput.current.value, self.descriptionInput.current.value,
             function () {
                 self.setState({submitting: false, submitted: true});

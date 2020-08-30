@@ -1,17 +1,9 @@
-import Reflux from 'reflux';
-
 import RESTClient from "../util/RESTClient";
-import TrackersActions from "../actions/TrackersActions";
 import {notify} from "react-notify-toast";
 
-class TrackersStore extends Reflux.Store {
+class TrackersService {
 
-    constructor() {
-        super();
-        this.listenables = TrackersActions;
-    }
-
-    onFindAll() {
+    findAll() {
         const self = this;
 
         RESTClient.get("/trackers", {}, function(response) {
@@ -19,20 +11,20 @@ class TrackersStore extends Reflux.Store {
         });
     }
 
-    onFindOne(trackerName) {
+    findOne(trackerName) {
         const self = this;
         RESTClient.get("/trackers/show/" + trackerName, {}, function(response) {
             self.setState({tracker: response.data});
         });
     }
 
-    onIssueStartTrackingRequest(trackerName, banditUUID, successCallback) {
+    issueStartTrackingRequest(trackerName, banditUUID, successCallback) {
         RESTClient.post("/trackers/show/" + trackerName + "/command/start_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
             notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
         })
     }
 
-    onIssueCancelTrackingRequest(trackerName, banditUUID, successCallback) {
+    issueCancelTrackingRequest(trackerName, banditUUID, successCallback) {
         RESTClient.post("/trackers/show/" + trackerName + "/command/cancel_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
             notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
         })
@@ -40,4 +32,4 @@ class TrackersStore extends Reflux.Store {
 
 }
 
-export default TrackersStore;
+export default TrackersService;

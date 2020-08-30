@@ -1,16 +1,15 @@
 import React from 'react';
-import Reflux from 'reflux';
 import SSIDRow from "./SSIDRow";
-import NetworksStore from "../../stores/NetworksStore";
-import NetworksActions from "../../actions/NetworksActions";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import NetworksService from "../../services/NetworksService";
 
-class SSIDTableRow extends Reflux.Component {
+class SSIDTableRow extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = NetworksStore;
+        this.service = new NetworksService();
+        this.service.findSSIDOnBSSID = this.service.findSSIDOnBSSID.bind(this);
 
         this.state = {
             ssid: undefined
@@ -21,10 +20,14 @@ class SSIDTableRow extends Reflux.Component {
         const ssid = this.props.ssid;
         const bssid = this.props.bssid;
 
-        this.setState({ssid: undefined});
-
         if (ssid !== "[not human readable]") {
-            NetworksActions.findSSIDOnBSSID(bssid, ssid);
+            this.service.findSSIDOnBSSID(bssid, ssid);
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.state.ssid && prevState.ssid) {
+            console.log("UPDATED! " + prevState.ssid.name + " -> " + this.state.ssid.name);
         }
     }
 
@@ -38,8 +41,6 @@ class SSIDTableRow extends Reflux.Component {
                 mostActive = channel.channel_number;
             }
         }
-
-        console.log(mostActive);
 
         return mostActive;
     }

@@ -1,18 +1,9 @@
 import React from 'react';
-import Reflux from 'reflux';
 import BanditForm from "./BanditForm";
-import BanditsStore from "../../../stores/BanditsStore";
-import BanditsActions from "../../../actions/BanditsActions";
 import {notify} from "react-notify-toast";
 import Routes from "../../../util/Routes";
 
-class CreateBanditPage extends Reflux.Component {
-
-    constructor() {
-        super();
-
-        this.store = BanditsStore;
-    }
+class CreateBanditPage extends React.Component {
 
     _createBandit(e) {
         e.preventDefault();
@@ -20,7 +11,7 @@ class CreateBanditPage extends Reflux.Component {
         const self = this;
         this.setState({submitting: true});
 
-        BanditsActions.createBandit(
+        this.banditsService.createBandit(
             self.nameInput.current.value, self.descriptionInput.current.value,
             function () {
                 self.setState({submitting: false, submitted: true});

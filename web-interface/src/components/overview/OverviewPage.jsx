@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import Overview from "./Overview";
 
-class OverviewPage extends Reflux.Component {
+class OverviewPage extends React.Component {
 
     render() {
         return (

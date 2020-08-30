@@ -1,16 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import Routes from "../../util/Routes";
 import BanditIdentifiersTableRow from "./BanditIdentifersTableRow";
-import BanditsStore from "../../stores/BanditsStore";
 
-class BanditIdentifiersTable extends Reflux.Component {
-
-    constructor(props) {
-        super(props);
-
-        this.store = BanditsStore;
-    }
+class BanditIdentifiersTable extends React.Component {
 
     render() {
         const self = this;

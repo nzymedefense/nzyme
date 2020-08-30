@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class GroundStationDisabled extends Reflux.Component {
+class GroundStationDisabled extends React.Component {
 
     render() {
         return (

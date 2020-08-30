@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class ActiveAlertsWidget extends Reflux.Component {
+class ActiveAlertsWidget extends React.Component {
 
     render() {
         return (

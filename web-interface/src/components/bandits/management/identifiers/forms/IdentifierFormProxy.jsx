@@ -1,11 +1,10 @@
 import React from 'react';
-import Reflux from 'reflux';
 import FingerprintIdentifierForm from "./FingerprintIdentifierForm";
 import SignalStrengthIdentifierForm from "./SignalStrengthIdentifierForm";
 import SSIDIdentifierForm from "./SSIDIdentifierForm";
 import PwnagotchiIdentityForm from "./PwnagotchiIdentityForm";
 
-class IdentifierFormProxy extends Reflux.Component {
+class IdentifierFormProxy extends React.Component {
 
     render() {
         const formType = this.props.formType;

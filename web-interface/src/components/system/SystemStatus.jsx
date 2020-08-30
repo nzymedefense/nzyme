@@ -1,28 +1,29 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import LoadingSpinner from "../misc/LoadingSpinner";
 
-import SystemActions from "../../actions/SystemActions";
-import SystemStore from "../../stores/SystemStore";
 import SystemStatusState from "./SystemStatusState";
+import SystemService from "../../services/SystemService";
 
-class SystemStatus extends Reflux.Component {
+class SystemStatus extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = SystemStore;
-
         this.state = {
             systemStatus: undefined
         };
+
+        this.systemService = new SystemService();
+        this.systemService.getStatus = this.systemService.getStatus.bind(this);
     }
 
     componentDidMount() {
-        SystemActions.getStatus();
+        const self = this;
+
+        this.systemService.getStatus();
         setInterval(function () {
-            SystemActions.getStatus();
+            self.systemService.getStatus();
         }, 5000);
     }
 

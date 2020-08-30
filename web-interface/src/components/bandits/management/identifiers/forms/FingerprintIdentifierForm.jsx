@@ -1,7 +1,6 @@
 import React from 'react';
-import Reflux from 'reflux';
 
-class FingerprintIdentifierForm extends Reflux.Component {
+class FingerprintIdentifierForm extends React.Component {
 
     constructor(props) {
         super(props);

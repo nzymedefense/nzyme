@@ -1,26 +1,24 @@
 import React from 'react';
-import Reflux from 'reflux';
 
 import LoadingSpinner from "../misc/LoadingSpinner";
-
-import SystemActions from "../../actions/SystemActions";
-import SystemStore from "../../stores/SystemStore";
 import VersionInfo from "./VersionInfo";
+import SystemService from "../../services/SystemService";
 
-class Versioncheck extends Reflux.Component {
+class Versioncheck extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.store = SystemStore;
-
         this.state = {
             versionInfo: undefined
         };
+
+        this.systemService = new SystemService();
+        this.systemService.getVersionInfo = this.systemService.getVersionInfo.bind(this);
     }
 
     componentDidMount() {
-        SystemActions.getVersionInfo();
+        this.systemService.getVersionInfo();
     }
 
     render() {

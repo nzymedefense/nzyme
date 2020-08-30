@@ -1,15 +1,10 @@
 import React from 'react';
-import Reflux from 'reflux';
+import AuthenticationService from "../../services/AuthenticationService";
 
-import AuthenticationStore from "../../stores/AuthenticationStore";
-import AuthenticationActions from "../../actions/AuthenticationActions";
-
-class LoginPage extends Reflux.Component {
+class LoginPage extends React.Component {
 
     constructor(props) {
         super(props);
-
-        this.store = AuthenticationStore;
 
         this.usernameInput = React.createRef();
         this.passwordInput = React.createRef();
@@ -17,6 +12,9 @@ class LoginPage extends Reflux.Component {
         this.state = {
             loggingIn: false
         };
+
+        this.authenticationService = new AuthenticationService();
+        this.authenticationService.createSession = this.authenticationService.createSession.bind(this);
 
         this._submitLoginForm = this._submitLoginForm.bind(this);
     }
@@ -28,7 +26,7 @@ class LoginPage extends Reflux.Component {
         const username = this.usernameInput.current.value;
         const password = this.passwordInput.current.value;
 
-        AuthenticationActions.createSession(username, password);
+        this.authenticationService.createSession(username, password);
     }
 
     render() {

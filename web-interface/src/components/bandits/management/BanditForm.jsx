@@ -1,8 +1,8 @@
 import React from 'react';
-import Reflux from 'reflux';
 import Redirect from "react-router-dom/Redirect";
+import BanditsService from "../../../services/BanditsService";
 
-class BanditForm extends Reflux.Component {
+class BanditForm extends React.Component {
 
     constructor(props) {
         super(props);
@@ -22,6 +22,10 @@ class BanditForm extends Reflux.Component {
 
         this._handleNameInput = this._handleNameInput.bind(this);
         this._handleDescriptionInput = this._handleDescriptionInput.bind(this);
+
+        this.banditsService = new BanditsService();
+        this.banditsService.createBandit = this.banditsService.createBandit.bind(this);
+        this.banditsService.updateBandit = this.banditsService.updateBandit.bind(this);
     }
 
     _handleNameInput(e) {

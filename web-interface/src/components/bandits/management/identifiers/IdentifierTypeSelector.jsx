@@ -1,8 +1,7 @@
 import React from 'react';
-import Reflux from 'reflux';
 import {startCase} from "lodash/string";
 
-class IdentifierTypeSelector extends Reflux.Component {
+class IdentifierTypeSelector extends React.Component {
 
     constructor(props) {
         super(props);
