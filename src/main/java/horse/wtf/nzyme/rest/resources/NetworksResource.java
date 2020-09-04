@@ -20,6 +20,7 @@ package horse.wtf.nzyme.rest.resources;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.Dot11SecurityConfiguration;
 import horse.wtf.nzyme.dot11.networks.BSSID;
@@ -208,7 +209,9 @@ public class NetworksResource {
                     if (includeHistory) {
                         histogram = signalWaterfallHistogramLoader.load(b, s, c, historySeconds);
                         tracks = Lists.newArrayList();
-                        tracks.addAll(new TrackDetector(histogram).detect());
+
+                        Dot11BSSIDDefinition config = nzyme.getConfiguration().findBSSIDDefinition(b.bssid(), s.name());
+                        tracks.addAll(new TrackDetector(histogram).detect((config == null || config.trackDetectorConfig() == null) ? TrackDetector.DEFAULT_CONFIG : config.trackDetectorConfig()));
                     } else {
                         histogram = null;
                         tracks = null;

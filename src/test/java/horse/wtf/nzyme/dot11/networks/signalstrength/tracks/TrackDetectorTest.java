@@ -35,7 +35,7 @@ public class TrackDetectorTest extends ResourcesAccessingTest {
     @Test
     public void testDetectScenario001() {
         TrackDetector detector = new TrackDetector(loadHistogram("tracks/001_8h_single_10db_spread.json"));
-        List<Track> tracks = detector.detect();
+        List<Track> tracks = detector.detect(TrackDetector.DEFAULT_CONFIG);
 
         // Can't compare lists directly because of JUnit DateTime timezone weirdness.
         assertEquals(tracks.size(), 1);
@@ -51,7 +51,7 @@ public class TrackDetectorTest extends ResourcesAccessingTest {
     @Test
     public void testDetectScenario002() {
         TrackDetector detector = new TrackDetector(loadHistogram("tracks/002_4h_two_pineapple.json"));
-        List<Track> tracks = detector.detect();
+        List<Track> tracks = detector.detect(TrackDetector.DEFAULT_CONFIG);
 
         // Can't compare lists directly because of JUnit DateTime timezone weirdness.
         assertEquals(tracks.size(), 3);

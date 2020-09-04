@@ -59,8 +59,8 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         }});
         assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
             add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", ImmutableList.of("c9ed4adc12dc3e17208446b6a10070b70a73b9ce3a99215e05426faea6de91c7")));
-                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", ImmutableList.of("def456")));
+                add(Dot11BSSIDDefinition.create("06:0d:2d:c9:36:23", ImmutableList.of("c9ed4adc12dc3e17208446b6a10070b70a73b9ce3a99215e05426faea6de91c7"), null));
+                add(Dot11BSSIDDefinition.create("24:a4:3c:7d:01:cc", ImmutableList.of("def456"), null));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(3);
@@ -71,7 +71,7 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
             }}, 40));
 
             add(Dot11NetworkDefinition.create("WTF", new ArrayList<Dot11BSSIDDefinition>() {{
-                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b")));
+                add(Dot11BSSIDDefinition.create("00:c0:ca:95:68:3b",  ImmutableList.of("dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b"), null));
             }}, new ArrayList<Integer>() {{
                 add(1);
                 add(11);

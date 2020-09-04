@@ -117,7 +117,6 @@ graylog_uplinks: []
     bssids: [
       {
         address: "f0:9f:c2:dd:18:f6",
-        expected_signal_strength: {from: -80, to: -90}
         fingerprints: [ 8ba95bfb6207749c01479235017a76b15ad63c387fd0bcc74593388f81326ca0 ]
       }
     ]

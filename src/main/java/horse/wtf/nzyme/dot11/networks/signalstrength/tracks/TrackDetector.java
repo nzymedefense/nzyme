@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.dot11.networks.signalstrength.tracks;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,9 +36,7 @@ public class TrackDetector {
 
     private static final Logger LOG = LogManager.getLogger(TrackDetector.class);
 
-    public static final int FRAME_THRESHOLD = 20;
-    public static final int GAP_THRESHOLD = 9;
-    public static final int SIGNAL_CENTERLINE_JITTER = 8;
+    public static final TrackDetectorConfig DEFAULT_CONFIG = TrackDetectorConfig.create(20, 9, 8);
 
     private final SignalWaterfallHistogram histogram;
 
@@ -45,7 +44,7 @@ public class TrackDetector {
         this.histogram = histogram;
     }
 
-    public List<Track> detect() {
+    public List<Track> detect(TrackDetectorConfig config) {
         /*
          * For each Y measurement (time), look at each X measurement and start a track if Y for the
          * coordinates are > FRAME_THRESHOLD. Keep the track active until coordinates Y is < FRAME_THRESHOLD
@@ -63,7 +62,7 @@ public class TrackDetector {
             int trackStart = -1;
 
             for (Long z : line) {
-                if (z > FRAME_THRESHOLD && x != -100) {
+                if (z > config.frameThreshold() && x != -100) {
                     // Signal.
                     if (trackLength == 0) {
                         // New track identified.
@@ -78,8 +77,8 @@ public class TrackDetector {
                         // We are on a track.
                         gapLength++;
 
-                        if (gapLength >= GAP_THRESHOLD || x == 0) {
-                            PartialTrack partialTrack = PartialTrack.create( y, trackStart, x-GAP_THRESHOLD+2);
+                        if (gapLength >= config.gapThreshold() || x == 0) {
+                            PartialTrack partialTrack = PartialTrack.create( y, trackStart, x-config.gapThreshold()+2);
 
                             LOG.debug(partialTrack);
                             if (!partialTracks.containsKey(partialTrack.averageSignal())) {
@@ -114,7 +113,7 @@ public class TrackDetector {
             // Find a possibly existing centerline track that we can add this partial track to.
             Optional<Integer> matchingCenterline = Optional.empty();
             for (Integer existingCenterline : centerlineAveragedTracks.keySet()) {
-                if (partialCenterline >= existingCenterline-SIGNAL_CENTERLINE_JITTER && partialCenterline <= existingCenterline+SIGNAL_CENTERLINE_JITTER) {
+                if (partialCenterline >= existingCenterline-config.signalCenterlineJitter() && partialCenterline <= existingCenterline+ config.signalCenterlineJitter()) {
                     matchingCenterline = Optional.of(existingCenterline);
                 }
             }
@@ -165,6 +164,38 @@ public class TrackDetector {
         }
 
         return tracks.build();
+    }
+
+    @AutoValue
+    public static abstract class TrackDetectorConfig {
+
+        public abstract int frameThreshold();
+        public abstract int gapThreshold();
+        public abstract int signalCenterlineJitter();
+
+        public static TrackDetectorConfig create(int frameThreshold, int gapThreshold, int signalCenterlineJitter) {
+            return builder()
+                    .frameThreshold(frameThreshold)
+                    .gapThreshold(gapThreshold)
+                    .signalCenterlineJitter(signalCenterlineJitter)
+                    .build();
+        }
+
+        public static Builder builder() {
+            return new AutoValue_TrackDetector_TrackDetectorConfig.Builder();
+        }
+
+        @AutoValue.Builder
+        public abstract static class Builder {
+            public abstract Builder frameThreshold(int frameThreshold);
+
+            public abstract Builder gapThreshold(int gapThreshold);
+
+            public abstract Builder signalCenterlineJitter(int signalCenterlineJitter);
+
+            public abstract TrackDetectorConfig build();
+        }
+
     }
 
 }

@@ -21,6 +21,7 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
+import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -67,9 +68,24 @@ public class BaseDot11ConfigurationLoader {
 
             ImmutableList.Builder<Dot11BSSIDDefinition> lowercaseBSSIDs = new ImmutableList.Builder<>();
             for (Config bssid : config.getConfigList(ConfigurationKeys.BSSIDS)) {
+                TrackDetector.TrackDetectorConfig trackDetectorConfig = null;
+                if (bssid.hasPath(ConfigurationKeys.TRACK_DETECTOR)) {
+                    Config tdc = bssid.getConfig(ConfigurationKeys.TRACK_DETECTOR);
+                    if (tdc.hasPath(ConfigurationKeys.FRAME_THRESHOLD) && tdc.hasPath(ConfigurationKeys.GAP_THRESHOLD) && tdc.hasPath(ConfigurationKeys.SIGNAL_CENTERLINE_JITTER)) {
+                        trackDetectorConfig = TrackDetector.TrackDetectorConfig.create(
+                                tdc.getInt(ConfigurationKeys.FRAME_THRESHOLD),
+                                tdc.getInt(ConfigurationKeys.GAP_THRESHOLD),
+                                tdc.getInt(ConfigurationKeys.SIGNAL_CENTERLINE_JITTER)
+                        );
+                    } else {
+                        LOG.warn("Not parsing track detector config. Missing at least one configuration key. Please consult documentation.");
+                    }
+                }
+
                 lowercaseBSSIDs.add(Dot11BSSIDDefinition.create(
                         bssid.getString(ConfigurationKeys.ADDRESS).toLowerCase(),
-                        bssid.getStringList(ConfigurationKeys.FINGERPRINTS)
+                        bssid.getStringList(ConfigurationKeys.FINGERPRINTS),
+                        trackDetectorConfig
                 ));
             }
 

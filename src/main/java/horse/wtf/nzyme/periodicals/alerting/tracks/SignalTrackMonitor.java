@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.MultipleTrackAlert;
+import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
@@ -72,10 +73,13 @@ public class SignalTrackMonitor extends Periodical {
                         continue;
                     }
 
+                    Dot11BSSIDDefinition config = nzyme.getConfiguration().findBSSIDDefinition(bssid.bssid(), ssid.name());
+                    TrackDetector.TrackDetectorConfig tdc = (config == null || config.trackDetectorConfig() == null) ? TrackDetector.DEFAULT_CONFIG : config.trackDetectorConfig();
+
                     SignalWaterfallHistogramLoader signalWaterfallHistogramLoader = new SignalWaterfallHistogramLoader(nzyme);
                     for (Channel channel : ssid.channels().values()) {
                         TrackDetector trackDetector = new TrackDetector(signalWaterfallHistogramLoader.load(bssid, ssid, channel, 60*15));
-                        List<Track> tracks = trackDetector.detect();
+                        List<Track> tracks = trackDetector.detect(tdc);
 
                         if (tracks.size() > 1) {
                             nzyme.getAlertsService().handle(MultipleTrackAlert.create(

@@ -6,10 +6,7 @@ import com.typesafe.config.Config;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
-import horse.wtf.nzyme.configuration.Dot11MonitorDefinition;
-import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
-import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
+import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
@@ -99,6 +96,20 @@ public abstract class LeaderConfiguration {
         for (Dot11NetworkDefinition network : dot11Networks()) {
             if (network.allBSSIDAddresses().contains(bssid) && network.ssid().equals(ssid)) {
                 return network;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public Dot11BSSIDDefinition findBSSIDDefinition(String bssid, String ssid) {
+        Dot11NetworkDefinition networkDefinition = findNetworkDefinition(bssid, ssid);
+        if (networkDefinition != null) {
+            for (Dot11BSSIDDefinition dot11BSSIDDefinition : networkDefinition.bssids()) {
+                if (dot11BSSIDDefinition.address().equals(bssid)) {
+                    return dot11BSSIDDefinition;
+                }
             }
         }
 

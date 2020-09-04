@@ -66,6 +66,10 @@ public class ConfigurationKeys {
     public static final String DELAY_MILLISECONDS = "delay_milliseconds";
     public static final String FINGERPRINTS = "fingerprints";
     public static final String FINGERPRINT = "fingerprint";
+    public static final String TRACK_DETECTOR = "track_detector";
+    public static final String FRAME_THRESHOLD = "frame_threshold";
+    public static final String GAP_THRESHOLD = "gap_threshold";
+    public static final String SIGNAL_CENTERLINE_JITTER = "signal_centerline_jitter";
     public static final String BEACON_RATE = "beacon_rate";
     public static final String CALLBACKS = "callbacks";
     public static final String HIDS = "hids";
