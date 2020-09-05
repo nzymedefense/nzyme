@@ -22,7 +22,6 @@ class BanditsTable extends React.Component {
 
         const self = this;
         setInterval(function () {
-            console.log("REFRESH");
             self.banditsService.findAll();
         }, 5000);
     }
