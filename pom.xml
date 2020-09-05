@@ -17,6 +17,7 @@
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
         <timestamp>${maven.build.timestamp}</timestamp>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
 
         <log4j.version>2.13.3</log4j.version>
         <pcap4j.version>1.8.2</pcap4j.version>
@@ -395,6 +396,7 @@
                     <tagNameFormat>@{project.version}</tagNameFormat>
                     <preparationGoals>clean test</preparationGoals>
                     <goals>package</goals>
+                    <arguments>-Dmaven.javadoc.skip=true</arguments>
                 </configuration>
             </plugin>
 
