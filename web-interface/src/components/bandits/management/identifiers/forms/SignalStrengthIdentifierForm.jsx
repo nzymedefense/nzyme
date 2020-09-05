@@ -21,7 +21,7 @@ class SignalStrengthIdentifierForm extends React.Component {
         this.setState({from: from, errorMessage: ""});
 
         if (from > 0 || from < -100) {
-            this.setState({errorMessage: "Invalid. The value must be between 0 and -100."});
+            this.setState({errorMessage: "Invalid. The 'from' value must be between 0 and -100."});
             this.props.configurationUpdate({ready: false});
             return;
         }
@@ -34,7 +34,7 @@ class SignalStrengthIdentifierForm extends React.Component {
         this.setState({to: to, errorMessage: ""});
 
         if (to > 0 || to < -100) {
-            this.setState({errorMessage: "Invalid. The to must be between 0 and -100."});
+            this.setState({errorMessage: "Invalid. The 'to' value must be between 0 and -100."});
             this.props.configurationUpdate({ready: false});
             return;
         }
@@ -43,6 +43,10 @@ class SignalStrengthIdentifierForm extends React.Component {
     }
 
     _handleUpdate(from, to) {
+        from = parseInt(from, 10);
+        to = parseInt(to, 10);
+
+        console.log(from + " <= " + to);
         if (from <= to) {
             this.setState({errorMessage: "Invalid. The 'from' value must be larger than the 'to' value."});
             this.props.configurationUpdate({ready: false});
