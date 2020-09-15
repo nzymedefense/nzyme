@@ -129,7 +129,6 @@ graylog_uplinks: []
   unexpected_ssid
   crypto_change
   unexpected_channel
-  known_bandit_fingerprint
   unexpected_fingerprint
   beacon_rate_anomaly
   multiple_signal_tracks
