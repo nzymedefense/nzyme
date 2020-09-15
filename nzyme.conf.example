@@ -131,7 +131,6 @@ graylog_uplinks: []
   unexpected_channel
   known_bandit_fingerprint
   unexpected_fingerprint
-  signal_anomaly
   beacon_rate_anomaly
   multiple_signal_tracks
   pwnagotchi_advertisement
