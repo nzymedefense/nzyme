@@ -26,7 +26,8 @@ class AlertDetailsPage extends React.Component {
     componentDidMount() {
         const alertId = this.alertId;
         this.alertsService.findOne(alertId);
-        setInterval(function() { this.alertsService(alertId) }, 5000);
+        const self = this;
+        setInterval(function() { self.alertsService.findOne(alertId) }, 5000);
     }
 
     render() {
