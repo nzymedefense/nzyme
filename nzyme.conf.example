@@ -1,6 +1,5 @@
 # General nzyme configuration.
 general: {
-  # In this version, only LEADER is supported. Added for future compatibility. Do not change.
   role: LEADER
 
   # The ID or name of this nzyme instance. Must be unique and contain only alphanumeric characters, underscores and dashes.
