@@ -5,7 +5,7 @@ general: {
   # The ID or name of this nzyme tracker. Must be unique and contain only alphanumeric characters, underscores and dashes.
   id: nzyme-tracker-01
 
-  # Path to directory that the tracker will use to store some temporary information. (must be writable)
+  # Path to directory that nzyme will use to store some temporary information. (must be writable)
   data_directory: /usr/share/nzyme
 
   # HIDs (human interface device) to run. Default is LogHID. The documentation lists all available HIDs.
