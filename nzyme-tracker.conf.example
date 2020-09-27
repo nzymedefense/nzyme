@@ -1,3 +1,6 @@
+# Configuration reference: https://go.nzyme.org/configuration-reference
+# More details about bandits and trackers: https://go.nzyme.org/bandits-and-trackers
+
 # General nzyme configuration.
 general: {
   role: TRACKER
