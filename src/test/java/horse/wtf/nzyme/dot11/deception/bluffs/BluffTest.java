@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.dot11.deception.bluffs;
 
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
@@ -32,13 +33,13 @@ public class BluffTest {
                 false,
                 new File("").toPath(),
                 new File("").toPath(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
+                ImmutableList.of(),
+                ImmutableList.of(),
+                ImmutableList.of(),
+                ImmutableList.of(),
                 30,
-                Collections.emptyList(),
-                Collections.emptyList(),
+                ImmutableList.of(),
+                ImmutableList.of(),
                 null,
                 null
         );

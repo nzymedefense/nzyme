@@ -170,7 +170,7 @@ public class LeaderConfigurationLoader {
         return alerting.getInt(ConfigurationKeys.TRAINING_PERIOD_SECONDS);
     }
 
-    private List<Dot11TrapDeviceDefinition> parseDot11TrapDeviceDefinitions() {
+    private ImmutableList<Dot11TrapDeviceDefinition> parseDot11TrapDeviceDefinitions() {
         ImmutableList.Builder<Dot11TrapDeviceDefinition> result = new ImmutableList.Builder<>();
 
         for (Config config : root.getConfigList(ConfigurationKeys.DOT11_TRAPS)) {
@@ -197,7 +197,7 @@ public class LeaderConfigurationLoader {
         return result.build();
     }
 
-    private List<Alert.TYPE_WIDE> parseDot11Alerts() {
+    private ImmutableList<Alert.TYPE_WIDE> parseDot11Alerts() {
         ImmutableList.Builder<Alert.TYPE_WIDE> result = new ImmutableList.Builder<>();
 
         for (String alert : root.getStringList(ConfigurationKeys.DOT11_ALERTS)) {
@@ -212,30 +212,30 @@ public class LeaderConfigurationLoader {
     }
 
     @Nullable
-    private List<GraylogAddress> parseGraylogUplinks() {
+    private ImmutableList<GraylogAddress> parseGraylogUplinks() {
         try {
             List<String> graylogAddresses = root.getStringList(ConfigurationKeys.GRAYLOG_UPLINKS);
             if (graylogAddresses == null) {
                 return null;
             }
 
-            List<GraylogAddress> result = Lists.newArrayList();
+            ImmutableList.Builder<GraylogAddress> result = new ImmutableList.Builder<>();
             for (String address : graylogAddresses) {
                 String[] parts = address.split(":");
                 result.add(GraylogAddress.create(parts[0], Integer.parseInt(parts[1])));
             }
 
-            return result;
+            return result.build();
         } catch (ConfigException e) {
             LOG.debug(e);
             return null;
         }
     }
 
-    private List<AlertCallback> parseAlertCallbacks() {
-        List<AlertCallback> callbacks = Lists.newArrayList();
+    private ImmutableList<AlertCallback> parseAlertCallbacks() {
+        ImmutableList.Builder<AlertCallback> callbacks = new ImmutableList.Builder<>();
         if (!alerting.hasPath(ConfigurationKeys.CALLBACKS)) {
-            return callbacks;
+            return callbacks.build();
         }
 
         List<? extends Config> cs;
@@ -264,10 +264,10 @@ public class LeaderConfigurationLoader {
             }
         } catch (Exception e) {
             LOG.error("Could not parse alert callbacks", e);
-            return callbacks;
+            return callbacks.build();
         }
 
-        return callbacks;
+        return callbacks.build();
     }
 
     @Nullable

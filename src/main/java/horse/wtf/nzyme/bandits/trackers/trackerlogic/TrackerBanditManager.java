@@ -181,7 +181,7 @@ public class TrackerBanditManager implements ContactIdentifierProcess {
                 currentTrackLastContact = DateTime.now();
 
                 for (BanditTraceHandler handler : traceHandlers) {
-                    handler.handle(bandit, frame.meta().getAntennaSignal());
+                    handler.handle(bandit, frame.meta().getAntennaSignal(), frame.meta().getChannel());
                 }
             }
         }
@@ -213,6 +213,6 @@ public class TrackerBanditManager implements ContactIdentifierProcess {
     }
 
     public interface BanditTraceHandler {
-        void handle(Bandit bandit, int rssi);
+        void handle(Bandit bandit, int rssi, int channel);
     }
 }

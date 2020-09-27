@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.configuration;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import org.apache.logging.log4j.LogManager;
@@ -46,7 +47,7 @@ public class ConfigurationValidator {
             }
 
             // List
-            if (clazz.equals(List.class)) {
+            if (clazz.equals(ImmutableList.class)) {
                 c.getList(key);
             }
 

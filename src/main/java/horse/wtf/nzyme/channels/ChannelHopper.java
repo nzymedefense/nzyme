@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.channels;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +42,8 @@ public class ChannelHopper {
 
     private final List<ChannelSwitchHandler> channelSwitchHandlers;
 
+    private List<Integer> configuredChannels;
+
     private int currentChannel = 0;
     private int currentChannelIndex = 0;
 
@@ -48,6 +52,7 @@ public class ChannelHopper {
             throw new RuntimeException("Channels empty or NULL. You need to configure at least one channel.");
         }
 
+        this.configuredChannels = probeConfiguration.channels();
         this.channelSwitchHandlers = Lists.newArrayList();
 
         this.probe = probe;
@@ -61,19 +66,20 @@ public class ChannelHopper {
                 .build()
         ).scheduleWithFixedDelay(() -> {
             try {
+                List<Integer> channels = new ArrayList<>(configuredChannels);
                 if (!this.probe.isInLoop()) {
                     LOG.debug("Not hopping channel. Probe [{}] not in loop.", probeConfiguration.networkInterfaceName());
                     return;
                 }
 
                 // Check if we reached end of channel list and recycle to 0 in that case.
-                if(this.currentChannelIndex >= probeConfiguration.channels().size()-1) {
+                if(this.currentChannelIndex >= channels.size()-1) {
                     this.currentChannelIndex = 0;
                 } else {
                     this.currentChannelIndex++;
                 }
 
-                int channel = probeConfiguration.channels().get(this.currentChannelIndex);
+                int channel = channels.get(this.currentChannelIndex);
 
                 LOG.debug("Configuring [{}] to use channel <{}>", probeConfiguration.networkInterfaceName(), channel);
 
@@ -115,6 +121,19 @@ public class ChannelHopper {
         } catch(Exception e) {
             LOG.error("Could not hop to channel <{}>.", channel, e);
         }
+    }
+
+    public void setChannels(List<Integer> channels) {
+        if (channels.equals(this.configuredChannels)) {
+            // No need to update if channels did not change.
+            return;
+        }
+
+        LOG.info("Updating list of channels to <{}>.", Joiner.on(",").join(channels));
+        this.configuredChannels = channels;
+
+        this.currentChannel = 0;
+        this.currentChannelIndex = 0;
     }
 
     public Integer getCurrentChannel() {

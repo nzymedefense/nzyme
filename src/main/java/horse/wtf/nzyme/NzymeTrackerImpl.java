@@ -30,6 +30,7 @@ import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
@@ -158,7 +159,13 @@ public class NzymeTrackerImpl implements NzymeTracker {
             }
         });
 
-        this.banditManager.onBanditTrace((bandit,rssi) -> {
+        this.banditManager.onBanditTrace((bandit,rssi,channel) -> {
+            for (Dot11Probe probe : getProbes()) {
+                if (probe instanceof Dot11MonitorProbe) {
+                    ((Dot11MonitorProbe) probe).getChannelDesignator().onBanditTrace(channel);
+                }
+            }
+
             for (TrackerHID hid : hids) {
                 hid.onBanditTrace(bandit,rssi);
             }

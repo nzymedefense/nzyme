@@ -457,7 +457,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                             configuration.graylogUplinks(),
                             getNodeID(),
                             td.device(),
-                            td.channels(),
+                            ImmutableList.copyOf(td.channels()),
                             td.channelHopInterval(),
                             td.channelHopCommand(),
                             configuration.dot11Networks(),

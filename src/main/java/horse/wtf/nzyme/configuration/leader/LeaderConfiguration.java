@@ -12,7 +12,7 @@ import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.List;
+
 
 @AutoValue
 public abstract class LeaderConfiguration {
@@ -41,16 +41,16 @@ public abstract class LeaderConfiguration {
     @Nullable
     public abstract Path tlsKeyPath();
 
-    public abstract List<Dot11MonitorDefinition> dot11Monitors();
-    public abstract List<Dot11NetworkDefinition> dot11Networks();
-    public abstract List<Dot11TrapDeviceDefinition> dot11TrapDevices();
+    public abstract ImmutableList<Dot11MonitorDefinition> dot11Monitors();
+    public abstract ImmutableList<Dot11NetworkDefinition> dot11Networks();
+    public abstract ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices();
 
-    public abstract List<Alert.TYPE_WIDE> dot11Alerts();
+    public abstract ImmutableList<Alert.TYPE_WIDE> dot11Alerts();
     public abstract int alertingTrainingPeriodSeconds();
 
-    public abstract List<GraylogAddress> graylogUplinks();
+    public abstract ImmutableList<GraylogAddress> graylogUplinks();
 
-    public abstract List<AlertCallback> alertCallbacks();
+    public abstract ImmutableList<AlertCallback> alertCallbacks();
 
     @Nullable
     public abstract Config debugConfig();
@@ -58,13 +58,13 @@ public abstract class LeaderConfiguration {
     @Nullable
     public abstract TrackerDeviceConfiguration trackerDevice();
 
-    public List<String> ourSSIDs() {
+    public ImmutableList<String> ourSSIDs() {
         ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
         dot11Networks().forEach(n -> ssids.add(n.ssid()));
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, List<Dot11MonitorDefinition> dot11Monitors, List<Dot11NetworkDefinition> dot11Networks, List<Dot11TrapDeviceDefinition> dot11TrapDevices, List<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, List<GraylogAddress> graylogUplinks, List<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<GraylogAddress> graylogUplinks, ImmutableList<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -148,19 +148,19 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
-        public abstract Builder dot11Monitors(List<Dot11MonitorDefinition> dot11Monitors);
+        public abstract Builder dot11Monitors(ImmutableList<Dot11MonitorDefinition> dot11Monitors);
 
-        public abstract Builder dot11Networks(List<Dot11NetworkDefinition> dot11Networks);
+        public abstract Builder dot11Networks(ImmutableList<Dot11NetworkDefinition> dot11Networks);
 
-        public abstract Builder dot11TrapDevices(List<Dot11TrapDeviceDefinition> dot11TrapDevices);
+        public abstract Builder dot11TrapDevices(ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices);
 
-        public abstract Builder dot11Alerts(List<Alert.TYPE_WIDE> dot11Alerts);
+        public abstract Builder dot11Alerts(ImmutableList<Alert.TYPE_WIDE> dot11Alerts);
 
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
 
-        public abstract Builder graylogUplinks(List<GraylogAddress> graylogUplinks);
+        public abstract Builder graylogUplinks(ImmutableList<GraylogAddress> graylogUplinks);
 
-        public abstract Builder alertCallbacks(List<AlertCallback> alertCallbacks);
+        public abstract Builder alertCallbacks(ImmutableList<AlertCallback> alertCallbacks);
 
         public abstract Builder debugConfig(Config debugConfig);
 

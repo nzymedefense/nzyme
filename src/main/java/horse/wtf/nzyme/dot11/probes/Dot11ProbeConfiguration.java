@@ -18,12 +18,12 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @AutoValue
 public abstract class Dot11ProbeConfiguration {
@@ -31,21 +31,21 @@ public abstract class Dot11ProbeConfiguration {
     public abstract String probeName();
 
     @Nullable
-    public abstract List<GraylogAddress> graylogAddresses();
+    public abstract ImmutableList<GraylogAddress> graylogAddresses();
     public abstract String nzymeId();
 
     public abstract String networkInterfaceName();
-    public abstract List<Integer> channels();
+    public abstract ImmutableList<Integer> channels();
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
 
     @Nullable
-    public abstract List<Dot11NetworkDefinition> getDot11Networks();
+    public abstract ImmutableList<Dot11NetworkDefinition> getDot11Networks();
 
     @Nullable
-    public abstract List<Dot11TrapDeviceDefinition> getDot11TrapDevices();
+    public abstract ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices();
 
-    public static Dot11ProbeConfiguration create(String probeName, List<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, List<Integer> channels, Integer channelHopInterval, String channelHopCommand, List<Dot11NetworkDefinition> getDot11Networks, List<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
+    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
         return builder()
                 .probeName(probeName)
                 .graylogAddresses(graylogAddresses)
@@ -67,21 +67,21 @@ public abstract class Dot11ProbeConfiguration {
     public abstract static class Builder {
         public abstract Builder probeName(String probeName);
 
-        public abstract Builder graylogAddresses(List<GraylogAddress> graylogAddresses);
+        public abstract Builder graylogAddresses(ImmutableList<GraylogAddress> graylogAddresses);
 
         public abstract Builder nzymeId(String nzymeId);
 
         public abstract Builder networkInterfaceName(String networkInterfaceName);
 
-        public abstract Builder channels(List<Integer> channels);
+        public abstract Builder channels(ImmutableList<Integer> channels);
 
         public abstract Builder channelHopInterval(Integer channelHopInterval);
 
         public abstract Builder channelHopCommand(String channelHopCommand);
 
-        public abstract Builder getDot11Networks(List<Dot11NetworkDefinition> getDot11Networks);
+        public abstract Builder getDot11Networks(ImmutableList<Dot11NetworkDefinition> getDot11Networks);
 
-        public abstract Builder getDot11TrapDevices(List<Dot11TrapDeviceDefinition> getDot11TrapDevices);
+        public abstract Builder getDot11TrapDevices(ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices);
 
         public abstract Dot11ProbeConfiguration build();
     }

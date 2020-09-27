@@ -36,6 +36,8 @@ import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
+import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,6 +62,7 @@ public class TextGUIHID implements TrackerHID {
     private final Label labelTrackerStatus = new Label("");
     private final Label labelWiFiStatus = new Label("");
     private final Label labelWiFiChannels = new Label("").setForegroundColor(TextColor.ANSI.WHITE);
+    private final Label labelDesignator = new Label("").setForegroundColor(TextColor.ANSI.WHITE);
 
     private final Label labelTask = new Label("");
     private final Label labelBandit = new Label("");
@@ -103,10 +106,35 @@ public class TextGUIHID implements TrackerHID {
                     labelWiFiChannels.setText(wifiChannels());
 
                     boolean allProbesLive = true;
+                    Dot11MonitorProbe firstMonitor = null;
                     for (Dot11Probe probe : nzyme.getProbes()) {
+                        if (probe instanceof Dot11MonitorProbe) {
+                            firstMonitor = (Dot11MonitorProbe) probe;
+                        }
+
                         if (!probe.isInLoop() || !probe.isActive()) {
                             allProbesLive = false;
                             break;
+                        }
+                    }
+
+                    if (firstMonitor != null) {
+                        switch (firstMonitor.getChannelDesignator().getStatus()) {
+                            case LOCKED:
+                                labelDesignator.setText("  LOCK  ");
+                                labelDesignator.setForegroundColor(TextColor.ANSI.BLACK);
+                                labelDesignator.setBackgroundColor(TextColor.ANSI.GREEN);
+                                break;
+                            case UNLOCKED:
+                                labelDesignator.setText("UNLOCKED");
+                                labelDesignator.setForegroundColor(TextColor.ANSI.WHITE);
+                                labelDesignator.setBackgroundColor(TextColor.ANSI.BLACK);
+                                break;
+                            case SWEEPING:
+                                labelDesignator.setText("SWEEPING");
+                                labelDesignator.setForegroundColor(TextColor.ANSI.BLACK);
+                                labelDesignator.setBackgroundColor(TextColor.ANSI.YELLOW);
+                                break;
                         }
                     }
 
@@ -204,13 +232,14 @@ public class TextGUIHID implements TrackerHID {
         Panel mainPanel = new Panel();
 
         // Top status.
-        Panel statusPanel = new Panel(new GridLayout(7));
+        Panel statusPanel = new Panel(new GridLayout(8));
         statusPanel.addComponent(labelConnection.withBorder(Borders.singleLine("CONN")));
         statusPanel.addComponent(labelSignal.withBorder(Borders.singleLine("SIG")));
         statusPanel.addComponent(labelTrackerStatus.withBorder(Borders.singleLine("LINK DVC")));
         statusPanel.addComponent(labelWiFiStatus.withBorder(Borders.singleLine("802.11")));
         statusPanel.addComponent(labelWiFiChannels.withBorder(Borders.singleLine("CHANNEL")));
-        statusPanel.addComponent(new EmptySpace(new TerminalSize(12, 3)));
+        statusPanel.addComponent(labelDesignator.withBorder(Borders.singleLine("DSGNTR")));
+        statusPanel.addComponent(new EmptySpace(new TerminalSize(3, 3)));
         statusPanel.addComponent(labelTime.withBorder(Borders.singleLine("CLOCK")));
         mainPanel.addComponent(statusPanel);
 

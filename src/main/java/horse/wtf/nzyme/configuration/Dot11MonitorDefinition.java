@@ -19,19 +19,18 @@ package horse.wtf.nzyme.configuration;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
-
-import java.util.List;
 
 @AutoValue
 public abstract class Dot11MonitorDefinition {
 
     public abstract String device();
-    public abstract List<Integer> channels();
+    public abstract ImmutableList<Integer> channels();
     public abstract String channelHopCommand();
     public abstract Integer channelHopInterval();
 
-    public static Dot11MonitorDefinition create(String device, List<Integer> channels, String channelHopCommand, Integer channelHopInterval) {
+    public static Dot11MonitorDefinition create(String device, ImmutableList<Integer> channels, String channelHopCommand, Integer channelHopInterval) {
         return builder()
                 .device(device)
                 .channels(channels)
@@ -48,7 +47,7 @@ public abstract class Dot11MonitorDefinition {
     public abstract static class Builder {
         public abstract Builder device(String device);
 
-        public abstract Builder channels(List<Integer> channels);
+        public abstract Builder channels(ImmutableList<Integer> channels);
 
         public abstract Builder channelHopCommand(String channelHopCommand);
 

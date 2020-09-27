@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 
 import java.util.*;
@@ -27,14 +28,14 @@ public class AlertTestHelper {
 
     protected static final Dot11ProbeConfiguration CONFIG_STANDARD = Dot11ProbeConfiguration.create(
             "mockProbe1",
-            Collections.emptyList(),
+            ImmutableList.of(),
             "test1",
             "wlan0",
-            Collections.emptyList(),
+            ImmutableList.of(),
             1,
             "foo",
-            Collections.emptyList(),
-            Collections.emptyList()
+            ImmutableList.of(),
+            ImmutableList.of()
     );
 
 

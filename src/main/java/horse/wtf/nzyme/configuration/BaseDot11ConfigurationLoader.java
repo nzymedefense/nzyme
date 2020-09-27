@@ -37,7 +37,7 @@ public class BaseDot11ConfigurationLoader {
         this.root = root;
     }
 
-    public List<Dot11MonitorDefinition> parseDot11Monitors() {
+    public ImmutableList<Dot11MonitorDefinition> parseDot11Monitors() {
         ImmutableList.Builder<Dot11MonitorDefinition> result = new ImmutableList.Builder<>();
 
         for (Config config : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
@@ -48,7 +48,7 @@ public class BaseDot11ConfigurationLoader {
 
             result.add(Dot11MonitorDefinition.create(
                     config.getString(ConfigurationKeys.DEVICE),
-                    config.getIntList(ConfigurationKeys.CHANNELS),
+                    ImmutableList.copyOf(config.getIntList(ConfigurationKeys.CHANNELS)),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
                     config.getInt(ConfigurationKeys.HOP_INTERVAL)
             ));
@@ -57,7 +57,7 @@ public class BaseDot11ConfigurationLoader {
         return result.build();
     }
 
-    public List<Dot11NetworkDefinition> parseDot11Networks() {
+    public ImmutableList<Dot11NetworkDefinition> parseDot11Networks() {
         ImmutableList.Builder<Dot11NetworkDefinition> result = new ImmutableList.Builder<>();
 
         for (Config config : root.getConfigList(ConfigurationKeys.DOT11_NETWORKS)) {
@@ -112,7 +112,7 @@ public class BaseDot11ConfigurationLoader {
         for (Config c : root.getConfigList(ConfigurationKeys.DOT11_MONITORS)) {
             String where = ConfigurationKeys.DOT11_MONITORS + "." + "#" + i;
             ConfigurationValidator.expect(c, ConfigurationKeys.DEVICE, where, String.class);
-            ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, List.class);
+            ConfigurationValidator.expect(c, ConfigurationKeys.CHANNELS, where, ImmutableList.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_COMMAND, where, String.class);
             ConfigurationValidator.expect(c, ConfigurationKeys.HOP_INTERVAL, where, Integer.class);
             i++;

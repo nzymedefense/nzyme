@@ -24,6 +24,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import horse.wtf.nzyme.channels.ChannelHopper;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
@@ -59,6 +60,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private PcapHandle pcap;
     private final ChannelHopper channelHopper;
+    private final ChannelDesignator channelDesignator;
 
     private final Statistics statistics;
 
@@ -110,6 +112,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
 
+        channelDesignator = new ChannelDesignator(this);
     }
 
     @Override
@@ -266,6 +269,14 @@ public class Dot11MonitorProbe extends Dot11Probe {
                 }
             }
         };
+    }
+
+    public ChannelDesignator getChannelDesignator() {
+        return channelDesignator;
+    }
+
+    public ChannelHopper getChannelHopper() {
+        return channelHopper;
     }
 
     @Override
