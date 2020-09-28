@@ -108,12 +108,14 @@ public class TextGUIHID implements TrackerHID {
                     boolean allProbesLive = true;
                     Dot11MonitorProbe firstMonitor = null;
                     for (Dot11Probe probe : nzyme.getProbes()) {
-                        if (probe instanceof Dot11MonitorProbe) {
-                            firstMonitor = (Dot11MonitorProbe) probe;
-                        }
-
                         if (!probe.isInLoop() || !probe.isActive()) {
                             allProbesLive = false;
+                            break;
+                        }
+                    }
+                    for (Dot11Probe probe : nzyme.getProbes()) {
+                        if (probe instanceof Dot11MonitorProbe) {
+                            firstMonitor = (Dot11MonitorProbe) probe;
                             break;
                         }
                     }

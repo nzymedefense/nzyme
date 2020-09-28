@@ -102,6 +102,10 @@ public class TrackerStateWatchdog {
         this.lastRSSIReceived.set(Optional.of(rssi));
     }
 
+    public List<TrackerState> getStates() {
+        return new ArrayList<>(states.get());
+    }
+
     private void stateChanged() {
         nzyme.getGroundStation().handleTrackerConnectionStateChange(states.get());
     }

@@ -28,7 +28,8 @@ public interface TrackerHID {
     enum TYPE {
         AUDIO,
         LOG,
-        TEXTGUI
+        TEXTGUI,
+        WEB
     }
 
     void initialize();

@@ -62,7 +62,7 @@ import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramCleaner;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.rest.CORSFilter;
-import horse.wtf.nzyme.rest.InjectionBinder;
+import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
@@ -241,7 +241,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new AuthenticationFilter(this));
         resourceConfig.register(new CORSFilter());
-        resourceConfig.register(new InjectionBinder(this));
+        resourceConfig.register(new NzymeLeaderInjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
         resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());

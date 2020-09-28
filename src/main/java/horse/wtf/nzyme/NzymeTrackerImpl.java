@@ -29,6 +29,7 @@ import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.WebHID;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
@@ -124,6 +125,9 @@ public class NzymeTrackerImpl implements NzymeTracker {
                         break;
                     case TEXTGUI:
                         hid = new TextGUIHID(this);
+                        break;
+                    case WEB:
+                        hid = new WebHID(this);
                         break;
                     default:
                         throw new RuntimeException("Unknown HID [" + type+ "]");

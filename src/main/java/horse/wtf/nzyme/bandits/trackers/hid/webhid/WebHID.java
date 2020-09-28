@@ -1,0 +1,193 @@
+/*
+ *  This file is part of nzyme.
+ *
+ *  nzyme is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  nzyme is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package horse.wtf.nzyme.bandits.trackers.hid.webhid;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.NzymeTracker;
+import horse.wtf.nzyme.bandits.Bandit;
+import horse.wtf.nzyme.bandits.trackers.TrackerState;
+import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.NzymeTrackerInjectionBinder;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDAssetsResource;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDResource;
+import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
+import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
+import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.rest.CORSFilter;
+import horse.wtf.nzyme.rest.NzymeExceptionMapper;
+import horse.wtf.nzyme.rest.ObjectMapperProvider;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.message.DeflateEncoder;
+import org.glassfish.jersey.message.GZipEncoder;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.EncodingFilter;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+
+public class WebHID implements TrackerHID {
+
+    private static final Logger LOG = LogManager.getLogger(WebHID.class);
+
+    private final NzymeTracker nzyme;
+
+    // State information.
+    private int leaderRSSI = 0;
+    private boolean trackerDeviceLive = false;
+    private boolean allProbesLive = false;
+    private ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus = ChannelDesignator.DESIGNATION_STATUS.UNLOCKED;
+
+    public WebHID(NzymeTracker nzyme) {
+        this.nzyme = nzyme;
+    }
+
+    @Override
+    public void initialize() {
+        // Spin up REST API and web interface.
+        java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
+        ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(new NzymeTrackerInjectionBinder(this.nzyme, this));
+        resourceConfig.register(new CORSFilter());
+        resourceConfig.register(new ObjectMapperProvider());
+        resourceConfig.register(new JacksonJaxbJsonProvider());
+        resourceConfig.register(new NzymeExceptionMapper());
+
+        // Register REST API resources.
+        resourceConfig.register(TrackerWebHIDResource.class);
+
+        // Enable GZIP.
+        resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
+
+        // Register web interface asset resources.
+        resourceConfig.register(TrackerWebHIDAssetsResource.class);
+
+        URI listenURI = URI.create("http://0.0.0.0:13000"); // TODO make configurable
+        HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(listenURI, resourceConfig);
+
+        // Start server.
+        try {
+            httpServer.start();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not start REST API.", e);
+        }
+
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("webhid-secup-%d").build())
+                .scheduleWithFixedDelay(() -> {
+                    allProbesLive = true;
+                    Dot11MonitorProbe firstMonitor = null;
+                    for (Dot11Probe probe : nzyme.getProbes()) {
+                        if (!probe.isInLoop() || !probe.isActive()) {
+                            allProbesLive = false;
+                            break;
+                        }
+                    }
+                    for (Dot11Probe probe : nzyme.getProbes()) {
+                        if (probe instanceof Dot11MonitorProbe) {
+                            firstMonitor = (Dot11MonitorProbe) probe;
+                            break;
+                        }
+                    }
+
+                    if (firstMonitor != null) {
+                        channelDesignationStatus = firstMonitor.getChannelDesignator().getStatus();
+                    }
+
+                    trackerDeviceLive = nzyme.getGroundStation().getTrackerDevice().isHealthy();
+                }, 0, 1, TimeUnit.SECONDS);
+
+        LOG.info("Started WebHID and REST API at [{}].", listenURI);
+    }
+
+    @Override
+    public void onConnectionStateChange(List<TrackerState> connectionState) {
+
+    }
+
+    @Override
+    public void onPingFromLeaderReceived(TrackerMessage.Ping ping, int rssi) {
+        this.leaderRSSI = rssi;
+    }
+
+    @Override
+    public void onPingFromTrackerReceived(TrackerMessage.Ping ping, int rssi) {
+
+    }
+
+    @Override
+    public void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request) {
+
+    }
+
+    @Override
+    public void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request) {
+
+    }
+
+    @Override
+    public void onInitialContactWithTrackedBandit(Bandit bandit) {
+
+    }
+
+    @Override
+    public void onBanditTrace(Bandit bandit, int rssi) {
+
+    }
+
+    @Override
+    public void onChannelSwitch(int previousChannel, int newChannel) {
+
+    }
+
+    public int getLeaderRSSI() {
+        return leaderRSSI;
+    }
+
+    public boolean isAllProbesLive() {
+        return allProbesLive;
+    }
+
+    public boolean isTrackerDeviceLive() {
+        return trackerDeviceLive;
+    }
+
+    public List<Integer> allMonitorChannels() {
+        List<Integer> channels = Lists.newArrayList();
+        for (Dot11Probe probe : nzyme.getProbes()) {
+            channels.add(probe.getCurrentChannel());
+        }
+
+        return channels;
+    }
+
+    public ChannelDesignator.DESIGNATION_STATUS getChannelDesignationStatus() {
+        return channelDesignationStatus;
+    }
+}
