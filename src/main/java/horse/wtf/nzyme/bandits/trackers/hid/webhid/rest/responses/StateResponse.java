@@ -28,25 +28,25 @@ import java.util.List;
 @AutoValue
 public abstract class StateResponse {
 
-    @JsonProperty
+    @JsonProperty("clock")
     public abstract DateTime clock();
 
-    @JsonProperty
+    @JsonProperty("tracker_state")
     public abstract List<TrackerState> trackerState();
 
-    @JsonProperty
+    @JsonProperty("leader_signal_strength")
     public abstract int leaderSignalStrength();
 
-    @JsonProperty
+    @JsonProperty("tracker_device_live")
     public abstract boolean trackerDeviceLive();
 
-    @JsonProperty
+    @JsonProperty("monitors_live")
     public abstract boolean dot11MonitorsLive();
 
-    @JsonProperty
+    @JsonProperty("channels")
     public abstract List<Integer> dot11Channels();
 
-    @JsonProperty
+    @JsonProperty("channel_designation_status")
     public abstract ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus();
 
     public static StateResponse create(DateTime clock, List<TrackerState> trackerState, int leaderSignalStrength, boolean trackerDeviceLive, boolean dot11MonitorsLive, List<Integer> dot11Channels, ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus) {
