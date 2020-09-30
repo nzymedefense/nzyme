@@ -23,6 +23,7 @@ import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @AutoValue
@@ -49,7 +50,29 @@ public abstract class StateResponse {
     @JsonProperty("channel_designation_status")
     public abstract ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus();
 
-    public static StateResponse create(DateTime clock, List<TrackerState> trackerState, int leaderSignalStrength, boolean trackerDeviceLive, boolean dot11MonitorsLive, List<Integer> dot11Channels, ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus) {
+    @JsonProperty("is_tracking")
+    public abstract boolean isTracking();
+
+    @JsonProperty("tracking_target")
+    @Nullable
+    public abstract String trackingTarget();
+
+    @JsonProperty("track")
+    @Nullable
+    public abstract String track();
+
+    @JsonProperty("track_frames")
+    public abstract long trackFrames();
+
+    @JsonProperty("track_contact")
+    @Nullable
+    public abstract DateTime trackContact();
+
+    @JsonProperty("bandit_signal")
+    @Nullable
+    public abstract Long banditSignal();
+
+    public static StateResponse create(DateTime clock, List<TrackerState> trackerState, int leaderSignalStrength, boolean trackerDeviceLive, boolean dot11MonitorsLive, List<Integer> dot11Channels, ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus, boolean isTracking, String trackingTarget, String track, long trackFrames, DateTime trackContact, Long banditSignal) {
         return builder()
                 .clock(clock)
                 .trackerState(trackerState)
@@ -58,6 +81,12 @@ public abstract class StateResponse {
                 .dot11MonitorsLive(dot11MonitorsLive)
                 .dot11Channels(dot11Channels)
                 .channelDesignationStatus(channelDesignationStatus)
+                .isTracking(isTracking)
+                .trackingTarget(trackingTarget)
+                .track(track)
+                .trackFrames(trackFrames)
+                .trackContact(trackContact)
+                .banditSignal(banditSignal)
                 .build();
     }
 
@@ -81,6 +110,19 @@ public abstract class StateResponse {
 
         public abstract Builder channelDesignationStatus(ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus);
 
+        public abstract Builder isTracking(boolean isTracking);
+
+        public abstract Builder trackingTarget(String trackingTarget);
+
+        public abstract Builder track(String track);
+
+        public abstract Builder trackFrames(long trackFrames);
+
+        public abstract Builder trackContact(DateTime trackContact);
+
+        public abstract Builder banditSignal(Long banditSignal);
+
         public abstract StateResponse build();
     }
+
 }

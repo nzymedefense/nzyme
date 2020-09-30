@@ -43,6 +43,22 @@ public class TrackerWebHIDResource {
 
     @GET
     public Response getStatus() {
+        String track;
+        long frameCount;
+        DateTime lastContact;
+        Long banditSignal;
+        if (nzyme.getBanditManager().hasActiveTrack() && nzyme.getBanditManager().getTrackSummary() != null) {
+            track = nzyme.getBanditManager().getTrackSummary().track().toString().substring(0,6);
+            frameCount = nzyme.getBanditManager().getTrackSummary().frameCount();
+            lastContact = nzyme.getBanditManager().getTrackSummary().lastContact();
+            banditSignal = (long) nzyme.getBanditManager().getTrackSummary().lastSignal();
+        } else {
+            track = null;
+            frameCount = 0;
+            lastContact = null;
+            banditSignal = null;
+        }
+
         return Response.ok(StateResponse.create(
                 DateTime.now(),
                 nzyme.getStateWatchdog().getStates(),
@@ -50,7 +66,13 @@ public class TrackerWebHIDResource {
                 hid.isTrackerDeviceLive(),
                 hid.isAllProbesLive(),
                 hid.allMonitorChannels(),
-                hid.getChannelDesignationStatus()
+                hid.getChannelDesignationStatus(),
+                nzyme.getBanditManager().isCurrentlyTracking(),
+                nzyme.getBanditManager().isCurrentlyTracking() ? nzyme.getBanditManager().getCurrentlyTrackedBandit().uuid().toString().substring(0,6) : null,
+                track,
+                frameCount,
+                lastContact,
+                banditSignal
         )).build();
     }
 

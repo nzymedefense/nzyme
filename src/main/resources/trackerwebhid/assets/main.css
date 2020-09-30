@@ -4,13 +4,16 @@ body {
     font-family: 'Inconsolata', monospace;
 }
 
+#logo {
+    height: 20px;
+}
+
 div.section {
     border: 1px solid #606060;
     padding-bottom: 12px;
 }
 
 div.section-header {
-    text-align: center;
     margin-bottom: -12px;
 }
 
@@ -24,6 +27,12 @@ div.section-header h2 {
     background-color: #0c0d16;
     padding-left: 10px;
     padding-right: 10px;
+    margin-left: 10px;
+}
+
+div.section-indicator-container {
+    width: 327px;
+    margin: auto;
 }
 
 div.indicator {
@@ -33,11 +42,11 @@ div.indicator {
 }
 
 div.indicator-md {
-    width: 114px;
+    width: 109px;
 }
 
 div.indicator-lg {
-    width: 229px;
+    width: 218px;
 }
 
 div.indicator-header {
@@ -71,4 +80,13 @@ div.indicator-value span {
 .indicator-color-inactive {
     background-color: #32334a !important;
     color: #fff;
+}
+
+.chart {
+    text-align: center;
+    width: 328px;
+}
+
+span#prop-bandit-signal {
+    font-weight: 700;
 }

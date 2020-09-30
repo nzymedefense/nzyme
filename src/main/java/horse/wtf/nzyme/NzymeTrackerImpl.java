@@ -195,7 +195,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                             LOG.error("Could not send contact status.", e);
                         }
                     }
-                }, 2, 10, TimeUnit.SECONDS);
+                }, 2, 30, TimeUnit.SECONDS);
 
         Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder()

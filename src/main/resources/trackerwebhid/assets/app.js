@@ -12,8 +12,31 @@ setInterval(function(){
 
 // TODO: notification in case of fetch error
 //       loading screen when not connected
+//       empty bandit signal when not tracking or not track
+
+const signalData = [];
+Chart.defaults.global.animation.duration = 0;
+
+function fakeLabels(x) {
+    const result = [];
+    for (i = 0; i < x.length; i++) {
+        result.push("");
+    }
+
+    return result;
+}
 
 function render(state) {
+    if (signalData.length >= 300) {
+        signalData.shift();
+    }
+
+    if (state.bandit_signal) {
+        signalData.push(state.bandit_signal);
+    } else {
+        signalData.push(-100);
+    }
+
     let leaderSignal = Math.round(state.leader_signal_strength/255*100);
     let connection = "DARK";
     let connectionClass = "indicator-color-red";
@@ -34,7 +57,7 @@ function render(state) {
 
     // Signal strength.
     if (connection === "DARK") {
-        document.getElementById("prop-signal").innerText = "n/a";
+        document.getElementById("prop-signal").innerText = "N/A";
         document.getElementById("prop-signal").className = "indicator-color-inactive";
     } else {
         document.getElementById("prop-signal").innerText = leaderSignal.toString() + "%";
@@ -80,5 +103,87 @@ function render(state) {
     }
     document.getElementById("prop-channel-designator").innerText = channelDesignator;
     document.getElementById("prop-channel-designator").className = channelDesignatorClass;
+
+    // Task
+    if (state.is_tracking) {
+        document.getElementById("prop-task").innerText = "TRACK";
+        document.getElementById("prop-task").className = "indicator-color-green";
+
+        document.getElementById("prop-bandit-target").innerText = state.tracking_target;
+        document.getElementById("prop-bandit-target").className = "";
+
+        // Track
+        if (state.track) {
+            document.getElementById("prop-track").innerText = state.track;
+            document.getElementById("prop-track").className = "indicator-color-green";
+
+            let frames = state.track_frames;
+            if (frames > 1000000) {
+                frames = ">1M";
+            }
+            document.getElementById("prop-frames").innerText = numeral(frames).format("0,0");
+            document.getElementById("prop-frames").className = "";
+
+            document.getElementById("prop-contact").innerText = moment(state.track_contact).format('LTS');
+            document.getElementById("prop-contact").className = "";
+
+            document.getElementById("prop-bandit-signal").innerText = state.bandit_signal + " dBm";
+        } else {
+            document.getElementById("prop-track").innerText = "NO CTCT";
+            document.getElementById("prop-track").className = "indicator-color-red";
+
+            document.getElementById("prop-frames").innerText = "N/A";
+            document.getElementById("prop-frames").className = "indicator-color-inactive";
+
+            document.getElementById("prop-contact").innerText = "N/A";
+            document.getElementById("prop-contact").className = "indicator-color-inactive";
+
+            document.getElementById("prop-bandit-signal").innerText = "N/A";
+        }
+    } else {
+        document.getElementById("prop-task").innerText = "NONE";
+        document.getElementById("prop-task").className = "indicator-color-inactive";
+
+        document.getElementById("prop-bandit-target").innerText =  "NONE";
+        document.getElementById("prop-bandit-target").className = "indicator-color-inactive";
+
+        document.getElementById("prop-track").innerText = "N/A";
+        document.getElementById("prop-track").className = "indicator-color-inactive";
+
+        document.getElementById("prop-frames").innerText = "N/A";
+        document.getElementById("prop-frames").className = "indicator-color-inactive";
+
+        document.getElementById("prop-contact").innerText = "N/A";
+        document.getElementById("prop-contact").className = "indicator-color-inactive";
+
+        document.getElementById("prop-bandit-signal").innerText = "N/A";
+    }
+
+    var ctx = document.getElementById('chart-chart');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: fakeLabels(signalData),
+            datasets: [{
+                label: 'Bandit Signal',
+                backgroundColor: 'rgb(255,60,92)',
+                borderColor: 'rgb(255,60,92)',
+                borderWidth: 1,
+                cubicInterpolationMode: 'monotone',
+                steppedLine: true,
+                pointRadius: 0,
+                data: signalData,
+                fill: false,
+            }]
+        },
+        options: {
+            title: {display: false},
+            legend: {display: false},
+            scales:{
+                xAxes: [{ display: false }],
+                yAxes: [{ display: true, ticks: {min: -100, max: 0, fontFamily: "'Inconsolata', monospace"}}],
+            }
+        }
+    });
 
 }

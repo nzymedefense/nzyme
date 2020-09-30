@@ -73,6 +73,16 @@ public class TrackerWebHIDAssetsResource {
     }
 
     @GET
+    @Path("/assets/{filename}.png")
+    public Response getPNG(@PathParam("filename") String filename) {
+        try {
+            return Response.ok(readFile("assets/" + Tools.safeAlphanumericString(filename) + ".png"), "image/javascript").build();
+        } catch(IOException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    @GET
     @Path("/assets/fonts/{filename}.woff2")
     public Response getJS(@PathParam("filename") String filename) {
         try {

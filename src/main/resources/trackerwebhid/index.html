@@ -21,33 +21,36 @@
 
 <div class="container">
 
-    <div class="row">
+    <div class="row mt-2">
         <div class="col-sm-12 text-center">
-            nzyme
+            <img src="/assets/nzyme.png" id="logo" />
+            nzyme TRACKER
         </div>
     </div>
 
-    <div class="row mt-2">
+    <div class="row mt-3">
         <div class="col-sm-12">
             <div class="section">
                 <div class="section-header">
                     <h2>Master Link</h2>
                 </div>
 
-                <div class="section-indicators clearfix">
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">CONN</div>
-                        <div class="indicator-value"><span id="prop-connection"></span></div>
-                    </div>
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">CONN</div>
+                            <div class="indicator-value"><span id="prop-connection"></span></div>
+                        </div>
 
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">Signal</div>
-                        <div class="indicator-value"><span id="prop-signal"></span></div>
-                    </div>
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Signal</div>
+                            <div class="indicator-value"><span id="prop-signal"></span></div>
+                        </div>
 
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">LINK DVC</div>
-                        <div class="indicator-value"><span id="prop-link-device"></span></div>
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">LINK DVC</div>
+                            <div class="indicator-value"><span id="prop-link-device"></span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -61,20 +64,22 @@
                     <h2>802.11</h2>
                 </div>
 
-                <div class="section-indicators clearfix">
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">Monitors</div>
-                        <div class="indicator-value"><span id="prop-monitors"></span></div>
-                    </div>
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Monitors</div>
+                            <div class="indicator-value"><span id="prop-monitors"></span></div>
+                        </div>
 
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">Channel</div>
-                        <div class="indicator-value"><span id="prop-channel"></span></div>
-                    </div>
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Channel</div>
+                            <div class="indicator-value"><span id="prop-channel"></span></div>
+                        </div>
 
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">DSGNTR</div>
-                        <div class="indicator-value"><span id="prop-channel-designator"></span></div>
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">DSGNTR</div>
+                            <div class="indicator-value"><span id="prop-channel-designator"></span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,15 +93,52 @@
                     <h2>Operator</h2>
                 </div>
 
-                <div class="section-indicators clearfix">
-                    <div class="indicator indicator-md">
-                        <div class="indicator-header">Task</div>
-                        <div class="indicator-value"><span id="prop-task"></span></div>
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Task</div>
+                            <div class="indicator-value"><span id="prop-task"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-lg">
+                            <div class="indicator-header">Bandit Target</div>
+                            <div class="indicator-value"><span id="prop-bandit-target"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Tracking</h2>
+                </div>
+
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Track</div>
+                            <div class="indicator-value"><span id="prop-track"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Frames</div>
+                            <div class="indicator-value"><span id="prop-frames"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Contact</div>
+                            <div class="indicator-value"><span id="prop-contact"></span></div>
+                        </div>
                     </div>
 
-                    <div class="indicator indicator-lg">
-                        <div class="indicator-header">Bandit Target</div>
-                        <div class="indicator-value"><span id="prop-bandit-target"></span></div>
+                    <div class="chart clearfix mt-2">
+                        <div class="indicator-header">Bandit Signal: <span id="prop-bandit-signal"></span></div>
+
+                        <canvas id="chart-chart" height="100"></canvas>
                     </div>
                 </div>
             </div>
@@ -105,8 +147,10 @@
 
 </div>
 
+<script src="/assets/numeral.js"></script>
 <script src="/assets/moment.js"></script>
 <script src="/assets/axios.js"></script>
+<script src="/assets/chart.js"></script>
 <script src="/assets/app.js"></script>
 </body>
 </html>
