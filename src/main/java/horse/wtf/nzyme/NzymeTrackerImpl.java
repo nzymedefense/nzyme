@@ -216,7 +216,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     m.channelHopCommand(),
                     null,
                     null
-            ), metrics, statistics, anonymizer);
+            ), metrics, statistics, anonymizer, true);
 
             probe.onChannelSwitch((previousChannel, newChannel) -> {
                 for (TrackerHID hid : hids) {

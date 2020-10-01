@@ -86,7 +86,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
 
     private DateTime mostRecentFrameTimestamp;
 
-    public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics, Anonymizer anonymizer) {
+    public Dot11MonitorProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics, Statistics statistics, Anonymizer anonymizer, boolean hasDesignator) {
         super(configuration, statistics, metrics);
 
         this.statistics = statistics;
@@ -112,7 +112,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         channelHopper = new ChannelHopper(this, configuration);
         channelHopper.initialize();
 
-        channelDesignator = new ChannelDesignator(this);
+        channelDesignator = hasDesignator ? new ChannelDesignator(this) : null;
     }
 
     @Override

@@ -363,7 +363,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channelHopCommand(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
-            ), metrics, statistics, anonymizer);
+            ), metrics, statistics, anonymizer, false);
 
             // Add standard interceptors for broad channel monitoring.
             Dot11MonitorProbe.configureAsBroadMonitor(probe, this);
