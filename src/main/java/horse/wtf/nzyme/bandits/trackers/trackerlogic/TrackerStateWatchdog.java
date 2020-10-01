@@ -22,6 +22,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TrackerStateWatchdog {
+
+    private static final Logger LOG = LogManager.getLogger(TrackerStateWatchdog.class);
 
     private final NzymeTracker nzyme;
 
@@ -98,7 +102,9 @@ public class TrackerStateWatchdog {
             return;
         }
 
-        this.lastPingReceived.set(Optional.of(new DateTime(ping.getTimestamp())));
+        LOG.info("ping received");
+
+        this.lastPingReceived.set(Optional.of(DateTime.now()));
         this.lastRSSIReceived.set(Optional.of(rssi));
     }
 

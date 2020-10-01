@@ -3,7 +3,6 @@ import React from 'react';
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Routes from "../../../util/Routes";
 import moment from "moment";
-import TrackerTimeDrift from "./TrackerTimeDrift";
 import TrackingModeCard from "./TrackingModeCard";
 import TrackerStatusCard from "./TrackerStatusCard";
 import {round} from "lodash";
@@ -86,13 +85,6 @@ class TrackerDetailPage extends React.Component {
                         <dl>
                             <dt>Signal Strength:</dt>
                             <dd>{round(tracker.rssi/255*100)}%</dd>
-                        </dl>
-                    </div>
-
-                    <div className="col-md-2">
-                        <dl>
-                            <dt>Time Drift:</dt>
-                            <dd><TrackerTimeDrift drift={tracker.drift} status={tracker.state} /></dd>
                         </dl>
                     </div>
 

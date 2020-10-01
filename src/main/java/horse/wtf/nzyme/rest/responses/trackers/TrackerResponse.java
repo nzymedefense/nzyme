@@ -34,9 +34,6 @@ public abstract class TrackerResponse {
     @JsonProperty
     public abstract String version();
 
-    @JsonProperty
-    public abstract long drift();
-
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
@@ -55,11 +52,10 @@ public abstract class TrackerResponse {
     @JsonProperty
     public abstract int rssi();
 
-    public static TrackerResponse create(String name, String version, long drift, DateTime lastSeen, TrackerState state, String trackingMode, List<ContactResponse> contacts, boolean hasPendingTrackingRequests, int rssi) {
+    public static TrackerResponse create(String name, String version, DateTime lastSeen, TrackerState state, String trackingMode, List<ContactResponse> contacts, boolean hasPendingTrackingRequests, int rssi) {
         return builder()
                 .name(name)
                 .version(version)
-                .drift(drift)
                 .lastSeen(lastSeen)
                 .state(state)
                 .trackingMode(trackingMode)
@@ -78,8 +74,6 @@ public abstract class TrackerResponse {
         public abstract Builder name(String name);
 
         public abstract Builder version(String version);
-
-        public abstract Builder drift(long drift);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 

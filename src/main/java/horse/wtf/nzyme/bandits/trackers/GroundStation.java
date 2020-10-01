@@ -193,7 +193,6 @@ public class GroundStation implements Runnable {
                                         .setVersion(nzymeVersion)
                                         .setNodeType(TrackerMessage.Ping.NodeType.valueOf(nzymeRole.toString().toUpperCase()))
                                         .setTrackingMode(currentlyTrackedBandit)
-                                        .setTimestamp(DateTime.now().getMillis())
                                         .build())
                                 .build());
                     } catch(Exception e) {

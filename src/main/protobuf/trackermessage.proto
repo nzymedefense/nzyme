@@ -28,7 +28,6 @@ message Ping {
     NodeType nodeType = 2;
     string version = 3;
     string trackingMode = 4;
-    int64 timestamp = 5;
 
 }
 

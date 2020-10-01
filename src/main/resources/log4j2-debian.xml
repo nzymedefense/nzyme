@@ -22,5 +22,9 @@
         <Logger name="liquibase" level="warn">
             <AppenderRef ref="Logfile" />
         </Logger>
+
+        <Logger name="org.glassfish.grizzly" level="error">
+            <AppenderRef ref="Logfile" />
+        </Logger>
     </Loggers>
 </Configuration>

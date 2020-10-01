@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class TrackerManager {
 
-    private static final Logger LOG = LogManager.getLogger(TrackerManager.class);
-
     public static final int DARK_TIMEOUT_SECONDS = 30;
     private static final int RETENTION_MINUTES = 60;
 
@@ -61,13 +59,6 @@ public class TrackerManager {
     }
 
     public void registerTrackerPing(TrackerMessage.Ping ping, int rssi) {
-        // Check for time drift.
-        long drift = new DateTime(ping.getTimestamp()).minus(DateTime.now().getMillis()).getMillis();
-        if (drift > 5000 || drift < -5000) {
-            LOG.warn("Tracker [{}] has a significant time drift of <{}ms>. " +
-                    "Make sure that all nzyme components have their clocks synchronized using NTP.", ping.getSource(), drift);
-        }
-
         if (!activeTrackers.get().containsKey(ping.getSource())) {
             // Register new tracker.
             activeTrackers.get().put(
@@ -76,7 +67,6 @@ public class TrackerManager {
                             ping.getSource(),
                             DateTime.now(),
                             ping.getVersion(),
-                            drift,
                             ping.getTrackingMode(),
                             rssi
                     )
@@ -89,8 +79,6 @@ public class TrackerManager {
             tracker.setVersion(ping.getVersion());
             tracker.setTrackingMode(ping.getTrackingMode());
             tracker.setRssi(rssi);
-
-            tracker.setDrift(drift);
         }
     }
 

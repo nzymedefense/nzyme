@@ -59,7 +59,6 @@ public class TrackersResource {
             trackers.add(TrackerResponse.create(
                     tracker.getName(),
                     tracker.getVersion(),
-                    tracker.getDrift(),
                     tracker.getLastSeen(),
                     TrackerManager.decideTrackerState(tracker),
                     tracker.getTrackingMode(),
@@ -86,7 +85,6 @@ public class TrackersResource {
             return Response.ok(TrackerResponse.create(
                     tracker.getName(),
                     tracker.getVersion(),
-                    tracker.getDrift(),
                     tracker.getLastSeen(),
                     TrackerManager.decideTrackerState(tracker),
                     tracker.getTrackingMode(),

@@ -24,15 +24,13 @@ public class Tracker {
     private final String name;
 
     private String version;
-    private long drift;
     private DateTime lastSeen;
     private String trackingMode;
     private int rssi;
 
-    public Tracker(String name, DateTime lastSeen, String version, long drift, String trackingMode, int rssi) {
+    public Tracker(String name, DateTime lastSeen, String version, String trackingMode, int rssi) {
         this.name = name;
         this.version = version;
-        this.drift = drift;
         this.lastSeen = lastSeen;
         this.trackingMode = trackingMode;
         this.rssi = rssi;
@@ -48,14 +46,6 @@ public class Tracker {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public long getDrift() {
-        return drift;
-    }
-
-    public void setDrift(long drift) {
-        this.drift = drift;
     }
 
     public int getRssi() {
