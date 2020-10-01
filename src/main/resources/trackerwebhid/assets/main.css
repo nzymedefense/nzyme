@@ -90,3 +90,10 @@ div.indicator-value span {
 span#prop-bandit-signal {
     font-weight: 700;
 }
+
+ul#events {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 0;
+    margin-left: 10px;
+}

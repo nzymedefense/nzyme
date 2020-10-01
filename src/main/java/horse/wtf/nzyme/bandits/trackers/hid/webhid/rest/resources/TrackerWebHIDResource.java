@@ -72,7 +72,8 @@ public class TrackerWebHIDResource {
                 track,
                 frameCount,
                 lastContact,
-                banditSignal
+                banditSignal,
+                hid.getEvents()
         )).build();
     }
 

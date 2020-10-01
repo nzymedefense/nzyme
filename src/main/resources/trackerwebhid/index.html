@@ -19,7 +19,7 @@
     You need to enable JavaScript to run this app.
 </noscript>
 
-<div class="container">
+<div class="container d-block" id="main-container">
 
     <div class="row mt-2">
         <div class="col-sm-12 text-center">
@@ -145,6 +145,29 @@
         </div>
     </div>
 
+    <div class="row mt-3 mb-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Events</h2>
+                </div>
+
+                <ul id="events"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container d-none" id="error-container">
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="alert alert-danger">
+                <p><strong>nzyme TRACKER - Could not load data!</strong></p>
+
+                <p>Make sure this browser can reach http://10.0.0.1:13000/api/state on your tracker device.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="/assets/numeral.js"></script>

@@ -20,6 +20,7 @@ package horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.responses;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.WebHID;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import org.joda.time.DateTime;
 
@@ -72,7 +73,10 @@ public abstract class StateResponse {
     @Nullable
     public abstract Long banditSignal();
 
-    public static StateResponse create(DateTime clock, List<TrackerState> trackerState, int leaderSignalStrength, boolean trackerDeviceLive, boolean dot11MonitorsLive, List<Integer> dot11Channels, ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus, boolean isTracking, String trackingTarget, String track, long trackFrames, DateTime trackContact, Long banditSignal) {
+    @JsonProperty("events")
+    public abstract List<WebHID.Event> events();
+
+    public static StateResponse create(DateTime clock, List<TrackerState> trackerState, int leaderSignalStrength, boolean trackerDeviceLive, boolean dot11MonitorsLive, List<Integer> dot11Channels, ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus, boolean isTracking, String trackingTarget, String track, long trackFrames, DateTime trackContact, Long banditSignal, List<WebHID.Event> events) {
         return builder()
                 .clock(clock)
                 .trackerState(trackerState)
@@ -87,6 +91,7 @@ public abstract class StateResponse {
                 .trackFrames(trackFrames)
                 .trackContact(trackContact)
                 .banditSignal(banditSignal)
+                .events(events)
                 .build();
     }
 
@@ -121,6 +126,8 @@ public abstract class StateResponse {
         public abstract Builder trackContact(DateTime trackContact);
 
         public abstract Builder banditSignal(Long banditSignal);
+
+        public abstract Builder events(List<WebHID.Event> events);
 
         public abstract StateResponse build();
     }

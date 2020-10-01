@@ -4,15 +4,11 @@ setInterval(function(){
             render(response.data)
         })
         .catch(function (error) {
-            // TODO notify show
-            console.log("failed");
+            document.getElementById("main-container").className = "container d-none";
+            document.getElementById("error-container").className = "container d-block";
             console.log(error);
         });
 }, 1000);
-
-// TODO: notification in case of fetch error
-//       loading screen when not connected
-//       empty bandit signal when not tracking or not track
 
 const signalData = [];
 Chart.defaults.global.animation.duration = 0;
@@ -27,6 +23,9 @@ function fakeLabels(x) {
 }
 
 function render(state) {
+    document.getElementById("main-container").className = "container d-block";
+    document.getElementById("error-container").className = "container d-none";
+
     if (signalData.length >= 300) {
         signalData.shift();
     }
@@ -159,6 +158,7 @@ function render(state) {
         document.getElementById("prop-bandit-signal").innerText = "N/A";
     }
 
+    // Bandit signal chart.
     var ctx = document.getElementById('chart-chart');
     new Chart(ctx, {
         type: 'line',
@@ -186,4 +186,20 @@ function render(state) {
         }
     });
 
+    // Events list.
+    const events = document.getElementById("events");
+    events.innerHTML = "";
+    if (state.events && state.events.length > 0) {
+        for (let i = state.events.length - 1; i >=0 ; i--) {
+            const x = state.events[i];
+            let message = moment(x.timestamp).format('LTS') + " [" + x.source + "]: " + x.message;
+            const li = document.createElement("li");
+            li.appendChild(document.createTextNode(message))
+            events.appendChild(li);
+        }
+    } else {
+        const li = document.createElement("li");
+        li.appendChild(document.createTextNode("No events."))
+        events.appendChild(li);
+    }
 }

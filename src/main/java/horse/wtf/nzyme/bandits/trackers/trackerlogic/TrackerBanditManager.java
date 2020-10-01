@@ -89,6 +89,7 @@ public class TrackerBanditManager implements ContactIdentifierProcess {
         UUID uuid = UUID.fromString(request.getUuid());
         if (currentlyTrackedBandit != null && currentlyTrackedBandit.uuid().equals(uuid)) {
             LOG.info("Already tracking bandit [{}].", uuid);
+            return;
         }
 
         // Parse bandit from track request.

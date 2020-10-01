@@ -17,8 +17,11 @@
 
 package horse.wtf.nzyme.bandits.trackers.hid.webhid;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.google.common.base.Joiner;
+import com.google.auto.value.AutoValue;
+import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
@@ -43,10 +46,12 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -63,8 +68,12 @@ public class WebHID implements TrackerHID {
     private boolean allProbesLive = false;
     private ChannelDesignator.DESIGNATION_STATUS channelDesignationStatus = ChannelDesignator.DESIGNATION_STATUS.UNLOCKED;
 
+    @SuppressWarnings("UnstableApiUsage")
+    private final EvictingQueue<WebHID.Event> events;
+
     public WebHID(NzymeTracker nzyme) {
         this.nzyme = nzyme;
+        this.events = EvictingQueue.create(20);
     }
 
     @Override
@@ -143,12 +152,12 @@ public class WebHID implements TrackerHID {
 
     @Override
     public void onStartTrackingRequestReceived(TrackerMessage.StartTrackRequest request) {
-
+        event(request.getSource(), "Received request to track bandit.");
     }
 
     @Override
     public void onCancelTrackingRequestReceived(TrackerMessage.CancelTrackRequest request) {
-
+        event(request.getSource(), "All bandit tracking canceled on leader request.");
     }
 
     @Override
@@ -164,6 +173,15 @@ public class WebHID implements TrackerHID {
     @Override
     public void onChannelSwitch(int previousChannel, int newChannel) {
 
+    }
+
+    private void event(String source, String message) {
+        //noinspection UnstableApiUsage
+        events.add(WebHID.Event.create(DateTime.now(), source, message));
+    }
+
+    public List<WebHID.Event> getEvents() {
+        return ImmutableList.copyOf(events);
     }
 
     public int getLeaderRSSI() {
@@ -190,4 +208,42 @@ public class WebHID implements TrackerHID {
     public ChannelDesignator.DESIGNATION_STATUS getChannelDesignationStatus() {
         return channelDesignationStatus;
     }
+
+    @AutoValue
+    public static abstract class Event {
+
+        @JsonProperty
+        public abstract DateTime timestamp();
+
+        @JsonProperty
+        public abstract String source();
+
+        @JsonProperty
+        public abstract String message();
+
+        public static WebHID.Event create(DateTime timestamp, String source, String message) {
+            return builder()
+                    .timestamp(timestamp)
+                    .source(source)
+                    .message(message)
+                    .build();
+        }
+
+        public static WebHID.Event.Builder builder() {
+            return new AutoValue_WebHID_Event.Builder();
+        }
+
+        @AutoValue.Builder
+        public abstract static class Builder {
+            public abstract WebHID.Event.Builder timestamp(DateTime timestamp);
+
+            public abstract WebHID.Event.Builder source(String source);
+
+            public abstract WebHID.Event.Builder message(String message);
+
+            public abstract WebHID.Event build();
+        }
+
+    }
+
 }
