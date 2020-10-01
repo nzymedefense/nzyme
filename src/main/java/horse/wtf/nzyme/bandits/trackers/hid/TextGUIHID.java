@@ -292,6 +292,9 @@ public class TextGUIHID implements TrackerHID {
             // We are offline.
             labelConnection.setText(" DARK");
             labelConnection.setForegroundColor(TextColor.ANSI.RED);
+
+            labelSignal.setText(" n/a");
+            labelSignal.setForegroundColor(TextColor.ANSI.RED);
         }
     }
 
