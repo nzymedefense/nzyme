@@ -18,6 +18,8 @@
 package horse.wtf.nzyme.rest;
 
 import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDAssetsResource;
+import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDResource;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
@@ -40,7 +42,9 @@ public class ResourcesRequireAuthenticationTest {
     private final List<Class<?>> WHITELIST = ImmutableList.of(
             WebInterfaceAssetsResource.class,
             PingResource.class,
-            AuthenticationResource.class
+            AuthenticationResource.class,
+            TrackerWebHIDAssetsResource.class,
+            TrackerWebHIDResource.class
     );
 
     @Test
