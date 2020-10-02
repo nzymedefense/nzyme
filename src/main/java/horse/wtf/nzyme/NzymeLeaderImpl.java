@@ -35,7 +35,6 @@ import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
-import horse.wtf.nzyme.debug.LeaderDebug;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -325,9 +324,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         // Initialize probes.
         initializeProbes();
-
-        // Initialize all debug methods.
-        new LeaderDebug(this).initialize();
     }
 
     public void shutdown() {

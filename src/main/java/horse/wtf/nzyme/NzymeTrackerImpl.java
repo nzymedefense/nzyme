@@ -25,13 +25,11 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.trackers.TrackerTrackSummary;
-import horse.wtf.nzyme.bandits.trackers.hid.AudioHID;
 import horse.wtf.nzyme.bandits.trackers.hid.LogHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TextGUIHID;
 import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.WebHID;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
-import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerBanditManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
@@ -117,9 +115,6 @@ public class NzymeTrackerImpl implements NzymeTracker {
             for (TrackerHID.TYPE type : this.configuration.hids()) {
                 TrackerHID hid;
                 switch (type) {
-                    case AUDIO:
-                        hid = new AudioHID();
-                        break;
                     case LOG:
                         hid = new LogHID();
                         break;

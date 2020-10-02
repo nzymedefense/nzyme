@@ -92,6 +92,7 @@ public class TextGUIHID implements TrackerHID {
                 .setNameFormat("textguihid-%d").build())
                 .submit(() -> {
                     try {
+                        Thread.sleep(2500);
                         initializeGUI();
                     } catch (Exception e) {
                         LOG.error("Could not initialize Text GUI HID.", e);

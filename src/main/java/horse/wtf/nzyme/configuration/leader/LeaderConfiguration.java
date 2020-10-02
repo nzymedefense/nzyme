@@ -53,9 +53,6 @@ public abstract class LeaderConfiguration {
     public abstract ImmutableList<AlertCallback> alertCallbacks();
 
     @Nullable
-    public abstract Config debugConfig();
-
-    @Nullable
     public abstract TrackerDeviceConfiguration trackerDevice();
 
     public ImmutableList<String> ourSSIDs() {
@@ -64,7 +61,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<GraylogAddress> graylogUplinks, ImmutableList<AlertCallback> alertCallbacks, Config debugConfig, TrackerDeviceConfiguration trackerDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<GraylogAddress> graylogUplinks, ImmutableList<AlertCallback> alertCallbacks, TrackerDeviceConfiguration trackerDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -86,7 +83,6 @@ public abstract class LeaderConfiguration {
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .graylogUplinks(graylogUplinks)
                 .alertCallbacks(alertCallbacks)
-                .debugConfig(debugConfig)
                 .trackerDevice(trackerDevice)
                 .build();
     }
@@ -161,8 +157,6 @@ public abstract class LeaderConfiguration {
         public abstract Builder graylogUplinks(ImmutableList<GraylogAddress> graylogUplinks);
 
         public abstract Builder alertCallbacks(ImmutableList<AlertCallback> alertCallbacks);
-
-        public abstract Builder debugConfig(Config debugConfig);
 
         public abstract Builder trackerDevice(TrackerDeviceConfiguration trackerDevice);
 

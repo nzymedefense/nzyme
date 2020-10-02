@@ -40,7 +40,6 @@ public class BluffTest {
                 30,
                 ImmutableList.of(),
                 ImmutableList.of(),
-                null,
                 null
         );
     }

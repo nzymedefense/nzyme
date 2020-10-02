@@ -99,7 +99,6 @@ public class LeaderConfigurationLoader {
                 parseAlertingTrainingPeriodSeconds(),
                 parseGraylogUplinks(),
                 parseAlertCallbacks(),
-                parseDebugConfig(),
                 parseTrackerDevice()
         );
     }
@@ -283,15 +282,6 @@ public class LeaderConfigurationLoader {
                     trackerDevice.getString(ConfigurationKeys.TYPE),
                     trackerDevice.getConfig(ConfigurationKeys.PARAMETERS)
             );
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private Config parseDebugConfig() {
-        if (root.hasPath(ConfigurationKeys.DEBUG)) {
-            return root.getConfig(ConfigurationKeys.DEBUG);
         } else {
             return null;
         }

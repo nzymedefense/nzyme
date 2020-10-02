@@ -101,9 +101,7 @@ public class TrackerStateWatchdog {
         if (ping.getNodeType() != TrackerMessage.Ping.NodeType.LEADER) {
             return;
         }
-
-        LOG.info("ping received");
-
+        
         this.lastPingReceived.set(Optional.of(DateTime.now()));
         this.lastRSSIReceived.set(Optional.of(rssi));
     }
