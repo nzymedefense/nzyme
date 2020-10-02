@@ -8,6 +8,8 @@ class TrackerStatus extends React.Component {
                 return <span className="badge badge-success">ONLINE</span>;
             case "DARK":
                 return <span className="badge badge-danger">DARK</span>;
+            case "WEAK":
+                return <span className="badge badge-warning">WEAK</span>;
             default:
                 return this.props.status;
         }

@@ -22,8 +22,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerState;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class TrackerStateWatchdog {
 
-    private static final Logger LOG = LogManager.getLogger(TrackerStateWatchdog.class);
+    public static final int WEAK_RSSI_LIMIT = 165;
 
     private final NzymeTracker nzyme;
 
@@ -76,7 +74,7 @@ public class TrackerStateWatchdog {
 
                                 // Is the signal weak?
                                 lastRSSIReceived.get().ifPresent(rssi -> {
-                                    if (rssi < 165) {
+                                    if (rssi < WEAK_RSSI_LIMIT) {
                                         result.add(TrackerState.WEAK);
                                     }
                                 });

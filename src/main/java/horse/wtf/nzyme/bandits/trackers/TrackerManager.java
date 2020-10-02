@@ -20,6 +20,7 @@ package horse.wtf.nzyme.bandits.trackers;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
+import horse.wtf.nzyme.bandits.trackers.trackerlogic.TrackerStateWatchdog;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -90,7 +91,11 @@ public class TrackerManager {
         if (tracker.getLastSeen().isBefore(DateTime.now().minusSeconds(TrackerManager.DARK_TIMEOUT_SECONDS))) {
             return TrackerState.DARK;
         } else {
-            return TrackerState.ONLINE;
+            if (tracker.getRssi() < TrackerStateWatchdog.WEAK_RSSI_LIMIT) {
+                return TrackerState.WEAK;
+            } else {
+                return TrackerState.ONLINE;
+            }
         }
     }
 

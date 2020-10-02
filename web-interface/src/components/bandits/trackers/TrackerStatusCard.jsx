@@ -14,6 +14,10 @@ class TrackerStatusCard extends React.Component {
                 bg = "bg-danger";
                 statusText = "Dark";
                 break;
+            case "WEAK":
+                bg = "bg-warning";
+                statusText = "Weak Signal";
+                break;
             default:
                 bg = "bg-info";
                 statusText = "Unknown (" + this.props.status + ")";
