@@ -76,7 +76,7 @@ public class TrackerStateWatchdog {
 
                                 // Is the signal weak?
                                 lastRSSIReceived.get().ifPresent(rssi -> {
-                                    if (rssi < 50) { // TODO find a good threshold
+                                    if (rssi < 165) {
                                         result.add(TrackerState.WEAK);
                                     }
                                 });
@@ -101,7 +101,7 @@ public class TrackerStateWatchdog {
         if (ping.getNodeType() != TrackerMessage.Ping.NodeType.LEADER) {
             return;
         }
-        
+
         this.lastPingReceived.set(Optional.of(DateTime.now()));
         this.lastRSSIReceived.set(Optional.of(rssi));
     }
