@@ -263,8 +263,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Register web interface asset resources.
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
-        if(configuration.useTls()) {
-            try {
+        try {
+            if (configuration.useTls()) {
                 httpServer = GrizzlyHttpServerFactory.createHttpServer(
                         configuration.restListenUri(),
                         resourceConfig,
@@ -274,11 +274,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
                                 configuration.tlsKeyPath()
                         )
                 );
-            } catch (GeneralSecurityException | IOException e) {
-                throw new RuntimeException("Could not initialize secure web server.", e);
+            } else {
+                httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
             }
-        } else {
-            httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
+        } catch(Exception e) {
+            throw new RuntimeException("Could not start web server.", e);
         }
 
         LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",

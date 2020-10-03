@@ -104,7 +104,13 @@ public class Main {
                 }
 
                 NzymeLeader nzyme = new NzymeLeaderImpl(baseConfiguration, leaderConfiguration, database);
-                nzyme.initialize();
+
+                try {
+                    nzyme.initialize();
+                } catch(Exception e) {
+                    LOG.fatal("Could not initialize nzyme.", e);
+                    System.exit(FAILURE);
+                }
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     Thread.currentThread().setName("shutdown-hook");
@@ -127,7 +133,12 @@ public class Main {
                 }
 
                 NzymeTracker tracker = new NzymeTrackerImpl(baseConfiguration, trackerConfiguration);
-                tracker.initialize();
+                try {
+                    tracker.initialize();
+                } catch (Exception e) {
+                    LOG.fatal("Could not initialize nzyme.", e);
+                    System.exit(FAILURE);
+                }
         }
 
         while(true) {
