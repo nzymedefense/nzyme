@@ -139,8 +139,8 @@ class CreateIdentifierPage extends React.Component {
                             <h3>Help</h3>
                             <p>
                                 Identifiers are attributes that describe a bandit. For example, you could use identifiers
-                                to describe a bandit that probes for two specific SSIDs, is always detected using a weak
-                                signal strength and also only uses specific channels.
+                                to describe a bandit that probes for two specific SSIDs and is always detected using a weak
+                                signal strength.
                             </p>
                         </div>
                     </div>
