@@ -141,7 +141,6 @@ graylog_uplinks: []
 # Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps
 802_11_traps: []
 
-# Optional: A tracker device to track down physical location of bandits. Please read more in the documentation.
-# Please consult the nzyme documentation to find out supported tracker devices.
-# See: https://go.nzyme.org/bandits-and-trackers
-tracker_device {}
+# Optional: A device to communicate with nzyme trackers, used to track down physical location of bandits. Please read
+# more in the documentation. See: https://go.nzyme.org/bandits-and-trackers
+groundstation_device: {}

@@ -31,11 +31,10 @@ import horse.wtf.nzyme.bandits.trackers.hid.TrackerHID;
 import horse.wtf.nzyme.bandits.trackers.messagehandlers.*;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
-import horse.wtf.nzyme.configuration.TrackerDeviceConfiguration;
+import horse.wtf.nzyme.configuration.UplinkDeviceConfiguration;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -71,7 +70,7 @@ public class GroundStation implements Runnable {
                          MetricRegistry metrics,
                          ContactIdentifierProcess contacts,
                          @Nullable TrackerManager trackerManager,
-                         TrackerDeviceConfiguration config) throws ConfigException {
+                         UplinkDeviceConfiguration config) throws ConfigException {
         //noinspection UnstableApiUsage
         this.transmitQueue = new ArrayDeque(100);
         this.hids = Lists.newArrayList();
@@ -89,7 +88,7 @@ public class GroundStation implements Runnable {
         try {
             deviceType = TrackerDevice.TYPE.valueOf(config.type());
         } catch(IllegalArgumentException e) {
-            throw new ConfigException.BadValue(ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.TYPE,
+            throw new ConfigException.BadValue(ConfigurationKeys.TYPE,
                     "Invalid tracker device type.", e);
         }
 

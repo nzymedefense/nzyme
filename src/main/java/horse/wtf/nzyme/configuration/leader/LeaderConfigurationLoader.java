@@ -99,7 +99,7 @@ public class LeaderConfigurationLoader {
                 parseAlertingTrainingPeriodSeconds(),
                 parseGraylogUplinks(),
                 parseAlertCallbacks(),
-                parseTrackerDevice()
+                parseGroundstationDevice()
         );
     }
 
@@ -270,15 +270,15 @@ public class LeaderConfigurationLoader {
     }
 
     @Nullable
-    private TrackerDeviceConfiguration parseTrackerDevice() {
-        if (!root.hasPath(ConfigurationKeys.TRACKER_DEVICE)) {
+    private UplinkDeviceConfiguration parseGroundstationDevice() {
+        if (!root.hasPath(ConfigurationKeys.GROUNDSTATION_DEVICE)) {
             return null;
         }
 
-        Config trackerDevice = root.getConfig(ConfigurationKeys.TRACKER_DEVICE);
+        Config trackerDevice = root.getConfig(ConfigurationKeys.GROUNDSTATION_DEVICE);
 
         if(trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
-            return TrackerDeviceConfiguration.create(
+            return UplinkDeviceConfiguration.create(
                     trackerDevice.getString(ConfigurationKeys.TYPE),
                     trackerDevice.getConfig(ConfigurationKeys.PARAMETERS)
             );
@@ -303,32 +303,32 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_MONITORS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
-        ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.GROUNDSTATION_DEVICE, "<root>", Config.class);
 
-        if (root.hasPath(ConfigurationKeys.TRACKER_DEVICE)) {
-            Config trackerDevice = root.getConfig(ConfigurationKeys.TRACKER_DEVICE);
+        if (root.hasPath(ConfigurationKeys.GROUNDSTATION_DEVICE)) {
+            Config groundstationDevice = root.getConfig(ConfigurationKeys.GROUNDSTATION_DEVICE);
 
-            if (trackerDevice.hasPath(ConfigurationKeys.TYPE)) {
-                ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
-                ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+            if (groundstationDevice.hasPath(ConfigurationKeys.TYPE)) {
+                ConfigurationValidator.expect(groundstationDevice, ConfigurationKeys.TYPE, ConfigurationKeys.GROUNDSTATION_DEVICE, String.class);
+                ConfigurationValidator.expect(groundstationDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.GROUNDSTATION_DEVICE, Config.class);
 
                 // Validate parameters of SX126X LoRa HAT.
-                if (trackerDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
-                    Config loraConfig = trackerDevice.getConfig(ConfigurationKeys.PARAMETERS);
+                if (groundstationDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
+                    Config loraConfig = groundstationDevice.getConfig(ConfigurationKeys.PARAMETERS);
 
                     // Serial port must exist.
-                    ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+                    ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.GROUNDSTATION_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
                     String serialPortPath = loraConfig.getString(ConfigurationKeys.SERIAL_PORT);
                     if (!new File(serialPortPath).exists()) {
-                        throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                        throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.GROUNDSTATION_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
                                 + ConfigurationKeys.SERIAL_PORT + " does not point to an existing serial port path at [" + serialPortPath + "].");
                     }
 
                     // Encryption key must exist and be exactly 32 characters.
-                    ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+                    ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.GROUNDSTATION_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
                     String encryptionKey = loraConfig.getString(ConfigurationKeys.ENCRYPTION_KEY);
                     if (encryptionKey.length() != 32) {
-                        throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                        throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.GROUNDSTATION_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
                                 + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
                     }
                 }

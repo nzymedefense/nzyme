@@ -35,7 +35,7 @@ public class TrackerConfigurationLoader {
 
     private final Config root;
     private final Config general;
-    private final Config trackerDevice;
+    private final Config uplinkDevice;
 
     private final BaseDot11ConfigurationLoader baseDot11ConfigurationLoader;
 
@@ -50,7 +50,7 @@ public class TrackerConfigurationLoader {
 
         try {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
-            this.trackerDevice = root.getConfig(ConfigurationKeys.TRACKER_DEVICE);
+            this.uplinkDevice = root.getConfig(ConfigurationKeys.UPLINK_DEVICE);
         } catch(ConfigException e) {
             throw new IncompleteConfigurationException("Incomplete configuration.", e);
         }
@@ -61,7 +61,7 @@ public class TrackerConfigurationLoader {
     public TrackerConfiguration get() {
         return TrackerConfiguration.create(
                 parseRole(),
-                parseTrackerDevice(),
+                parseUplinkDevice(),
                 parseHIDs(),
                 baseDot11ConfigurationLoader.parseDot11Monitors()
         );
@@ -71,10 +71,10 @@ public class TrackerConfigurationLoader {
         return general.getEnum(Role.class, ConfigurationKeys.ROLE);
     }
 
-    private TrackerDeviceConfiguration parseTrackerDevice() {
-        return TrackerDeviceConfiguration.create(
-                trackerDevice.getString(ConfigurationKeys.TYPE),
-                trackerDevice.getConfig(ConfigurationKeys.PARAMETERS)
+    private UplinkDeviceConfiguration parseUplinkDevice() {
+        return UplinkDeviceConfiguration.create(
+                uplinkDevice.getString(ConfigurationKeys.TYPE),
+                uplinkDevice.getConfig(ConfigurationKeys.PARAMETERS)
         );
     }
 
@@ -90,15 +90,15 @@ public class TrackerConfigurationLoader {
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.DATA_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
-        ConfigurationValidator.expect(root, ConfigurationKeys.TRACKER_DEVICE, "<root>", Config.class);
+        ConfigurationValidator.expect(root, ConfigurationKeys.UPLINK_DEVICE, "<root>", Config.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.HIDS, ConfigurationKeys.GENERAL, List.class);
 
         // Tracker config.
-        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
-        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+        ConfigurationValidator.expect(uplinkDevice, ConfigurationKeys.TYPE, ConfigurationKeys.UPLINK_DEVICE, String.class);
+        ConfigurationValidator.expect(uplinkDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.UPLINK_DEVICE, Config.class);
 
-        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.TYPE, ConfigurationKeys.TRACKER_DEVICE, String.class);
-        ConfigurationValidator.expect(trackerDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.TRACKER_DEVICE, Config.class);
+        ConfigurationValidator.expect(uplinkDevice, ConfigurationKeys.TYPE, ConfigurationKeys.UPLINK_DEVICE, String.class);
+        ConfigurationValidator.expect(uplinkDevice, ConfigurationKeys.PARAMETERS, ConfigurationKeys.UPLINK_DEVICE, Config.class);
 
         // HIDs.
         for (String hid : general.getStringList(ConfigurationKeys.HIDS)) {
@@ -110,22 +110,22 @@ public class TrackerConfigurationLoader {
         }
 
         // Validate parameters of SX126X LoRa HAT.
-        if (trackerDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
-            Config loraConfig = trackerDevice.getConfig(ConfigurationKeys.PARAMETERS);
+        if (uplinkDevice.getString(ConfigurationKeys.TYPE).equals(TrackerDevice.TYPE.SX126X_LORA.toString())) {
+            Config loraConfig = uplinkDevice.getConfig(ConfigurationKeys.PARAMETERS);
 
             // Serial port must exist.
-            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.SERIAL_PORT, ConfigurationKeys.UPLINK_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
             String serialPortPath = loraConfig.getString(ConfigurationKeys.SERIAL_PORT);
             if (!new File(serialPortPath).exists()) {
-                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.UPLINK_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
                         + ConfigurationKeys.SERIAL_PORT + " does not point to an existing serial port path at [" + serialPortPath + "].");
             }
 
             // Encryption key must exist and be exactly 32 characters.
-            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
+            ConfigurationValidator.expect(loraConfig, ConfigurationKeys.ENCRYPTION_KEY, ConfigurationKeys.UPLINK_DEVICE + "." + ConfigurationKeys.PARAMETERS, String.class);
             String encryptionKey = loraConfig.getString(ConfigurationKeys.ENCRYPTION_KEY);
             if (encryptionKey.length() != 32) {
-                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.TRACKER_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
+                throw new InvalidConfigurationException("Parameter " + ConfigurationKeys.UPLINK_DEVICE + "." + ConfigurationKeys.PARAMETERS + "."
                         + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
             }
         }

@@ -293,7 +293,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         // Ground Station.
-        if (configuration.trackerDevice() != null) {
+        if (configuration.groundstationDevice() != null) {
             try {
                 this.groundStation = new GroundStation(
                         Role.LEADER,
@@ -302,7 +302,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         metrics,
                         contactManager,
                         trackerManager,
-                        configuration.trackerDevice()
+                        configuration.groundstationDevice()
                 );
 
                 // Pings.

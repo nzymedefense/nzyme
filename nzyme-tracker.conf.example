@@ -16,7 +16,7 @@ general: {
 }
 
 # Please consult the nzyme documentation to find out supported tracker devices.
-tracker_device {
+uplink_device {
   type: SX126X_LORA
   parameters: {
     # Set the encryption key to your own 32 character string of letters and numbers.

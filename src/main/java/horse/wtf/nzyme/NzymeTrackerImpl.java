@@ -107,7 +107,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     metrics,
                     banditManager,
                     null,
-                    configuration.trackerDevice()
+                    configuration.uplinkDevice()
             );
 
 

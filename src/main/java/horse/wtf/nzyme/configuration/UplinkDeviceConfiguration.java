@@ -21,12 +21,12 @@ import com.google.auto.value.AutoValue;
 import com.typesafe.config.Config;
 
 @AutoValue
-public abstract class TrackerDeviceConfiguration {
+public abstract class UplinkDeviceConfiguration {
 
     public abstract String type();
     public abstract Config parameters();
 
-    public static TrackerDeviceConfiguration create(String type, Config parameters) {
+    public static UplinkDeviceConfiguration create(String type, Config parameters) {
         return builder()
                 .type(type)
                 .parameters(parameters)
@@ -34,7 +34,7 @@ public abstract class TrackerDeviceConfiguration {
     }
 
     public static Builder builder() {
-        return new AutoValue_TrackerDeviceConfiguration.Builder();
+        return new AutoValue_UplinkDeviceConfiguration.Builder();
     }
 
     @AutoValue.Builder
@@ -43,7 +43,7 @@ public abstract class TrackerDeviceConfiguration {
 
         public abstract Builder parameters(Config parameters);
 
-        public abstract TrackerDeviceConfiguration build();
+        public abstract UplinkDeviceConfiguration build();
     }
 
 }
