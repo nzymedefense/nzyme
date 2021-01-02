@@ -208,7 +208,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                             Dot11MetaInformation meta = Dot11MetaInformation.parse(r.getHeader().getDataFields());
 
                             if (meta.isMalformed()) {
-                                LOG.trace("Bad checksum. Skipping malformed packet.");
+                                LOG.trace("Bad checksum. Skipping malformed packet on probe [{}].", getName());
                                 statistics.tickMalformedCountAndNotify(meta);
                                 continue;
                             }
@@ -252,7 +252,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
                                                 LOG.error("Not parsing unsupported management frame subtype [{}].", type.value());
                                         }
                                     } catch (MalformedFrameException e) {
-                                        LOG.info("Skipping malformed frame.", e);
+                                        LOG.info("Skipping malformed frame on probe [{}].", getName(), e);
                                         getStatistics().tickMalformedCountAndNotify(meta);
                                     }
                                 }
@@ -262,9 +262,9 @@ public class Dot11MonitorProbe extends Dot11Probe {
                             time.stop();
                         }
                     } catch(IllegalArgumentException | ArrayIndexOutOfBoundsException | IllegalRawDataException e) {
-                        LOG.debug("Illegal data received.", e);
+                        LOG.debug("Illegal data received on probe [{}].", getName(), e);
                     } catch(Exception e) {
-                        LOG.error("Could not process packet.", e);
+                        LOG.error("Could not process packet on probe [{}].", getName(), e);
                     }
                 }
             }
