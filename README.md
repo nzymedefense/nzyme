@@ -7,13 +7,13 @@
 
 ### What is nzyme?
 
-The nzyme project uses WiFi adapters in monitor mode to scan the frequencies for suspicious behavior, specifically rogue access points and known WiFi attack platforms. Each recorded wireless frame is parsed and optionally sent to a [Graylog](https://www.graylog.org/) log management system for long-term storage that allows you to perform forensics and incident response. Ever wondered what to do if you catch a malicious wireless actor? With 
+The nzyme project uses WiFi adapters in monitor mode to scan the frequencies for suspicious behavior, specifically rogue access points and known WiFi attack platforms. Each recorded wireless frame is parsed and optionally sent to a [Graylog](https://www.graylog.org/) log management system for long-term storage that allows you to perform forensics and incident response. Ever wondered what to do if you catch a malicious wireless actor? With nzyme, you will be able to reconstruct what happened, who was targeted, and who was successfully compromised.
 
-Several [types of alerts](https://go.nzyme.org/alerting) are automatically raised. The employed techniques range from signature based analysis of expected network infrastructure to threat landscape assessment with fingerprinting to setting traps with deception capabilities.
+Several [types of alerts](https://go.nzyme.org/alerting) are automatically raised. The employed techniques range from signature based analysis of expected network infrastructure, threat landscape assessment with fingerprinting to setting traps with deception capabilities.
 
 ### What is nzyme not?
 
-nzyme is not designed to be physically moving around in any way. It is supposed to stay stationary and constantly observe the WiFi RF spectrum. If you are looking for a WiFi recon or wardriving tool, you should check out [Kismet](https://www.kismetwireless.net/).
+nzyme is not designed to be physically moving around in any way. It is supposed to stay stationary and constantly observe the WiFi radio frequency spectrum. If you are looking for a WiFi recon or wardriving tool, you should check out [Kismet](https://www.kismetwireless.net/).
 
 (It obviously won't break from moving around but the interface and some of the functionality won't make much sense anymore.)
 
