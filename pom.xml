@@ -11,7 +11,7 @@
 
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>
-    <version>1.0.0-beta.7-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
