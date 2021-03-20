@@ -6,12 +6,12 @@
         <url>https://github.com/lennartkoopmann/nzyme</url>
         <connection>scm:git:git://github.com/lennartkoopmann/nzyme.git</connection>
         <developerConnection>scm:git:git@github.com:lennartkoopmann/nzyme.git</developerConnection>
-      <tag>1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
