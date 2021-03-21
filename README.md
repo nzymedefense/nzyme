@@ -19,7 +19,7 @@ nzyme is not designed to be physically moving around in any way. It is supposed 
 
 ## Getting Started
 
-Please use [the Wiki](https://github.com/lennartkoopmann/nzyme/wiki) to get started.
+Please visit the [getting started page](https://www.nzyme.org/get-started) to get started.
 
 ## Contributing
 
