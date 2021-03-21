@@ -1,18 +1,18 @@
 /*
- *  This file is part of nzyme.
+ * This file is part of nzyme.
  *
- *  nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme;
@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class Version {
@@ -32,12 +33,19 @@ public class Version {
         Properties buildProperties = new Properties();
 
         try {
-            gitProperties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
-            buildProperties.load(getClass().getClassLoader().getResourceAsStream("build.properties"));
+            InputStream git = getClass().getClassLoader().getResourceAsStream("git.properties");
+            InputStream build = getClass().getClassLoader().getResourceAsStream("build.properties");
+
+            if (git == null || build == null) {
+                throw new RuntimeException("git.properties or build.properties missing. Run mvn:package to fix.");
+            }
+
+            gitProperties.load(git);
+            buildProperties.load(build);
 
             return new StringBuilder(String.valueOf(gitProperties.get("git.build.version")))
                     .append(" built at [")
-                    .append(String.valueOf(buildProperties.get("date"))).append("]")
+                    .append(buildProperties.get("date")).append("]")
                     .toString();
         } catch (IOException e) {
             LOG.error("Could not load version information.", e);
@@ -53,7 +61,7 @@ public class Version {
             return com.github.zafarkhaja.semver.Version.valueOf(String.valueOf(gitProperties.get("git.build.version")));
         } catch(Exception e) {
             // This is not recoverable and can only happen if something goes sideways during build.
-            throw new RuntimeException("Could not build semantic version from nzyme version.", e);
+            throw new RuntimeException("Could not build semantic version from probe version.", e);
         }
     }
 

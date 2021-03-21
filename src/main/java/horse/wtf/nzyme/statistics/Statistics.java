@@ -1,34 +1,41 @@
 /*
- *  This file is part of Nzyme.
+ * This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  Nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
-import horse.wtf.nzyme.Nzyme;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.UplinkHandler;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
 
+    private final UplinkHandler uplink;
+
     private final AtomicLong frameCount;
+    private final AtomicLong recentFrameCount;
+    private final AtomicLong recentFrameCountTemp;
     private final AtomicLong malformedCount;
     private final Map<String, AtomicLong> frameTypes;
 
@@ -36,41 +43,52 @@ public class Statistics {
     private final Map<Integer, AtomicLong> channelMalformedCounts;
 
     // Remember to reset these in resetStats()
-    private final Map<String, AtomicLong> probingDevices;
-    private final Map<String, AtomicLong> accessPoints;
-    private final Map<String, AtomicLong> beaconedNetworks;
 
-    public Statistics() {
+    public Statistics(UplinkHandler uplink) {
+        this.uplink = uplink;
+
         this.frameCount = new AtomicLong(0);
+        this.recentFrameCount = new AtomicLong(0);
+        this.recentFrameCountTemp = new AtomicLong(0);
         this.malformedCount = new AtomicLong(0);
 
         this.channelCounts = Maps.newHashMap();
         this.channelMalformedCounts = Maps.newHashMap();
 
         this.frameTypes = Maps.newHashMap();
-        this.probingDevices = Maps.newHashMap();
-        this.accessPoints = Maps.newHashMap();
-        this.beaconedNetworks = Maps.newHashMap();
-    }
 
-    public void resetAccumulativeTicks() {
-        probingDevices.clear();
-        accessPoints.clear();
-        beaconedNetworks.clear();
+        // Periodically clean up recent statistics.
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("statistics-recent-cleaner-%d")
+                .build())
+                .scheduleAtFixedRate(this::resetRecentFrameCount, 1, 1, TimeUnit.MINUTES);
     }
 
     public void tickFrameCount(Dot11MetaInformation meta) {
         frameCount.incrementAndGet();
+        recentFrameCountTemp.incrementAndGet();
         tickInMap(meta.getChannel(), channelCounts);
     }
 
-    public void tickMalformedCountAndNotify(Nzyme nzyme, Dot11MetaInformation meta) {
+    public void resetRecentFrameCount() {
+        recentFrameCount.set(recentFrameCountTemp.get());
+        recentFrameCountTemp.set(0);
+    }
+
+    public long getRecentFrameCount() {
+        return recentFrameCount.get();
+    }
+
+    public void tickMalformedCountAndNotify(Dot11MetaInformation meta) {
         int channel = 0;
         if(meta != null) {
             channel = meta.getChannel();
+            frameCount.incrementAndGet();
+            tickInMap(meta.getChannel(), channelCounts);
         }
 
-        nzyme.notify(
+        uplink.notifyUplinks(
                 new Notification("Malformed frame received.", channel)
                         .addField(FieldNames.SUBTYPE, "malformed"), meta);
 
@@ -81,30 +99,6 @@ public class Statistics {
 
     public void tickType(String type) {
         tickInMap(type, frameTypes);
-    }
-
-    public void tickProbingDevice(String bssid) {
-        tickInMap(bssid, probingDevices);
-    }
-
-    public void tickAccessPoint(String bssid) {
-        tickInMap(bssid, accessPoints);
-    }
-
-    public void tickBeaconedNetwork(String ssid) {
-        tickInMap(ssid, beaconedNetworks);
-    }
-
-    public Map<String, AtomicLong> getProbingDevices() {
-        return probingDevices;
-    }
-
-    public Map<String, AtomicLong> getAccessPoints() {
-        return accessPoints;
-    }
-
-    public Map<String, AtomicLong> getBeaconedNetworks() {
-        return beaconedNetworks;
     }
 
     public AtomicLong getFrameCount() {

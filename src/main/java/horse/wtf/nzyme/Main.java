@@ -1,76 +1,56 @@
 /*
- *  This file is part of Nzyme.
+ * This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  Nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme;
 
 import com.beust.jcommander.JCommander;
-import com.github.joschi.jadconfig.JadConfig;
-import com.github.joschi.jadconfig.RepositoryException;
-import com.github.joschi.jadconfig.ValidationException;
-import com.github.joschi.jadconfig.repositories.PropertiesRepository;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.configuration.CLIArguments;
-import horse.wtf.nzyme.configuration.Configuration;
-import horse.wtf.nzyme.periodicals.PeriodicalManager;
-import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
-import horse.wtf.nzyme.statistics.Statistics;
-import horse.wtf.nzyme.statistics.StatisticsPrinter;
+import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.configuration.base.BaseConfiguration;
+import horse.wtf.nzyme.configuration.base.BaseConfigurationLoader;
+import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
+import horse.wtf.nzyme.configuration.tracker.TrackerConfigurationLoader;
+import horse.wtf.nzyme.database.Database;
+import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class Main {
 
     private static final Logger LOG = LogManager.getLogger(Main.class);
 
-    public static final int STATS_INTERVAL = 60;
     private static final int FAILURE = 1;
 
     public static void main(String[] argv) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Thread.currentThread().setName("shutdown-hook");
-            LOG.info("Shutting down.");
-        }));
-
-        Version version = new Version();
-        LOG.info("Version: {}.", version.getVersionString());
-
         final CLIArguments cliArguments = new CLIArguments();
-        final Configuration configuration = new Configuration();
 
         // Parse CLI arguments.
         JCommander.newBuilder()
                 .addObject(cliArguments)
                 .build()
                 .parse(argv);
-
-        // Parse configuration.
-        try {
-            new JadConfig(new PropertiesRepository(cliArguments.getConfigFilePath()), configuration).process();
-        } catch (RepositoryException | ValidationException e) {
-            LOG.error("Could not read config.", e);
-            Runtime.getRuntime().exit(FAILURE);
-        }
 
         // Override log level if requested.
         if(cliArguments.isDebugMode()) {
@@ -81,42 +61,84 @@ public class Main {
             Logging.setRootLoggerLevel(Level.TRACE);
         }
 
-        // Set up statistics printer.
-        final Statistics statistics = new Statistics();
-        final StatisticsPrinter statisticsPrinter = new StatisticsPrinter(statistics);
-        LOG.info("Printing statistics every {} seconds.", STATS_INTERVAL);
-        // Statistics printer.
-        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("statistics-%d")
-                .build()
-        ).scheduleAtFixedRate(() -> {
-            LOG.info(statisticsPrinter.print());
-            statistics.resetAccumulativeTicks();
-        }, STATS_INTERVAL, STATS_INTERVAL, TimeUnit.SECONDS);
-
-        ExecutorService loopExecutor = Executors.newFixedThreadPool(configuration.getChannels().size(), new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setNameFormat("nzyme-loop-%d")
-                .build());
-
-        // Periodicals.
-        PeriodicalManager periodicalManager = new PeriodicalManager();
-
-        if(configuration.areVersionchecksEnabled()) {
-            periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version), 0, 60, TimeUnit.MINUTES);
-        } else {
-            LOG.info("Versionchecks are disabled.");
+        // Parse configuration.
+        BaseConfiguration baseConfiguration = null;
+        try {
+            baseConfiguration = new BaseConfigurationLoader(new File(cliArguments.getConfigFilePath())).get();
+        } catch (InvalidConfigurationException | ConfigException e) {
+            LOG.error("Invalid baseconfiguration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (IncompleteConfigurationException e) {
+            LOG.error("Incomplete base configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (FileNotFoundException e) {
+            LOG.error("Could not read configuration file.", e);
+            System.exit(FAILURE);
         }
 
-        for (Map.Entry<String, ImmutableList<Integer>> config : configuration.getChannels().entrySet()) {
-            try {
-                Nzyme nzyme = new NzymeImpl(config.getKey(), config.getValue(), cliArguments, configuration, statistics);
-                loopExecutor.submit(nzyme.loop());
-            } catch (NzymeInitializationException e) {
-                LOG.error("Boot error.", e);
-                Runtime.getRuntime().exit(FAILURE);
-            }
+
+        switch (baseConfiguration.mode()) {
+            case LEADER:
+                LeaderConfiguration leaderConfiguration = null;
+                try {
+                    leaderConfiguration = new LeaderConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+                } catch (InvalidConfigurationException | ConfigException e) {
+                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (IncompleteConfigurationException e) {
+                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (FileNotFoundException e) {
+                    LOG.error("Could not read configuration file.", e);
+                    System.exit(FAILURE);
+                }
+
+
+                // Database.
+                Database database = new Database(leaderConfiguration);
+                try {
+                    database.initializeAndMigrate();
+                } catch (LiquibaseException e) {
+                    LOG.fatal("Error during database initialization and migration.", e);
+                    System.exit(FAILURE);
+                }
+
+                NzymeLeader nzyme = new NzymeLeaderImpl(baseConfiguration, leaderConfiguration, database);
+
+                try {
+                    nzyme.initialize();
+                } catch(Exception e) {
+                    LOG.fatal("Could not initialize nzyme.", e);
+                    System.exit(FAILURE);
+                }
+
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    Thread.currentThread().setName("shutdown-hook");
+                    nzyme.shutdown();
+                }));
+                break;
+            case TRACKER:
+                TrackerConfiguration trackerConfiguration = null;
+                try {
+                    trackerConfiguration = new TrackerConfigurationLoader(new File(cliArguments.getConfigFilePath())).get();
+                } catch (InvalidConfigurationException | ConfigException e) {
+                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (IncompleteConfigurationException e) {
+                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+                    System.exit(FAILURE);
+                } catch (FileNotFoundException e) {
+                    LOG.error("Could not read configuration file.", e);
+                    System.exit(FAILURE);
+                }
+
+                NzymeTracker tracker = new NzymeTrackerImpl(baseConfiguration, trackerConfiguration);
+                try {
+                    tracker.initialize();
+                } catch (Exception e) {
+                    LOG.fatal("Could not initialize nzyme.", e);
+                    System.exit(FAILURE);
+                }
         }
 
         while(true) {

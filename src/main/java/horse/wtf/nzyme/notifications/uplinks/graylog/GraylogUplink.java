@@ -1,23 +1,25 @@
 /*
- *  This file is part of Nzyme.
+ * This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  Nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme.notifications.uplinks.graylog;
 
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import org.graylog2.gelfclient.GelfConfiguration;
@@ -27,21 +29,18 @@ import org.graylog2.gelfclient.transport.GelfTransport;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
-
-import static horse.wtf.nzyme.Tools.calculateSignalQuality;
+import java.util.Map;
 
 public class GraylogUplink implements Uplink {
 
     private static final String SOURCE = "nzyme";
 
     private final String nzymeId;
-    private final String networkInterfaceName;
 
     private final GelfTransport gelfTransport;
 
-    public GraylogUplink(String hostname, int port, String nzymeId, String networkInterfaceName) {
+    public GraylogUplink(String hostname, int port, String nzymeId) {
         this.nzymeId = nzymeId;
-        this.networkInterfaceName = networkInterfaceName;
 
         this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
                 .transport(GelfTransports.TCP)
@@ -65,19 +64,32 @@ public class GraylogUplink implements Uplink {
 
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
         gelf.addAdditionalFields(notification.getAdditionalFields());
-        gelf.addAdditionalField("nzyme_sensor_id", this.nzymeId);
-        gelf.addAdditionalField("nic_name", this.networkInterfaceName);
+        gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
+        gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "frame_record");
 
         // Meta information.
         if(meta != null) {
-            gelf.addAdditionalField("signal_strength", meta.getAntennaSignal());
-            gelf.addAdditionalField("frequency", meta.getFrequency());
-            gelf.addAdditionalField("signal_quality", calculateSignalQuality(meta.getAntennaSignal()));
-            gelf.addAdditionalField("is_wep", meta.isWep());
+            gelf.addAdditionalField(FieldNames.ANTENNA_SIGNAL, meta.getAntennaSignal());
+            gelf.addAdditionalField(FieldNames.FREQUENCY, meta.getFrequency());
+            gelf.addAdditionalField(FieldNames.SIGNAL_QUALITY, meta.getSignalQuality());
 
             if(meta.getMacTimestamp() >= 0) {
-                gelf.addAdditionalField("mac_timestamp", meta.getMacTimestamp());
+                gelf.addAdditionalField(FieldNames.MAC_TIMESTAMP, meta.getMacTimestamp());
             }
+        }
+
+        this.gelfTransport.trySend(gelf);
+    }
+
+    @Override
+    public void notifyOfAlert(Alert alert) {
+        GelfMessage gelf = new GelfMessage("ALERT: " + alert.getMessage(), SOURCE);
+        gelf.addAdditionalField(FieldNames.NZYME_SENSOR_ID, this.nzymeId);
+        gelf.addAdditionalField(FieldNames.NZYME_MESSAGE_TYPE, "alert");
+        gelf.addAdditionalField(FieldNames.ALERT_TYPE, alert.getType().toString().toLowerCase());
+
+        for (Map.Entry<String, Object> x : alert.getFields().entrySet()) {
+            gelf.addAdditionalField("alert_" + x.getKey(), x.getValue());
         }
 
         this.gelfTransport.trySend(gelf);

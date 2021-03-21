@@ -1,18 +1,18 @@
 /*
- *  This file is part of nzyme.
+ * This file is part of nzyme.
  *
- *  nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme.periodicals.versioncheck;
@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
+import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.Registry;
 import horse.wtf.nzyme.Version;
 import horse.wtf.nzyme.periodicals.Periodical;
 import horse.wtf.nzyme.util.Wall;
@@ -46,15 +48,17 @@ public class VersioncheckThread extends Periodical {
 
     private final OkHttpClient httpClient;
     private final Version version;
+    private final NzymeLeader nzyme;
     private final ObjectMapper om;
 
-    public VersioncheckThread(Version version) {
+    public VersioncheckThread(Version version, NzymeLeader nzyme) {
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
                 .build();
 
         this.version = version;
+        this.nzyme = nzyme;
         this.om = new ObjectMapper()
                 .registerModule(new JodaModule())
                 .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
@@ -63,7 +67,7 @@ public class VersioncheckThread extends Periodical {
 
     @Override
     protected void execute() {
-        LOG.info("Starting to check for most recent Nzyme version.");
+        LOG.info("Starting to check for most recent nzyme version.");
 
         try {
             Request request = new Request.Builder()
@@ -79,6 +83,7 @@ public class VersioncheckThread extends Periodical {
             if (!response.isSuccessful()) {
                LOG.error("Could not check for newest nzyme version. Expected HTTP <200> but received HTTP <{}>. " +
                                "Please consult the README.", response.code());
+               return;
             }
 
             if (response.body() != null) {
@@ -91,7 +96,11 @@ public class VersioncheckThread extends Periodical {
                             + versionResponse.getFullVersionString() + " (released at " +
                             versionResponse.releasedAt + ").";
                     LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
+
+                    nzyme.getRegistry().setBool(Registry.KEY.NEW_VERSION_AVAILABLE, true);
                 }
+
+                LOG.info("Successfully completed version check. Everything seems up to date.");
             } else {
                 LOG.error("Could not check for newest nzyme version. Received empty response. Please consult the README.");
             }
@@ -102,7 +111,7 @@ public class VersioncheckThread extends Periodical {
 
     @Override
     public String getName() {
-        return "Versionchecks";
+        return "VersioncheckThread";
     }
 
 }

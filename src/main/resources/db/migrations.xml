@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+
+    <changeSet id="0" author="lennartkoopmann">
+        <createTable tableName="measurements" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="measurement_type" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="measurement_value" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="1" author="lennartkoopmann">
+        <createIndex indexName="idx_measurements_standard_lookup" tableName="measurements" unique="false">
+            <column name="measurement_type" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_measurements_created_at" tableName="measurements" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2" author="lennartkoopmann">
+        <createTable tableName="signal_index_history" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_index" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="signal_index_threshold" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="signal_quality" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="signal_stddev" type="float">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="expected_delta_upper" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="expected_delta_lower" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_sigindex_standard_lookup" tableName="signal_index_history" unique="false">
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="channel" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_sigindex_created_at" tableName="signal_index_history" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="3" author="lennartkoopmann">
+        <createTable tableName="beacon_rate_history" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="beacon_rate" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_beaconrate_standard_lookup" tableName="beacon_rate_history" unique="false">
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="channel" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="idx_beaconrate_created_at" tableName="beacon_rate_history" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="4" author="lennartkoopmann">
+        <dropColumn tableName="beacon_rate_history" columnName="channel" />
+    </changeSet>
+
+    <changeSet id="5" author="lennartkoopmann">
+        <dropTable tableName="signal_index_history" />
+    </changeSet>
+
+    <changeSet id="6" author="lennartkoopmann">
+        <createTable tableName="sigidx_histogram_history" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="histogram" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_sigidxhistory_standard_lookup" tableName="sigidx_histogram_history" unique="false">
+            <column name="bssid" />
+            <column name="ssid" />
+            <column name="channel" />
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="7" author="lennartkoopmann">
+        <createTable tableName="alerts" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="alert_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="alert_type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="subsystem" type="varchar(25)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="message" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fields" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="use_frame_count" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="documentation_link" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="false_positives" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="alerts_standard_lookup" tableName="alerts" unique="false">
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="8" author="lennartkoopmann">
+        <dropColumn tableName="alerts" columnName="false_positives" />
+        <dropColumn tableName="alerts" columnName="documentation_link" />
+        <dropColumn tableName="alerts" columnName="description" />
+        <dropColumn tableName="alerts" columnName="message" />
+    </changeSet>
+
+    <changeSet id="9" author="lennartkoopmann">
+        <addColumn tableName="alerts">
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="frequency" type="integer">
+                <constraints nullable="false" />
+            </column>
+            <column name="antenna_signal" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="10" author="lennartkoopmann">
+        <dropColumn tableName="alerts" columnName="channel" />
+        <dropColumn tableName="alerts" columnName="antenna_signal" />
+        <dropColumn tableName="alerts" columnName="frequency" />
+    </changeSet>
+
+    <changeSet id="11" author="lennartkoopmann">
+        <createTable tableName="bandits">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bandit_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="name" type="varchar(75)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="identifiers" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="bandits_standard_lookup" tableName="bandits" unique="false">
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex indexName="bandits_indiv_lookup" tableName="bandits" unique="false">
+            <column name="bandit_uuid" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="12" author="lennartkoopmann">
+        <dropColumn tableName="bandits" columnName="identifiers" />
+
+        <createTable tableName="bandit_identifiers">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="identifier_type" type="varchar(75)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bandit_id" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="configuration" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="bandits_identifiers_linked_lookup" tableName="bandit_identifiers" unique="false">
+            <column name="bandit_id" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_bandits2identifiers"
+                                    baseTableName="bandit_identifiers"
+                                    baseColumnNames="bandit_id"
+                                    referencedTableName="bandits"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
+    </changeSet>
+
+    <changeSet id="13" author="lennartkoopmann">
+        <createTable tableName="contacts">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="contact_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="bandit_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="contacts_linked_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_bandits2contacts"
+                                    baseTableName="contacts"
+                                    baseColumnNames="bandit_id"
+                                    referencedTableName="bandits"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
+
+    </changeSet>
+
+    <changeSet id="14" author="lennartkoopmann">
+        <modifyDataType tableName="measurements" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="measurements" columnName="measurement_value" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="beacon_rate_history" columnName="beacon_rate" newDataType="bigint" />
+        <modifyDataType tableName="sigidx_histogram_history" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="alerts" columnName="frame_count" newDataType="bigint" />
+        <modifyDataType tableName="bandits" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="id" newDataType="bigint" />
+        <modifyDataType tableName="bandit_identifiers" columnName="bandit_id" newDataType="bigint" />
+    </changeSet>
+
+    <changeSet id="15" author="lennartkoopmann">
+        <createIndex indexName="contacts_active_lookup" tableName="contacts" unique="false">
+            <column name="bandit_id" />
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="16" author="lennartkoopmann">
+        <addColumn tableName="bandit_identifiers">
+            <column name="identifier_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="17" author="lennartkoopmann">
+        <addColumn tableName="bandits">
+            <column name="read_only" type="boolean" defaultValue="false">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="18" author="lennartkoopmann">
+        <addColumn tableName="contacts">
+            <column name="source_role" type="varchar(75)" defaultValue="LEADER" >
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="contacts">
+            <column name="source_name" type="varchar(255)" defaultValue="unknown/migrated">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="19" author="lennartkoopmann">
+        <addColumn tableName="contacts">
+            <column name="last_signal" type="bigint" defaultValue="0">
+                <constraints nullable="false" unique="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,182 @@
+html, body {
+    font-family: 'Inconsolata', monospace;
+    color: #fff;
+    height: 100%;
+}
+
+body.login-page {
+    padding-top: 35px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+}
+
+h1 {
+    text-align: center;
+    border-bottom: 1px solid #191b28;
+    border-top: 1px solid #191b28;
+    padding-bottom: 5px;
+    padding-top: 10px;
+    margin-bottom: 20px;
+}
+
+header {
+    background-color: #191b28;
+    margin-bottom: 11px;
+}
+
+hr {
+    background-color: #444
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+ol.breadcrumb li.breadcrumb-item::before {
+    color: #0b5573;
+}
+
+ol.breadcrumb li.breadcrumb-item {
+    color: #999;
+}
+
+.blink{
+    text-decoration: blink;
+    -webkit-animation-name: blinker;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-timing-function:ease-in-out;
+    -webkit-animation-direction: alternate;
+}
+
+.container-login {
+    height: 100%;
+    align-content: center;
+}
+
+.container-login .card {
+    height: 285px;
+    margin-top: auto;
+    margin-bottom: auto;
+    width: 400px;
+    background-color: rgba(0,0,0,0.5) !important;
+}
+
+.container-login .card-header h5 {
+    margin-bottom: 0;
+}
+
+.container-login .card-footer {
+    background-color: rgba(0,0,0,0.8) !important;
+    color: #757e86;
+}
+
+div.overview-card p {
+    font-weight: 600;
+}
+
+div.overview-card span {
+    font-size: 26px;
+}
+
+.navbar img.logo {
+    height: 30px;
+    width: 25.5px;
+    margin-right: 15px;
+}
+
+a.navbar-brand {
+    color: #fff;
+    font-weight: 500 !important;
+}
+
+a.navbar-brand:hover {
+    color: #fff;
+}
+
+a:hover {
+    text-decoration: none;
+    color: #0b5573;
+}
+
+h2 em {
+    color: #999;
+    font-style: normal;
+}
+
+#footer a {
+    color: #0a4862;
+}
+
+#footer a:hover {
+    text-decoration: none;
+    color: #0b5573;
+}
+
+li.state-not-active {
+    text-decoration: line-through;
+    color: #999;
+}
+
+ul.channel-details-fingerprints {
+    list-style-type: square;
+    padding-left: 15px;
+}
+
+select.channel-switcher {
+    margin-left: 12px;
+}
+
+i.monitored-network {
+    margin-left: 7px;
+    font-size: 13px;
+}
+
+@-webkit-keyframes blinker {
+    from {opacity: 1.0;}
+    to {opacity: 0.4;}
+}
+
+div.dashboard div.dashboard-card {
+    height: 150px;
+    text-align: center;
+}
+
+div.dashboard div.dashboard-card-high {
+    height: 300px;
+}
+
+div.dashboard div.dashboard-card div.dashboard-align {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+div.dashboard div.dashboard-card div.dashboard-manual-align {
+    margin-top: 10px;
+}
+
+div.dashboard div.dashboard-card span.dashboard-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px;
+    text-transform: uppercase;
+}
+
+div.dashboard div.lower-row {
+    margin-top: 30px;
+}
+
+span.most-active-channel {
+    font-weight: bold;
+    border-top: 1px dotted #999;
+    border-bottom: 1px dotted #999;
+}
+
+i.built-in-bandit {
+    color: #292b40;
+    margin-left: 10px;
+}

@@ -1,18 +1,18 @@
 /*
- *  This file is part of Nzyme.
+ * This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  Nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme.dot11;
@@ -22,18 +22,22 @@ import org.pcap4j.packet.*;
 
 import java.util.ArrayList;
 
+import static horse.wtf.nzyme.util.Tools.calculateSignalQuality;
+
 public class Dot11MetaInformation {
 
     private final boolean malformed;
     private final int antennaSignal;
+    private final int signalQuality;
     private final int frequency;
     private final int channel;
     private final long macTimestamp;
     private final boolean isWep;
 
-    private Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
+    public Dot11MetaInformation(boolean malformed, int antennaSignal, int frequency, int channel, long macTimestamp, boolean isWep) {
         this.malformed = malformed;
         this.antennaSignal = antennaSignal;
+        this.signalQuality = calculateSignalQuality(antennaSignal);
         this.channel = channel;
         this.frequency = frequency;
         this.macTimestamp = macTimestamp;
@@ -46,6 +50,10 @@ public class Dot11MetaInformation {
 
     public int getAntennaSignal() {
         return antennaSignal;
+    }
+
+    public int getSignalQuality() {
+        return signalQuality;
     }
 
     public int getFrequency() {

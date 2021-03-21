@@ -1,0 +1,48 @@
+package horse.wtf.nzyme.notifications.uplinks.misc;
+
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.notifications.Uplink;
+
+import javax.annotation.Nullable;
+
+/*
+ * Used for handler unit testing and has no real use-case for anything else.
+ */
+public class LoopbackUplink implements Uplink {
+
+    private Notification lastNotification;
+    private Dot11MetaInformation lastMeta;
+    private Alert lastAlert;
+
+    @Override
+    public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
+        this.lastNotification = notification;
+        this.lastMeta = meta;
+    }
+
+    @Override
+    public void notifyOfAlert(Alert alert) {
+        this.lastAlert = alert;
+    }
+
+    public Notification getLastNotification() {
+        return lastNotification;
+    }
+
+    public Dot11MetaInformation getLastMeta() {
+        return lastMeta;
+    }
+
+    public Alert getLastAlert() {
+        return lastAlert;
+    }
+
+    public void clear() {
+        lastNotification = null;
+        lastMeta = null;
+        lastAlert = null;
+    }
+
+}

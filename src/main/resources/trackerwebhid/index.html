@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+
+    <link rel="shortcut icon" href="/assets/favicon.ico">
+
+    <link rel="stylesheet" href="/assets/bootstrap4.css" />
+    <link rel="stylesheet" href="/assets/fonts.css" />
+    <link rel="stylesheet" href="/assets/main.css" />
+
+    <title>nzyme - Tracker HID</title>
+</head>
+<body>
+
+<noscript>
+    You need to enable JavaScript to run this app.
+</noscript>
+
+<div class="container d-block" id="main-container">
+
+    <div class="row mt-2">
+        <div class="col-sm-12 text-center">
+            <img src="/assets/nzyme.png" id="logo" />
+            nzyme TRACKER
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Master Link</h2>
+                </div>
+
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">CONN</div>
+                            <div class="indicator-value"><span id="prop-connection"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Signal</div>
+                            <div class="indicator-value"><span id="prop-signal"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">LINK DVC</div>
+                            <div class="indicator-value"><span id="prop-link-device"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>802.11</h2>
+                </div>
+
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Monitors</div>
+                            <div class="indicator-value"><span id="prop-monitors"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Channel</div>
+                            <div class="indicator-value"><span id="prop-channel"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">DSGNTR</div>
+                            <div class="indicator-value"><span id="prop-channel-designator"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Operator</h2>
+                </div>
+
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Task</div>
+                            <div class="indicator-value"><span id="prop-task"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-lg">
+                            <div class="indicator-header">Bandit Target</div>
+                            <div class="indicator-value"><span id="prop-bandit-target"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Tracking</h2>
+                </div>
+
+                <div class="section-indicator-container">
+                    <div class="section-indicators clearfix">
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Track</div>
+                            <div class="indicator-value"><span id="prop-track"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Frames</div>
+                            <div class="indicator-value"><span id="prop-frames"></span></div>
+                        </div>
+
+                        <div class="indicator indicator-md">
+                            <div class="indicator-header">Contact</div>
+                            <div class="indicator-value"><span id="prop-contact"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="chart clearfix mt-2">
+                        <div class="indicator-header">Bandit Signal: <span id="prop-bandit-signal"></span></div>
+
+                        <canvas id="chart-chart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 mb-3">
+        <div class="col-sm-12">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Events</h2>
+                </div>
+
+                <ul id="events"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container d-none" id="error-container">
+    <div class="row mt-3">
+        <div class="col-sm-12">
+            <div class="alert alert-danger">
+                <p><strong>nzyme TRACKER - Could not load data!</strong></p>
+
+                <p>Make sure this browser can reach http://10.0.0.1:13000/api/state on your tracker device.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/assets/numeral.js"></script>
+<script src="/assets/moment.js"></script>
+<script src="/assets/axios.js"></script>
+<script src="/assets/chart.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>

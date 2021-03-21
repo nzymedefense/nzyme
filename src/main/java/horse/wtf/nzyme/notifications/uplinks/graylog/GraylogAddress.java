@@ -1,38 +1,48 @@
 /*
- *  This file is part of Nzyme.
+ * This file is part of nzyme.
  *
- *  Nzyme is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
  *
- *  Nzyme is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with Nzyme.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
 package horse.wtf.nzyme.notifications.uplinks.graylog;
 
-public class GraylogAddress {
+import com.google.auto.value.AutoValue;
 
-    private final String host;
-    private final int port;
+@AutoValue
+public abstract class GraylogAddress {
 
-    public GraylogAddress(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public abstract String host();
+    public abstract int port();
+
+    public static GraylogAddress create(String host, int port) {
+        return builder()
+                .host(host)
+                .port(port)
+                .build();
     }
 
-    public String getHost() {
-        return host;
+    public static Builder builder() {
+        return new AutoValue_GraylogAddress.Builder();
     }
 
-    public int getPort() {
-        return port;
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder host(String host);
+
+        public abstract Builder port(int port);
+
+        public abstract GraylogAddress build();
     }
 
 }
