@@ -46,6 +46,7 @@ import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
+import horse.wtf.nzyme.notifications.uplinks.UplinkFactory;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
@@ -86,7 +87,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
+import java.net.InetSocketAddress;
 import java.security.Key;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -207,9 +208,10 @@ public class NzymeLeaderImpl implements NzymeLeader {
         final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
         reporter.start();
 
-        // Register configured Graylog uplinks.
-        for (GraylogAddress graylogAddress : configuration.graylogUplinks()) {
-            registerUplink(new GraylogUplink(graylogAddress.host(), graylogAddress.port(), getNodeID()));
+        // Register configured uplinks.
+        UplinkFactory uplinkFactory = new UplinkFactory(getNodeID());
+        for (UplinkDefinition uplinkDefinition : configuration.uplinks()) {
+            registerUplink(uplinkFactory.fromConfigurationDefinition(uplinkDefinition));
         }
 
         // Periodicals.
@@ -351,7 +353,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Dot11MonitorDefinition m : configuration.dot11Monitors()) {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
-                    configuration.graylogUplinks(),
+                    getUplinks(),
                     getNodeID(),
                     m.device(),
                     m.channels(),
@@ -450,7 +452,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
             Dot11SenderProbe probe = new Dot11SenderProbe(
                     Dot11ProbeConfiguration.create(
                             "trap-sender-" + td.device() + "-" + tc.type(),
-                            configuration.graylogUplinks(),
+                            getUplinks(),
                             getNodeID(),
                             td.device(),
                             ImmutableList.copyOf(td.channels()),
@@ -562,8 +564,13 @@ public class NzymeLeaderImpl implements NzymeLeader {
         return clients;
     }
 
+    public ImmutableList<Uplink> getUplinks() {
+        return ImmutableList.copyOf(this.uplinks);
+    }
+
     @Override
     public void registerUplink(Uplink uplink) {
+        LOG.info("Registering uplink of type [{}].", uplink.getClass().getCanonicalName());
         this.uplinks.add(uplink);
     }
 

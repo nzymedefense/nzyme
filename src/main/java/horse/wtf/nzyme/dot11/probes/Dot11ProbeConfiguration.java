@@ -21,7 +21,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
 import horse.wtf.nzyme.configuration.Dot11TrapDeviceDefinition;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import horse.wtf.nzyme.notifications.Uplink;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +31,7 @@ public abstract class Dot11ProbeConfiguration {
     public abstract String probeName();
 
     @Nullable
-    public abstract ImmutableList<GraylogAddress> graylogAddresses();
+    public abstract ImmutableList<Uplink> uplinks();
     public abstract String nzymeId();
 
     public abstract String networkInterfaceName();
@@ -45,10 +45,10 @@ public abstract class Dot11ProbeConfiguration {
     @Nullable
     public abstract ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices();
 
-    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<GraylogAddress> graylogAddresses, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
+    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<Uplink> uplinks, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
         return builder()
                 .probeName(probeName)
-                .graylogAddresses(graylogAddresses)
+                .uplinks(uplinks)
                 .nzymeId(nzymeId)
                 .networkInterfaceName(networkInterfaceName)
                 .channels(channels)
@@ -67,7 +67,7 @@ public abstract class Dot11ProbeConfiguration {
     public abstract static class Builder {
         public abstract Builder probeName(String probeName);
 
-        public abstract Builder graylogAddresses(ImmutableList<GraylogAddress> graylogAddresses);
+        public abstract Builder uplinks(ImmutableList<Uplink> uplinks);
 
         public abstract Builder nzymeId(String nzymeId);
 

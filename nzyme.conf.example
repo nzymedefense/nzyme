@@ -79,9 +79,10 @@ interfaces: {
   use_tls: false
 }
 
-# List of Graylog GELF TCP inputs. (Optional but strongly recommended to enable analytics, forensics and incident response.)
-# See https://go.nzyme.org/docs-graylog
-graylog_uplinks: []
+# List of uplinks. Sends frame meta information and alerts to log management systems like Graylog for threat hunting and
+# forensics.
+# See https://go.nzyme.org/uplinks
+uplinks: []
 
 # 802.11/Wifi adapters that are designated to read traffic.
 # The more monitors you have listening on different channels, the more traffic will be picked up and the more
