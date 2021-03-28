@@ -22,6 +22,8 @@ import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.UplinkDefinition;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
+import horse.wtf.nzyme.notifications.uplinks.syslog.SyslogUDPRFC3164UDPUplink;
+import horse.wtf.nzyme.notifications.uplinks.syslog.SyslogUDPRFC5424UDPUplink;
 
 import java.net.InetSocketAddress;
 
@@ -39,7 +41,9 @@ public class UplinkFactory {
             case "graylog":
                 return new GraylogUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
             case "syslog_udp_rfc5424":
-                throw new RuntimeException("not implemented");
+                return new SyslogUDPRFC5424UDPUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
+            case "syslog_udp_rfc3164":
+                return new SyslogUDPRFC3164UDPUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
             default:
                 throw new RuntimeException("Unknown uplink type [" + def + "].");
         }

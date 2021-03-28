@@ -59,8 +59,7 @@ public class GraylogUplink implements Uplink {
 
         if(meta != null) {
             sb.append(" ").append("(").append(meta.getFrequency()).append("MHz @")
-                    .append(" ").append(meta.getAntennaSignal()).append("dBm)")
-                    .toString();
+                    .append(" ").append(meta.getAntennaSignal()).append("dBm)");
         }
 
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);
