@@ -287,13 +287,11 @@ public class DefaultBandits {
     }};
 
     public static void seed(ContactManager contactIdentifier) {
+        contactIdentifier.removeAllReadOnlyBandits();
         for (Bandit bandit : BANDITS) {
-            Optional<Bandit> x = contactIdentifier.findBanditByUUID(bandit.uuid());
-            if (!x.isPresent()) {
-                LOG.info("Registering missing default bandit: {}", bandit);
-                contactIdentifier.registerBandit(bandit);
-            }
+            contactIdentifier.registerBandit(bandit);
         }
+
 
     }
 
