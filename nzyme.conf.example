@@ -80,8 +80,7 @@ interfaces: {
 }
 
 # List of uplinks. Sends frame meta information and alerts to log management systems like Graylog for threat hunting and
-# forensics.
-# See https://go.nzyme.org/uplinks
+# forensics. See https://go.nzyme.org/uplinks
 uplinks: []
 
 # 802.11/Wifi adapters that are designated to read traffic.
