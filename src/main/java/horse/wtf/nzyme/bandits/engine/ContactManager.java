@@ -108,6 +108,10 @@ public class ContactManager implements ContactIdentifierProcess {
         this.bandits = null;
     }
 
+    public void removeAllReadOnlyBandits() {
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits WHERE read_only = true"));
+        this.bandits = null;    }
+
     public void registerIdentifier(Bandit bandit, BanditIdentifier identifier) {
         nzyme.getDatabase().useHandle(handle -> {
             String configuration;

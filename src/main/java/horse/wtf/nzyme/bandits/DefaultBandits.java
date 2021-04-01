@@ -45,10 +45,10 @@ public class DefaultBandits {
 
     public static final List<Bandit> BANDITS = new ArrayList<Bandit>(){{
         add(Bandit.create(null, UUID.fromString("d754ab90-67f9-43bc-b5df-bd815112e55b"),
-                "WiFi Pineapple Nano or Tetra (PineAP), esp8266_deauther",
+                "WiFi Pineapple Nano, Tetra or Mark VII (PineAP), esp8266_deauther",
                 "[Built-in bandit definition]\n\nDetects WiFi Pineapple PineAP frames and esp8266_deauther frames, " +
                         "which appear to be cloned from Pineapple frames because they have the same fingerprint.\n\n" +
-                        "Pineapple Nano v2.0.2, v2.5.2 and Tetra v1.1.2, v2.5.2, v2.7.0 but other firmware versions might match, too.",
+                        "Pineapple Nano v2.0.2, v2.5.2, Mark VII v1.0.2 and Tetra v1.1.2, v2.5.2, v2.7.0 but other firmware versions might match, too.",
                 true,
                 new DateTime("2020-03-29T00:00:00+0000"),
                 new DateTime("2020-03-29T00:00:00+0000"),
@@ -256,16 +256,42 @@ public class DefaultBandits {
                             UUID.fromString("16e0f703-49c4-4ee2-b757-1889c358e707")));
                 }})
         );
+
+        add(Bandit.create(null, UUID.fromString("edb33ea4-829b-4f46-827d-c75a728fc0a0"),
+                "WiFi Pineapple Mark VII (management access point)",
+                "[Built-in bandit definition] Pineapple Mark VII v1.0.2, but other firmware versions might match, too.",
+                true,
+                new DateTime("2021-03-31T00:00:00+0000"),
+                new DateTime("2021-03-31T00:00:00+0000"),
+                new ArrayList<BanditIdentifier>(){{
+                    add(new FingerprintBanditIdentifier(
+                            "52e13d95488261db15fa486a107a5ee5dbf14affa652e928b31dca4c245be6e6",
+                            null,
+                            UUID.fromString("119a972f-b9f7-49d4-ba22-9647dd241148")));
+                }})
+        );
+
+        add(Bandit.create(null, UUID.fromString("9f78318b-7f3c-45cb-9dd6-6176759ac031"),
+                "WiFi Pineapple Mark VII (public access point)",
+                "[Built-in bandit definition] Pineapple Mark VII v1.0.2, but other firmware versions might match, too.",
+                true,
+                new DateTime("2021-03-31T00:00:00+0000"),
+                new DateTime("2021-03-31T00:00:00+0000"),
+                new ArrayList<BanditIdentifier>(){{
+                    add(new FingerprintBanditIdentifier(
+                            "609406d11b6d0398a830142b9ae5c24f59640cf3f02887fe2dc351e056846bb4",
+                            null,
+                            UUID.fromString("59d54520-cd1d-4f76-826e-d914bb76fe8c")));
+                }})
+        );
     }};
 
     public static void seed(ContactManager contactIdentifier) {
+        contactIdentifier.removeAllReadOnlyBandits();
         for (Bandit bandit : BANDITS) {
-            Optional<Bandit> x = contactIdentifier.findBanditByUUID(bandit.uuid());
-            if (!x.isPresent()) {
-                LOG.info("Registering missing default bandit: {}", bandit);
-                contactIdentifier.registerBandit(bandit);
-            }
+            contactIdentifier.registerBandit(bandit);
         }
+
 
     }
 
