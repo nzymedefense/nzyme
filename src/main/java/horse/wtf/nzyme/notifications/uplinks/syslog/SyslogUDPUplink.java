@@ -65,31 +65,7 @@ public abstract class SyslogUDPUplink implements Uplink {
     @Override
     public void notify(Notification notification, @Nullable Dot11MetaInformation meta) {
         try {
-            StringBuilder sb = new StringBuilder(notification.getMessage());
-
-            if(meta != null) {
-                sb.append(" ").append("(").append(meta.getFrequency()).append("MHz @")
-                        .append(" ").append(meta.getAntennaSignal()).append("dBm)");
-            }
-
-            for (Map.Entry<String, Object> field : notification.getAdditionalFields().entrySet()) {
-                sb.append(" ").append(field.getKey()).append("=\"").append(field.getValue().toString().replace("\"", "\\\"")).append("\"");
-            }
-
-            sb.append(" ").append(FieldNames.NZYME_SENSOR_ID).append("=\"").append(this.nzymeId).append("\"");
-            sb.append(" ").append(FieldNames.NZYME_MESSAGE_TYPE).append("=\"frame_record\"");
-
-            if(meta != null) {
-                sb.append(" ").append(FieldNames.ANTENNA_SIGNAL).append("=\"").append(meta.getAntennaSignal()).append("\"");
-                sb.append(" ").append(FieldNames.FREQUENCY).append("=\"").append(meta.getFrequency()).append("\"");
-                sb.append(" ").append(FieldNames.SIGNAL_QUALITY).append("=\"").append(meta.getSignalQuality()).append("\"");
-
-                if(meta.getMacTimestamp() >= 0) {
-                    sb.append(" ").append(FieldNames.MAC_TIMESTAMP).append("=\"").append(meta.getMacTimestamp()).append("\"");
-                }
-            }
-
-            sender.sendMessage(sb.toString());
+            sender.sendMessage(buildMessage(notification, meta));
         } catch (Exception e) {
             LOG.info("Could not send syslog message.", e);
         }
@@ -109,10 +85,39 @@ public abstract class SyslogUDPUplink implements Uplink {
             sb.append(" ").append(FieldNames.NZYME_MESSAGE_TYPE).append("=\"alert\"");
             sb.append(" ").append(FieldNames.ALERT_TYPE).append("=\"").append(alert.getType().toString().toLowerCase()).append("\"");
 
+
             sender.sendMessage(sb.toString());
         } catch (Exception e) {
             LOG.info("Could not send syslog message.", e);
         }
+    }
+
+    public String buildMessage(Notification notification, @Nullable Dot11MetaInformation meta) {
+        StringBuilder sb = new StringBuilder(notification.getMessage());
+
+        if(meta != null) {
+            sb.append(" ").append("(").append(meta.getFrequency()).append("MHz @")
+                    .append(" ").append(meta.getAntennaSignal()).append("dBm)");
+        }
+
+        for (Map.Entry<String, Object> field : notification.getAdditionalFields().entrySet()) {
+            sb.append(" ").append(field.getKey()).append("=\"").append(field.getValue().toString().replace("\"", "\\\"")).append("\"");
+        }
+
+        sb.append(" ").append(FieldNames.NZYME_SENSOR_ID).append("=\"").append(this.nzymeId).append("\"");
+        sb.append(" ").append(FieldNames.NZYME_MESSAGE_TYPE).append("=\"frame_record\"");
+
+        if(meta != null) {
+            sb.append(" ").append(FieldNames.ANTENNA_SIGNAL).append("=\"").append(meta.getAntennaSignal()).append("\"");
+            sb.append(" ").append(FieldNames.FREQUENCY).append("=\"").append(meta.getFrequency()).append("\"");
+            sb.append(" ").append(FieldNames.SIGNAL_QUALITY).append("=\"").append(meta.getSignalQuality()).append("\"");
+
+            if(meta.getMacTimestamp() >= 0) {
+                sb.append(" ").append(FieldNames.MAC_TIMESTAMP).append("=\"").append(meta.getMacTimestamp()).append("\"");
+            }
+        }
+
+        return sb.toString();
     }
 
 }
