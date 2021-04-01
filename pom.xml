@@ -22,7 +22,7 @@
         <log4j.version>2.13.3</log4j.version>
         <pcap4j.version>1.8.2</pcap4j.version>
         <gelfclient.version>1.4.4</gelfclient.version>
-        <guava.version>28.0-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <jcommander.version>1.78</jcommander.version>
         <testng.version>7.0.0</testng.version>
         <okhttp.version>4.1.0</okhttp.version>
