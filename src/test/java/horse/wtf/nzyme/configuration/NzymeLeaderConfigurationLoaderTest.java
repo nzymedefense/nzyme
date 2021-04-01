@@ -1,3 +1,20 @@
+/*
+ * This file is part of nzyme.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
+ *
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
+
 package horse.wtf.nzyme.configuration;
 
 import com.google.common.collect.ImmutableList;
@@ -6,7 +23,6 @@ import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -36,10 +52,6 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertTrue(c.fetchOuis());
         assertTrue(c.versionchecksEnabled());
         assertEquals(c.restListenUri(), URI.create("http://127.0.0.1:22900/"));
-        assertEquals(c.graylogUplinks(), new ArrayList<GraylogAddress>() {{
-            add(GraylogAddress.create("10.243.255.10", 33001));
-            add(GraylogAddress.create("127.0.0.1", 9001));
-        }});
         assertEquals(c.dot11Monitors(), new ArrayList<Dot11MonitorDefinition>() {{
             add(Dot11MonitorDefinition.create("wlx00c0ca8fd89a", ImmutableList.of(1,2,3,4,5,6), "sudo /sbin/iwconfig {interface} channel {channel}", 1));
             add(Dot11MonitorDefinition.create("wlx00c0ca971216", ImmutableList.of(7,8,9,10,11), "sudo /sbin/iwconfig {interface} channel {channel}", 3));
@@ -73,6 +85,23 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
             add(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL);
             add(Alert.TYPE_WIDE.CRYPTO_CHANGE);
         }});
+
+        assertEquals(c.uplinks().size(), 4);
+        assertEquals(c.uplinks().get(0).type(), "syslog_udp_rfc5424");
+        assertEquals(c.uplinks().get(0).configuration().getString(ConfigurationKeys.HOST), "localhost");
+        assertEquals(c.uplinks().get(0).configuration().getInt(ConfigurationKeys.PORT), 5516);
+
+        assertEquals(c.uplinks().get(1).type(), "graylog");
+        assertEquals(c.uplinks().get(1).configuration().getString(ConfigurationKeys.HOST), "example.org");
+        assertEquals(c.uplinks().get(1).configuration().getInt(ConfigurationKeys.PORT), 5517);
+
+        assertEquals(c.uplinks().get(2).type(), "graylog");
+        assertEquals(c.uplinks().get(2).configuration().getString(ConfigurationKeys.HOST), "10.243.255.10");
+        assertEquals(c.uplinks().get(2).configuration().getInt(ConfigurationKeys.PORT), 33001);
+
+        assertEquals(c.uplinks().get(3).type(), "graylog");
+        assertEquals(c.uplinks().get(3).configuration().getString(ConfigurationKeys.HOST), "127.0.0.1");
+        assertEquals(c.uplinks().get(3).configuration().getInt(ConfigurationKeys.PORT), 9001);
     }
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)

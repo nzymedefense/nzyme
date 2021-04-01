@@ -27,6 +27,7 @@ public class ConfigurationKeys {
     public static final String DOT11_NETWORKS = "802_11_networks";
     public static final String DOT11_ALERTS = "802_11_alerts";
     public static final String GRAYLOG_UPLINKS = "graylog_uplinks";
+    public static final String UPLINKS = "uplinks";
     public static final String DOT11_TRAPS = "802_11_traps";
     public static final String UPLINK_DEVICE = "uplink_device";
     public static final String GROUNDSTATION_DEVICE = "groundstation_device";
@@ -74,6 +75,9 @@ public class ConfigurationKeys {
     public static final String BEACON_RATE = "beacon_rate";
     public static final String CALLBACKS = "callbacks";
     public static final String HIDS = "hids";
+    public static final String CONFIGURATION = "configuration";
+    public static final String HOST = "host";
+    public static final String PORT = "port";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";
