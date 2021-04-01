@@ -28,6 +28,7 @@ import org.graylog2.gelfclient.GelfTransports;
 import org.graylog2.gelfclient.transport.GelfTransport;
 
 import javax.annotation.Nullable;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
@@ -39,10 +40,10 @@ public class GraylogUplink implements Uplink {
 
     private final GelfTransport gelfTransport;
 
-    public GraylogUplink(String hostname, int port, String nzymeId) {
+    public GraylogUplink(InetSocketAddress address, String nzymeId) {
         this.nzymeId = nzymeId;
 
-        this.gelfTransport = GelfTransports.create(new GelfConfiguration(new InetSocketAddress(hostname, port))
+        this.gelfTransport = GelfTransports.create(new GelfConfiguration(address)
                 .transport(GelfTransports.TCP)
                 .queueSize(512)
                 .connectTimeout(5000)
@@ -58,8 +59,7 @@ public class GraylogUplink implements Uplink {
 
         if(meta != null) {
             sb.append(" ").append("(").append(meta.getFrequency()).append("MHz @")
-                    .append(" ").append(meta.getAntennaSignal()).append("dBm)")
-                    .toString();
+                    .append(" ").append(meta.getAntennaSignal()).append("dBm)");
         }
 
         GelfMessage gelf = new GelfMessage(sb.toString(), SOURCE);

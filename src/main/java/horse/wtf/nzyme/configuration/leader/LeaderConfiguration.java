@@ -2,7 +2,6 @@ package horse.wtf.nzyme.configuration.leader;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
-import com.typesafe.config.Config;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
@@ -41,14 +40,14 @@ public abstract class LeaderConfiguration {
     @Nullable
     public abstract Path tlsKeyPath();
 
+    public abstract ImmutableList<UplinkDefinition> uplinks();
+
     public abstract ImmutableList<Dot11MonitorDefinition> dot11Monitors();
     public abstract ImmutableList<Dot11NetworkDefinition> dot11Networks();
     public abstract ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices();
 
     public abstract ImmutableList<Alert.TYPE_WIDE> dot11Alerts();
     public abstract int alertingTrainingPeriodSeconds();
-
-    public abstract ImmutableList<GraylogAddress> graylogUplinks();
 
     public abstract ImmutableList<AlertCallback> alertCallbacks();
 
@@ -61,7 +60,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<GraylogAddress> graylogUplinks, ImmutableList<AlertCallback> alertCallbacks, UplinkDeviceConfiguration groundstationDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, UplinkDeviceConfiguration groundstationDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -76,12 +75,12 @@ public abstract class LeaderConfiguration {
                 .useTls(useTls)
                 .tlsCertificatePath(tlsCertificatePath)
                 .tlsKeyPath(tlsKeyPath)
+                .uplinks(uplinks)
                 .dot11Monitors(dot11Monitors)
                 .dot11Networks(dot11Networks)
                 .dot11TrapDevices(dot11TrapDevices)
                 .dot11Alerts(dot11Alerts)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
-                .graylogUplinks(graylogUplinks)
                 .alertCallbacks(alertCallbacks)
                 .groundstationDevice(groundstationDevice)
                 .build();
@@ -144,6 +143,8 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
+        public abstract Builder uplinks(ImmutableList<UplinkDefinition> uplinks);
+
         public abstract Builder dot11Monitors(ImmutableList<Dot11MonitorDefinition> dot11Monitors);
 
         public abstract Builder dot11Networks(ImmutableList<Dot11NetworkDefinition> dot11Networks);
@@ -153,8 +154,6 @@ public abstract class LeaderConfiguration {
         public abstract Builder dot11Alerts(ImmutableList<Alert.TYPE_WIDE> dot11Alerts);
 
         public abstract Builder alertingTrainingPeriodSeconds(int alertingTrainingPeriodSeconds);
-
-        public abstract Builder graylogUplinks(ImmutableList<GraylogAddress> graylogUplinks);
 
         public abstract Builder alertCallbacks(ImmutableList<AlertCallback> alertCallbacks);
 

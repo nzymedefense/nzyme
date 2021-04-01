@@ -47,6 +47,7 @@
         <lanterna.version>3.0.3</lanterna.version>
         <simplejavamail.version>6.4.0</simplejavamail.version>
         <freemarker.version>2.3.30</freemarker.version>
+        <syslog.version>1.1.7</syslog.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -280,6 +281,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.12</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cloudbees</groupId>
+            <artifactId>syslog-java-client</artifactId>
+            <version>${syslog.version}</version>
         </dependency>
     </dependencies>
 

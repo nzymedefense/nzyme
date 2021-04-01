@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueFactory;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
@@ -40,6 +41,7 @@ import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 public class LeaderConfigurationLoader {
@@ -92,15 +94,53 @@ public class LeaderConfigurationLoader {
                 parseUseTls(),
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
+                parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
                 baseDot11ConfigurationLoader.parseDot11Networks(),
                 parseDot11TrapDeviceDefinitions(),
                 parseDot11Alerts(),
                 parseAlertingTrainingPeriodSeconds(),
-                parseGraylogUplinks(),
                 parseAlertCallbacks(),
                 parseGroundstationDevice()
         );
+    }
+
+    private ImmutableList<UplinkDefinition> parseUplinks() {
+        ImmutableList.Builder<UplinkDefinition> result = new ImmutableList.Builder<>();
+
+        if (root.hasPath(ConfigurationKeys.UPLINKS)) {
+            for (Config uplinkDefinition : root.getConfigList(ConfigurationKeys.UPLINKS)) {
+                result.add(UplinkDefinition.create(
+                        uplinkDefinition.getString(ConfigurationKeys.TYPE),
+                        uplinkDefinition.getConfig(ConfigurationKeys.CONFIGURATION))
+                );
+            }
+        }
+
+        // SOFT MIGRATION. Remove with nzyme v2.0.
+        if (root.hasPath(ConfigurationKeys.GRAYLOG_UPLINKS)) {
+            LOG.warn("!!! DEPRECATION WANRING !!! The \"graylog_uplinks\" configuration has moved to a generic \"uplinks\" configuration. Please consult the configuration file reference on www.nzyme.org.");
+
+            try {
+                List<String> graylogAddresses = root.getStringList(ConfigurationKeys.GRAYLOG_UPLINKS);
+                if (graylogAddresses == null) {
+                    return null;
+                }
+
+                for (String address : graylogAddresses) {
+                    String[] parts = address.split(":");
+                    Config config = ConfigFactory.empty()
+                            .withValue(ConfigurationKeys.HOST, ConfigValueFactory.fromAnyRef(parts[0]))
+                            .withValue(ConfigurationKeys.PORT, ConfigValueFactory.fromAnyRef(Integer.parseInt(parts[1])));
+                    result.add(UplinkDefinition.create("graylog", config));
+                }
+            } catch (ConfigException e) {
+                LOG.debug(e);
+                return null;
+            }
+        }
+
+        return result.build();
     }
 
     private Role parseRole() {
@@ -210,27 +250,6 @@ public class LeaderConfigurationLoader {
         return result.build();
     }
 
-    @Nullable
-    private ImmutableList<GraylogAddress> parseGraylogUplinks() {
-        try {
-            List<String> graylogAddresses = root.getStringList(ConfigurationKeys.GRAYLOG_UPLINKS);
-            if (graylogAddresses == null) {
-                return null;
-            }
-
-            ImmutableList.Builder<GraylogAddress> result = new ImmutableList.Builder<>();
-            for (String address : graylogAddresses) {
-                String[] parts = address.split(":");
-                result.add(GraylogAddress.create(parts[0], Integer.parseInt(parts[1])));
-            }
-
-            return result.build();
-        } catch (ConfigException e) {
-            LOG.debug(e);
-            return null;
-        }
-    }
-
     private ImmutableList<AlertCallback> parseAlertCallbacks() {
         ImmutableList.Builder<AlertCallback> callbacks = new ImmutableList.Builder<>();
         if (!alerting.hasPath(ConfigurationKeys.CALLBACKS)) {
@@ -304,6 +323,16 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.GROUNDSTATION_DEVICE, "<root>", Config.class);
+
+        if (root.hasPath(ConfigurationKeys.UPLINKS)) {
+            ConfigurationValidator.expect(root, ConfigurationKeys.UPLINKS, "<root>", List.class);
+
+            int i = 0;
+            for (Config x : root.getConfigList(ConfigurationKeys.UPLINKS)) {
+                ConfigurationValidator.expect(x, ConfigurationKeys.TYPE, ConfigurationKeys.UPLINKS + ".#" +i, String.class);
+                ConfigurationValidator.expect(x, ConfigurationKeys.CONFIGURATION, ConfigurationKeys.UPLINKS + ".#" +i, Config.class);
+            }
+        }
 
         if (root.hasPath(ConfigurationKeys.GROUNDSTATION_DEVICE)) {
             Config groundstationDevice = root.getConfig(ConfigurationKeys.GROUNDSTATION_DEVICE);
