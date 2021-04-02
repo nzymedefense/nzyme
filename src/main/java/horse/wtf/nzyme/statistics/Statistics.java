@@ -19,7 +19,7 @@ package horse.wtf.nzyme.statistics;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Statistics {
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector uplink;
 
     private final AtomicLong frameCount;
     private final AtomicLong recentFrameCount;
@@ -44,7 +44,7 @@ public class Statistics {
 
     // Remember to reset these in resetStats()
 
-    public Statistics(UplinkHandler uplink) {
+    public Statistics(RemoteConnector uplink) {
         this.uplink = uplink;
 
         this.frameCount = new AtomicLong(0);

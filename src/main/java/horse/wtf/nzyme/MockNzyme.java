@@ -32,11 +32,13 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
+import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -78,6 +80,7 @@ public class MockNzyme implements NzymeLeader {
     private final Version version;
     private final Database database;
     private final List<Uplink> uplinks;
+    private final List<Forwarder> forwarders;
 
     public MockNzyme() {
         this.version = new Version();
@@ -92,6 +95,7 @@ public class MockNzyme implements NzymeLeader {
         this.nodeID = "mocky-mock";
 
         this.uplinks = Lists.newArrayList();
+        this.forwarders = Lists.newArrayList();
 
         this.database = new Database(configuration);
         try {
@@ -152,6 +156,14 @@ public class MockNzyme implements NzymeLeader {
         for (Uplink uplink : uplinks) {
             uplink.notifyOfAlert(alert);
         }
+    }
+
+    @Override
+    public void forwardFrame(Dot11Frame frame) {
+        for (Forwarder forwarder : forwarders) {
+            forwarder.forward(frame);
+        }
+
     }
 
     @Override

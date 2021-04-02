@@ -41,6 +41,7 @@ import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.deception.traps.BeaconTrap;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -61,6 +62,8 @@ import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramCleaner;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
+import horse.wtf.nzyme.remote.forwarders.Forwarder;
+import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
@@ -113,6 +116,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final SystemStatus systemStatus;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
+    private final List<Forwarder> forwarders;
 
     private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
 
@@ -143,6 +147,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.configuration = configuration;
         this.database = database;
         this.uplinks = Lists.newArrayList();
+        this.forwarders = Lists.newArrayList();
 
         this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
@@ -212,6 +217,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
         UplinkFactory uplinkFactory = new UplinkFactory(getNodeID());
         for (UplinkDefinition uplinkDefinition : configuration.uplinks()) {
             registerUplink(uplinkFactory.fromConfigurationDefinition(uplinkDefinition));
+        }
+
+        // Register configured forwarders.
+        ForwarderFactory forwarderFactory = new ForwarderFactory();
+        for (ForwarderDefinition forwarderDefinition : configuration.forwarders()) {
+            this.forwarders.add(forwarderFactory.fromConfigurationDefinition(forwarderDefinition));
         }
 
         // Periodicals.
@@ -586,6 +597,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Uplink uplink : uplinks) {
             uplink.notifyOfAlert(alert);
         }
+    }
+
+    @Override
+    public void forwardFrame(Dot11Frame frame) {
+        for (Forwarder forwarder : this.forwarders) {
+            forwarder.forward(frame);
+        }
+
     }
 
     @Override

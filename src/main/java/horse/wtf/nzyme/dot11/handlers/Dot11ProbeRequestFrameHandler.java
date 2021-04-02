@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeRequestFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
 import horse.wtf.nzyme.notifications.Notification;
@@ -29,12 +29,12 @@ public class Dot11ProbeRequestFrameHandler extends Dot11FrameHandler<Dot11ProbeR
 
     private static final Logger LOG = LogManager.getLogger(Dot11ProbeRequestFrameHandler.class);
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector remote;
 
-    public Dot11ProbeRequestFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
+    public Dot11ProbeRequestFrameHandler(Dot11Probe probe, RemoteConnector remote) {
         super(probe);
 
-        this.uplink = uplink;
+        this.remote = remote;
     }
 
     @Override
@@ -46,13 +46,15 @@ public class Dot11ProbeRequestFrameHandler extends Dot11FrameHandler<Dot11ProbeR
             message = "Probe request: " + frame.requester() + " is looking for any network. (null probe request)";
         }
 
-        uplink.notifyUplinks(
+        remote.notifyUplinks(
                 new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.SSID, frame.ssid() == null ? "[no SSID]" : frame.ssid())
                         .addField(FieldNames.TRANSMITTER, frame.requester())
                         .addField(FieldNames.SUBTYPE, "probe-req"),
                 frame.meta()
         );
+
+        remote.forwardFrame(frame);
 
         LOG.debug(message);
     }

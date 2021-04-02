@@ -51,6 +51,8 @@ public abstract class LeaderConfiguration {
 
     public abstract ImmutableList<AlertCallback> alertCallbacks();
 
+    public abstract ImmutableList<ForwarderDefinition> forwarders();
+
     @Nullable
     public abstract UplinkDeviceConfiguration groundstationDevice();
 
@@ -60,7 +62,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, UplinkDeviceConfiguration groundstationDevice) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, UplinkDeviceConfiguration groundstationDevice, ImmutableList<ForwarderDefinition> forwarders) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -83,6 +85,7 @@ public abstract class LeaderConfiguration {
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .alertCallbacks(alertCallbacks)
                 .groundstationDevice(groundstationDevice)
+                .forwarders(forwarders)
                 .build();
     }
 
@@ -158,6 +161,8 @@ public abstract class LeaderConfiguration {
         public abstract Builder alertCallbacks(ImmutableList<AlertCallback> alertCallbacks);
 
         public abstract Builder groundstationDevice(UplinkDeviceConfiguration groundstationDevice);
+
+        public abstract Builder forwarders(ImmutableList<ForwarderDefinition> forwarders);
 
         public abstract LeaderConfiguration build();
     }

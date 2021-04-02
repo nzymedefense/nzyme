@@ -78,6 +78,7 @@ public class ConfigurationKeys {
     public static final String CONFIGURATION = "configuration";
     public static final String HOST = "host";
     public static final String PORT = "port";
+    public static final String FORWARDERS = "forwarders";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

@@ -38,6 +38,7 @@ import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.interceptors.BanditIdentifierInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -290,6 +291,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
     @Override
     public void notifyUplinksOfAlert(Alert alert) {
+        // ignored for tracker
+    }
+
+    @Override
+    public void forwardFrame(Dot11Frame frame) {
         // ignored for tracker
     }
 }

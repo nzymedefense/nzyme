@@ -101,7 +101,8 @@ public class LeaderConfigurationLoader {
                 parseDot11Alerts(),
                 parseAlertingTrainingPeriodSeconds(),
                 parseAlertCallbacks(),
-                parseGroundstationDevice()
+                parseGroundstationDevice(),
+                parseForwarders()
         );
     }
 
@@ -306,6 +307,21 @@ public class LeaderConfigurationLoader {
         }
     }
 
+    private ImmutableList<ForwarderDefinition> parseForwarders() {
+        ImmutableList.Builder<ForwarderDefinition> result = new ImmutableList.Builder<>();
+
+        if (root.hasPath(ConfigurationKeys.FORWARDERS)) {
+            for (Config forwarderDefinition : root.getConfigList(ConfigurationKeys.FORWARDERS)) {
+                result.add(ForwarderDefinition.create(
+                        forwarderDefinition.getString(ConfigurationKeys.TYPE),
+                        forwarderDefinition.getConfig(ConfigurationKeys.CONFIGURATION))
+                );
+            }
+        }
+
+        return result.build();
+    }
+
     private void validate() throws IncompleteConfigurationException, InvalidConfigurationException {
         // Completeness and type validity.
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
@@ -331,6 +347,16 @@ public class LeaderConfigurationLoader {
             for (Config x : root.getConfigList(ConfigurationKeys.UPLINKS)) {
                 ConfigurationValidator.expect(x, ConfigurationKeys.TYPE, ConfigurationKeys.UPLINKS + ".#" +i, String.class);
                 ConfigurationValidator.expect(x, ConfigurationKeys.CONFIGURATION, ConfigurationKeys.UPLINKS + ".#" +i, Config.class);
+            }
+        }
+
+        if (root.hasPath(ConfigurationKeys.FORWARDERS)) {
+            ConfigurationValidator.expect(root, ConfigurationKeys.FORWARDERS, "<root>", List.class);
+
+            int i = 0;
+            for (Config x : root.getConfigList(ConfigurationKeys.FORWARDERS)) {
+                ConfigurationValidator.expect(x, ConfigurationKeys.TYPE, ConfigurationKeys.FORWARDERS + ".#" +i, String.class);
+                ConfigurationValidator.expect(x, ConfigurationKeys.CONFIGURATION, ConfigurationKeys.FORWARDERS + ".#" +i, Config.class);
             }
         }
 

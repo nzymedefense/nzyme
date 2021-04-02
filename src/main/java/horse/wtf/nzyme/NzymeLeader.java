@@ -19,18 +19,15 @@ package horse.wtf.nzyme;
 
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
-import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.statistics.Statistics;
@@ -39,7 +36,7 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import java.security.Key;
 import java.util.List;
 
-public interface NzymeLeader extends UplinkHandler {
+public interface NzymeLeader extends RemoteConnector {
 
     void initialize();
     void shutdown();

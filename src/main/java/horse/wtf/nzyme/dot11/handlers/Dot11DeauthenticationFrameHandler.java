@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -29,12 +29,12 @@ public class Dot11DeauthenticationFrameHandler extends Dot11FrameHandler<Dot11De
 
     private static final Logger LOG = LogManager.getLogger(Dot11DeauthenticationFrameHandler.class);
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector remote;
 
-    public Dot11DeauthenticationFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
+    public Dot11DeauthenticationFrameHandler(Dot11Probe probe, RemoteConnector remote) {
         super(probe);
 
-        this.uplink = uplink;
+        this.remote = remote;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class Dot11DeauthenticationFrameHandler extends Dot11FrameHandler<Dot11De
         String message = "Deauth: Transmitter " + frame.transmitter() + " is deauthenticating " + frame.destination()
                 + " from BSSID " + frame.bssid() + " (" + frame.reasonString() + ")";
 
-        uplink.notifyUplinks(
+        remote.notifyUplinks(
                 new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
                         .addField(FieldNames.DESTINATION, frame.destination())
@@ -52,6 +52,8 @@ public class Dot11DeauthenticationFrameHandler extends Dot11FrameHandler<Dot11De
                         .addField(FieldNames.SUBTYPE, "deauth"),
                 frame.meta()
         );
+
+        remote.forwardFrame(frame);
 
         LOG.debug(message);
     }

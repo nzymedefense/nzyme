@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -25,18 +25,16 @@ import horse.wtf.nzyme.notifications.Notification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Map;
-
 public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11ProbeResponseFrame> {
 
     private static final Logger LOG = LogManager.getLogger(Dot11ProbeResponseFrameHandler.class);
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector remote;
 
-    public Dot11ProbeResponseFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
+    public Dot11ProbeResponseFrameHandler(Dot11Probe probe, RemoteConnector remote) {
         super(probe);
 
-        this.uplink = uplink;
+        this.remote = remote;
     }
 
     @Override
@@ -48,7 +46,7 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
             message = frame.transmitter() + " responded to probe request from " + frame.destination() + " for " + frame.ssid();
         }
 
-        uplink.notifyUplinks(
+        remote.notifyUplinks(
                 new Notification(message, frame.meta().getChannel())
                         .addField(FieldNames.DESTINATION, frame.destination())
                         .addField(FieldNames.TRANSMITTER, frame.transmitter())
@@ -60,6 +58,8 @@ public class Dot11ProbeResponseFrameHandler extends Dot11FrameHandler<Dot11Probe
                         .addField(FieldNames.SUBTYPE, "probe-resp"),
                         frame.meta()
         );
+
+        remote.forwardFrame(frame);
 
         LOG.debug(message);
     }

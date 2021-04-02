@@ -22,7 +22,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.trackers.trackerlogic.ChannelDesignator;
 import horse.wtf.nzyme.channels.ChannelHopper;
@@ -318,7 +318,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         channelHopper.onChannelSwitch(handler);
     }
 
-    public static void configureAsBroadMonitor(final Dot11MonitorProbe probe, UplinkHandler uplink) {
+    public static void configureAsBroadMonitor(final Dot11MonitorProbe probe, RemoteConnector uplink) {
         probe.addFrameInterceptor(new Dot11FrameInterceptor<Dot11AssociationRequestFrame>() {
             private final Dot11FrameHandler<Dot11AssociationRequestFrame> handler = new Dot11AssociationRequestFrameHandler(probe, uplink);
 

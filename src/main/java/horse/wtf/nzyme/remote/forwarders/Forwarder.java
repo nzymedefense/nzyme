@@ -15,15 +15,12 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme;
+package horse.wtf.nzyme.remote.forwarders;
 
-import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.Notification;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 
-public interface UplinkHandler {
+public interface Forwarder {
 
-    void notifyUplinks(Notification notification, Dot11MetaInformation meta);
-    void notifyUplinksOfAlert(Alert alert);
+    void forward(Dot11Frame frame);
 
 }

@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.handlers;
 
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.frames.Dot11AssociationRequestFrame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -29,12 +29,12 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
 
     private static final Logger LOG = LogManager.getLogger(Dot11AssociationRequestFrameHandler.class);
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector remote;
 
-    public Dot11AssociationRequestFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
+    public Dot11AssociationRequestFrameHandler(Dot11Probe probe, RemoteConnector remote) {
         super(probe);
 
-        this.uplink = uplink;
+        this.remote = remote;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
                 + associationRequest.ssid()
                 + " at " + associationRequest.destination();
 
-        uplink.notifyUplinks(
+        remote.notifyUplinks(
                 new Notification(message, associationRequest.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, associationRequest.transmitter())
                         .addField(FieldNames.DESTINATION, associationRequest.destination())
@@ -51,6 +51,8 @@ public class Dot11AssociationRequestFrameHandler extends Dot11FrameHandler<Dot11
                         .addField(FieldNames.SUBTYPE, "assoc-req"),
                 associationRequest.meta()
         );
+
+        remote.forwardFrame(associationRequest);
 
         LOG.debug(message);
     }

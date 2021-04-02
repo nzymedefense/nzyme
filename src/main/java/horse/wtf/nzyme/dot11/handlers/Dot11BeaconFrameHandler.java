@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.dot11.handlers;
 
 import com.google.common.base.Strings;
-import horse.wtf.nzyme.UplinkHandler;
+import horse.wtf.nzyme.RemoteConnector;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.notifications.FieldNames;
@@ -27,18 +27,16 @@ import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Map;
-
 public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame> {
 
     private static final Logger LOG = LogManager.getLogger(Dot11BeaconFrameHandler.class);
 
-    private final UplinkHandler uplink;
+    private final RemoteConnector remote;
 
-    public Dot11BeaconFrameHandler(Dot11Probe probe, UplinkHandler uplink) {
+    public Dot11BeaconFrameHandler(Dot11Probe probe, RemoteConnector remote) {
         super(probe);
 
-        this.uplink = uplink;
+        this.remote = remote;
     }
 
     @Override
@@ -53,7 +51,7 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
 
         Dot11MetaInformation meta = beacon.meta();
 
-        uplink.notifyUplinks(
+        remote.notifyUplinks(
                 new Notification(message, beacon.meta().getChannel())
                         .addField(FieldNames.TRANSMITTER, beacon.transmitter())
                         .addField(FieldNames.TRANSMITTER_FINGERPRINT, beacon.transmitterFingerprint())
@@ -65,6 +63,8 @@ public class Dot11BeaconFrameHandler extends Dot11FrameHandler<Dot11BeaconFrame>
                         .addField(FieldNames.SUBTYPE, "beacon"),
                 meta
         );
+
+        remote.forwardFrame(beacon);
 
         LOG.debug(message);
     }
