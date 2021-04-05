@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
@@ -55,19 +54,21 @@ public class UDPForwarder implements Forwarder {
     @Override
     public void forward(Dot11Frame frame) {
         try {
-            byte[] forwardedFrame = ForwardedFrame.Dot11Frame.newBuilder()
-                    .setRecordedAt(new DateTime().getMillis())
-                    .setSource(nzymeId)
-                    .setFrameType(frame.getClass().getCanonicalName())
-                    .setFrameHeader(ByteString.copyFrom(frame.header()))
-                    .setFramePayload(ByteString.copyFrom(frame.payload()))
-                    .setFrameMeta(buildMetaBuf(frame.meta()))
-                    .build()
+            byte[] forwardedFrame = ForwardedFrame.Frame.newBuilder()
+                    .setFrameType("802.11")
+                    .setDot11Frame(
+                            ForwardedFrame.Dot11Frame.newBuilder()
+                                    .setRecordedAt(new DateTime().getMillis())
+                                    .setSource(nzymeId)
+                                    .setFrameType(frame.getClass().getCanonicalName())
+                                    .setFrameHeader(ByteString.copyFrom(frame.header()))
+                                    .setFramePayload(ByteString.copyFrom(frame.payload()))
+                                    .setFrameMeta(buildMetaBuf(frame.meta()))
+                                    .build()
+                    ).build()
                     .toByteArray();
 
-            DatagramPacket packet = new DatagramPacket(forwardedFrame, forwardedFrame.length, address);
-
-            socket.send(packet);
+            socket.send(new DatagramPacket(forwardedFrame, forwardedFrame.length, address));
         } catch (Exception e) {
             LOG.error("Could not forward frame.", e);
         }

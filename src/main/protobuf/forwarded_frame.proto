@@ -20,6 +20,11 @@ syntax = "proto3";
 option java_outer_classname = "ForwardedFrame";
 option java_package = "horse.wtf.nzyme.remote.forwarders.protobuf";
 
+message Frame {
+  string frameType = 1;
+  Dot11Frame dot11Frame = 2;
+}
+
 message Dot11Frame {
 
   int64 recordedAt = 1;
