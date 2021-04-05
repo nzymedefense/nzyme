@@ -17,29 +17,72 @@
 
 package horse.wtf.nzyme.remote.forwarders;
 
+import com.google.protobuf.ByteString;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
+import horse.wtf.nzyme.remote.forwarders.protobuf.ForwardedFrame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 public class UDPForwarder implements Forwarder {
 
     private static final Logger LOG = LogManager.getLogger(UDPForwarder.class);
 
-    private DatagramSocket socket;
+    private final String nzymeId;
     private InetSocketAddress address;
 
-    public UDPForwarder(InetSocketAddress address) {
+    private DatagramSocket socket;
+
+    public UDPForwarder(InetSocketAddress address, String nzymeId) {
         LOG.info("Initializing UDP forwarder to [{}]", address);
         this.address = address;
+        this.nzymeId = nzymeId;
+
+        try {
+            socket = new DatagramSocket();
+        } catch (SocketException e) {
+            throw new RuntimeException("Could not create UDP socket.", e);
+        }
     }
 
     @Override
     public void forward(Dot11Frame frame) {
+        try {
+            byte[] forwardedFrame = ForwardedFrame.Dot11Frame.newBuilder()
+                    .setRecordedAt(new DateTime().getMillis())
+                    .setSource(nzymeId)
+                    .setFrameType(frame.getClass().getCanonicalName())
+                    .setFrameHeader(ByteString.copyFrom(frame.header()))
+                    .setFramePayload(ByteString.copyFrom(frame.payload()))
+                    .setFrameMeta(buildMetaBuf(frame.meta()))
+                    .build()
+                    .toByteArray();
 
+            DatagramPacket packet = new DatagramPacket(forwardedFrame, forwardedFrame.length, address);
+
+            socket.send(packet);
+        } catch (Exception e) {
+            LOG.error("Could not forward frame.", e);
+        }
+    }
+
+    private ForwardedFrame.FrameMeta buildMetaBuf(Dot11MetaInformation meta) {
+        return ForwardedFrame.FrameMeta.newBuilder()
+                .setIsMalformed(meta.isMalformed())
+                .setAntennaSignal(meta.getAntennaSignal())
+                .setSignalQuality(meta.getSignalQuality())
+                .setFrequency(meta.getFrequency())
+                .setChannel(meta.getChannel())
+                .setMacTimestamp(meta.getMacTimestamp())
+                .setIsWEP(meta.isWep())
+                .build();
     }
 
 }

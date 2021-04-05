@@ -30,6 +30,8 @@ public abstract class Dot11DeauthenticationFrame implements Dot11Frame {
     public abstract Short reasonCode();
     public abstract String reasonString();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
 
     @JsonIgnore
     public String descriptionString() {
@@ -45,7 +47,7 @@ public abstract class Dot11DeauthenticationFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11DeauthenticationFrame create(String destination, String transmitter, String bssid, Short reasonCode, String reasonString, Dot11MetaInformation meta) {
+    public static Dot11DeauthenticationFrame create(String destination, String transmitter, String bssid, Short reasonCode, String reasonString, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .destination(destination)
                 .transmitter(transmitter)
@@ -53,6 +55,8 @@ public abstract class Dot11DeauthenticationFrame implements Dot11Frame {
                 .reasonCode(reasonCode)
                 .reasonString(reasonString)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -73,6 +77,10 @@ public abstract class Dot11DeauthenticationFrame implements Dot11Frame {
         public abstract Builder reasonString(String reasonString);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11DeauthenticationFrame build();
     }

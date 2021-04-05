@@ -29,6 +29,8 @@ public abstract class Dot11DisassociationFrame implements Dot11Frame {
     public abstract Short reasonCode();
     public abstract String reasonString();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
 
     @JsonIgnore
     public String descriptionString() {
@@ -43,13 +45,15 @@ public abstract class Dot11DisassociationFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11DisassociationFrame create(String destination, String transmitter, Short reasonCode, String reasonString, Dot11MetaInformation meta) {
+    public static Dot11DisassociationFrame create(String destination, String transmitter, Short reasonCode, String reasonString, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .destination(destination)
                 .transmitter(transmitter)
                 .reasonCode(reasonCode)
                 .reasonString(reasonString)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -68,6 +72,10 @@ public abstract class Dot11DisassociationFrame implements Dot11Frame {
         public abstract Builder reasonString(String reasonString);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11DisassociationFrame build();
     }

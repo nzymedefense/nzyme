@@ -292,7 +292,7 @@ public class NetworksTest {
                         new MetricRegistry(),
                         Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION,
                         Frames.PROBE_RESP_1_PAYLOAD),
-                META_NO_WEP));
+                META_NO_WEP, new byte[]{}, new byte[]{}));
 
         assertNotNull(n.getBSSIDs());
         assertNotNull(n.getSSIDs());

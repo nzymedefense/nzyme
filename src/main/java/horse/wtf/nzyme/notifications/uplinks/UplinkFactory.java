@@ -51,7 +51,7 @@ public class UplinkFactory {
 
     private InetSocketAddress parseInetSocketAddress(Config config) {
         if(config.hasPath(ConfigurationKeys.HOST) && config.hasPath(ConfigurationKeys.PORT)) {
-            return InetSocketAddress.createUnresolved(config.getString(ConfigurationKeys.HOST), config.getInt(ConfigurationKeys.PORT));
+            return new InetSocketAddress(config.getString(ConfigurationKeys.HOST), config.getInt(ConfigurationKeys.PORT));
         } else {
             throw new RuntimeException("Invalid configuration. Expecting \"host\" and \"port\" set in uplink configuration. Please consult the uplink documentation.");
         }

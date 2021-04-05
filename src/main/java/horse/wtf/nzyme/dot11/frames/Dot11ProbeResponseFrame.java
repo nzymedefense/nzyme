@@ -34,6 +34,8 @@ public abstract class Dot11ProbeResponseFrame implements Dot11Frame {
     public abstract String transmitterFingerprint();
     public abstract Dot11TaggedParameters taggedParameters();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
 
     @JsonIgnore
     public String descriptionString() {
@@ -50,7 +52,7 @@ public abstract class Dot11ProbeResponseFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11ProbeResponseFrame create(String ssid, String destination, String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta) {
+    public static Dot11ProbeResponseFrame create(String ssid, String destination, String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .ssid(ssid)
                 .destination(destination)
@@ -58,6 +60,8 @@ public abstract class Dot11ProbeResponseFrame implements Dot11Frame {
                 .transmitterFingerprint(transmitterFingerprint)
                 .taggedParameters(taggedParameters)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -78,6 +82,10 @@ public abstract class Dot11ProbeResponseFrame implements Dot11Frame {
         public abstract Builder taggedParameters(Dot11TaggedParameters taggedParameters);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11ProbeResponseFrame build();
     }

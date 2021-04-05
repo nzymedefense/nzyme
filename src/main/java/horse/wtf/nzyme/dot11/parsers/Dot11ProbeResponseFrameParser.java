@@ -61,7 +61,7 @@ public class Dot11ProbeResponseFrameParser extends Dot11FrameParser<Dot11ProbeRe
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters.fingerprint(), taggedParameters, meta);
+        return Dot11ProbeResponseFrame.create(ssid, destination, transmitter, taggedParameters.fingerprint(), taggedParameters, meta, payload, header);
     }
 
 }

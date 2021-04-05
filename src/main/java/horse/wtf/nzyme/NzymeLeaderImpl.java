@@ -220,7 +220,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         // Register configured forwarders.
-        ForwarderFactory forwarderFactory = new ForwarderFactory();
+        ForwarderFactory forwarderFactory = new ForwarderFactory(getNodeID());
         for (ForwarderDefinition forwarderDefinition : configuration.forwarders()) {
             this.forwarders.add(forwarderFactory.fromConfigurationDefinition(forwarderDefinition));
         }
@@ -604,7 +604,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Forwarder forwarder : this.forwarders) {
             forwarder.forward(frame);
         }
-
     }
 
     @Override

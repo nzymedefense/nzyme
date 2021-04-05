@@ -31,6 +31,8 @@ public abstract class Dot11AssociationRequestFrame implements Dot11Frame {
     public abstract String destination();
     public abstract String transmitter();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
 
     @JsonIgnore
     public String descriptionString() {
@@ -44,12 +46,14 @@ public abstract class Dot11AssociationRequestFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11AssociationRequestFrame create(String ssid, String destination, String transmitter, Dot11MetaInformation meta) {
+    public static Dot11AssociationRequestFrame create(String ssid, String destination, String transmitter, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .ssid(ssid)
                 .destination(destination)
                 .transmitter(transmitter)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -66,6 +70,10 @@ public abstract class Dot11AssociationRequestFrame implements Dot11Frame {
         public abstract Builder transmitter(String transmitter);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11AssociationRequestFrame build();
     }

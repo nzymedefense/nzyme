@@ -25,11 +25,17 @@ import java.net.InetSocketAddress;
 
 public class ForwarderFactory {
 
+    private final String nzymeId;
+
+    public ForwarderFactory(String nzymeId) {
+        this.nzymeId = nzymeId;
+    }
+
     public Forwarder fromConfigurationDefinition(ForwarderDefinition definition) {
         String def = definition.type().toLowerCase();
         switch(def) {
             case "udp":
-                return new UDPForwarder(parseInetSocketAddress(definition.configuration()));
+                return new UDPForwarder(parseInetSocketAddress(definition.configuration()), nzymeId);
             default:
                 throw new RuntimeException("Unknown forwarder type [" + def + "].");
         }
@@ -37,7 +43,7 @@ public class ForwarderFactory {
 
     private InetSocketAddress parseInetSocketAddress(Config config) {
         if(config.hasPath(ConfigurationKeys.HOST) && config.hasPath(ConfigurationKeys.PORT)) {
-            return InetSocketAddress.createUnresolved(config.getString(ConfigurationKeys.HOST), config.getInt(ConfigurationKeys.PORT));
+            return new InetSocketAddress(config.getString(ConfigurationKeys.HOST), config.getInt(ConfigurationKeys.PORT));
         } else {
             throw new RuntimeException("Invalid configuration. Expecting \"host\" and \"port\" set in forwarder configuration. Please consult the forwarder documentation.");
         }

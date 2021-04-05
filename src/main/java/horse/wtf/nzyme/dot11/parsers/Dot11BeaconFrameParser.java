@@ -57,7 +57,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
             transmitter = anonymizer.anonymizeBSSID(transmitter);
         }
 
-        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta, payload);
+        return Dot11BeaconFrame.create(ssid, transmitter, taggedParameters.fingerprint(), taggedParameters, meta, payload, header);
     }
 
 }

@@ -40,6 +40,8 @@ public abstract class Dot11BeaconFrame implements Dot11Frame {
 
     public abstract byte[] payload();
 
+    public abstract byte[] header();
+
     @JsonIgnore
     public String descriptionString() {
         StringBuilder sb = new StringBuilder();
@@ -54,7 +56,7 @@ public abstract class Dot11BeaconFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11BeaconFrame create(String ssid, String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta, byte[] payload) {
+    public static Dot11BeaconFrame create(String ssid, String transmitter, String transmitterFingerprint, Dot11TaggedParameters taggedParameters, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .ssid(ssid)
                 .transmitter(transmitter)
@@ -62,6 +64,7 @@ public abstract class Dot11BeaconFrame implements Dot11Frame {
                 .taggedParameters(taggedParameters)
                 .meta(meta)
                 .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -82,6 +85,8 @@ public abstract class Dot11BeaconFrame implements Dot11Frame {
         public abstract Builder meta(Dot11MetaInformation meta);
 
         public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11BeaconFrame build();
     }

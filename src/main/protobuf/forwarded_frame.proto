@@ -1,0 +1,45 @@
+/*
+ * This file is part of nzyme.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Server Side Public License, version 1,
+ * as published by MongoDB, Inc.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * Server Side Public License for more details.
+ *
+ * You should have received a copy of the Server Side Public License
+ * along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
+
+syntax = "proto3";
+
+option java_outer_classname = "ForwardedFrame";
+option java_package = "horse.wtf.nzyme.remote.forwarders.protobuf";
+
+message Dot11Frame {
+
+  int64 recordedAt = 1;
+  string source = 2;
+  string frameType = 3;
+  bytes frameHeader = 4;
+  bytes framePayload = 5;
+  FrameMeta frameMeta = 6;
+
+}
+
+message FrameMeta {
+
+  bool isMalformed = 1;
+  int32 antennaSignal = 2;
+  int32 signalQuality = 3;
+  int32 frequency = 4;
+  int32 channel = 5;
+  int64 macTimestamp = 6;
+  bool isWEP = 7;
+
+}
+

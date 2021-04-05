@@ -31,6 +31,8 @@ public abstract class Dot11ProbeRequestFrame implements Dot11Frame {
     public abstract String requester();
     public abstract Boolean isBroadcastProbe();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
 
     @JsonIgnore
     public String descriptionString() {
@@ -44,12 +46,14 @@ public abstract class Dot11ProbeRequestFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11ProbeRequestFrame create(String requester, String ssid, Boolean isBroadcastProbe, Dot11MetaInformation meta) {
+    public static Dot11ProbeRequestFrame create(String requester, String ssid, Boolean isBroadcastProbe, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .requester(requester)
                 .ssid(ssid)
                 .isBroadcastProbe(isBroadcastProbe)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
                 .build();
     }
 
@@ -66,6 +70,10 @@ public abstract class Dot11ProbeRequestFrame implements Dot11Frame {
         public abstract Builder isBroadcastProbe(Boolean isBroadcastProbe);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
 
         public abstract Dot11ProbeRequestFrame build();
     }
