@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Dot11MonitorProbe extends Dot11Probe {
 
-    private static final Logger LOG = LogManager.getLogger(Dot11Probe.class);
+    private static final Logger LOG = LogManager.getLogger(Dot11MonitorProbe.class);
 
     private final Dot11ProbeConfiguration configuration;
 

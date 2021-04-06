@@ -64,6 +64,7 @@ import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
+import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
@@ -224,6 +225,15 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (ForwarderDefinition forwarderDefinition : configuration.forwarders()) {
             this.forwarders.add(forwarderFactory.fromConfigurationDefinition(forwarderDefinition));
         }
+
+        // Start remote input if enabled.
+        // TODO XXX
+        RemoteFrameInput input = new RemoteFrameInput(this, new InetSocketAddress("0.0.0.0", 9001));
+        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                        .setDaemon(true)
+                        .setNameFormat("remote-input-%d")
+                        .build())
+                .submit(input.run());
 
         // Periodicals.
         PeriodicalManager periodicalManager = new PeriodicalManager();

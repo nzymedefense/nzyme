@@ -111,9 +111,11 @@ public class DashboardResource {
         List<ProbeResponse> probes = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {
             ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
-            for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
-                for (Object alertClass : interceptor.raisesAlerts()) {
-                    raisesAlerts.add(((Class) alertClass).getSimpleName());
+            if (probe.getInterceptors() != null) {
+                for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
+                    for (Object alertClass : interceptor.raisesAlerts()) {
+                        raisesAlerts.add(((Class) alertClass).getSimpleName());
+                    }
                 }
             }
 
