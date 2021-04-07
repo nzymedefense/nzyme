@@ -48,8 +48,6 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.UplinkFactory;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateCleaner;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateWriter;
@@ -62,6 +60,7 @@ import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramCleaner;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
+import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
@@ -77,7 +76,6 @@ import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
-import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -111,13 +109,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final LeaderConfiguration configuration;
     private final Database database;
     private final ExecutorService probeExecutor;
-    private final Statistics statistics;
     private final MetricRegistry metrics;
     private final Registry registry;
     private final SystemStatus systemStatus;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
+
+    private final FrameProcessor frameProcessor;
 
     private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
 
@@ -137,8 +136,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private GroundStation groundStation;
 
-    private final List<Alert.TYPE_WIDE> configuredAlerts;
-
     private HttpServer httpServer;
 
     public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
@@ -150,9 +147,10 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
 
+        this.frameProcessor = new FrameProcessor();
+
         this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
-        this.statistics = new Statistics(this);
         this.metrics = new MetricRegistry();
         this.registry = new Registry();
         this.probes = Lists.newArrayList();
@@ -177,7 +175,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.ouiManager = new OUIManager(this);
 
-        this.configuredAlerts = configuration.dot11Alerts();
         this.alerts = new AlertsService(this);
         this.alerts.registerCallbacks(configuration.alertCallbacks());
         this.contactManager = new ContactManager(this);
@@ -201,7 +198,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
-        LOG.info("Active alerts: {}", configuredAlerts);
+        LOG.info("Active alerts: {}", configuration.dot11Alerts());
 
         // Initial OUI fetch. Not in periodical because this needs to be blocking.
         try {
@@ -250,11 +247,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
             LOG.info("Versionchecks are disabled.");
         }
 
-        if (configuredAlerts.contains(Alert.TYPE_WIDE.BEACON_RATE_ANOMALY)) {
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.BEACON_RATE_ANOMALY)) {
             periodicalManager.scheduleAtFixedRate(new BeaconRateAnomalyAlertMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
-        if(configuredAlerts.contains(Alert.TYPE_WIDE.MULTIPLE_SIGNAL_TRACKS)) {
+        if(configuration.dot11Alerts().contains(Alert.TYPE_WIDE.MULTIPLE_SIGNAL_TRACKS)) {
             periodicalManager.scheduleAtFixedRate(new SignalTrackMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
@@ -382,41 +379,38 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channelHopCommand(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
-            ), metrics, statistics, anonymizer, false);
-
-            // Add standard interceptors for broad channel monitoring.
-            Dot11MonitorProbe.configureAsBroadMonitor(probe, this);
-
-            // Add alerting interceptors.
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
-                probe.addFrameInterceptors(new UnexpectedBSSIDInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
-            }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
-                probe.addFrameInterceptors(new UnexpectedSSIDInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
-            }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.CRYPTO_CHANGE)) {
-                probe.addFrameInterceptors(new CryptoChangeInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
-            }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
-                probe.addFrameInterceptors(new UnexpectedChannelInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
-            }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.UNEXPECTED_FINGERPRINT)) {
-                probe.addFrameInterceptors(new UnexpectedFingerprintInterceptorSet(alerts, configuration.dot11Networks()).getInterceptors());
-            }
-            if (configuredAlerts.contains(Alert.TYPE_WIDE.PWNAGOTCHI_ADVERTISEMENT)) {
-                probe.addFrameInterceptor(new PwnagotchiAdvertisementInterceptor(alerts));
-            }
-
-            // Networks manager interceptors.
-            probe.addFrameInterceptors(new NetworksAndClientsInterceptorSet(this).getInterceptors());
-
-            // Bandit identifier.
-            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(getContactManager()).getInterceptors());
+            ), frameProcessor, metrics, anonymizer, this,false);
 
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);
 
             // Initialization happens in thread.
+        }
+
+        // Broad monitor interceptors.
+        frameProcessor.registerDot11Interceptors(new BroadMonitorInterceptorSet(this).getInterceptors());
+
+        // Bandit interceptor.
+        frameProcessor.registerDot11Interceptors(new BanditIdentifierInterceptorSet(getContactManager()).getInterceptors());
+
+        // Dot11 alerting interceptors.
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
+            frameProcessor.registerDot11Interceptors(new UnexpectedBSSIDInterceptorSet(getAlertsService(), configuration.dot11Networks()).getInterceptors());
+        }
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_SSID)) {
+            frameProcessor.registerDot11Interceptors(new UnexpectedSSIDInterceptorSet(getAlertsService(), configuration.dot11Networks()).getInterceptors());
+        }
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.CRYPTO_CHANGE)) {
+            frameProcessor.registerDot11Interceptors(new CryptoChangeInterceptorSet(getAlertsService(), configuration.dot11Networks()).getInterceptors());
+        }
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL)) {
+            frameProcessor.registerDot11Interceptors(new UnexpectedChannelInterceptorSet(getAlertsService(), configuration.dot11Networks()).getInterceptors());
+        }
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_FINGERPRINT)) {
+            frameProcessor.registerDot11Interceptors(new UnexpectedFingerprintInterceptorSet(getAlertsService(), configuration.dot11Networks()).getInterceptors());
+        }
+        if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.PWNAGOTCHI_ADVERTISEMENT)) {
+            frameProcessor.registerDot11Interceptor(new PwnagotchiAdvertisementInterceptor(getAlertsService()));
         }
 
         // Traps.
@@ -460,14 +454,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
                 continue;
             }
 
-            // Register interceptors with all monitor probes.
-            for (Dot11Probe probe : getProbes()) {
-                if (probe instanceof Dot11MonitorProbe) {
-                    LOG.info("Registering frame interceptors of [{}] on monitor probe [{}].",
-                            trap.getClass().getCanonicalName(), probe.getName());
-                    probe.addFrameInterceptors(trap.requestedInterceptors());
-                }
-            }
+            // Register interceptors of this trap.
+            LOG.info("Registering frame interceptors of [{}].", trap.getClass().getCanonicalName());
+            frameProcessor.registerDot11Interceptors(trap.requestedInterceptors());
 
             // Start probe.
             Dot11SenderProbe probe = new Dot11SenderProbe(
@@ -481,7 +470,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                             td.channelHopCommand(),
                             configuration.dot11Networks(),
                             configuration.dot11TrapDevices()
-                    ), trap, statistics, metrics);
+                    ), trap, metrics);
 
             trap.setProbe(probe);
 
@@ -493,6 +482,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public String getNodeID() {
         return nodeId;
+    }
+
+    @Override
+    public FrameProcessor getFrameProcessor() {
+        return this.frameProcessor;
     }
 
     @Override
@@ -543,11 +537,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public ObjectMapper getObjectMapper() {
         return objectMapper;
-    }
-
-    @Override
-    public Statistics getStatistics() {
-        return statistics;
     }
 
     @Override

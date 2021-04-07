@@ -20,7 +20,7 @@ package horse.wtf.nzyme.remote.inputs;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.remote.forwarders.protobuf.ForwardedFrame;
+import horse.wtf.nzyme.remote.protobuf.NzymeMessage;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,20 +93,26 @@ public class RemoteFrameInput {
                     Timer.Context time = this.remoteFrameTimer.time();
                     byte[] payload = Arrays.copyOfRange(packet.getData(), 0, packet.getLength());
 
-                    ForwardedFrame.Frame frame = ForwardedFrame.Frame.parseFrom(payload);
+                    NzymeMessage.Message message = NzymeMessage.Message.parseFrom(payload);
 
-                    if (frame.getFrameType().equals("802.11")) {
-                        this.globalFrameMeter.mark();
-                        this.remoteFramesReceived.mark();
-
-                        LOG.info(frame.getDot11Frame().getFrameType());
-
-                        // TODO FROM FRAME statistics.tickFrameCount();
-                        time.stop();
-                    } else {
-                        LOG.trace("Ignoring frame type [{}].", frame.getFrameType());
+                    if (!message.getMessageType().equals("frame")) {
+                        LOG.trace("Ignoring frame type [{}].", message.getMessageType());
                         continue;
                     }
+
+                    if (!message.getFrame().getFrameType().equals("802.11")) {
+                        LOG.trace("Ignoring frame type [{}].", message.getFrame().getFrameType());
+                        continue;
+                    }
+
+                    this.globalFrameMeter.mark();
+                    this.remoteFramesReceived.mark();
+
+                    NzymeMessage.Dot11Frame frame = message.getFrame().getDot11Frame();
+                    LOG.info(frame.getFrameType());
+
+                    // TODO FROM FRAME statistics.tickFrameCount();
+                    time.stop();
                 } catch (Exception e) {
                     LOG.warn("Error receiving remote frame. Skipping.", e);
                     inLoop.set(false);

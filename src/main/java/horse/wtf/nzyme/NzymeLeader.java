@@ -30,7 +30,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
-import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import java.security.Key;
@@ -43,12 +43,13 @@ public interface NzymeLeader extends RemoteConnector {
 
     String getNodeID();
 
+    FrameProcessor getFrameProcessor();
+
     Networks getNetworks();
     Clients getClients();
 
     void registerUplink(Uplink uplink);
 
-    Statistics getStatistics();
     LeaderConfiguration getConfiguration();
 
     MetricRegistry getMetrics();

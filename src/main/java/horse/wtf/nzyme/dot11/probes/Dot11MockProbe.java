@@ -18,18 +18,12 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
-import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
-import horse.wtf.nzyme.statistics.Statistics;
 import org.joda.time.DateTime;
-
-import java.util.Collections;
-import java.util.List;
 
 public class Dot11MockProbe extends Dot11Probe {
 
-    public Dot11MockProbe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
-        super(configuration, statistics, metrics);
+    public Dot11MockProbe(Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
+        super(configuration, metrics);
     }
 
     @Override
@@ -60,16 +54,6 @@ public class Dot11MockProbe extends Dot11Probe {
     @Override
     public Long getTotalFrames() {
         return -1L;
-    }
-
-    @Override
-    public void addFrameInterceptor(Dot11FrameInterceptor interceptor) {
-
-    }
-
-    @Override
-    public List<Dot11FrameInterceptor> getInterceptors() {
-        return Collections.emptyList();
     }
 
 }

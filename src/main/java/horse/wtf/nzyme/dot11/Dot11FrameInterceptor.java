@@ -24,7 +24,7 @@ import java.util.List;
 
 public interface Dot11FrameInterceptor<T> {
 
-    void intercept(T frame) throws IllegalRawDataException;
+    void intercept(T frame);
     byte forSubtype();
     List<Class<? extends Alert>> raisesAlerts();
 

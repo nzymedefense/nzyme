@@ -18,17 +18,11 @@
 package horse.wtf.nzyme.dot11.probes;
 
 import com.codahale.metrics.MetricRegistry;
-import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
-import horse.wtf.nzyme.statistics.Statistics;
 import org.joda.time.DateTime;
-
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 public abstract class Dot11Probe {
 
     private final Dot11ProbeConfiguration configuration;
-    private final Statistics statistics;
 
     protected final MetricRegistry metrics;
 
@@ -39,19 +33,9 @@ public abstract class Dot11Probe {
     public abstract Integer getCurrentChannel();
     public abstract Long getTotalFrames();
 
-    public abstract void addFrameInterceptor(Dot11FrameInterceptor interceptor);
-    public abstract List<Dot11FrameInterceptor> getInterceptors();
-
-    public Dot11Probe(Dot11ProbeConfiguration configuration, Statistics statistics, MetricRegistry metrics) {
-        this.statistics = statistics;
+    public Dot11Probe(Dot11ProbeConfiguration configuration, MetricRegistry metrics) {
         this.configuration = configuration;
         this.metrics = metrics;
-    }
-
-    public void addFrameInterceptors(@NotNull List<Dot11FrameInterceptor> interceptors) {
-        for (Dot11FrameInterceptor interceptor : interceptors) {
-            addFrameInterceptor(interceptor);
-        }
     }
 
     public boolean isActive() {
@@ -61,10 +45,6 @@ public abstract class Dot11Probe {
         }
 
         return ts.isAfter(DateTime.now().minusMinutes(1));
-    }
-
-    public Statistics getStatistics() {
-        return statistics;
     }
 
     public Dot11ProbeConfiguration getConfiguration() {

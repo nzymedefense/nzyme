@@ -20,7 +20,7 @@ package horse.wtf.nzyme.remote.forwarders;
 import com.google.protobuf.ByteString;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
-import horse.wtf.nzyme.remote.forwarders.protobuf.ForwardedFrame;
+import horse.wtf.nzyme.remote.protobuf.NzymeMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -54,18 +54,21 @@ public class UDPForwarder implements Forwarder {
     @Override
     public void forward(Dot11Frame frame) {
         try {
-            byte[] forwardedFrame = ForwardedFrame.Frame.newBuilder()
-                    .setFrameType("802.11")
-                    .setDot11Frame(
-                            ForwardedFrame.Dot11Frame.newBuilder()
-                                    .setRecordedAt(new DateTime().getMillis())
-                                    .setSource(nzymeId)
-                                    .setFrameType(frame.getClass().getCanonicalName())
-                                    .setFrameHeader(ByteString.copyFrom(frame.header()))
-                                    .setFramePayload(ByteString.copyFrom(frame.payload()))
-                                    .setFrameMeta(buildMetaBuf(frame.meta()))
-                                    .build()
-                    ).build()
+            byte[] forwardedFrame= NzymeMessage.Message.newBuilder()
+                    .setMessageType("frame")
+                    .setFrame(NzymeMessage.Frame.newBuilder()
+                            .setFrameType("802.11")
+                            .setDot11Frame(
+                                    NzymeMessage.Dot11Frame.newBuilder()
+                                            .setRecordedAt(new DateTime().getMillis())
+                                            .setSource(nzymeId)
+                                            .setFrameType(frame.getClass().getCanonicalName())
+                                            .setFrameHeader(ByteString.copyFrom(frame.header()))
+                                            .setFramePayload(ByteString.copyFrom(frame.payload()))
+                                            .setFrameMeta(buildMetaBuf(frame.meta()))
+                                            .build()
+                            ).build())
+                    .build()
                     .toByteArray();
 
             socket.send(new DatagramPacket(forwardedFrame, forwardedFrame.length, address));
@@ -74,8 +77,8 @@ public class UDPForwarder implements Forwarder {
         }
     }
 
-    private ForwardedFrame.FrameMeta buildMetaBuf(Dot11MetaInformation meta) {
-        return ForwardedFrame.FrameMeta.newBuilder()
+    private NzymeMessage.FrameMeta buildMetaBuf(Dot11MetaInformation meta) {
+        return NzymeMessage.FrameMeta.newBuilder()
                 .setIsMalformed(meta.isMalformed())
                 .setAntennaSignal(meta.getAntennaSignal())
                 .setSignalQuality(meta.getSignalQuality())

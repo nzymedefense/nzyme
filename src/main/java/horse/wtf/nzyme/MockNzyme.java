@@ -38,8 +38,8 @@ import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
+import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
-import horse.wtf.nzyme.statistics.Statistics;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -65,7 +65,6 @@ public class MockNzyme implements NzymeLeader {
 
     private final String nodeID;
 
-    private final Statistics statistics;
     private final LeaderConfiguration configuration;
     private final SystemStatus systemStatus;
     private final Networks networks;
@@ -81,6 +80,7 @@ public class MockNzyme implements NzymeLeader {
     private final Database database;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
+    private final FrameProcessor frameProcessor;
 
     public MockNzyme() {
         this.version = new Version();
@@ -97,6 +97,8 @@ public class MockNzyme implements NzymeLeader {
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
 
+        this.frameProcessor = new FrameProcessor();
+
         this.database = new Database(configuration);
         try {
             this.database.initializeAndMigrate();
@@ -106,7 +108,6 @@ public class MockNzyme implements NzymeLeader {
 
         this.metricRegistry = new MetricRegistry();
         this.registry = new Registry();
-        this.statistics = new Statistics(this);
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
@@ -127,6 +128,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public String getNodeID() {
         return nodeID;
+    }
+
+    @Override
+    public FrameProcessor getFrameProcessor() {
+        return frameProcessor;
     }
 
     @Override
@@ -164,11 +170,6 @@ public class MockNzyme implements NzymeLeader {
             forwarder.forward(frame);
         }
 
-    }
-
-    @Override
-    public Statistics getStatistics() {
-        return statistics;
     }
 
     @Override

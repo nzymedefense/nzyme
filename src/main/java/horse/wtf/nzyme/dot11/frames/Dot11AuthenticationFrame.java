@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11.frames;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.parsers.Dot11AuthenticationFrameParser;
 
@@ -34,6 +35,7 @@ public abstract class Dot11AuthenticationFrame implements Dot11Frame {
     public abstract Dot11MetaInformation meta();
     public abstract byte[] payload();
     public abstract byte[] header();
+    public abstract byte frameType();
 
     @JsonIgnore
     public String descriptionString() {
@@ -61,6 +63,7 @@ public abstract class Dot11AuthenticationFrame implements Dot11Frame {
                 .meta(meta)
                 .payload(payload)
                 .header(header)
+                .frameType(Dot11FrameSubtype.AUTHENTICATION)
                 .build();
     }
 
@@ -87,6 +90,8 @@ public abstract class Dot11AuthenticationFrame implements Dot11Frame {
         public abstract Builder payload(byte[] payload);
 
         public abstract Builder header(byte[] header);
+
+        public abstract Builder frameType(byte type);
 
         public abstract Dot11AuthenticationFrame build();
     }
