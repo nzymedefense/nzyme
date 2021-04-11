@@ -535,6 +535,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
+    public Anonymizer getAnonymizer() {
+        return anonymizer;
+    }
+
+    @Override
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }

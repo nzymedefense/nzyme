@@ -19,11 +19,16 @@ package horse.wtf.nzyme.remote.inputs;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import com.google.protobuf.InvalidProtocolBufferException;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.frames.Dot11FrameFactory;
+import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.protobuf.NzymeMessage;
 import horse.wtf.nzyme.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.pcap4j.packet.IllegalRawDataException;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -36,11 +41,12 @@ public class RemoteFrameInput {
 
     private static final Logger LOG = LogManager.getLogger(RemoteFrameInput.class);
 
-    private final NzymeLeader nzyme;
+    private final FrameProcessor processor;
+    private final Dot11FrameFactory frameFactory;
+
     private final InetSocketAddress address;
 
     // Metrics
-    private final Meter globalFrameMeter;
     private final Meter remoteFramesReceived;
     private final Timer remoteFrameTimer;
 
@@ -49,15 +55,19 @@ public class RemoteFrameInput {
     private DatagramSocket socket;
 
     public RemoteFrameInput(NzymeLeader nzyme, InetSocketAddress address) {
-        this.nzyme = nzyme;
         this.address = address;
+        this.processor = nzyme.getFrameProcessor();
+        this.frameFactory = new Dot11FrameFactory(nzyme.getMetrics(), nzyme.getAnonymizer());
 
-        this.globalFrameMeter = nzyme.getMetrics().meter(MetricNames.FRAME_COUNT);
         this.remoteFramesReceived = nzyme.getMetrics().meter(MetricNames.REMOTE_FRAMES_RECEIVED);
         this.remoteFrameTimer = nzyme.getMetrics().timer(MetricNames.REMOTE_FRAMES_TIMING);
     }
 
     private void initialize() throws SocketException {
+        if (this.socket != null && this.socket.isBound()) {
+            this.socket.close();
+        }
+
         this.socket = new DatagramSocket(address);
     }
 
@@ -105,14 +115,14 @@ public class RemoteFrameInput {
                         continue;
                     }
 
-                    this.globalFrameMeter.mark();
                     this.remoteFramesReceived.mark();
 
                     NzymeMessage.Dot11Frame frame = message.getFrame().getDot11Frame();
-                    LOG.info(frame.getFrameType());
-
-                    // TODO FROM FRAME statistics.tickFrameCount();
+                    processor.processDot11Frame(frameFactory.fromRemote(frame));
                     time.stop();
+                } catch (MalformedFrameException | IllegalRawDataException | InvalidProtocolBufferException e) {
+                    LOG.warn("Invalid content of received remote frame. Skipping but not resetting connection.", e);
+                    continue;
                 } catch (Exception e) {
                     LOG.warn("Error receiving remote frame. Skipping.", e);
                     inLoop.set(false);

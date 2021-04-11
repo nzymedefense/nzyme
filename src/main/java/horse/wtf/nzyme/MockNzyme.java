@@ -31,6 +31,7 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -81,6 +82,7 @@ public class MockNzyme implements NzymeLeader {
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
     private final FrameProcessor frameProcessor;
+    private final Anonymizer anonymizer;
 
     public MockNzyme() {
         this.version = new Version();
@@ -115,6 +117,7 @@ public class MockNzyme implements NzymeLeader {
         this.alertsService = new AlertsService(this);
         this.objectMapper = new ObjectMapper();
         this.contactManager = new ContactManager(this);
+        this.anonymizer = new Anonymizer(false, "/tmp");
     }
 
     @Override
@@ -235,6 +238,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public OUIManager getOUIManager() {
         return ouiManager;
+    }
+
+    @Override
+    public Anonymizer getAnonymizer() {
+        return anonymizer;
     }
 
     @Override

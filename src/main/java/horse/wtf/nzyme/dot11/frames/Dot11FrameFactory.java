@@ -23,6 +23,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.*;
+import horse.wtf.nzyme.remote.protobuf.NzymeMessage;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.pcap4j.packet.namednumber.Dot11FrameType;
 
@@ -71,4 +72,51 @@ public class Dot11FrameFactory {
         }
     }
 
+    public Dot11Frame fromRemote(NzymeMessage.Dot11Frame frame) throws MalformedFrameException, IllegalRawDataException {
+        Dot11FrameType type;
+        switch (frame.getFrameType()) {
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11AssociationRequestFrame":
+                type = Dot11FrameType.ASSOCIATION_REQUEST;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11AssociationResponseFrame":
+                type = Dot11FrameType.ASSOCIATION_RESPONSE;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11AuthenticationFrame":
+                type = Dot11FrameType.AUTHENTICATION;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11BeaconFrame":
+                type = Dot11FrameType.BEACON;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11DeauthenticationFrame":
+                type = Dot11FrameType.DEAUTHENTICATION;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11DisassociationFrame":
+                type = Dot11FrameType.DISASSOCIATION;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11ProbeRequestFrame":
+                type = Dot11FrameType.PROBE_REQUEST;
+                break;
+            case "horse.wtf.nzyme.dot11.frames.AutoValue_Dot11ProbeResponseFrame":
+                type = Dot11FrameType.PROBE_RESPONSE;
+                break;
+            default:
+                throw new RuntimeException("Unknown frame type [" + frame.getFrameType() + "].");
+        }
+
+        NzymeMessage.FrameMeta meta = frame.getFrameMeta();
+
+        return build(
+                type,
+                frame.getFramePayload().toByteArray(),
+                frame.getFrameHeader().toByteArray(),
+                new Dot11MetaInformation(
+                        meta.getIsMalformed(),
+                        meta.getAntennaSignal(),
+                        meta.getFrequency(),
+                        meta.getChannel(),
+                        meta.getMacTimestamp(),
+                        meta.getIsWEP()
+                )
+        );
+    }
 }

@@ -25,6 +25,7 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -71,6 +72,8 @@ public interface NzymeLeader extends RemoteConnector {
     SystemStatus getSystemStatus();
 
     OUIManager getOUIManager();
+
+    Anonymizer getAnonymizer();
 
     ObjectMapper getObjectMapper();
 
