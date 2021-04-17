@@ -30,8 +30,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
@@ -50,7 +49,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 10);
         assertEquals(n.getMessage(), "b0:93:5b:1d:c8:f1 responded to probe request from 3c:8d:20:52:e4:87 for Home 5F48");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("destination"), "3c:8d:20:52:e4:87");
@@ -59,7 +58,37 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
         assertEquals(n.getAdditionalFields().get("security_full"), "WPA2-PSK-CCMP");
         assertEquals(n.getAdditionalFields().get("is_wpa1"), false);
         assertEquals(n.getAdditionalFields().get("is_wpa2"), true);
+        assertEquals(n.getAdditionalFields().get("is_wpa3"), false);
         assertEquals(n.getAdditionalFields().get("is_wps"), true);
+        assertEquals(n.getAdditionalFields().get("subtype"), "probe-resp");
+    }
+
+    @Test
+    public void testDot11ProbeResponseFrameWPA3() throws MalformedFrameException, IllegalRawDataException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        Dot11ProbeResponseFrame frame = new Dot11ProbeResponseFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.PROBE_RESP_PSKSHA256_SAE_PAYLOAD, Frames.PROBE_RESP_PSKSHA256_SAE_HEADER, META_NO_WEP);
+
+        FrameProcessor processor = new FrameProcessor();
+        processor.registerDot11Interceptors(new BroadMonitorInterceptorSet(nzyme).getInterceptors());
+        processor.processDot11Frame(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 10);
+        assertEquals(n.getMessage(), "9c:ed:d5:fd:5b:2b responded to probe request from 46:78:72:9b:73:72 for wpa3test2");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("destination"), "46:78:72:9b:73:72");
+        assertEquals(n.getAdditionalFields().get("transmitter"), "9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("ssid"), "wpa3test2");
+        assertEquals(n.getAdditionalFields().get("security_full"), "WPA3-PSK-PSKSHA256-SAE-CCMP");
+        assertEquals(n.getAdditionalFields().get("is_wpa1"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa2"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa3"), true);
+        assertEquals(n.getAdditionalFields().get("is_wps"), false);
         assertEquals(n.getAdditionalFields().get("subtype"), "probe-resp");
     }
 
@@ -176,7 +205,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 10);
         assertEquals(n.getMessage(), "Received beacon from 00:c0:ca:95:68:3b for SSID WTF");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "00:c0:ca:95:68:3b");
@@ -185,6 +214,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
         assertEquals(n.getAdditionalFields().get("security_full"), "WPA1-EAM-PSK-CCMP, WPA2-EAM-PSK-CCMP");
         assertEquals(n.getAdditionalFields().get("is_wpa1"), true);
         assertEquals(n.getAdditionalFields().get("is_wpa2"), true);
+        assertEquals(n.getAdditionalFields().get("is_wpa3"), false);
         assertEquals(n.getAdditionalFields().get("is_wps"), false);
         assertEquals(n.getAdditionalFields().get("subtype"), "beacon");
     }
@@ -204,7 +234,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
         Notification n = loopback.getLastNotification();
 
-        assertEquals(n.getAdditionalFields().size(), 9);
+        assertEquals(n.getAdditionalFields().size(), 10);
         assertEquals(n.getMessage(), "Received broadcast beacon from 24:a4:3c:7d:01:cc");
         assertEquals(n.getAdditionalFields().get("channel"), 1);
         assertEquals(n.getAdditionalFields().get("transmitter"), "24:a4:3c:7d:01:cc");
@@ -213,6 +243,36 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
         assertEquals(n.getAdditionalFields().get("security_full"), "NONE");
         assertEquals(n.getAdditionalFields().get("is_wpa1"), false);
         assertEquals(n.getAdditionalFields().get("is_wpa2"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa3"), false);
+        assertEquals(n.getAdditionalFields().get("is_wps"), false);
+        assertEquals(n.getAdditionalFields().get("subtype"), "beacon");
+    }
+
+    @Test
+    public void testDot11BeaconFrameWPA3() throws MalformedFrameException, IllegalRawDataException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        Dot11BeaconFrame frame = new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.BEACON_PSKSHA256_SAE_PAYLOAD, Frames.BEACON_PSKSHA256_SAE_HEADER, META_NO_WEP);
+
+        FrameProcessor processor = new FrameProcessor();
+        processor.registerDot11Interceptors(new BroadMonitorInterceptorSet(nzyme).getInterceptors());
+        processor.processDot11Frame(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 10);
+        assertEquals(n.getMessage(), "Received beacon from 9c:ed:d5:fd:5b:2b for SSID wpa3test2");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("transmitter_fingerprint"), "b368c28c554e2f663a8c2c8704fd48d7e9189235e6f6e96024d77655d003b77e");
+        assertEquals(n.getAdditionalFields().get("ssid"), "wpa3test2");
+        assertEquals(n.getAdditionalFields().get("security_full"), "WPA3-PSK-PSKSHA256-SAE-CCMP");
+        assertEquals(n.getAdditionalFields().get("is_wpa1"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa2"), false);
+        assertEquals(n.getAdditionalFields().get("is_wpa3"), true);
         assertEquals(n.getAdditionalFields().get("is_wps"), false);
         assertEquals(n.getAdditionalFields().get("subtype"), "beacon");
     }
@@ -370,6 +430,85 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
         assertEquals(n.getAdditionalFields().get("response_string"), "failure");
         assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "shared_key");
         assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 4);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDot11AuthFrameWPA3CommitSeqSuccess() throws MalformedFrameException, IllegalRawDataException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.AUTH_SUCCESS_COMMIT_PSKSHA256_SAE_PAYLOAD, Frames.AUTH_SUCCESS_COMMIT_PSKSHA256_SAE_HEADER, META_NO_WEP);
+
+        FrameProcessor processor = new FrameProcessor();
+        processor.registerDot11Interceptors(new BroadMonitorInterceptorSet(nzyme).getInterceptors());
+        processor.processDot11Frame(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 6);
+        assertEquals(n.getMessage(), "2a:e9:1e:d5:11:2a is requesting to authenticate using SAE (WPA3) at 9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "2a:e9:1e:d5:11:2a");
+        assertEquals(n.getAdditionalFields().get("destination"), "9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "sae");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 1);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDot11AuthFrameWPA3ConfirmSeqSuccess() throws MalformedFrameException, IllegalRawDataException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.AUTH_SUCCESS_CONFIRM_PSKSHA256_SAE_PAYLOAD, Frames.AUTH_SUCCESS_CONFIRM_PSKSHA256_SAE_HEADER, META_NO_WEP);
+
+        FrameProcessor processor = new FrameProcessor();
+        processor.registerDot11Interceptors(new BroadMonitorInterceptorSet(nzyme).getInterceptors());
+        processor.processDot11Frame(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 8);
+        assertEquals(n.getMessage(), "9c:ed:d5:fd:5b:2b is responding to SAE (WPA3) authentication request from 2a:e9:1e:d5:11:2a. (success)");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("destination"), "2a:e9:1e:d5:11:2a");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short) 0);
+        assertEquals(n.getAdditionalFields().get("response_string"), "success");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "sae");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 2);
+        assertEquals(n.getAdditionalFields().get("subtype"), "auth");
+    }
+
+    @Test
+    public void testDot11AuthFrameWPA3ConfirmSeqFailure() throws MalformedFrameException, IllegalRawDataException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        Dot11AuthenticationFrame frame = new Dot11AuthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.AUTH_SUCCESS_CONFIRM_PSKSHA256_SAE_FAILURE_PAYLOAD, Frames.AUTH_SUCCESS_CONFIRM_PSKSHA256_SAE_FAILURE_HEADER, META_NO_WEP);
+
+        FrameProcessor processor = new FrameProcessor();
+        processor.registerDot11Interceptors(new BroadMonitorInterceptorSet(nzyme).getInterceptors());
+        processor.processDot11Frame(frame);
+
+        Notification n = loopback.getLastNotification();
+
+        assertEquals(n.getAdditionalFields().size(), 8);
+        assertEquals(n.getMessage(), "9c:ed:d5:fd:5b:2b is responding to SAE (WPA3) authentication request from 2a:e9:1e:d5:11:2a. (failure)");
+        assertEquals(n.getAdditionalFields().get("channel"), 1);
+        assertEquals(n.getAdditionalFields().get("transmitter"), "9c:ed:d5:fd:5b:2b");
+        assertEquals(n.getAdditionalFields().get("destination"), "2a:e9:1e:d5:11:2a");
+        assertEquals(n.getAdditionalFields().get("response_code"), (short) 1);
+        assertEquals(n.getAdditionalFields().get("response_string"), "failure");
+        assertEquals(n.getAdditionalFields().get("authentication_algorithm"), "sae");
+        assertEquals(n.getAdditionalFields().get("transaction_sequence_number"), (short) 2);
         assertEquals(n.getAdditionalFields().get("subtype"), "auth");
     }
 

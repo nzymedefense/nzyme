@@ -50,7 +50,7 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
     }
 
     public enum ALGORITHM_TYPE {
-        OPEN_SYSTEM, SHARED_KEY
+        OPEN_SYSTEM, SHARED_KEY, SAE
     }
 
     @Override
@@ -77,6 +77,9 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
                 break;
             case 1:
                 algorithm = ALGORITHM_TYPE.SHARED_KEY;
+                break;
+            case 3:
+                algorithm = ALGORITHM_TYPE.SAE;
                 break;
             default:
                 throw new MalformedFrameException("Invalid algorithm type with code [" + algorithmCode + "]. Skipping.");

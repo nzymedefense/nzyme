@@ -155,14 +155,22 @@ public class Dot11TaggedParameters {
         // WPA 2.
         if (params.containsKey(ID_RSN)) {
             try {
-                byte[] wpa2 = params.get(ID_RSN);
-                LOG.trace("WPA2 payload: {}", () -> Tools.byteArrayToHexPrettyPrint(wpa2));
+                byte[] rsn = params.get(ID_RSN);
+                LOG.trace("WPA2 payload: {}", () -> Tools.byteArrayToHexPrettyPrint(rsn));
 
-                List<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = parseEncryptionModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION, wpa2);
-                List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, wpa2);
+                List<Dot11SecurityConfiguration.ENCRYPTION_MODE> encryptionModes = parseEncryptionModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION, rsn);
+                List<Dot11SecurityConfiguration.KEY_MGMT_MODE> keyMgmtModes = parseKeyMgmtModes(WPA2_PAIRWISE_CYPHER_SUITE_COUNT_POSITION + (encryptionModes.size() * 4) + 2, rsn);
+
+                Dot11SecurityConfiguration.MODE mode;
+
+                if (keyMgmtModes.contains(Dot11SecurityConfiguration.KEY_MGMT_MODE.SAE)) {
+                    mode = Dot11SecurityConfiguration.MODE.WPA3;
+                } else {
+                    mode = Dot11SecurityConfiguration.MODE.WPA2;
+                }
 
                 configurations.add(Dot11SecurityConfiguration.create(
-                        Dot11SecurityConfiguration.MODE.WPA2,
+                        mode,
                         keyMgmtModes,
                         encryptionModes
                 ));
@@ -189,7 +197,22 @@ public class Dot11TaggedParameters {
     }
 
     public boolean isWPA2() {
-        return params.containsKey(ID_RSN);
+        return !isWPA3() && params.containsKey(ID_RSN);
+    }
+
+    public boolean isWPA3() {
+        // Basically, it's WPA3 if the SAE key management mode exists. If not, it's WPA2 (if the ID_RSN exists)
+        if (!params.containsKey(ID_RSN)) {
+            return false;
+        }
+
+        for (Dot11SecurityConfiguration sec : getSecurityConfiguration()) {
+            if (sec.keyManagementModes().contains(Dot11SecurityConfiguration.KEY_MGMT_MODE.SAE)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isWPS() {
@@ -281,6 +304,7 @@ public class Dot11TaggedParameters {
                     encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
                     break;
                 default:
+                    LOG.warn("Unknown encryption mode [{}].", suite);
                     encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.UNKNOWN);
             }
         });
@@ -300,7 +324,14 @@ public class Dot11TaggedParameters {
                 case 2:
                     keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
                     break;
+                case 6:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSKSHA256);
+                    break;
+                case 8:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.SAE);
+                    break;
                 default:
+                    LOG.warn("Unknown key management mode [{}].", suite);
                     keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.UNKNOWN);
             }
         });
