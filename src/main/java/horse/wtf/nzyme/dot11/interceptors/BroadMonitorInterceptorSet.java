@@ -154,6 +154,23 @@ public class BroadMonitorInterceptorSet {
                                 return;
                         }
                         break;
+                    case SAE:
+                        switch(frame.transactionSequence()) {
+                            case 1:
+                                message = frame.transmitter() + " is requesting to authenticate using SAE (WPA3) at " + frame.destination();
+                                break;
+                            case 2:
+                                message = frame.transmitter() + " is responding to SAE (WPA3) authentication " +
+                                        "request from " + frame.destination() + ". (" + frame.statusString() + ")";
+                                additionalFields.put(FieldNames.RESPONSE_CODE, frame.statusCode());
+                                additionalFields.put(FieldNames.RESPONSE_STRING, frame.statusString());
+                                break;
+                            default:
+                                LOG.trace("Invalid SAE authentication transaction sequence number [{}]. " +
+                                        "Skipping.", frame.transactionSequence());
+                                return;
+                        }
+                        break;
                     case SHARED_KEY:
                         switch (frame.transactionSequence()) {
                             case 1:
@@ -217,6 +234,7 @@ public class BroadMonitorInterceptorSet {
                                 .addField(FieldNames.SECURITY_FULL, frame.taggedParameters().getFullSecurityString())
                                 .addField(FieldNames.IS_WPA1, frame.taggedParameters().isWPA1())
                                 .addField(FieldNames.IS_WPA2, frame.taggedParameters().isWPA2())
+                                .addField(FieldNames.IS_WPA3, frame.taggedParameters().isWPA3())
                                 .addField(FieldNames.IS_WPS, frame.taggedParameters().isWPS())
                                 .addField(FieldNames.SUBTYPE, "beacon"),
                         meta
@@ -312,6 +330,7 @@ public class BroadMonitorInterceptorSet {
                                 .addField(FieldNames.SECURITY_FULL, frame.taggedParameters().getFullSecurityString())
                                 .addField(FieldNames.IS_WPA1, frame.taggedParameters().isWPA1())
                                 .addField(FieldNames.IS_WPA2, frame.taggedParameters().isWPA2())
+                                .addField(FieldNames.IS_WPA3, frame.taggedParameters().isWPA3())
                                 .addField(FieldNames.IS_WPS, frame.taggedParameters().isWPS())
                                 .addField(FieldNames.SUBTYPE, "probe-resp"),
                         frame.meta()

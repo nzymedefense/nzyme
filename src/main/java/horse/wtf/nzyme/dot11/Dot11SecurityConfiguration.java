@@ -28,12 +28,15 @@ public abstract class Dot11SecurityConfiguration {
     public enum MODE {
         NONE,
         WPA1,
-        WPA2
+        WPA2,
+        WPA3
     }
 
     public enum KEY_MGMT_MODE {
         PSK,
         EAM,
+        PSKSHA256,
+        SAE,
         UNKNOWN
     }
 

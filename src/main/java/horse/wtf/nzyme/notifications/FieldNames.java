@@ -45,6 +45,7 @@ public class FieldNames {
     public static final String SECURITY_FULL = "security_full";
     public static final String IS_WPA1 = "is_wpa1";
     public static final String IS_WPA2 = "is_wpa2";
+    public static final String IS_WPA3 = "is_wpa3";
     public static final String IS_WPS = "is_wps";
 
     public static final String TRANSACTION_SEQUENCE_NUMBER = "transaction_sequence_number";
