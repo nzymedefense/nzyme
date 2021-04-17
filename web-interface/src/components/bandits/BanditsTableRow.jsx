@@ -21,8 +21,12 @@ class BanditsTableRow extends React.Component {
                 <td title={bandit.last_contact ? moment(bandit.last_contact).format() : "never"}>
                     {bandit.last_contact ? moment(bandit.last_contact).fromNow() : "never"}
                 </td>
-                <td title={moment(bandit.created_at).format()}>{moment(bandit.created_at).fromNow()}</td>
-                <td title={moment(bandit.updated_at).format()}>{moment(bandit.updated_at).fromNow()}</td>
+                <td title={bandit.read_only ? "Bandit is built-in" : moment(bandit.created_at).format()}>
+                    {bandit.read_only ? "n/a" : moment(bandit.created_at).fromNow()}
+                </td>
+                <td title={bandit.read_only ? "Bandit is built-in" : moment(bandit.updated_at).format()}>
+                    {bandit.read_only ? "n/a" : moment(bandit.updated_at).fromNow()}
+                </td>
             </tr>
         );
     }
