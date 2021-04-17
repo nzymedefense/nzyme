@@ -152,6 +152,16 @@ public class MetricsResource {
                 GaugeResponse.fromGauge(getGauge(MetricNames.GROUNDSTATION_QUEUE_SIZE))
         );
 
+        metrics.put(
+                "remote_frames_received",
+                CounterResponse.fromCounter(getCounter(MetricNames.REMOTE_FRAMES_RECEIVED))
+        );
+
+        metrics.put(
+                "remote_frames_timing",
+                TimerResponse.fromTimer(getTimer(MetricNames.REMOTE_FRAMES_TIMING))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

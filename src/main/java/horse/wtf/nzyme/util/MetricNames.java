@@ -61,5 +61,4 @@ public class MetricNames {
     public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
 
 
-
 }
