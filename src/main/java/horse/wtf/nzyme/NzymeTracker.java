@@ -29,7 +29,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 
 import java.util.List;
 
-public interface NzymeTracker extends UplinkHandler  {
+public interface NzymeTracker extends RemoteConnector {
 
     void initialize();
     void shutdown();

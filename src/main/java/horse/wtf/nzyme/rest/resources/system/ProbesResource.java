@@ -17,15 +17,11 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11SenderProbe;
 import horse.wtf.nzyme.rest.authentication.Secured;
-import horse.wtf.nzyme.rest.responses.probes.CurrentChannelsResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
 import horse.wtf.nzyme.rest.responses.system.TrapResponse;
@@ -60,8 +56,7 @@ public class ProbesResource {
                     probe.isActive(),
                     probe.getConfiguration().channels(),
                     probe.getCurrentChannel(),
-                    probe.getTotalFrames(),
-                    buildRaisedAlerts(probe)
+                    probe.getTotalFrames()
             ));
         }
 
@@ -86,8 +81,7 @@ public class ProbesResource {
                                 probe.isActive(),
                                 probe.getConfiguration().channels(),
                                 probe.getCurrentChannel(),
-                                probe.getTotalFrames(),
-                                buildRaisedAlerts(probe)
+                                probe.getTotalFrames()
                         ),
                         sender.getTrap().getType().toString(),
                         sender.getTrap().getDescription()
@@ -96,16 +90,6 @@ public class ProbesResource {
         }
 
         return Response.ok(TrapsListResponse.create(traps)).build();
-    }
-
-    private List<String> buildRaisedAlerts(Dot11Probe probe) {
-        ImmutableList.Builder<String> raisesAlerts = new ImmutableList.Builder<>();
-        for (Dot11FrameInterceptor interceptor : probe.getInterceptors()) {
-            for (Object alertClass : interceptor.raisesAlerts()) {
-                raisesAlerts.add(((Class) alertClass).getSimpleName());
-            }
-        }
-        return raisesAlerts.build();
     }
 
 }

@@ -15,28 +15,18 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.dot11.handlers;
+package horse.wtf.nzyme;
 
-import com.google.common.collect.ImmutableList;
+import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
+import horse.wtf.nzyme.notifications.Notification;
 
-import java.util.Collections;
+public interface RemoteConnector {
 
-public class FrameHandlerTest {
+    void notifyUplinks(Notification notification, Dot11MetaInformation meta);
+    void notifyUplinksOfAlert(Alert alert);
 
-    protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
-
-    protected static final Dot11ProbeConfiguration CONFIG_STANDARD = Dot11ProbeConfiguration.create(
-            "mockProbe1",
-            ImmutableList.of(),
-            "test1",
-            "wlan0",
-            ImmutableList.of(),
-            1,
-            "foo",
-            ImmutableList.of(),
-            ImmutableList.of()
-    );
+    void forwardFrame(Dot11Frame frame);
 
 }

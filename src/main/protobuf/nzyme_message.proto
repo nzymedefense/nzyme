@@ -15,15 +15,41 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme;
+syntax = "proto3";
 
-import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.dot11.Dot11MetaInformation;
-import horse.wtf.nzyme.notifications.Notification;
+option java_outer_classname = "NzymeMessage";
+option java_package = "horse.wtf.nzyme.remote.protobuf";
 
-public interface UplinkHandler {
+message Message {
+  string MessageType = 1;
+  Frame frame = 2;
+}
 
-    void notifyUplinks(Notification notification, Dot11MetaInformation meta);
-    void notifyUplinksOfAlert(Alert alert);
+message Frame {
+  string frameType = 1;
+  Dot11Frame dot11Frame = 2;
+}
+
+message Dot11Frame {
+
+  int64 recordedAt = 1;
+  string source = 2;
+  string frameType = 3;
+  bytes frameHeader = 4;
+  bytes framePayload = 5;
+  FrameMeta frameMeta = 6;
 
 }
+
+message FrameMeta {
+
+  bool isMalformed = 1;
+  int32 antennaSignal = 2;
+  int32 signalQuality = 3;
+  int32 frequency = 4;
+  int32 channel = 5;
+  int64 macTimestamp = 6;
+  bool isWEP = 7;
+
+}
+

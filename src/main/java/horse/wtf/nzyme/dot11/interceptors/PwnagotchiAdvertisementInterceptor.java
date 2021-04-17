@@ -42,7 +42,7 @@ public class PwnagotchiAdvertisementInterceptor implements Dot11FrameInterceptor
     }
 
     @Override
-    public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
+    public void intercept(Dot11BeaconFrame frame) {
         extractor.extract(frame).ifPresent(advertisement -> alerts.handle(PwnagotchiAdvertisementAlert.create(
                 DateTime.now(),
                 advertisement,

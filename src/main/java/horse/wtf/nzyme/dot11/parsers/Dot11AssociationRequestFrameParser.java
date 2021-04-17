@@ -64,7 +64,7 @@ public class Dot11AssociationRequestFrameParser extends Dot11FrameParser<Dot11As
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11AssociationRequestFrame.create(ssid, destination, transmitter, meta);
+        return Dot11AssociationRequestFrame.create(ssid, destination, transmitter, meta, payload, header);
     }
 
 }

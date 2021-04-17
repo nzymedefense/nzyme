@@ -15,29 +15,12 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.dot11.handlers;
+package horse.wtf.nzyme.remote.forwarders;
 
-import horse.wtf.nzyme.dot11.probes.Dot11Probe;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 
-public abstract class Dot11FrameHandler<T> {
+public interface Forwarder {
 
-    protected Dot11Probe probe;
-
-    protected Dot11FrameHandler(Dot11Probe probe) {
-        this.probe = probe;
-    }
-
-    private void tick() {
-        probe.getStatistics().tickType(getName());
-    }
-
-    public void handle(T frame) {
-        tick();
-
-        doHandle(frame);
-    }
-
-    protected abstract void doHandle(T frame);
-    public abstract String getName();
+    void forward(Dot11Frame frame);
 
 }

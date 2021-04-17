@@ -19,6 +19,7 @@ package horse.wtf.nzyme.dot11.frames;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
 @AutoValue
@@ -29,6 +30,9 @@ public abstract class Dot11AssociationResponseFrame implements Dot11Frame {
     public abstract String response();
     public abstract Short responseCode();
     public abstract Dot11MetaInformation meta();
+    public abstract byte[] payload();
+    public abstract byte[] header();
+    public abstract byte frameType();
 
     @JsonIgnore
     public String descriptionString() {
@@ -43,13 +47,16 @@ public abstract class Dot11AssociationResponseFrame implements Dot11Frame {
         return sb.toString();
     }
 
-    public static Dot11AssociationResponseFrame create(String transmitter, String destination, String response, Short responseCode, Dot11MetaInformation meta) {
+    public static Dot11AssociationResponseFrame create(String transmitter, String destination, String response, Short responseCode, Dot11MetaInformation meta, byte[] payload, byte[] header) {
         return builder()
                 .transmitter(transmitter)
                 .destination(destination)
                 .response(response)
                 .responseCode(responseCode)
                 .meta(meta)
+                .payload(payload)
+                .header(header)
+                .frameType(Dot11FrameSubtype.ASSOCIATION_RESPONSE)
                 .build();
     }
 
@@ -68,6 +75,12 @@ public abstract class Dot11AssociationResponseFrame implements Dot11Frame {
         public abstract Builder responseCode(Short responseCode);
 
         public abstract Builder meta(Dot11MetaInformation meta);
+
+        public abstract Builder payload(byte[] payload);
+
+        public abstract Builder header(byte[] header);
+
+        public abstract Builder frameType(byte type);
 
         public abstract Dot11AssociationResponseFrame build();
     }

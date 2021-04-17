@@ -113,7 +113,7 @@ public class Dot11AuthenticationFrameParser extends Dot11FrameParser<Dot11Authen
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11AuthenticationFrame.create(algorithm, statusCode, status, transactionSequence, destination, transmitter, meta);
+        return Dot11AuthenticationFrame.create(algorithm, statusCode, status, transactionSequence, destination, transmitter, meta, payload, header);
     }
 
 }

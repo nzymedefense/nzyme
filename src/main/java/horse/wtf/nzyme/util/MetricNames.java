@@ -26,6 +26,7 @@ import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.tracks.SignalTrackMonitor;
+import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -56,5 +57,8 @@ public class MetricNames {
     public static final String GROUNDSTATION_RX = name(GroundStation.class, "rx");
     public static final String GROUNDSTATION_ENCRYPTION_TIMING = name(GroundStation.class, "encryption-timing");
     public static final String GROUNDSTATION_QUEUE_SIZE = name(GroundStation.class, "queue_size");
+    public static final String REMOTE_FRAMES_RECEIVED = name(RemoteFrameInput.class, "frames-received");
+    public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
+
 
 }

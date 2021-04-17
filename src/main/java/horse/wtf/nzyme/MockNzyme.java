@@ -31,13 +31,16 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
-import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.processing.FrameProcessor;
+import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -63,7 +66,6 @@ public class MockNzyme implements NzymeLeader {
 
     private final String nodeID;
 
-    private final Statistics statistics;
     private final LeaderConfiguration configuration;
     private final SystemStatus systemStatus;
     private final Networks networks;
@@ -78,6 +80,9 @@ public class MockNzyme implements NzymeLeader {
     private final Version version;
     private final Database database;
     private final List<Uplink> uplinks;
+    private final List<Forwarder> forwarders;
+    private final FrameProcessor frameProcessor;
+    private final Anonymizer anonymizer;
 
     public MockNzyme() {
         this.version = new Version();
@@ -92,6 +97,9 @@ public class MockNzyme implements NzymeLeader {
         this.nodeID = "mocky-mock";
 
         this.uplinks = Lists.newArrayList();
+        this.forwarders = Lists.newArrayList();
+
+        this.frameProcessor = new FrameProcessor();
 
         this.database = new Database(configuration);
         try {
@@ -102,7 +110,6 @@ public class MockNzyme implements NzymeLeader {
 
         this.metricRegistry = new MetricRegistry();
         this.registry = new Registry();
-        this.statistics = new Statistics(this);
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
@@ -110,6 +117,7 @@ public class MockNzyme implements NzymeLeader {
         this.alertsService = new AlertsService(this);
         this.objectMapper = new ObjectMapper();
         this.contactManager = new ContactManager(this);
+        this.anonymizer = new Anonymizer(false, "/tmp");
     }
 
     @Override
@@ -123,6 +131,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public String getNodeID() {
         return nodeID;
+    }
+
+    @Override
+    public FrameProcessor getFrameProcessor() {
+        return frameProcessor;
     }
 
     @Override
@@ -155,8 +168,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
-    public Statistics getStatistics() {
-        return statistics;
+    public void forwardFrame(Dot11Frame frame) {
+        for (Forwarder forwarder : forwarders) {
+            forwarder.forward(frame);
+        }
+
     }
 
     @Override
@@ -222,6 +238,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public OUIManager getOUIManager() {
         return ouiManager;
+    }
+
+    @Override
+    public Anonymizer getAnonymizer() {
+        return anonymizer;
     }
 
     @Override

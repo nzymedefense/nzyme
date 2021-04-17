@@ -15,37 +15,29 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.notifications.uplinks;
+package horse.wtf.nzyme.remote.forwarders;
 
 import com.typesafe.config.Config;
 import horse.wtf.nzyme.configuration.ConfigurationKeys;
-import horse.wtf.nzyme.configuration.UplinkDefinition;
-import horse.wtf.nzyme.notifications.Uplink;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogUplink;
-import horse.wtf.nzyme.notifications.uplinks.syslog.SyslogUDPRFC3164UDPUplink;
-import horse.wtf.nzyme.notifications.uplinks.syslog.SyslogUDPRFC5424UDPUplink;
+import horse.wtf.nzyme.configuration.ForwarderDefinition;
 
 import java.net.InetSocketAddress;
 
-public class UplinkFactory {
+public class ForwarderFactory {
 
     private final String nzymeId;
 
-    public UplinkFactory(String nzymeId) {
+    public ForwarderFactory(String nzymeId) {
         this.nzymeId = nzymeId;
     }
 
-    public Uplink fromConfigurationDefinition(UplinkDefinition definition) {
+    public Forwarder fromConfigurationDefinition(ForwarderDefinition definition) {
         String def = definition.type().toLowerCase();
         switch(def) {
-            case "graylog":
-                return new GraylogUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
-            case "syslog_udp_rfc5424":
-                return new SyslogUDPRFC5424UDPUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
-            case "syslog_udp_rfc3164":
-                return new SyslogUDPRFC3164UDPUplink(parseInetSocketAddress(definition.configuration()), nzymeId);
+            case "udp":
+                return new UDPForwarder(parseInetSocketAddress(definition.configuration()), nzymeId);
             default:
-                throw new RuntimeException("Unknown uplink type [" + def + "].");
+                throw new RuntimeException("Unknown forwarder type [" + def + "].");
         }
     }
 
@@ -53,7 +45,7 @@ public class UplinkFactory {
         if(config.hasPath(ConfigurationKeys.HOST) && config.hasPath(ConfigurationKeys.PORT)) {
             return new InetSocketAddress(config.getString(ConfigurationKeys.HOST), config.getInt(ConfigurationKeys.PORT));
         } else {
-            throw new RuntimeException("Invalid configuration. Expecting \"host\" and \"port\" set in uplink configuration. Please consult the uplink documentation.");
+            throw new RuntimeException("Invalid configuration. Expecting \"host\" and \"port\" set in forwarder configuration. Please consult the forwarder documentation.");
         }
     }
 

@@ -38,12 +38,13 @@ import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
+import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.interceptors.BanditIdentifierInterceptorSet;
 import horse.wtf.nzyme.dot11.probes.Dot11MonitorProbe;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11ProbeConfiguration;
 import horse.wtf.nzyme.notifications.Notification;
-import horse.wtf.nzyme.statistics.Statistics;
+import horse.wtf.nzyme.processing.FrameProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,7 +67,8 @@ public class NzymeTrackerImpl implements NzymeTracker {
     private final GroundStation groundStation;
     private final TrackerBanditManager banditManager;
     private final TrackerStateWatchdog trackerStateWatchdog;
-    private final Statistics statistics;
+
+    private final FrameProcessor frameProcessor;
 
     private final List<Dot11Probe> probes;
     private final MetricRegistry metrics;
@@ -84,10 +86,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
         this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
 
+        this.frameProcessor = new FrameProcessor();
+
         this.probes = Lists.newArrayList();
         this.hids = Lists.newArrayList();
 
-        this.statistics = new Statistics(this);
         this.metrics = new MetricRegistry();
 
         this.om = new ObjectMapper()
@@ -211,7 +214,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     m.channelHopCommand(),
                     null,
                     null
-            ), metrics, statistics, anonymizer, true);
+            ), frameProcessor, metrics, anonymizer, this,true);
 
             probe.onChannelSwitch((previousChannel, newChannel) -> {
                 for (TrackerHID hid : hids) {
@@ -220,12 +223,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
             });
 
-            // Register the bandit interceptor.
-            probe.addFrameInterceptors(new BanditIdentifierInterceptorSet(getBanditManager()).getInterceptors());
-
             probeExecutor.submit(probe.loop());
             this.probes.add(probe);
         }
+
+        frameProcessor.registerDot11Interceptors(new BanditIdentifierInterceptorSet(getBanditManager()).getInterceptors());
     }
 
     @Override
@@ -290,6 +292,11 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
     @Override
     public void notifyUplinksOfAlert(Alert alert) {
+        // ignored for tracker
+    }
+
+    @Override
+    public void forwardFrame(Dot11Frame frame) {
         // ignored for tracker
     }
 }

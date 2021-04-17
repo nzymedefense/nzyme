@@ -63,7 +63,7 @@ public class Dot11DeauthenticationFrameParser extends Dot11FrameParser<Dot11Deau
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11DeauthenticationFrame.create(destination, transmitter, bssid, reasonCode, reasonString, meta);
+        return Dot11DeauthenticationFrame.create(destination, transmitter, bssid, reasonCode, reasonString, meta, payload, header);
     }
 
 }

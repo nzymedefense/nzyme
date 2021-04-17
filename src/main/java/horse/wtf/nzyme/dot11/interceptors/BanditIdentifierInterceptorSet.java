@@ -25,7 +25,6 @@ import horse.wtf.nzyme.dot11.Dot11FrameSubtype;
 import horse.wtf.nzyme.dot11.frames.Dot11BeaconFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11ProbeResponseFrame;
-import org.pcap4j.packet.IllegalRawDataException;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +42,7 @@ public class BanditIdentifierInterceptorSet {
 
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
-            public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
+            public void intercept(Dot11BeaconFrame frame) {
                 ci.identify(frame);
             }
 
@@ -60,7 +59,7 @@ public class BanditIdentifierInterceptorSet {
 
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
-            public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
+            public void intercept(Dot11ProbeResponseFrame frame) {
                 ci.identify(frame);
             }
 
@@ -77,7 +76,7 @@ public class BanditIdentifierInterceptorSet {
 
         interceptors.add(new Dot11FrameInterceptor<Dot11DeauthenticationFrame>() {
             @Override
-            public void intercept(Dot11DeauthenticationFrame frame) throws IllegalRawDataException {
+            public void intercept(Dot11DeauthenticationFrame frame) {
                 ci.identify(frame);
             }
 

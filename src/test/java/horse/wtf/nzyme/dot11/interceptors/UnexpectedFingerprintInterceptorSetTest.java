@@ -77,7 +77,7 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         "00:c0:ca:95:68:3b",
                         "dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b",
                         new Dot11TaggedParameters(new MetricRegistry(), Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, Frames.PROBE_RESP_1_PAYLOAD),
-                        META_NO_WEP)
+                        META_NO_WEP, new byte[]{}, new byte[]{})
                 );
                 assertNull(loopback.getLastAlert());
                 reset(loopback, nzyme);
@@ -89,7 +89,7 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         "0a:c0:ca:95:68:3b",
                         "WRONGdfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b",
                         new Dot11TaggedParameters(new MetricRegistry(), Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, Frames.PROBE_RESP_1_PAYLOAD),
-                        META_NO_WEP)
+                        META_NO_WEP, new byte[]{}, new byte[]{})
                 );
                 assertNull(loopback.getLastAlert());
                 reset(loopback, nzyme);
@@ -101,7 +101,7 @@ public class UnexpectedFingerprintInterceptorSetTest extends InterceptorSetTest 
                         "00:c0:ca:95:68:3b",
                         "WRONGdfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b",
                         new Dot11TaggedParameters(new MetricRegistry(), Dot11TaggedParameters.PROBERESP_TAGGED_PARAMS_POSITION, Frames.PROBE_RESP_1_PAYLOAD),
-                        META_NO_WEP)
+                        META_NO_WEP, new byte[]{}, new byte[]{})
                 );
                 assertNotNull(loopback.getLastAlert());
                 assertEquals(UnexpectedFingerprintProbeRespAlert.class, loopback.getLastAlert().getClass());

@@ -50,7 +50,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
 
         interceptors.add(new Dot11FrameInterceptor<Dot11ProbeResponseFrame>() {
             @Override
-            public void intercept(Dot11ProbeResponseFrame frame) throws IllegalRawDataException {
+            public void intercept(Dot11ProbeResponseFrame frame) {
                 // Don't consider broadcast frames.
                 if (frame.ssid() == null) {
                     return;
@@ -86,7 +86,7 @@ public class ProbeRequestTrapResponseInterceptorSet {
 
         interceptors.add(new Dot11FrameInterceptor<Dot11BeaconFrame>() {
             @Override
-            public void intercept(Dot11BeaconFrame frame) throws IllegalRawDataException {
+            public void intercept(Dot11BeaconFrame frame) {
                 // Don't consider broadcast frames.
                 if (frame.ssid() == null) {
                     return;

@@ -79,7 +79,7 @@ public class Dot11AssociationResponseFrameParser extends Dot11FrameParser<Dot11A
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11AssociationResponseFrame.create(transmitter, destination, response, responseCode, meta);
+        return Dot11AssociationResponseFrame.create(transmitter, destination, response, responseCode, meta, payload, header);
     }
 
 }

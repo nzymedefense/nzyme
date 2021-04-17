@@ -58,7 +58,7 @@ public class Dot11DisassociationFrameParser extends Dot11FrameParser<Dot11Disass
             destination = anonymizer.anonymizeBSSID(destination);
         }
 
-        return Dot11DisassociationFrame.create(destination, transmitter, reasonCode, reasonString, meta);
+        return Dot11DisassociationFrame.create(destination, transmitter, reasonCode, reasonString, meta, payload, header);
     }
 
 }

@@ -21,6 +21,9 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 
 public interface Dot11Frame {
 
+    byte frameType();
     Dot11MetaInformation meta();
+    byte[] payload();
+    byte[] header();
 
 }
