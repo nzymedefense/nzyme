@@ -31,14 +31,16 @@ public abstract class Dot11TrapDeviceDefinition {
     public abstract List<Integer> channels();
     public abstract String channelHopCommand();
     public abstract int channelHopInterval();
+    public abstract boolean skipEnableMonitor();
     public abstract Dot11TrapConfiguration trap();
 
-    public static Dot11TrapDeviceDefinition create(String device, List<Integer> channels, String channelHopCommand, int channelHopInterval, Dot11TrapConfiguration trap) {
+    public static Dot11TrapDeviceDefinition create(String device, List<Integer> channels, String channelHopCommand, int channelHopInterval, boolean skipEnableMonitor, Dot11TrapConfiguration trap) {
         return builder()
                 .device(device)
                 .channels(channels)
                 .channelHopCommand(channelHopCommand)
                 .channelHopInterval(channelHopInterval)
+                .skipEnableMonitor(skipEnableMonitor)
                 .trap(trap)
                 .build();
     }
@@ -68,6 +70,8 @@ public abstract class Dot11TrapDeviceDefinition {
         public abstract Builder channelHopInterval(int channelHopInterval);
 
         public abstract Builder trap(Dot11TrapConfiguration trap);
+
+        public abstract Builder skipEnableMonitor(boolean skipEnableMonitor);
 
         public abstract Dot11TrapDeviceDefinition build();
     }

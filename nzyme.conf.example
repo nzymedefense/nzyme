@@ -103,6 +103,10 @@ uplinks: []
 
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
     channel_hop_interval: 1
+
+    # Skip the automatic monitor mode configuration of this interface. Only enable this if for some reason libpcap can't
+    # properly configure this interface into monitor mode. In that case, you can try to set it manually instead.
+    skip_enable_monitor: false
   }
 ]
 

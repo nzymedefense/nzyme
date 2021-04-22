@@ -34,6 +34,7 @@ public class AlertTestHelper {
             ImmutableList.of(),
             1,
             "foo",
+            false,
             ImmutableList.of(),
             ImmutableList.of()
     );

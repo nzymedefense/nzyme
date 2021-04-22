@@ -38,6 +38,7 @@ public abstract class Dot11ProbeConfiguration {
     public abstract ImmutableList<Integer> channels();
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
+    public abstract boolean skipEnableMonitor();
 
     @Nullable
     public abstract ImmutableList<Dot11NetworkDefinition> getDot11Networks();
@@ -45,7 +46,7 @@ public abstract class Dot11ProbeConfiguration {
     @Nullable
     public abstract ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices();
 
-    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<Uplink> uplinks, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
+    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<Uplink> uplinks, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, boolean skipEnableMonitor, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
         return builder()
                 .probeName(probeName)
                 .uplinks(uplinks)
@@ -56,6 +57,7 @@ public abstract class Dot11ProbeConfiguration {
                 .channelHopCommand(channelHopCommand)
                 .getDot11Networks(getDot11Networks)
                 .getDot11TrapDevices(getDot11TrapDevices)
+                .skipEnableMonitor(skipEnableMonitor)
                 .build();
     }
 
@@ -78,6 +80,8 @@ public abstract class Dot11ProbeConfiguration {
         public abstract Builder channelHopInterval(Integer channelHopInterval);
 
         public abstract Builder channelHopCommand(String channelHopCommand);
+
+        public abstract Builder skipEnableMonitor(boolean skipEnableMonitor);
 
         public abstract Builder getDot11Networks(ImmutableList<Dot11NetworkDefinition> getDot11Networks);
 

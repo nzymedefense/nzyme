@@ -72,7 +72,7 @@ public class Dot11SenderProbe extends Dot11Probe {
         }
 
         PcapHandle.Builder phb = new PcapHandle.Builder(networkInterface.getName())
-                .rfmon(true)
+                .rfmon(!configuration.skipEnableMonitor())
                 .snaplen(65536)
                 .promiscuousMode(PcapNetworkInterface.PromiscuousMode.PROMISCUOUS)
                 .timeoutMillis(100)

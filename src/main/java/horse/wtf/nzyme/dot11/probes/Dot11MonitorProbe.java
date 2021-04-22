@@ -105,7 +105,7 @@ public class Dot11MonitorProbe extends Dot11Probe {
         LOG.info("Building PCAP handle on interface [{}]", configuration.networkInterfaceName());
 
         PcapHandle.Builder phb = new PcapHandle.Builder(networkInterface.getName())
-                .rfmon(true)
+                .rfmon(!configuration.skipEnableMonitor())
                 .snaplen(65536)
                 .promiscuousMode(PcapNetworkInterface.PromiscuousMode.PROMISCUOUS)
                 .timeoutMillis(100)

@@ -29,13 +29,15 @@ public abstract class Dot11MonitorDefinition {
     public abstract ImmutableList<Integer> channels();
     public abstract String channelHopCommand();
     public abstract Integer channelHopInterval();
+    public abstract boolean skipEnableMonitor();
 
-    public static Dot11MonitorDefinition create(String device, ImmutableList<Integer> channels, String channelHopCommand, Integer channelHopInterval) {
+    public static Dot11MonitorDefinition create(String device, ImmutableList<Integer> channels, String channelHopCommand, Integer channelHopInterval, boolean skipEnableMonitor) {
         return builder()
                 .device(device)
                 .channels(channels)
                 .channelHopCommand(channelHopCommand)
                 .channelHopInterval(channelHopInterval)
+                .skipEnableMonitor(skipEnableMonitor)
                 .build();
     }
 
@@ -52,6 +54,8 @@ public abstract class Dot11MonitorDefinition {
         public abstract Builder channelHopCommand(String channelHopCommand);
 
         public abstract Builder channelHopInterval(Integer channelHopInterval);
+
+        public abstract Builder skipEnableMonitor(boolean skipEnableMonitor);
 
         public abstract Dot11MonitorDefinition build();
     }

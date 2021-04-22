@@ -225,11 +225,19 @@ public class LeaderConfigurationLoader {
                     trapConfig
             );
 
+            final boolean skipEnableMonitor;
+            if (config.hasPath(ConfigurationKeys.SKIP_ENABLE_MONITOR)) {
+                skipEnableMonitor = config.getBoolean(ConfigurationKeys.SKIP_ENABLE_MONITOR);
+            } else {
+                skipEnableMonitor = false;
+            }
+
             result.add(Dot11TrapDeviceDefinition.create(
                     config.getString(ConfigurationKeys.DEVICE),
                     config.getIntList(ConfigurationKeys.CHANNELS),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
                     config.getInt(ConfigurationKeys.HOP_INTERVAL),
+                    skipEnableMonitor,
                     trap
             ));
         }

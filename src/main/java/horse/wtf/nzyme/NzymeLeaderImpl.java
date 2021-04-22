@@ -377,6 +377,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channels(),
                     m.channelHopInterval(),
                     m.channelHopCommand(),
+                    m.skipEnableMonitor(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
             ), frameProcessor, metrics, anonymizer, this,false);
@@ -468,6 +469,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                             ImmutableList.copyOf(td.channels()),
                             td.channelHopInterval(),
                             td.channelHopCommand(),
+                            td.skipEnableMonitor(),
                             configuration.dot11Networks(),
                             configuration.dot11TrapDevices()
                     ), trap, metrics);

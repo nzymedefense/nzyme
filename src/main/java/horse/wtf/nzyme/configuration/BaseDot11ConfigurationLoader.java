@@ -46,11 +46,19 @@ public class BaseDot11ConfigurationLoader {
                 continue;
             }
 
+            final boolean skipEnableMonitor;
+            if (config.hasPath(ConfigurationKeys.SKIP_ENABLE_MONITOR)) {
+                skipEnableMonitor = config.getBoolean(ConfigurationKeys.SKIP_ENABLE_MONITOR);
+            } else {
+                skipEnableMonitor = false;
+            }
+
             result.add(Dot11MonitorDefinition.create(
                     config.getString(ConfigurationKeys.DEVICE),
                     ImmutableList.copyOf(config.getIntList(ConfigurationKeys.CHANNELS)),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
-                    config.getInt(ConfigurationKeys.HOP_INTERVAL)
+                    config.getInt(ConfigurationKeys.HOP_INTERVAL),
+                    skipEnableMonitor
             ));
         }
 
