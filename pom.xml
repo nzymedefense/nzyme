@@ -587,7 +587,7 @@
                     </plugin>
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
-                        <version>1.8.0</version>
+                        <version>1.11.3</version>
                         <artifactId>frontend-maven-plugin</artifactId>
 
                         <configuration>
