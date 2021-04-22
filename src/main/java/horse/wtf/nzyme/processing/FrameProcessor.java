@@ -19,6 +19,7 @@ package horse.wtf.nzyme.processing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Monitor;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.dot11.Dot11FrameInterceptor;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
@@ -30,12 +31,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class FrameProcessor {
 
+    private final Monitor monitor;
+
     private final AtomicLong recentDot11FrameCount;
     private final AtomicLong recentDot11FrameCountTemp;
 
     private final List<Dot11FrameInterceptor> dot11Interceptors;
 
     public FrameProcessor() {
+        this.monitor = new Monitor();
         this.dot11Interceptors = Lists.newArrayList();
 
         this.recentDot11FrameCount = new AtomicLong(0);
@@ -50,12 +54,18 @@ public class FrameProcessor {
     }
 
     public void processDot11Frame(Dot11Frame frame) {
-        recentDot11FrameCountTemp.incrementAndGet();
+        monitor.enter();
 
-        for (Dot11FrameInterceptor interceptor : dot11Interceptors) {
-            if (interceptor.forSubtype() == frame.frameType()) {
-                interceptor.intercept(frame);
+        try {
+            recentDot11FrameCountTemp.incrementAndGet();
+
+            for (Dot11FrameInterceptor interceptor : dot11Interceptors) {
+                if (interceptor.forSubtype() == frame.frameType()) {
+                    interceptor.intercept(frame);
+                }
             }
+        } finally {
+            monitor.leave();
         }
     }
 
@@ -66,7 +76,13 @@ public class FrameProcessor {
     }
 
     public void registerDot11Interceptor(Dot11FrameInterceptor interceptor) {
-        this.dot11Interceptors.add(interceptor);
+        monitor.enter();
+
+        try {
+            this.dot11Interceptors.add(interceptor);
+        } finally {
+            monitor.leave();
+        }
     }
 
     public ImmutableList<Dot11FrameInterceptor> getDot11Interceptors() {
