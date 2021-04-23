@@ -41,6 +41,8 @@ public class DefaultBandits {
      *
      * This will probably bite me later but appears to be the best approach for now.
      *
+     * NAME AND DESCRIPTION OF A DEFAULT BANDIT CAN BE CHANGED.
+     *
      */
 
     public static final List<Bandit> BANDITS = new ArrayList<Bandit>(){{
@@ -287,12 +289,13 @@ public class DefaultBandits {
     }};
 
     public static void seed(ContactManager contactIdentifier) {
-        contactIdentifier.removeAllReadOnlyBandits();
         for (Bandit bandit : BANDITS) {
-            contactIdentifier.registerBandit(bandit);
+            if (contactIdentifier.findBanditByUUID(bandit.uuid()).isPresent()) {
+                contactIdentifier.updateBandit(bandit.uuid(), bandit.description(), bandit.name());
+            } else {
+                contactIdentifier.registerBandit(bandit);
+            }
         }
-
-
     }
 
 }
