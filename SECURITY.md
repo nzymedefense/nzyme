@@ -6,6 +6,7 @@ The following versions of nzyme can be considered maintained and will receive ti
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.1.x   | :heavy_check_mark: |
 | 1.0.x   | :heavy_check_mark: |
 | < 1.0.x | :x:                |
 
