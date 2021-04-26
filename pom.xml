@@ -45,7 +45,7 @@
         <protobuf.version>3.15.8</protobuf.version>
         <jaxb.version>2.3.1</jaxb.version>
         <tink.version>1.5.0</tink.version>
-        <lanterna.version>3.0.3</lanterna.version>
+        <lanterna.version>3.1.1</lanterna.version>
         <simplejavamail.version>6.5.2</simplejavamail.version>
         <freemarker.version>2.3.30</freemarker.version>
         <syslog.version>1.1.7</syslog.version>
