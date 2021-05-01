@@ -449,4 +449,33 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20" author="lennartkoopmann">
+        <createTable tableName="sentry_ssids" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_sentry_ssids_standard_lookup" tableName="sentry_ssids" unique="false">
+            <column name="ssid" />
+        </createIndex>
+
+        <createIndex indexName="idx_sentry_ssids_list_lookup" tableName="sentry_ssids" unique="false">
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
+
 </databaseChangeLog>

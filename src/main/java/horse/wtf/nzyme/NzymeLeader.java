@@ -27,6 +27,7 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -47,6 +48,7 @@ public interface NzymeLeader extends RemoteConnector {
     FrameProcessor getFrameProcessor();
 
     Networks getNetworks();
+    Sentry getSentry();
     Clients getClients();
 
     void registerUplink(Uplink uplink);
