@@ -53,7 +53,8 @@ public abstract class Alert {
         MULTIPLE_SIGNAL_TRACKS,
         PWNAGOTCHI_ADVERTISEMENT,
         BANDIT_CONTACT,
-        BEACON_TRAP_1
+        BEACON_TRAP_1,
+        UNKNOWN_SSID
     }
 
     public enum TYPE {
@@ -72,7 +73,8 @@ public abstract class Alert {
         MULTIPLE_SIGNAL_TRACKS,
         PWNAGOTCHI_ADVERTISEMENT,
         BANDIT_CONTACT,
-        BEACON_TRAP_1
+        BEACON_TRAP_1,
+        UNKNOWN_SSID
     }
 
     public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
@@ -354,6 +356,16 @@ public abstract class Alert {
                         (Integer) fields.get(FieldNames.FREQUENCY),
                         (Integer) fields.get(FieldNames.ANTENNA_SIGNAL),
                         db.frameCount()
+                );
+                break;
+            case UNKNOWN_SSID:
+                alert = UnknownSSIDAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.SSID),
+                        (String) fields.get(FieldNames.BSSID),
+                        (Integer) fields.get(FieldNames.CHANNEL),
+                        (Integer) fields.get(FieldNames.FREQUENCY),
+                        (Integer) fields.get(FieldNames.ANTENNA_SIGNAL)
                 );
                 break;
             default:
