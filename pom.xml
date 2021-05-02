@@ -49,6 +49,7 @@
         <simplejavamail.version>6.5.2</simplejavamail.version>
         <freemarker.version>2.3.30</freemarker.version>
         <syslog.version>1.1.7</syslog.version>
+        <opencsv.version>5.4</opencsv.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -292,6 +293,11 @@
             <groupId>com.cloudbees</groupId>
             <artifactId>syslog-java-client</artifactId>
             <version>${syslog.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
         </dependency>
     </dependencies>
 

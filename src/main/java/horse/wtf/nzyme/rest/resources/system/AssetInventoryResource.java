@@ -17,7 +17,10 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.opencsv.CSVWriter;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
@@ -32,6 +35,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Path("/api/asset-inventory")
 @Produces(MediaType.APPLICATION_JSON)
@@ -61,7 +67,50 @@ public class AssetInventoryResource {
             ));
         }
 
-        return Response.ok(Dot11AssetInventoryResponse.create(ssids.build())).build();
+        return Response.ok(Dot11AssetInventoryResponse.create(ssids.build(), buildSSIDCSV(), buildBSSIDCSV())).build();
+    }
+
+    private String buildSSIDCSV() {
+        StringWriter stringWriter = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(stringWriter);
+
+        csvWriter.writeNext(new String[]{"ssid","security","channels","bssids"});
+
+        for (Dot11NetworkDefinition ssid : nzyme.getConfiguration().dot11Networks()) {
+            List<String> bssids = Lists.newArrayList();
+            for (Dot11BSSIDDefinition bssid : ssid.bssids()) {
+                bssids.add(bssid.address());
+            }
+
+            List<String> columns = Lists.newArrayList();
+            columns.add(ssid.ssid());
+            columns.add(Joiner.on(",").join(ssid.security()));
+            columns.add(Joiner.on(",").join(ssid.channels()));
+            columns.add(Joiner.on(",").join(bssids));
+            csvWriter.writeNext(columns.toArray(String[]::new));
+        }
+
+        return stringWriter.toString();
+    }
+
+    private String buildBSSIDCSV() {
+        StringWriter stringWriter = new StringWriter();
+        CSVWriter csvWriter = new CSVWriter(stringWriter);
+
+        csvWriter.writeNext(new String[]{"bssid","ssid","fingerprint","security"});
+
+        for (Dot11NetworkDefinition ssid : nzyme.getConfiguration().dot11Networks()) {
+            for (Dot11BSSIDDefinition bssid : ssid.bssids()) {
+                List<String> columns = new ArrayList<>();
+                columns.add(bssid.address());
+                columns.add(ssid.ssid());
+                columns.add(Joiner.on(",").join(bssid.fingerprints()));
+                columns.add(Joiner.on(",").join(ssid.security()));
+                csvWriter.writeNext(columns.toArray(String[]::new));
+            }
+        }
+
+        return stringWriter.toString();
     }
 
 }

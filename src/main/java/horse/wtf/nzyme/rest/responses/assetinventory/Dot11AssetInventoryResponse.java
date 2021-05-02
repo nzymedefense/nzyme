@@ -28,9 +28,17 @@ public abstract class Dot11AssetInventoryResponse {
     @JsonProperty
     public abstract List<Dot11SSIDAssetResponse> ssids();
 
-    public static Dot11AssetInventoryResponse create(List<Dot11SSIDAssetResponse> ssids) {
+    @JsonProperty("ssids_csv")
+    public abstract String ssidsCSV();
+
+    @JsonProperty("bssids_csv")
+    public abstract String bssidsCSV();
+
+    public static Dot11AssetInventoryResponse create(List<Dot11SSIDAssetResponse> ssids, String ssidsCSV, String bssidsCSV) {
         return builder()
                 .ssids(ssids)
+                .ssidsCSV(ssidsCSV)
+                .bssidsCSV(bssidsCSV)
                 .build();
     }
 
@@ -41,6 +49,10 @@ public abstract class Dot11AssetInventoryResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder ssids(List<Dot11SSIDAssetResponse> ssids);
+
+        public abstract Builder ssidsCSV(String ssidsCSV);
+
+        public abstract Builder bssidsCSV(String bssidsCSV);
 
         public abstract Dot11AssetInventoryResponse build();
     }

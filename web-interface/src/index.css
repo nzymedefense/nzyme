@@ -180,3 +180,21 @@ i.built-in-bandit {
     color: #292b40;
     margin-left: 10px;
 }
+
+div.assets-csv-export h5 {
+    margin-top: 13px;
+}
+
+div.assets-csv-export button {
+    margin-top: 8px;
+}
+
+div.assets-csv-export textarea {
+    background-color: #191B28;
+    border: 0;
+    padding: 5px;
+    color: #aaa;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: scroll;
+}
