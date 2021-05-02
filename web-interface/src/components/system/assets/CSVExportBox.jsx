@@ -1,5 +1,4 @@
 import React from 'react';
-import LoadingSpinner from "../../misc/LoadingSpinner";
 
 class CSVExportBox extends React.Component {
 

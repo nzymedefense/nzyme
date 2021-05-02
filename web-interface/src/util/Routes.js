@@ -1,6 +1,11 @@
 const Routes = {
     DASHBOARD: "/",
-    SYSTEM_STATUS: "/system",
+    SYSTEM: {
+        STATUS: "/system",
+        ASSETS: {
+            INDEX: "/system/assets/index"
+        }
+    },
     NETWORKS: {
         INDEX: "/networks",
         SHOW: (bssid, ssid, channel) => `/networks/show/${bssid}/${ssid}/${channel}`
@@ -17,9 +22,6 @@ const Routes = {
         NEW: "/bandits/new",
         EDIT: (uuid) => `/bandits/edit/${uuid}`,
         NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
-    },
-    ASSETS: {
-        INDEX: "/assets"
     }
 };
 

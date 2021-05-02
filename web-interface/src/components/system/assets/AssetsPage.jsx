@@ -2,7 +2,6 @@ import React from 'react';
 import AssetInventoryService from "../../../services/AssetInventoryService";
 import Dot11NetworkAssetsList from "./Dot11NetworkAssetsList";
 import CSVExport from "./CSVExport";
-import Routes from "../../../util/Routes";
 
 class AssetsPage extends React.Component {
 

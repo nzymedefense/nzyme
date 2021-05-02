@@ -108,7 +108,7 @@ class App extends React.Component {
                                     <Route exact path={Routes.DASHBOARD} component={OverviewPage}/>
 
                                     { /* System Status. */}
-                                    <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage}/>
+                                    <Route exact path={Routes.SYSTEM.STATUS} component={SystemPage}/>
 
                                     { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
@@ -128,7 +128,7 @@ class App extends React.Component {
                                     <Route exact path={Routes.BANDITS.SHOW_TRACKER(":name")} component={TrackerDetailPage} />
 
                                     { /* Assets. */}
-                                    <Route exact path={Routes.ASSETS.INDEX} component={AssetsPage}/>
+                                    <Route exact path={Routes.SYSTEM.ASSETS.INDEX} component={AssetsPage}/>
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

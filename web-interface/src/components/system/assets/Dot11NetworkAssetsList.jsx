@@ -1,6 +1,5 @@
 import React from 'react';
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import ProbeTableRow from "../ProbeTableRow";
 import SSIDAsset from "./SSIDAsset";
 
 class Dot11NetworkAssetsList extends React.Component {

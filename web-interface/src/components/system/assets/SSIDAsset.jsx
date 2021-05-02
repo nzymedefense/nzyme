@@ -18,7 +18,7 @@ class SSIDAsset extends React.Component {
                     <dd>{join(this.props.ssid.security, ", ")}</dd>
                     <dt>Channels:</dt>
                     <dd>{join(this.props.ssid.channels, ", ")}</dd>
-                </dl>s
+                </dl>
 
                 <h4>Access Points</h4>
 
