@@ -73,6 +73,7 @@ import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
+import horse.wtf.nzyme.rest.resources.system.AssetInventoryResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
@@ -279,6 +280,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
+        resourceConfig.register(AssetInventoryResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
