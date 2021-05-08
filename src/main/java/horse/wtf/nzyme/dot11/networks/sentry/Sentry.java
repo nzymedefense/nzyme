@@ -81,14 +81,14 @@ public class Sentry {
                     nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
                             "INSERT INTO sentry_ssids(ssid, first_seen, last_seen) VALUES(:ssid, :first_seen, :last_seen)")
                             .bind("ssid", entry.ssid())
-                            .bind("first_seen", entry.firstSeen())
-                            .bind("last_seen", entry.lastSeen())
+                            .bind("first_seen", entry.firstSeen().withMillisOfSecond(0))
+                            .bind("last_seen", entry.lastSeen().withMillisOfSecond(0))
                             .execute()
                     );
                 } else {
                     nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
                             "UPDATE sentry_ssids SET last_seen = :last_seen WHERE ssid = :ssid")
-                            .bind("last_seen", entry.lastSeen())
+                            .bind("last_seen", entry.lastSeen().withMillisOfSecond(0))
                             .bind("ssid", entry.ssid())
                             .execute()
                     );

@@ -54,7 +54,8 @@ public abstract class Alert {
         PWNAGOTCHI_ADVERTISEMENT,
         BANDIT_CONTACT,
         BEACON_TRAP_1,
-        UNKNOWN_SSID
+        UNKNOWN_SSID,
+        DEAUTH_FLOOD
     }
 
     public enum TYPE {
@@ -74,7 +75,8 @@ public abstract class Alert {
         PWNAGOTCHI_ADVERTISEMENT,
         BANDIT_CONTACT,
         BEACON_TRAP_1,
-        UNKNOWN_SSID
+        UNKNOWN_SSID,
+        DEAUTH_FLOOD
     }
 
     public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
