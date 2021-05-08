@@ -30,6 +30,7 @@ import AlertsPage from "./components/alerts/AlertsPage";
 import AlertsService from "./services/AlertsService";
 import AuthenticationService from "./services/AuthenticationService";
 import PingService from "./services/PingService";
+import AssetsPage from "./components/system/assets/AssetsPage";
 
 class App extends React.Component {
 
@@ -107,7 +108,7 @@ class App extends React.Component {
                                     <Route exact path={Routes.DASHBOARD} component={OverviewPage}/>
 
                                     { /* System Status. */}
-                                    <Route exact path={Routes.SYSTEM_STATUS} component={SystemPage}/>
+                                    <Route exact path={Routes.SYSTEM.STATUS} component={SystemPage}/>
 
                                     { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
@@ -125,6 +126,9 @@ class App extends React.Component {
                                     <Route exact path={Routes.BANDITS.EDIT(":id")} component={EditBanditPage} />
                                     <Route exact path={Routes.BANDITS.NEW_IDENTIFIER(":banditUUID")} component={CreateIdentifierPage} />
                                     <Route exact path={Routes.BANDITS.SHOW_TRACKER(":name")} component={TrackerDetailPage} />
+
+                                    { /* Assets. */}
+                                    <Route exact path={Routes.SYSTEM.ASSETS.INDEX} component={AssetsPage}/>
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

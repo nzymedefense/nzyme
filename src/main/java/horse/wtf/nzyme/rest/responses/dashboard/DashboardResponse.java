@@ -42,6 +42,9 @@ public abstract class DashboardResponse {
     @JsonProperty("frame_throughput_histogram")
     public abstract Map<String, Long> frameThroughputHistogram();
 
+    @JsonProperty("deauth_frame_histogram")
+    public abstract Map<String, Long> deauthFrameHistogram();
+
     @JsonProperty("alerts")
     public abstract AlertsListResponse alerts();
 
@@ -51,12 +54,13 @@ public abstract class DashboardResponse {
     @JsonProperty("probes")
     public abstract ProbesListResponse probes();
 
-    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> frameThroughputHistogram, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
+    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> frameThroughputHistogram, Map<String, Long> deauthFrameHistogram, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
         return builder()
                 .activeAlerts(activeAlerts)
                 .activeContacts(activeContacts)
                 .systemHealthStatus(systemHealthStatus)
                 .frameThroughputHistogram(frameThroughputHistogram)
+                .deauthFrameHistogram(deauthFrameHistogram)
                 .alerts(alerts)
                 .contacts(contacts)
                 .probes(probes)
@@ -76,6 +80,8 @@ public abstract class DashboardResponse {
         public abstract Builder systemHealthStatus(SystemStatus.HEALTH systemHealthStatus);
 
         public abstract Builder frameThroughputHistogram(Map<String, Long> frameThroughputHistogram);
+
+        public abstract Builder deauthFrameHistogram(Map<String, Long> deauthFrameHistogram);
 
         public abstract Builder alerts(AlertsListResponse alerts);
 

@@ -11,7 +11,7 @@
 
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
@@ -25,16 +25,16 @@
         <guava.version>30.1.1-jre</guava.version>
         <jcommander.version>1.81</jcommander.version>
         <testng.version>7.4.0</testng.version>
-        <okhttp.version>4.1.0</okhttp.version>
+        <okhttp.version>4.9.1</okhttp.version>
         <jackson.version>2.12.3</jackson.version>
-        <jodatime.version>2.10.3</jodatime.version>
+        <jodatime.version>2.10.10</jodatime.version>
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.8.1</autovalue.version>
-        <metrics.version>4.1.19</metrics.version>
+        <metrics.version>4.1.21</metrics.version>
         <jersey.version>2.34</jersey.version>
         <typesafeconfig.version>1.4.1</typesafeconfig.version>
-        <jdbi.version>3.19.0</jdbi.version>
-        <liquibase.version>4.3.4</liquibase.version>
+        <jdbi.version>3.20.0</jdbi.version>
+        <liquibase.version>4.3.5</liquibase.version>
         <liquibase-slf4j.version>4.0.0</liquibase-slf4j.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
         <jmte.version>6.0.0</jmte.version>
@@ -42,13 +42,14 @@
         <jwt.version>0.11.2</jwt.version>
         <reflections.version>0.9.12</reflections.version>
         <jssc.version>2.8.0</jssc.version>
-        <protobuf.version>3.15.8</protobuf.version>
+        <protobuf.version>3.16.0</protobuf.version>
         <jaxb.version>2.3.1</jaxb.version>
         <tink.version>1.5.0</tink.version>
-        <lanterna.version>3.0.3</lanterna.version>
+        <lanterna.version>3.1.1</lanterna.version>
         <simplejavamail.version>6.5.2</simplejavamail.version>
-        <freemarker.version>2.3.30</freemarker.version>
+        <freemarker.version>2.3.31</freemarker.version>
         <syslog.version>1.1.7</syslog.version>
+        <opencsv.version>5.4</opencsv.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -286,12 +287,17 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.12</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>com.cloudbees</groupId>
             <artifactId>syslog-java-client</artifactId>
             <version>${syslog.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
         </dependency>
     </dependencies>
 
@@ -383,7 +389,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.4</version>
                 <configuration>
                     <minimizeJar>false</minimizeJar>
                 </configuration>
@@ -544,7 +550,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.6</version>
+                <version>0.8.7</version>
                 <executions>
                     <execution>
                         <goals>

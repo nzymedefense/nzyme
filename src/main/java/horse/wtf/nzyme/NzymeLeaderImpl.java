@@ -38,11 +38,13 @@ import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.deauth.DeauthenticationMonitor;
 import horse.wtf.nzyme.dot11.deception.traps.BeaconTrap;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.interceptors.*;
+import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
@@ -72,6 +74,7 @@ import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
+import horse.wtf.nzyme.rest.resources.system.AssetInventoryResource;
 import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
@@ -121,7 +124,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
 
     private final Networks networks;
+    private final Sentry sentry;
     private final Clients clients;
+    private final DeauthenticationMonitor deauthenticationMonitor;
 
     private final ObjectMapper objectMapper;
 
@@ -156,8 +161,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
+        this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
         this.objectMapper = new ObjectMapper();
+
+        this.deauthenticationMonitor = new DeauthenticationMonitor(this);
 
         this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
 
@@ -276,6 +284,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
+        resourceConfig.register(AssetInventoryResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -391,8 +400,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Broad monitor interceptors.
         frameProcessor.registerDot11Interceptors(new BroadMonitorInterceptorSet(this).getInterceptors());
 
-        // Bandit interceptor.
+        // Bandit interceptors.
         frameProcessor.registerDot11Interceptors(new BanditIdentifierInterceptorSet(getContactManager()).getInterceptors());
+
+        // Sentry interceptors.
+        frameProcessor.registerDot11Interceptors(new SentryInterceptorSet(sentry, alerts).getInterceptors());
+
+        // Deauth counter.
+        frameProcessor.registerDot11Interceptor(new DeauthFrameCounterInterceptor(deauthenticationMonitor));
 
         // Dot11 alerting interceptors.
         if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
@@ -413,6 +428,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.PWNAGOTCHI_ADVERTISEMENT)) {
             frameProcessor.registerDot11Interceptor(new PwnagotchiAdvertisementInterceptor(getAlertsService()));
         }
+
 
         // Traps.
         for (Dot11TrapDeviceDefinition td : configuration.dot11TrapDevices()) {
@@ -574,6 +590,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Networks getNetworks() {
         return networks;
+    }
+
+    @Override
+    public Sentry getSentry() {
+        return sentry;
     }
 
     @Override

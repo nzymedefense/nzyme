@@ -140,6 +140,7 @@ uplinks: []
   multiple_signal_tracks
   pwnagotchi_advertisement
   bandit_contact
+  unknown_ssid
 ]
 
 # Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps
