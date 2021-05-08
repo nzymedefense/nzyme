@@ -33,16 +33,34 @@ public abstract class Dot11SecurityConfiguration {
     }
 
     public enum KEY_MGMT_MODE {
-        PSK,
         EAM,
+        PSK,
+        FTEAM,
+        FTPSK,
+        EAMSHA256,
         PSKSHA256,
+        TDLS,
         SAE,
+        FTSAESHA256,
+        APPEERKEY,
+        EAMEAPSHA256,
+        EAMEAPSHA384,
+        FTEAMSHA384,
         UNKNOWN
     }
 
     public enum ENCRYPTION_MODE {
+        WEP,
         TKIP,
-        CCMP, // AES
+        CCMP,
+        WEP104,
+        BIPCMAC128,
+        GCMP128,
+        GCMP256,
+        CCMP256,
+        BIPGMAC128,
+        BIPGMAC256,
+        BIPCMAC256,
         UNKNOWN
     }
 
