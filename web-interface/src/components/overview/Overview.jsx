@@ -9,6 +9,7 @@ import AlertsTable from "../alerts/AlertsTable";
 import ContactsTable from "../bandits/ContactsTable";
 import ProbesTable from "../system/ProbesTable";
 import DashboardService from "../../services/DashboardService";
+import DeauthFramesWidget from "./widgets/DeauthFramesWidget";
 
 class Overview extends React.Component {
 
@@ -61,6 +62,13 @@ class Overview extends React.Component {
                     <div className="col-md-12">
                         <h4>802.11 Frame Throughput</h4>
                         <FrameThroughputWidget frameThroughputHistogram={this.state.dashboard.frame_throughput_histogram} />
+                    </div>
+                </div>
+
+                <div className="row mt-md-3">
+                    <div className="col-md-12">
+                        <h4>802.11 Deauthentication Frames</h4>
+                        <DeauthFramesWidget deauthFrameHistogram={this.state.dashboard.deauth_frame_histogram} />
                     </div>
                 </div>
 

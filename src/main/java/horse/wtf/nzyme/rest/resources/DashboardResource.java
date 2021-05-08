@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecording;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.measurements.Measurement;
 import horse.wtf.nzyme.measurements.MeasurementType;
@@ -55,6 +56,7 @@ public class DashboardResource {
     private static final Logger LOG = LogManager.getLogger(DashboardResource.class);
 
     private static final String MEASUREMENTS_QUERY = "SELECT * FROM measurements WHERE measurement_type = ? AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') ORDER BY created_at ASC;";
+    private static final String DEAUTH_QUERY = "SELECT * FROM deauth_monitor WHERE created_at > (current_timestamp - interval '1 day') ORDER BY created_at ASC;";
 
     @Inject
     private NzymeLeader nzyme;
@@ -81,6 +83,12 @@ public class DashboardResource {
                 handle.createQuery(MEASUREMENTS_QUERY)
                         .bind(0, MeasurementType.DOT11_FRAME_COUNT)
                         .mapTo(Measurement.class)
+                        .list()
+        ));
+
+        Map<String, Long> deauthHistogram = buildDeauthHistogram(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(DEAUTH_QUERY)
+                        .mapTo(DeauthenticationMonitorRecording.class)
                         .list()
         ));
 
@@ -126,6 +134,7 @@ public class DashboardResource {
                         activeContacts,
                         systemHealthStatus,
                         frameThroughputHistogram,
+                        deauthHistogram,
                         AlertsListResponse.create(alerts.size(), alerts),
                         contacts,
                         ProbesListResponse.create(probes.size(), probes)
@@ -134,12 +143,7 @@ public class DashboardResource {
     }
 
     private Map<String, Long> buildMeasurementHistogram(List<Measurement> measurements) {
-        Map<String, Long> clientCountHistogram = new TreeMap<>();
-
-        // Always have an x-axis for full 24 hours to avoid weird diagonal connections.
-        for (int i = 1; i < 24*60; i++) {
-            clientCountHistogram.put(DateTime.now(DateTimeZone.UTC).minusMinutes(i).withSecondOfMinute(0).withMillisOfSecond(0).toString(), 0L);
-        }
+        Map<String, Long> clientCountHistogram = buildEmptyDailyHistogram();
 
         if (measurements != null && !measurements.isEmpty()) {
             for (Measurement measurement : measurements) {
@@ -148,6 +152,29 @@ public class DashboardResource {
         }
 
         return clientCountHistogram;
+    }
+
+    private Map<String, Long> buildDeauthHistogram(List<DeauthenticationMonitorRecording> recordings) {
+        Map<String, Long> deauthHistogram = buildEmptyDailyHistogram();
+
+        if (recordings != null && !recordings.isEmpty()) {
+            for (DeauthenticationMonitorRecording recording : recordings) {
+                deauthHistogram.put(recording.createdAt().withZone(DateTimeZone.UTC).withSecondOfMinute(0).withMillisOfSecond(0).toString(), recording.totalFrameCount());
+            }
+        }
+
+        return deauthHistogram;
+    }
+
+    private Map<String, Long> buildEmptyDailyHistogram() {
+        Map<String, Long> histo = new TreeMap<>();
+
+        // Always have an x-axis for full 24 hours to avoid weird diagonal connections.
+        for (int i = 1; i < 24*60; i++) {
+            histo.put(DateTime.now(DateTimeZone.UTC).minusMinutes(i).withSecondOfMinute(0).withMillisOfSecond(0).toString(), 0L);
+        }
+
+        return histo;
     }
 
 }

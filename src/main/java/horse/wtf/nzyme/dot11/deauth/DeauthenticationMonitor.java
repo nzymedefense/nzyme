@@ -61,7 +61,7 @@ public class DeauthenticationMonitor {
             nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
                     "INSERT INTO deauth_monitor(total_frame_count, created_at) VALUES(:frame_count, :created_at)")
                     .bind("frame_count", count)
-                    .bind("created_at", DateTime.now())
+                    .bind("created_at", DateTime.now().withMillisOfSecond(0))
                     .execute()
             );
         } catch(Exception e) {
