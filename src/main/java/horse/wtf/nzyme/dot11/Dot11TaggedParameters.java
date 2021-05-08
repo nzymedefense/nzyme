@@ -297,11 +297,38 @@ public class Dot11TaggedParameters {
         int cypherSuitesCount = payload[startPosition];
         parseSuites(cypherSuitesCount, payload, startPosition).forEach(suite -> {
             switch(suite) {
+                case 1:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.WEP);
+                    break;
                 case 2:
                     encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.TKIP);
                     break;
                 case 4:
                     encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP);
+                    break;
+                case 5:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.WEP104);
+                    break;
+                case 6:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.BIPCMAC128);
+                    break;
+                case 8:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.GCMP128);
+                    break;
+                case 9:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.GCMP256);
+                    break;
+                case 10:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.CCMP256);
+                    break;
+                case 11:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.BIPGMAC128);
+                    break;
+                case 12:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.BIPGMAC256);
+                    break;
+                case 13:
+                    encryptionModes.add(Dot11SecurityConfiguration.ENCRYPTION_MODE.BIPCMAC256);
                     break;
                 default:
                     LOG.warn("Unknown encryption mode [{}].", suite);
@@ -324,11 +351,38 @@ public class Dot11TaggedParameters {
                 case 2:
                     keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSK);
                     break;
+                case 3:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.FTEAM);
+                    break;
+                case 4:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.FTPSK);
+                    break;
+                case 5:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAMSHA256);
+                    break;
                 case 6:
                     keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.PSKSHA256);
                     break;
+                case 7:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.TDLS);
+                    break;
                 case 8:
                     keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.SAE);
+                    break;
+                case 9:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.FTSAESHA256);
+                    break;
+                case 10:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.APPEERKEY);
+                    break;
+                case 11:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAMEAPSHA256);
+                    break;
+                case 12:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.EAMEAPSHA384);
+                    break;
+                case 13:
+                    keyMgmtModes.add(Dot11SecurityConfiguration.KEY_MGMT_MODE.FTEAMSHA384);
                     break;
                 default:
                     LOG.warn("Unknown key management mode [{}].", suite);

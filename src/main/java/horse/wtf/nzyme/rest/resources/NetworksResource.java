@@ -142,7 +142,7 @@ public class NetworksResource {
                         crypto.add(sec.asString());
                     }
 
-                    // Total Frames.s
+                    // Total Frames
                     for (Channel channel : ssid.channels().values()) {
                         totalFrames += channel.totalFrames().get();
                     }

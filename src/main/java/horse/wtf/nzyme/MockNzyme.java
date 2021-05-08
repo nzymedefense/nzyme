@@ -34,6 +34,7 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.frames.Dot11Frame;
+import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.notifications.Notification;
@@ -53,7 +54,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
-public class MockNzyme implements NzymeLeader {
+public  class MockNzyme implements NzymeLeader {
 
     private File loadFromResourceFile(String name) {
         URL resource = getClass().getClassLoader().getResource(name);
@@ -83,6 +84,7 @@ public class MockNzyme implements NzymeLeader {
     private final List<Forwarder> forwarders;
     private final FrameProcessor frameProcessor;
     private final Anonymizer anonymizer;
+    private final Sentry sentry;
 
     public MockNzyme() {
         this.version = new Version();
@@ -118,6 +120,7 @@ public class MockNzyme implements NzymeLeader {
         this.objectMapper = new ObjectMapper();
         this.contactManager = new ContactManager(this);
         this.anonymizer = new Anonymizer(false, "/tmp");
+        this.sentry = new Sentry(this, 5);
     }
 
     @Override
@@ -141,6 +144,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public Networks getNetworks() {
         return networks;
+    }
+
+    @Override
+    public Sentry getSentry() {
+        return sentry;
     }
 
     @Override

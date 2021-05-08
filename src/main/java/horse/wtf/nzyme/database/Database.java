@@ -5,7 +5,9 @@ import horse.wtf.nzyme.bandits.database.BanditIdentifierMapper;
 import horse.wtf.nzyme.bandits.database.BanditMapper;
 import horse.wtf.nzyme.bandits.database.ContactMapper;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
+import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import liquibase.Contexts;
@@ -30,6 +32,10 @@ public class Database {
             .appendFractionOfSecond(0, 6)
             .toFormatter().withZoneUTC();
 
+    public static final DateTimeFormatter DATE_TIME_FORMATTER_WITH_ZONE = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ssZ")
+            .toFormatter();
+
     public static final DateTimeFormatter BUCKET_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ss")
             .toFormatter().withZoneUTC();
@@ -52,7 +58,9 @@ public class Database {
                 .registerRowMapper(new AlertDatabaseEntryMapper())
                 .registerRowMapper(new BanditMapper())
                 .registerRowMapper(new BanditIdentifierMapper())
-                .registerRowMapper(new ContactMapper());
+                .registerRowMapper(new ContactMapper())
+                .registerRowMapper(new SentrySSIDMapper())
+                .registerRowMapper(new DeauthenticationMonitorRecordingMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
