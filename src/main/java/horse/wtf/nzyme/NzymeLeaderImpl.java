@@ -38,6 +38,7 @@ import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
+import horse.wtf.nzyme.dot11.deauth.DeauthenticationMonitor;
 import horse.wtf.nzyme.dot11.deception.traps.BeaconTrap;
 import horse.wtf.nzyme.dot11.deception.traps.ProbeRequestTrap;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
@@ -125,6 +126,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final Networks networks;
     private final Sentry sentry;
     private final Clients clients;
+    private final DeauthenticationMonitor deauthenticationMonitor;
 
     private final ObjectMapper objectMapper;
 
@@ -162,6 +164,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
         this.objectMapper = new ObjectMapper();
+
+        this.deauthenticationMonitor = new DeauthenticationMonitor(this);
 
         this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
 
@@ -401,6 +405,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         // Sentry interceptors.
         frameProcessor.registerDot11Interceptors(new SentryInterceptorSet(sentry, alerts).getInterceptors());
+
+        // Deauth counter.
+        frameProcessor.registerDot11Interceptor(new DeauthFrameCounterInterceptor(deauthenticationMonitor));
 
         // Dot11 alerting interceptors.
         if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {

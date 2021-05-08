@@ -477,5 +477,24 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="21" author="lennartkoopmann">
+        <createTable tableName="deauth_monitor" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="total_frame_count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_deauth_frame_count_standard_lookup" tableName="deauth_monitor" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>
