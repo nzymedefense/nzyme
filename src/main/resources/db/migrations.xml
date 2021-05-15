@@ -497,4 +497,8 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="22" author="lennartkoopmann">
+        <sqlFile path="db/quartz.sql" />
+    </changeSet>
+
 </databaseChangeLog>

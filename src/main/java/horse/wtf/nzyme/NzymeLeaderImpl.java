@@ -66,6 +66,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
@@ -79,6 +80,7 @@ import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
+import horse.wtf.nzyme.scheduler.reporting.TacticalSummaryReport;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -90,6 +92,7 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.quartz.SchedulerException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -143,6 +146,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private HttpServer httpServer;
 
+    private SchedulingService schedulingService;
+
     public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
         this.version = new Version();
         this.nodeId = baseConfiguration.nodeId();
@@ -168,6 +173,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.deauthenticationMonitor = new DeauthenticationMonitor(this);
 
         this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
+
+        try {
+            this.schedulingService = new SchedulingService(this);
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Could not instantiate scheduling service.", e);
+        }
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());
@@ -240,7 +251,20 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         .build())
                 .submit(input.run());
 
-        // Periodicals.
+        // Scheduler.
+        try {
+            schedulingService.initialize();
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Could not start scheduling service.", e);
+        }
+
+        try {
+            schedulingService.scheduleReport(new TacticalSummaryReport(22, 46));
+        } catch(SchedulerException e) {
+            throw new RuntimeException("Could not schedule a report.", e);
+        }
+
+        // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);

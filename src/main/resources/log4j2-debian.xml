@@ -23,6 +23,10 @@
             <AppenderRef ref="Logfile" />
         </Logger>
 
+        <Logger name="org.quartz" level="warn">
+            <AppenderRef ref="Logfile" />
+        </Logger>
+
         <Logger name="org.glassfish.grizzly" level="error">
             <AppenderRef ref="Logfile" />
         </Logger>
