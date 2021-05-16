@@ -114,7 +114,8 @@ public class Dot11TaggedParameters {
 
                 position = position + length + 2; // 2 = tag+length offset
 
-                if(position >= payload.length) {
+                // last 4 bytes are FCS, it position is in it or after, stop
+                if(position >= payload.length - 4) {
                     // fin
                     break;
                 }
