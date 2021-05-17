@@ -17,10 +17,20 @@
 
 package horse.wtf.nzyme.scheduler.reporting;
 
+import com.google.common.collect.Maps;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.NzymeLeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 import org.quartz.*;
+
+import javax.annotation.Nullable;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.util.Map;
 
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
@@ -50,23 +60,45 @@ public class TacticalSummaryReport implements Report {
         return Report.class;
     }
 
-    public static final class Report implements Job {
+    public static final class Report extends ReportJob {
+
+        private final Configuration templateConfig;
+
+        public Report() {
+            // Set up template engine.
+            this.templateConfig = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_30);
+            this.templateConfig.setClassForTemplateLoading(this.getClass(), "/");
+            this.templateConfig.setDefaultEncoding("UTF-8");
+            this.templateConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+            this.templateConfig.setLogTemplateExceptions(false);
+            this.templateConfig.setWrapUncheckedExceptions(true);
+            this.templateConfig.setFallbackOnNullLoopVariable(false);
+        }
+
+        public void runReport(NzymeLeader nzyme, @Nullable Writer writer) throws JobExecutionException {
+            try {
+                Map<String, Object> parameters = Maps.newHashMap();
+                parameters.put("document_title", "nzyme - Tactical Summary Report");
+                parameters.put("generated_at", DateTime.now().toString());
+
+                Template template = this.templateConfig.getTemplate("reports/tactical_summary_report.ftl");
+
+                if (writer != null) {
+                    template.process(parameters, writer);
+                } else {
+                    // email
+                }
+
+                // store in DB
+                // ...
+            } catch(Exception e) {
+                throw new JobExecutionException("Could not create report content.", e);
+            }
+        }
 
         @Override
-        public void execute(JobExecutionContext context) throws JobExecutionException {
-            NzymeLeader nzyme;
-            try {
-                SchedulerContext schedContext = context.getScheduler().getContext();
-                nzyme = (NzymeLeader) schedContext.get("nzyme");
-            } catch (SchedulerException e) {
-                throw new JobExecutionException(e);
-            }
-
-            if (nzyme == null) {
-                throw new JobExecutionException("Could not retrieve nzyme from scheduler context.");
-            }
-
-            LOG.info("-------------------------------- CALLED at {}", nzyme.getNodeID());
+        public void runReport(NzymeLeader nzyme) throws JobExecutionException {
+            runReport(nzyme, null);
         }
 
     }

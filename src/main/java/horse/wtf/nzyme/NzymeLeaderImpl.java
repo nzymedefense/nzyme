@@ -259,7 +259,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         try {
-            schedulingService.scheduleReport(new TacticalSummaryReport(22, 46));
+            schedulingService.scheduleReport(new TacticalSummaryReport(15, 51));
         } catch(SchedulerException e) {
             throw new RuntimeException("Could not schedule a report.", e);
         }

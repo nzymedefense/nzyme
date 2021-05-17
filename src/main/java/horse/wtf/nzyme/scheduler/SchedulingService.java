@@ -60,9 +60,9 @@ public class SchedulingService {
     }
 
     public void scheduleReport(Report report) throws SchedulerException {
-        // todo support multiple keys etc. this has to come out of DB with CRUD
+        // TODO. include in CRUD via REST. this is purely dev logic.
 
-        JobDetail job = newJob(report.getJobClass())
+       /*JobDetail job = newJob(report.getJobClass())
                 .withIdentity(report.getName(), SCHEDULER_GROUP.REPORTS.toString())
                 .build();
 
@@ -72,7 +72,7 @@ public class SchedulingService {
                 .withSchedule(report.getSchedule())
                 .build();
 
-        this.scheduler.scheduleJob(job, trigger);
+        this.scheduler.scheduleJob(job, trigger);*/
     }
 
 }
