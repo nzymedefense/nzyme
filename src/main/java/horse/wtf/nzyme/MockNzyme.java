@@ -37,6 +37,9 @@ import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.events.EventService;
+import horse.wtf.nzyme.events.ShutdownEvent;
+import horse.wtf.nzyme.events.StartupEvent;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -46,6 +49,7 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import liquibase.exception.LiquibaseException;
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -85,6 +89,7 @@ public  class MockNzyme implements NzymeLeader {
     private final FrameProcessor frameProcessor;
     private final Anonymizer anonymizer;
     private final Sentry sentry;
+    private final EventService eventService;
 
     public MockNzyme() {
         this.version = new Version();
@@ -121,14 +126,17 @@ public  class MockNzyme implements NzymeLeader {
         this.contactManager = new ContactManager(this);
         this.anonymizer = new Anonymizer(false, "/tmp");
         this.sentry = new Sentry(this, 5);
+        this.eventService = new EventService(this);
     }
 
     @Override
     public void initialize() {
+        eventService.recordEvent(new StartupEvent());
     }
 
     @Override
     public void shutdown() {
+        eventService.recordEvent(new ShutdownEvent());
     }
 
     @Override
@@ -241,6 +249,11 @@ public  class MockNzyme implements NzymeLeader {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
+    }
+
+    @Override
+    public EventService getEventService() {
+        return eventService;
     }
 
     @Override

@@ -27,6 +27,7 @@ import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSID;
+import horse.wtf.nzyme.events.Event;
 import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.ReportJob;
 import org.apache.logging.log4j.LogManager;
@@ -92,11 +93,17 @@ public class TacticalSummaryReport implements Report {
 
         public void runReport(NzymeLeader nzyme, @Nullable Writer writer) throws JobExecutionException {
             try {
+                List<Map<String, String>> alerts = buildAlerts(nzyme);
+
                 Map<String, Object> parameters = Maps.newHashMap();
                 parameters.put("title", "nzyme - Tactical Summary Report");
+                parameters.put("time_range", "Previous 24 hours");
                 parameters.put("generated_at", DateTime.now().toString(LONG_DATETIME));
                 parameters.put("networks", buildNetworks(nzyme));
-                parameters.put("alerts", buildAlerts(nzyme));
+                parameters.put("alerts", alerts);
+                parameters.put("alerts_count", alerts.size());
+                parameters.put("system_restarts", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.STARTUP));
+                parameters.put("probe_malfunctions", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.BROKEN_PROBE));
 
                 Template template = this.templateConfig.getTemplate("reports/tactical_summary_report.ftl");
 

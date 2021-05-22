@@ -9,6 +9,7 @@ import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
+import horse.wtf.nzyme.events.db.EventRecordMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -60,7 +61,8 @@ public class Database {
                 .registerRowMapper(new BanditIdentifierMapper())
                 .registerRowMapper(new ContactMapper())
                 .registerRowMapper(new SentrySSIDMapper())
-                .registerRowMapper(new DeauthenticationMonitorRecordingMapper());
+                .registerRowMapper(new DeauthenticationMonitorRecordingMapper())
+                .registerRowMapper(new EventRecordMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

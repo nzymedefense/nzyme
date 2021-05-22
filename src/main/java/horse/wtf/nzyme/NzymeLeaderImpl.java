@@ -47,6 +47,9 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.events.EventService;
+import horse.wtf.nzyme.events.ShutdownEvent;
+import horse.wtf.nzyme.events.StartupEvent;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.UplinkFactory;
@@ -92,6 +95,7 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
 import java.io.IOException;
@@ -118,6 +122,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final MetricRegistry metrics;
     private final Registry registry;
     private final SystemStatus systemStatus;
+    private final EventService eventService;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
@@ -165,6 +170,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.registry = new Registry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
+        this.eventService = new EventService(this);
         this.networks = new Networks(this);
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
@@ -216,6 +222,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
+
+        eventService.recordEvent(new StartupEvent());
 
         LOG.info("Active alerts: {}", configuration.dot11Alerts());
 
@@ -273,6 +281,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 5, 5, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
@@ -384,6 +393,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.systemStatus.unsetStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.SHUTTING_DOWN);
+
+        eventService.recordEvent(new ShutdownEvent());
 
         // Shutdown REST API.
         if (httpServer != null) {
@@ -569,6 +580,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
+    }
+
+    @Override
+    public EventService getEventService() {
+        return eventService;
     }
 
     @Override

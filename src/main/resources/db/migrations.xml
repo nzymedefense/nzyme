@@ -501,4 +501,32 @@
         <sqlFile path="db/quartz.sql" />
     </changeSet>
 
+    <changeSet id="23" author="lennartkoopmann">
+        <createTable tableName="events" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="type" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_events_standard_lookup" tableName="events" unique="false">
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

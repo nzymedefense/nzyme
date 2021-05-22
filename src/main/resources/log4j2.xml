@@ -30,7 +30,7 @@
             <AppenderRef ref="Logfile" />
         </Logger>
 
-        <Logger name="com.mchange.v2.c3p0" level="warn">
+        <Logger name="com.mchange" level="warn">
             <AppenderRef ref="Console" />
             <AppenderRef ref="Logfile" />
         </Logger>

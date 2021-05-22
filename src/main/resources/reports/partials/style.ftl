@@ -21,4 +21,13 @@
     table.networks tr.new-today td {
         color: #f97515;
     }
+
+    div.card-body p {
+        font-weight: 600;
+    }
+
+    div.card-body span {
+        font-size: 26px;
+        text-transform: uppercase;
+    }
 </style>
