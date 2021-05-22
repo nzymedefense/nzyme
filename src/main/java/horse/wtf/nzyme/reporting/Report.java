@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.scheduler.reporting;
+package horse.wtf.nzyme.reporting;
 
 import org.quartz.Job;
 import org.quartz.ScheduleBuilder;

@@ -80,7 +80,7 @@ import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
-import horse.wtf.nzyme.scheduler.reporting.TacticalSummaryReport;
+import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;

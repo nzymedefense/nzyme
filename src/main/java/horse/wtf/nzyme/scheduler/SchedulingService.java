@@ -18,14 +18,13 @@
 package horse.wtf.nzyme.scheduler;
 
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.scheduler.reporting.Report;
+import horse.wtf.nzyme.reporting.Report;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Properties;
 
 import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulingService {
 

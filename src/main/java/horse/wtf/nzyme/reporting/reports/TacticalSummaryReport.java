@@ -15,21 +15,28 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.scheduler.reporting;
+package horse.wtf.nzyme.reporting.reports;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.ReportJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.quartz.*;
 
 import javax.annotation.Nullable;
-import java.io.OutputStream;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
@@ -37,6 +44,9 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class TacticalSummaryReport implements Report {
 
     private static final Logger LOG = LogManager.getLogger(TacticalSummaryReport.class);
+
+    private static final DateTimeFormatter LONG_DATETIME = DateTimeFormat.forPattern("MMMM dd, yyyy, HH:mm:ss aa (Z ZZZZ)");
+    private static final DateTimeFormatter LONG_DATETIME_LESS_ZONE = DateTimeFormat.forPattern("MMMM dd, yyyy, HH:mm:ss aa (Z)");
 
     private final ScheduleBuilder<? extends Trigger> schedule;
 
@@ -78,8 +88,9 @@ public class TacticalSummaryReport implements Report {
         public void runReport(NzymeLeader nzyme, @Nullable Writer writer) throws JobExecutionException {
             try {
                 Map<String, Object> parameters = Maps.newHashMap();
-                parameters.put("document_title", "nzyme - Tactical Summary Report");
-                parameters.put("generated_at", DateTime.now().toString());
+                parameters.put("title", "nzyme - Tactical Summary Report");
+                parameters.put("generated_at", DateTime.now().toString(LONG_DATETIME));
+                parameters.put("alerts", buildAlerts(nzyme));
 
                 Template template = this.templateConfig.getTemplate("reports/tactical_summary_report.ftl");
 
@@ -96,12 +107,26 @@ public class TacticalSummaryReport implements Report {
             }
         }
 
+        private List<Map<String, String>> buildAlerts(NzymeLeader nzyme) {
+            List<Map<String, String>> result = Lists.newArrayList();
+
+            for (Alert alert : nzyme.getAlertsService().findAllAlertsSince24HoursAgo(100).values()) {
+                Map<String, String> alertData = Maps.newHashMap();
+                alertData.put("type", alert.getType().toString());
+                alertData.put("first_seen", alert.getFirstSeen().withZone(DateTimeZone.getDefault()).toString(LONG_DATETIME_LESS_ZONE));
+                alertData.put("last_seen", alert.getLastSeen().withZone(DateTimeZone.getDefault()).toString(LONG_DATETIME_LESS_ZONE));
+                alertData.put("frames", alert.isUseFrameCount() ? alert.getFrameCount().toString() : "n/a");
+                result.add(alertData);
+            }
+
+            return result;
+        }
+
         @Override
         public void runReport(NzymeLeader nzyme) throws JobExecutionException {
             runReport(nzyme, null);
         }
 
     }
-
 }
 
