@@ -17,4 +17,8 @@
         font-style: italic;
         color: #4d4d74;
     }
+
+    table.networks tr.new-today td {
+        color: #f97515;
+    }
 </style>

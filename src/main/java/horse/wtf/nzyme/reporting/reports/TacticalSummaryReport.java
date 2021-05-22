@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme.reporting.reports;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Configuration;
@@ -24,6 +26,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSID;
 import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.ReportJob;
 import org.apache.logging.log4j.LogManager;
@@ -36,8 +39,10 @@ import org.quartz.*;
 
 import javax.annotation.Nullable;
 import java.io.Writer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
@@ -90,6 +95,7 @@ public class TacticalSummaryReport implements Report {
                 Map<String, Object> parameters = Maps.newHashMap();
                 parameters.put("title", "nzyme - Tactical Summary Report");
                 parameters.put("generated_at", DateTime.now().toString(LONG_DATETIME));
+                parameters.put("networks", buildNetworks(nzyme));
                 parameters.put("alerts", buildAlerts(nzyme));
 
                 Template template = this.templateConfig.getTemplate("reports/tactical_summary_report.ftl");
@@ -122,6 +128,39 @@ public class TacticalSummaryReport implements Report {
             return result;
         }
 
+        private List<Map<String, Object>> buildNetworks(NzymeLeader nzyme) {
+            List<Map<String, Object>> result = Lists.newArrayList();
+
+            ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
+            for (SentrySSID newSSID :nzyme.getSentry().findNewToday()){
+                if (!Strings.isNullOrEmpty(newSSID.ssid())) {
+                    ssids.add(newSSID.ssid());
+                }
+            }
+
+            ImmutableList<String> newNetworks = ssids.build();
+
+            List<SentrySSID> sorted = nzyme.getSentry().findSeenToday()
+                    .stream()
+                    .sorted(Comparator.comparing(SentrySSID::ssid, Comparator.nullsFirst(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+
+            for (SentrySSID network : sorted) {
+                if(Strings.isNullOrEmpty(network.ssid())) {
+                    continue;
+                }
+
+                Map<String, Object> ssidData = Maps.newHashMap();
+                ssidData.put("ssid", network.ssid());
+                ssidData.put("first_seen", network.firstSeen().toString(LONG_DATETIME_LESS_ZONE));
+                ssidData.put("last_seen", network.lastSeen().toString(LONG_DATETIME_LESS_ZONE));
+                ssidData.put("new_today", newNetworks.contains(network.ssid()));
+                result.add(ssidData);
+            }
+
+            return result;
+        }
+
         @Override
         public void runReport(NzymeLeader nzyme) throws JobExecutionException {
             runReport(nzyme, null);
@@ -129,4 +168,3 @@ public class TacticalSummaryReport implements Report {
 
     }
 }
-

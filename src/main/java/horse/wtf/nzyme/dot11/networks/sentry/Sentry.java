@@ -116,6 +116,31 @@ public class Sentry {
         return ImmutableList.copyOf(table.values());
     }
 
+    public ImmutableList<SentrySSID> findSeenToday() {
+        ImmutableList.Builder<SentrySSID> result = new ImmutableList.Builder<>();
+
+        for (SentrySSID ssid : getSSIDs()) {
+            if (ssid.lastSeen().isAfter(DateTime.now().minusHours(24))) {
+                result.add(ssid);
+            }
+        }
+
+        return result.build();
+    }
+
+    public ImmutableList<SentrySSID> findNewToday() {
+        ImmutableList.Builder<SentrySSID> result = new ImmutableList.Builder<>();
+
+        // Pull those seen today and check if they were also seen first today.
+        for (SentrySSID ssid : findSeenToday()) {
+            if (ssid.firstSeen().isAfter(DateTime.now().minusHours(24))) {
+                result.add(ssid);
+            }
+        }
+
+        return result.build();
+    }
+
     public boolean knowsSSID(String ssid) {
         if (ssid == null || ssid.trim().isEmpty() || !Tools.isHumanlyReadable(ssid)) {
             throw new RuntimeException("Cannot use NULL, empty or non-humanly-readable SSID in Sentry.");
