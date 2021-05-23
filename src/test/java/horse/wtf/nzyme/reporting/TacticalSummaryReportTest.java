@@ -7,7 +7,6 @@ import horse.wtf.nzyme.alerts.UnknownSSIDAlert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
-import horse.wtf.nzyme.events.BrokenProbeEvent;
 import horse.wtf.nzyme.events.StartupEvent;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import org.joda.time.DateTime;
