@@ -83,9 +83,24 @@ public class Dot11MetaInformation {
         boolean isWep = false;
         long macTimestamp = -1;
 
+        boolean antennaRead = false;
         for (RadiotapPacket.RadiotapData f : dataFields) {
             if(f instanceof RadiotapDataAntennaSignal) {
+                if (antennaRead) {
+                    /*
+                     * In some circumstances, RadioTap might report multiple antenna signal fields, with one of them being wildly
+                     * off. Only read the first one.
+                     *
+                     * I assume this might be related to adapters with multiple antennas or simply a faulty driver.
+                     *
+                     * Thanks to @mathieubrun for reporting this: https://github.com/lennartkoopmann/nzyme/issues/459
+                     */
+
+                    continue;
+                }
+
                 antennaSignal = ((RadiotapDataAntennaSignal) f).getAntennaSignalAsInt();
+                antennaRead = true;
             } else if (f instanceof RadiotapDataChannel) {
                 frequency = ((RadiotapDataChannel) f).getFrequencyAsInt();
                 channel =  Frequencies.frequencyToChannel(frequency);
