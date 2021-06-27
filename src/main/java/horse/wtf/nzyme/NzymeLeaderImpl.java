@@ -224,13 +224,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         // Start remote input if enabled.
-        // TODO XXX
-        RemoteFrameInput input = new RemoteFrameInput(this, new InetSocketAddress("0.0.0.0", 9001));
-        Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat("remote-input-%d")
-                        .build())
-                .submit(input.run());
+        if (configuration.remoteInputAddress() != null) {
+            RemoteFrameInput input = new RemoteFrameInput(this, configuration.remoteInputAddress());
+            Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+                    .setDaemon(true)
+                    .setNameFormat("remote-input-%d")
+                    .build())
+                    .submit(input.run());
+        }
 
         // Periodicals.
         PeriodicalManager periodicalManager = new PeriodicalManager();

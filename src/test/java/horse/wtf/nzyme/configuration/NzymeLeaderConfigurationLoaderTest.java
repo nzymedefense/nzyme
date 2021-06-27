@@ -27,6 +27,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 
@@ -102,6 +103,8 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertEquals(c.uplinks().get(3).type(), "graylog");
         assertEquals(c.uplinks().get(3).configuration().getString(ConfigurationKeys.HOST), "127.0.0.1");
         assertEquals(c.uplinks().get(3).configuration().getInt(ConfigurationKeys.PORT), 9001);
+
+        assertEquals(c.remoteInputAddress(), new InetSocketAddress("0.0.0.0", 9002));
     }
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)
