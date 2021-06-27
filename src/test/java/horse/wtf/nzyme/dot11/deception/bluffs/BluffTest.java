@@ -9,6 +9,7 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ public class BluffTest {
                 false,
                 new File("").toPath(),
                 new File("").toPath(),
+                new InetSocketAddress("0.0.0.0", 9001),
                 ImmutableList.of(),
                 ImmutableList.of(),
                 ImmutableList.of(),
@@ -40,8 +42,8 @@ public class BluffTest {
                 ImmutableList.of(),
                 30,
                 ImmutableList.of(),
-                null,
-                ImmutableList.of()
+                ImmutableList.of(),
+                null
         );
     }
 

@@ -76,7 +76,6 @@ public class Main {
             System.exit(FAILURE);
         }
 
-
         switch (baseConfiguration.mode()) {
             case LEADER:
                 LeaderConfiguration leaderConfiguration = null;

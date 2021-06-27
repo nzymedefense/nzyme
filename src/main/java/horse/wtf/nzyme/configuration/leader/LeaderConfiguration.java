@@ -6,9 +6,9 @@ import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.configuration.*;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 
 import javax.annotation.Nullable;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Path;
 
@@ -40,6 +40,9 @@ public abstract class LeaderConfiguration {
     @Nullable
     public abstract Path tlsKeyPath();
 
+    @Nullable
+    public abstract InetSocketAddress remoteInputAddress();
+
     public abstract ImmutableList<UplinkDefinition> uplinks();
 
     public abstract ImmutableList<Dot11MonitorDefinition> dot11Monitors();
@@ -62,7 +65,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, UplinkDeviceConfiguration groundstationDevice, ImmutableList<ForwarderDefinition> forwarders) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -77,6 +80,7 @@ public abstract class LeaderConfiguration {
                 .useTls(useTls)
                 .tlsCertificatePath(tlsCertificatePath)
                 .tlsKeyPath(tlsKeyPath)
+                .remoteInputAddress(remoteInputAddress)
                 .uplinks(uplinks)
                 .dot11Monitors(dot11Monitors)
                 .dot11Networks(dot11Networks)
@@ -84,8 +88,8 @@ public abstract class LeaderConfiguration {
                 .dot11Alerts(dot11Alerts)
                 .alertingTrainingPeriodSeconds(alertingTrainingPeriodSeconds)
                 .alertCallbacks(alertCallbacks)
-                .groundstationDevice(groundstationDevice)
                 .forwarders(forwarders)
+                .groundstationDevice(groundstationDevice)
                 .build();
     }
 
@@ -146,6 +150,8 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
+        public abstract Builder remoteInputAddress(InetSocketAddress remoteInputAddress);
+
         public abstract Builder uplinks(ImmutableList<UplinkDefinition> uplinks);
 
         public abstract Builder dot11Monitors(ImmutableList<Dot11MonitorDefinition> dot11Monitors);
@@ -160,10 +166,11 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder alertCallbacks(ImmutableList<AlertCallback> alertCallbacks);
 
-        public abstract Builder groundstationDevice(UplinkDeviceConfiguration groundstationDevice);
-
         public abstract Builder forwarders(ImmutableList<ForwarderDefinition> forwarders);
+
+        public abstract Builder groundstationDevice(UplinkDeviceConfiguration groundstationDevice);
 
         public abstract LeaderConfiguration build();
     }
+
 }
