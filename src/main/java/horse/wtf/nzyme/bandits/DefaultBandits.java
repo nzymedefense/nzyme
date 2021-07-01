@@ -290,7 +290,7 @@ public class DefaultBandits {
 
     public static void seed(ContactManager contactIdentifier) {
         for (Bandit bandit : BANDITS) {
-            if (contactIdentifier.findBanditByUUID(bandit.uuid()).isPresent()) {
+            if (contactIdentifier.banditExists(bandit.uuid())) {
                 contactIdentifier.updateBandit(bandit.uuid(), bandit.description(), bandit.name());
             } else {
                 contactIdentifier.registerBandit(bandit);
