@@ -6,8 +6,6 @@ import horse.wtf.nzyme.measurements.MeasurementType;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +17,7 @@ public class MeasurementMapper implements RowMapper<Measurement> {
         return Measurement.create(
                 MeasurementType.valueOf(rs.getString("measurement_type")),
                 rs.getLong("measurement_value"),
-                DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER)
+                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER)
         );
     }
 

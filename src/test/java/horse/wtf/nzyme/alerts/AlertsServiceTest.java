@@ -139,4 +139,30 @@ public class AlertsServiceTest extends AlertTestHelper {
         assertEquals(loopback.getLastAlert().getClass(), UnexpectedSSIDBeaconAlert.class);
     }
 
+    @Test
+    public void testDoesNotFailOnMissingMilliseconds() {
+        NzymeLeader nzyme = new MockNzyme();
+
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        AlertsService as = new AlertsService(nzyme);
+        as.handle(UnexpectedSSIDBeaconAlert.create(
+                DateTime.now().withMillisOfSecond(0),
+                "wtf",
+                "00:c0:ca:95:68:3b",
+                1,
+                1000,
+                -50,
+                1
+        ));
+
+        // Set timestamps to a value without milliseconds.
+        nzyme.getDatabase().withHandle(handle ->
+            handle.execute("UPDATE alerts SET first_seen = '2021-06-14 12:33:25', last_seen = '2021-06-14 12:33:25'")
+        );
+
+        as.findAllAlerts(100, 0);
+    }
+
 }
