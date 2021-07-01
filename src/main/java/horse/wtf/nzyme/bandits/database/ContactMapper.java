@@ -34,8 +34,8 @@ public class ContactMapper implements RowMapper<Contact> {
     public Contact map(ResultSet rs, StatementContext ctx) throws SQLException {
         return Contact.create(
                 UUID.fromString(rs.getString("contact_uuid")),
-                DateTime.parse(rs.getString("first_seen"), Database.DATE_TIME_FORMATTER),
-                DateTime.parse(rs.getString("last_seen"), Database.DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("first_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("last_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
                 rs.getLong("frame_count"),
                 Role.valueOf(rs.getString("source_role")),
                 rs.getString("source_name"),

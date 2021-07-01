@@ -14,7 +14,7 @@ public class SignalIndexHistogramHistoryDBEntryMapper implements RowMapper<Signa
     public SignalIndexHistogramHistoryDBEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SignalIndexHistogramHistoryDBEntry.create(
                 rs.getString("histogram"),
-                DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER)
+                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER)
         );
 
     }
