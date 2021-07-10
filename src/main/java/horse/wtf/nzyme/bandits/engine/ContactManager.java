@@ -138,6 +138,25 @@ public class ContactManager implements ContactIdentifierProcess {
 
     }
 
+    public boolean banditExists(UUID uuid) {
+        // Use the cached bandits if they have not been invalidated by a writing function.
+        if (bandits != null) {
+            for (Bandit bandit : bandits.values()) {
+                if (bandit.uuid().equals(uuid)) {
+                    return true;
+                }
+            }
+        }
+
+        long count = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM bandits WHERE bandit_uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(Long.class)
+                        .first());
+
+        return count > 0;
+    }
+
     public Map<UUID, Bandit> getBandits() {
         // Return the cached bandits if they have not been invalidated by a writing function.
         if (bandits != null) {

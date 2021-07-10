@@ -7,7 +7,7 @@
         <connection>scm:git:git://github.com/lennartkoopmann/nzyme.git</connection>
         <developerConnection>scm:git:git@github.com:lennartkoopmann/nzyme.git</developerConnection>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>

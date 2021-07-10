@@ -28,12 +28,16 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 
 public class Database {
 
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd HH:mm:ss.")
-            .appendFractionOfSecond(0, 6)
+    public static final DateTimeFormatter DATABASE_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
+            .appendOptional( // Parse milliseconds only if they exist. (they are omitted in DB if at 0)
+                    new DateTimeFormatterBuilder()
+                            .appendLiteral(".")
+                            .appendFractionOfSecond(0, 6).toParser()
+            )
             .toFormatter().withZoneUTC();
 
-    public static final DateTimeFormatter DATE_TIME_FORMATTER_WITH_ZONE = new DateTimeFormatterBuilder()
+    public static final DateTimeFormatter DEAUTH_MONITOR_TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ssZ")
             .toFormatter();
 

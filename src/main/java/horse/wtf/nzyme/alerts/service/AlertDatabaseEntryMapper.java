@@ -38,8 +38,8 @@ public class AlertDatabaseEntryMapper implements RowMapper<AlertDatabaseEntry> {
                 Alert.TYPE.valueOf(rs.getString("alert_type")),
                 Subsystem.valueOf(rs.getString("subsystem")),
                 rs.getString("fields"),
-                DateTime.parse(rs.getString("first_seen"), Database.DATE_TIME_FORMATTER),
-                DateTime.parse(rs.getString("last_seen"), Database.DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("first_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("last_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
                 rs.getLong("frame_count")
         );
     }

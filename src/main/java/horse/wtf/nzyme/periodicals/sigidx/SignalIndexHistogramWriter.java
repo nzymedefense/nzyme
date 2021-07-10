@@ -2,6 +2,7 @@ package horse.wtf.nzyme.periodicals.sigidx;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Channel;
@@ -9,6 +10,8 @@ import horse.wtf.nzyme.dot11.networks.SSID;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 public class SignalIndexHistogramWriter extends Periodical {
 
@@ -26,13 +29,16 @@ public class SignalIndexHistogramWriter extends Periodical {
     protected void execute() {
         LOG.debug("Updating signal index histograms.");
 
-        for (BSSID bssid : nzyme.getNetworks().getBSSIDs().values()) {
-            for (SSID ssid : bssid.ssids().values()) {
+        List<BSSID> bssids = Lists.newArrayList(nzyme.getNetworks().getBSSIDs().values());
+        for (BSSID bssid : bssids) {
+            List<SSID> ssids = Lists.newArrayList(bssid.ssids().values());
+            for (SSID ssid : ssids) {
                 if (!ssid.isHumanReadable()) {
                     continue;
                 }
 
-                for (Channel channel : ssid.channels().values()) {
+                List<Channel> channels = Lists.newArrayList(ssid.channels().values());
+                for (Channel channel : channels) {
                     final String histogram;
                     try {
                         histogram = om.writeValueAsString(channel.signalStrengthTable().getSignalDistributionHistogram());

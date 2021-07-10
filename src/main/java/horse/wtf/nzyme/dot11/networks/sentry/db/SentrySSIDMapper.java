@@ -21,7 +21,6 @@ import horse.wtf.nzyme.database.Database;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,8 +31,8 @@ public class SentrySSIDMapper implements RowMapper<SentrySSID>  {
     public SentrySSID map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SentrySSID.create(
                 rs.getString("ssid"),
-                DateTime.parse(rs.getString("first_seen"), Database.DATE_TIME_FORMATTER_WITH_ZONE),
-                DateTime.parse(rs.getString("last_seen"), Database.DATE_TIME_FORMATTER_WITH_ZONE)
+                DateTime.parse(rs.getString("first_seen"), Database.DEAUTH_MONITOR_TIME_FORMATTER),
+                DateTime.parse(rs.getString("last_seen"), Database.DEAUTH_MONITOR_TIME_FORMATTER)
         );
     }
 

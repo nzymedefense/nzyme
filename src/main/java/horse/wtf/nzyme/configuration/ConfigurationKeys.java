@@ -32,6 +32,7 @@ public class ConfigurationKeys {
     public static final String UPLINK_DEVICE = "uplink_device";
     public static final String GROUNDSTATION_DEVICE = "groundstation_device";
     public static final String DATA_DIRECTORY = "data_directory";
+    public static final String REMOTE_INPUT = "remote_input";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";

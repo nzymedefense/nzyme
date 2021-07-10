@@ -31,7 +31,7 @@ public class DeauthenticationMonitorRecordingMapper implements RowMapper<Deauthe
     public DeauthenticationMonitorRecording map(ResultSet rs, StatementContext ctx) throws SQLException {
         return DeauthenticationMonitorRecording.create(
                 rs.getLong("total_frame_count"),
-                DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER_WITH_ZONE)
+                DateTime.parse(rs.getString("created_at"), Database.DEAUTH_MONITOR_TIME_FORMATTER)
         );
     }
 

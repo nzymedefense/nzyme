@@ -38,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -94,6 +95,7 @@ public class LeaderConfigurationLoader {
                 parseUseTls(),
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
+                parseRemoteInputAddress(),
                 parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
                 baseDot11ConfigurationLoader.parseDot11Networks(),
@@ -101,9 +103,21 @@ public class LeaderConfigurationLoader {
                 parseDot11Alerts(),
                 parseAlertingTrainingPeriodSeconds(),
                 parseAlertCallbacks(),
-                parseGroundstationDevice(),
-                parseForwarders()
+                parseForwarders(),
+                parseGroundstationDevice()
         );
+    }
+
+    private InetSocketAddress parseRemoteInputAddress() {
+        if (root.hasPath(ConfigurationKeys.REMOTE_INPUT)) {
+            Config remoteInput = root.getConfig(ConfigurationKeys.REMOTE_INPUT);
+            String host = remoteInput.getString(ConfigurationKeys.HOST);
+            int port = remoteInput.getInt(ConfigurationKeys.PORT);
+
+            return new InetSocketAddress(host, port);
+        } else {
+            return null;
+        }
     }
 
     private ImmutableList<UplinkDefinition> parseUplinks() {
@@ -366,6 +380,12 @@ public class LeaderConfigurationLoader {
                 ConfigurationValidator.expect(x, ConfigurationKeys.TYPE, ConfigurationKeys.FORWARDERS + ".#" +i, String.class);
                 ConfigurationValidator.expect(x, ConfigurationKeys.CONFIGURATION, ConfigurationKeys.FORWARDERS + ".#" +i, Config.class);
             }
+        }
+
+        if (root.hasPath(ConfigurationKeys.REMOTE_INPUT)) {
+            Config remoteInput = root.getConfig(ConfigurationKeys.REMOTE_INPUT);
+            ConfigurationValidator.expect(remoteInput, ConfigurationKeys.HOST, ConfigurationKeys.REMOTE_INPUT, String.class);
+            ConfigurationValidator.expect(remoteInput, ConfigurationKeys.PORT, ConfigurationKeys.REMOTE_INPUT, Integer.class);
         }
 
         if (root.hasPath(ConfigurationKeys.GROUNDSTATION_DEVICE)) {
