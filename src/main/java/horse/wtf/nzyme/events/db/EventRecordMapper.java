@@ -38,7 +38,7 @@ public class EventRecordMapper implements RowMapper<EventRecord> {
                 rs.getString("type"),
                 rs.getString("name"),
                 rs.getString("description"),
-                DateTime.parse(rs.getString("created_at"), Database.DATE_TIME_FORMATTER_WITH_ZONE)
+                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER)
         );
     }
 
