@@ -7,6 +7,7 @@ import horse.wtf.nzyme.alerts.UnknownSSIDAlert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
+import horse.wtf.nzyme.events.BrokenProbeEvent;
 import horse.wtf.nzyme.events.StartupEvent;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import org.joda.time.DateTime;
@@ -44,7 +45,7 @@ public class TacticalSummaryReportTest {
         nzyme.getAlertsService().handle(PwnagotchiAdvertisementAlert.create(new DateTime(), PwnagotchiAdvertisement.create("james", "1.1", "123", 0D, 0, 0), 11, 1234, 0, 1));
 
         nzyme.getEventService().recordEvent(new StartupEvent());
-        //nzyme.getEventService().recordEvent(new BrokenProbeEvent("foo-probe-1", "foo,bar"));
+        nzyme.getEventService().recordEvent(new BrokenProbeEvent("foo-probe-1", "foo,bar"));
 
         TacticalSummaryReport.Report report = new TacticalSummaryReport.Report();
         report.runReport(nzyme, new FileWriter("/tmp/report.html"));
