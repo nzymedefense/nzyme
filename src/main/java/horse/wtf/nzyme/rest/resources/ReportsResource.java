@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 
 import javax.inject.Inject;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -42,6 +43,11 @@ public class ReportsResource {
 
     @Inject
     private NzymeLeader nzyme;
+
+    @GET
+    public Response findAllScheduledReports() {
+        // https://github.com/jmrozanec/cron-utils
+    }
 
     @POST
     @Path("/schedule")

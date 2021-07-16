@@ -25,6 +25,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import java.util.Properties;
 
 import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 public class SchedulingService {
 
@@ -59,9 +60,7 @@ public class SchedulingService {
     }
 
     public void scheduleReport(Report report) throws SchedulerException {
-        // TODO. include in CRUD via REST. this is purely dev logic.
-
-       /*JobDetail job = newJob(report.getJobClass())
+       JobDetail job = newJob(report.getJobClass())
                 .withIdentity(report.getName(), SCHEDULER_GROUP.REPORTS.toString())
                 .build();
 
@@ -71,7 +70,7 @@ public class SchedulingService {
                 .withSchedule(report.getSchedule())
                 .build();
 
-        this.scheduler.scheduleJob(job, trigger);*/
+        this.scheduler.scheduleJob(job, trigger);
     }
 
 }

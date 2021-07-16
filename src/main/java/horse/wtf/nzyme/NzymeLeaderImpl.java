@@ -310,6 +310,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
         resourceConfig.register(AssetInventoryResource.class);
+        resourceConfig.register(ReportsResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);

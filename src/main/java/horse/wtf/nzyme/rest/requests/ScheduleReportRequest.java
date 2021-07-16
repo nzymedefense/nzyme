@@ -17,26 +17,27 @@
 
 package horse.wtf.nzyme.rest.requests;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+
+import java.util.List;
 
 @AutoValue
 public abstract class ScheduleReportRequest {
 
-    @JsonProperty("report_type")
     public abstract String reportType();
-
-    @JsonProperty("hour_of_day")
     public abstract int hourOfDay();
-
-    @JsonProperty("minute_of_hour")
     public abstract int minuteOfHour();
+    public abstract List<String> emailReceivers();
 
-    public static ScheduleReportRequest create(String reportType, int hourOfDay, int minuteOfHour) {
+    @JsonCreator
+    public static ScheduleReportRequest create(@JsonProperty("report_type") String reportType, @JsonProperty("hour_of_day") int hourOfDay, @JsonProperty("minute_of_hour") int minuteOfHour, @JsonProperty("email_receivers") List<String> emailReceivers) {
         return builder()
                 .reportType(reportType)
                 .hourOfDay(hourOfDay)
                 .minuteOfHour(minuteOfHour)
+                .emailReceivers(emailReceivers)
                 .build();
     }
 
@@ -51,6 +52,8 @@ public abstract class ScheduleReportRequest {
         public abstract Builder hourOfDay(int hourOfDay);
 
         public abstract Builder minuteOfHour(int minuteOfHour);
+
+        public abstract Builder emailReceivers(List<String> emailReceivers);
 
         public abstract ScheduleReportRequest build();
     }

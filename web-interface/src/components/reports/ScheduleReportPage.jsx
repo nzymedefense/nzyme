@@ -1,6 +1,9 @@
 import React from 'react';
 import EmailReceivers from "./EmailReceivers";
 import Routes from "../../util/Routes";
+import ReportsService from "../../services/ReportsService";
+import {notify} from "react-notify-toast";
+import Redirect from "react-router-dom/Redirect";
 
 class ScheduleReportPage extends React.Component {
 
@@ -11,8 +14,12 @@ class ScheduleReportPage extends React.Component {
       selectedReportType: undefined,
       emailReceivers: [],
       runAt: "20:00",
-      addEmailFilled: false
+      addEmailFilled: false,
+      submitting: false,
+      submitted: false
     };
+
+    this.reportsService = new ReportsService();
 
     this.selector = React.createRef();
     this.formDetails = React.createRef();
@@ -85,9 +92,31 @@ class ScheduleReportPage extends React.Component {
 
   _submitForm(e) {
     e.preventDefault();
+
+    const self = this;
+    const dateParts = this.state.runAt.split(":");
+
+    this.reportsService.schedule(
+        this.state.selectedReportType,
+        parseInt(dateParts[0], 10),
+        parseInt(dateParts[1], 10),
+        this.state.emailReceivers,
+        function () {
+          self.setState({submitting: false, submitted: true});
+          notify.show("Report Scheduled", "success");
+        },
+        function () {
+          self.setState({submitting: false});
+          notify.show("Could not schedule report. Please check nzyme log file.", "error");
+        }
+    )
   }
 
   render() {
+    if (this.state.submitted) {
+      return ( <Redirect to={Routes.REPORTS.INDEX} /> );
+    }
+
     return (
         <div>
           <div className="row">
@@ -141,7 +170,7 @@ class ScheduleReportPage extends React.Component {
                   <h5>Email Receivers <small>Optional</small></h5>
                   <EmailReceivers receivers={this.state.emailReceivers} onReceiverDelete={this._onEmailReceiverDelete} />
 
-                  <button type="submit" className="btn btn-success">Schedule Report</button>&nbsp;
+                  <button type="submit" disabled={this.state.submitting}className="btn btn-success">Schedule Report</button>&nbsp;
                   <a href={Routes.REPORTS.INDEX} className="btn btn-dark">Back</a>
                 </div>
 
