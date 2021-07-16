@@ -45,6 +45,7 @@ import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
+import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -254,6 +255,11 @@ public  class MockNzyme implements NzymeLeader {
     @Override
     public EventService getEventService() {
         return eventService;
+    }
+
+    @Override
+    public SchedulingService getSchedulingService() {
+        return null;
     }
 
     @Override

@@ -83,7 +83,6 @@ import horse.wtf.nzyme.rest.resources.system.MetricsResource;
 import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
-import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -95,11 +94,9 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
-import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.Key;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -265,12 +262,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
             schedulingService.initialize();
         } catch (SchedulerException e) {
             throw new RuntimeException("Could not start scheduling service.", e);
-        }
-
-        try {
-            schedulingService.scheduleReport(new TacticalSummaryReport(15, 51));
-        } catch(SchedulerException e) {
-            throw new RuntimeException("Could not schedule a report.", e);
         }
 
         // Periodicals. (TODO: Replace with scheduler service)
@@ -586,6 +577,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public EventService getEventService() {
         return eventService;
+    }
+
+    @Override
+    public SchedulingService getSchedulingService() {
+        return schedulingService;
     }
 
     @Override

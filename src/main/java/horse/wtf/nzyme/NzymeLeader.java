@@ -34,6 +34,7 @@ import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.processing.FrameProcessor;
+import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import java.security.Key;
@@ -74,6 +75,7 @@ public interface NzymeLeader extends RemoteConnector {
 
     SystemStatus getSystemStatus();
     EventService getEventService();
+    SchedulingService getSchedulingService();
 
     OUIManager getOUIManager();
 

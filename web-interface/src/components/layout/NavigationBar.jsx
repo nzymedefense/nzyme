@@ -40,9 +40,9 @@ class NavigationBar extends React.Component {
                   <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <a className="dropdown-item" href={Routes.SYSTEM.STATUS}>System Status</a>
                     <a className="dropdown-item" href={Routes.SYSTEM.ASSETS.INDEX}>Assets</a>
+                    <a className="dropdown-item" href={Routes.REPORTS.INDEX}>Reports</a>
                   </div>
                 </li>
-
 
                 <li className="nav-item">
                   <AlertsButton hasAlerts={this.props.hasAlerts} />

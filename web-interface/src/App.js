@@ -31,6 +31,8 @@ import AlertsService from "./services/AlertsService";
 import AuthenticationService from "./services/AuthenticationService";
 import PingService from "./services/PingService";
 import AssetsPage from "./components/system/assets/AssetsPage";
+import ReportsPage from "./components/reports/ReportsPage";
+import ScheduleReportPage from "./components/reports/ScheduleReportPage";
 
 class App extends React.Component {
 
@@ -129,6 +131,10 @@ class App extends React.Component {
 
                                     { /* Assets. */}
                                     <Route exact path={Routes.SYSTEM.ASSETS.INDEX} component={AssetsPage}/>
+
+                                    { /* Reports. */}
+                                    <Route exact path={Routes.REPORTS.INDEX} component={ReportsPage}/>
+                                    <Route exact path={Routes.REPORTS.SCHEDULE} component={ScheduleReportPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>
