@@ -51,6 +51,7 @@
         <syslog.version>1.1.7</syslog.version>
         <opencsv.version>5.4</opencsv.version>
         <quartz.version>2.3.2</quartz.version>
+        <cronutils.version>9.1.5</cronutils.version>
 
         <nodejs.version>v12.3.1</nodejs.version>
         <yarn.version>v1.16.0</yarn.version>
@@ -304,6 +305,11 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
             <version>${quartz.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>${cronutils.version}</version>
         </dependency>
     </dependencies>
 

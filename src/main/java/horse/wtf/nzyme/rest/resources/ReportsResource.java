@@ -17,11 +17,20 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import com.cronutils.descriptor.CronDescriptor;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
+import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
+import horse.wtf.nzyme.rest.responses.reports.ScheduledReportEntryResponse;
+import horse.wtf.nzyme.rest.responses.reports.ScheduledReportsListResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
@@ -33,6 +42,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Locale;
 
 @Path("/api/reports")
 @Secured
@@ -46,7 +57,22 @@ public class ReportsResource {
 
     @GET
     public Response findAllScheduledReports() {
-        // https://github.com/jmrozanec/cron-utils
+        CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());
+        CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+
+        List<ScheduledReportEntryResponse> reports = Lists.newArrayList();
+        for (ScheduledReportEntry report : nzyme.getSchedulingService().findAllScheduledReports()) {
+            reports.add(ScheduledReportEntryResponse.create(
+                    report.name(),
+                    report.nextFireTime(),
+                    report.previousFireTime(),
+                    report.triggerState(),
+                    report.cronExpression(),
+                    cronDescriptor.describe(cronParser.parse(report.cronExpression()))
+            ));
+        }
+
+        return Response.ok(ScheduledReportsListResponse.create(reports.size(), reports)).build();
     }
 
     @POST

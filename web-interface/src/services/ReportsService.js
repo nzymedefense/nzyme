@@ -2,6 +2,15 @@ import RESTClient from "../util/RESTClient";
 
 class ReportsService {
 
+  findAll() {
+    let self = this;
+
+    RESTClient.get("/reports", {}, function(response) {
+      console.log(response);
+      self.setState({reports: response.data.reports});
+    });
+  }
+
   schedule(type, hourOfDay, minuteOfHour, emailReceivers, successCallback, errorCallback) {
     const data = {
       report_type: type,

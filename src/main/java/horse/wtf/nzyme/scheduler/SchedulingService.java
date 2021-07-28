@@ -19,10 +19,13 @@ package horse.wtf.nzyme.scheduler;
 
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
@@ -38,6 +41,7 @@ public class SchedulingService {
     }
 
     private final Scheduler scheduler;
+    private final NzymeLeader nzyme;
 
     public SchedulingService(NzymeLeader nzyme) throws SchedulerException {
         Properties config = new Properties();
@@ -53,6 +57,8 @@ public class SchedulingService {
 
         this.scheduler = new StdSchedulerFactory(config).getScheduler();
         this.scheduler.getContext().put("nzyme", nzyme);
+
+        this.nzyme = nzyme;
     }
 
     public void initialize() throws SchedulerException {
@@ -60,17 +66,30 @@ public class SchedulingService {
     }
 
     public void scheduleReport(Report report) throws SchedulerException {
-       JobDetail job = newJob(report.getJobClass())
-                .withIdentity(report.getName(), SCHEDULER_GROUP.REPORTS.toString())
+        // Attach a random UUID or Quartz will complain about duplicate report names.
+        String reportName = report.getName() + "-" + UUID.randomUUID().toString();
+
+        JobDetail job = newJob(report.getJobClass())
+                .withIdentity(reportName, SCHEDULER_GROUP.REPORTS.toString())
                 .build();
 
         Trigger trigger = newTrigger()
-                .withIdentity(report.getName() + "-cron", TRIGGER_GROUP.REPORTS.toString())
+                .withIdentity(reportName, TRIGGER_GROUP.REPORTS.toString())
                 .startNow()
                 .withSchedule(report.getSchedule())
                 .build();
 
         this.scheduler.scheduleJob(job, trigger);
+    }
+
+    public List<ScheduledReportEntry> findAllScheduledReports() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression " +
+                        "FROM scheduler_triggers t LEFT JOIN scheduler_cron_triggers AS c ON c.trigger_name = t.trigger_name " +
+                        "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON';")
+                        .mapTo(ScheduledReportEntry.class)
+                        .list()
+        );
     }
 
 }

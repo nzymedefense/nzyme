@@ -1,5 +1,6 @@
 import React from 'react';
 import Routes from "../../util/Routes";
+import ReportsTable from "./ReportsTable";
 
 class ReportsPage extends React.Component {
 
@@ -26,6 +27,12 @@ class ReportsPage extends React.Component {
                 &nbsp;
                 <a href={Routes.REPORTS.SCHEDULE} className="btn btn-success">Schedule Report</a>
               </div>
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="col-md-12">
+              <ReportsTable />
             </div>
           </div>
         </div>
