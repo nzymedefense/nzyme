@@ -27,7 +27,7 @@ class BanditsPage extends React.Component {
 
                     <div className="col-md-3">
                         <div className="float-right">
-                            <a href="https://go.nzyme.org/bandits-and-trackers" className="btn btn-primary" target="_blank">
+                            <a href="https://go.nzyme.org/bandits-and-trackers" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
                                 Help
                             </a>
                             &nbsp;
