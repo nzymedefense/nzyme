@@ -21,8 +21,16 @@ class ReportsTable extends React.Component {
   }
 
   render() {
-    if (!this.state.reports) {
+    if (this.state.reports === undefined) {
       return <LoadingSpinner />;
+    }
+
+    if (this.state.reports.length === 0) {
+        return (
+            <div className="alert alert-info">
+                No reports scheduled yet.
+            </div>
+        )
     }
 
     const self = this;

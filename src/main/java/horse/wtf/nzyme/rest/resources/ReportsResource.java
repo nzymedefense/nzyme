@@ -44,6 +44,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 @Path("/api/reports")
 @Secured
@@ -63,6 +64,7 @@ public class ReportsResource {
         List<ScheduledReportEntryResponse> reports = Lists.newArrayList();
         for (ScheduledReportEntry report : nzyme.getSchedulingService().findAllScheduledReports()) {
             reports.add(ScheduledReportEntryResponse.create(
+                    report.name().split("-")[1],
                     report.name(),
                     report.nextFireTime(),
                     report.previousFireTime(),

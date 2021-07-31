@@ -21,8 +21,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class ScheduledReportEntryResponse {
+
+    @JsonProperty("id")
+    public abstract String id();
 
     @JsonProperty("name")
     public abstract String name();
@@ -42,8 +47,9 @@ public abstract class ScheduledReportEntryResponse {
     @JsonProperty("schedule_string")
     public abstract String scheduleString();
 
-    public static ScheduledReportEntryResponse create(String name, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString) {
+    public static ScheduledReportEntryResponse create(String id, String name, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString) {
         return builder()
+                .id(id)
                 .name(name)
                 .nextFireTime(nextFireTime)
                 .previousFireTime(previousFireTime)
@@ -59,6 +65,8 @@ public abstract class ScheduledReportEntryResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(String id);
+
         public abstract Builder name(String name);
 
         public abstract Builder nextFireTime(DateTime nextFireTime);
