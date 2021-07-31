@@ -27,7 +27,9 @@ class BanditsPage extends React.Component {
 
                     <div className="col-md-3">
                         <div className="float-right">
-                            <a href="" className="btn btn-primary">Help</a>
+                            <a href="https://go.nzyme.org/bandits-and-trackers" className="btn btn-primary" target="_blank">
+                                Help
+                            </a>
                             &nbsp;
                             <a href={Routes.BANDITS.NEW} className="btn btn-success">Create Bandit</a>
                         </div>
