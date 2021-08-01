@@ -24,6 +24,7 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -65,7 +66,7 @@ public class SchedulingService {
         this.scheduler.start();
     }
 
-    public void scheduleReport(Report report) throws SchedulerException {
+    public String scheduleReport(Report report) throws SchedulerException {
         // Attach a random UUID or Quartz will complain about duplicate report names.
         String reportName = report.getName() + "-" + UUID.randomUUID().toString();
 
@@ -80,6 +81,8 @@ public class SchedulingService {
                 .build();
 
         this.scheduler.scheduleJob(job, trigger);
+
+        return reportName;
     }
 
     public List<ScheduledReportEntry> findAllScheduledReports() {
@@ -89,6 +92,44 @@ public class SchedulingService {
                         "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON';")
                         .mapTo(ScheduledReportEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<ScheduledReportEntry> findScheduledReport(String reportName) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression " +
+                                "FROM scheduler_triggers t LEFT JOIN scheduler_cron_triggers AS c ON c.trigger_name = t.trigger_name " +
+                                "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON' AND t.job_name = :reportName")
+                        .bind("reportName", reportName)
+                        .mapTo(ScheduledReportEntry.class)
+                        .findFirst()
+        );
+    }
+
+    public List<String> findEmailReceiversOfReport(String reportName) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT address FROM report_receivers_email WHERE report_name = :reportName")
+                        .bind("reportName", reportName)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public void addEmailReceiverToReport(String reportName, String emailAddress) {
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("INSERT INTO report_receivers_email(report_name, address) VALUES(:reportName, :emailAddress)")
+                        .bind("reportName", reportName)
+                        .bind("emailAddress", emailAddress)
+                        .execute()
+        );
+    }
+
+    public void removeEmailReceiverFromReport(String reportName, String emailAddress) {
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("DELETE FROM report_receivers_email WHERE report_name = :reportName AND address = emailAddress")
+                        .bind("reportName", reportName)
+                        .bind("emailAddress", emailAddress)
+                        .execute()
         );
     }
 

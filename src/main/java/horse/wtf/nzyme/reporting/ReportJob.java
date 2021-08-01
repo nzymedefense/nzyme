@@ -18,18 +18,29 @@
 package horse.wtf.nzyme.reporting;
 
 import horse.wtf.nzyme.NzymeLeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.quartz.*;
+
+import java.util.List;
 
 public abstract class ReportJob implements Job {
 
-    public abstract void runReport(NzymeLeader nzyme) throws JobExecutionException;
+    private static final Logger LOG = LogManager.getLogger(ReportJob.class);
+
+    public abstract void runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         NzymeLeader nzyme;
+        List<String> emailReceivers;
+
         try {
             SchedulerContext schedContext = context.getScheduler().getContext();
             nzyme = (NzymeLeader) schedContext.get("nzyme");
+
+            String jobName = context.getJobDetail().getKey().getName();
+            emailReceivers = nzyme.getSchedulingService().findEmailReceiversOfReport(jobName);
         } catch (SchedulerException e) {
             throw new JobExecutionException(e);
         }
@@ -38,7 +49,7 @@ public abstract class ReportJob implements Job {
             throw new JobExecutionException("Could not retrieve nzyme from scheduler context.");
         }
 
-        runReport(nzyme);
+        runReport(nzyme, emailReceivers);
     }
 
 }

@@ -25,7 +25,8 @@ const Routes = {
     },
     REPORTS: {
         INDEX: "/reports",
-        SCHEDULE: "/reports/schedule"
+        SCHEDULE: "/reports/schedule",
+        DETAILS: name => `/reports/show/${name}`
     }
 };
 

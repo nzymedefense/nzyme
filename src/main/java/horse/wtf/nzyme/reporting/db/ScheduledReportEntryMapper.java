@@ -23,6 +23,7 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 
 public class ScheduledReportEntryMapper implements RowMapper<ScheduledReportEntry> {
 

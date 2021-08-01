@@ -20,6 +20,8 @@ package horse.wtf.nzyme.reporting.db;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class ScheduledReportEntry {
 

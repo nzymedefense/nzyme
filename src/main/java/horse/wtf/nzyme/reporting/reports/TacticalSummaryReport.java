@@ -91,7 +91,7 @@ public class TacticalSummaryReport implements Report {
             this.templateConfig.setFallbackOnNullLoopVariable(false);
         }
 
-        public void runReport(NzymeLeader nzyme, @Nullable Writer writer) throws JobExecutionException {
+        public void runReport(NzymeLeader nzyme, @Nullable Writer writer, List<String> emailReceivers) throws JobExecutionException {
             try {
                 List<Map<String, String>> alerts = buildAlerts(nzyme);
 
@@ -110,7 +110,7 @@ public class TacticalSummaryReport implements Report {
                 if (writer != null) {
                     template.process(parameters, writer);
                 } else {
-                    // email
+                    LOG.info("SENDING EMAIL TO: {}", emailReceivers);
                 }
 
                 // store in DB
@@ -169,8 +169,8 @@ public class TacticalSummaryReport implements Report {
         }
 
         @Override
-        public void runReport(NzymeLeader nzyme) throws JobExecutionException {
-            runReport(nzyme, null);
+        public void runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
+            runReport(nzyme, null, emailReceivers);
         }
 
     }

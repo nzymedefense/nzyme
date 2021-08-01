@@ -1,6 +1,7 @@
 import React from 'react';
 import ReportName from "./ReportName";
 import ReportFireTime from "./ReportFireTime";
+import Routes from "../../util/Routes";
 
 class ReportsTableRow extends React.Component {
   render() {
@@ -8,7 +9,11 @@ class ReportsTableRow extends React.Component {
 
     return (
         <tr>
-          <td><ReportName name={report.name} /></td>
+          <td>
+              <a href={Routes.REPORTS.DETAILS(encodeURIComponent(report.name))}>
+                <ReportName name={report.name} />
+              </a>
+          </td>
           <td><ReportFireTime time={report.next_fire_time} /></td>
           <td><ReportFireTime time={report.previous_fire_time} /></td>
           <td>{report.trigger_state}</td>

@@ -529,4 +529,24 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="24" author="lennartkoopmann">
+        <createTable tableName="report_receivers_email" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="report_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="address" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_report_emails_standard_lookup" tableName="report_receivers_email" unique="false">
+            <column name="report_name" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -36,14 +36,12 @@ import org.apache.logging.log4j.Logger;
 import org.quartz.SchedulerException;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/reports")
@@ -58,31 +56,29 @@ public class ReportsResource {
 
     @GET
     public Response findAllScheduledReports() {
-        CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());
-        CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
-
         List<ScheduledReportEntryResponse> reports = Lists.newArrayList();
         for (ScheduledReportEntry report : nzyme.getSchedulingService().findAllScheduledReports()) {
-            reports.add(ScheduledReportEntryResponse.create(
-                    report.name().split("-")[1],
-                    report.name(),
-                    report.nextFireTime(),
-                    report.previousFireTime(),
-                    report.triggerState(),
-                    report.cronExpression(),
-                    cronDescriptor.describe(cronParser.parse(report.cronExpression()))
-            ));
+            reports.add(entryToResponse(report));
         }
 
         return Response.ok(ScheduledReportsListResponse.create(reports.size(), reports)).build();
     }
 
+    @GET
+    @Path("/show/{name}")
+    public Response findReport(@PathParam("name") String id) {
+        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(id);
+
+        if (result.isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        return Response.ok(entryToResponse(result.get())).build();
+    }
+
     @POST
     @Path("/schedule")
     public Response scheduleReport(ScheduleReportRequest request) {
-
-        // TODO XXX: Email receivers
-
         Report report;
         switch (request.reportType()) {
             case "TacticalSummary":
@@ -94,12 +90,32 @@ public class ReportsResource {
         }
 
         try {
-            nzyme.getSchedulingService().scheduleReport(report);
+            String dbName = nzyme.getSchedulingService().scheduleReport(report);
+
+            for (String email : request.emailReceivers()) {
+                nzyme.getSchedulingService().addEmailReceiverToReport(dbName, email);
+            }
+
             return Response.status(Response.Status.CREATED).build();
         } catch(SchedulerException e) {
             throw new RuntimeException("Could not schedule report.", e);
         }
 
+    }
+
+    private ScheduledReportEntryResponse entryToResponse(ScheduledReportEntry x) {
+        CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());
+        CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+
+        return ScheduledReportEntryResponse.create(
+                x.name().split("-")[1],
+                x.name(),
+                x.nextFireTime(),
+                x.previousFireTime(),
+                x.triggerState(),
+                x.cronExpression(),
+                cronDescriptor.describe(cronParser.parse(x.cronExpression()))
+        );
     }
 
 }

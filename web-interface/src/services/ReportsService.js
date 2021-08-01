@@ -6,8 +6,15 @@ class ReportsService {
     let self = this;
 
     RESTClient.get("/reports", {}, function(response) {
-      console.log(response);
       self.setState({reports: response.data.reports});
+    });
+  }
+
+  findOne(name) {
+    let self = this;
+
+    RESTClient.get("/reports/show/" + name, {}, function(response) {
+      self.setState({report: response.data});
     });
   }
 
