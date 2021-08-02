@@ -23,6 +23,11 @@ import org.quartz.Trigger;
 
 public interface Report {
 
+    enum EXCECUTION_RESULT {
+        SUCCESS,
+        ERROR
+    }
+
     ScheduleBuilder<? extends Trigger> getSchedule();
     String getName();
 

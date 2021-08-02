@@ -26,14 +26,16 @@ import java.util.List;
 public abstract class ScheduledReportEntry {
 
     public abstract String name();
+    public abstract DateTime createdAt();
     public abstract DateTime nextFireTime();
     public abstract DateTime previousFireTime();
     public abstract String triggerState();
     public abstract String cronExpression();
 
-    public static ScheduledReportEntry create(String name, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression) {
+    public static ScheduledReportEntry create(String name, DateTime createdAt, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression) {
         return builder()
                 .name(name)
+                .createdAt(createdAt)
                 .nextFireTime(nextFireTime)
                 .previousFireTime(previousFireTime)
                 .triggerState(triggerState)
@@ -48,6 +50,8 @@ public abstract class ScheduledReportEntry {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
+
+        public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder nextFireTime(DateTime nextFireTime);
 

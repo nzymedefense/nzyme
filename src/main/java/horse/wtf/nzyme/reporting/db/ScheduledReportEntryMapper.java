@@ -31,6 +31,7 @@ public class ScheduledReportEntryMapper implements RowMapper<ScheduledReportEntr
     public ScheduledReportEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return ScheduledReportEntry.create(
                 rs.getString("job_name"),
+                new DateTime(rs.getString("created_at")),
                 new DateTime(rs.getLong("next_fire_time")),
                 new DateTime(rs.getLong("prev_fire_time")),
                 rs.getString("trigger_state"),

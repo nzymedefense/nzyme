@@ -3,6 +3,7 @@ import Routes from "../../util/Routes";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ReportName from "./ReportName";
 import ReportsService from "../../services/ReportsService";
+import moment from "moment";
 
 class ReportDetailsPage extends React.Component {
 
@@ -54,6 +55,16 @@ class ReportDetailsPage extends React.Component {
                         <pre style={{"backgroundColor": "#fff"}}>{JSON.stringify(this.state.report, null ,2)}</pre>
                     </div>
                 </div>
+
+                <div className="row">
+                    <div className="col-md-3">
+                        <dl>
+                            <dt>Created at:</dt>
+                            <dd>foo</dd>
+                        </dl>
+                    </div>
+                </div>
+
             </div>
         )
     }

@@ -110,11 +110,13 @@ public class ReportsResource {
         return ScheduledReportEntryResponse.create(
                 x.name().split("-")[1],
                 x.name(),
+                x.createdAt(),
                 x.nextFireTime(),
                 x.previousFireTime(),
                 x.triggerState(),
                 x.cronExpression(),
-                cronDescriptor.describe(cronParser.parse(x.cronExpression()))
+                cronDescriptor.describe(cronParser.parse(x.cronExpression())),
+                nzyme.getSchedulingService().findEmailReceiversOfReport(x.name())
         );
     }
 

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.UUID;
 
 @AutoValue
@@ -31,6 +32,9 @@ public abstract class ScheduledReportEntryResponse {
 
     @JsonProperty("name")
     public abstract String name();
+
+    @JsonProperty("created_at")
+    public abstract DateTime createdAt();
 
     @JsonProperty("next_fire_time")
     public abstract DateTime nextFireTime();
@@ -47,15 +51,20 @@ public abstract class ScheduledReportEntryResponse {
     @JsonProperty("schedule_string")
     public abstract String scheduleString();
 
-    public static ScheduledReportEntryResponse create(String id, String name, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString) {
+    @JsonProperty("email_receivers")
+    public abstract List<String> emailReceivers();
+
+    public static ScheduledReportEntryResponse create(String id, String name, DateTime createdAt, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString, List<String> emailReceivers) {
         return builder()
                 .id(id)
                 .name(name)
+                .createdAt(createdAt)
                 .nextFireTime(nextFireTime)
                 .previousFireTime(previousFireTime)
                 .triggerState(triggerState)
                 .cronExpression(cronExpression)
                 .scheduleString(scheduleString)
+                .emailReceivers(emailReceivers)
                 .build();
     }
 
@@ -69,6 +78,8 @@ public abstract class ScheduledReportEntryResponse {
 
         public abstract Builder name(String name);
 
+        public abstract Builder createdAt(DateTime createdAt);
+
         public abstract Builder nextFireTime(DateTime nextFireTime);
 
         public abstract Builder previousFireTime(DateTime previousFireTime);
@@ -78,6 +89,8 @@ public abstract class ScheduledReportEntryResponse {
         public abstract Builder cronExpression(String cronExpression);
 
         public abstract Builder scheduleString(String scheduleString);
+
+        public abstract Builder emailReceivers(List<String> emailReceivers);
 
         public abstract ScheduledReportEntryResponse build();
     }

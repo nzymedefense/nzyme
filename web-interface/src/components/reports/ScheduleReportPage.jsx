@@ -4,6 +4,7 @@ import Routes from "../../util/Routes";
 import ReportsService from "../../services/ReportsService";
 import {notify} from "react-notify-toast";
 import Redirect from "react-router-dom/Redirect";
+import ReportName from "./ReportName";
 
 class ScheduleReportPage extends React.Component {
 
@@ -119,6 +120,18 @@ class ScheduleReportPage extends React.Component {
 
     return (
         <div>
+          <div className="row">
+            <div className="col-md-12">
+              <nav aria-label="breadcrumb">
+                <ol className="breadcrumb">
+                  <li className="breadcrumb-item"><a href={Routes.REPORTS.INDEX}>Reports</a></li>
+                  <li className="breadcrumb-item active" aria-current="page">Schedule Report</li>
+                </ol>
+              </nav>
+            </div>
+          </div>
+
+
           <div className="row">
             <div className="col-md-12">
               <h1>Schedule Report</h1>

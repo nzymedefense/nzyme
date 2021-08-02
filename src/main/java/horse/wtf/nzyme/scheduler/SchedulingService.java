@@ -20,6 +20,7 @@ package horse.wtf.nzyme.scheduler;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
+import org.joda.time.DateTime;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -82,6 +83,13 @@ public class SchedulingService {
 
         this.scheduler.scheduleJob(job, trigger);
 
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("INSERT INTO report_metadata(report_name, created_at) VALUES(:reportName, :createdAt)")
+                        .bind("reportName", reportName)
+                        .bind("createdAt", DateTime.now())
+                        .execute()
+        );
+
         return reportName;
     }
 
@@ -129,6 +137,18 @@ public class SchedulingService {
                 handle.createUpdate("DELETE FROM report_receivers_email WHERE report_name = :reportName AND address = emailAddress")
                         .bind("reportName", reportName)
                         .bind("emailAddress", emailAddress)
+                        .execute()
+        );
+    }
+
+    public void logReportExecutionResult(String reportName, Report.EXCECUTION_RESULT result, String message) {
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("INSERT INTO report_execution_log(report_name, result, message, created_at) " +
+                                "VALUES(:reportName, :result, :message, :createdAt)")
+                        .bind("reportName", reportName)
+                        .bind("result", result)
+                        .bind("message", message)
+                        .bind("createdAt", DateTime.now())
                         .execute()
         );
     }

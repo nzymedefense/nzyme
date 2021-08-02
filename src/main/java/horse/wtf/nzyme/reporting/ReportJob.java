@@ -32,24 +32,46 @@ public abstract class ReportJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        NzymeLeader nzyme;
+        NzymeLeader nzyme = null;
+        String jobName = null;
         List<String> emailReceivers;
 
         try {
             SchedulerContext schedContext = context.getScheduler().getContext();
             nzyme = (NzymeLeader) schedContext.get("nzyme");
 
-            String jobName = context.getJobDetail().getKey().getName();
+            jobName = context.getJobDetail().getKey().getName();
             emailReceivers = nzyme.getSchedulingService().findEmailReceiversOfReport(jobName);
         } catch (SchedulerException e) {
+            if (nzyme != null) {
+                nzyme.getSchedulingService().logReportExecutionResult(
+                        jobName,
+                        Report.EXCECUTION_RESULT.ERROR,
+                        "Could not initialized report."
+                );
+            }
             throw new JobExecutionException(e);
         }
 
-        if (nzyme == null) {
-            throw new JobExecutionException("Could not retrieve nzyme from scheduler context.");
-        }
+        try {
+            runReport(nzyme, emailReceivers);
 
-        runReport(nzyme, emailReceivers);
+            nzyme.getSchedulingService().logReportExecutionResult(
+                    jobName,
+                    Report.EXCECUTION_RESULT.SUCCESS,
+                    "Report executed successfully."
+            );
+        } catch(Exception e) {
+            LOG.error("Could not execute report", e);
+
+            nzyme.getSchedulingService().logReportExecutionResult(
+                    jobName,
+                    Report.EXCECUTION_RESULT.ERROR,
+                    "Could not execute report. [" + e.getMessage() + "] - See nzyme log for more details."
+            );
+
+            throw e;
+        }
     }
 
 }
