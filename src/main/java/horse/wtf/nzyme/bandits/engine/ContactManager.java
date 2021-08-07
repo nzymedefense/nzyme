@@ -372,7 +372,9 @@ public class ContactManager implements ContactIdentifierProcess {
             // Run all identifiers.
             if(bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
                 // If no identifier missed, this is a bandit frame.
-                if (identifierEngine.identify(frame, bandit)) {
+
+                ContactIdentifierEngine.ContactIdentifierResult result = identifierEngine.identify(frame, bandit);
+                if (result.match()) {
                     // Create new contact if this is the first frame.
                     if (!banditHasActiveContactOnSource(bandit, nzyme.getNodeID())) {
                         LOG.debug("New contact for bandit [{}].", bandit);
@@ -395,7 +397,7 @@ public class ContactManager implements ContactIdentifierProcess {
 
                     // Register/refresh alert.
                     if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {
-                        nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), 1L));
+                        nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), result.ssid(), 1L));
                     }
                 }
             }

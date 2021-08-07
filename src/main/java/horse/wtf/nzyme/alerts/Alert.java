@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -342,10 +343,18 @@ public abstract class Alert {
                 );
                 break;
             case BANDIT_CONTACT:
+                Optional<String> ssid;
+                if (fields.containsKey(FieldNames.SSID)) {
+                    ssid = Optional.of((String) fields.get(FieldNames.SSID));
+                } else {
+                    ssid = Optional.empty();
+                }
+
                 alert = BanditContactAlert.create(
                         db.firstSeen(),
                         (String) fields.get(FieldNames.BANDIT_NAME),
                         (String) fields.get(FieldNames.BANDIT_UUID),
+                        ssid,
                         db.frameCount()
                 );
                 break;

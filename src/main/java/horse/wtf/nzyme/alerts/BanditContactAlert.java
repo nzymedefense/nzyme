@@ -17,14 +17,17 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.notifications.FieldNames;
 import org.joda.time.DateTime;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class BanditContactAlert extends Alert {
 
@@ -40,7 +43,11 @@ public class BanditContactAlert extends Alert {
 
     @Override
     public String getMessage() {
-        return "Bandit [" + getBanditName() + "] detected.";
+        if (getFields().containsKey(FieldNames.SSID)) {
+            return "Bandit [" + getBanditName() + "] detected, advertising [" + getFields().get(FieldNames.SSID) + "].";
+        } else {
+            return "Bandit [" + getBanditName() + "] detected.";
+        }
     }
 
     @Override
@@ -64,14 +71,28 @@ public class BanditContactAlert extends Alert {
 
         BanditContactAlert a = (BanditContactAlert) alert;
 
+        if (getFields().containsKey(FieldNames.SSID)) {
+            if (!a.getFields().containsKey(FieldNames.SSID)) {
+                return false;
+            } else {
+                if (!getFields().get(FieldNames.SSID).equals(a.getFields().get(FieldNames.SSID))) {
+                    return false;
+                }
+            }
+        }
+
         return a.getBanditUUID().equals(this.getBanditUUID());
     }
 
-    public static BanditContactAlert create(DateTime firstSeen, String banditName, String banditUUID, long frameCount) {
+    public static BanditContactAlert create(DateTime firstSeen, String banditName, String banditUUID, Optional<String> ssid, long frameCount) {
         ImmutableMap.Builder<String, Object> fields = new ImmutableMap.Builder<>();
 
         fields.put(FieldNames.BANDIT_NAME, banditName);
         fields.put(FieldNames.BANDIT_UUID, banditUUID);
+
+        if (ssid.isPresent() && !Strings.isNullOrEmpty(ssid.get())) {
+            fields.put(FieldNames.SSID, ssid.get());
+        }
 
         return new BanditContactAlert(firstSeen, Subsystem.DOT_11, fields.build(), frameCount);
     }

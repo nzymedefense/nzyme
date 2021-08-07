@@ -165,7 +165,9 @@ public class TrackerBanditManager implements ContactIdentifierProcess {
 
         Bandit bandit = getCurrentlyTrackedBandit();
         if (bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
-            if (identifierEngine.identify(frame, bandit)) {
+
+            ContactIdentifierEngine.ContactIdentifierResult result = identifierEngine.identify(frame, bandit);
+            if (result.match()) {
                 if (currentTrack == null) {
                     // New track!
                     currentTrack = UUID.randomUUID();
