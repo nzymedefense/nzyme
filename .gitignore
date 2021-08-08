@@ -17,4 +17,3 @@ openssl.cnf
 *.pem
 
 src/main/resources/git.properties
-node_modules/.yarn-integrity
