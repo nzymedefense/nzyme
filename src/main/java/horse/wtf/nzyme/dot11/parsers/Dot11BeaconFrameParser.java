@@ -52,7 +52,7 @@ public class Dot11BeaconFrameParser extends Dot11FrameParser<Dot11BeaconFrame> {
             ssid = null;
         }
 
-        if (anonymizer.isEnabled()) {
+        if (anonymizer != null && anonymizer.isEnabled()) {
             ssid = anonymizer.anonymizeSSID(ssid);
             transmitter = anonymizer.anonymizeBSSID(transmitter);
         }

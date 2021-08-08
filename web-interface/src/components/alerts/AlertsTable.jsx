@@ -4,6 +4,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Routes from "../../util/Routes";
 import FrameCount from "./FrameCount";
+import AlertSSID from "./AlertSSID";
 
 class AlertsTable extends React.Component {
 
@@ -22,8 +23,9 @@ class AlertsTable extends React.Component {
   static _buildAlertRow(key, alert) {
     return (
       <tr key={key} className={alert.is_active ? "text-danger" : "text-warning"}>
-        <td>{alert.id}</td>
+        <td>{alert.id.substr(0, 8)}</td>
         <td>{alert.type}</td>
+        <td><AlertSSID ssid={alert.fields.ssid} /></td>
         <td>{moment(alert.first_seen).fromNow()}</td>
         <td>{moment(alert.last_seen).fromNow()}</td>
         <td><FrameCount alert={alert} /></td>
@@ -62,6 +64,7 @@ class AlertsTable extends React.Component {
                 <tr>
                   <th>ID</th>
                   <th>Type</th>
+                  <th>Related SSID</th>
                   <th>First Seen</th>
                   <th>Last Seen</th>
                   <th>Frames</th>
