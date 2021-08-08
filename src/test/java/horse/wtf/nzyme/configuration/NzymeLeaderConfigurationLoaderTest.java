@@ -42,12 +42,16 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test
     public void testGetValidConfig() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
-        LeaderConfiguration c = new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
+        String configFile = "nzyme-test-complete-valid.conf";
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            configFile = "nzyme-test-complete-valid-windows.conf";
+            System.out.println("loading Windows nzyme configuration file");
+        }
+
+        LeaderConfiguration c = new LeaderConfigurationLoader(loadFromResourceFile(configFile), false).get();
 
         assertEquals(c.role(), Role.LEADER);
         assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
-        assertEquals(c.pythonExecutable(), "/usr/bin/python2.7");
-        assertEquals(c.pythonScriptDirectory(), "/tmp");
         assertEquals(c.pythonScriptPrefix(), "nzyme_");
         assertEquals(c.alertingTrainingPeriodSeconds(), 300);
         assertTrue(c.fetchOuis());

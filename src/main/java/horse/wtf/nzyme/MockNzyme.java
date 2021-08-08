@@ -91,7 +91,13 @@ public  class MockNzyme implements NzymeLeader {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
-            this.configuration = new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-complete-valid.conf"), false).get();
+            String configFile = "nzyme-test-complete-valid.conf";
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                configFile = "nzyme-test-complete-valid-windows.conf";
+                System.out.println("loading Windows nzyme configuration file");
+            }
+
+            this.configuration = new LeaderConfigurationLoader(loadFromResourceFile(configFile), false).get();
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }

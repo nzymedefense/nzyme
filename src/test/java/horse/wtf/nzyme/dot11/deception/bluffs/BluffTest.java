@@ -49,8 +49,14 @@ public class BluffTest {
 
     private static final LeaderConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_");
 
+
     @Test
     public void testGetInvokedCommand() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -59,6 +65,11 @@ public class BluffTest {
 
     @Test
     public void testCustomPython() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -67,6 +78,11 @@ public class BluffTest {
 
     @Test
     public void testCustomBluffDirectory() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/var/tmp", "nzyme_"), "mock");
         mock.execute();
 
@@ -75,23 +91,48 @@ public class BluffTest {
 
     @Test
     public void testCustomBluffPrefix() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
         Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/tmp", "nzymeTEST_"), "mock");
         mock.execute();
 
         assertEquals(mock.getInvokedCommand(), "/usr/bin/python /tmp/nzymeTEST_MockBluff --test mock");
     }
 
-    @Test(expectedExceptions = Bluff.InsecureParametersException.class)
     public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {
-        Bluff mock = new MockBluff(STANDARD_CONFIG, "param & /usr/bin/FOOKED");
-        mock.execute();
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
+        try {
+            Bluff mock = new MockBluff(STANDARD_CONFIG, "param & /usr/bin/FOOKED");
+            mock.execute();
+        } catch(Bluff.InsecureParametersException e) {
+            return;
+        }
+
+        fail("Did not throw expected exception.");
     }
 
-    @Test(expectedExceptions = Bluff.InsecureParametersException.class)
     public void testStaticParameterValidation() throws Bluff.InsecureParametersException, Bluff.BluffExecutionException, InvalidConfigurationException, IncompleteConfigurationException {
-        Bluff mock = new MockBluff(STANDARD_CONFIG, "mock");
-        ((MockBluff) mock).setParameterKey("-i foo & /usr/bin/fooked &");
-        mock.execute();
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Not running bluff tests on Windows.");
+            return;
+        }
+
+        try {
+            Bluff mock = new MockBluff(STANDARD_CONFIG, "mock");
+            ((MockBluff) mock).setParameterKey("-i foo & /usr/bin/fooked &");
+            mock.execute();
+        } catch(Bluff.InsecureParametersException e) {
+            return;
+        }
+
+        fail("Did not throw expected exception.");
     }
 
     private class MockBluff extends Bluff {
