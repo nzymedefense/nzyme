@@ -42,9 +42,9 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test
     public void testGetValidConfig() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
-        String configFile = "nzyme-test-complete-valid.conf";
+        String configFile = "nzyme-test-complete-valid.conf.test";
         if (System.getProperty("os.name").startsWith("Windows")) {
-            configFile = "nzyme-test-complete-valid-windows.conf";
+            configFile = "nzyme-test-complete-valid-windows.conf.test";
             System.out.println("loading Windows nzyme configuration file");
         }
 
@@ -113,7 +113,7 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)
     public void testGetInvalidConfigIncomplete() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
-        new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf"), false).get();
+        new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf.test"), false).get();
     }
 
 }

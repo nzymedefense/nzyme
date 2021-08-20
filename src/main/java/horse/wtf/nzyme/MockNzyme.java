@@ -91,9 +91,9 @@ public  class MockNzyme implements NzymeLeader {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
-            String configFile = "nzyme-test-complete-valid.conf";
+            String configFile = "nzyme-test-complete-valid.conf.test";
             if (System.getProperty("os.name").startsWith("Windows")) {
-                configFile = "nzyme-test-complete-valid-windows.conf";
+                configFile = "nzyme-test-complete-valid-windows.conf.test";
                 System.out.println("loading Windows nzyme configuration file");
             }
 

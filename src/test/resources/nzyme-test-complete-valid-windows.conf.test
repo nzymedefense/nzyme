@@ -1,0 +1,120 @@
+general: {
+  role: LEADER
+  id: nzyme-testng
+
+  admin_password_hash: 932f3c1b56257ce8539ac269d7aab42550dacf8818d075f0bdf1990562aae3ef
+
+  python {
+    path: "C:\\Users\\lenna\\AppData\\Local\\Programs\\Python\\Python39\\python.exe"
+    script_directory: "C:\\temp"
+    script_prefix: nzyme_
+  }
+
+  alerting {
+    clean_after_minutes: 15
+    training_period_seconds: 300
+  }
+
+  database_path: "postgresql://localhost:5432/nzyme-java-tests?user=postgres&password=123123123"
+  database_path: ${?TEST_DATABASE_URL}
+
+  fetch_ouis: true
+  versionchecks: true
+}
+
+interfaces: {
+  rest_listen_uri: "http://127.0.0.1:22900/"
+  http_external_uri: "http://127.0.0.1:22900/"
+  use_tls: false
+  tls_certificate_path: none
+  tls_key_path: none
+}
+
+graylog_uplinks: [
+  "10.243.255.10:33001",
+  "127.0.0.1:9001"
+]
+
+remote_input: {
+  host: 0.0.0.0
+  port: 9002
+}
+
+uplinks: [
+  {
+    type: syslog_udp_rfc5424,
+    configuration: { host: localhost, port: 5516 }
+  }
+  {
+    type: graylog,
+    configuration: { host: example.org, port: 5517 }
+  }
+]
+
+802_11_monitors: [
+  {
+    device: wlx00c0ca8fd89a
+    channels: [1,2,3,4,5,6]
+    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
+    channel_hop_interval: 1
+  }
+
+  {
+    device: wlx00c0ca971216
+    channels: [7,8,9,10,11]
+    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
+    channel_hop_interval: 3
+  }
+]
+
+802_11_networks: [
+  {
+    ssid: United_Wi-Fi
+    channels: [1,3,6,11]
+    security: [
+      NONE
+    ]
+    beacon_rate: 40
+    bssids: [
+      {
+        address: "06:0d:2d:c9:36:23",
+        fingerprints: [c9ed4adc12dc3e17208446b6a10070b70a73b9ce3a99215e05426faea6de91c7]
+      }
+      {
+        address: "24:a4:3c:7d:01:cc",
+        fingerprints: [def456]
+      }
+    ]
+  }
+
+  {
+    ssid: WTF
+    channels: [1,11]
+    security: [
+      WPA1-EAM-PSK-CCMP,
+      WPA2-EAM-PSK-CCMP
+    ]
+    beacon_rate: 40
+    bssids: [
+      {
+        address: "00:c0:ca:95:68:3b",
+        expected_signal_strength: {from: -37, to: -27}
+        fingerprints: [dfac3abce0c722f9609343f7dfa208afa51a1c7decbd2eb6f96c78051f0a594b]
+      }
+    ]
+  }
+]
+
+
+802_11_traps: [
+]
+
+802_11_alerts: [
+  unexpected_bssid
+  unexpected_ssid
+  unexpected_channel
+  crypto_change
+  known_bandit_fingerprint
+]
+
+tracker_device {}
