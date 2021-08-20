@@ -77,6 +77,14 @@ public class Database {
         }
     }
 
+    public long getTotalSize() {
+        return withHandle(handle -> {
+            return handle.createQuery("SELECT pg_database_size(current_database())")
+                    .mapTo(Long.class)
+                    .first();
+        });
+    }
+
     public <R, X extends Exception> R withHandle(HandleCallback<R, X> callback) throws X {
         return jdbi.withHandle(callback);
     }
