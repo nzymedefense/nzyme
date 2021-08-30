@@ -21,7 +21,7 @@ nzyme is not designed to be physically moving around in any way. It is supposed 
 
 ## Getting Started
 
-Please visit the [getting started page](https://www.nzyme.org/get-started) to get started.
+Please visit the [getting started page](https://www.nzyme.org/docs/intro) to get started.
 
 ## Contributing
 
