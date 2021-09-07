@@ -110,7 +110,11 @@ public class TacticalSummaryReport implements Report {
                 if (writer != null) {
                     template.process(parameters, writer);
                 } else {
-                    LOG.info("SENDING EMAIL TO: {}", emailReceivers);
+                    if (!emailReceivers.isEmpty()) {
+                        LOG.info("SENDING EMAIL TO: {}", emailReceivers);
+                    } else {
+                        LOG.info("No email receivers configured.");
+                    }
                 }
 
                 // store in DB

@@ -33,6 +33,40 @@ class ReportsService {
     });
   }
 
+  deleteReport(name, errorCallback) {
+    let self = this;
+
+    RESTClient.delete("/reports/show/" + name, {}, function() {
+      self.setState({reportDeleted: true});
+    }, function() {
+      errorCallback();
+    });
+  }
+
+  deleteEmailReceiver(reportName, email, successCallback, errorCallback) {
+    const data = {
+      email_address: email
+    }
+
+    RESTClient.post("/reports/show/" + reportName + "/receivers/email/delete", data, function() {
+      successCallback();
+    }, function() {
+      errorCallback();
+    });
+  }
+
+  addEmailReceiver(reportName, email, successCallback, errorCallback) {
+    const data = {
+      email_address: email
+    }
+
+    RESTClient.post("/reports/show/" + reportName + "/receivers/email", data, function() {
+      successCallback();
+    }, function() {
+      errorCallback();
+    });
+  }
+
 }
 
 export default ReportsService;

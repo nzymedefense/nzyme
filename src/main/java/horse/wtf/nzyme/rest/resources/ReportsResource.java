@@ -19,7 +19,6 @@ package horse.wtf.nzyme.rest.resources;
 
 import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import com.google.common.collect.Lists;
@@ -28,6 +27,7 @@ import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
 import horse.wtf.nzyme.rest.responses.reports.ScheduledReportEntryResponse;
 import horse.wtf.nzyme.rest.responses.reports.ScheduledReportsListResponse;
@@ -42,7 +42,6 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 @Path("/api/reports")
 @Secured
@@ -92,8 +91,14 @@ public class ReportsResource {
         try {
             String dbName = nzyme.getSchedulingService().scheduleReport(report);
 
+            List<String> addedEmailReceivers = Lists.newArrayList();
             for (String email : request.emailReceivers()) {
+                if (addedEmailReceivers.contains(email)) {
+                    LOG.warn("Duplicate email address. Skipping.");
+                    continue;
+                }
                 nzyme.getSchedulingService().addEmailReceiverToReport(dbName, email);
+                addedEmailReceivers.add(email);
             }
 
             return Response.status(Response.Status.CREATED).build();
@@ -102,6 +107,60 @@ public class ReportsResource {
         }
 
     }
+
+    @POST
+    @Path("/show/{name}/receivers/email")
+    public Response addEmailReceiver(@PathParam("name") String id, ModifyReportReceiverEmailRequest request) {
+        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(id);
+
+        if (result.isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        ScheduledReportEntry report = result.get();
+        if (nzyme.getSchedulingService().findEmailReceiversOfReport(report.name()).contains(request.emailAddress())) {
+            LOG.error("Email address already exists in receivers for this report. Skipping.");
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getSchedulingService().addEmailReceiverToReport(report.name(), request.emailAddress());
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST // not using DELETE because libraries are inconsistent with allowing bodies in DELETE requests.
+    @Path("/show/{name}/receivers/email/delete")
+    public Response removeEmailReceiver(@PathParam("name") String id, ModifyReportReceiverEmailRequest request) {
+        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(id);
+
+        if (result.isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        nzyme.getSchedulingService().removeEmailReceiverFromReport(result.get().name(), request.emailAddress());
+
+        return Response.status(Response.Status.OK).build();
+    }
+
+    @DELETE
+    @Path("/show/{name}")
+    public Response deleteReport(@PathParam("name") String id) {
+        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(id);
+
+        if (result.isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        try {
+            nzyme.getSchedulingService().unscheduleAndDeleteReport(id);
+        } catch(Exception e) {
+            LOG.error("Could not delete report.", e);
+            return Response.serverError().build();
+        }
+
+        return Response.ok().build();
+    }
+
 
     private ScheduledReportEntryResponse entryToResponse(ScheduledReportEntry x) {
         CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());

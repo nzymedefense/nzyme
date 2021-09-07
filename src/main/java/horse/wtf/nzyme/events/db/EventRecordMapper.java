@@ -17,17 +17,12 @@
 
 package horse.wtf.nzyme.events.db;
 
-import horse.wtf.nzyme.Subsystem;
-import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.alerts.service.AlertDatabaseEntry;
-import horse.wtf.nzyme.database.Database;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 public class EventRecordMapper implements RowMapper<EventRecord> {
 
@@ -38,7 +33,7 @@ public class EventRecordMapper implements RowMapper<EventRecord> {
                 rs.getString("type"),
                 rs.getString("name"),
                 rs.getString("description"),
-                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER)
+                new DateTime(rs.getTimestamp("created_at"))
         );
     }
 

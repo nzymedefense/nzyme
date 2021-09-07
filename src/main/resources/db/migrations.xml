@@ -569,26 +569,6 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="25" author="lennartkoopmann">
-        <createTable tableName="report_metadata" >
-            <column name="id" type="integer" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-
-            <column name="report_name" type="varchar(255)">
-                <constraints nullable="false" />
-            </column>
-
-            <column name="created_at" type="timestamp with time zone">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-
-        <createIndex indexName="idx_report_meta_standard_lookup" tableName="report_metadata" unique="false">
-            <column name="report_name" />
-        </createIndex>
-    </changeSet>
-
     <changeSet id="26" author="lennartkoopmann">
         <createTable tableName="report_execution_log" >
             <column name="id" type="integer" autoIncrement="true">

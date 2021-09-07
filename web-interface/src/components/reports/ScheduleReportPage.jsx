@@ -4,7 +4,6 @@ import Routes from "../../util/Routes";
 import ReportsService from "../../services/ReportsService";
 import {notify} from "react-notify-toast";
 import Redirect from "react-router-dom/Redirect";
-import ReportName from "./ReportName";
 
 class ScheduleReportPage extends React.Component {
 
@@ -65,6 +64,12 @@ class ScheduleReportPage extends React.Component {
     const receiver = this.addEmail.current.value;
 
     if (receiver && receiver.trim() !== "") {
+
+      if (this.state.emailReceivers.includes(receiver)) {
+        notify.show("Email receiver already exists.", "error");
+        return;
+      }
+
       this.addEmail.current.value = "";
       this.setState(prevState => ({
         emailReceivers: [...prevState.emailReceivers, receiver],

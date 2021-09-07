@@ -93,11 +93,35 @@ public class SchedulingService {
         return reportName;
     }
 
+    public void unscheduleAndDeleteReport(String reportName) throws SchedulerException {
+        this.scheduler.deleteJob(JobKey.jobKey(reportName, SCHEDULER_GROUP.REPORTS.toString()));
+
+        // TODO use constraints
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("DELETE FROM report_metadata WHERE report_name = :reportName")
+                        .bind("reportName", reportName)
+                        .execute()
+        );
+
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("DELETE FROM report_receivers_email WHERE report_name = :reportName")
+                        .bind("reportName", reportName)
+                        .execute()
+        );
+
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("DELETE FROM report_execution_log WHERE report_name = :reportName")
+                        .bind("reportName", reportName)
+                        .execute()
+        );
+    }
+
     public List<ScheduledReportEntry> findAllScheduledReports() {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression " +
+                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression, m.created_at " +
                         "FROM scheduler_triggers t LEFT JOIN scheduler_cron_triggers AS c ON c.trigger_name = t.trigger_name " +
-                        "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON';")
+                        "LEFT JOIN report_metadata AS m ON m.report_name = t.trigger_name " +
+                         "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON';")
                         .mapTo(ScheduledReportEntry.class)
                         .list()
         );
@@ -105,8 +129,9 @@ public class SchedulingService {
 
     public Optional<ScheduledReportEntry> findScheduledReport(String reportName) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression " +
+                handle.createQuery("SELECT t.job_name, t.next_fire_time, t.prev_fire_time, t.trigger_state, c.cron_expression, m.created_at " +
                                 "FROM scheduler_triggers t LEFT JOIN scheduler_cron_triggers AS c ON c.trigger_name = t.trigger_name " +
+                                "LEFT JOIN report_metadata AS m ON m.report_name = t.trigger_name " +
                                 "WHERE t.trigger_group = 'REPORTS' AND t.trigger_type = 'CRON' AND t.job_name = :reportName")
                         .bind("reportName", reportName)
                         .mapTo(ScheduledReportEntry.class)
@@ -134,7 +159,7 @@ public class SchedulingService {
 
     public void removeEmailReceiverFromReport(String reportName, String emailAddress) {
         nzyme.getDatabase().withHandle(handle ->
-                handle.createUpdate("DELETE FROM report_receivers_email WHERE report_name = :reportName AND address = emailAddress")
+                handle.createUpdate("DELETE FROM report_receivers_email WHERE report_name = :reportName AND address = :emailAddress")
                         .bind("reportName", reportName)
                         .bind("emailAddress", emailAddress)
                         .execute()

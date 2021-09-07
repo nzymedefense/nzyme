@@ -40,9 +40,9 @@ class ReportsTable extends React.Component {
           <thead>
           <tr>
             <th>Report Type</th>
+            <th>Created At</th>
             <th>Next Fire Time</th>
             <th>Previous Fire Time</th>
-            <th>Status</th>
             <th>Schedule</th>
           </tr>
           </thead>

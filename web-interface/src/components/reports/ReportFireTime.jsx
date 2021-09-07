@@ -6,12 +6,10 @@ class ReportFireTime extends React.Component {
   render() {
     const time = this.props.time;
 
-    console.log(time);
-
     if (Date.parse(time) > 0) {
-      return moment(time).format("lll")
+      return <span title={moment(time).fromNow()}>{moment(time).format("lll")}</span>
     } else {
-      return "n/a";
+      return <span>n/a</span>;
     }
   }
 

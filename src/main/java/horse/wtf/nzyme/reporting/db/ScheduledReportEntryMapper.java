@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.reporting.db;
 
+import horse.wtf.nzyme.database.Database;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -31,7 +32,7 @@ public class ScheduledReportEntryMapper implements RowMapper<ScheduledReportEntr
     public ScheduledReportEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return ScheduledReportEntry.create(
                 rs.getString("job_name"),
-                new DateTime(rs.getString("created_at")),
+                new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getLong("next_fire_time")),
                 new DateTime(rs.getLong("prev_fire_time")),
                 rs.getString("trigger_state"),
