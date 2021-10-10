@@ -17,5 +17,43 @@
 
 package horse.wtf.nzyme.rest.responses.reports;
 
-public class ExecutionLogEntryResponse {
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.value.AutoValue;
+import org.joda.time.DateTime;
+
+@AutoValue
+public abstract class ExecutionLogEntryResponse {
+
+    @JsonProperty("result")
+    public abstract String result();
+
+    @JsonProperty("message")
+    public abstract String message();
+
+    @JsonProperty("created_at")
+    public abstract DateTime createdAt();
+
+    public static ExecutionLogEntryResponse create(String result, String message, DateTime createdAt) {
+        return builder()
+                .result(result)
+                .message(message)
+                .createdAt(createdAt)
+                .build();
+    }
+
+    public static Builder builder() {
+        return new AutoValue_ExecutionLogEntryResponse.Builder();
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder result(String result);
+
+        public abstract Builder message(String message);
+
+        public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract ExecutionLogEntryResponse build();
+    }
+
 }

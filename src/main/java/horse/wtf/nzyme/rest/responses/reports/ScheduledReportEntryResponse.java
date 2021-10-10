@@ -54,7 +54,10 @@ public abstract class ScheduledReportEntryResponse {
     @JsonProperty("email_receivers")
     public abstract List<String> emailReceivers();
 
-    public static ScheduledReportEntryResponse create(String id, String name, DateTime createdAt, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString, List<String> emailReceivers) {
+    @JsonProperty("recent_execution_log")
+    public abstract List<ExecutionLogEntryResponse> recentExecutionLog();
+
+    public static ScheduledReportEntryResponse create(String id, String name, DateTime createdAt, DateTime nextFireTime, DateTime previousFireTime, String triggerState, String cronExpression, String scheduleString, List<String> emailReceivers, List<ExecutionLogEntryResponse> recentExecutionLog) {
         return builder()
                 .id(id)
                 .name(name)
@@ -65,6 +68,7 @@ public abstract class ScheduledReportEntryResponse {
                 .cronExpression(cronExpression)
                 .scheduleString(scheduleString)
                 .emailReceivers(emailReceivers)
+                .recentExecutionLog(recentExecutionLog)
                 .build();
     }
 
@@ -92,7 +96,8 @@ public abstract class ScheduledReportEntryResponse {
 
         public abstract Builder emailReceivers(List<String> emailReceivers);
 
+        public abstract Builder recentExecutionLog(List<ExecutionLogEntryResponse> recentExecutionLog);
+
         public abstract ScheduledReportEntryResponse build();
     }
-
 }

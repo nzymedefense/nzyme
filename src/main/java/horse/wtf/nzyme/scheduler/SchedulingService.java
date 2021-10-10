@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.scheduler;
 
+import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
@@ -180,7 +181,12 @@ public class SchedulingService {
     }
 
     public List<ExecutionLogEntry> findExecutionLogs(String reportName) {
-
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT report_name, result, message, created_at FROM report_execution_log WHERE report_name = :reportName")
+                        .bind("reportName", reportName)
+                        .mapTo(ExecutionLogEntry.class)
+                        .list()
+        );
     }
 
 }

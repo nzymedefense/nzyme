@@ -47,7 +47,7 @@ public abstract class ReportJob implements Job {
                 nzyme.getSchedulingService().logReportExecutionResult(
                         jobName,
                         Report.EXCECUTION_RESULT.ERROR,
-                        "Could not initialize report."
+                        "Could not initialize report. [" + e.getMessage() + "] - See nzyme log for more details."
                 );
             }
             throw new JobExecutionException(e);

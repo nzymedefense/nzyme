@@ -24,11 +24,13 @@ import com.cronutils.parser.CronParser;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
+import horse.wtf.nzyme.rest.responses.reports.ExecutionLogEntryResponse;
 import horse.wtf.nzyme.rest.responses.reports.ScheduledReportEntryResponse;
 import horse.wtf.nzyme.rest.responses.reports.ScheduledReportsListResponse;
 import org.apache.logging.log4j.LogManager;
@@ -57,7 +59,9 @@ public class ReportsResource {
     public Response findAllScheduledReports() {
         List<ScheduledReportEntryResponse> reports = Lists.newArrayList();
         for (ScheduledReportEntry report : nzyme.getSchedulingService().findAllScheduledReports()) {
-            reports.add(entryToResponse(report));
+            List<ExecutionLogEntry> logs = nzyme.getSchedulingService().findExecutionLogs(report.name());
+
+            reports.add(entryToResponse(report, logs));
         }
 
         return Response.ok(ScheduledReportsListResponse.create(reports.size(), reports)).build();
@@ -72,7 +76,9 @@ public class ReportsResource {
             return Response.status(404).build();
         }
 
-        return Response.ok(entryToResponse(result.get())).build();
+        List<ExecutionLogEntry> logs = nzyme.getSchedulingService().findExecutionLogs(result.get().name());
+
+        return Response.ok(entryToResponse(result.get(), logs)).build();
     }
 
     @POST
@@ -162,9 +168,20 @@ public class ReportsResource {
     }
 
 
-    private ScheduledReportEntryResponse entryToResponse(ScheduledReportEntry x) {
+    private ScheduledReportEntryResponse entryToResponse(ScheduledReportEntry x, List<ExecutionLogEntry> executionLog) {
         CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());
         CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
+
+        List<ExecutionLogEntryResponse> executionLogResponse = Lists.newArrayList();
+        if (executionLog != null) {
+            for (ExecutionLogEntry log : executionLog) {
+                executionLogResponse.add(ExecutionLogEntryResponse.create(
+                        log.result(),
+                        log.message(),
+                        log.createdAt()
+                ));
+            }
+        }
 
         return ScheduledReportEntryResponse.create(
                 x.name().split("-")[1],
@@ -175,7 +192,8 @@ public class ReportsResource {
                 x.triggerState(),
                 x.cronExpression(),
                 cronDescriptor.describe(cronParser.parse(x.cronExpression())),
-                nzyme.getSchedulingService().findEmailReceiversOfReport(x.name())
+                nzyme.getSchedulingService().findEmailReceiversOfReport(x.name()),
+                executionLogResponse
         );
     }
 
