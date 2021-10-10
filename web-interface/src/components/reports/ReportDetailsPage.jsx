@@ -222,6 +222,12 @@ class ReportDetailsPage extends React.Component {
                     </div>
                 </div>
 
+                <div className="row">
+                    <div className="col-md-12">
+                        <h2>Execution Log</h2>
+                    </div>
+                </div>
+
             </div>
         )
     }

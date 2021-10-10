@@ -19,6 +19,7 @@ package horse.wtf.nzyme.scheduler;
 
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import org.joda.time.DateTime;
 import org.quartz.*;
@@ -176,6 +177,10 @@ public class SchedulingService {
                         .bind("createdAt", DateTime.now())
                         .execute()
         );
+    }
+
+    public List<ExecutionLogEntry> findExecutionLogs(String reportName) {
+
     }
 
 }

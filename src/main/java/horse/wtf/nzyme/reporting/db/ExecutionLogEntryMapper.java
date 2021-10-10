@@ -24,17 +24,15 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ScheduledReportEntryMapper implements RowMapper<ScheduledReportEntry> {
+public class ExecutionLogEntryMapper implements RowMapper<ExecutionLogEntry> {
 
     @Override
-    public ScheduledReportEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return ScheduledReportEntry.create(
-                rs.getString("job_name"),
-                new DateTime(rs.getTimestamp("created_at")),
-                new DateTime(rs.getLong("next_fire_time")),
-                new DateTime(rs.getLong("prev_fire_time")),
-                rs.getString("trigger_state"),
-                rs.getString("cron_expression")
+    public ExecutionLogEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return ExecutionLogEntry.create(
+                rs.getString("report_name"),
+                rs.getString("result"),
+                rs.getString("message"),
+                new DateTime(rs.getTimestamp("created_at"))
         );
     }
 
