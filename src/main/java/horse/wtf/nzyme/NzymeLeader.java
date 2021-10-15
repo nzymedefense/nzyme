@@ -30,9 +30,11 @@ import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.processing.FrameProcessor;
+import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
 import java.security.Key;
@@ -72,6 +74,8 @@ public interface NzymeLeader extends RemoteConnector {
     GroundStation getGroundStation();
 
     SystemStatus getSystemStatus();
+    EventService getEventService();
+    SchedulingService getSchedulingService();
 
     OUIManager getOUIManager();
 

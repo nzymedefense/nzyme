@@ -1,0 +1,54 @@
+package horse.wtf.nzyme.reporting;
+
+import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.alerts.PwnagotchiAdvertisementAlert;
+import horse.wtf.nzyme.alerts.UnknownSSIDAlert;
+import horse.wtf.nzyme.dot11.Dot11MetaInformation;
+import horse.wtf.nzyme.dot11.MalformedFrameException;
+import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
+import horse.wtf.nzyme.events.BrokenProbeEvent;
+import horse.wtf.nzyme.events.StartupEvent;
+import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
+import org.joda.time.DateTime;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.io.FileWriter;
+
+public class TacticalSummaryReportTest {
+
+    protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
+
+    @BeforeMethod
+    public void cleanDatabase() {
+        NzymeLeader nzyme = new MockNzyme();
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts"));
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM events"));
+    }
+
+    @Test
+    public void testBasicReport() throws Exception, MalformedFrameException {
+        MockNzyme nzyme = new MockNzyme();
+
+        nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusDays(162));
+        nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusSeconds(4));
+        nzyme.getSentry().tickSSID("United_WiFi", DateTime.now().minusDays(172));
+        nzyme.getSentry().tickSSID("United_WiFi", DateTime.now());
+        nzyme.getSentry().tickSSID("MobileHotspot5233", DateTime.now().minusHours(23));
+        nzyme.getSentry().tickSSID("MobileHotspot5233", DateTime.now().minusHours(22).minusMinutes(45));
+        nzyme.getSentry().tickSSID("MySweetHome", DateTime.now().minusDays(163));
+        nzyme.getSentry().tickSSID("MySweetHome", DateTime.now());
+
+        nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "Centurion_Lounge", "8F:F0:17:E8:68:28", 11, 1234, 0));
+        nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "United_WiFi", "9C:29:9E:C7:74:52", 11, 1234, 0));
+        nzyme.getAlertsService().handle(PwnagotchiAdvertisementAlert.create(new DateTime(), PwnagotchiAdvertisement.create("james", "1.1", "123", 0D, 0, 0), 11, 1234, 0, 1));
+
+        nzyme.getEventService().recordEvent(new StartupEvent());
+        nzyme.getEventService().recordEvent(new BrokenProbeEvent("foo-probe-1", "foo,bar"));
+
+        TacticalSummaryReport.Report report = new TacticalSummaryReport.Report();
+        report.runReport(nzyme, new FileWriter("/tmp/report.html"), null);
+    }
+
+}

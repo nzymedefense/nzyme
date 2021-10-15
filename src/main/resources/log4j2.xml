@@ -25,6 +25,16 @@
             <AppenderRef ref="Logfile" />
         </Logger>
 
+        <Logger name="org.quartz" level="warn">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="Logfile" />
+        </Logger>
+
+        <Logger name="com.mchange" level="warn">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="Logfile" />
+        </Logger>
+
         <Logger name="liquibase" level="warn">
             <AppenderRef ref="Console" />
             <AppenderRef ref="Logfile" />

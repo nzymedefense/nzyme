@@ -47,6 +47,9 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.events.EventService;
+import horse.wtf.nzyme.events.ShutdownEvent;
+import horse.wtf.nzyme.events.StartupEvent;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.UplinkFactory;
@@ -66,6 +69,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
@@ -90,9 +94,9 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.quartz.SchedulerException;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.Key;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -115,6 +119,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final MetricRegistry metrics;
     private final Registry registry;
     private final SystemStatus systemStatus;
+    private final EventService eventService;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
@@ -143,6 +148,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private HttpServer httpServer;
 
+    private SchedulingService schedulingService;
+
     public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
         this.version = new Version();
         this.nodeId = baseConfiguration.nodeId();
@@ -160,6 +167,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.registry = new Registry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
+        this.eventService = new EventService(this);
         this.networks = new Networks(this);
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
@@ -168,6 +176,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.deauthenticationMonitor = new DeauthenticationMonitor(this);
 
         this.anonymizer = new Anonymizer(baseConfiguration.anonymize(), baseConfiguration.dataDirectory());
+
+        try {
+            this.schedulingService = new SchedulingService(this);
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Could not instantiate scheduling service.", e);
+        }
 
         // Register JVM metrics.
         this.metrics.register("gc", new GarbageCollectorMetricSet());
@@ -206,6 +220,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
+        eventService.recordEvent(new StartupEvent());
+
         LOG.info("Active alerts: {}", configuration.dot11Alerts());
 
         // Initial OUI fetch. Not in periodical because this needs to be blocking.
@@ -241,7 +257,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     .submit(input.run());
         }
 
-        // Periodicals.
+        // Scheduler.
+        try {
+            schedulingService.initialize();
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Could not start scheduling service.", e);
+        }
+
+        // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
@@ -250,6 +273,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 5, 5, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
@@ -286,6 +310,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
         resourceConfig.register(AssetInventoryResource.class);
+        resourceConfig.register(ReportsResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -361,6 +386,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.systemStatus.unsetStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.SHUTTING_DOWN);
+
+        eventService.recordEvent(new ShutdownEvent());
 
         // Shutdown REST API.
         if (httpServer != null) {
@@ -546,6 +573,16 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
+    }
+
+    @Override
+    public EventService getEventService() {
+        return eventService;
+    }
+
+    @Override
+    public SchedulingService getSchedulingService() {
+        return schedulingService;
     }
 
     @Override

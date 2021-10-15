@@ -38,7 +38,7 @@ public class AlertsService {
     private static final Logger LOG = LogManager.getLogger(AlertsService.class);
 
     private static final String ALERTS_QUERY = "SELECT * FROM alerts ORDER BY last_seen DESC LIMIT :limit OFFSET :offset";
-
+    private static final String ALERTS_24_HOURS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '24 hours') ORDER BY last_seen DESC LIMIT :limit";
     private static final String ACTIVE_ALERTS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '" + EXPIRY_MINUTES + " minutes') " +
             "ORDER BY last_seen DESC";
 
@@ -104,6 +104,15 @@ public class AlertsService {
                 handle.createQuery(ALERTS_QUERY)
                         .bind("limit", limit)
                         .bind("offset", offset)
+                        .mapTo(AlertDatabaseEntry.class)
+                        .list()
+        ));
+    }
+
+    public Map<UUID, Alert> findAllAlertsSince24HoursAgo(int limit) {
+        return buildAlertsMap(nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery(ALERTS_24_HOURS_QUERY)
+                        .bind("limit", limit)
                         .mapTo(AlertDatabaseEntry.class)
                         .list()
         ));

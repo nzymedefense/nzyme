@@ -157,6 +157,10 @@ h2 em {
     color: #0b5573;
 }
 
+div.alert p {
+    margin-bottom: 0;
+}
+
 li.state-not-active {
     text-decoration: line-through;
     color: #999;
@@ -236,4 +240,9 @@ div.assets-csv-export textarea {
     white-space: pre;
     overflow-wrap: normal;
     overflow-x: scroll;
+}
+
+i.reports-remove-receiver {
+    color: #ff3c5c;
+    font-size: 11px;
 }
