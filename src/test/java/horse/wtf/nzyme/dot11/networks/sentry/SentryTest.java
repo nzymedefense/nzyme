@@ -18,6 +18,8 @@ public class SentryTest {
 
     @Test
     public void testTickSSID() throws InterruptedException {
+        Thread.sleep(5000);
+
         Sentry sentry = new Sentry(new MockNzyme(), 1);
 
         assertFalse(sentry.knowsSSID("foo1"));
