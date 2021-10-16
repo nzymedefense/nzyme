@@ -22,7 +22,9 @@ public class SentryTest {
 
     @Test
     public void testTickSSID() throws InterruptedException {
-        Sentry sentry = new Sentry(new MockNzyme(), 1);
+        NzymeLeader nzyme = new MockNzyme();
+        Sentry sentry = new Sentry(nzyme, 1);
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM sentry_ssids;"));
 
         LOG.info(DateTime.now());
         LOG.info("SENTRY DUMP 1: {}", sentry.getSSIDs());
