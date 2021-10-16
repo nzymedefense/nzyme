@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.dot11.networks.sentry;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
