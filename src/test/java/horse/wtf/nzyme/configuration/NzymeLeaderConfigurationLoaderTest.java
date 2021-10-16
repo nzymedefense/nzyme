@@ -23,8 +23,11 @@ import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
+import org.simplejavamail.api.email.Recipient;
+import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.testng.annotations.Test;
 
+import javax.mail.Message;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
@@ -109,6 +112,14 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertEquals(c.uplinks().get(3).configuration().getInt(ConfigurationKeys.PORT), 9001);
 
         assertEquals(c.remoteInputAddress(), new InetSocketAddress("0.0.0.0", 9002));
+
+        assertEquals(c.reporting().email().transportStrategy(), TransportStrategy.SMTP_TLS);
+        assertEquals(c.reporting().email().host(), "smtp.example.org");
+        assertEquals(c.reporting().email().port(), 587);
+        assertEquals(c.reporting().email().username(), "your_username");
+        assertEquals(c.reporting().email().password(), "your_password");
+        assertEquals(c.reporting().email().from(), new Recipient("nzyme", "nzyme@example.org", Message.RecipientType.TO));
+        assertEquals(c.reporting().email().subjectPrefix(), "[NZYME]");
     }
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)
