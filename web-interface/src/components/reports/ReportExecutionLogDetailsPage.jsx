@@ -58,7 +58,7 @@ class ReportExecutionLogDetailsPage extends React.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <iframe className="report-execution-content" srcDoc={this.state.log.content} />
+                        <iframe title="Report Page" className="report-execution-content" srcDoc={this.state.log.content} />
                     </div>
                 </div>
             </div>
