@@ -2,8 +2,6 @@ package horse.wtf.nzyme.dot11.networks.sentry;
 
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -11,8 +9,6 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 public class SentryTest {
-
-    private static final Logger LOG = LogManager.getLogger(SentryTest.class);
 
     @BeforeMethod
     public void cleanAlerts() {
@@ -25,14 +21,9 @@ public class SentryTest {
         NzymeLeader nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM sentry_ssids;"));
         Sentry sentry = new Sentry(nzyme, 1);
-        
-        LOG.info(DateTime.now());
-        LOG.info("SENTRY DUMP 1: {}", sentry.getSSIDs());
 
         assertFalse(sentry.knowsSSID("foo1"));
         assertFalse(sentry.knowsSSID("foo2"));
-
-        LOG.info("SENTRY DUMP 2: {}", sentry.getSSIDs());
 
         assertEquals(sentry.getSSIDs().size(), 0);
 
@@ -43,6 +34,15 @@ public class SentryTest {
         assertEquals(sentry.getSSIDs().size(), 2);
 
         sentry.tickSSID("foo1", DateTime.now());
+        assertEquals(sentry.getSSIDs().size(), 2);
+
+        assertTrue(sentry.knowsSSID("foo1"));
+        assertTrue(sentry.knowsSSID("foo2"));
+        assertFalse(sentry.knowsSSID("bar"));
+
+        Thread.sleep(2500);
+
+        Sentry sentry2 = new Sentry(new MockNzyme(), 1);
         assertEquals(sentry.getSSIDs().size(), 2);
 
         assertTrue(sentry.knowsSSID("foo1"));
