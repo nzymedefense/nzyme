@@ -48,7 +48,7 @@ public class TacticalSummaryReportTest {
         nzyme.getEventService().recordEvent(new BrokenProbeEvent("foo-probe-1", "foo,bar"));
 
         TacticalSummaryReport.Report report = new TacticalSummaryReport.Report();
-        report.runReport(nzyme, new FileWriter("/tmp/report.html"), null);
+        report.runReport(nzyme, null);
     }
 
 }

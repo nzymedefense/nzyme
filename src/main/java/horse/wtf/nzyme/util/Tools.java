@@ -18,11 +18,15 @@
 package horse.wtf.nzyme.util;
 
 import com.google.common.base.CharMatcher;
+import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import org.simplejavamail.api.email.Recipient;
 
+import javax.mail.Message;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tools {
@@ -33,6 +37,7 @@ public class Tools {
             .precomputed();
 
     private static final Pattern SAFE_ID = Pattern.compile("^[a-zA-Z0-9-_]+$");
+    private static final Pattern EMAIL_RECIPIENT_PATTERN = Pattern.compile("^(.+)<(.+)>$");
 
     public static boolean isValidUTF8( byte[] input ) {
         CharsetDecoder cs = Charset.forName("UTF-8").newDecoder();
@@ -114,6 +119,19 @@ public class Tools {
         }
 
         throw new RuntimeException("Cannot cast object of type [" + value.getClass().getCanonicalName() + "] to Integer.");
+    }
+
+    public static Recipient parseEmailAddress(String s) throws InvalidConfigurationException {
+        try {
+            Matcher matcher = EMAIL_RECIPIENT_PATTERN.matcher(s);
+            if (!matcher.find()) {
+                throw new InvalidConfigurationException("Invalid email address: (no match) [" + s + "] (correct format: \"Some Body <somebody@example.org>\"");
+            } else {
+                return new Recipient(matcher.group(1).trim(), matcher.group(2).trim(), Message.RecipientType.TO); // TO even if it's FROM is a library weirdness here
+            }
+        } catch(Exception e){
+            throw new InvalidConfigurationException("Invalid email address: [" + s + "] (correct format: \"Some Body <somebody@example.org>\"", e);
+        }
     }
 
 }

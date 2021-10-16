@@ -32,10 +32,14 @@ import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
 import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
+import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.simplejavamail.api.email.Recipient;
+import org.simplejavamail.api.mailer.config.TransportStrategy;
 
 import javax.annotation.Nullable;
+import javax.mail.Message;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
@@ -104,8 +108,44 @@ public class LeaderConfigurationLoader {
                 parseAlertingTrainingPeriodSeconds(),
                 parseAlertCallbacks(),
                 parseForwarders(),
-                parseGroundstationDevice()
+                parseGroundstationDevice(),
+                parseReporting()
         );
+    }
+
+    private ReportingConfiguration parseReporting() {
+        if (root.hasPath(ConfigurationKeys.REPORTING)) {
+            Config c = root.getConfig(ConfigurationKeys.REPORTING);
+
+            ReportingConfiguration.Email email;
+            if (c.hasPath(ConfigurationKeys.EMAIL)) {
+                Config e = c.getConfig(ConfigurationKeys.EMAIL);
+
+                Recipient from; // "Recipient" as FROM is library weirdness.
+                try {
+                    from = Tools.parseEmailAddress(e.getString(ConfigurationKeys.FROM));
+                } catch (InvalidConfigurationException ex) {
+                    // This is checked during validation and *should* not happen.
+                    throw new RuntimeException("Invalid email address format.", ex);
+                }
+
+                email = ReportingConfiguration.Email.create(
+                        TransportStrategy.valueOf(e.getString(ConfigurationKeys.TRANSPORT_STRATEGY)),
+                        e.getString(ConfigurationKeys.HOST),
+                        e.getInt(ConfigurationKeys.PORT),
+                        e.getString(ConfigurationKeys.USERNAME),
+                        e.getString(ConfigurationKeys.PASSWORD),
+                        from,
+                        e.getString(ConfigurationKeys.SUBJECT_PREFIX)
+                );
+            } else {
+                email = null;
+            }
+
+            return ReportingConfiguration.create(email);
+        } else {
+            return null;
+        }
     }
 
     private InetSocketAddress parseRemoteInputAddress() {
@@ -415,6 +455,31 @@ public class LeaderConfigurationLoader {
                                 + ConfigurationKeys.ENCRYPTION_KEY + " must be exactly 32 characters long.");
                     }
                 }
+            }
+        }
+
+        if (root.hasPath(ConfigurationKeys.REPORTING)) {
+            Config reporting = root.getConfig(ConfigurationKeys.REPORTING);
+            if (reporting.hasPath(ConfigurationKeys.EMAIL)) {
+                Config email = reporting.getConfig(ConfigurationKeys.EMAIL);
+                String where = "reporting.email";
+
+                ConfigurationValidator.expect(email, ConfigurationKeys.TRANSPORT_STRATEGY, where, String.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.HOST, where, String.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.PORT, where, Integer.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.USERNAME, where, String.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.PASSWORD, where, String.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.FROM, where, String.class);
+                ConfigurationValidator.expect(email, ConfigurationKeys.SUBJECT_PREFIX, where, String.class);
+
+                TransportStrategy transportStrategy;
+                try {
+                    TransportStrategy.valueOf(email.getString(ConfigurationKeys.TRANSPORT_STRATEGY));
+                } catch(IllegalArgumentException e) {
+                    throw new InvalidConfigurationException("Invalid reporting SMTP transport strategy.", e);
+                }
+
+                Tools.parseEmailAddress(email.getString(ConfigurationKeys.FROM));
             }
         }
 

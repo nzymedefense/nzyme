@@ -28,7 +28,7 @@ public abstract class ReportJob implements Job {
 
     private static final Logger LOG = LogManager.getLogger(ReportJob.class);
 
-    public abstract void runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException;
+    public abstract String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -47,19 +47,21 @@ public abstract class ReportJob implements Job {
                 nzyme.getSchedulingService().logReportExecutionResult(
                         jobName,
                         Report.EXCECUTION_RESULT.ERROR,
-                        "Could not initialize report. [" + e.getMessage() + "] - See nzyme log for more details."
+                        "Could not initialize report. [" + e.getMessage() + "] - See nzyme log for more details.",
+                        null
                 );
             }
             throw new JobExecutionException(e);
         }
 
         try {
-            runReport(nzyme, emailReceivers);
+            String reportContent = runReport(nzyme, emailReceivers);
 
             nzyme.getSchedulingService().logReportExecutionResult(
                     jobName,
                     Report.EXCECUTION_RESULT.SUCCESS,
-                    "Report executed successfully."
+                    "Report executed successfully.",
+                    reportContent
             );
         } catch(Exception e) {
             LOG.error("Could not execute report", e);
@@ -67,7 +69,8 @@ public abstract class ReportJob implements Job {
             nzyme.getSchedulingService().logReportExecutionResult(
                     jobName,
                     Report.EXCECUTION_RESULT.ERROR,
-                    "Could not execute report. [" + e.getMessage() + "] - See nzyme log for more details."
+                    "Could not execute report. [" + e.getMessage() + "] - See nzyme log for more details.",
+                    null
             );
 
             throw e;

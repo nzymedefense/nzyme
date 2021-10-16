@@ -67,6 +67,14 @@ class ReportsService {
     });
   }
 
+  findExecutionLog(reportName, executionId) {
+    let self = this;
+
+    RESTClient.get("/reports/show/" + reportName + "/execution/" + executionId, {}, function(response) {
+      self.setState({log: response.data});
+    });
+  }
+
 }
 
 export default ReportsService;

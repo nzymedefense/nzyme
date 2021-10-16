@@ -69,8 +69,8 @@ public class ReportsResource {
 
     @GET
     @Path("/show/{name}")
-    public Response findReport(@PathParam("name") String id) {
-        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(id);
+    public Response findReport(@PathParam("name") String name) {
+        Optional<ScheduledReportEntry> result = nzyme.getSchedulingService().findScheduledReport(name);
 
         if (result.isEmpty()) {
             return Response.status(404).build();
@@ -79,6 +79,26 @@ public class ReportsResource {
         List<ExecutionLogEntry> logs = nzyme.getSchedulingService().findExecutionLogs(result.get().name());
 
         return Response.ok(entryToResponse(result.get(), logs)).build();
+    }
+
+    @GET
+    @Path("/show/{name}/execution/{execution}")
+    public Response findReport(@PathParam("name") String name, @PathParam("execution") Long executionId) {
+        Optional<ExecutionLogEntry> result = nzyme.getSchedulingService().findExecutionLog(name, executionId);
+
+        if (result.isEmpty()) {
+            return Response.status(404).build();
+        }
+
+        ExecutionLogEntry log = result.get();
+
+        return Response.ok(ExecutionLogEntryResponse.create(
+                log.id(),
+                log.result(),
+                log.message(),
+                log.content(),
+                log.createdAt()
+        )).build();
     }
 
     @POST
@@ -167,7 +187,6 @@ public class ReportsResource {
         return Response.ok().build();
     }
 
-
     private ScheduledReportEntryResponse entryToResponse(ScheduledReportEntry x, List<ExecutionLogEntry> executionLog) {
         CronDescriptor cronDescriptor = CronDescriptor.instance(Locale.getDefault());
         CronParser cronParser = new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ));
@@ -176,8 +195,10 @@ public class ReportsResource {
         if (executionLog != null) {
             for (ExecutionLogEntry log : executionLog) {
                 executionLogResponse.add(ExecutionLogEntryResponse.create(
+                        log.id(),
                         log.result(),
                         log.message(),
+                        null,
                         log.createdAt()
                 ));
             }

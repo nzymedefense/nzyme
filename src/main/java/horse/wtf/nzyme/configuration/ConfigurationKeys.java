@@ -33,6 +33,7 @@ public class ConfigurationKeys {
     public static final String GROUNDSTATION_DEVICE = "groundstation_device";
     public static final String DATA_DIRECTORY = "data_directory";
     public static final String REMOTE_INPUT = "remote_input";
+    public static final String REPORTING = "reporting";
 
     public static final String DEVICE = "device";
     public static final String CHANNELS = "channels";
@@ -81,6 +82,14 @@ public class ConfigurationKeys {
     public static final String HOST = "host";
     public static final String PORT = "port";
     public static final String FORWARDERS = "forwarders";
+    public static final String EMAIL = "email";
+    public static final String WHERE = "alerting.callbacks.[email]";
+    public static final String TRANSPORT_STRATEGY = "transport_strategy";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+    public static final String RECIPIENTS = "recipients";
+    public static final String FROM = "from";
+    public static final String SUBJECT_PREFIX = "subject_prefix";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

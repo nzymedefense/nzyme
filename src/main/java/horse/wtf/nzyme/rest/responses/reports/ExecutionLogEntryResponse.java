@@ -21,8 +21,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class ExecutionLogEntryResponse {
+
+    @JsonProperty("id")
+    public abstract Long id();
 
     @JsonProperty("result")
     public abstract String result();
@@ -30,13 +35,19 @@ public abstract class ExecutionLogEntryResponse {
     @JsonProperty("message")
     public abstract String message();
 
+    @JsonProperty("content")
+    @Nullable
+    public abstract String content();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
-    public static ExecutionLogEntryResponse create(String result, String message, DateTime createdAt) {
+    public static ExecutionLogEntryResponse create(Long id, String result, String message, String content, DateTime createdAt) {
         return builder()
+                .id(id)
                 .result(result)
                 .message(message)
+                .content(content)
                 .createdAt(createdAt)
                 .build();
     }
@@ -47,9 +58,13 @@ public abstract class ExecutionLogEntryResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(Long id);
+
         public abstract Builder result(String result);
 
         public abstract Builder message(String message);
+
+        public abstract Builder content(String content);
 
         public abstract Builder createdAt(DateTime createdAt);
 

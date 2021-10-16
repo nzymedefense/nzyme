@@ -20,19 +20,26 @@ package horse.wtf.nzyme.reporting.db;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class ExecutionLogEntry {
 
+    public abstract Long id();
     public abstract String reportName();
     public abstract String result();
     public abstract String message();
+    @Nullable
+    public abstract String content();
     public abstract DateTime createdAt();
 
-    public static ExecutionLogEntry create(String reportName, String result, String message, DateTime createdAt) {
+    public static ExecutionLogEntry create(Long id, String reportName, String result, String message, String content, DateTime createdAt) {
         return builder()
+                .id(id)
                 .reportName(reportName)
                 .result(result)
                 .message(message)
+                .content(content)
                 .createdAt(createdAt)
                 .build();
     }
@@ -43,11 +50,15 @@ public abstract class ExecutionLogEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(Long id);
+
         public abstract Builder reportName(String reportName);
 
         public abstract Builder result(String result);
 
         public abstract Builder message(String message);
+
+        public abstract Builder content(String content);
 
         public abstract Builder createdAt(DateTime createdAt);
 

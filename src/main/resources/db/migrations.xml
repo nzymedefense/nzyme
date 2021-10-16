@@ -598,4 +598,41 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="27" author="lennartkoopmann">
+        <createTable tableName="reports" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="report_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="report" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_reports_standard_lookup" tableName="reports" unique="false">
+            <column name="report_name" />
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="28" author="lennartkoopmann">
+        <dropTable tableName="reports" />
+
+        <addColumn tableName="report_execution_log">
+            <column name="content" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+
+
 </databaseChangeLog>

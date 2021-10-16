@@ -24,9 +24,11 @@ import com.typesafe.config.Config;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.configuration.ConfigurationKeys;
 import horse.wtf.nzyme.configuration.ConfigurationValidator;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.util.Tools;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -151,67 +153,44 @@ public class EmailCallback implements AlertCallback {
     }
 
     private static final String WHERE = "alerting.callbacks.[email]";
-    private static final String CK_TRANSPORT_STRATEGY = "transport_strategy";
-    private static final String CK_HOST = "host";
-    private static final String CK_PORT = "port";
-    private static final String CK_USERNAME = "username";
-    private static final String CK_PASSWORD = "password";
-    private static final String CK_RECIPIENTS = "recipients";
-    private static final String CK_FROM = "from";
-    private static final String CK_SUBJECT_PREFIX = "subject_prefix";
-
-    private static final Pattern RECIPIENT_PATTERN = Pattern.compile("^(.+)<(.+)>$");
 
     public static Configuration parseConfiguration(Config c, String httpExternalUri) throws InvalidConfigurationException, IncompleteConfigurationException {
         // Completeness.
-        ConfigurationValidator.expect(c, CK_TRANSPORT_STRATEGY, WHERE, String.class);
-        ConfigurationValidator.expect(c, CK_HOST, WHERE, String.class);
-        ConfigurationValidator.expect(c, CK_PORT, WHERE, Integer.class);
-        ConfigurationValidator.expect(c, CK_USERNAME, WHERE, String.class);
-        ConfigurationValidator.expect(c, CK_PASSWORD, WHERE, String.class);
-        ConfigurationValidator.expect(c, CK_RECIPIENTS, WHERE, List.class);
-        ConfigurationValidator.expect(c, CK_FROM, WHERE, String.class);
-        ConfigurationValidator.expect(c, CK_SUBJECT_PREFIX, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.TRANSPORT_STRATEGY, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.HOST, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.PORT, WHERE, Integer.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.USERNAME, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.PASSWORD, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.RECIPIENTS, WHERE, List.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.FROM, WHERE, String.class);
+        ConfigurationValidator.expect(c, ConfigurationKeys.SUBJECT_PREFIX, WHERE, String.class);
 
         // Validity.
         // Transport strategy exists.
         TransportStrategy transportStrategy;
         try {
-            transportStrategy = TransportStrategy.valueOf(c.getString(CK_TRANSPORT_STRATEGY));
+            transportStrategy = TransportStrategy.valueOf(c.getString(ConfigurationKeys.TRANSPORT_STRATEGY));
         } catch(IllegalArgumentException e) {
             throw new InvalidConfigurationException("Invalid SMTP transport strategy.", e);
         }
 
         // Recipients are valid.
         List<Recipient> recipients = Lists.newArrayList();
-        for (String rec : c.getStringList(CK_RECIPIENTS)) {
-            recipients.add(parseRecipient(rec, Message.RecipientType.TO));
+        for (String rec : c.getStringList(ConfigurationKeys.RECIPIENTS)) {
+            recipients.add(Tools.parseEmailAddress(rec));
         }
 
         return Configuration.create(
                 transportStrategy,
-                c.getString(CK_HOST),
-                c.getInt(CK_PORT),
-                c.getString(CK_USERNAME),
-                c.getString(CK_PASSWORD),
+                c.getString(ConfigurationKeys.HOST),
+                c.getInt(ConfigurationKeys.PORT),
+                c.getString(ConfigurationKeys.USERNAME),
+                c.getString(ConfigurationKeys.PASSWORD),
                 recipients,
-                parseRecipient(c.getString(CK_FROM), Message.RecipientType.TO), // recipient type is ignored
-                c.getString(CK_SUBJECT_PREFIX),
+                Tools.parseEmailAddress(c.getString(ConfigurationKeys.FROM)), // recipient type is ignored
+                c.getString(ConfigurationKeys.SUBJECT_PREFIX),
                 httpExternalUri
         );
-    }
-
-    public static Recipient parseRecipient(String s, Message.RecipientType recipientType) throws InvalidConfigurationException {
-        try {
-            Matcher matcher = RECIPIENT_PATTERN.matcher(s);
-            if (!matcher.find()) {
-                throw new InvalidConfigurationException("Invalid email address: (no match) [" + s + "] (correct format: \"Some Body <somebody@example.org>\"");
-            } else {
-                return new Recipient(matcher.group(1).trim(), matcher.group(2).trim(), recipientType);
-            }
-        } catch(Exception e){
-            throw new InvalidConfigurationException("Invalid email address: [" + s + "] (correct format: \"Some Body <somebody@example.org>\"", e);
-        }
     }
 
     @AutoValue

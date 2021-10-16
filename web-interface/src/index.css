@@ -246,3 +246,9 @@ i.reports-remove-receiver {
     color: #ff3c5c;
     font-size: 11px;
 }
+
+iframe.report-execution-content {
+    width: 100%;
+    height: 800px;
+    border: 2px dashed #282a38 !important;
+}

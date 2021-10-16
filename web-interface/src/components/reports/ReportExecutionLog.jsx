@@ -1,11 +1,13 @@
 import React from 'react';
 import moment from "moment";
 import ReportExecutionLogStatusBadge from "./ReportExecutionLogStatusBadge";
+import Routes from "../../util/Routes";
 
 class ReportExecutionLog extends React.Component {
 
     render() {
         const logs = this.props.logs;
+        const reportName = this.props.reportName;
 
         if (!logs || logs.length === 0) {
             return (
@@ -21,6 +23,7 @@ class ReportExecutionLog extends React.Component {
                         <th>Execution Time</th>
                         <th>Result</th>
                         <th>Message</th>
+                        <th>&nbsp;</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -30,6 +33,12 @@ class ReportExecutionLog extends React.Component {
                             <td title={logs[key].created_at}>{moment(logs[key].created_at).format()}</td>
                             <td><ReportExecutionLogStatusBadge status={logs[key].result} /></td>
                             <td>{logs[key].message}</td>
+                            <td>
+                                <a className="btn btn-sm btn-primary"
+                                   href={Routes.REPORTS.EXECUTION_LOG_DETAILS(encodeURIComponent(reportName), logs[key].id)}>
+                                    Open
+                                </a>
+                            </td>
                         </tr>
                         )
                     })}

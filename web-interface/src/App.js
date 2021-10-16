@@ -34,6 +34,7 @@ import AssetsPage from "./components/system/assets/AssetsPage";
 import ReportsPage from "./components/reports/ReportsPage";
 import ScheduleReportPage from "./components/reports/ScheduleReportPage";
 import ReportDetailsPage from "./components/reports/ReportDetailsPage";
+import ReportExecutionLogDetailsPage from "./components/reports/ReportExecutionLogDetailsPage";
 
 class App extends React.Component {
 
@@ -137,6 +138,7 @@ class App extends React.Component {
                                     <Route exact path={Routes.REPORTS.INDEX} component={ReportsPage}/>
                                     <Route exact path={Routes.REPORTS.SCHEDULE} component={ScheduleReportPage} />
                                     <Route exact path={Routes.REPORTS.DETAILS(":name")} component={ReportDetailsPage} />
+                                    <Route exact path={Routes.REPORTS.EXECUTION_LOG_DETAILS(":name", ":executionId")} component={ReportExecutionLogDetailsPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

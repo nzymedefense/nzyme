@@ -26,6 +26,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.configuration.ReportingConfiguration;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSID;
 import horse.wtf.nzyme.events.Event;
 import horse.wtf.nzyme.reporting.Report;
@@ -37,9 +38,14 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.quartz.*;
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
+import org.simplejavamail.mailer.MailerBuilder;
 
-import javax.annotation.Nullable;
-import java.io.Writer;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +84,8 @@ public class TacticalSummaryReport implements Report {
 
     public static final class Report extends ReportJob {
 
+        private static final String NAME = "Tactical Summary";
+
         private final Configuration templateConfig;
 
         public Report() {
@@ -91,12 +99,12 @@ public class TacticalSummaryReport implements Report {
             this.templateConfig.setFallbackOnNullLoopVariable(false);
         }
 
-        public void runReport(NzymeLeader nzyme, @Nullable Writer writer, List<String> emailReceivers) throws JobExecutionException {
+        public String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
             try {
                 List<Map<String, String>> alerts = buildAlerts(nzyme);
 
                 Map<String, Object> parameters = Maps.newHashMap();
-                parameters.put("title", "nzyme - Tactical Summary Report");
+                parameters.put("title", "nzyme - " + NAME);
                 parameters.put("time_range", "Previous 24 hours");
                 parameters.put("generated_at", DateTime.now().toString(LONG_DATETIME));
                 parameters.put("networks", buildNetworks(nzyme));
@@ -107,18 +115,50 @@ public class TacticalSummaryReport implements Report {
 
                 Template template = this.templateConfig.getTemplate("reports/tactical_summary_report.ftl");
 
-                if (writer != null) {
-                    template.process(parameters, writer);
-                } else {
-                    if (!emailReceivers.isEmpty()) {
-                        LOG.info("SENDING EMAIL TO: {}", emailReceivers);
+                StringWriter writer = new StringWriter();
+
+                // Process template and write into String.
+                template.process(parameters, writer);
+
+                String reportContent = writer.toString();
+
+                // TODO Send email if this report has email receivers.
+                if (emailReceivers != null && !emailReceivers.isEmpty()) {
+                    if (nzyme.getConfiguration().reporting().email() == null) {
+                        LOG.error("Report has email receivers configured but reporting has no SMTP settings. Please refer to the documentation. Cannot send emails.");
                     } else {
-                        LOG.info("No email receivers configured.");
+                        LOG.debug("Sending report email to: {}", emailReceivers);
+
+                        ReportingConfiguration.Email emailConfig = nzyme.getConfiguration().reporting().email();
+                        Mailer mailer = MailerBuilder
+                                .withSMTPServer(emailConfig.host(), emailConfig.port(), emailConfig.username(), emailConfig.password())
+                                .withTransportStrategy(emailConfig.transportStrategy())
+                                .clearEmailAddressCriteria()
+                                .buildMailer();
+
+                        LOG.info("Sending report emails.");
+                        for (String receiver : emailReceivers) {
+                            LOG.debug("Sending report email to <{}>", receiver);
+                            try {
+                                Email email = EmailBuilder.startingBlank()
+                                        .to(receiver)
+                                        .from(emailConfig.from())
+                                        .withSubject(emailConfig.subjectPrefix() + " Report: " + NAME)
+                                        .withPlainText("Report is attached. - Nzyme.\n\n(Download and open in browser for best display quality.)")
+                                        .withAttachment("report.html", new ByteArrayDataSource(reportContent.getBytes(StandardCharsets.UTF_8), "text/html"))
+                                        .buildEmail();
+
+                                mailer.sendMail(email);
+                            } catch(Exception e) {
+                                LOG.error("Could not send Email.", e);
+                            }
+                        }
                     }
+                } else {
+                    LOG.info("Report has no email receivers configured.");
                 }
 
-                // store in DB
-                // ...
+                return reportContent;
             } catch(Exception e) {
                 throw new JobExecutionException("Could not create report content.", e);
             }
@@ -170,11 +210,6 @@ public class TacticalSummaryReport implements Report {
             }
 
             return result;
-        }
-
-        @Override
-        public void runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
-            runReport(nzyme, null, emailReceivers);
         }
 
     }

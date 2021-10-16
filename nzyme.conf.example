@@ -146,6 +146,21 @@ uplinks: []
 # Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps
 802_11_traps: []
 
+reporting: {
+  email: {
+    # One of: SMTP, SMTPS or SMTP_TLS
+    transport_strategy: SMTP_TLS
+
+    host: smtp.example.org
+    port: 587
+    username: "your_username"
+    password: "your_password"
+
+    from: "nzyme <nzyme@example.org>"
+    subject_prefix: "[NZYME]"
+  }
+}
+
 # Optional: A device to communicate with nzyme trackers, used to track down physical location of bandits. Please read
 # more in the documentation. See: https://go.nzyme.org/bandits-and-trackers
 groundstation_device: {}

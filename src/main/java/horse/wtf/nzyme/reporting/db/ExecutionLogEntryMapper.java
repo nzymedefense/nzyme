@@ -29,9 +29,11 @@ public class ExecutionLogEntryMapper implements RowMapper<ExecutionLogEntry> {
     @Override
     public ExecutionLogEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return ExecutionLogEntry.create(
+                rs.getLong("id"),
                 rs.getString("report_name"),
                 rs.getString("result"),
                 rs.getString("message"),
+                rs.getString("content"),
                 new DateTime(rs.getTimestamp("created_at"))
         );
     }

@@ -225,11 +225,11 @@ class ReportDetailsPage extends React.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <h2>Execution Log</h2>
+                        <h2>Execution Log <small>(previous 14 executions)</small></h2>
                     </div>
 
                     <div className="col-md-12">
-                        <ReportExecutionLog logs={report.recent_execution_log} />
+                        <ReportExecutionLog reportName={this.reportName} logs={report.recent_execution_log} />
                     </div>
                 </div>
 

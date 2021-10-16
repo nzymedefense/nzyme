@@ -17,7 +17,6 @@
 
 package horse.wtf.nzyme.scheduler;
 
-import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.reporting.Report;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
@@ -26,6 +25,7 @@ import org.joda.time.DateTime;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -168,13 +168,14 @@ public class SchedulingService {
         );
     }
 
-    public void logReportExecutionResult(String reportName, Report.EXCECUTION_RESULT result, String message) {
+    public void logReportExecutionResult(String reportName, Report.EXCECUTION_RESULT result, String message, @Nullable String reportContent) {
         nzyme.getDatabase().withHandle(handle ->
-                handle.createUpdate("INSERT INTO report_execution_log(report_name, result, message, created_at) " +
-                                "VALUES(:reportName, :result, :message, :createdAt)")
+                handle.createUpdate("INSERT INTO report_execution_log(report_name, result, message, content, created_at) " +
+                                "VALUES(:reportName, :result, :message, :content, :createdAt)")
                         .bind("reportName", reportName)
                         .bind("result", result)
                         .bind("message", message)
+                        .bind("content", reportContent)
                         .bind("createdAt", DateTime.now())
                         .execute()
         );
@@ -182,10 +183,20 @@ public class SchedulingService {
 
     public List<ExecutionLogEntry> findExecutionLogs(String reportName) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT report_name, result, message, created_at FROM report_execution_log WHERE report_name = :reportName")
+                handle.createQuery("SELECT id, report_name, result, message, content, created_at FROM report_execution_log WHERE report_name = :reportName LIMIT 14")
                         .bind("reportName", reportName)
                         .mapTo(ExecutionLogEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<ExecutionLogEntry> findExecutionLog(String reportName, Long executionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, report_name, result, message, content, created_at FROM report_execution_log WHERE report_name = :reportName AND id = :id")
+                        .bind("id", executionId)
+                        .bind("reportName", reportName)
+                        .mapTo(ExecutionLogEntry.class)
+                        .findFirst()
         );
     }
 
