@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.scheduler;
 
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.ReportBase;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import org.joda.time.DateTime;
@@ -69,7 +69,7 @@ public class SchedulingService {
         this.scheduler.start();
     }
 
-    public String scheduleReport(Report report) throws SchedulerException {
+    public String scheduleReport(ReportBase report) throws SchedulerException {
         // Attach a random UUID or Quartz will complain about duplicate report names.
         String reportName = report.getName() + "-" + UUID.randomUUID().toString();
 
@@ -168,7 +168,7 @@ public class SchedulingService {
         );
     }
 
-    public void logReportExecutionResult(String reportName, Report.EXCECUTION_RESULT result, String message, @Nullable String reportContent) {
+    public void logReportExecutionResult(String reportName, ReportBase.EXECUTION_RESULT result, String message, @Nullable String reportContent) {
         nzyme.getDatabase().withHandle(handle ->
                 handle.createUpdate("INSERT INTO report_execution_log(report_name, result, message, content, created_at) " +
                                 "VALUES(:reportName, :result, :message, :content, :createdAt)")

@@ -51,6 +51,16 @@ class ScheduleReportPage extends React.Component {
               </p>
             </React.Fragment>
         )
+      case "WirelessSurvey":
+        return (
+            <React.Fragment>
+              <h5>Wireless Survey Report</h5>
+              <p>
+                The Wireless Survey Report provides a summary of all monitored networks, which networks have been seen
+                before and which networks appeared for the first time within the last 24 hours.
+              </p>
+            </React.Fragment>
+        )
       default:
         return (
             <React.Fragment>
@@ -152,6 +162,7 @@ class ScheduleReportPage extends React.Component {
                           className="form-control" required defaultValue="default-empty">
                     <option key="default-empty" />
                     <option key="TacticalSummary" value="TacticalSummary">Tactical Summary</option>
+                    <option key="WirelessSurvey" value="WirelessSurvey">Wireless Survey</option>
                   </select>
                 </div>
 

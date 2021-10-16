@@ -23,16 +23,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Template;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSID;
-import horse.wtf.nzyme.events.Event;
 import horse.wtf.nzyme.reporting.ReportBase;
 import horse.wtf.nzyme.reporting.ReportJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.quartz.*;
+import org.quartz.Job;
+import org.quartz.JobExecutionException;
 
 import java.io.StringWriter;
 import java.util.Comparator;
@@ -40,13 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class TacticalSummaryReport extends ReportBase {
+public class WirelessSurveyReport extends ReportBase {
 
-    private static final Logger LOG = LogManager.getLogger(TacticalSummaryReport.class);
+    private static final Logger LOG = LogManager.getLogger(WirelessSurveyReport.class);
 
-    public static final String NAME = "Tactical Summary";
+    public static final String NAME = "Wireless Survey";
 
-    public TacticalSummaryReport(int hourOfDay, int minuteOfHour) {
+    public WirelessSurveyReport(int hourOfDay, int minuteOfHour) {
         super(hourOfDay, minuteOfHour);
     }
 
@@ -60,21 +58,16 @@ public class TacticalSummaryReport extends ReportBase {
 
     public static final class Report extends ReportJob {
 
+        @Override
         public String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
             try {
-                List<Map<String, String>> alerts = buildAlerts(nzyme);
-
                 Map<String, Object> parameters = Maps.newHashMap();
                 parameters.put("title", "nzyme - " + NAME);
                 parameters.put("time_range", "Previous 24 hours");
                 parameters.put("generated_at", DateTime.now().toString(LONG_DATETIME));
                 parameters.put("networks", buildNetworks(nzyme));
-                parameters.put("alerts", alerts);
-                parameters.put("alerts_count", alerts.size());
-                parameters.put("system_restarts", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.STARTUP));
-                parameters.put("probe_malfunctions", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.BROKEN_PROBE));
 
-                Template template = getTemplateConfig().getTemplate("reports/tactical_summary_report.ftl");
+                Template template = getTemplateConfig().getTemplate("reports/wireless_survey_report.ftl");
 
                 StringWriter writer = new StringWriter();
                 template.process(parameters, writer);
@@ -82,26 +75,6 @@ public class TacticalSummaryReport extends ReportBase {
             } catch(Exception e) {
                 throw new JobExecutionException("Could not create report content.", e);
             }
-        }
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-
-        private List<Map<String, String>> buildAlerts(NzymeLeader nzyme) {
-            List<Map<String, String>> result = Lists.newArrayList();
-
-            for (Alert alert : nzyme.getAlertsService().findAllAlertsSince24HoursAgo(100).values()) {
-                Map<String, String> alertData = Maps.newHashMap();
-                alertData.put("type", alert.getType().toString());
-                alertData.put("first_seen", alert.getFirstSeen().withZone(DateTimeZone.getDefault()).toString(LONG_DATETIME_LESS_ZONE));
-                alertData.put("last_seen", alert.getLastSeen().withZone(DateTimeZone.getDefault()).toString(LONG_DATETIME_LESS_ZONE));
-                alertData.put("frames", alert.isUseFrameCount() ? alert.getFrameCount().toString() : "n/a");
-                result.add(alertData);
-            }
-
-            return result;
         }
 
         private List<Map<String, Object>> buildNetworks(NzymeLeader nzyme) {
@@ -137,5 +110,10 @@ public class TacticalSummaryReport extends ReportBase {
             return result;
         }
 
+        @Override
+        public String getName() {
+            return NAME;
+        }
     }
+
 }

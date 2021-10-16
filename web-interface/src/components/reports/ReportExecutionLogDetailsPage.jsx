@@ -3,6 +3,7 @@ import Routes from "../../util/Routes";
 import ReportName from "./ReportName";
 import ReportsService from "../../services/ReportsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import moment from "moment";
 
 class ReportExecutionLogDetailsPage extends React.Component {
 
@@ -57,8 +58,24 @@ class ReportExecutionLogDetailsPage extends React.Component {
                 </div>
 
                 <div className="row">
+                    <div className="col-md-3">
+                        <dl>
+                            <dt>Completed at:</dt>
+                            <dd>{moment(this.state.log.created_at).format()}</dd>
+                        </dl>
+                    </div>
+                    <div className="col-md-9">
+                        <dl>
+                            <dt>Result:</dt>
+                            <dd>{this.state.log.message}</dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div className="row">
                     <div className="col-md-12">
-                        <iframe title="Report Page" className="report-execution-content" srcDoc={this.state.log.content} />
+                        <h2>Report Content:</h2>
+                        <iframe title="Report Page" className="report-execution-content mt-1" srcDoc={this.state.log.content} />
                     </div>
                 </div>
             </div>

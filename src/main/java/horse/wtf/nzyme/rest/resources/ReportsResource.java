@@ -23,10 +23,11 @@ import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.reporting.Report;
+import horse.wtf.nzyme.reporting.ReportBase;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
+import horse.wtf.nzyme.reporting.reports.WirelessSurveyReport;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
@@ -50,7 +51,7 @@ import java.util.Optional;
 @Produces(MediaType.APPLICATION_JSON)
 public class ReportsResource {
 
-    private static final Logger LOG = LogManager.getLogger(TrackersResource.class);
+    private static final Logger LOG = LogManager.getLogger(ReportsResource.class);
 
     @Inject
     private NzymeLeader nzyme;
@@ -104,10 +105,13 @@ public class ReportsResource {
     @POST
     @Path("/schedule")
     public Response scheduleReport(ScheduleReportRequest request) {
-        Report report;
+        ReportBase report;
         switch (request.reportType()) {
             case "TacticalSummary":
                 report = new TacticalSummaryReport(request.hourOfDay(), request.minuteOfHour());
+                break;
+            case "WirelessSurvey":
+                report = new WirelessSurveyReport(request.hourOfDay(), request.minuteOfHour());
                 break;
             default:
                 LOG.error("No report of type [{}] found", request.reportType());

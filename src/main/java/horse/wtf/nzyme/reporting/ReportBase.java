@@ -21,16 +21,28 @@ import org.quartz.Job;
 import org.quartz.ScheduleBuilder;
 import org.quartz.Trigger;
 
-public interface Report {
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
-    enum EXCECUTION_RESULT {
+public abstract class ReportBase {
+
+    public enum EXECUTION_RESULT {
         SUCCESS,
         ERROR
     }
 
-    ScheduleBuilder<? extends Trigger> getSchedule();
-    String getName();
+    protected final ScheduleBuilder<? extends Trigger> schedule;
 
-    Class<? extends Job> getJobClass();
+    public ReportBase(int hourOfDay, int minuteOfHour) {
+        this.schedule = dailyAtHourAndMinute(hourOfDay, minuteOfHour)
+                .withMisfireHandlingInstructionFireAndProceed(); // On misfire, fire immediately, then back to schedule.
+    }
+
+    public ScheduleBuilder<? extends Trigger> getSchedule() {
+        return schedule;
+    }
+
+    public abstract String getName();
+
+    public abstract Class<? extends Job> getJobClass();
 
 }
