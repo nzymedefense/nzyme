@@ -38,7 +38,7 @@ public class SentryTest {
         assertTrue(sentry.knowsSSID("foo2"));
         assertFalse(sentry.knowsSSID("bar"));
 
-        Thread.sleep(2500);
+        Thread.sleep(5000);
 
         Sentry sentry2 = new Sentry(new MockNzyme(), 1);
         assertEquals(sentry.getSSIDs().size(), 2);
