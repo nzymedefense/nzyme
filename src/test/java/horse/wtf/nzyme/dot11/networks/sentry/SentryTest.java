@@ -2,6 +2,8 @@ package horse.wtf.nzyme.dot11.networks.sentry;
 
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -9,6 +11,8 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 public class SentryTest {
+
+    private static final Logger LOG = LogManager.getLogger(SentryTest.class);
 
     @BeforeMethod
     public void cleanAlerts() {
@@ -18,12 +22,15 @@ public class SentryTest {
 
     @Test
     public void testTickSSID() throws InterruptedException {
-        Thread.sleep(5000);
-
         Sentry sentry = new Sentry(new MockNzyme(), 1);
+
+        LOG.info(DateTime.now());
+        LOG.info("SENTRY DUMP 1: {}", sentry.getSSIDs());
 
         assertFalse(sentry.knowsSSID("foo1"));
         assertFalse(sentry.knowsSSID("foo2"));
+
+        LOG.info("SENTRY DUMP 2: {}", sentry.getSSIDs());
 
         assertEquals(sentry.getSSIDs().size(), 0);
 
