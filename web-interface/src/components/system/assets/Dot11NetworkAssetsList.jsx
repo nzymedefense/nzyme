@@ -10,6 +10,20 @@ class Dot11NetworkAssetsList extends React.Component {
         if (!this.props.ssids) {
             return <LoadingSpinner/>;
         } else {
+            if (this.props.ssids.length === 0) {
+                return (
+                    <div className="row assets-ssid">
+                        <div className="col-md-12">
+                            <div className="alert alert-warning">
+                                No 802.11 networks configured for monitoring in your nzyme configuration file. Learn
+                                how to configure networks in
+                                the <a href="https://go.nzyme.org/network-monitoring" target="_blank" rel="noopener noreferrer">documentation</a>.
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
             return (
                 <div className="row assets-ssid">
                     <div className="col-md-12">
