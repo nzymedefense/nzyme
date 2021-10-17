@@ -53,12 +53,20 @@ public class BaseDot11ConfigurationLoader {
                 skipEnableMonitor = false;
             }
 
+            final int maxIdleTimeSeconds;
+            if (config.hasPath(ConfigurationKeys.MAX_IDLE_TIME_SECONDS)) {
+                maxIdleTimeSeconds = config.getInt(ConfigurationKeys.MAX_IDLE_TIME_SECONDS);
+            } else {
+                maxIdleTimeSeconds = 60;
+            }
+
             result.add(Dot11MonitorDefinition.create(
                     config.getString(ConfigurationKeys.DEVICE),
                     ImmutableList.copyOf(config.getIntList(ConfigurationKeys.CHANNELS)),
                     config.getString(ConfigurationKeys.HOP_COMMAND),
                     config.getInt(ConfigurationKeys.HOP_INTERVAL),
-                    skipEnableMonitor
+                    skipEnableMonitor,
+                    maxIdleTimeSeconds
             ));
         }
 

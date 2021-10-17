@@ -44,7 +44,7 @@ public abstract class Dot11Probe {
             return false;
         }
 
-        return ts.isAfter(DateTime.now().minusMinutes(1));
+        return ts.isAfter(DateTime.now().minusSeconds(configuration.maxIdleTimeSeconds()));
     }
 
     public Dot11ProbeConfiguration getConfiguration() {

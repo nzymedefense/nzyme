@@ -61,8 +61,8 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertTrue(c.versionchecksEnabled());
         assertEquals(c.restListenUri(), URI.create("http://127.0.0.1:22900/"));
         assertEquals(c.dot11Monitors(), new ArrayList<Dot11MonitorDefinition>() {{
-            add(Dot11MonitorDefinition.create("wlx00c0ca8fd89a", ImmutableList.of(1,2,3,4,5,6), "sudo /sbin/iwconfig {interface} channel {channel}", 1, false));
-            add(Dot11MonitorDefinition.create("wlx00c0ca971216", ImmutableList.of(7,8,9,10,11), "sudo /sbin/iwconfig {interface} channel {channel}", 3, false));
+            add(Dot11MonitorDefinition.create("wlx00c0ca8fd89a", ImmutableList.of(1,2,3,4,5,6), "sudo /sbin/iwconfig {interface} channel {channel}", 1, false, 60));
+            add(Dot11MonitorDefinition.create("wlx00c0ca971216", ImmutableList.of(7,8,9,10,11), "sudo /sbin/iwconfig {interface} channel {channel}", 3, false, 60));
         }});
         assertEquals(c.dot11Networks(), new ArrayList<Dot11NetworkDefinition>() {{
             add(Dot11NetworkDefinition.create("United_Wi-Fi", new ArrayList<Dot11BSSIDDefinition>() {{

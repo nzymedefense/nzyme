@@ -213,6 +213,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                     m.channelHopInterval(),
                     m.channelHopCommand(),
                     m.skipEnableMonitor(),
+                    m.maxIdleTimeSeconds(),
                     null,
                     null
             ), frameProcessor, metrics, anonymizer, this,true);

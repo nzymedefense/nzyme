@@ -48,6 +48,11 @@ uplink_device {
     # Channel hop interval in seconds. Leave at default if you don't know what this is.
     channel_hop_interval: 1
 
+    # Time this monitor can remain without recording any frames until it is marked as failing. Under certain conditions,
+    # it can be normal to not record any frames for an extended period of time. If you receive warnings and alerts for
+    # failed probes when there were simply no frames to record, increase this value. Default: 60
+    max_idle_time_seconds: 60
+
     # Skip the automatic monitor mode configuration of this interface. Only enable this if for some reason libpcap can't
     # properly configure this interface into monitor mode. In that case, you can try to set it manually instead.
     skip_enable_monitor: false

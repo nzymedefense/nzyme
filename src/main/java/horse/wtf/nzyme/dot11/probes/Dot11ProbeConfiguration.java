@@ -39,6 +39,7 @@ public abstract class Dot11ProbeConfiguration {
     public abstract Integer channelHopInterval();
     public abstract String channelHopCommand();
     public abstract boolean skipEnableMonitor();
+    public abstract int maxIdleTimeSeconds();
 
     @Nullable
     public abstract ImmutableList<Dot11NetworkDefinition> getDot11Networks();
@@ -46,7 +47,7 @@ public abstract class Dot11ProbeConfiguration {
     @Nullable
     public abstract ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices();
 
-    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<Uplink> uplinks, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, boolean skipEnableMonitor, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
+    public static Dot11ProbeConfiguration create(String probeName, ImmutableList<Uplink> uplinks, String nzymeId, String networkInterfaceName, ImmutableList<Integer> channels, Integer channelHopInterval, String channelHopCommand, boolean skipEnableMonitor, int maxIdleTimeSeconds, ImmutableList<Dot11NetworkDefinition> getDot11Networks, ImmutableList<Dot11TrapDeviceDefinition> getDot11TrapDevices) {
         return builder()
                 .probeName(probeName)
                 .uplinks(uplinks)
@@ -55,9 +56,10 @@ public abstract class Dot11ProbeConfiguration {
                 .channels(channels)
                 .channelHopInterval(channelHopInterval)
                 .channelHopCommand(channelHopCommand)
+                .skipEnableMonitor(skipEnableMonitor)
+                .maxIdleTimeSeconds(maxIdleTimeSeconds)
                 .getDot11Networks(getDot11Networks)
                 .getDot11TrapDevices(getDot11TrapDevices)
-                .skipEnableMonitor(skipEnableMonitor)
                 .build();
     }
 
@@ -82,6 +84,8 @@ public abstract class Dot11ProbeConfiguration {
         public abstract Builder channelHopCommand(String channelHopCommand);
 
         public abstract Builder skipEnableMonitor(boolean skipEnableMonitor);
+
+        public abstract Builder maxIdleTimeSeconds(int maxIdleTimeSeconds);
 
         public abstract Builder getDot11Networks(ImmutableList<Dot11NetworkDefinition> getDot11Networks);
 

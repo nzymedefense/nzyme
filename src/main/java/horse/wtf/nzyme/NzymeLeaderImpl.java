@@ -415,6 +415,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                     m.channelHopInterval(),
                     m.channelHopCommand(),
                     m.skipEnableMonitor(),
+                    m.maxIdleTimeSeconds(),
                     configuration.dot11Networks(),
                     configuration.dot11TrapDevices()
             ), frameProcessor, metrics, anonymizer, this,false);
@@ -514,6 +515,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
                             td.channelHopInterval(),
                             td.channelHopCommand(),
                             td.skipEnableMonitor(),
+                            60,
                             configuration.dot11Networks(),
                             configuration.dot11TrapDevices()
                     ), trap, metrics);

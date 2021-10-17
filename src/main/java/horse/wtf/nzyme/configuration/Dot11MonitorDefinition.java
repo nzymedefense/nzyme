@@ -30,15 +30,24 @@ public abstract class Dot11MonitorDefinition {
     public abstract String channelHopCommand();
     public abstract Integer channelHopInterval();
     public abstract boolean skipEnableMonitor();
+    public abstract int maxIdleTimeSeconds();
 
-    public static Dot11MonitorDefinition create(String device, ImmutableList<Integer> channels, String channelHopCommand, Integer channelHopInterval, boolean skipEnableMonitor) {
+    public static Dot11MonitorDefinition create(String device, ImmutableList<Integer> channels, String channelHopCommand, Integer channelHopInterval, boolean skipEnableMonitor, int maxIdleTimeSeconds) {
         return builder()
                 .device(device)
                 .channels(channels)
                 .channelHopCommand(channelHopCommand)
                 .channelHopInterval(channelHopInterval)
                 .skipEnableMonitor(skipEnableMonitor)
+                .maxIdleTimeSeconds(maxIdleTimeSeconds)
                 .build();
+    }
+
+    public static boolean checkConfig(Config c) {
+        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.DEVICE))
+                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
+                && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
+                && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0;
     }
 
     public static Builder builder() {
@@ -57,14 +66,8 @@ public abstract class Dot11MonitorDefinition {
 
         public abstract Builder skipEnableMonitor(boolean skipEnableMonitor);
 
+        public abstract Builder maxIdleTimeSeconds(int maxIdleTimeSeconds);
+
         public abstract Dot11MonitorDefinition build();
     }
-
-    public static boolean checkConfig(Config c) {
-        return !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.DEVICE))
-                && c.getIntList(ConfigurationKeys.CHANNELS) != null && !c.getIntList(ConfigurationKeys.CHANNELS).isEmpty()
-                && !Strings.isNullOrEmpty(c.getString(ConfigurationKeys.HOP_COMMAND))
-                && c.getInt(ConfigurationKeys.HOP_INTERVAL) >= 0;
-    }
-
 }

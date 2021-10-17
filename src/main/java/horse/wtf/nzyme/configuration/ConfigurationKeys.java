@@ -41,6 +41,7 @@ public class ConfigurationKeys {
     public static final String HOP_COMMAND = "channel_hop_command";
     public static final String HOP_INTERVAL = "channel_hop_interval";
     public static final String SKIP_ENABLE_MONITOR = "skip_enable_monitor";
+    public static final String MAX_IDLE_TIME_SECONDS = "max_idle_time_seconds";
     public static final String ROLE = "role";
     public static final String ID = "id";
     public static final String ADMIN_PASSWORD_HASH = "admin_password_hash";
