@@ -4,6 +4,12 @@ const Routes = {
         STATUS: "/system",
         ASSETS: {
             INDEX: "/system/assets/index"
+        },
+        REPORTS: {
+            INDEX: "/system/reports",
+            SCHEDULE: "/system/reports/schedule",
+            DETAILS: name => `/system/reports/show/${name}`,
+            EXECUTION_LOG_DETAILS: (name, executionId) => `/system/reports/show/${name}/execution/${executionId}`
         }
     },
     NETWORKS: {
@@ -22,12 +28,6 @@ const Routes = {
         NEW: "/bandits/new",
         EDIT: (uuid) => `/bandits/edit/${uuid}`,
         NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
-    },
-    REPORTS: {
-        INDEX: "/reports",
-        SCHEDULE: "/reports/schedule",
-        DETAILS: name => `/reports/show/${name}`,
-        EXECUTION_LOG_DETAILS: (name, executionId) => `/reports/show/${name}/execution/${executionId}`
     }
 };
 

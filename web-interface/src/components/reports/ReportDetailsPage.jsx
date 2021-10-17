@@ -103,7 +103,7 @@ class ReportDetailsPage extends React.Component {
 
     render() {
         if (this.state.reportDeleted) {
-            return <Redirect to={Routes.REPORTS.INDEX} />
+            return <Redirect to={Routes.SYSTEM.REPORTS.INDEX} />
         }
 
         if (!this.state.report) {
@@ -119,7 +119,7 @@ class ReportDetailsPage extends React.Component {
                     <div className="col-md-12">
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
-                                <li className="breadcrumb-item"><a href={Routes.REPORTS.INDEX}>Reports</a></li>
+                                <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
                                 <li className="breadcrumb-item active" aria-current="page">
                                     <ReportName name={this.state.report.name} />
                                 </li>
@@ -150,7 +150,7 @@ class ReportDetailsPage extends React.Component {
 
                     <div className="col-md-6">
                         <span className="float-right">
-                            <a href={Routes.REPORTS.INDEX} className="btn btn-dark">Back</a>&nbsp;
+                            <a href={Routes.SYSTEM.REPORTS.INDEX} className="btn btn-dark">Back</a>&nbsp;
                             <button className="btn btn-danger" onClick={this._deleteReport}>Delete Report</button>&nbsp;
                         </span>
                     </div>

@@ -35,7 +35,7 @@ class ReportExecutionLog extends React.Component {
                             <td>{logs[key].message}</td>
                             <td>
                                 <a className="btn btn-sm btn-primary"
-                                   href={Routes.REPORTS.EXECUTION_LOG_DETAILS(encodeURIComponent(reportName), logs[key].id)}>
+                                   href={Routes.SYSTEM.REPORTS.EXECUTION_LOG_DETAILS(encodeURIComponent(reportName), logs[key].id)}>
                                     Open
                                 </a>
                             </td>

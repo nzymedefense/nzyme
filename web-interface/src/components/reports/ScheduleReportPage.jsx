@@ -130,7 +130,7 @@ class ScheduleReportPage extends React.Component {
 
   render() {
     if (this.state.submitted) {
-      return ( <Redirect to={Routes.REPORTS.INDEX} /> );
+      return ( <Redirect to={Routes.SYSTEM.REPORTS.INDEX} /> );
     }
 
     return (
@@ -139,7 +139,7 @@ class ScheduleReportPage extends React.Component {
             <div className="col-md-12">
               <nav aria-label="breadcrumb">
                 <ol className="breadcrumb">
-                  <li className="breadcrumb-item"><a href={Routes.REPORTS.INDEX}>Reports</a></li>
+                  <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
                   <li className="breadcrumb-item active" aria-current="page">Schedule Report</li>
                 </ol>
               </nav>
@@ -200,7 +200,7 @@ class ScheduleReportPage extends React.Component {
                   <EmailReceivers receivers={this.state.emailReceivers} onReceiverDelete={this._onEmailReceiverDelete} />
 
                   <button type="submit" disabled={this.state.submitting}className="btn btn-success">Schedule Report</button>&nbsp;
-                  <a href={Routes.REPORTS.INDEX} className="btn btn-dark">Back</a>
+                  <a href={Routes.SYSTEM.REPORTS.INDEX} className="btn btn-dark">Back</a>
                 </div>
 
               </form>

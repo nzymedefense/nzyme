@@ -39,9 +39,9 @@ class ReportExecutionLogDetailsPage extends React.Component {
                     <div className="col-md-12">
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
-                                <li className="breadcrumb-item"><a href={Routes.REPORTS.INDEX}>Reports</a></li>
+                                <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
                                 <li className="breadcrumb-item">
-                                    <a href={Routes.REPORTS.DETAILS(this.reportName)}><ReportName name={this.reportName} /></a>
+                                    <a href={Routes.SYSTEM.REPORTS.DETAILS(this.reportName)}><ReportName name={this.reportName} /></a>
                                 </li>
                                 <li className="breadcrumb-item active"  aria-current="page">
                                     Execution #{this.executionId}

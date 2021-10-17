@@ -40,7 +40,7 @@ class NavigationBar extends React.Component {
                   <div className="dropdown-menu" aria-labelledby="navbarDropdown">
                     <a className="dropdown-item" href={Routes.SYSTEM.STATUS}>System Status</a>
                     <a className="dropdown-item" href={Routes.SYSTEM.ASSETS.INDEX}>Assets</a>
-                    <a className="dropdown-item" href={Routes.REPORTS.INDEX}>Reports</a>
+                    <a className="dropdown-item" href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a>
                   </div>
                 </li>
 
@@ -66,6 +66,7 @@ class NavigationBar extends React.Component {
                 <li className="nav-item"><a className="btn btn-dark" href={Routes.BANDITS.INDEX}>Bandits</a></li>
                 <li className="nav-item"><a className="btn btn-dark" href={Routes.SYSTEM.STATUS}>System Status</a></li>
                 <li className="nav-item"><a className="btn btn-dark" href={Routes.SYSTEM.ASSETS.INDEX}>Assets</a></li>
+                <li className="nav-item"><a className="btn btn-dark" href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
                 <li className="nav-item">
                   <a href="#logout" onClick={this.props.handleLogout} className="btn btn-dark" title="Sign Out">
                     Log Out

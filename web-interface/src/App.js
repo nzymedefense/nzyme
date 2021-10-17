@@ -135,10 +135,10 @@ class App extends React.Component {
                                     <Route exact path={Routes.SYSTEM.ASSETS.INDEX} component={AssetsPage}/>
 
                                     { /* Reports. */}
-                                    <Route exact path={Routes.REPORTS.INDEX} component={ReportsPage}/>
-                                    <Route exact path={Routes.REPORTS.SCHEDULE} component={ScheduleReportPage} />
-                                    <Route exact path={Routes.REPORTS.DETAILS(":name")} component={ReportDetailsPage} />
-                                    <Route exact path={Routes.REPORTS.EXECUTION_LOG_DETAILS(":name", ":executionId")} component={ReportExecutionLogDetailsPage} />
+                                    <Route exact path={Routes.SYSTEM.REPORTS.INDEX} component={ReportsPage}/>
+                                    <Route exact path={Routes.SYSTEM.REPORTS.SCHEDULE} component={ScheduleReportPage} />
+                                    <Route exact path={Routes.SYSTEM.REPORTS.DETAILS(":name")} component={ReportDetailsPage} />
+                                    <Route exact path={Routes.SYSTEM.REPORTS.EXECUTION_LOG_DETAILS(":name", ":executionId")} component={ReportExecutionLogDetailsPage} />
 
                                     { /* 404. */}
                                     <Route path={Routes.NOT_FOUND} component={NotFoundPage}/>

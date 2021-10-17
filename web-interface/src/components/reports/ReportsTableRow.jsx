@@ -11,7 +11,7 @@ class ReportsTableRow extends React.Component {
     return (
         <tr>
           <td>
-              <a href={Routes.REPORTS.DETAILS(encodeURIComponent(report.name))}>
+              <a href={Routes.SYSTEM.REPORTS.DETAILS(encodeURIComponent(report.name))}>
                 <ReportName name={report.name} />
               </a>
           </td>

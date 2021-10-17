@@ -25,7 +25,7 @@ class ReportsPage extends React.Component {
               <div className="float-right">
                 <a href="https://go.nzyme.org/reporting" className="btn btn-primary">Help</a>
                 &nbsp;
-                <a href={Routes.REPORTS.SCHEDULE} className="btn btn-success">Schedule Report</a>
+                <a href={Routes.SYSTEM.REPORTS.SCHEDULE} className="btn btn-success">Schedule Report</a>
               </div>
             </div>
           </div>
