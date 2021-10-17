@@ -17,18 +17,29 @@
 
 package horse.wtf.nzyme.events;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.events.db.EventRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class EventService {
 
+    private static final Logger LOG = LogManager.getLogger(EventService.class);
+
     private final NzymeLeader nzyme;
+
+    private final Map<Event.TYPE, List<Consumer<Event>>> subscribers;
 
     public EventService(NzymeLeader nzyme) {
         this.nzyme = nzyme;
+        this.subscribers = Maps.newHashMap();
     }
 
     public void recordEvent(Event event) {
@@ -36,6 +47,16 @@ public class EventService {
     }
 
     public void recordEvent(Event event, DateTime timestamp) {
+        try {
+            if (subscribers.containsKey(event.type())) {
+                for (Consumer<Event> callback : subscribers.get(event.type())) {
+                    callback.accept(event);
+                }
+            }
+        } catch(Exception e) {
+            LOG.error("Callback for event [{}] failed. Continuing.", event, e);
+        }
+
         nzyme.getDatabase().useHandle(handle -> handle.execute("INSERT INTO events(type, name, description, created_at) VALUES(?, ?, ?, ?)",
                 event.type().toString(),
                 event.name(),
@@ -69,6 +90,15 @@ public class EventService {
                         .mapTo(EventRecord.class)
                         .list()
         );
+    }
+
+    public void subscribe(Event.TYPE type, Consumer<Event> callback) {
+        subscribers.putIfAbsent(type, Lists.newArrayList());
+        subscribers.get(type).add(callback);
+    }
+
+    public Map<Event.TYPE, List<Consumer<Event>>> getSubscribers() {
+        return Maps.newHashMap(subscribers);
     }
 
 }
