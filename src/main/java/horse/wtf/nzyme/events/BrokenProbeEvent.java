@@ -41,4 +41,13 @@ public class BrokenProbeEvent implements Event {
     public String description() {
         return "Probe [" + probeName + "] is not working as expected. Check your nzyme log file. (" + errorDescription + ")";
     }
+
+    public String getProbeName() {
+        return probeName;
+    }
+
+    public String getErrorDescription() {
+        return errorDescription;
+    }
+
 }

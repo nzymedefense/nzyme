@@ -79,4 +79,6 @@ public class FieldNames {
 
     public static final String ID = "id";
 
+    public static final String PROBE_NAME = "probe_name";
+    public static final String ERROR_DESCRIPTION = "error_description";
 }

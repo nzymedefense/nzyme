@@ -56,7 +56,8 @@ public abstract class Alert {
         BANDIT_CONTACT,
         BEACON_TRAP_1,
         UNKNOWN_SSID,
-        DEAUTH_FLOOD
+        DEAUTH_FLOOD,
+        PROBE_FAILURE
     }
 
     public enum TYPE {
@@ -77,7 +78,8 @@ public abstract class Alert {
         BANDIT_CONTACT,
         BEACON_TRAP_1,
         UNKNOWN_SSID,
-        DEAUTH_FLOOD
+        DEAUTH_FLOOD,
+        PROBE_FAILURE
     }
 
     public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
@@ -377,6 +379,13 @@ public abstract class Alert {
                         (Integer) fields.get(FieldNames.CHANNEL),
                         (Integer) fields.get(FieldNames.FREQUENCY),
                         (Integer) fields.get(FieldNames.ANTENNA_SIGNAL)
+                );
+                break;
+            case PROBE_FAILURE:
+                alert = ProbeFailureAlert.create(
+                        db.firstSeen(),
+                        (String) fields.get(FieldNames.PROBE_NAME),
+                        (String) fields.get(FieldNames.ERROR_DESCRIPTION)
                 );
                 break;
             default:

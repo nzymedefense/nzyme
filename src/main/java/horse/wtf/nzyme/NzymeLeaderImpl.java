@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
 import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.ProbeFailureAlert;
 import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
@@ -47,9 +48,7 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
-import horse.wtf.nzyme.events.EventService;
-import horse.wtf.nzyme.events.ShutdownEvent;
-import horse.wtf.nzyme.events.StartupEvent;
+import horse.wtf.nzyme.events.*;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.notifications.uplinks.UplinkFactory;
@@ -94,6 +93,7 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
 import java.io.IOException;
@@ -103,6 +103,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class NzymeLeaderImpl implements NzymeLeader {
@@ -203,6 +204,14 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         this.trackerManager = new TrackerManager();
 
+        // Register event callbacks.
+        this.eventService.subscribe(Event.TYPE.BROKEN_PROBE, event -> {
+            BrokenProbeEvent bpe = (BrokenProbeEvent) event;
+            getAlertsService().handle(
+                    ProbeFailureAlert.create(DateTime.now(), bpe.getProbeName(), bpe.getErrorDescription())
+            );
+        });
+
         // Disable TRAINING status when training period is over.
         LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
@@ -273,7 +282,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 5, 5, TimeUnit.MINUTES);
+        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 1, 1, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

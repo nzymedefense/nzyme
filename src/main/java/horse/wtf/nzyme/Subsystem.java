@@ -19,6 +19,7 @@ package horse.wtf.nzyme;
 
 public enum Subsystem {
 
+    NZYME_SYS,
     DOT_11
 
 }
