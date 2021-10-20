@@ -84,7 +84,8 @@ public abstract class Alert {
 
     public static final List<TYPE_WIDE> HIDDEN_IN_UI = ImmutableList.of(
             TYPE_WIDE.PROBE_RESPONSE_TRAP_1,
-            TYPE_WIDE.BEACON_TRAP_1
+            TYPE_WIDE.BEACON_TRAP_1,
+            TYPE_WIDE.PROBE_FAILURE
     );
 
     private final Subsystem subsystem;
