@@ -162,6 +162,11 @@ public class MetricsResource {
                 TimerResponse.fromTimer(getTimer(MetricNames.REMOTE_FRAMES_TIMING))
         );
 
+        metrics.put(
+                "database_size",
+                GaugeResponse.fromGauge(getGauge(MetricNames.DATABASE_SIZE))
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 

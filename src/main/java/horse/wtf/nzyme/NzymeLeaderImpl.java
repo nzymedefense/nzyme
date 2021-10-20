@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
@@ -83,6 +84,7 @@ import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.util.MetricNames;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
@@ -243,6 +245,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Metrics JMX reporter.
         final JmxReporter reporter = JmxReporter.forRegistry(metrics).build();
         reporter.start();
+
+        // Database metrics.
+        metrics.register(MetricNames.DATABASE_SIZE, (Gauge<Long>) database::getTotalSize);
 
         // Register configured uplinks.
         UplinkFactory uplinkFactory = new UplinkFactory(getNodeID());

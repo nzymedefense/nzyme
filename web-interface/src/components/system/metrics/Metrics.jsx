@@ -82,6 +82,15 @@ class Metrics extends React.Component {
                             </div>
 
                             <div className="row">
+                                <div className="col-md-3">
+                                    <dl>
+                                        <dt>Total Database Size:</dt>
+                                        <dd>{numeral(this.state.systemMetrics.database_size.value).format("0.0b")}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <div className="row">
                                 <div className="col-md-12">
                                     <table className="table table-sm table-hover table-striped">
                                         <thead>
