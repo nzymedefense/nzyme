@@ -91,6 +91,7 @@ public class ConfigurationKeys {
     public static final String RECIPIENTS = "recipients";
     public static final String FROM = "from";
     public static final String SUBJECT_PREFIX = "subject_prefix";
+    public static final String PATH = "path";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

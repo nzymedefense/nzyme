@@ -28,6 +28,7 @@ import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.alerts.service.callbacks.AlertCallback;
 import horse.wtf.nzyme.alerts.service.callbacks.EmailCallback;
+import horse.wtf.nzyme.alerts.service.callbacks.FileCallback;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
@@ -339,6 +340,8 @@ public class LeaderConfigurationLoader {
                     case "email":
                         callbacks.add(new EmailCallback(EmailCallback.parseConfiguration(c, parseHttpExternalUri().toString())));
                         break;
+                    case "file":
+                        callbacks.add(new FileCallback(FileCallback.parseConfiguration(c)));
                     default:
                         LOG.error("Skipping unknown alert callback of type [{}].", type);
                 }

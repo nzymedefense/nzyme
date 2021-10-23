@@ -55,6 +55,13 @@ general: {
           "Somebody Else <somebody.else@example.org>"
         ]
       }
+
+      {
+        type: file
+        enabled: false
+
+        path: /var/log/nzyme/alerts.log
+      }
     ]
 
     # Length of the training period. Do not change this if you don't know what this means.

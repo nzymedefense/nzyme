@@ -17,11 +17,13 @@
 
 package horse.wtf.nzyme.alerts;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntry;
 import horse.wtf.nzyme.alerts.service.AlertsService;
@@ -30,6 +32,8 @@ import horse.wtf.nzyme.notifications.FieldNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -94,6 +98,7 @@ public abstract class Alert {
     private final AtomicReference<DateTime> lastSeen;
     private final AtomicLong frameCount;
     private final boolean useFrameCount;
+    private final ObjectMapper objectMapper;
 
     private final String description;
     private final String documentationLink;
@@ -123,6 +128,8 @@ public abstract class Alert {
         this.useFrameCount = useFrameCount;
 
         this.frameCount = new AtomicLong(frameCount);
+
+        this.objectMapper = new ObjectMapper();
     }
 
     public DateTime getFirstSeen() {
@@ -176,6 +183,24 @@ public abstract class Alert {
 
     public void setUUID(UUID uuid) {
         this.uuid = uuid;
+    }
+
+    public String toJSONString() throws JsonProcessingException {
+        Map<String, Object> payload = Maps.newHashMap();
+
+        payload.put("first_seen", getFirstSeen().toString());
+        payload.put("last_seen", getLastSeen().toString());
+        payload.put("frame_count", getFrameCount());
+        payload.put("is_use_frame_count", isUseFrameCount());
+        payload.put("message", getMessage());
+        payload.put("type", getType());
+        payload.put("subsystem", getSubsystem());
+        payload.put("documentation_link", getDocumentationLink());
+        payload.put("description", getDescription());
+        payload.put("fields", getFields());
+        payload.put("false_positives", getFalsePositives());
+
+        return objectMapper.writeValueAsString(payload);
     }
 
     public static Alert serializeFromDatabase(AlertDatabaseEntry db) throws IOException {
