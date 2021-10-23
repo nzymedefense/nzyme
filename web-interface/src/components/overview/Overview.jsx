@@ -6,10 +6,10 @@ import ActiveContactsWidget from "./widgets/ActiveContactsWidget";
 import SystemStatusWidget from "./widgets/SystemStatusWidget";
 import FrameThroughputWidget from "./widgets/FrameThroughputWidget";
 import AlertsTable from "../alerts/AlertsTable";
-import ContactsTable from "../bandits/ContactsTable";
 import ProbesTable from "../system/ProbesTable";
 import DashboardService from "../../services/DashboardService";
 import DeauthFramesWidget from "./widgets/DeauthFramesWidget";
+import BanditContactWidget from "./widgets/BanditContactWidget";
 
 class Overview extends React.Component {
 
@@ -82,7 +82,7 @@ class Overview extends React.Component {
                 <div className="row mt-md-3">
                     <div className="col-md-12">
                         <h4>Recent Bandit Contacts (last 5)</h4>
-                        <ContactsTable contacts={this.state.dashboard.contacts} />
+                        <BanditContactWidget contacts={this.state.dashboard.contacts} />
                     </div>
                 </div>
 
