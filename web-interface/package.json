@@ -30,7 +30,7 @@
     "html-webpack-plugin": "2.29.0",
     "jest": "20.0.4",
     "jquery": "^1.9.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "numeral": "^2.0.6",
     "object-assign": "4.1.1",
