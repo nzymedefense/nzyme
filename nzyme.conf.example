@@ -93,7 +93,7 @@ uplinks: []
 # 802.11/Wifi adapters that are designated to read traffic.
 # The more monitors you have listening on different channels, the more traffic will be picked up and the more
 # traffic will be available as the basis for alerts and analysis.
-# See: https://go.nzyme.org/network-monitoring
+# See: https://go.nzyme.org/configuration-reference
 802_11_monitors: [
   {
     # The 802.11/WiFi adapter name. (from `ifconfig` or `ip link`)
@@ -126,6 +126,7 @@ uplinks: []
 # It is recommended to leave this empty or on default at first start of nzyme and
 # then build it using the data nzyme shows in the web interface. For example, the
 # "security" and "fingerprints" strings can be copied from the web interface.
+# See: https://go.nzyme.org/network-monitoring
 802_11_networks: [
   {
     ssid: mywifinetwork
