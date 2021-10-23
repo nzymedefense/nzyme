@@ -35,6 +35,7 @@ import ReportsPage from "./components/reports/ReportsPage";
 import ScheduleReportPage from "./components/reports/ScheduleReportPage";
 import ReportDetailsPage from "./components/reports/ReportDetailsPage";
 import ReportExecutionLogDetailsPage from "./components/reports/ReportExecutionLogDetailsPage";
+import NetworkDetailsPageRedirector from "./components/networks/details/NetworkDetailsPageRedirector";
 
 class App extends React.Component {
 
@@ -116,8 +117,8 @@ class App extends React.Component {
 
                                     { /* Networks. */}
                                     <Route exact path={Routes.NETWORKS.INDEX} component={NetworksPage}/>
-                                    <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")}
-                                           component={NetworkDetailsPage}/>
+                                    <Route exact path={Routes.NETWORKS.SHOW(":bssid", ":ssid", ":channel")} component={NetworkDetailsPage}/>
+                                    <Route exact path={Routes.NETWORKS.PROXY(":bssid", ":ssid")} component={NetworkDetailsPageRedirector} />
 
                                     { /* Alerts. */}
                                     <Route exact path={Routes.ALERTS.INDEX} component={AlertsPage}/>

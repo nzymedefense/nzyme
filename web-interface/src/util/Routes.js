@@ -14,7 +14,8 @@ const Routes = {
     },
     NETWORKS: {
         INDEX: "/networks",
-        SHOW: (bssid, ssid, channel) => `/networks/show/${bssid}/${ssid}/${channel}`
+        SHOW: (bssid, ssid, channel) => `/networks/show/${bssid}/${ssid}/${channel}`,
+        PROXY: (bssid, ssid) => `/networks/show/${bssid}/${ssid}`
     },
     NOT_FOUND: "/notfound",
     ALERTS: {
