@@ -90,6 +90,22 @@ nav.navbar img.logo {
     margin-right: 15px;
 }
 
+.table {
+    color: #fff;
+}
+
+.table-hover tbody tr:hover {
+    color: #fff;
+}
+
+.table thead td {
+    border-bottom: 2px solid #28293e;
+}
+
+.table th, .table td {
+    border-top: 1px solid #28293e;
+}
+
 a.navbar-brand {
     color: #fff;
     font-weight: 500 !important;
@@ -252,3 +268,4 @@ iframe.report-execution-content {
     height: 800px;
     border: 2px dashed #282a38 !important;
 }
+

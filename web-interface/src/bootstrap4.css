@@ -7775,9 +7775,6 @@ a.text-dark:hover, a.text-dark:focus {
   .display-2 {
     font-size: 3.5rem; } }
 
-body {
-  background-image: url("../images/ng-background-dot.png"); }
-
 .btn-shadow {
   margin-left: 8px; }
   .btn-shadow.btn-primary, .btn-shadow.btn-outline-primary {
