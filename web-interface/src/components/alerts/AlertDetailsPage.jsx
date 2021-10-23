@@ -65,8 +65,6 @@ class AlertDetailsPage extends React.Component {
                                 </small>
                             </h2>
 
-
-
                             <blockquote className={"text-danger"} style={{"font-weight":"bold"}}>{this.state.alert.message}</blockquote>
 
                             <hr />
