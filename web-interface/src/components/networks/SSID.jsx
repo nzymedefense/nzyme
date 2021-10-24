@@ -7,7 +7,7 @@ class SSID extends React.Component {
         if (this.props.ssid.human_readable) {
             return (
                 <span>
-                    <a href={Routes.NETWORKS.SHOW(this.props.ssid.bssid, this.props.ssid.name, this.props.channel)}>
+                    <a href={Routes.NETWORKS.SHOW(encodeURIComponent(encodeURIComponent(this.props.ssid.bssid)), encodeURIComponent(encodeURIComponent(this.props.ssid.name)), this.props.channel)}>
                         {this.props.ssid.name.trim()}
                     </a>
                     {this.props.ssid.is_monitored ? <i className="fas fa-heartbeat text-muted monitored-network" title="Monitored Network" /> : undefined }
