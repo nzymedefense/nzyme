@@ -8,8 +8,6 @@ class AlertField extends React.Component {
         const value = this.props.value;
         const fields = this.props.fields;
 
-        console.log(this.props);
-
         let additional;
         // Link to bandit.
         if ((key === "bandit_name" && fields.hasOwnProperty("bandit_uuid"))|| key === "bandit_uuid") {

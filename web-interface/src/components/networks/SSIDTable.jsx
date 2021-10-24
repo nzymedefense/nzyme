@@ -25,12 +25,6 @@ class SSIDTableRow extends React.Component {
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.state.ssid && prevState.ssid) {
-            console.log("UPDATED! " + prevState.ssid.name + " -> " + this.state.ssid.name);
-        }
-    }
-
     _findMostActiveChannel(channels) {
         let mostActive = 0;
 

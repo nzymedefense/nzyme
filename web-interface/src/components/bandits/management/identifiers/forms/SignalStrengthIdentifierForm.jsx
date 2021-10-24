@@ -45,8 +45,7 @@ class SignalStrengthIdentifierForm extends React.Component {
     _handleUpdate(from, to) {
         from = parseInt(from, 10);
         to = parseInt(to, 10);
-
-        console.log(from + " <= " + to);
+        
         if (from <= to) {
             this.setState({errorMessage: "Invalid. The 'from' value must be larger than the 'to' value."});
             this.props.configurationUpdate({ready: false});
