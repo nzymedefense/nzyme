@@ -6,8 +6,7 @@
     <meta name="theme-color" content="#000000">
 
     <link rel="shortcut icon" href="${appPrefix}assets/static/favicon.ico">
-
-    <link rel="stylesheet" href="${appPrefix}assets/static/css/bootstrap4.css" />
+    
     <link rel="stylesheet" href="${appPrefix}assets/static/css/fontawesome.css" />
     <link rel="stylesheet" href="${appPrefix}assets/static/css/fonts.css" />
 
@@ -21,6 +20,8 @@
         assetsUri: "${appPrefix}assets/"
       }
     </script>
+
+    <title>nzyme - WiFi Defense System</title>
   </head>
   <body>
     <noscript>
