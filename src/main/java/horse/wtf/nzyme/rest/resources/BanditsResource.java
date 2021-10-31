@@ -366,6 +366,8 @@ public class BanditsResource {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
         for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
+            Optional<List<String>> ssidsOfContact = nzyme.getContactManager().findSsidsOfContact(contact.uuid());
+
             response.add(ContactResponse.create(
                     contact.uuid(),
                     contact.frameCount(),
@@ -376,7 +378,8 @@ public class BanditsResource {
                     bandit.uuid().toString(),
                     bandit.name(),
                     contact.sourceRole().toString(),
-                    contact.sourceName()
+                    contact.sourceName(),
+                    ssidsOfContact.orElse(Lists.newArrayList())
             ));
         }
 

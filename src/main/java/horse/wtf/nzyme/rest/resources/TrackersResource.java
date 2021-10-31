@@ -117,7 +117,8 @@ public class TrackersResource {
                     bandit.uuid().toString(),
                     bandit.name(),
                     contact.sourceRole().toString(),
-                    contact.sourceName()
+                    contact.sourceName(),
+                    Lists.newArrayList()
             ));
         }
 

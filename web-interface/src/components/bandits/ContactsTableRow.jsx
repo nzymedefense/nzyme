@@ -19,6 +19,7 @@ class ContactsTableRow extends React.Component {
                 <td>
                     <Timespan from={contact.first_seen} to={contact.last_seen} />
                 </td>
+                <td>{contact.ssids.length}</td>
                 <td title={moment(contact.first_seen).format()}>
                     {moment(contact.first_seen).format("M/D/YY hh:mm a")}
                 </td>

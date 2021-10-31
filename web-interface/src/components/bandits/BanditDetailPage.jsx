@@ -219,6 +219,24 @@ class BanditDetailPage extends React.Component {
                 </div>
 
                 <div className="row">
+                    <div className="col-md-12">
+                        <h3>Contacts <small>last 50</small></h3>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <ContactsTable contacts={bandit.contacts} />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-12">
+                        <hr />
+                    </div>
+                </div>
+
+                <div className="row mt-3">
                     <div className="col-md-9">
                         <h3>Identifiers</h3>
                     </div>
@@ -245,18 +263,6 @@ class BanditDetailPage extends React.Component {
                 <div className="row">
                     <div className="col-md-12">
                         <BanditTracking groundstationEnabled={this.state.groundstationEnabled} bandit={bandit} />
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <h3>Contacts <small>last 50</small></h3>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <ContactsTable contacts={bandit.contacts} />
                     </div>
                 </div>
             </div>

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.UUID;
 
 @AutoValue
@@ -56,7 +57,10 @@ public abstract class ContactResponse {
     @JsonProperty("source_name")
     public abstract String sourceName();
 
-    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName) {
+    @JsonProperty("ssids")
+    public abstract List<String> ssids();
+
+    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<String> ssids) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
@@ -68,6 +72,7 @@ public abstract class ContactResponse {
                 .banditName(banditName)
                 .sourceRole(sourceRole)
                 .sourceName(sourceName)
+                .ssids(ssids)
                 .build();
     }
 
@@ -96,6 +101,8 @@ public abstract class ContactResponse {
         public abstract Builder sourceRole(String sourceRole);
 
         public abstract Builder sourceName(String sourceName);
+
+        public abstract Builder ssids(List<String> ssids);
 
         public abstract ContactResponse build();
     }

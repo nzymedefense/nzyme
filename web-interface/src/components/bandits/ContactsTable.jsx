@@ -26,6 +26,7 @@ class ContactsTable extends React.Component {
                             <th>Signal</th>
                             <th>Frames</th>
                             <th>Duration</th>
+                            <th>SSIDs</th>
                             <th>First Seen</th>
                             <th>Last Seen</th>
                         </tr>
