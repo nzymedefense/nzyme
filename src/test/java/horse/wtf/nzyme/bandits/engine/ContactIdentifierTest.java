@@ -24,6 +24,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -139,25 +141,46 @@ public class ContactIdentifierTest {
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size());
         assertEquals(i.findContacts().size(), 0);
 
-        UUID bandit1UUID = UUID.randomUUID();
-        i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
-        UUID contact1UUID = UUID.randomUUID();
-        Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(contact1UUID, DateTime.now(), DateTime.now(), 0L, Role.LEADER, nzyme.getNodeID(), 0,bandit1.databaseId(), bandit1));
+        UUID banditUUID = UUID.randomUUID();
+        i.registerBandit(Bandit.create(null, banditUUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
+
+        UUID contactUUID = UUID.randomUUID();
+        Bandit bandit = i.findBanditByUUID(banditUUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
+        i.registerContact(Contact.create(contactUUID, DateTime.now(), DateTime.now(), 0L, Role.LEADER, nzyme.getNodeID(), 0,bandit.databaseId(), bandit));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
 
-        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 0);
+        assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 0);
+        assertTrue(i.findSsidsOfContact(contactUUID).isEmpty());
 
-        i.registerContactFrame(bandit1, nzyme.getNodeID(), 0);
-        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 1);
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("foo"));
+        assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 1);
+        List<String> ssids = i.findSsidsOfContact(contactUUID).get();
+        assertEquals(ssids.size(), 1);
+        assertTrue(ssids.contains("foo"));
+        assertFalse(ssids.contains("bar"));
 
-        i.registerContactFrame(bandit1, nzyme.getNodeID(), 0);
-        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 2);
+        // Frame with no SSID should not change SSIDs but increase frame count.
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.empty());
+        assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 2);
+        ssids = i.findSsidsOfContact(contactUUID).get();
+        assertEquals(ssids.size(), 1);
+        assertTrue(ssids.contains("foo"));
+        assertFalse(ssids.contains("bar"));
 
-        i.registerContactFrame(bandit1, nzyme.getNodeID(), 0);
-        assertEquals(i.findContacts().get(contact1UUID).frameCount().longValue(), 3);
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("bar"));
+        ssids = i.findSsidsOfContact(contactUUID).get();
+        assertEquals(ssids.size(), 2);
+        assertTrue(ssids.contains("foo"));
+        assertTrue(ssids.contains("bar"));
+
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("foo"));
+        assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 4);
+        ssids = i.findSsidsOfContact(contactUUID).get();
+        assertEquals(ssids.size(), 2);
+        assertTrue(ssids.contains("foo"));
+        assertTrue(ssids.contains("bar"));
     }
 
     @Test

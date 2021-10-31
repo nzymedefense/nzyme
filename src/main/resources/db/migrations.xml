@@ -633,6 +633,37 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="29" author="lennartkoopmann">
+        <createTable tableName="contacts_ssids" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
 
+            <column name="contact_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_contacts_ssids_standard_lookup" tableName="contacts_ssids" unique="false">
+            <column name="contact_uuid" />
+        </createIndex>
+
+        <createIndex indexName="idx_contacts_ssids_upsert_lookup" tableName="contacts_ssids" unique="false">
+            <column name="contact_uuid" />
+            <column name="ssid" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_contacts2ssids"
+                                    baseTableName="contacts_ssids"
+                                    baseColumnNames="contact_uuid"
+                                    referencedTableName="contacts"
+                                    referencedColumnNames="contact_uuid"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
 
 </databaseChangeLog>

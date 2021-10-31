@@ -279,19 +279,52 @@ public class ContactManager implements ContactIdentifierProcess {
         return count > 0;
     }
 
-    public void registerContactFrame(Bandit bandit, String sourceName, int rssi) {
-        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1, " +
-                "last_seen = (current_timestamp at time zone 'UTC'), last_signal = :last_signal " +
-                "WHERE bandit_id = :bandit_id AND source_name = :source_name " +
-                "AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
-                .bind("source_name", sourceName)
-                .bind("last_signal", rssi)
-                .bind("bandit_id", bandit.databaseId())
-                .execute()
+    public void registerContactFrame(Bandit bandit, String sourceName, int rssi, Optional<String> ssid) {
+        UUID contactUUID = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT contact_uuid FROM contacts WHERE bandit_id = :bandit_id AND source_name = :source_name AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
+                        .bind("source_name", sourceName)
+                        .bind("last_signal", rssi)
+                        .bind("bandit_id", bandit.databaseId())
+                        .mapTo(UUID.class)
+                        .first()
         );
 
-        // TODO: this will cause way too many queries. find a better way.
-        this.contacts = null;
+        if (contactUUID != null) {
+            nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = frame_count+1 WHERE contact_uuid = :contact_uuid")
+                    .bind("contact_uuid", contactUUID)
+                    .execute()
+            );
+
+            // See if we have to register a new SSID for this contact if we have a SSID as part of the contact frame.
+            if (ssid.isPresent()) {
+                Optional<List<String>> ssids = findSsidsOfContact(contactUUID);
+
+                if (ssids.isEmpty() || !ssids.get().contains(ssid.get())) {
+                    nzyme.getDatabase().useHandle(handle -> handle.createUpdate("INSERT INTO contacts_ssids(contact_uuid, ssid) VALUES(:contact_uuid, :ssid)")
+                            .bind("contact_uuid", contactUUID)
+                            .bind("ssid", ssid)
+                            .execute());
+                }
+            }
+
+            // TODO: this will cause way too many queries. find a better way.
+            this.contacts = null;
+        }
+    }
+
+    public Optional<List<String>> findSsidsOfContact(UUID contactUUID) {
+        List<String> ssids = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT ssid FROM contacts_ssids WHERE contact_uuid = :contact_uuid")
+                        .bind("contact_uuid", contactUUID)
+                        .mapTo(String.class)
+                        .list()
+        );
+
+        if (ssids == null || ssids.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(ssids);
+        }
     }
 
     public void updateContactFrames(Bandit bandit, String sourceName, long frameCount, int rssi) {
@@ -389,7 +422,7 @@ public class ContactManager implements ContactIdentifierProcess {
                     }
 
                     LOG.debug("Registering frame for existing bandit [{}]", bandit);
-                    registerContactFrame(bandit, nzyme.getNodeID(), frame.meta().getAntennaSignal());
+                    registerContactFrame(bandit, nzyme.getNodeID(), frame.meta().getAntennaSignal(), result.ssid());
 
                     // Register/refresh alert.
                     if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {
