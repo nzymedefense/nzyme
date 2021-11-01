@@ -29,6 +29,7 @@ const Routes = {
         NEW: "/bandits/new",
         EDIT: (uuid) => `/bandits/edit/${uuid}`,
         NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
+        CONTACT_DETAILS: (banditUUID, contactUUID) => `/bandits/show/${banditUUID}/contacts/${contactUUID}`
     }
 };
 

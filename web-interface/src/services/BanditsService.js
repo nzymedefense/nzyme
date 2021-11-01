@@ -19,6 +19,14 @@ class BanditsService {
         });
     }
 
+    findContactOfBandit(banditUUID, contactUUID) {
+        const self = this;
+
+        RESTClient.get("/bandits/show/" + banditUUID + "/contacts/" + contactUUID, {}, function(response) {
+            self.setState({contact: response.data});
+        });
+    }
+
     createBandit(name, description, successCallback, errorCallback) {
         RESTClient.post("/bandits", {name: name, description: description}, function() {
             successCallback();

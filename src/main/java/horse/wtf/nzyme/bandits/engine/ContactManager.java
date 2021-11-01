@@ -389,6 +389,22 @@ public class ContactManager implements ContactIdentifierProcess {
         );
     }
 
+    public Optional<Contact> findContactOfBandit(Bandit bandit, UUID contactUUID) {
+        Contact contact = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM contacts WHERE bandit_id = :bandit_id AND contact_uuid = :contact_uuid")
+                        .bind("bandit_id", bandit.databaseId())
+                        .bind("contact_uuid", contactUUID)
+                        .mapTo(Contact.class)
+                        .first()
+        );
+
+        if (contact == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(contact);
+        }
+    }
+
     public List<Contact> findContactsOfTracker(Tracker tracker) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM contacts WHERE source_name = :source_name ORDER BY last_seen DESC LIMIT 50")

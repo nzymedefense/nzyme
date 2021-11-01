@@ -31,10 +31,7 @@ import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
 import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
-import horse.wtf.nzyme.rest.responses.bandits.BanditIdentifierResponse;
-import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
-import horse.wtf.nzyme.rest.responses.bandits.BanditsListResponse;
-import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
+import horse.wtf.nzyme.rest.responses.bandits.*;
 import horse.wtf.nzyme.rest.responses.bandits.identifiers.IdentifierTypesResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -341,6 +338,57 @@ public class BanditsResource {
         nzyme.getContactManager().removeIdentifier(identifierUUID);
 
         return Response.ok().build();
+    }
+
+    @GET
+    @Path("/show/{banditUUID}/contacts/{contactUUID}")
+    public Response findContactOfBandit(@PathParam("banditUUID") String bUUID, @PathParam("contactUUID") String cUUID) {
+        if (Strings.isNullOrEmpty(bUUID) || Strings.isNullOrEmpty(cUUID)) {
+            LOG.warn("UUID was null or empty.");
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        UUID banditUUID;
+        UUID contactUUID;
+        try {
+            banditUUID = UUID.fromString(bUUID);
+            contactUUID = UUID.fromString(cUUID);
+        } catch(IllegalArgumentException e) {
+            LOG.error("Invalid UUID.", e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        Optional<Bandit> oBandit = nzyme.getContactManager().findBanditByUUID(banditUUID);
+        if (oBandit.isEmpty()) {
+            LOG.error("Bandit not found.");
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Bandit bandit = oBandit.get();
+
+        Optional<Contact> oContact = nzyme.getContactManager().findContactOfBandit(bandit, contactUUID);
+        if (oContact.isEmpty()) {
+            LOG.error("Contact not found.");
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Contact contact = oContact.get();
+
+        Optional<List<String>> ssids = nzyme.getContactManager().findSsidsOfContact(contact.uuid());
+
+        return Response.ok(ContactDetailsResponse.create(
+                contact.uuid(),
+                contact.frameCount(),
+                contact.firstSeen(),
+                contact.lastSeen(),
+                contact.isActive(),
+                contact.lastSignal(),
+                bandit.uuid().toString(),
+                bandit.name(),
+                contact.sourceRole().toString(),
+                contact.sourceName(),
+                ssids.orElse(Lists.newArrayList())
+        )).build();
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {

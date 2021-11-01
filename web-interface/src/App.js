@@ -36,6 +36,7 @@ import ScheduleReportPage from "./components/reports/ScheduleReportPage";
 import ReportDetailsPage from "./components/reports/ReportDetailsPage";
 import ReportExecutionLogDetailsPage from "./components/reports/ReportExecutionLogDetailsPage";
 import NetworkDetailsPageRedirector from "./components/networks/details/NetworkDetailsPageRedirector";
+import BanditContactDetailsPage from "./components/bandits/BanditContactDetailsPage";
 
 class App extends React.Component {
 
@@ -128,6 +129,7 @@ class App extends React.Component {
                                     <Route exact path={Routes.BANDITS.INDEX} component={BanditsPage}/>
                                     <Route exact path={Routes.BANDITS.NEW} component={CreateBanditPage}/>
                                     <Route exact path={Routes.BANDITS.SHOW(":id")} component={BanditDetailPage} />
+                                    <Route exact path={Routes.BANDITS.CONTACT_DETAILS(":banditUUID", ":contactUUID")} component={BanditContactDetailsPage} />
                                     <Route exact path={Routes.BANDITS.EDIT(":id")} component={EditBanditPage} />
                                     <Route exact path={Routes.BANDITS.NEW_IDENTIFIER(":banditUUID")} component={CreateIdentifierPage} />
                                     <Route exact path={Routes.BANDITS.SHOW_TRACKER(":name")} component={TrackerDetailPage} />

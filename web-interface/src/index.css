@@ -269,3 +269,7 @@ iframe.report-execution-content {
     border: 2px dashed #282a38 !important;
 }
 
+span.contact-status {
+    position: relative;
+    top: -6px;
+}
