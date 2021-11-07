@@ -42,6 +42,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -376,6 +377,7 @@ public class BanditsResource {
         Contact contact = oContact.get();
 
         Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+        Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
@@ -388,7 +390,8 @@ public class BanditsResource {
                 bandit.name(),
                 contact.sourceRole().toString(),
                 contact.sourceName(),
-                ssids.orElse(Lists.newArrayList())
+                ssids.orElse(Collections.emptyList()),
+                bssids.orElse(Collections.emptyList())
         )).build();
     }
 
@@ -415,7 +418,8 @@ public class BanditsResource {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
         for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
-            Optional<List<String>> ssidsOfContact = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
             response.add(ContactResponse.create(
                     contact.uuid(),
@@ -428,7 +432,8 @@ public class BanditsResource {
                     bandit.name(),
                     contact.sourceRole().toString(),
                     contact.sourceName(),
-                    ssidsOfContact.orElse(Lists.newArrayList())
+                    ssids.orElse(Collections.emptyList()),
+                    bssids.orElse(Collections.emptyList())
             ));
         }
 

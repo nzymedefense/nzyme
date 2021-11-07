@@ -38,6 +38,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -118,7 +119,8 @@ public class TrackersResource {
                     bandit.name(),
                     contact.sourceRole().toString(),
                     contact.sourceName(),
-                    Lists.newArrayList()
+                    Collections.emptyList(),
+                    Collections.emptyList()
             ));
         }
 

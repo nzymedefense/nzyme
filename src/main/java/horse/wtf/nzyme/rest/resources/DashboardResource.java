@@ -45,10 +45,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 @Path("/api/dashboard")
 @Secured
@@ -101,7 +98,8 @@ public class DashboardResource {
                 LOG.warn("Skipping unexpected incomplete contact [{}].", contact);
                 continue;
             }
-            Optional<List<String>> ssidsOfContact = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
             contacts.add(ContactResponse.create(
                     contact.uuid(),
@@ -114,7 +112,8 @@ public class DashboardResource {
                     contact.bandit().name(),
                     contact.sourceRole().toString(),
                     contact.sourceName(),
-                    ssidsOfContact.orElse(Lists.newArrayList())
+                    ssids.orElse(Collections.emptyList()),
+                    bssids.orElse(Collections.emptyList())
             ));
         }
 

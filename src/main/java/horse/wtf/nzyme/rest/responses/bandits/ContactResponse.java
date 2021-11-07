@@ -60,7 +60,10 @@ public abstract class ContactResponse {
     @JsonProperty("ssids")
     public abstract List<String> ssids();
 
-    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<String> ssids) {
+    @JsonProperty("bssids")
+    public abstract List<String> bssids();
+
+    public static ContactResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<String> ssids, List<String> bssids) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
@@ -73,6 +76,7 @@ public abstract class ContactResponse {
                 .sourceRole(sourceRole)
                 .sourceName(sourceName)
                 .ssids(ssids)
+                .bssids(bssids)
                 .build();
     }
 
@@ -104,6 +108,9 @@ public abstract class ContactResponse {
 
         public abstract Builder ssids(List<String> ssids);
 
+        public abstract Builder bssids(List<String> bssids);
+
         public abstract ContactResponse build();
     }
+
 }

@@ -7,6 +7,7 @@ import Timespan from "../misc/Timespan";
 import RSSI from "../misc/RSSI";
 import numeral from "numeral";
 import AdvertisedSSIDList from "./AdvertisedSSIDList";
+import AdvertisedBSSIDList from "./AdvertisedBSSIDList";
 
 class BanditContactDetailsPage extends React.Component {
 
@@ -137,10 +138,13 @@ class BanditContactDetailsPage extends React.Component {
                 </div>
 
                 <div className="row mt-3">
-                    <div className="col-md-12">
+                    <div className="col-md-6">
                         <h2>Advertised SSIDs</h2>
-
                         <AdvertisedSSIDList ssids={contact.ssids} />
+                    </div>
+                    <div className="col-md-6">
+                        <h2>Advertised BSSIDs</h2>
+                        <AdvertisedBSSIDList bssids={contact.bssids} />
                     </div>
                 </div>
 
