@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -166,8 +167,8 @@ public class TrackerBanditManager implements ContactIdentifierProcess {
         Bandit bandit = getCurrentlyTrackedBandit();
         if (bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
 
-            ContactIdentifierEngine.ContactIdentifierResult result = identifierEngine.identify(frame, bandit);
-            if (result.match()) {
+            Optional<ContactIdentifierEngine.ContactIdentification> result = identifierEngine.identify(frame, bandit);
+            if (result.isPresent()) {
                 if (currentTrack == null) {
                     // New track!
                     currentTrack = UUID.randomUUID();

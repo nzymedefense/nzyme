@@ -154,7 +154,7 @@ public class ContactIdentifierTest {
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 0);
         assertTrue(i.findSsidsOfContact(contactUUID).isEmpty());
 
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("foo"));
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 1);
         List<String> ssids = i.findSsidsOfContact(contactUUID).get();
         assertEquals(ssids.size(), 1);
@@ -162,20 +162,20 @@ public class ContactIdentifierTest {
         assertFalse(ssids.contains("bar"));
 
         // Frame with no SSID should not change SSIDs but increase frame count.
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.empty());
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.empty());
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 2);
         ssids = i.findSsidsOfContact(contactUUID).get();
         assertEquals(ssids.size(), 1);
         assertTrue(ssids.contains("foo"));
         assertFalse(ssids.contains("bar"));
 
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("bar"));
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0,"7C:75:5C:AF:E4:71", Optional.of("bar"));
         ssids = i.findSsidsOfContact(contactUUID).get();
         assertEquals(ssids.size(), 2);
         assertTrue(ssids.contains("foo"));
         assertTrue(ssids.contains("bar"));
 
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, Optional.of("foo"));
+        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 4);
         ssids = i.findSsidsOfContact(contactUUID).get();
         assertEquals(ssids.size(), 2);

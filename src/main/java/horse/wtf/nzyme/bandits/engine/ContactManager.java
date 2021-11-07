@@ -46,11 +46,14 @@ public class ContactManager implements ContactIdentifierProcess {
     private ImmutableMap<UUID, Bandit> bandits;
 
     private final ContactIdentifierEngine identifierEngine;
+    private final ContactRecorder contactRecorder;
 
     public ContactManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
+        this.contactRecorder = new ContactRecorder(10);
+
         // Register default bandits.
         DefaultBandits.seed(this);
     }
@@ -279,7 +282,7 @@ public class ContactManager implements ContactIdentifierProcess {
         return count > 0;
     }
 
-    public void registerContactFrame(Bandit bandit, String sourceName, int rssi, Optional<String> ssid) {
+    public void registerContactFrame(Bandit bandit, String sourceName, int rssi, String bssid, Optional<String> ssid) {
         UUID contactUUID = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT contact_uuid FROM contacts WHERE bandit_id = :bandit_id AND source_name = :source_name AND last_seen > (current_timestamp at time zone 'UTC' - interval '" + TrackTimeout.MINUTES + " minutes')")
                         .bind("source_name", sourceName)
@@ -299,7 +302,7 @@ public class ContactManager implements ContactIdentifierProcess {
             );
 
             // See if we have to register a new SSID for this contact if we have a SSID as part of the contact frame.
-            if (ssid.isPresent()) {
+            if (ssid.isPresent()) { // TODO remove this whole thing in favor of ContactRecorder.
                 Optional<List<String>> ssids = findSsidsOfContact(contactUUID);
 
                 if (ssids.isEmpty() || !ssids.get().contains(ssid.get())) {
@@ -309,6 +312,9 @@ public class ContactManager implements ContactIdentifierProcess {
                             .execute());
                 }
             }
+
+            // Register in contact recorder for tracking.
+            this.contactRecorder.recordFrame(contactUUID, rssi, bssid, ssid);
 
             // TODO: this will cause way too many queries. find a better way.
             this.contacts = null;
@@ -423,8 +429,8 @@ public class ContactManager implements ContactIdentifierProcess {
             if(bandit.identifiers() != null && !bandit.identifiers().isEmpty()) {
                 // If no identifier missed, this is a bandit frame.
 
-                ContactIdentifierEngine.ContactIdentifierResult result = identifierEngine.identify(frame, bandit);
-                if (result.match()) {
+                Optional<ContactIdentifierEngine.ContactIdentification> result = identifierEngine.identify(frame, bandit);
+                if (result.isPresent()) {
                     // Create new contact if this is the first frame.
                     if (!banditHasActiveContactOnSource(bandit, nzyme.getNodeID())) {
                         LOG.debug("New contact for bandit [{}].", bandit);
@@ -443,11 +449,11 @@ public class ContactManager implements ContactIdentifierProcess {
                     }
 
                     LOG.debug("Registering frame for existing bandit [{}]", bandit);
-                    registerContactFrame(bandit, nzyme.getNodeID(), frame.meta().getAntennaSignal(), result.ssid());
+                    registerContactFrame(bandit, nzyme.getNodeID(), frame.meta().getAntennaSignal(), result.get().bssid(), result.get().ssid());
 
                     // Register/refresh alert.
                     if (nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.BANDIT_CONTACT)) {
-                        nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), result.ssid(), 1L));
+                        nzyme.getAlertsService().handle(BanditContactAlert.create(DateTime.now(), bandit.name(), bandit.uuid().toString(), result.get().ssid(), 1L));
                     }
                 }
             }

@@ -33,18 +33,15 @@ import java.util.Optional;
 
 public class ContactIdentifierEngine {
 
-    private static final ContactIdentifierResult MATCH = ContactIdentifierResult.create(true, Optional.empty());
-    private static final ContactIdentifierResult NO_MATCH = ContactIdentifierResult.create(false, Optional.empty());
-
     private final Timer timing;
 
     public ContactIdentifierEngine(MetricRegistry metrics) {
         this.timing = metrics.timer(MetricNames.CONTACT_IDENTIFIER_TIMING);
     }
 
-    public ContactIdentifierResult identify(Dot11Frame frame, Identifiable bandit) {
+    public Optional<ContactIdentification> identify(Dot11Frame frame, Identifiable bandit) {
         if (bandit.identifiers() == null || bandit.identifiers().isEmpty()) {
-            return NO_MATCH;
+            return Optional.empty();
         }
 
         Timer.Context timer = this.timing.time();
@@ -56,9 +53,9 @@ public class ContactIdentifierEngine {
                     if (matches.isPresent() && matches.get()) {
                         if (Strings.isNullOrEmpty(beacon.ssid())) {
                             // Broadcast.
-                            return MATCH;
+                            return Optional.of(ContactIdentification.create( beacon.transmitter(), Optional.empty()));
                         } else {
-                            return ContactIdentifierResult.create(true, Optional.of(beacon.ssid()));
+                            return Optional.of(ContactIdentification.create(beacon.transmitter(), Optional.of(beacon.ssid())));
                         }
                     }
                 }
@@ -69,17 +66,18 @@ public class ContactIdentifierEngine {
                     if (matches.isPresent() && matches.get()) {
                         if (Strings.isNullOrEmpty(probeResponse.ssid())) {
                             // Broadcast.
-                            return MATCH;
+                            return Optional.of(ContactIdentification.create(probeResponse.transmitter(), Optional.empty()));
                         } else {
-                            return ContactIdentifierResult.create(true, Optional.of(probeResponse.ssid()));
+                            return Optional.of(ContactIdentification.create(probeResponse.transmitter(), Optional.of(probeResponse.ssid())));
                         }
                     }
                 }
 
                 if (frame instanceof Dot11DeauthenticationFrame) {
-                    Optional<Boolean> matches = identifier.matches((Dot11DeauthenticationFrame) frame);
+                    Dot11DeauthenticationFrame deauth = (Dot11DeauthenticationFrame) frame;
+                    Optional<Boolean> matches = identifier.matches(deauth);
                     if (matches.isPresent() && matches.get()) {
-                        return MATCH;
+                        return Optional.of(ContactIdentification.create(deauth.transmitter(), Optional.empty()));
                     }
                 }
             }
@@ -87,33 +85,33 @@ public class ContactIdentifierEngine {
             timer.stop();
         }
 
-        return NO_MATCH;
+        return Optional.empty();
     }
 
     @AutoValue
-    public static abstract class ContactIdentifierResult {
+    public static abstract class ContactIdentification {
 
-        public abstract boolean match();
+        public abstract String bssid();
         public abstract Optional<String> ssid();
 
-        public static ContactIdentifierResult create(boolean match, Optional<String> ssid) {
+        public static ContactIdentification create(String bssid, Optional<String> ssid) {
             return builder()
-                    .match(match)
+                    .bssid(bssid)
                     .ssid(ssid)
                     .build();
         }
 
         public static Builder builder() {
-            return new AutoValue_ContactIdentifierEngine_ContactIdentifierResult.Builder();
+            return new AutoValue_ContactIdentifierEngine_ContactIdentification.Builder();
         }
 
         @AutoValue.Builder
         public abstract static class Builder {
-            public abstract Builder match(boolean match);
+            public abstract Builder bssid(String bssid);
 
             public abstract Builder ssid(Optional<String> ssid);
 
-            public abstract ContactIdentifierResult build();
+            public abstract ContactIdentification build();
         }
 
     }

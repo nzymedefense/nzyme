@@ -17,6 +17,7 @@ import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.testng.Assert.*;
@@ -34,11 +35,12 @@ public class ContactIdentifierEngineTest {
         );
         Bandit bandit = Bandit.create(1L, UUID.randomUUID(), "Test", "Test", false, DateTime.now(), DateTime.now(), identifiers);
 
-        ContactIdentifierEngine.ContactIdentifierResult result = engine.identify(frame, bandit);
+        Optional<ContactIdentifierEngine.ContactIdentification> result = engine.identify(frame, bandit);
 
-        assertTrue(result.match());
-        assertTrue(result.ssid().isPresent());
-        assertEquals(result.ssid().get(), "WTF");
+        assertTrue(result.isPresent());
+        assertTrue(result.get().ssid().isPresent());
+        assertEquals(result.get().ssid().get(), "WTF");
+        assertEquals(result.get().bssid(), "00:c0:ca:95:68:3b");
     }
 
     @Test
@@ -52,10 +54,11 @@ public class ContactIdentifierEngineTest {
         );
         Bandit bandit = Bandit.create(1L, UUID.randomUUID(), "Test", "Test", false, DateTime.now(), DateTime.now(), identifiers);
 
-        ContactIdentifierEngine.ContactIdentifierResult result = engine.identify(frame, bandit);
+        Optional<ContactIdentifierEngine.ContactIdentification> result = engine.identify(frame, bandit);
 
-        assertTrue(result.match());
-        assertTrue(result.ssid().isEmpty());
+        assertTrue(result.isPresent());
+        assertTrue(result.get().ssid().isEmpty());
+        assertEquals(result.get().bssid(), "24:a4:3c:7d:01:cc");
     }
 
     @Test
@@ -69,10 +72,9 @@ public class ContactIdentifierEngineTest {
         );
         Bandit bandit = Bandit.create(1L, UUID.randomUUID(), "Test", "Test", false, DateTime.now(), DateTime.now(), identifiers);
 
-        ContactIdentifierEngine.ContactIdentifierResult result = engine.identify(frame, bandit);
+        Optional<ContactIdentifierEngine.ContactIdentification> result = engine.identify(frame, bandit);
 
-        assertFalse(result.match());
-        assertTrue(result.ssid().isEmpty());
+        assertTrue(result.isEmpty());
     }
 
 }
