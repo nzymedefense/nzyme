@@ -666,4 +666,54 @@
                                     onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="30" author="lennartkoopmann">
+        <createTable tableName="contact_records" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="contact_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="record_type" type="varchar(25)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="record_value" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="rssi_average" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="rssi_stddev" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+        </createTable>
+
+        <createIndex indexName="idx_contact_records_standard_lookup" tableName="contact_records" unique="false">
+            <column name="contact_uuid" />
+            <column name="record_type" />
+        </createIndex>
+
+        <addForeignKeyConstraint    constraintName="link_contacts2records"
+                                    baseTableName="contact_records"
+                                    baseColumnNames="contact_uuid"
+                                    referencedTableName="contacts"
+                                    referencedColumnNames="contact_uuid"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="31" author="lennartkoopmann">
+        <dropTable tableName="contacts_ssids" />
+    </changeSet>
+
 </databaseChangeLog>

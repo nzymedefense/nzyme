@@ -16,15 +16,12 @@ import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.parsers.Dot11BeaconFrameParser;
-import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
-import horse.wtf.nzyme.dot11.parsers.Dot11ProbeResponseFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -152,35 +149,19 @@ public class ContactIdentifierTest {
         assertEquals(i.findContacts().size(), 1);
 
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 0);
-        assertTrue(i.findSsidsOfContact(contactUUID).isEmpty());
+        assertTrue(i.findRecordValuesOfContact(contactUUID, ContactRecorder.RECORD_TYPE.SSID).isEmpty());
+        assertTrue(i.findRecordValuesOfContact(contactUUID, ContactRecorder.RECORD_TYPE.BSSID).isEmpty());
 
         i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 1);
-        List<String> ssids = i.findSsidsOfContact(contactUUID).get();
-        assertEquals(ssids.size(), 1);
-        assertTrue(ssids.contains("foo"));
-        assertFalse(ssids.contains("bar"));
 
         // Frame with no SSID should not change SSIDs but increase frame count.
         i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.empty());
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 2);
-        ssids = i.findSsidsOfContact(contactUUID).get();
-        assertEquals(ssids.size(), 1);
-        assertTrue(ssids.contains("foo"));
-        assertFalse(ssids.contains("bar"));
-
         i.registerContactFrame(bandit, nzyme.getNodeID(), 0,"7C:75:5C:AF:E4:71", Optional.of("bar"));
-        ssids = i.findSsidsOfContact(contactUUID).get();
-        assertEquals(ssids.size(), 2);
-        assertTrue(ssids.contains("foo"));
-        assertTrue(ssids.contains("bar"));
 
         i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 4);
-        ssids = i.findSsidsOfContact(contactUUID).get();
-        assertEquals(ssids.size(), 2);
-        assertTrue(ssids.contains("foo"));
-        assertTrue(ssids.contains("bar"));
     }
 
     @Test

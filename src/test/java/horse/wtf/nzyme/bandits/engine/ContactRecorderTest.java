@@ -1,5 +1,8 @@
 package horse.wtf.nzyme.bandits.engine;
 
+import horse.wtf.nzyme.MockNzyme;
+import horse.wtf.nzyme.NzymeLeader;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -10,9 +13,16 @@ import static org.testng.Assert.*;
 
 public class ContactRecorderTest {
 
+    @BeforeMethod
+    public void cleanAlerts() {
+        NzymeLeader nzyme = new MockNzyme();
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits;"));
+    }
+
     @Test
-    public void testRecordFrame() {
-        ContactRecorder rec = new ContactRecorder(60);
+    public void testRecordFrame() throws InterruptedException {
+        NzymeLeader nzyme = new MockNzyme();
+        ContactRecorder rec = new ContactRecorder(5, nzyme);
 
         assertTrue(rec.getSSIDs().isEmpty());
         assertTrue(rec.getBSSIDs().isEmpty());
@@ -77,7 +87,6 @@ public class ContactRecorderTest {
         assertEquals(ssidCompute.get(u3).size(), 1);
         assertEquals(ssidCompute.get(u3).get("baz"), ContactRecorder.ComputationResult.create(-85.0D, 5.D));
 
-
         assertEquals(bssidCompute.size(), 3);
 
         assertEquals(bssidCompute.get(u1).size(), 2);
@@ -93,7 +102,7 @@ public class ContactRecorderTest {
 
     @Test
     public void testCleansFrames() throws InterruptedException {
-        ContactRecorder rec = new ContactRecorder(3);
+        ContactRecorder rec = new ContactRecorder(3, new MockNzyme());
 
         assertTrue(rec.getSSIDs().isEmpty());
         assertTrue(rec.getBSSIDs().isEmpty());

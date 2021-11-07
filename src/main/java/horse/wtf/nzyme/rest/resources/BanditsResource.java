@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.engine.ContactRecorder;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
@@ -374,7 +375,7 @@ public class BanditsResource {
 
         Contact contact = oContact.get();
 
-        Optional<List<String>> ssids = nzyme.getContactManager().findSsidsOfContact(contact.uuid());
+        Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
 
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
@@ -414,7 +415,7 @@ public class BanditsResource {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
         for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
-            Optional<List<String>> ssidsOfContact = nzyme.getContactManager().findSsidsOfContact(contact.uuid());
+            Optional<List<String>> ssidsOfContact = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
 
             response.add(ContactResponse.create(
                     contact.uuid(),

@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.math.Stats;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,12 +38,20 @@ public class ContactRecorder {
 
     private static final Logger LOG = LogManager.getLogger(ContactRecorder.class);
 
+    public enum RECORD_TYPE {
+        SSID, BSSID
+    }
+
     private final Object mutex = new Object();
+
+    private final NzymeLeader nzyme;
 
     private final Map<UUID, Map<String, List<Integer>>> ssids;
     private final Map<UUID, Map<String, List<Integer>>> bssids;
 
-    public ContactRecorder(int cleaningFrequencySeconds) {
+    public ContactRecorder(int cleaningFrequencySeconds, NzymeLeader nzyme) {
+        this.nzyme = nzyme;
+
         this.ssids = Maps.newHashMap();
         this.bssids = Maps.newHashMap();
 
@@ -53,11 +62,17 @@ public class ContactRecorder {
                         .build()
         ).scheduleWithFixedDelay(() -> {
             synchronized (mutex) {
-                // Write averages to database.
+                try {
+                    // Write averages to database.
+                    writeToDatabase(compute(this.ssids), RECORD_TYPE.SSID);
+                    writeToDatabase(compute(this.bssids), RECORD_TYPE.BSSID);
 
-                // Reset recordings.
-                ssids.clear();
-                bssids.clear();
+                    // Reset recordings.
+                    ssids.clear();
+                    bssids.clear();
+                } catch(Exception e) {
+                    LOG.error("Error in contact recorder synchronization.", e);
+                }
             }
         }, cleaningFrequencySeconds, cleaningFrequencySeconds, TimeUnit.SECONDS);
     }
@@ -116,6 +131,35 @@ public class ContactRecorder {
 
     public Map<UUID, Map<String, List<Integer>>> getBSSIDs() {
         return Maps.newHashMap(bssids);
+    }
+
+    private void writeToDatabase(Map<UUID, Map<String, ComputationResult>> records, RECORD_TYPE recordType) {
+        for (Map.Entry<UUID, Map<String, ComputationResult>> contact : records.entrySet()) {
+            for (Map.Entry<String, ComputationResult> record : contact.getValue().entrySet()) {
+                ComputationResult cr = record.getValue();
+                nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
+                        "INSERT INTO contact_records(contact_uuid, record_type, record_value, rssi_average, rssi_stddev, created_at) " +
+                                "VALUES(:contact_uuid, :record_type, :record_value, :rssi_average, :rssi_stddev, (current_timestamp at time zone 'UTC'))")
+                        .bind("contact_uuid", contact.getKey())
+                        .bind("record_type", recordType)
+                        .bind("record_value", record.getKey())
+                        .bind("rssi_average", cr.average())
+                        .bind("rssi_stddev", cr.stdDev())
+                        .execute()
+                );
+            }
+        }
+    }
+
+    public List<ContactRecord> findContactRecords(UUID contactUUID, RECORD_TYPE recordType) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT contact_uuid, record_type, record_value, rssi_average, rssi_stddev, created_at " +
+                                "FROM contact_records WHERE contact_uuid = :contact_uuid AND record_type = :record_type " +
+                                "ORDER BY created_at DESC")
+                        .bind("contact_uuid", contactUUID)
+                        .bind("record_type", recordType)
+                        .mapTo(ContactRecord.class)
+                        .list());
     }
 
     @AutoValue

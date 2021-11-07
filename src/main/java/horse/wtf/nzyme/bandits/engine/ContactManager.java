@@ -52,10 +52,14 @@ public class ContactManager implements ContactIdentifierProcess {
         this.nzyme = nzyme;
 
         this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
-        this.contactRecorder = new ContactRecorder(10);
+        this.contactRecorder = new ContactRecorder(10, nzyme);
 
         // Register default bandits.
         DefaultBandits.seed(this);
+    }
+
+    public ContactRecorder getContactRecorder() {
+        return contactRecorder;
     }
 
     public long registerBandit(Bandit bandit) {
@@ -301,19 +305,7 @@ public class ContactManager implements ContactIdentifierProcess {
                     .execute()
             );
 
-            // See if we have to register a new SSID for this contact if we have a SSID as part of the contact frame.
-            if (ssid.isPresent()) { // TODO remove this whole thing in favor of ContactRecorder.
-                Optional<List<String>> ssids = findSsidsOfContact(contactUUID);
-
-                if (ssids.isEmpty() || !ssids.get().contains(ssid.get())) {
-                    nzyme.getDatabase().useHandle(handle -> handle.createUpdate("INSERT INTO contacts_ssids(contact_uuid, ssid) VALUES(:contact_uuid, :ssid)")
-                            .bind("contact_uuid", contactUUID)
-                            .bind("ssid", ssid)
-                            .execute());
-                }
-            }
-
-            // Register in contact recorder for tracking.
+            // Register frame in contact recorder for tracking.
             this.contactRecorder.recordFrame(contactUUID, rssi, bssid, ssid);
 
             // TODO: this will cause way too many queries. find a better way.
@@ -321,10 +313,12 @@ public class ContactManager implements ContactIdentifierProcess {
         }
     }
 
-    public Optional<List<String>> findSsidsOfContact(UUID contactUUID) {
+    public Optional<List<String>> findRecordValuesOfContact(UUID contactUUID, ContactRecorder.RECORD_TYPE recordType) {
         List<String> ssids = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT ssid FROM contacts_ssids WHERE contact_uuid = :contact_uuid")
+                handle.createQuery("SELECT DISTINCT(record_value) FROM contact_records " +
+                                "WHERE contact_uuid = :contact_uuid AND record_type = :record_type")
                         .bind("contact_uuid", contactUUID)
+                        .bind("record_type", recordType)
                         .mapTo(String.class)
                         .list()
         );
