@@ -6,7 +6,6 @@ import moment from "moment";
 import Timespan from "../misc/Timespan";
 import RSSI from "../misc/RSSI";
 import numeral from "numeral";
-import BanditsTableRow from "./BanditsTableRow";
 import AdvertisedSSIDList from "./AdvertisedSSIDList";
 
 class BanditContactDetailsPage extends React.Component {
