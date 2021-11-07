@@ -716,4 +716,12 @@
         <dropTable tableName="contacts_ssids" />
     </changeSet>
 
+    <changeSet id="32" author="lennartkoopmann">
+        <addColumn tableName="contact_records">
+            <column name="frame_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

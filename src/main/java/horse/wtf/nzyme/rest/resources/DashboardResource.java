@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.engine.ContactRecordAggregation;
 import horse.wtf.nzyme.bandits.engine.ContactRecorder;
 import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecording;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
@@ -98,8 +99,8 @@ public class DashboardResource {
                 LOG.warn("Skipping unexpected incomplete contact [{}].", contact);
                 continue;
             }
-            Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
-            Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
+            Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
             contacts.add(ContactResponse.create(
                     contact.uuid(),

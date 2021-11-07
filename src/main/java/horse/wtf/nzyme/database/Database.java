@@ -1,10 +1,7 @@
 package horse.wtf.nzyme.database;
 
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
-import horse.wtf.nzyme.bandits.database.BanditIdentifierMapper;
-import horse.wtf.nzyme.bandits.database.BanditMapper;
-import horse.wtf.nzyme.bandits.database.ContactMapper;
-import horse.wtf.nzyme.bandits.database.ContactRecordMapper;
+import horse.wtf.nzyme.bandits.database.*;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
@@ -72,7 +69,8 @@ public class Database {
                 .registerRowMapper(new EventRecordMapper())
                 .registerRowMapper(new ScheduledReportEntryMapper())
                 .registerRowMapper(new ExecutionLogEntryMapper())
-                .registerRowMapper(new ContactRecordMapper());
+                .registerRowMapper(new ContactRecordMapper())
+                .registerRowMapper(new ContactRecordValueAggregationMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

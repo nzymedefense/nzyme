@@ -115,7 +115,7 @@ public class ContactRecorder {
                 Stats stats = Stats.of(values.getValue());
                 entryResult.put(
                         values.getKey(),
-                        ComputationResult.create(stats.mean(), stats.populationStandardDeviation())
+                        ComputationResult.create(values.getValue().size(), stats.mean(), stats.populationStandardDeviation())
                 );
             }
 
@@ -138,11 +138,12 @@ public class ContactRecorder {
             for (Map.Entry<String, ComputationResult> record : contact.getValue().entrySet()) {
                 ComputationResult cr = record.getValue();
                 nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
-                        "INSERT INTO contact_records(contact_uuid, record_type, record_value, rssi_average, rssi_stddev, created_at) " +
-                                "VALUES(:contact_uuid, :record_type, :record_value, :rssi_average, :rssi_stddev, (current_timestamp at time zone 'UTC'))")
+                        "INSERT INTO contact_records(contact_uuid, record_type, record_value, frame_count, rssi_average, rssi_stddev, created_at) " +
+                                "VALUES(:contact_uuid, :record_type, :record_value, :frame_count, :rssi_average, :rssi_stddev, (current_timestamp at time zone 'UTC'))")
                         .bind("contact_uuid", contact.getKey())
                         .bind("record_type", recordType)
                         .bind("record_value", record.getKey())
+                        .bind("frame_count", cr.frameCount())
                         .bind("rssi_average", cr.average())
                         .bind("rssi_stddev", cr.stdDev())
                         .execute()
@@ -153,7 +154,7 @@ public class ContactRecorder {
 
     public List<ContactRecord> findContactRecords(UUID contactUUID, RECORD_TYPE recordType) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT contact_uuid, record_type, record_value, rssi_average, rssi_stddev, created_at " +
+                handle.createQuery("SELECT contact_uuid, record_type, record_value, frame_count, rssi_average, rssi_stddev, created_at " +
                                 "FROM contact_records WHERE contact_uuid = :contact_uuid AND record_type = :record_type " +
                                 "ORDER BY created_at DESC")
                         .bind("contact_uuid", contactUUID)
@@ -165,11 +166,13 @@ public class ContactRecorder {
     @AutoValue
     public static abstract class ComputationResult {
 
+        public abstract long frameCount();
         public abstract double average();
         public abstract double stdDev();
 
-        public static ComputationResult create(double average, double stdDev) {
+        public static ComputationResult create(long frameCount, double average, double stdDev) {
             return builder()
+                    .frameCount(frameCount)
                     .average(average)
                     .stdDev(stdDev)
                     .build();
@@ -181,6 +184,8 @@ public class ContactRecorder {
 
         @AutoValue.Builder
         public abstract static class Builder {
+            public abstract Builder frameCount(long frameCount);
+
             public abstract Builder average(double average);
 
             public abstract Builder stdDev(double stdDev);

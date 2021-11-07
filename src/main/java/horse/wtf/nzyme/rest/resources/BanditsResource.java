@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
+import horse.wtf.nzyme.bandits.engine.ContactRecordAggregation;
 import horse.wtf.nzyme.bandits.engine.ContactRecorder;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
@@ -376,8 +377,8 @@ public class BanditsResource {
 
         Contact contact = oContact.get();
 
-        Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
-        Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
+        Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+        Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
@@ -418,8 +419,8 @@ public class BanditsResource {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
         for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
-            Optional<List<String>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
-            Optional<List<String>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
+            Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+            Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
             response.add(ContactResponse.create(
                     contact.uuid(),

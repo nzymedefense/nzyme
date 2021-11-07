@@ -28,15 +28,17 @@ public abstract class ContactRecord {
     public abstract UUID contactUUID();
     public abstract ContactRecorder.RECORD_TYPE recordType();
     public abstract String recordValue();
+    public abstract long frameCount();
     public abstract double rssiAverage();
     public abstract double rssiStdDev();
     public abstract DateTime createdAt();
 
-    public static ContactRecord create(UUID contactUUID, ContactRecorder.RECORD_TYPE recordType, String recordValue, double rssiAverage, double rssiStdDev, DateTime createdAt) {
+    public static ContactRecord create(UUID contactUUID, ContactRecorder.RECORD_TYPE recordType, String recordValue, long frameCount, double rssiAverage, double rssiStdDev, DateTime createdAt) {
         return builder()
                 .contactUUID(contactUUID)
                 .recordType(recordType)
                 .recordValue(recordValue)
+                .frameCount(frameCount)
                 .rssiAverage(rssiAverage)
                 .rssiStdDev(rssiStdDev)
                 .createdAt(createdAt)
@@ -54,6 +56,8 @@ public abstract class ContactRecord {
         public abstract Builder recordType(ContactRecorder.RECORD_TYPE recordType);
 
         public abstract Builder recordValue(String recordValue);
+
+        public abstract Builder frameCount(long frameCount);
 
         public abstract Builder rssiAverage(double rssiAverage);
 

@@ -19,6 +19,7 @@ package horse.wtf.nzyme.rest.responses.bandits;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.bandits.engine.ContactRecordAggregation;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -58,12 +59,12 @@ public abstract class ContactDetailsResponse {
     public abstract String sourceName();
 
     @JsonProperty("ssids")
-    public abstract List<String> ssids();
+    public abstract List<ContactRecordAggregation> ssids();
 
     @JsonProperty("bssids")
-    public abstract List<String> bssids();
+    public abstract List<ContactRecordAggregation> bssids();
 
-    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<String> ssids, List<String> bssids) {
+    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<ContactRecordAggregation> ssids, List<ContactRecordAggregation> bssids) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
@@ -106,9 +107,9 @@ public abstract class ContactDetailsResponse {
 
         public abstract Builder sourceName(String sourceName);
 
-        public abstract Builder ssids(List<String> ssids);
+        public abstract Builder ssids(List<ContactRecordAggregation> ssids);
 
-        public abstract Builder bssids(List<String> bssids);
+        public abstract Builder bssids(List<ContactRecordAggregation> bssids);
 
         public abstract ContactDetailsResponse build();
     }

@@ -313,20 +313,21 @@ public class ContactManager implements ContactIdentifierProcess {
         }
     }
 
-    public Optional<List<String>> findRecordValuesOfContact(UUID contactUUID, ContactRecorder.RECORD_TYPE recordType) {
-        List<String> ssids = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(record_value) FROM contact_records " +
-                                "WHERE contact_uuid = :contact_uuid AND record_type = :record_type")
+    public Optional<List<ContactRecordAggregation>> findRecordValuesOfContact(UUID contactUUID, ContactRecorder.RECORD_TYPE recordType) {
+        List<ContactRecordAggregation> values = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(record_value) AS record_value, SUM(frame_count) AS frame_count FROM contact_records " +
+                                "WHERE contact_uuid = :contact_uuid AND record_type = :record_type " +
+                                "GROUP BY record_value ORDER BY frame_count DESC")
                         .bind("contact_uuid", contactUUID)
                         .bind("record_type", recordType)
-                        .mapTo(String.class)
+                        .mapTo(ContactRecordAggregation.class)
                         .list()
         );
 
-        if (ssids == null || ssids.isEmpty()) {
+        if (values == null || values.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(ssids);
+            return Optional.of(values);
         }
     }
 

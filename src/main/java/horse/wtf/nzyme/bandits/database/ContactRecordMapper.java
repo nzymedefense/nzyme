@@ -42,6 +42,7 @@ public class ContactRecordMapper implements RowMapper<ContactRecord>  {
                 UUID.fromString(rs.getString("contact_uuid")),
                 recordType,
                 rs.getString("record_value"),
+                rs.getLong("frame_count"),
                 rs.getDouble("rssi_average"),
                 rs.getDouble("rssi_stddev"),
                 new DateTime(rs.getTimestamp("created_at"))
