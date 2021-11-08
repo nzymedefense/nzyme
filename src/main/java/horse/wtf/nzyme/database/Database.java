@@ -70,7 +70,8 @@ public class Database {
                 .registerRowMapper(new ScheduledReportEntryMapper())
                 .registerRowMapper(new ExecutionLogEntryMapper())
                 .registerRowMapper(new ContactRecordMapper())
-                .registerRowMapper(new ContactRecordValueAggregationMapper());
+                .registerRowMapper(new ContactRecordValueAggregationMapper())
+                .registerRowMapper(new ContactRecorderFrameCountHistogramEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

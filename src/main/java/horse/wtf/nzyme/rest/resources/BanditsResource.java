@@ -17,9 +17,11 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
@@ -43,10 +45,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Path("/api/bandits")
 @Secured
@@ -345,10 +344,27 @@ public class BanditsResource {
 
     @GET
     @Path("/show/{banditUUID}/contacts/{contactUUID}")
-    public Response findContactOfBandit(@PathParam("banditUUID") String bUUID, @PathParam("contactUUID") String cUUID) {
+    public Response findContactOfBandit(@PathParam("banditUUID") String bUUID,
+                                        @PathParam("contactUUID") String cUUID,
+                                        @QueryParam("detailed_ssids") String detailedSSIDsQ,
+                                        @QueryParam("detailed_bssids") String detailedBSSIDsQ) {
         if (Strings.isNullOrEmpty(bUUID) || Strings.isNullOrEmpty(cUUID)) {
             LOG.warn("UUID was null or empty.");
             return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        List<String> detailedSSIDs;
+        if (detailedSSIDsQ != null) {
+            detailedSSIDs = Lists.newArrayList(Splitter.on(",").split(detailedSSIDsQ));
+        } else {
+            detailedSSIDs = Collections.emptyList();
+        }
+
+        List<String> detailedBSSIDs;
+        if (detailedBSSIDsQ != null) {
+            detailedBSSIDs = Lists.newArrayList(Splitter.on(",").split(detailedBSSIDsQ));
+        } else {
+            detailedBSSIDs = Collections.emptyList();
         }
 
         UUID banditUUID;
@@ -380,6 +396,9 @@ public class BanditsResource {
         Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
         Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
+        Optional<Map<String, Map<String, Long>>> ssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
+        Optional<Map<String, Map<String, Long>>> bssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
+
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
                 contact.frameCount(),
@@ -392,7 +411,9 @@ public class BanditsResource {
                 contact.sourceRole().toString(),
                 contact.sourceName(),
                 ssids.orElse(Collections.emptyList()),
-                bssids.orElse(Collections.emptyList())
+                bssids.orElse(Collections.emptyList()),
+                ssidFrameCountHistograms.orElse(Maps.newHashMap()),
+                bssidFrameCountHistograms.orElse(Maps.newHashMap())
         )).build();
     }
 

@@ -8,6 +8,7 @@ import RSSI from "../misc/RSSI";
 import numeral from "numeral";
 import AdvertisedSSIDTable from "./AdvertisedSSIDTable";
 import AdvertisedBSSIDTable from "./AdvertisedBSSIDTable";
+import SimpleBarChart from "../charts/SimpleBarChart";
 
 class BanditContactDetailsPage extends React.Component {
 
@@ -18,13 +19,16 @@ class BanditContactDetailsPage extends React.Component {
         this.contactUUID = decodeURIComponent(props.match.params.contactUUID);
 
         this.state = {
-            contact: undefined
+            contact: undefined,
+            detailed_ssids: ["foo"],
+            detailed_bssids: ["00:13:37:a8:96:e3"]
         }
 
         this.banditsService = new BanditsService();
         this.banditsService.findContactOfBandit = this.banditsService.findContactOfBandit.bind(this);
 
         this._loadContact = this._loadContact.bind(this);
+        this._formatFrameCountHistogram = this._formatFrameCountHistogram.bind(this);
     }
 
     componentDidMount() {
@@ -37,7 +41,31 @@ class BanditContactDetailsPage extends React.Component {
     }
 
     _loadContact(banditUUID, contactUUID) {
-        this.banditsService.findContactOfBandit(banditUUID, contactUUID);
+        this.banditsService.findContactOfBandit(banditUUID, contactUUID, this.state.detailed_ssids.join(), this.state.detailed_bssids.join());
+    }
+
+    _formatFrameCountHistogram(counts) {
+        const result = [];
+
+        Object.keys(counts).forEach(function (key) {
+            let x = [];
+            let y = [];
+
+            Object.keys(counts[key]).sort().forEach(function (countKey) {
+                x.push(new Date(countKey));
+                y.push(counts[key][countKey]);
+            });
+
+            result.push({
+                x: x,
+                y: y,
+                type: "line",
+                name: key,
+                line: {width: 1, shape: "linear"},
+            })
+        });
+
+        return result;
     }
 
     render() {
@@ -145,6 +173,28 @@ class BanditContactDetailsPage extends React.Component {
                     <div className="col-md-6">
                         <h2>Advertised BSSIDs</h2>
                         <AdvertisedBSSIDTable bssids={contact.bssids} />
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-6">
+                        <SimpleBarChart
+                            title="Frame Count"
+                            showLegend={true}
+                            width={540}
+                            height={150}
+                            customMarginTop={30}
+                            finalData={this._formatFrameCountHistogram(this.state.contact.ssid_frame_count_histograms)}/>
+                    </div>
+
+                    <div className="col-md-6">
+                        <SimpleBarChart
+                            title="Frame Count"
+                            showLegend={true}
+                            width={545}
+                            height={150}
+                            customMarginTop={30}
+                            finalData={this._formatFrameCountHistogram(this.state.contact.bssid_frame_count_histograms)}/>
                     </div>
                 </div>
 

@@ -18,6 +18,7 @@
 package horse.wtf.nzyme.bandits.engine;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.alerts.Alert;
@@ -329,6 +330,38 @@ public class ContactManager implements ContactIdentifierProcess {
         } else {
             return Optional.of(values);
         }
+    }
+
+    public Optional<Map<String, Map<String, Long>>> findFrameCountHistogramsOfContact(UUID contactUUID, List<String> values, ContactRecorder.RECORD_TYPE type) {
+        if (values.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Map<String, Map<String, Long>> result = Maps.newHashMap();
+
+        for (String value : values) {
+            Map<String, Long> histogram = Maps.newHashMap();
+
+            List<ContactRecorderFrameCountHistogramEntry> entries = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT frame_count, created_at FROM contact_records " +
+                                    "WHERE contact_uuid = :contact_uuid AND record_type = :record_type AND record_value = :value " +
+                                    "AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
+                                    "ORDER BY created_at DESC")
+                            .bind("contact_uuid", contactUUID)
+                            .bind("record_type", type)
+                            .bind("value", value)
+                            .mapTo(ContactRecorderFrameCountHistogramEntry.class)
+                            .list()
+            );
+
+            for (ContactRecorderFrameCountHistogramEntry entry : entries) {
+                histogram.put(entry.createdAt().toString(), entry.frameCount());
+            }
+
+            result.put(value, histogram);
+        }
+
+        return Optional.of(result);
     }
 
     public void updateContactFrames(Bandit bandit, String sourceName, long frameCount, int rssi) {

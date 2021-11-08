@@ -26,6 +26,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -139,13 +140,14 @@ public class ContactRecorder {
                 ComputationResult cr = record.getValue();
                 nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
                         "INSERT INTO contact_records(contact_uuid, record_type, record_value, frame_count, rssi_average, rssi_stddev, created_at) " +
-                                "VALUES(:contact_uuid, :record_type, :record_value, :frame_count, :rssi_average, :rssi_stddev, (current_timestamp at time zone 'UTC'))")
+                                "VALUES(:contact_uuid, :record_type, :record_value, :frame_count, :rssi_average, :rssi_stddev, :created_at)")
                         .bind("contact_uuid", contact.getKey())
                         .bind("record_type", recordType)
                         .bind("record_value", record.getKey())
                         .bind("frame_count", cr.frameCount())
                         .bind("rssi_average", cr.average())
                         .bind("rssi_stddev", cr.stdDev())
+                        .bind("created_at", DateTime.now())
                         .execute()
                 );
             }

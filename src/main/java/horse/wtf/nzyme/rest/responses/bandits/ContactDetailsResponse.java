@@ -23,6 +23,7 @@ import horse.wtf.nzyme.bandits.engine.ContactRecordAggregation;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @AutoValue
@@ -64,7 +65,13 @@ public abstract class ContactDetailsResponse {
     @JsonProperty("bssids")
     public abstract List<ContactRecordAggregation> bssids();
 
-    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<ContactRecordAggregation> ssids, List<ContactRecordAggregation> bssids) {
+    @JsonProperty("ssid_frame_count_histograms")
+    public abstract Map<String, Map<String, Long>> ssidFrameCountHistograms();
+
+    @JsonProperty("bssid_frame_count_histograms")
+    public abstract Map<String, Map<String, Long>> bssidFrameCountHistograms();
+
+    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<ContactRecordAggregation> ssids, List<ContactRecordAggregation> bssids, Map<String, Map<String, Long>> ssidFrameCountHistograms, Map<String, Map<String, Long>> bssidFrameCountHistograms) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
@@ -78,6 +85,8 @@ public abstract class ContactDetailsResponse {
                 .sourceName(sourceName)
                 .ssids(ssids)
                 .bssids(bssids)
+                .ssidFrameCountHistograms(ssidFrameCountHistograms)
+                .bssidFrameCountHistograms(bssidFrameCountHistograms)
                 .build();
     }
 
@@ -110,6 +119,10 @@ public abstract class ContactDetailsResponse {
         public abstract Builder ssids(List<ContactRecordAggregation> ssids);
 
         public abstract Builder bssids(List<ContactRecordAggregation> bssids);
+
+        public abstract Builder ssidFrameCountHistograms(Map<String, Map<String, Long>> ssidFrameCountHistograms);
+
+        public abstract Builder bssidFrameCountHistograms(Map<String, Map<String, Long>> bssidFrameCountHistograms);
 
         public abstract ContactDetailsResponse build();
     }

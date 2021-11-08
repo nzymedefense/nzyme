@@ -19,10 +19,10 @@ class BanditsService {
         });
     }
 
-    findContactOfBandit(banditUUID, contactUUID) {
+    findContactOfBandit(banditUUID, contactUUID, detailed_ssids, detailed_bssids) {
         const self = this;
 
-        RESTClient.get("/bandits/show/" + banditUUID + "/contacts/" + contactUUID, {}, function(response) {
+        RESTClient.get("/bandits/show/" + banditUUID + "/contacts/" + contactUUID, {"detailed_ssids": detailed_ssids, "detailed_bssids": detailed_bssids}, function(response) {
             self.setState({contact: response.data});
         });
     }
