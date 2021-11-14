@@ -179,7 +179,7 @@ class BanditContactDetailsPage extends React.Component {
                 <div className="row">
                     <div className="col-md-6">
                         <SimpleBarChart
-                            title="Frame Count"
+                            title="Frame Count (by SSID, most recent 24h max)"
                             showLegend={true}
                             width={540}
                             height={150}
@@ -189,7 +189,7 @@ class BanditContactDetailsPage extends React.Component {
 
                     <div className="col-md-6">
                         <SimpleBarChart
-                            title="Frame Count"
+                            title="Frame Count (by BSSID, most recent 24h max)"
                             showLegend={true}
                             width={545}
                             height={150}

@@ -49,11 +49,13 @@ public class ContactManager implements ContactIdentifierProcess {
     private final ContactIdentifierEngine identifierEngine;
     private final ContactRecorder contactRecorder;
 
+    private static final int CONTACT_RECORDER_SYNC_FREQ = 10;
+
     public ContactManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
-        this.contactRecorder = new ContactRecorder(10, nzyme);
+        this.contactRecorder = new ContactRecorder(CONTACT_RECORDER_SYNC_FREQ, nzyme);
 
         // Register default bandits.
         DefaultBandits.seed(this);
@@ -345,11 +347,11 @@ public class ContactManager implements ContactIdentifierProcess {
             List<ContactRecorderFrameCountHistogramEntry> entries = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT frame_count, created_at FROM contact_records " +
                                     "WHERE contact_uuid = :contact_uuid AND record_type = :record_type AND record_value = :value " +
-                                    "AND created_at > (current_timestamp at time zone 'UTC' - interval '1 day') " +
-                                    "ORDER BY created_at DESC")
+                                    "ORDER BY created_at DESC LIMIT :limit")
                             .bind("contact_uuid", contactUUID)
                             .bind("record_type", type)
                             .bind("value", value)
+                            .bind("limit", 86400/CONTACT_RECORDER_SYNC_FREQ) // max 1 day
                             .mapTo(ContactRecorderFrameCountHistogramEntry.class)
                             .list()
             );

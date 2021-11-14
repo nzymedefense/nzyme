@@ -50,7 +50,7 @@ public class ContactRecorder {
     private final Map<UUID, Map<String, List<Integer>>> ssids;
     private final Map<UUID, Map<String, List<Integer>>> bssids;
 
-    public ContactRecorder(int cleaningFrequencySeconds, NzymeLeader nzyme) {
+    public ContactRecorder(int syncFrequencySeconds, NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.ssids = Maps.newHashMap();
@@ -75,7 +75,7 @@ public class ContactRecorder {
                     LOG.error("Error in contact recorder synchronization.", e);
                 }
             }
-        }, cleaningFrequencySeconds, cleaningFrequencySeconds, TimeUnit.SECONDS);
+        }, syncFrequencySeconds, syncFrequencySeconds, TimeUnit.SECONDS);
     }
 
     public void recordFrame(UUID contactUUID, int rssi, String bssid, Optional<String> ssid) {
