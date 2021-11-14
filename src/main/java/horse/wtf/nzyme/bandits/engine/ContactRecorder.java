@@ -50,7 +50,7 @@ public class ContactRecorder {
     private final Map<UUID, Map<String, List<Integer>>> ssids;
     private final Map<UUID, Map<String, List<Integer>>> bssids;
 
-    public ContactRecorder(int syncFrequencySeconds, NzymeLeader nzyme) {
+    public ContactRecorder(int cleaningFrequencySeconds, NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
         this.ssids = Maps.newHashMap();
@@ -67,15 +67,15 @@ public class ContactRecorder {
                     // Write averages to database.
                     writeToDatabase(compute(this.ssids), RECORD_TYPE.SSID);
                     writeToDatabase(compute(this.bssids), RECORD_TYPE.BSSID);
-
+                } catch(Exception e) {
+                    LOG.error("Error in contact recorder synchronization.", e);
+                } finally {
                     // Reset recordings.
                     ssids.clear();
                     bssids.clear();
-                } catch(Exception e) {
-                    LOG.error("Error in contact recorder synchronization.", e);
                 }
             }
-        }, syncFrequencySeconds, syncFrequencySeconds, TimeUnit.SECONDS);
+        }, cleaningFrequencySeconds, cleaningFrequencySeconds, TimeUnit.SECONDS);
     }
 
     public void recordFrame(UUID contactUUID, int rssi, String bssid, Optional<String> ssid) {
