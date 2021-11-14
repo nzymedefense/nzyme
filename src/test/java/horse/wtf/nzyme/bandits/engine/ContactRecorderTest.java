@@ -94,7 +94,7 @@ public class ContactRecorderTest {
         assertEquals(bssidCompute.get(u1).get("9A:87:13:D6:CA:F4"), ContactRecorder.ComputationResult.create(2,-45.0D, 4.0D));
 
         assertEquals(bssidCompute.get(u2).size(), 1);
-        assertEquals(bssidCompute.get(u2).get("6B:29:AF:99:17:20"), ContactRecorder.ComputationResult.create(1,-21.0D, 2.0D));
+        assertEquals(bssidCompute.get(u2).get("6B:29:AF:99:17:20"), ContactRecorder.ComputationResult.create(2,-21.0D, 2.0D));
 
         assertEquals(bssidCompute.get(u3).size(), 1);
         assertEquals(bssidCompute.get(u3).get("12:0C:CD:FD:5F:E3"), ContactRecorder.ComputationResult.create(1,-85.D, 5.0D));
