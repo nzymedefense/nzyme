@@ -20,28 +20,30 @@ class BanditContactDetailsPage extends React.Component {
 
         this.state = {
             contact: undefined,
-            detailed_ssids: ["foo"],
-            detailed_bssids: ["00:13:37:a8:96:e3"]
+            detailed_ssids: [],
+            detailed_bssids: []
         }
 
         this.banditsService = new BanditsService();
         this.banditsService.findContactOfBandit = this.banditsService.findContactOfBandit.bind(this);
 
-        this._loadContact = this._loadContact.bind(this);
+        this._loadData = this._loadData.bind(this);
         this._formatFrameCountHistogram = this._formatFrameCountHistogram.bind(this);
+        this._onNewSSIDSelection = this._onNewSSIDSelection.bind(this);
+        this._onNewBSSIDSelection = this._onNewBSSIDSelection.bind(this);
     }
 
     componentDidMount() {
         const self = this;
-        self._loadContact(self.banditUUID, self.contactUUID)
+        self._loadData()
 
         setInterval(function () {
-            self._loadContact(self.banditUUID, self.contactUUID)
+            self._loadData()
         }, 5000);
     }
 
-    _loadContact(banditUUID, contactUUID) {
-        this.banditsService.findContactOfBandit(banditUUID, contactUUID, this.state.detailed_ssids.join(), this.state.detailed_bssids.join());
+    _loadData() {
+        this.banditsService.findContactOfBandit(this.banditUUID, this.contactUUID, this.state.detailed_ssids.join(), this.state.detailed_bssids.join());
     }
 
     _formatFrameCountHistogram(counts) {
@@ -66,6 +68,20 @@ class BanditContactDetailsPage extends React.Component {
         });
 
         return result;
+    }
+
+    _onNewSSIDSelection(selection) {
+        const self = this;
+        this.setState({detailed_ssids: selection}, function () {
+            self._loadData();
+        });
+    }
+
+    _onNewBSSIDSelection(selection) {
+        const self = this;
+        this.setState({detailed_bssids: selection}, function () {
+            self._loadData();
+        });
     }
 
     render() {
@@ -168,11 +184,11 @@ class BanditContactDetailsPage extends React.Component {
                 <div className="row mt-3">
                     <div className="col-md-6">
                         <h2>Advertised SSIDs</h2>
-                        <AdvertisedSSIDTable ssids={contact.ssids} />
+                        <AdvertisedSSIDTable ssids={contact.ssids} onNewSelection={this._onNewSSIDSelection} />
                     </div>
                     <div className="col-md-6">
                         <h2>Advertised BSSIDs</h2>
-                        <AdvertisedBSSIDTable bssids={contact.bssids} />
+                        <AdvertisedBSSIDTable bssids={contact.bssids} onNewSelection={this._onNewBSSIDSelection} />
                     </div>
                 </div>
 
