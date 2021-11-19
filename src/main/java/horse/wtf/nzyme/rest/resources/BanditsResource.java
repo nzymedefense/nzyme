@@ -399,6 +399,9 @@ public class BanditsResource {
         Optional<Map<String, Map<String, Long>>> ssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
         Optional<Map<String, Map<String, Long>>> bssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
 
+        Optional<Map<String, Map<String, Long>>> ssidSignalStrengthHistograms = nzyme.getContactManager().findSignalStrengthHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
+        Optional<Map<String, Map<String, Long>>> bssidSignalStrengthHistograms = nzyme.getContactManager().findSignalStrengthHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
+
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
                 contact.frameCount(),
@@ -413,7 +416,9 @@ public class BanditsResource {
                 ssids.orElse(Collections.emptyList()),
                 bssids.orElse(Collections.emptyList()),
                 ssidFrameCountHistograms.orElse(Maps.newHashMap()),
-                bssidFrameCountHistograms.orElse(Maps.newHashMap())
+                bssidFrameCountHistograms.orElse(Maps.newHashMap()),
+                ssidSignalStrengthHistograms.orElse(Maps.newHashMap()),
+                bssidSignalStrengthHistograms.orElse(Maps.newHashMap())
         )).build();
     }
 

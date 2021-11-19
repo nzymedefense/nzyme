@@ -71,7 +71,13 @@ public abstract class ContactDetailsResponse {
     @JsonProperty("bssid_frame_count_histograms")
     public abstract Map<String, Map<String, Long>> bssidFrameCountHistograms();
 
-    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<ContactRecordAggregation> ssids, List<ContactRecordAggregation> bssids, Map<String, Map<String, Long>> ssidFrameCountHistograms, Map<String, Map<String, Long>> bssidFrameCountHistograms) {
+    @JsonProperty("ssid_signal_strength_histograms")
+    public abstract Map<String, Map<String, Long>> ssidSignalStrengthHistograms();
+
+    @JsonProperty("bssid_signal_strength_histograms")
+    public abstract Map<String, Map<String, Long>> bssidSignalStrengthHistograms();
+
+    public static ContactDetailsResponse create(UUID uuid, Long frameCount, DateTime firstSeen, DateTime lastSeen, Boolean isActive, int lastSignal, String banditUUID, String banditName, String sourceRole, String sourceName, List<ContactRecordAggregation> ssids, List<ContactRecordAggregation> bssids, Map<String, Map<String, Long>> ssidFrameCountHistograms, Map<String, Map<String, Long>> bssidFrameCountHistograms, Map<String, Map<String, Long>> ssidSignalStrengthHistograms, Map<String, Map<String, Long>> bssidSignalStrengthHistograms) {
         return builder()
                 .uuid(uuid)
                 .frameCount(frameCount)
@@ -87,6 +93,8 @@ public abstract class ContactDetailsResponse {
                 .bssids(bssids)
                 .ssidFrameCountHistograms(ssidFrameCountHistograms)
                 .bssidFrameCountHistograms(bssidFrameCountHistograms)
+                .ssidSignalStrengthHistograms(ssidSignalStrengthHistograms)
+                .bssidSignalStrengthHistograms(bssidSignalStrengthHistograms)
                 .build();
     }
 
@@ -123,6 +131,10 @@ public abstract class ContactDetailsResponse {
         public abstract Builder ssidFrameCountHistograms(Map<String, Map<String, Long>> ssidFrameCountHistograms);
 
         public abstract Builder bssidFrameCountHistograms(Map<String, Map<String, Long>> bssidFrameCountHistograms);
+
+        public abstract Builder ssidSignalStrengthHistograms(Map<String, Map<String, Long>> ssidSignalStrengthHistograms);
+
+        public abstract Builder bssidSignalStrengthHistograms(Map<String, Map<String, Long>> bssidSignalStrengthHistograms);
 
         public abstract ContactDetailsResponse build();
     }

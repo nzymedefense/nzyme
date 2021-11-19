@@ -28,7 +28,6 @@ class BanditContactDetailsPage extends React.Component {
         this.banditsService.findContactOfBandit = this.banditsService.findContactOfBandit.bind(this);
 
         this._loadData = this._loadData.bind(this);
-        this._formatFrameCountHistogram = this._formatFrameCountHistogram.bind(this);
         this._onNewSSIDSelection = this._onNewSSIDSelection.bind(this);
         this._onNewBSSIDSelection = this._onNewBSSIDSelection.bind(this);
     }
@@ -46,7 +45,7 @@ class BanditContactDetailsPage extends React.Component {
         this.banditsService.findContactOfBandit(this.banditUUID, this.contactUUID, this.state.detailed_ssids.join(), this.state.detailed_bssids.join());
     }
 
-    _formatFrameCountHistogram(counts) {
+    _formatHistogram(counts) {
         const result = [];
 
         Object.keys(counts).forEach(function (key) {
@@ -200,7 +199,7 @@ class BanditContactDetailsPage extends React.Component {
                             width={540}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatFrameCountHistogram(this.state.contact.ssid_frame_count_histograms)}/>
+                            finalData={this._formatHistogram(this.state.contact.ssid_frame_count_histograms)}/>
                     </div>
 
                     <div className="col-md-6">
@@ -210,7 +209,29 @@ class BanditContactDetailsPage extends React.Component {
                             width={545}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatFrameCountHistogram(this.state.contact.bssid_frame_count_histograms)}/>
+                            finalData={this._formatHistogram(this.state.contact.bssid_frame_count_histograms)}/>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-md-6">
+                        <SimpleBarChart
+                            title="Signal Strength (by SSID, most recent 24h max)"
+                            showLegend={true}
+                            width={540}
+                            height={150}
+                            customMarginTop={30}
+                            finalData={this._formatHistogram(this.state.contact.ssid_signal_strength_histograms)}/>
+                    </div>
+
+                    <div className="col-md-6">
+                        <SimpleBarChart
+                            title="Signal Strength (by BSSID, most recent 24h max)"
+                            showLegend={true}
+                            width={545}
+                            height={150}
+                            customMarginTop={30}
+                            finalData={this._formatHistogram(this.state.contact.bssid_signal_strength_histograms)}/>
                     </div>
                 </div>
 
