@@ -12,7 +12,14 @@ class ContactsTableRow extends React.Component {
 
         return (
             <tr>
-                <td><a href={Routes.BANDITS.CONTACT_DETAILS(contact.bandit_uuid, contact.uuid)}>{contact.uuid.substr(0, 8)}</a></td>
+                <td>
+                    {
+                        contact.source_role === "LEADER" ?
+                            <a href={Routes.BANDITS.CONTACT_DETAILS(contact.bandit_uuid, contact.uuid)}>{contact.uuid.substr(0, 8)}</a>
+                            :
+                            <span title="Only LEADER contacts produce track details.">{contact.uuid.substr(0, 8)}</span>
+                    }
+                </td>
                 <td>{contact.source_name} ({contact.source_role})</td>
                 <td>{contact.is_active ? <span className="badge badge-success">active</span> : <span className='badge badge-primary'>not active</span>}</td>
                 <td>{contact.is_active ? <RSSI rssi={contact.last_signal} /> : "n/a"}</td>
