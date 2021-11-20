@@ -49,7 +49,7 @@ public class ContactManager implements ContactIdentifierProcess {
     private final ContactIdentifierEngine identifierEngine;
     private final ContactRecorder contactRecorder;
 
-    private static final int CONTACT_RECORDER_SYNC_FREQ = 10;
+    private static final int CONTACT_RECORDER_SYNC_FREQ = 60;
 
     public ContactManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
