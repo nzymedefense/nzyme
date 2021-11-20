@@ -27,6 +27,7 @@ import horse.wtf.nzyme.bandits.Bandit;
 import horse.wtf.nzyme.bandits.Contact;
 import horse.wtf.nzyme.bandits.engine.ContactRecordAggregation;
 import horse.wtf.nzyme.bandits.engine.ContactRecorder;
+import horse.wtf.nzyme.bandits.engine.ContactRecorderHistogramEntry;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
@@ -396,11 +397,8 @@ public class BanditsResource {
         Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
         Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
 
-        Optional<Map<String, Map<String, Long>>> ssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
-        Optional<Map<String, Map<String, Long>>> bssidFrameCountHistograms = nzyme.getContactManager().findFrameCountHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
-
-        Optional<Map<String, Map<String, Long>>> ssidSignalStrengthHistograms = nzyme.getContactManager().findSignalStrengthHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
-        Optional<Map<String, Map<String, Long>>> bssidSignalStrengthHistograms = nzyme.getContactManager().findSignalStrengthHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
+        Optional<Map<String, List<ContactRecorderHistogramEntry>>> ssidRawHistograms = nzyme.getContactManager().findRecordingHistogramsOfContact(contact.uuid(), detailedSSIDs, ContactRecorder.RECORD_TYPE.SSID);
+        Optional<Map<String, List<ContactRecorderHistogramEntry>>> bssidRawHistograms = nzyme.getContactManager().findRecordingHistogramsOfContact(contact.uuid(), detailedBSSIDs, ContactRecorder.RECORD_TYPE.BSSID);
 
         return Response.ok(ContactDetailsResponse.create(
                 contact.uuid(),
@@ -415,11 +413,45 @@ public class BanditsResource {
                 contact.sourceName(),
                 ssids.orElse(Collections.emptyList()),
                 bssids.orElse(Collections.emptyList()),
-                ssidFrameCountHistograms.orElse(Maps.newHashMap()),
-                bssidFrameCountHistograms.orElse(Maps.newHashMap()),
-                ssidSignalStrengthHistograms.orElse(Maps.newHashMap()),
-                bssidSignalStrengthHistograms.orElse(Maps.newHashMap())
+                buildContactRecordHistogram(ssidRawHistograms, ContactRecorder.VALUE_TYPE.FRAME_COUNT).orElse(Maps.newHashMap()),
+                buildContactRecordHistogram(bssidRawHistograms, ContactRecorder.VALUE_TYPE.FRAME_COUNT).orElse(Maps.newHashMap()),
+                buildContactRecordHistogram(ssidRawHistograms, ContactRecorder.VALUE_TYPE.SIGNAL_STRENGTH).orElse(Maps.newHashMap()),
+                buildContactRecordHistogram(bssidRawHistograms, ContactRecorder.VALUE_TYPE.SIGNAL_STRENGTH).orElse(Maps.newHashMap())
         )).build();
+    }
+
+    private Optional<Map<String, Map<String, Long>>> buildContactRecordHistogram(Optional<Map<String, List<ContactRecorderHistogramEntry>>> x, ContactRecorder.VALUE_TYPE valueType) {
+        if (x.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Map<String, Map<String, Long>> result = Maps.newHashMap();
+
+        for (Map.Entry<String, List<ContactRecorderHistogramEntry>> ssid : x.get().entrySet()) {
+            Map<String, Long> ssidResult = Maps.newHashMap();
+
+            for (ContactRecorderHistogramEntry value : ssid.getValue()) {
+                long selectedValue;
+
+                switch(valueType) {
+                    case FRAME_COUNT:
+                        selectedValue = value.frameCount();
+                        break;
+                    case SIGNAL_STRENGTH:
+                        selectedValue = value.signalStrength();
+                        break;
+                    default:
+                        throw new RuntimeException("Value type not implemented for histogram translation.");
+                }
+
+                ssidResult.put(value.createdAt().toString(), selectedValue);
+            }
+
+            result.put(ssid.getKey(), ssidResult);
+        }
+
+
+        return Optional.of(result);
     }
 
     private List<BanditIdentifierResponse> buildIdentifiersResponse(Bandit bandit) {

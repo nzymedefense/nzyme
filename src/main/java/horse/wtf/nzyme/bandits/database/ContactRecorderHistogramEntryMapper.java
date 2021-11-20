@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.bandits.database;
 
-import horse.wtf.nzyme.bandits.engine.ContactRecorderSignalStrengthHistogramEntry;
+import horse.wtf.nzyme.bandits.engine.ContactRecorderHistogramEntry;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -25,12 +25,13 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ContactRecorderSignalStrengthHistogramEntryMapper implements RowMapper<ContactRecorderSignalStrengthHistogramEntry> {
+public class ContactRecorderHistogramEntryMapper implements RowMapper<ContactRecorderHistogramEntry> {
 
     @Override
-    public ContactRecorderSignalStrengthHistogramEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return ContactRecorderSignalStrengthHistogramEntry.create(
-                rs.getLong("rssi_average"),
+    public ContactRecorderHistogramEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return ContactRecorderHistogramEntry.create(
+                rs.getLong("frame_count"),
+                (long) rs.getDouble("signal_strength"),
                 new DateTime(rs.getTimestamp("created_at"))
         );
     }

@@ -71,8 +71,7 @@ public class Database {
                 .registerRowMapper(new ExecutionLogEntryMapper())
                 .registerRowMapper(new ContactRecordMapper())
                 .registerRowMapper(new ContactRecordValueAggregationMapper())
-                .registerRowMapper(new ContactRecorderFrameCountHistogramEntryMapper())
-                .registerRowMapper(new ContactRecorderSignalStrengthHistogramEntryMapper());
+                .registerRowMapper(new ContactRecorderHistogramEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

@@ -21,28 +21,33 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class ContactRecorderFrameCountHistogramEntry {
+public abstract class ContactRecorderHistogramEntry {
 
     public abstract long frameCount();
+    public abstract long signalStrength();
     public abstract DateTime createdAt();
 
-    public static ContactRecorderFrameCountHistogramEntry create(long frameCount, DateTime createdAt) {
+    public static ContactRecorderHistogramEntry create(long frameCount, long signalStrength, DateTime createdAt) {
         return builder()
                 .frameCount(frameCount)
+                .signalStrength(signalStrength)
                 .createdAt(createdAt)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_ContactRecorderFrameCountHistogramEntry.Builder();
+        return new AutoValue_ContactRecorderHistogramEntry.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder frameCount(long frameCount);
 
+        public abstract Builder signalStrength(long signalStrength);
+
         public abstract Builder createdAt(DateTime createdAt);
 
-        public abstract ContactRecorderFrameCountHistogramEntry build();
+        public abstract ContactRecorderHistogramEntry build();
     }
+
 }

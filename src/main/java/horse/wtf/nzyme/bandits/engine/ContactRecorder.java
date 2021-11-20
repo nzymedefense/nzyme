@@ -43,6 +43,10 @@ public class ContactRecorder {
         SSID, BSSID
     }
 
+    public enum VALUE_TYPE {
+        FRAME_COUNT, SIGNAL_STRENGTH
+    }
+
     private final Object mutex = new Object();
 
     private final NzymeLeader nzyme;
