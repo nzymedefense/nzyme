@@ -361,8 +361,6 @@ public class ContactManager implements ContactIdentifierProcess {
     }
 
     public void updateContactFrames(Bandit bandit, String sourceName, long frameCount, int rssi) {
-        LOG.info("new contact frame: signal {}", rssi);
-
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("UPDATE contacts SET frame_count = :frame_count, " +
                 "last_seen = (current_timestamp at time zone 'UTC'), last_signal = :last_signal " +
                 "WHERE bandit_id = :bandit_id AND source_name = :source_name " +
