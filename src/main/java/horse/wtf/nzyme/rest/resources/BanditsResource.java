@@ -68,7 +68,7 @@ public class BanditsResource {
                 continue;
             }
 
-            List<ContactResponse> contacts = buildContactsResponse(x);
+            List<ContactResponse> contacts = buildContactsResponse(x, false);
 
             bandits.add(BanditResponse.create(
                     x.uuid(),
@@ -113,7 +113,7 @@ public class BanditsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<ContactResponse> contacts = buildContactsResponse(bandit);
+        List<ContactResponse> contacts = buildContactsResponse(bandit, true);
 
         return Response.ok(BanditResponse.create(
                 bandit.uuid(),
@@ -473,12 +473,20 @@ public class BanditsResource {
         return response.build();
     }
 
-    private List<ContactResponse> buildContactsResponse(Bandit bandit) {
+    private List<ContactResponse> buildContactsResponse(Bandit bandit, boolean includeContactRecords) {
         ImmutableList.Builder<ContactResponse> response = new ImmutableList.Builder<>();
 
         for (Contact contact : nzyme.getContactManager().findContactsOfBandit(bandit)) {
-            Optional<List<ContactRecordAggregation>> ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
-            Optional<List<ContactRecordAggregation>> bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
+
+            Optional<List<ContactRecordAggregation>> ssids;
+            Optional<List<ContactRecordAggregation>> bssids;
+            if (includeContactRecords) {
+                ssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.SSID);
+                bssids = nzyme.getContactManager().findRecordValuesOfContact(contact.uuid(), ContactRecorder.RECORD_TYPE.BSSID);
+            } else {
+                ssids = Optional.empty();
+                bssids = Optional.empty();
+            }
 
             response.add(ContactResponse.create(
                     contact.uuid(),
