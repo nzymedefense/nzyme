@@ -20,6 +20,7 @@ package horse.wtf.nzyme.dot11.deauth;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
+import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -74,6 +75,10 @@ public class DeauthenticationMonitor {
     }
 
     public void record(Dot11DeauthenticationFrame frame) {
+        this.counter.incrementAndGet();
+    }
+
+    public void record(Dot11DisassociationFrame frame) {
         this.counter.incrementAndGet();
     }
 

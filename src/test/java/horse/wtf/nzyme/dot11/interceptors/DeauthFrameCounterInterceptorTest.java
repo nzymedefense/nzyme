@@ -8,7 +8,9 @@ import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.deauth.DeauthenticationMonitor;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
+import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
+import horse.wtf.nzyme.dot11.parsers.Dot11DisassociationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.Test;
@@ -24,16 +26,23 @@ public class DeauthFrameCounterInterceptorTest {
         NzymeLeader nzyme = new MockNzyme();
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme);
 
-        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+        Dot11DeauthenticationFrame deauth = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
                 .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
 
-        DeauthFrameCounterInterceptor interceptor = new DeauthFrameCounterInterceptor(monitor);
+
+        Dot11DisassociationFrame disassoc = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
+
+        DeauthFrameCounterInterceptorSet interceptors = new DeauthFrameCounterInterceptorSet(monitor);
 
         assertEquals(monitor.currentCount(), 0);
-        interceptor.intercept(frame);
+
+        interceptors.getInterceptors().get(0).intercept(deauth);
         assertEquals(monitor.currentCount(), 1);
-        interceptor.intercept(frame);
+        interceptors.getInterceptors().get(0).intercept(deauth);
         assertEquals(monitor.currentCount(), 2);
+        interceptors.getInterceptors().get(1).intercept(disassoc);
+        assertEquals(monitor.currentCount(), 3);
     }
 
 }

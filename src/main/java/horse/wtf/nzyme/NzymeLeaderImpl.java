@@ -450,7 +450,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         frameProcessor.registerDot11Interceptors(new SentryInterceptorSet(sentry, alerts).getInterceptors());
 
         // Deauth counter.
-        frameProcessor.registerDot11Interceptor(new DeauthFrameCounterInterceptor(deauthenticationMonitor));
+        frameProcessor.registerDot11Interceptors(new DeauthFrameCounterInterceptorSet(deauthenticationMonitor).getInterceptors());
 
         // Dot11 alerting interceptors.
         if (configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNEXPECTED_BSSID)) {
