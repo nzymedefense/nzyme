@@ -129,4 +129,8 @@ reporting: {
   known_bandit_fingerprint
 ]
 
+deauth_monitor {
+  global_threshold: 10
+}
+
 tracker_device {}

@@ -62,13 +62,16 @@ public abstract class LeaderConfiguration {
     @Nullable
     public abstract ReportingConfiguration reporting();
 
+    @Nullable
+    public abstract DeauthenticationMonitorConfiguration deauth();
+
     public ImmutableList<String> ourSSIDs() {
         ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();
         dot11Networks().forEach(n -> ssids.add(n.ssid()));
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -94,6 +97,7 @@ public abstract class LeaderConfiguration {
                 .forwarders(forwarders)
                 .groundstationDevice(groundstationDevice)
                 .reporting(reporting)
+                .deauth(deauth)
                 .build();
     }
 
@@ -175,6 +179,8 @@ public abstract class LeaderConfiguration {
         public abstract Builder groundstationDevice(UplinkDeviceConfiguration groundstationDevice);
 
         public abstract Builder reporting(ReportingConfiguration reporting);
+
+        public abstract Builder deauth(DeauthenticationMonitorConfiguration deauth);
 
         public abstract LeaderConfiguration build();
     }

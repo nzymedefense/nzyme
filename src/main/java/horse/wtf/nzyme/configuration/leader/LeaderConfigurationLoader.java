@@ -110,7 +110,8 @@ public class LeaderConfigurationLoader {
                 parseAlertCallbacks(),
                 parseForwarders(),
                 parseGroundstationDevice(),
-                parseReporting()
+                parseReporting(),
+                parseDeauth()
         );
     }
 
@@ -144,6 +145,14 @@ public class LeaderConfigurationLoader {
             }
 
             return ReportingConfiguration.create(email);
+        } else {
+            return null;
+        }
+    }
+
+    private DeauthenticationMonitorConfiguration parseDeauth() {
+        if (root.hasPath(ConfigurationKeys.DEAUTH_MONITOR)) {
+            return DeauthenticationMonitorConfiguration.create(root.getConfig(ConfigurationKeys.DEAUTH_MONITOR).getInt(ConfigurationKeys.GLOBAL_THRESHOLD));
         } else {
             return null;
         }
@@ -484,6 +493,12 @@ public class LeaderConfigurationLoader {
 
                 Tools.parseEmailAddress(email.getString(ConfigurationKeys.FROM));
             }
+        }
+
+        if (root.hasPath(ConfigurationKeys.DEAUTH_MONITOR)) {
+            Config deauth = root.getConfig(ConfigurationKeys.DEAUTH_MONITOR);
+
+            ConfigurationValidator.expect(deauth, ConfigurationKeys.GLOBAL_THRESHOLD, ConfigurationKeys.DEAUTH_MONITOR, Integer.class);
         }
 
         // Password hash is 64 characters long (the size of a SHA256 hash string)

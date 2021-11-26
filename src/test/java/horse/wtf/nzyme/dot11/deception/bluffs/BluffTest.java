@@ -2,6 +2,7 @@ package horse.wtf.nzyme.dot11.deception.bluffs;
 
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.Role;
+import horse.wtf.nzyme.configuration.DeauthenticationMonitorConfiguration;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
@@ -44,7 +45,8 @@ public class BluffTest {
                 ImmutableList.of(),
                 ImmutableList.of(),
                 null,
-                null
+                null,
+                DeauthenticationMonitorConfiguration.create(10)
         );
     }
 

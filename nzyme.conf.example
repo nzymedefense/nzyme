@@ -142,6 +142,12 @@ uplinks: []
   }
 ]
 
+# The deauthentication monitor is used to monitor the number of recorded of deauthentication and disassociation frames.
+# The global_threshold parameter is used to control when a DEAUTH_FLOOD alert is triggered.
+deauth_monitor {
+  global_threshold: 10
+}
+
 # List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it. TODO ADD DOCS LINK
 802_11_alerts: [
   unexpected_bssid

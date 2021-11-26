@@ -49,12 +49,12 @@ public class DeauthenticationMonitor {
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
-                        .setNameFormat("deauthmon-sync")
+                        .setNameFormat("deauthmonitor")
                         .build()
-        ).scheduleAtFixedRate(this::sync, syncIntervalSeconds, syncIntervalSeconds, TimeUnit.SECONDS);
+        ).scheduleAtFixedRate(this::run, syncIntervalSeconds, syncIntervalSeconds, TimeUnit.SECONDS);
     }
 
-    private void sync() {
+    protected void run() {
         try {
             long count = this.counter.get();
             this.counter.set(0);
@@ -66,7 +66,7 @@ public class DeauthenticationMonitor {
                     .execute()
             );
         } catch(Exception e) {
-            LOG.error("Could not sync deauthentication monitor.", e);
+            LOG.error("Could not run deauthentication monitor.", e);
         }
     }
 

@@ -121,6 +121,10 @@ reporting: {
   }
 }
 
+deauth_monitor {
+  global_threshold: 10
+}
+
 802_11_alerts: [
   unexpected_bssid
   unexpected_ssid

@@ -92,6 +92,8 @@ public class ConfigurationKeys {
     public static final String FROM = "from";
     public static final String SUBJECT_PREFIX = "subject_prefix";
     public static final String PATH = "path";
+    public static final String DEAUTH_MONITOR = "deauth_monitor";
+    public static final String GLOBAL_THRESHOLD = "global_threshold";
 
     public static final String PARAMETERS = "parameters";
     public static final String SERIAL_PORT = "serial_port";

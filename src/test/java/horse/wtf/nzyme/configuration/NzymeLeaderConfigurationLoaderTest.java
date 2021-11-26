@@ -120,6 +120,8 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
         assertEquals(c.reporting().email().password(), "your_password");
         assertEquals(c.reporting().email().from(), new Recipient("nzyme", "nzyme@example.org", Message.RecipientType.TO));
         assertEquals(c.reporting().email().subjectPrefix(), "[NZYME]");
+
+        assertEquals(c.deauth().globalThreshold(), 10);
     }
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)
