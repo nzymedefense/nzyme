@@ -24,6 +24,7 @@ import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,10 @@ public abstract class DashboardResponse {
     @JsonProperty("deauth_frame_histogram")
     public abstract Map<String, Long> deauthFrameHistogram();
 
+    @JsonProperty("deauth_threshold")
+    @Nullable
+    public abstract Integer deauthThreshold();
+
     @JsonProperty("alerts")
     public abstract AlertsListResponse alerts();
 
@@ -54,13 +59,14 @@ public abstract class DashboardResponse {
     @JsonProperty("probes")
     public abstract ProbesListResponse probes();
 
-    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> frameThroughputHistogram, Map<String, Long> deauthFrameHistogram, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
+    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> frameThroughputHistogram, Map<String, Long> deauthFrameHistogram, Integer deauthThreshold, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
         return builder()
                 .activeAlerts(activeAlerts)
                 .activeContacts(activeContacts)
                 .systemHealthStatus(systemHealthStatus)
                 .frameThroughputHistogram(frameThroughputHistogram)
                 .deauthFrameHistogram(deauthFrameHistogram)
+                .deauthThreshold(deauthThreshold)
                 .alerts(alerts)
                 .contacts(contacts)
                 .probes(probes)
@@ -82,6 +88,8 @@ public abstract class DashboardResponse {
         public abstract Builder frameThroughputHistogram(Map<String, Long> frameThroughputHistogram);
 
         public abstract Builder deauthFrameHistogram(Map<String, Long> deauthFrameHistogram);
+
+        public abstract Builder deauthThreshold(Integer deauthThreshold);
 
         public abstract Builder alerts(AlertsListResponse alerts);
 

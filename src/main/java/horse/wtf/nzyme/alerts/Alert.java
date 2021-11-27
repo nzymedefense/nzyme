@@ -414,6 +414,13 @@ public abstract class Alert {
                         (String) fields.get(FieldNames.ERROR_DESCRIPTION)
                 );
                 break;
+            case DEAUTH_FLOOD:
+                alert = DeauthFloodAlert.create(
+                        db.firstSeen(),
+                        (int) fields.get(FieldNames.DEAUTH_RATE),
+                        (int) fields.get(FieldNames.GLOBAL_THRESHOLD)
+                );
+                break;
             default:
                 throw new RuntimeException("Cannot serialize persisted alert of type [" + db.type() + "]. Not implemented.");
         }

@@ -3,12 +3,16 @@ package horse.wtf.nzyme.dot11.deauth;
 import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.alerts.DeauthFloodAlert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
+import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
+import horse.wtf.nzyme.dot11.parsers.Dot11DisassociationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
+import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -69,6 +73,32 @@ public class DeauthenticationMonitorTest {
 
         monitor.record(frame);
         assertEquals(monitor.currentCount(), 1L);
+    }
+
+    @Test
+    public void testAlerting() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
+        NzymeLeader nzyme = new MockNzyme();
+        LoopbackUplink loopback = new LoopbackUplink();
+        nzyme.registerUplink(loopback);
+
+        DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme,2);
+
+        assertNull(loopback.getLastAlert());
+
+        Dot11DeauthenticationFrame deauth = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
+        Dot11DisassociationFrame disassoc = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                .parse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
+
+        for (int i = 0; i<7; i++) {
+            monitor.record(deauth);
+            monitor.record(disassoc);
+        }
+
+        Thread.sleep(3000); // sync kicks in
+
+        assertNotNull(loopback.getLastAlert());
+        assertEquals(loopback.getLastAlert().getClass(), DeauthFloodAlert.class);
     }
 
 }

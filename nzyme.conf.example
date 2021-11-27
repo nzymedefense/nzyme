@@ -160,6 +160,7 @@ deauth_monitor {
   pwnagotchi_advertisement
   bandit_contact
   unknown_ssid
+  deauth_flood
 ]
 
 # Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps

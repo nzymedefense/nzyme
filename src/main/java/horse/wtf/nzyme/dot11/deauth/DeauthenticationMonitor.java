@@ -19,6 +19,8 @@ package horse.wtf.nzyme.dot11.deauth;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.alerts.Alert;
+import horse.wtf.nzyme.alerts.DeauthFloodAlert;
 import horse.wtf.nzyme.dot11.frames.Dot11DeauthenticationFrame;
 import horse.wtf.nzyme.dot11.frames.Dot11DisassociationFrame;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +29,7 @@ import org.joda.time.DateTime;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeauthenticationMonitor {
 
@@ -35,7 +37,7 @@ public class DeauthenticationMonitor {
 
     private final NzymeLeader nzyme;
 
-    private final AtomicLong counter;
+    private final AtomicInteger counter;
 
     public DeauthenticationMonitor(NzymeLeader nzyme) {
         this(nzyme, 60);
@@ -43,7 +45,7 @@ public class DeauthenticationMonitor {
 
     public DeauthenticationMonitor(NzymeLeader nzyme, int syncIntervalSeconds) {
         this.nzyme = nzyme;
-        this.counter = new AtomicLong(0);
+        this.counter = new AtomicInteger(0);
 
         // Regularly delete networks that have not been seen for a while.
         Executors.newSingleThreadScheduledExecutor(
@@ -56,9 +58,20 @@ public class DeauthenticationMonitor {
 
     protected void run() {
         try {
-            long count = this.counter.get();
+            int count = this.counter.get();
             this.counter.set(0);
 
+            // Check if we need to alert if enabled.
+            if (nzyme.getConfiguration().deauth() != null && nzyme.getConfiguration().dot11Alerts().contains(Alert.TYPE_WIDE.DEAUTH_FLOOD)) {
+                int threshold = nzyme.getConfiguration().deauth().globalThreshold();
+                if (count > threshold) {
+                    nzyme.getAlertsService().handle(DeauthFloodAlert.create(DateTime.now(), count, threshold));
+                }
+            } else {
+                LOG.debug("DEAUTH_FLOOD alert disabled or not fully configured. Not checking.");
+            }
+
+            // Write count to database.
             nzyme.getDatabase().useHandle(handle -> handle.createUpdate(
                     "INSERT INTO deauth_monitor(total_frame_count, created_at) VALUES(:frame_count, :created_at)")
                     .bind("frame_count", count)

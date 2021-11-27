@@ -20,7 +20,6 @@ class Overview extends React.Component {
             dashboard: undefined
         }
 
-
         this.dashboardService = new DashboardService();
         this.dashboardService.findAll = this.dashboardService.findAll.bind(this);
 
@@ -67,8 +66,8 @@ class Overview extends React.Component {
 
                 <div className="row mt-md-3">
                     <div className="col-md-12">
-                        <h4>802.11 Deauthentication Frames</h4>
-                        <DeauthFramesWidget deauthFrameHistogram={this.state.dashboard.deauth_frame_histogram} />
+                        <h4>802.11 Deauthentication/Disassociation Frames</h4>
+                        <DeauthFramesWidget deauthFrameHistogram={this.state.dashboard.deauth_frame_histogram} threshold={this.state.dashboard.deauth_threshold} />
                     </div>
                 </div>
 

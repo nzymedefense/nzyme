@@ -81,4 +81,8 @@ public class FieldNames {
 
     public static final String PROBE_NAME = "probe_name";
     public static final String ERROR_DESCRIPTION = "error_description";
+
+    public static final String DEAUTH_RATE = "deauth_rate";
+
+    public static final String GLOBAL_THRESHOLD = "global_threshold";
 }

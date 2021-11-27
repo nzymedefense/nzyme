@@ -139,6 +139,7 @@ public class DashboardResource {
                         systemHealthStatus,
                         frameThroughputHistogram,
                         deauthHistogram,
+                        nzyme.getConfiguration().deauth() == null ? null : nzyme.getConfiguration().deauth().globalThreshold(),
                         AlertsListResponse.create(alerts.size(), alerts),
                         contacts,
                         ProbesListResponse.create(probes.size(), probes)

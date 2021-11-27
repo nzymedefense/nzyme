@@ -127,6 +127,7 @@ reporting: {
   unexpected_channel
   crypto_change
   known_bandit_fingerprint
+  deauth_flood
 ]
 
 deauth_monitor {
