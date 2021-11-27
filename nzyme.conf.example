@@ -148,7 +148,8 @@ deauth_monitor {
   global_threshold: 10
 }
 
-# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it. TODO ADD DOCS LINK
+# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it.
+# See: https://go.nzyme.org/alerting
 802_11_alerts: [
   unexpected_bssid
   unexpected_ssid
