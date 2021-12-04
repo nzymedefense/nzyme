@@ -23,7 +23,11 @@
             <h2>Networks</h2>
             <p class="section-description">All networks seen in the last 24 hours. Highlighted networks were first
                 seen within last 24 hours.</p>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-12">
             <table class="table table-sm table-hover table-striped networks">
                 <thead>
                 <tr>

@@ -27,6 +27,7 @@ import horse.wtf.nzyme.reporting.ReportBase;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntry;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
+import horse.wtf.nzyme.reporting.reports.WirelessInventoryReport;
 import horse.wtf.nzyme.reporting.reports.WirelessSurveyReport;
 import horse.wtf.nzyme.rest.authentication.Secured;
 import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
@@ -112,6 +113,9 @@ public class ReportsResource {
                 break;
             case "WirelessSurvey":
                 report = new WirelessSurveyReport(request.hourOfDay(), request.minuteOfHour());
+                break;
+            case "WirelessInventory":
+                report = new WirelessInventoryReport(request.hourOfDay(), request.minuteOfHour());
                 break;
             default:
                 LOG.error("No report of type [{}] found", request.reportType());

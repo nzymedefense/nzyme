@@ -30,4 +30,8 @@
         font-size: 26px;
         text-transform: uppercase;
     }
+
+    hr {
+        background-color: #444
+    }
 </style>

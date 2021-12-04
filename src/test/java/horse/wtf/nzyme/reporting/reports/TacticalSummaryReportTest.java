@@ -1,4 +1,4 @@
-package horse.wtf.nzyme.reporting;
+package horse.wtf.nzyme.reporting.reports;
 
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
@@ -9,12 +9,9 @@ import horse.wtf.nzyme.dot11.MalformedFrameException;
 import horse.wtf.nzyme.dot11.interceptors.misc.PwnagotchiAdvertisement;
 import horse.wtf.nzyme.events.BrokenProbeEvent;
 import horse.wtf.nzyme.events.StartupEvent;
-import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.io.FileWriter;
 
 public class TacticalSummaryReportTest {
 
