@@ -92,6 +92,7 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
             add(Alert.TYPE_WIDE.UNEXPECTED_SSID);
             add(Alert.TYPE_WIDE.UNEXPECTED_CHANNEL);
             add(Alert.TYPE_WIDE.CRYPTO_CHANGE);
+            add(Alert.TYPE_WIDE.DEAUTH_FLOOD);
         }});
 
         assertEquals(c.uplinks().size(), 4);
