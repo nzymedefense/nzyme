@@ -34,13 +34,6 @@ public class DeauthenticationMonitorTest {
         NzymeLeader nzyme = new MockNzyme();
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme,2);
 
-        long count = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM deauth_monitor")
-                        .mapTo(Long.class)
-                        .first());
-
-        assertEquals(count, 0);
-
         assertEquals(monitor.currentCount(), 0L);
 
         Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
