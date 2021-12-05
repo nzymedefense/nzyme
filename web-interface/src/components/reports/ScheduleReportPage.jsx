@@ -56,8 +56,18 @@ class ScheduleReportPage extends React.Component {
             <React.Fragment>
               <h5>Wireless Survey Report</h5>
               <p>
-                The Wireless Survey Report provides a summary of all monitored networks, which networks have been seen
+                The Wireless Survey Report provides a summary of all observed networks, which networks have been seen
                 before and which networks appeared for the first time within the last 24 hours.
+              </p>
+            </React.Fragment>
+        )
+      case "WirelessInventory":
+        return (
+            <React.Fragment>
+              <h5>Wireless Inventory Report</h5>
+              <p>
+                The Wireless Inventory Report provides a summary of all networks configured for monitoring by nzyme, together
+                with a list of all enabled alerts. Very useful to provide a configuration summary for compliance.
               </p>
             </React.Fragment>
         )
@@ -163,6 +173,7 @@ class ScheduleReportPage extends React.Component {
                     <option key="default-empty" />
                     <option key="TacticalSummary" value="TacticalSummary">Tactical Summary</option>
                     <option key="WirelessSurvey" value="WirelessSurvey">Wireless Survey</option>
+                    <option key="WirelessInventory" value="WirelessInventory">Wireless Inventory</option>
                   </select>
                 </div>
 
