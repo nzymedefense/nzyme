@@ -423,7 +423,7 @@
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <mavenExecutorId>forked-path</mavenExecutorId>
                     <tagNameFormat>@{project.version}</tagNameFormat>
-                    <preparationGoals>clean test</preparationGoals>
+                    <preparationGoals>clean</preparationGoals>
                     <goals>package</goals>
                     <arguments>-Dmaven.javadoc.skip=true</arguments>
                 </configuration>
