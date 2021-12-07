@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,6 +39,7 @@ public class DeauthenticationMonitor {
     private final NzymeLeader nzyme;
 
     private final AtomicInteger counter;
+    private final ScheduledExecutorService service;
 
     public DeauthenticationMonitor(NzymeLeader nzyme) {
         this(nzyme, 60);
@@ -48,12 +50,14 @@ public class DeauthenticationMonitor {
         this.counter = new AtomicInteger(0);
 
         // Regularly delete networks that have not been seen for a while.
-        Executors.newSingleThreadScheduledExecutor(
+        service = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
                         .setNameFormat("deauthmonitor")
                         .build()
-        ).scheduleAtFixedRate(this::run, syncIntervalSeconds, syncIntervalSeconds, TimeUnit.SECONDS);
+        );
+
+        service.scheduleAtFixedRate(this::run, syncIntervalSeconds, syncIntervalSeconds, TimeUnit.SECONDS);
     }
 
     protected void run() {
@@ -81,6 +85,10 @@ public class DeauthenticationMonitor {
         } catch(Exception e) {
             LOG.error("Could not run deauthentication monitor.", e);
         }
+    }
+
+    public void stop() {
+        service.shutdown();
     }
 
     public long currentCount() {

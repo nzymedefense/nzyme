@@ -4,6 +4,8 @@ import horse.wtf.nzyme.alerts.Alert;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 
@@ -11,6 +13,8 @@ import javax.annotation.Nullable;
  * Used for handler unit testing and has no real use-case for anything else.
  */
 public class LoopbackUplink implements Uplink {
+
+    private static final Logger LOG = LogManager.getLogger(LoopbackUplink.class);
 
     private Notification lastNotification;
     private Dot11MetaInformation lastMeta;
@@ -24,6 +28,7 @@ public class LoopbackUplink implements Uplink {
 
     @Override
     public void notifyOfAlert(Alert alert) {
+        LOG.info("Alert received.");
         this.lastAlert = alert;
     }
 
@@ -40,6 +45,7 @@ public class LoopbackUplink implements Uplink {
     }
 
     public void clear() {
+        LOG.info("Cleaning.");
         lastNotification = null;
         lastMeta = null;
         lastAlert = null;

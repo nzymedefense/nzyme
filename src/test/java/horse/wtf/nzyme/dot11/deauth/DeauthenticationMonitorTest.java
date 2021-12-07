@@ -13,6 +13,8 @@ import horse.wtf.nzyme.dot11.parsers.Dot11DeauthenticationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Dot11DisassociationFrameParser;
 import horse.wtf.nzyme.dot11.parsers.Frames;
 import horse.wtf.nzyme.notifications.uplinks.misc.LoopbackUplink;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.pcap4j.packet.IllegalRawDataException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -34,38 +36,42 @@ public class DeauthenticationMonitorTest {
         NzymeLeader nzyme = new MockNzyme();
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme,2);
 
-        assertEquals(monitor.currentCount(), 0L);
+        try {
+            assertEquals(monitor.currentCount(), 0L);
 
-        Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
-                .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
+            Dot11DeauthenticationFrame frame = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                    .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
 
-        monitor.record(frame);
-        assertEquals(monitor.currentCount(), 1L);
+            monitor.record(frame);
+            assertEquals(monitor.currentCount(), 1L);
 
-        monitor.record(frame);
-        assertEquals(monitor.currentCount(), 2L);
+            monitor.record(frame);
+            assertEquals(monitor.currentCount(), 2L);
 
-        monitor.record(frame);
-        assertEquals(monitor.currentCount(), 3L);
+            monitor.record(frame);
+            assertEquals(monitor.currentCount(), 3L);
+            Thread.sleep(3000); // sync kicks in
 
-        Thread.sleep(3000); // sync kicks in
-        assertEquals(monitor.currentCount(), 0L);
+            assertEquals(monitor.currentCount(), 0L);
 
-        long newCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM deauth_monitor")
-                        .mapTo(Long.class)
-                        .first());
+            long newCount = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(*) FROM deauth_monitor")
+                            .mapTo(Long.class)
+                            .first());
 
-        long frameCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT total_frame_count FROM deauth_monitor LIMIT 1")
-                        .mapTo(Long.class)
-                        .first());
+            long frameCount = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT total_frame_count FROM deauth_monitor LIMIT 1")
+                            .mapTo(Long.class)
+                            .first());
 
-        assertEquals(newCount, 1);
-        assertEquals(frameCount, 3);
+            assertEquals(newCount, 1);
+            assertEquals(frameCount, 3);
 
-        monitor.record(frame);
-        assertEquals(monitor.currentCount(), 1L);
+            monitor.record(frame);
+            assertEquals(monitor.currentCount(), 1L);
+        } finally {
+            monitor.stop();
+        }
     }
 
     @Test
@@ -74,24 +80,30 @@ public class DeauthenticationMonitorTest {
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
+        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts;"));
+
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme,2);
 
-        assertNull(loopback.getLastAlert());
+        try {
+            assertNull(loopback.getLastAlert());
 
-        Dot11DeauthenticationFrame deauth = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
-                .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
-        Dot11DisassociationFrame disassoc = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
-                .parse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
+            Dot11DeauthenticationFrame deauth = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                    .parse(Frames.DEAUTH_1_PAYLOAD, Frames.DEAUTH_1_HEADER, META_NO_WEP);
+            Dot11DisassociationFrame disassoc = new Dot11DisassociationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
+                    .parse(Frames.DISASSOC_1_PAYLOAD, Frames.DISASSOC_1_HEADER, META_NO_WEP);
 
-        for (int i = 0; i<7; i++) {
-            monitor.record(deauth);
-            monitor.record(disassoc);
+            for (int i = 0; i < 7; i++) {
+                monitor.record(deauth);
+                monitor.record(disassoc);
+            }
+
+            Thread.sleep(3000); // sync kicks in
+
+            assertNotNull(loopback.getLastAlert());
+            assertEquals(loopback.getLastAlert().getClass(), DeauthFloodAlert.class);
+        } finally {
+            monitor.stop();
         }
-
-        Thread.sleep(3000); // sync kicks in
-
-        assertNotNull(loopback.getLastAlert());
-        assertEquals(loopback.getLastAlert().getClass(), DeauthFloodAlert.class);
     }
 
 }
