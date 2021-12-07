@@ -425,7 +425,6 @@
                     <tagNameFormat>@{project.version}</tagNameFormat>
                     <preparationGoals>clean</preparationGoals>
                     <goals>package</goals>
-                    <arguments>-Dmaven.javadoc.skip=true</arguments>
                 </configuration>
             </plugin>
 
