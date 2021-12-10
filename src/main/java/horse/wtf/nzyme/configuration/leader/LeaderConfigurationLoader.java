@@ -351,6 +351,7 @@ public class LeaderConfigurationLoader {
                         break;
                     case "file":
                         callbacks.add(new FileCallback(FileCallback.parseConfiguration(c)));
+                        break;
                     default:
                         LOG.error("Skipping unknown alert callback of type [{}].", type);
                 }
