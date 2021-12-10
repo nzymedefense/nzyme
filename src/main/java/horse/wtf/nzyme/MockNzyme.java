@@ -93,6 +93,10 @@ public  class MockNzyme implements NzymeLeader {
     private final EventService eventService;
 
     public MockNzyme() {
+        this(5);
+    }
+
+    public MockNzyme(int sentryInterval) {
         this.version = new Version();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -132,7 +136,7 @@ public  class MockNzyme implements NzymeLeader {
         this.objectMapper = new ObjectMapper();
         this.contactManager = new ContactManager(this);
         this.anonymizer = new Anonymizer(false, "/tmp");
-        this.sentry = new Sentry(this, 5);
+        this.sentry = new Sentry(this, sentryInterval);
         this.eventService = new EventService(this);
     }
 

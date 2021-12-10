@@ -11,15 +11,15 @@ import static org.testng.Assert.*;
 public class SentryTest {
 
     @BeforeMethod
-    public void cleanAlerts() {
+    public void cleanSentry() {
         NzymeLeader nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM sentry_ssids;"));
     }
 
     @Test
     public void testTickSSID() throws InterruptedException {
-        NzymeLeader nzyme = new MockNzyme();
-        Sentry sentry = new Sentry(nzyme, 1);
+        NzymeLeader nzyme = new MockNzyme(1);
+        Sentry sentry = nzyme.getSentry();
 
         assertFalse(sentry.knowsSSID("foo1"));
         assertFalse(sentry.knowsSSID("foo2"));
