@@ -126,6 +126,8 @@ public  class MockNzyme implements NzymeLeader {
             throw new RuntimeException(e);
         }
 
+        this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
+
         this.metricRegistry = new MetricRegistry();
         this.registry = new Registry();
         this.systemStatus = new SystemStatus();

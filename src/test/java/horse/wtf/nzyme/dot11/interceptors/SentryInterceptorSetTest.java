@@ -29,7 +29,6 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testBeaconWithAlertDisabled() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
-
         LoopbackUplink uplink = new LoopbackUplink();
         NzymeLeader nzyme = new MockNzyme();
         nzyme.registerUplink(uplink);
