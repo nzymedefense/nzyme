@@ -27,17 +27,14 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class Sentry {
 
     private static final Logger LOG = LogManager.getLogger(Sentry.class);
 
     private final NzymeLeader nzyme;
-
+    private final ScheduledExecutorService executor;
     private final ConcurrentMap<String, SentrySSID> table;
 
     public Sentry(NzymeLeader nzyme, int syncInterval) {
@@ -46,12 +43,13 @@ public class Sentry {
 
         loadTable();
 
-        Executors.newSingleThreadScheduledExecutor(
+        executor = Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setDaemon(true)
                         .setNameFormat("sentry-scanner")
                         .build()
-        ).scheduleAtFixedRate(this::syncDatabase, syncInterval, syncInterval, TimeUnit.SECONDS);
+        );
+        executor.scheduleAtFixedRate(this::syncDatabase, syncInterval, syncInterval, TimeUnit.SECONDS);
     }
 
     private void loadTable() {
@@ -146,6 +144,10 @@ public class Sentry {
         }
 
         return table.containsKey(ssid);
+    }
+
+    public void stop() {
+        executor.shutdown();
     }
 
 }

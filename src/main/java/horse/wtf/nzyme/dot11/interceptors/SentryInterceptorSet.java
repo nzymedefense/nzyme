@@ -36,10 +36,12 @@ public class SentryInterceptorSet {
 
     private final Sentry sentry;
     private final AlertsService alerts;
+    private final boolean unknownSSIDAlertEnabled;
 
-    public SentryInterceptorSet(Sentry sentry, AlertsService alerts) {
+    public SentryInterceptorSet(Sentry sentry, AlertsService alerts, boolean unknownSSIDAlertEnabled) {
         this.sentry = sentry;
         this.alerts = alerts;
+        this.unknownSSIDAlertEnabled = unknownSSIDAlertEnabled;
     }
 
     public List<Dot11FrameInterceptor> getInterceptors() {
@@ -52,7 +54,7 @@ public class SentryInterceptorSet {
                     return;
                 }
 
-                if (!sentry.knowsSSID(frame.ssid())) {
+                if (unknownSSIDAlertEnabled && !sentry.knowsSSID(frame.ssid())) {
                     alerts.handle(UnknownSSIDAlert.create(
                             DateTime.now(),
                             frame.ssid(),
@@ -73,7 +75,7 @@ public class SentryInterceptorSet {
 
             @Override
             public List<Class<? extends Alert>> raisesAlerts() {
-                return new ArrayList<Class<? extends Alert>>(){{
+                return new ArrayList<>() {{
                     add(UnknownSSIDAlert.class);
                 }};
             }
@@ -86,7 +88,7 @@ public class SentryInterceptorSet {
                     return;
                 }
 
-                if (!sentry.knowsSSID(frame.ssid())) {
+                if (unknownSSIDAlertEnabled && !sentry.knowsSSID(frame.ssid())) {
                     alerts.handle(UnknownSSIDAlert.create(
                             DateTime.now(),
                             frame.ssid(),
@@ -107,7 +109,7 @@ public class SentryInterceptorSet {
 
             @Override
             public List<Class<? extends Alert>> raisesAlerts() {
-                return new ArrayList<Class<? extends Alert>>(){{
+                return new ArrayList<>() {{
                     add(UnknownSSIDAlert.class);
                 }};
             }

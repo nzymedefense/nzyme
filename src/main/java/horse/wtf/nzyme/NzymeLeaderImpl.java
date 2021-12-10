@@ -447,7 +447,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
         frameProcessor.registerDot11Interceptors(new BanditIdentifierInterceptorSet(getContactManager()).getInterceptors());
 
         // Sentry interceptors.
-        frameProcessor.registerDot11Interceptors(new SentryInterceptorSet(sentry, alerts).getInterceptors());
+        frameProcessor.registerDot11Interceptors(
+                new SentryInterceptorSet(sentry, alerts, configuration.dot11Alerts().contains(Alert.TYPE_WIDE.UNKNOWN_SSID)).getInterceptors()
+        );
 
         // Deauth counter.
         frameProcessor.registerDot11Interceptors(new DeauthFrameCounterInterceptorSet(deauthenticationMonitor).getInterceptors());
