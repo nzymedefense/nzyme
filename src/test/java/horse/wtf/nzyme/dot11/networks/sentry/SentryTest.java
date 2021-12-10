@@ -39,6 +39,8 @@ public class SentryTest {
         assertTrue(sentry.knowsSSID("foo2"));
         assertFalse(sentry.knowsSSID("bar"));
 
+        sentry.stop();
+
         Thread.sleep(2500);
 
         Sentry sentry2 = new Sentry(new MockNzyme(), 1);
@@ -47,6 +49,8 @@ public class SentryTest {
         assertTrue(sentry.knowsSSID("foo1"));
         assertTrue(sentry.knowsSSID("foo2"));
         assertFalse(sentry.knowsSSID("bar"));
+
+        sentry2.stop();
     }
 
 }
