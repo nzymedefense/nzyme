@@ -610,7 +610,7 @@
                     </plugin>
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
-                        <version>1.11.3</version>
+                        <version>1.12.1</version>
                         <artifactId>frontend-maven-plugin</artifactId>
 
                         <configuration>
