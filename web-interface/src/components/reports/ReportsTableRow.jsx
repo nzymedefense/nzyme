@@ -1,12 +1,12 @@
-import React from 'react';
-import ReportName from "./ReportName";
-import ReportFireTime from "./ReportFireTime";
-import Routes from "../../util/Routes";
-import moment from "moment";
+import React from 'react'
+import ReportName from './ReportName'
+import ReportFireTime from './ReportFireTime'
+import Routes from '../../util/ApiRoutes'
+import moment from 'moment'
 
 class ReportsTableRow extends React.Component {
-  render() {
-    const report = this.props.report;
+  render () {
+    const report = this.props.report
 
     return (
         <tr>
@@ -22,7 +22,6 @@ class ReportsTableRow extends React.Component {
         </tr>
     )
   }
-
 }
 
-export default ReportsTableRow;
+export default ReportsTableRow

@@ -1,41 +1,40 @@
-import React from 'react';
+import React from 'react'
 
 class AdvertisedBSSIDTable extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            selection: []
-        }
-
-        this._updateSelection = this._updateSelection.bind(this);
+    this.state = {
+      selection: []
     }
 
-    _updateSelection(x) {
-        const current = this.state.selection;
-        var selection;
+    this._updateSelection = this._updateSelection.bind(this)
+  }
 
-        if (this.state.selection.includes(x)) {
-            selection = current.filter(item => item !== x);
-        } else {
-            current.push(x);
-            selection = current;
-        }
+  _updateSelection (x) {
+    const current = this.state.selection
+    let selection
 
-        this.setState({selection: selection});
-        this.props.onNewSelection(selection);
+    if (this.state.selection.includes(x)) {
+      selection = current.filter(item => item !== x)
+    } else {
+      current.push(x)
+      selection = current
     }
 
-    render() {
-        const self = this;
-        const bssids = this.props.bssids;
+    this.setState({ selection: selection })
+    this.props.onNewSelection(selection)
+  }
 
-        if (!bssids || bssids.length === 0) {
-            return <div className="alert alert-info">No BSSIDS recorded.</div>;
-        }
+  render () {
+    const self = this
+    const bssids = this.props.bssids
 
-        return (
+    if (!bssids || bssids.length === 0) {
+      return <div className="alert alert-info">No BSSIDS recorded.</div>
+    }
+
+    return (
             <table className="table table-sm table-hover table-striped">
                 <thead>
                     <tr>
@@ -45,22 +44,21 @@ class AdvertisedBSSIDTable extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
-                    {Object.keys(bssids).map(function (key,i) {
-                        return (
-                            <tr key={"bssid-"+i}>
+                    {Object.keys(bssids).map(function (key, i) {
+                      return (
+                            <tr key={'bssid-' + i}>
                                 <td>{bssids[key].value}</td>
                                 <td>{bssids[key].frame_count}</td>
                                 <td>
                                     <input type="checkbox" onClick={() => self._updateSelection(bssids[key].value)} />
                                 </td>
                             </tr>
-                        )
+                      )
                     })}
                 </tbody>
             </table>
-        )
-    }
-
+    )
+  }
 }
 
-export default AdvertisedBSSIDTable;
+export default AdvertisedBSSIDTable

@@ -1,23 +1,26 @@
-import React from 'react';
+import React from 'react'
+import DeleteIdentifierButton from './management/identifiers/DeleteIdentifierButton'
 
 class BanditIdentifiersTableRow extends React.Component {
+  render () {
+    const identifier = this.props.identifier
 
-    render() {
-        const identifier = this.props.identifier;
-
-        return (
+    return (
             <tr>
                 <td>{identifier.type}</td>
                 <td>{identifier.matches}</td>
                 <td>
                     <span className="float-right">
-                        <button className="btn btn-sm btn-danger" onClick={(e) => this.props.onDelete(e, identifier)}>Delete</button>
+                        <DeleteIdentifierButton 
+                         bandit={this.props.bandit}
+                         trackers={this.props.trackers}
+                         identifier={identifier}
+                         setBandit={this.props.setBandit} />
                     </span>
                 </td>
             </tr>
-        );
-    }
-
+    )
+  }
 }
 
-export default BanditIdentifiersTableRow;
+export default BanditIdentifiersTableRow

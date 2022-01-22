@@ -1,47 +1,46 @@
-import React from 'react';
-import EmailReceivers from "./EmailReceivers";
-import Routes from "../../util/Routes";
-import ReportsService from "../../services/ReportsService";
-import {notify} from "react-notify-toast";
-import Redirect from "react-router-dom/Redirect";
+import React from 'react'
+import EmailReceivers from './EmailReceivers'
+import Routes from '../../util/ApiRoutes'
+import ReportsService from '../../services/ReportsService'
+import { notify } from 'react-notify-toast'
+import { Navigate } from 'react-router-dom'
 
 class ScheduleReportPage extends React.Component {
-
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
 
     this.state = {
       selectedReportType: undefined,
       emailReceivers: [],
-      runAt: "20:00",
+      runAt: '20:00',
       addEmailFilled: false,
       submitting: false,
       submitted: false
-    };
+    }
 
-    this.reportsService = new ReportsService();
+    this.reportsService = new ReportsService()
 
-    this.selector = React.createRef();
-    this.formDetails = React.createRef();
-    this.addEmail = React.createRef();
-    this.runAt = React.createRef();
+    this.selector = React.createRef()
+    this.formDetails = React.createRef()
+    this.addEmail = React.createRef()
+    this.runAt = React.createRef()
 
-    this._selectType = this._selectType.bind(this);
-    this._reportDescription = this._reportDescription.bind(this);
-    this._addEmailReceiver = this._addEmailReceiver.bind(this);
-    this._updateTime = this._updateTime.bind(this);
-    this._updateAddEmail = this._updateAddEmail.bind(this);
-    this._onEmailReceiverDelete = this._onEmailReceiverDelete.bind(this);
-    this._submitForm = this._submitForm.bind(this);
+    this._selectType = this._selectType.bind(this)
+    this._reportDescription = this._reportDescription.bind(this)
+    this._addEmailReceiver = this._addEmailReceiver.bind(this)
+    this._updateTime = this._updateTime.bind(this)
+    this._updateAddEmail = this._updateAddEmail.bind(this)
+    this._onEmailReceiverDelete = this._onEmailReceiverDelete.bind(this)
+    this._submitForm = this._submitForm.bind(this)
   }
 
-  _selectType() {
-    this.setState({selectedReportType: this.selector.current.value});
+  _selectType () {
+    this.setState({ selectedReportType: this.selector.current.value })
   }
 
-  _reportDescription() {
+  _reportDescription () {
     switch (this.state.selectedReportType) {
-      case "TacticalSummary":
+      case 'TacticalSummary':
         return (
             <React.Fragment>
               <h5>Tactical Summary Report</h5>
@@ -51,7 +50,7 @@ class ScheduleReportPage extends React.Component {
               </p>
             </React.Fragment>
         )
-      case "WirelessSurvey":
+      case 'WirelessSurvey':
         return (
             <React.Fragment>
               <h5>Wireless Survey Report</h5>
@@ -61,7 +60,7 @@ class ScheduleReportPage extends React.Component {
               </p>
             </React.Fragment>
         )
-      case "WirelessInventory":
+      case 'WirelessInventory':
         return (
             <React.Fragment>
               <h5>Wireless Inventory Report</h5>
@@ -80,17 +79,16 @@ class ScheduleReportPage extends React.Component {
     }
   }
 
-  _addEmailReceiver() {
-    const receiver = this.addEmail.current.value;
+  _addEmailReceiver () {
+    const receiver = this.addEmail.current.value
 
-    if (receiver && receiver.trim() !== "") {
-
+    if (receiver && receiver.trim() !== '') {
       if (this.state.emailReceivers.includes(receiver)) {
-        notify.show("Email receiver already exists.", "error");
-        return;
+        notify.show('Email receiver already exists.', 'error')
+        return
       }
 
-      this.addEmail.current.value = "";
+      this.addEmail.current.value = ''
       this.setState(prevState => ({
         emailReceivers: [...prevState.emailReceivers, receiver],
         addEmailFilled: false // we have to set this because the reset about does not trigger onChange and button is never disabled
@@ -98,49 +96,51 @@ class ScheduleReportPage extends React.Component {
     }
   }
 
-  _updateAddEmail() {
+  _updateAddEmail () {
     this.setState({
-      addEmailFilled: this.addEmail.current && this.addEmail.current.value.trim() !== ""
+      addEmailFilled: this.addEmail.current && this.addEmail.current.value.trim() !== ''
     })
   }
 
-  _updateTime() {
-    this.setState({runAt: this.runAt.current.value});
+  _updateTime () {
+    this.setState({ runAt: this.runAt.current.value })
   }
 
-  _onEmailReceiverDelete(e, deletedReceiver) {
-    e.preventDefault();
+  _onEmailReceiverDelete (e, deletedReceiver) {
+    e.preventDefault()
 
-    this.setState({emailReceivers: this.state.emailReceivers.filter(function(receiver) {
+    this.setState({
+      emailReceivers: this.state.emailReceivers.filter(function (receiver) {
         return receiver !== deletedReceiver
-      })});
+      })
+    })
   }
 
-  _submitForm(e) {
-    e.preventDefault();
+  _submitForm (e) {
+    e.preventDefault()
 
-    const self = this;
-    const dateParts = this.state.runAt.split(":");
+    const self = this
+    const dateParts = this.state.runAt.split(':')
 
     this.reportsService.schedule(
-        this.state.selectedReportType,
-        parseInt(dateParts[0], 10),
-        parseInt(dateParts[1], 10),
-        this.state.emailReceivers,
-        function () {
-          self.setState({submitting: false, submitted: true});
-          notify.show("Report Scheduled", "success");
-        },
-        function () {
-          self.setState({submitting: false});
-          notify.show("Could not schedule report. Please check nzyme log file.", "error");
-        }
+      this.state.selectedReportType,
+      parseInt(dateParts[0], 10),
+      parseInt(dateParts[1], 10),
+      this.state.emailReceivers,
+      function () {
+        self.setState({ submitting: false, submitted: true })
+        notify.show('Report Scheduled', 'success')
+      },
+      function () {
+        self.setState({ submitting: false })
+        notify.show('Could not schedule report. Please check nzyme log file.', 'error')
+      }
     )
   }
 
-  render() {
+  render () {
     if (this.state.submitted) {
-      return ( <Redirect to={Routes.SYSTEM.REPORTS.INDEX} /> );
+      return (<Navigate to={Routes.SYSTEM.REPORTS.INDEX} />)
     }
 
     return (
@@ -155,7 +155,6 @@ class ScheduleReportPage extends React.Component {
               </nav>
             </div>
           </div>
-
 
           <div className="row">
             <div className="col-md-12">
@@ -181,7 +180,7 @@ class ScheduleReportPage extends React.Component {
                   {this._reportDescription()}
                 </div>
 
-                <div style={{display: this.state.selectedReportType ? "block" : "none"}}>
+                <div style={{ display: this.state.selectedReportType ? 'block' : 'none' }}>
                   <div className="form-group" ref={this.formDetails}>
                     <label htmlFor="runAt">Run At</label>
                     <input id="runAt" name="runAt" ref={this.runAt} type="time" className="form-control" required value={this.state.runAt} onChange={this._updateTime} />
@@ -198,7 +197,7 @@ class ScheduleReportPage extends React.Component {
                              placeholder="john@example.org"
                              ref={this.addEmail}
                              onChange={this._updateAddEmail}
-                             onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} />
+                             onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault() }} />
                       <div className="input-group-append">
                         <button className="btn btn-secondary" type="button" onClick={this._addEmailReceiver} disabled={!this.state.addEmailFilled}>
                           Add Email Receiver
@@ -220,7 +219,6 @@ class ScheduleReportPage extends React.Component {
         </div>
     )
   }
-
 }
 
-export default ScheduleReportPage;
+export default ScheduleReportPage

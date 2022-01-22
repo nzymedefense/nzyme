@@ -1,36 +1,34 @@
-import React from 'react';
-import {compact} from "lodash/array";
+import React from 'react'
+import { compact } from 'lodash/array'
 
 class SSIDIdentifierForm extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            ssids: [],
-            errorMessage: "",
-        };
-
-        this._handleUpdate = this._handleUpdate.bind(this);
+    this.state = {
+      ssids: [],
+      errorMessage: ''
     }
 
-    _handleUpdate(e) {
-        const ssids = e.target.value.split(',');
-        this.setState({ssids: ssids, errorMessage: ""});
+    this._handleUpdate = this._handleUpdate.bind(this)
+  }
 
-        const explanation =  "a frame advertising any of the SSIDs ("+ compact(ssids) +") is recorded";
+  _handleUpdate (e) {
+    const ssids = e.target.value.split(',')
+    this.setState({ ssids: ssids, errorMessage: '' })
 
-        this.props.configurationUpdate({
-            configuration: {
-                ssids: compact(ssids)
-            },
-            explanation: explanation,
-            ready: true
-        });
-    }
+    const explanation = 'a frame advertising any of the SSIDs (' + compact(ssids) + ') is recorded'
 
-    render() {
-        return (
+    this.props.setConfiguration({
+      ssids: compact(ssids)
+    });
+
+    this.props.setExplanation(explanation);
+    this.props.setFormReady(true);
+  }
+
+  render () {
+    return (
             <form onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                     <label htmlFor="ssids">SSIDs</label>
@@ -40,9 +38,8 @@ class SSIDIdentifierForm extends React.Component {
                     <span className="text-danger">{this.state.errorMessage}</span>
                 </div>
             </form>
-        )
-    }
-
+    )
+  }
 }
 
-export default SSIDIdentifierForm;
+export default SSIDIdentifierForm

@@ -12,6 +12,7 @@ target/
 /anonfile
 
 web-interface/node
+web-interface/build
 
 openssl.cnf
 *.pem

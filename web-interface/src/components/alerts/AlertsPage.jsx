@@ -1,48 +1,47 @@
-import React from 'react';
-import AlertsTable from "./AlertsTable";
-import AlertsService from "../../services/AlertsService";
+import React from 'react'
+import AlertsTable from './AlertsTable'
+import AlertsService from '../../services/AlertsService'
 
 class AlertsPage extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            alerts: undefined,
-            total_alerts: 0,
-            page: 0
-        }
-
-        this.alertsService = new AlertsService();
-        this.alertsService.findAll = this.alertsService.findAll.bind(this);
-
-        this._loadData = this._loadData.bind(this);
-        this._page = this._page.bind(this);
+    this.state = {
+      alerts: undefined,
+      total_alerts: 0,
+      page: 0
     }
 
-    componentDidMount() {
-        this._loadData();
+    this.alertsService = new AlertsService()
+    this.alertsService.findAll = this.alertsService.findAll.bind(this)
 
-        setInterval(this._loadData, 5000);
+    this._loadData = this._loadData.bind(this)
+    this._page = this._page.bind(this)
+  }
+
+  componentDidMount () {
+    this._loadData()
+
+    setInterval(this._loadData, 5000)
+  }
+
+  _loadData () {
+    this.alertsService.findAll(this.state.page)
+  }
+
+  _page (direction) {
+    const currentPage = this.state.page
+    if (direction === 'next') {
+      this.setState({ alerts: undefined, page: currentPage + 1 }, () => { this._loadData() })
+    } else if (direction === 'previous') {
+      this.setState({ alerts: undefined, page: currentPage - 1 }, () => { this._loadData() })
     }
+  }
 
-    _loadData() {
-        this.alertsService.findAll(this.state.page);
-    }
+  render () {
+    const totalPages = this.state.total_alerts === 0 ? 1 : Math.ceil(this.state.total_alerts / 25)
 
-    _page(direction) {
-        const currentPage = this.state.page;
-        if (direction === "next") {
-            this.setState({alerts: undefined, page: currentPage+1}, () => {this._loadData()});
-        } else if (direction === "previous") {
-            this.setState({alerts: undefined, page: currentPage-1}, () => {this._loadData()});
-        }
-    }
-
-    render() {
-        const totalPages = this.state.total_alerts === 0 ? 1 : Math.ceil(this.state.total_alerts/25);
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -61,25 +60,24 @@ class AlertsPage extends React.Component {
                         <div className="col-md-6">
                             <nav>
                                 <ul className="pagination">
-                                    <li className={"page-item " + (this.state.page === 0 ? "disabled" : "")}>
-                                        <button className="page-link" disabled={this.state.page === 0} onClick={() => {this._page("previous")}}>Previous page</button>
+                                    <li className={'page-item ' + (this.state.page === 0 ? 'disabled' : '')}>
+                                        <button className="page-link" disabled={this.state.page === 0} onClick={() => { this._page('previous') }}>Previous page</button>
                                     </li>
 
-                                    <li className={"page-item " + (this.state.page+1 === totalPages ? "disabled" : "")}>
-                                        <button className="page-link" disabled={this.state.page+1 === totalPages} onClick={() => {this._page("next")}}>Next page</button>
+                                    <li className={'page-item ' + (this.state.page + 1 === totalPages ? 'disabled' : '')}>
+                                        <button className="page-link" disabled={this.state.page + 1 === totalPages} onClick={() => { this._page('next') }}>Next page</button>
                                     </li>
                                 </ul>
                             </nav>
                         </div>
                         <div className="col-md-6 text-right">
-                            Page {this.state.page+1}/{totalPages}
+                            Page {this.state.page + 1}/{totalPages}
                         </div>
                     </div>
                 }
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default AlertsPage;
+export default AlertsPage

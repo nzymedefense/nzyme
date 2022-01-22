@@ -1,85 +1,67 @@
-import RESTClient from "../util/RESTClient";
-import {notify} from "react-notify-toast";
+import RESTClient from '../util/RESTClient'
+import { notify } from 'react-notify-toast'
 
 class BanditsService {
+  findAll (setBandits) {
+    RESTClient.get('/bandits', {}, function (response) {
+      setBandits(response.data.bandits);
+    })
+  }
 
-    findAll() {
-        const self = this;
+  findOne (id, setBandits) {
+    RESTClient.get('/bandits/show/' + id, {}, function (response) {
+      setBandits(response.data);
+    })
+  }
 
-        RESTClient.get("/bandits", {}, function(response) {
-            self.setState({bandits: response.data.bandits});
-        });
-    }
+  findContactOfBandit (banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact) {
+    RESTClient.get('/bandits/show/' + banditUUID + '/contacts/' + contactUUID, { detailed_ssids: detailedSSIDs, detailed_bssids: detailedBSSIDs }, function (response) {
+      setContact(response.data);
+    })
+  }
 
-    findOne(id) {
-        const self = this;
+  createBandit (name, description, successCallback, errorCallback) {
+    RESTClient.post('/bandits', { name: name, description: description }, function () {
+      successCallback()
+    }, function () {
+      errorCallback()
+    })
+  }
 
-        RESTClient.get("/bandits/show/" + id, {}, function(response) {
-            self.setState({bandit: response.data});
-        });
-    }
+  updateBandit (id, name, description, successCallback, errorCallback) {
+    RESTClient.put('/bandits/show/' + id, { name: name, description: description }, function () {
+      successCallback()
+    }, function () {
+      errorCallback()
+    })
+  }
 
-    findContactOfBandit(banditUUID, contactUUID, detailed_ssids, detailed_bssids) {
-        const self = this;
+  deleteBandit (banditUUID, setDeleted) {
+    RESTClient.delete('/bandits/show/' + banditUUID, function () {
+      setDeleted(true);
+    }, function () {
+      notify.show('Could not delete bandit. Please check nzyme log file.', 'error')
+    })
+  }
 
-        RESTClient.get("/bandits/show/" + banditUUID + "/contacts/" + contactUUID, {"detailed_ssids": detailed_ssids, "detailed_bssids": detailed_bssids}, function(response) {
-            self.setState({contact: response.data});
-        });
-    }
+  findAllIdentifierTypes (setBanditIdentifierTypes) {
+  
+    RESTClient.get('/bandits/identifiers/types', {}, function (response) {
+      setBanditIdentifierTypes(response.data.types);
+    })
+  }
 
-    createBandit(name, description, successCallback, errorCallback) {
-        RESTClient.post("/bandits", {name: name, description: description}, function() {
-            successCallback();
-        }, function() {
-            errorCallback();
-        });
-    }
+  createIdentifier (banditUUID, createRequest, successCallback, errorCallback) {
+    const self = this
 
-    updateBandit(id, name, description, successCallback, errorCallback) {
-        RESTClient.put("/bandits/show/" + id, {name: name, description: description}, function() {
-            successCallback();
-        }, function() {
-            errorCallback();
-        });
-    }
+    RESTClient.post('/bandits/show/' + banditUUID + '/identifiers', createRequest, successCallback, errorCallback);
+  }
 
-    deleteBandit(banditUUID, successCallback) {
-        RESTClient.delete("/bandits/show/" + banditUUID, function () {
-            successCallback();
-        }, function() {
-            notify.show("Could not delete bandit. Please check nzyme log file.", "error");
-        });
-    }
-
-    findAllIdentifierTypes() {
-        const self = this;
-
-        RESTClient.get("/bandits/identifiers/types", {}, function(response) {
-            self.setState({banditIdentifierTypes: response.data.types});
-        });
-    }
-
-    createIdentifier(banditUUID, createRequest) {
-        const self = this;
-
-        RESTClient.post("/bandits/show/" + banditUUID + "/identifiers", createRequest, function() {
-            self.setState({submitting: false, submitted: true});
-            notify.show("Identifier created.", "success");
-        }, function() {
-            self.setState({submitting: false, submitted: false});
-            notify.show("Could not create identifier. Please check nzyme log file.", "error");
-        });
-    }
-
-    deleteIdentifier(banditUUID, identifierUUID, successCallback) {
-        const self = this;
-
-        RESTClient.delete("/bandits/show/" + banditUUID + "/identifiers/" + identifierUUID, successCallback, function() {
-            self.setState({submitting: false, submitted: false});
-            notify.show("Could not delete identifier. Please check nzyme log file.", "error");
-        });
-    }
-
+  deleteIdentifier (banditUUID, identifierUUID, successCallback) {
+    RESTClient.delete('/bandits/show/' + banditUUID + '/identifiers/' + identifierUUID, successCallback, function () {
+      notify.show('Could not delete identifier. Please check nzyme log file.', 'error');
+    })
+  }
 }
 
-export default BanditsService;
+export default BanditsService

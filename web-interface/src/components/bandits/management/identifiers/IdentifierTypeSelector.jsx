@@ -1,27 +1,17 @@
-import React from 'react';
-import {startCase} from "lodash/string";
+import React from 'react'
+import { startCase } from 'lodash/string'
 
-class IdentifierTypeSelector extends React.Component {
+function IdentifierTypeSelector(props) {
 
-    constructor(props) {
-        super(props);
-
-        this.selector = React.createRef();
-    }
-
-    render() {
-        const types = this.props.types;
-
-        return (
-            <select ref={this.selector} onChange={() => this.props.onChange(this.selector.current.value)}>
-                <option key="default-empty" />
-                {Object.keys(types).map(function (key,i) {
-                    return <option value={types[key]} key={types[key]}>{startCase(types[key])}</option>
-                })}
-            </select>
-        )
-    }
+  return (
+          <select ref={props.selector} onChange={props.onChange}>
+              <option key="default-empty" />
+              {Object.keys(props.types).map(function (key, i) {
+                return <option value={props.types[key]} key={props.types[key]}>{startCase(props.types[key])}</option>
+              })}
+          </select>
+  )
 
 }
 
-export default IdentifierTypeSelector;
+export default IdentifierTypeSelector

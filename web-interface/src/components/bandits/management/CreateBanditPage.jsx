@@ -1,31 +1,30 @@
-import React from 'react';
-import BanditForm from "./BanditForm";
-import {notify} from "react-notify-toast";
-import Routes from "../../../util/Routes";
+import React from 'react'
+import BanditForm from './BanditForm'
+import { notify } from 'react-notify-toast'
+import Routes from '../../../util/ApiRoutes'
 
 class CreateBanditPage extends React.Component {
+  _createBandit (e) {
+    e.preventDefault()
 
-    _createBandit(e) {
-        e.preventDefault();
+    const self = this
+    this.setState({ submitting: true })
 
-        const self = this;
-        this.setState({submitting: true});
+    this.banditsService.createBandit(
+      self.nameInput.current.value, self.descriptionInput.current.value,
+      function () {
+        self.setState({ submitting: false, submitted: true })
+        notify.show('Bandit created.', 'success')
+      },
+      function () {
+        self.setState({ submitting: false })
+        notify.show('Could not create bandit. Please check nzyme log file.', 'error')
+      }
+    )
+  }
 
-        this.banditsService.createBandit(
-            self.nameInput.current.value, self.descriptionInput.current.value,
-            function () {
-                self.setState({submitting: false, submitted: true});
-                notify.show("Bandit created.", "success");
-            },
-            function () {
-                self.setState({submitting: false});
-                notify.show("Could not create bandit. Please check nzyme log file.", "error");
-            }
-        );
-    }
-
-    render() {
-        return (
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -49,9 +48,8 @@ class CreateBanditPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default CreateBanditPage;
+export default CreateBanditPage

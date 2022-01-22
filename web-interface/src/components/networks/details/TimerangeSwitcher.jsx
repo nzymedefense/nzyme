@@ -1,39 +1,37 @@
-import React from 'react';
+import React from 'react'
 
 class TimerangeSwitcher extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
+    this.menu = React.createRef()
 
-        this.menu = React.createRef();
-
-        this.state = {
-            ranges: props.ranges
-        };
-
-        this._changeRange = this._changeRange.bind(this);
+    this.state = {
+      ranges: props.ranges
     }
 
-    _changeRange() {
-        this.props._changeRange(this.menu.current.value);
-    }
+    this._changeRange = this._changeRange.bind(this)
+  }
 
-    render() {
-        return (
+  _changeRange () {
+    this.props._changeRange(this.menu.current.value)
+  }
+
+  render () {
+    return (
             <div>
                 {this.props.title}:&nbsp;
 
                 <select className="timerange-switcher" defaultValue={this.props.currentRange} onChange={this._changeRange} ref={this.menu}>
-                    {this.state.ranges.map(function (key,i) {
-                        return <option key={"timerange-switch-" + key} value={key}>
-                            {key} {key === 1 ? "hour" : "hours"}
+                    {this.state.ranges.map(function (key, i) {
+                      return <option key={'timerange-switch-' + key} value={key}>
+                            {key} {key === 1 ? 'hour' : 'hours'}
                         </option>
                     })}
                 </select>
             </div>
-        );
-    }
-
+    )
+  }
 }
 
-export default TimerangeSwitcher;
+export default TimerangeSwitcher

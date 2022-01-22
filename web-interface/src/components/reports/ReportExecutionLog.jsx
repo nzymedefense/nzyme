@@ -1,22 +1,21 @@
-import React from 'react';
-import moment from "moment";
-import ReportExecutionLogStatusBadge from "./ReportExecutionLogStatusBadge";
-import Routes from "../../util/Routes";
+import React from 'react'
+import moment from 'moment'
+import ReportExecutionLogStatusBadge from './ReportExecutionLogStatusBadge'
+import Routes from '../../util/ApiRoutes'
 
 class ReportExecutionLog extends React.Component {
+  render () {
+    const logs = this.props.logs
+    const reportName = this.props.reportName
 
-    render() {
-        const logs = this.props.logs;
-        const reportName = this.props.reportName;
-
-        if (!logs || logs.length === 0) {
-            return (
+    if (!logs || logs.length === 0) {
+      return (
                 <div className="alert alert-info">
                     No report executions yet.
                 </div>
-            )
-        } else {
-            return (
+      )
+    } else {
+      return (
                 <table className="table table-sm table-hover table-striped">
                     <thead>
                     <tr>
@@ -27,9 +26,9 @@ class ReportExecutionLog extends React.Component {
                     </tr>
                     </thead>
                     <tbody>
-                    {Object.keys(logs).map(function (key,i) {
-                        return (
-                        <tr>
+                    {Object.keys(logs).map(function (key, i) {
+                      return (
+                        <tr key={'el-' + i}>
                             <td title={logs[key].created_at}>{moment(logs[key].created_at).format()}</td>
                             <td><ReportExecutionLogStatusBadge status={logs[key].result} /></td>
                             <td>{logs[key].message}</td>
@@ -40,14 +39,13 @@ class ReportExecutionLog extends React.Component {
                                 </a>
                             </td>
                         </tr>
-                        )
+                      )
                     })}
                     </tbody>
                 </table>
-            )
-        }
+      )
     }
-
+  }
 }
 
-export default ReportExecutionLog;
+export default ReportExecutionLog

@@ -1,47 +1,46 @@
-import React from 'react';
-import Redirect from "react-router-dom/Redirect";
-import BanditsService from "../../../services/BanditsService";
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+import BanditsService from '../../../services/BanditsService'
 
 class BanditForm extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
+    this.formHandler = this.props.formHandler.bind(this)
 
-        this.formHandler = this.props.formHandler.bind(this);
+    this.nameInput = React.createRef()
+    this.descriptionInput = React.createRef()
 
-        this.nameInput = React.createRef();
-        this.descriptionInput = React.createRef();
-
-        this.state = {
-            submitting: false,
-            submitted: false,
-            banditId: props.bandit ? props.bandit.uuid : undefined,
-            banditName: props.bandit ? props.bandit.name : "",
-            banditDescription: props.bandit ? props.bandit.description : ""
-        };
-
-        this._handleNameInput = this._handleNameInput.bind(this);
-        this._handleDescriptionInput = this._handleDescriptionInput.bind(this);
-
-        this.banditsService = new BanditsService();
-        this.banditsService.createBandit = this.banditsService.createBandit.bind(this);
-        this.banditsService.updateBandit = this.banditsService.updateBandit.bind(this);
+    this.state = {
+      submitting: false,
+      submitted: false,
+      banditId: props.bandit ? props.bandit.uuid : undefined,
+      banditName: props.bandit ? props.bandit.name : '',
+      banditDescription: props.bandit ? props.bandit.description : ''
     }
 
-    _handleNameInput(e) {
-        this.setState({banditName: e.target.value});
+    this._handleNameInput = this._handleNameInput.bind(this)
+    this._handleDescriptionInput = this._handleDescriptionInput.bind(this)
+
+    this.banditsService = new BanditsService()
+    this.banditsService.createBandit = this.banditsService.createBandit.bind(this)
+    this.banditsService.updateBandit = this.banditsService.updateBandit.bind(this)
+  }
+
+  _handleNameInput (e) {
+    this.setState({ banditName: e.target.value })
+  }
+
+  _handleDescriptionInput (e) {
+    this.setState({ banditDescription: e.target.value })
+  }
+
+  render () {
+    if (this.state.submitted) {
+      return (<Navigate to={this.props.backLink} />)
     }
 
-    _handleDescriptionInput(e) {
-        this.setState({banditDescription: e.target.value});
-    }
-
-    render() {
-        if (this.state.submitted) {
-            return ( <Redirect to={this.props.backLink} /> );
-        }
-
-        return (
+    return (
             <form onSubmit={this.formHandler}>
                 <div className="form-group">
                     <label htmlFor="name">Name</label>
@@ -56,9 +55,8 @@ class BanditForm extends React.Component {
                 <button type="submit" className="btn btn-success" disabled={this.state.submitting}>{this.props.submitName}</button>&nbsp;
                 <a href={this.props.backLink} className="btn btn-dark">Back</a>
             </form>
-        )
-    }
-
+    )
+  }
 }
 
-export default BanditForm;
+export default BanditForm

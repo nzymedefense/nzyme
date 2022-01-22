@@ -1,20 +1,19 @@
-import React from 'react';
-import BanditContactWidgetTableRow from "./BanditContactWidgetTableRow";
+import React from 'react'
+import BanditContactWidgetTableRow from './BanditContactWidgetTableRow'
 
 class BanditContactWidget extends React.Component {
+  render () {
+    const contacts = this.props.contacts
 
-    render() {
-        const contacts = this.props.contacts;
-
-        if (!contacts || contacts.length === 0) {
-            return (
+    if (!contacts || contacts.length === 0) {
+      return (
                 <div className="alert alert-info">
                     No contacts yet.
                 </div>
-            );
-        }
+      )
+    }
 
-        return (
+    return (
             <div className="row">
                 <div className="col-md-12">
                     <table className="table table-sm table-hover table-striped">
@@ -29,16 +28,15 @@ class BanditContactWidget extends React.Component {
                         </tr>
                         </thead>
                         <tbody>
-                        {Object.keys(contacts).map(function (key,i) {
-                            return <BanditContactWidgetTableRow key={contacts[key].uuid} contact={contacts[key]}/>
+                        {Object.keys(contacts).map(function (key, i) {
+                          return <BanditContactWidgetTableRow key={contacts[key].uuid} contact={contacts[key]}/>
                         })}
                         </tbody>
                     </table>
                 </div>
             </div>
-        );
-    }
-
+    )
+  }
 }
 
-export default BanditContactWidget;
+export default BanditContactWidget

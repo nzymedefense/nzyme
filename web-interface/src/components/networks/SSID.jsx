@@ -1,28 +1,25 @@
-import React from 'react';
-import Routes from "../../util/Routes";
+import React from 'react'
+import Routes from '../../util/ApiRoutes'
 
 class SSID extends React.Component {
-
-    render() {
-        if (this.props.ssid.human_readable) {
-            return (
+  render () {
+    if (this.props.ssid.human_readable) {
+      return (
                 <span>
-                    <a href={Routes.NETWORKS.SHOW(encodeURIComponent(encodeURIComponent(this.props.ssid.bssid)), encodeURIComponent(encodeURIComponent(this.props.ssid.name)), this.props.channel)}>
+                    <a href={Routes.NETWORKS.SHOW(encodeURIComponent(this.props.ssid.bssid), encodeURIComponent(encodeURIComponent(this.props.ssid.name)), this.props.channel)}>
                         {this.props.ssid.name.trim()}
                     </a>
                     {this.props.ssid.is_monitored ? <i className="fas fa-heartbeat text-muted monitored-network" title="Monitored Network" /> : undefined }
                 </span>
-            );
-        } else {
-            return (
+      )
+    } else {
+      return (
                 <span className="text-muted">
                     {this.props.ssid.name.trim()}
                 </span>
-            );
-        }
-
+      )
     }
-
+  }
 }
 
-export default SSID;
+export default SSID

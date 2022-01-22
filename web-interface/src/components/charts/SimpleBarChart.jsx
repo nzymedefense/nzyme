@@ -1,101 +1,99 @@
-import React from 'react';
+import React from 'react'
 
-import Plot from 'react-plotly.js';
+import Plot from 'react-plotly.js'
 
 class SimpleBarChart extends React.Component {
-
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
 
     this.state = {
-        data: props.data
-    };
+      data: props.data
+    }
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({ data: nextProps.data });
+  componentWillReceiveProps (nextProps) {
+    this.setState({ data: nextProps.data })
   }
 
-  render() {
-    let x = [];
-    let y = [];
+  render () {
+    const x = []
+    const y = []
 
-    const data = this.state.data;
+    const data = this.state.data
 
-    let finalData = this.props.finalData;
+    let finalData = this.props.finalData
     if (!finalData) {
-        Object.keys(data).forEach(function (key) {
-            x.push(new Date(key));
-            y.push(data[key]);
-        });
+      Object.keys(data).forEach(function (key) {
+        x.push(new Date(key))
+        y.push(data[key])
+      })
 
-        finalData = [
-            {
-                x: x,
-                y: y,
-                type: "bar",
-                line: {width: 1, shape: "linear", color: "#2983fe"},
-            }
-        ];
+      finalData = [
+        {
+          x: x,
+          y: y,
+          type: 'bar',
+          line: { width: 1, shape: 'linear', color: '#2983fe' }
+        }
+      ]
     }
 
-    let marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25;
-    let marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0;
-    let marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25;
-    let marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50;
+    const marginLeft = this.props.customMarginLeft ? this.props.customMarginLeft : 25
+    const marginRight = this.props.customMarginRight ? this.props.customMarginRight : 0
+    const marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25
+    const marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50
 
-      return (
+    return (
         <Plot
             style={{ width: '100%', height: '100%' }}
             data={finalData}
             layout={{
-                height: this.props.height,
-                width: this.props.width,
-                font: {
-                    family: "'Inconsolata', monospace",
-                    size: 10,
-                    color: this.props.textColor ? this.props.textColor : "#ffffff"
-                },
-                margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
-                title: { text: this.props.title },
-                paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
-                plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : "#0c0d16",
-                showlegend: false,
-                dragmode: false,
-                clickmode: "none",
-                hovermode: this.props.disableHover ? false : "x",
-                hoverlabel: {
-                    font: { size: 11 },
-                    namelength: -1
-                },
-                barmode: "stack",
-                boxgap: 0,
-                xaxis: {
-                    fixedrange: true,
-                    title: this.props.xaxistitle,
-                    zerolinecolor: "#1f2134",
-                    linecolor: "#11121f",
-                    gridcolor: "#1f2134"
-                },
-                yaxis: {
-                    fixedrange: true,
-                    title: this.props.yaxistitle,
-                    zerolinecolor: "#1f2134",
-                    linecolor: "#11121f",
-                    gridcolor: "#1f2134"
-                },
-                annotations: this.props.annotations ? this.props.annotations : [],
-                shapes: this.props.shapes
+              height: this.props.height,
+              width: this.props.width,
+              font: {
+                family: "'Inconsolata', monospace",
+                size: 10,
+                color: this.props.textColor ? this.props.textColor : '#ffffff'
+              },
+              margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
+              title: { text: this.props.title },
+              paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
+              plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
+              showlegend: false,
+              dragmode: false,
+              clickmode: 'none',
+              hovermode: this.props.disableHover ? false : 'x',
+              hoverlabel: {
+                font: { size: 11 },
+                namelength: -1
+              },
+              barmode: 'stack',
+              boxgap: 0,
+              xaxis: {
+                fixedrange: true,
+                title: this.props.xaxistitle,
+                zerolinecolor: '#1f2134',
+                linecolor: '#11121f',
+                gridcolor: '#1f2134'
+              },
+              yaxis: {
+                fixedrange: true,
+                title: this.props.yaxistitle,
+                zerolinecolor: '#1f2134',
+                linecolor: '#11121f',
+                gridcolor: '#1f2134'
+              },
+              annotations: this.props.annotations ? this.props.annotations : [],
+              shapes: this.props.shapes
             }}
             config={{
-                displayModeBar: false,
-                autosize: true,
-                responsive: true
+              displayModeBar: false,
+              autosize: true,
+              responsive: true
             }}
         />
     )
   }
-
 }
 
-export default SimpleBarChart;
+export default SimpleBarChart

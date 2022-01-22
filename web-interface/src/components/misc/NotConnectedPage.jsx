@@ -1,8 +1,7 @@
-import React from 'react';
+import React from 'react'
 
 class NotConnectedPage extends React.Component {
-
-  render() {
+  render () {
     return (
       <div>
         <div className="row">
@@ -25,10 +24,6 @@ class NotConnectedPage extends React.Component {
       </div>
     )
   }
-
 }
 
-export default NotConnectedPage;
-
-
-
+export default NotConnectedPage

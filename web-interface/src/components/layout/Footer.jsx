@@ -1,9 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 class Footer extends React.Component {
-
-    render() {
-        return (
+  render () {
+    return (
             <div className="row" id="footer">
                 <div className="col-md-12 mt-lg-3">
                     <div className="text-center text-dark">
@@ -18,9 +17,8 @@ class Footer extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default Footer;
+export default Footer

@@ -1,39 +1,31 @@
-import React from 'react';
-import Routes from "../../util/Routes";
-import ReportName from "./ReportName";
-import ReportsService from "../../services/ReportsService";
-import LoadingSpinner from "../misc/LoadingSpinner";
-import moment from "moment";
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 
-class ReportExecutionLogDetailsPage extends React.Component {
+import Routes from '../../util/ApiRoutes'
+import ReportName from './ReportName'
+import ReportsService from '../../services/ReportsService'
+import LoadingSpinner from '../misc/LoadingSpinner'
+import moment from 'moment'
 
-    constructor(props) {
-        super(props);
+const reportsService = new ReportsService();
 
-        this.reportName = decodeURIComponent(props.match.params.name);
-        this.executionId = decodeURIComponent(props.match.params.executionId);
+function ReportExecutionLogDetailsPage() {
 
-        this.state = {
-            report: undefined,
-            log: undefined
-        }
+    const{ reportName, executionId }= useParams();
 
-        this.reportsService = new ReportsService();
-        this.reportsService.findOne = this.reportsService.findOne.bind(this);
-        this.reportsService.findExecutionLog = this.reportsService.findExecutionLog.bind(this);
+    const [report, setReport] = useState(null);
+    const [log, setLog] = useState(null);
+
+    useEffect(() => {
+        reportsService.findOne(reportName, setReport);
+        reportsService.findExecutionLog(reportName, executionId, setLog);
+    }, [reportName, executionId, setReport, setLog]);
+
+    if (!report || !log) {
+        return <LoadingSpinner />
     }
 
-    componentDidMount() {
-        this.reportsService.findOne(this.reportName);
-        this.reportsService.findExecutionLog(this.reportName, this.executionId);
-    }
-
-    render () {
-        if (!this.state.report || !this.state.log) {
-            return <LoadingSpinner />
-        }
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -41,10 +33,10 @@ class ReportExecutionLogDetailsPage extends React.Component {
                             <ol className="breadcrumb">
                                 <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
                                 <li className="breadcrumb-item">
-                                    <a href={Routes.SYSTEM.REPORTS.DETAILS(this.reportName)}><ReportName name={this.reportName} /></a>
+                                    <a href={Routes.SYSTEM.REPORTS.DETAILS(report.name)}><ReportName name={report.name} /></a>
                                 </li>
-                                <li className="breadcrumb-item active"  aria-current="page">
-                                    Execution #{this.executionId}
+                                <li className="breadcrumb-item active" aria-current="page">
+                                    Execution #{log.id}
                                 </li>
                             </ol>
                         </nav>
@@ -53,7 +45,7 @@ class ReportExecutionLogDetailsPage extends React.Component {
 
                 <div className="row">
                     <div className="col-md-12">
-                        <h1><ReportName name={this.reportName} /> Execution #{this.executionId}</h1>
+                        <h1><ReportName name={report.name} /> Execution #{log.id}</h1>
                     </div>
                 </div>
 
@@ -61,27 +53,29 @@ class ReportExecutionLogDetailsPage extends React.Component {
                     <div className="col-md-3">
                         <dl>
                             <dt>Completed at:</dt>
-                            <dd>{moment(this.state.log.created_at).format()}</dd>
+                            <dd>{moment(log.created_at).format()}</dd>
                         </dl>
                     </div>
-                    <div className="col-md-9">
+                    <div className="col-md-8">
                         <dl>
                             <dt>Result:</dt>
-                            <dd>{this.state.log.message}</dd>
+                            <dd>{log.message}</dd>
                         </dl>
+                    </div>
+                    <div className="col-md-1">
+                        <a href={Routes.SYSTEM.REPORTS.DETAILS(report.name)} className="btn btn-dark">Back</a>&nbsp;
                     </div>
                 </div>
 
                 <div className="row">
                     <div className="col-md-12">
                         <h2>Report Content:</h2>
-                        <iframe title="Report Page" className="report-execution-content mt-1" srcDoc={this.state.log.content} />
+                        <iframe title="Report Page" className="report-execution-content mt-1" srcDoc={log.content} />
                     </div>
                 </div>
             </div>
-        )
-    }
+    )
 
 }
 
-export default ReportExecutionLogDetailsPage;
+export default ReportExecutionLogDetailsPage

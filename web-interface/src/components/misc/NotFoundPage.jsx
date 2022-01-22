@@ -1,9 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 class NotFoundPage extends React.Component {
-
-    render() {
-        return (
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -19,12 +18,8 @@ class NotFoundPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default NotFoundPage;
-
-
-
+export default NotFoundPage

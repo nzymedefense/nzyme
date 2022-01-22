@@ -1,68 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
+import { notify } from 'react-notify-toast'
 
-import LoadingSpinner from "../../../misc/LoadingSpinner";
-import IdentifierTypeSelector from "./IdentifierTypeSelector";
-import IdentifierFormProxy from "./forms/IdentifierFormProxy";
-import IdentifierExplanation from "./IdentifierExplanation";
-import Routes from "../../../../util/Routes";
-import Redirect from "react-router-dom/Redirect";
-import BanditsService from "../../../../services/BanditsService";
+import LoadingSpinner from '../../../misc/LoadingSpinner'
+import IdentifierTypeSelector from './IdentifierTypeSelector'
+import IdentifierFormProxy from './forms/IdentifierFormProxy'
+import IdentifierExplanation from './IdentifierExplanation'
+import Routes from '../../../../util/ApiRoutes'
 
-class CreateIdentifierPage extends React.Component {
+import BanditsService from '../../../../services/BanditsService';
 
-    constructor(props) {
-        super(props);
+const banditsService = new BanditsService();
 
-        this.banditId = decodeURIComponent(props.match.params.banditUUID);
+function CreateIdentifierPage(props) {
 
-        this.state = {
-            banditIdentifierTypes: undefined,
-            selectedType: undefined,
-            configuration: undefined,
-            explanation: undefined,
-            submitting: false,
-            submitted: false,
-            bandit: undefined
-        };
+    const { banditId } = useParams();
 
-        this._selectType = this._selectType.bind(this);
-        this._configurationUpdate = this._configurationUpdate.bind(this);
-        this._submitForm = this._submitForm.bind(this);
+    const typeSelector = React.createRef();
 
-        this.banditsService = new BanditsService();
-        this.banditsService.findOne = this.banditsService.findOne.bind(this);
-        this.banditsService.findAllIdentifierTypes = this.banditsService.findAllIdentifierTypes.bind(this);
-        this.banditsService.createIdentifier = this.banditsService.createIdentifier.bind(this);
-    }
+    const [bandit, setBandit] = useState(null);
+    const [banditIdentifierTypes, setBanditIdentifierTypes] = useState(null);
+    const [selectedType, setSelectedType] = useState(null);
+    const [configuration, setConfiguration] = useState(null);
+    const [explanation, setExplanation] = useState(null);
+    const [formReady, setFormReady] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    
+    useEffect(() => {
+        banditsService.findOne(banditId, setBandit);
+        banditsService.findAllIdentifierTypes(setBanditIdentifierTypes);
+    }, [banditId]);
 
-    componentDidMount() {
-        this.banditsService.findOne(this.banditId);
-        this.banditsService.findAllIdentifierTypes();
-    }
+    const selectType = useCallback(() => {
+        setSelectedType(typeSelector.current.value);
+    }, [typeSelector]);
 
-    _selectType(value) {
-        this.setState({selectedType: value, explanation: "", configuration: {}});
-    }
-
-    _configurationUpdate(obj) {
-        this.setState({configuration: obj.configuration, explanation: obj.explanation, formReady: obj.ready});
-    }
-
-    _submitForm(e) {
+    const submitForm = useCallback((e) => {
         e.preventDefault();
-        this.banditsService.createIdentifier(this.banditId, {type: this.state.selectedType, configuration: this.state.configuration});
+        setSubmitting(true);
+
+        banditsService.createIdentifier(
+            bandit.uuid,
+            {
+                type: selectedType,
+                configuration: configuration
+            },
+            function() {
+                notify.show('Identifier created.', 'success');
+                setSubmitting(false);
+                setSubmitted(true);
+            }, function() {
+                notify.show('Could not create identifier. Please check nzyme log file.', 'error');
+                setSubmitting(false);
+                setSubmitted(false);
+            }
+        );
+
+    }, [bandit, selectedType, configuration])
+
+    if (submitted) {
+        return (<Navigate to={Routes.BANDITS.SHOW(bandit.uuid)} />)
     }
 
-    render() {
-        if (this.state.submitted) {
-            return ( <Redirect to={Routes.BANDITS.SHOW(this.banditId)} /> );
-        }
+    if (!banditIdentifierTypes || !bandit) {
+        return <LoadingSpinner />
+    }
 
-        if (!this.state.banditIdentifierTypes || !this.state.bandit) {
-            return <LoadingSpinner />;
-        }
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -72,7 +78,7 @@ class CreateIdentifierPage extends React.Component {
                                     <a href={Routes.BANDITS.INDEX}>Bandits</a>
                                 </li>
                                 <li className="breadcrumb-item" aria-current="page">
-                                    <a href={Routes.BANDITS.SHOW(this.state.bandit.uuid)}>{this.state.bandit.name}</a>
+                                    <a href={Routes.BANDITS.SHOW(bandit.uuid)}>{bandit.name}</a>
                                 </li>
                                 <li className="breadcrumb-item active" aria-current="page">
                                     Create Identifier
@@ -93,11 +99,11 @@ class CreateIdentifierPage extends React.Component {
                         <div className="row">
                             <div className="col-md-12">
                                 <strong>Step 1)</strong> Select an identifier type:&nbsp;
-                                <IdentifierTypeSelector types={this.state.banditIdentifierTypes} onChange={this._selectType} />
+                                <IdentifierTypeSelector types={banditIdentifierTypes} onChange={selectType} selector={typeSelector} />
                             </div>
                         </div>
 
-                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                        <div className="row mt-md-3" style={{ display: selectedType ? 'block' : 'none' }}>
                             <div className="col-md-12">
                                 <strong>Step 2)</strong> Configure identifier details:
 
@@ -105,31 +111,33 @@ class CreateIdentifierPage extends React.Component {
                                     <div className="col-md-1" />
                                     <div className="col-md-8">
                                         <IdentifierFormProxy
-                                            formType={this.state.selectedType}
-                                            configurationUpdate={this._configurationUpdate}/>
+                                            formType={selectedType}
+                                            setConfiguration={setConfiguration}
+                                            setExplanation={setExplanation}
+                                            setFormReady={setFormReady} />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                        <div className="row mt-md-3" style={{ display: selectedType ? 'block' : 'none' }}>
                             <div className="col-md-12">
                                 <strong>Step 3)</strong> Confirm configuration:
 
                                 <div className="row mt-md-3">
                                     <div className="col-md-12">
-                                        <IdentifierExplanation explanation={this.state.explanation} />
+                                        <IdentifierExplanation explanation={explanation} />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="row mt-md-3" style={{"display": this.state.selectedType ? "block" : "none"}}>
+                        <div className="row mt-md-3" style={{ display: selectedType ? 'block' : 'none' }}>
                             <div className="col-md-12">
                                 <button className="btn btn-success"
-                                        onClick={this._submitForm}
-                                        disabled={!this.state.formReady || (this.state.formReady && this.state.submitting)}>Create Identifier</button>&nbsp;
-                                <a href={Routes.BANDITS.SHOW(this.banditId)} className="btn btn-dark">Back</a>
+                                        onClick={submitForm}
+                                        disabled={!formReady || (formReady && submitting)}>Create Identifier</button>&nbsp;
+                                <a href={Routes.BANDITS.SHOW(bandit.uuid)} className="btn btn-dark">Back</a>
                             </div>
                         </div>
                     </div>
@@ -146,9 +154,8 @@ class CreateIdentifierPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  
 }
 
-export default CreateIdentifierPage;
+export default CreateIdentifierPage

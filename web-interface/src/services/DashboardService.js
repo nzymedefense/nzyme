@@ -1,15 +1,13 @@
-import RESTClient from "../util/RESTClient";
+import RESTClient from '../util/RESTClient'
 
 class DashboardService {
+  findAll () {
+    const self = this
 
-    findAll() {
-        let self = this;
-
-        RESTClient.get("/dashboard", {}, function(response) {
-            self.setState({dashboard: response.data});
-        });
-    }
-
+    RESTClient.get('/dashboard', {}, function (response) {
+      self.setState({ dashboard: response.data })
+    })
+  }
 }
 
-export default DashboardService;
+export default DashboardService

@@ -1,39 +1,38 @@
-import React from 'react';
-import AuthenticationService from "../../services/AuthenticationService";
+import React from 'react'
+import AuthenticationService from '../../services/AuthenticationService'
 
 class LoginPage extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
+    this.usernameInput = React.createRef()
+    this.passwordInput = React.createRef()
 
-        this.usernameInput = React.createRef();
-        this.passwordInput = React.createRef();
-
-        this.state = {
-            loggingIn: false
-        };
-
-        this.authenticationService = new AuthenticationService();
-        this.authenticationService.createSession = this.authenticationService.createSession.bind(this);
-
-        this._submitLoginForm = this._submitLoginForm.bind(this);
+    this.state = {
+      loggingIn: false
     }
 
-    _submitLoginForm(e) {
-        e.preventDefault();
-        this.setState({loggingIn:true});
+    this.authenticationService = new AuthenticationService()
+    this.authenticationService.createSession = this.authenticationService.createSession.bind(this)
 
-        const username = this.usernameInput.current.value;
-        const password = this.passwordInput.current.value;
+    this._submitLoginForm = this._submitLoginForm.bind(this)
+  }
 
-        this.authenticationService.createSession(username, password);
-    }
+  _submitLoginForm (e) {
+    e.preventDefault()
+    this.setState({ loggingIn: true })
 
-    render() {
-        document.body.classList.add('login-page');
-        document.body.style.backgroundImage = "url(" + window.appConfig.assetsUri + "static/login_background.jpg)";
+    const username = this.usernameInput.current.value
+    const password = this.passwordInput.current.value
 
-        return (
+    this.authenticationService.createSession(username, password)
+  }
+
+  render () {
+    document.body.classList.add('login-page')
+    document.body.style.backgroundImage = 'url(' + window.appConfig.assetsUri + 'static/login_background.jpg)'
+
+    return (
             <div className="d-flex justify-content-center">
                 <div className="card">
                     <div className="card-header text-center">
@@ -54,7 +53,7 @@ class LoginPage extends React.Component {
                                 <input type="password" required className="form-control" placeholder="password" ref={this.passwordInput} />
                             </div>
                             <div className="form-group">
-                                <input type="submit" value={this.state.loggingIn ? "Logging in ..." : "Login"} className="btn float-right btn-primary" />
+                                <input type="submit" value={this.state.loggingIn ? 'Logging in ...' : 'Login'} className="btn float-right btn-primary" />
                             </div>
                         </form>
                     </div>
@@ -65,12 +64,8 @@ class LoginPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default LoginPage;
-
-
-
+export default LoginPage

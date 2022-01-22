@@ -1,17 +1,15 @@
-import React from 'react';
+import React from 'react'
 
 class BanditContactStatus extends React.Component {
+  render () {
+    const bandit = this.props.bandit
 
-    render() {
-        const bandit = this.props.bandit;
-
-        if (bandit.is_active) {
-            return <span className="badge badge-danger">active</span>;
-        } else {
-            return <span className='badge badge-primary'>not active</span>;
-        }
+    if (bandit.is_active) {
+      return <span className="badge badge-danger">active</span>
+    } else {
+      return <span className='badge badge-primary'>not active</span>
     }
-
+  }
 }
 
-export default BanditContactStatus;
+export default BanditContactStatus

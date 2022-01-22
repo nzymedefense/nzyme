@@ -1,38 +1,37 @@
-import React from 'react';
+import React from 'react'
 
-import TimerRow from "./TimerRow";
-import LoadingSpinner from "../ProbesTable";
+import TimerRow from './TimerRow'
+import LoadingSpinner from '../ProbesTable'
 
-import numeral from "numeral";
-import SystemService from "../../../services/SystemService";
+import numeral from 'numeral'
+import SystemService from '../../../services/SystemService'
 
 class Metrics extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            systemMetrics: undefined
-        };
-
-        this.systemService = new SystemService();
-        this.systemService.getMetrics = this.systemService.getMetrics.bind(this);
+    this.state = {
+      systemMetrics: undefined
     }
 
-    componentDidMount() {
-        const self = this;
+    this.systemService = new SystemService()
+    this.systemService.getMetrics = this.systemService.getMetrics.bind(this)
+  }
 
-        this.systemService.getMetrics();
-        setInterval(function () {
-            self.systemService.getMetrics();
-        }, 5000);
-    }
+  componentDidMount () {
+    const self = this
 
-    render() {
-        if (!this.state.systemMetrics) {
-            return <LoadingSpinner/>;
-        } else {
-            return (
+    this.systemService.getMetrics()
+    setInterval(function () {
+      self.systemService.getMetrics()
+    }, 5000)
+  }
+
+  render () {
+    if (!this.state.systemMetrics) {
+      return <LoadingSpinner/>
+    } else {
+      return (
                 <div>
                     <div className="row">
                         <div className="col-md-12">
@@ -43,10 +42,10 @@ class Metrics extends React.Component {
                                     <dl>
                                         <dt>Heap Memory Usage:</dt>
                                         <dd>
-                                            {numeral(this.state.systemMetrics.mem_heap_used.value).format("0.0b")}
+                                            {numeral(this.state.systemMetrics.mem_heap_used.value).format('0.0b')}
                                             &nbsp;of&nbsp;
-                                            {numeral(this.state.systemMetrics.mem_heap_max.value).format("0.0b")}
-                                            &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format("0.0%")})
+                                            {numeral(this.state.systemMetrics.mem_heap_max.value).format('0.0b')}
+                                            &nbsp;({numeral(this.state.systemMetrics.mem_heap_usage_percent.value).format('0.0%')})
                                         </dd>
                                     </dl>
                                 </div>
@@ -55,7 +54,7 @@ class Metrics extends React.Component {
                                     <dl>
                                         <dt>Non-Heap Memory Usage:</dt>
                                         <dd>
-                                            {numeral(this.state.systemMetrics.mem_nonheap_used.value).format("0.0b")}
+                                            {numeral(this.state.systemMetrics.mem_nonheap_used.value).format('0.0b')}
                                         </dd>
                                     </dl>
                                 </div>
@@ -64,9 +63,9 @@ class Metrics extends React.Component {
                                     <dl>
                                         <dt>Ground Station Traffic:</dt>
                                         <dd>
-                                            {numeral(this.state.systemMetrics.groundstation_rx.count).format("0.0b")} RX
+                                            {numeral(this.state.systemMetrics.groundstation_rx.count).format('0.0b')} RX
                                             &nbsp;/&nbsp;
-                                            {numeral(this.state.systemMetrics.groundstation_tx.count).format("0.0b")} TX
+                                            {numeral(this.state.systemMetrics.groundstation_tx.count).format('0.0b')} TX
                                         </dd>
                                     </dl>
                                 </div>
@@ -75,7 +74,7 @@ class Metrics extends React.Component {
                                     <dl>
                                         <dt>Ground Station Transmit Queue:</dt>
                                         <dd>
-                                            {numeral(this.state.systemMetrics.groundstation_queue_size.value).format("0,0")} entries
+                                            {numeral(this.state.systemMetrics.groundstation_queue_size.value).format('0,0')} entries
                                         </dd>
                                     </dl>
                                 </div>
@@ -85,7 +84,7 @@ class Metrics extends React.Component {
                                 <div className="col-md-3">
                                     <dl>
                                         <dt>Total Database Size:</dt>
-                                        <dd>{numeral(this.state.systemMetrics.database_size.value).format("0.0b")}</dd>
+                                        <dd>{numeral(this.state.systemMetrics.database_size.value).format('0.0b')}</dd>
                                     </dl>
                                 </div>
                             </div>
@@ -121,10 +120,9 @@ class Metrics extends React.Component {
                         </div>
                     </div>
                 </div>
-            )
-        }
+      )
     }
-
+  }
 }
 
-export default Metrics;
+export default Metrics

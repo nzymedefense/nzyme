@@ -1,10 +1,9 @@
-import React from 'react';
-import Routes from "../../util/Routes";
-import ReportsTable from "./ReportsTable";
+import React from 'react'
+import Routes from '../../util/ApiRoutes'
+import ReportsTable from './ReportsTable'
 
 class ReportsPage extends React.Component {
-
-  render() {
+  render () {
     return (
         <div>
           <div className="row">
@@ -38,7 +37,6 @@ class ReportsPage extends React.Component {
         </div>
     )
   }
-
 }
 
-export default ReportsPage;
+export default ReportsPage

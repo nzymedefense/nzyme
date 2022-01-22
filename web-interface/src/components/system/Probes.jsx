@@ -1,41 +1,40 @@
-import React from 'react';
+import React from 'react'
 
-import ProbesTable from "./ProbesTable";
-import TrapsTable from "./TrapsTable";
-import ProbesService from "../../services/ProbesService";
+import ProbesTable from './ProbesTable'
+import TrapsTable from './TrapsTable'
+import ProbesService from '../../services/ProbesService'
 
 class Probes extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            probes: undefined,
-            traps: undefined
-        };
-
-        this.probesService = new ProbesService();
-        this.probesService.findAll = this.probesService.findAll.bind(this);
-        this.probesService.findAllTraps = this.probesService.findAllTraps.bind(this);
-
-        this._loadData = this._loadData.bind(this);
+    this.state = {
+      probes: undefined,
+      traps: undefined
     }
 
-    componentDidMount() {
-        const self = this;
+    this.probesService = new ProbesService()
+    this.probesService.findAll = this.probesService.findAll.bind(this)
+    this.probesService.findAllTraps = this.probesService.findAllTraps.bind(this)
 
-        setInterval(function () {
-            self._loadData();
-        }, 1000);
-    }
+    this._loadData = this._loadData.bind(this)
+  }
 
-    _loadData() {
-        this.probesService.findAll();
-        this.probesService.findAllTraps();
-    }
+  componentDidMount () {
+    const self = this
 
-    render() {
-        return (
+    setInterval(function () {
+      self._loadData()
+    }, 1000)
+  }
+
+  _loadData () {
+    this.probesService.findAll()
+    this.probesService.findAllTraps()
+  }
+
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -53,9 +52,8 @@ class Probes extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default Probes;
+export default Probes

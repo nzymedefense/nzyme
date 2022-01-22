@@ -1,19 +1,17 @@
-import React from 'react';
+import React from 'react'
 
 class TrapTableRow extends React.Component {
+  render () {
+    const trap = this.props.trap
 
-    render() {
-        const trap = this.props.trap;
-
-        return (
+    return (
             <tr>
                 <td>{trap.type}</td>
                 <td>{trap.probe.name}</td>
                 <td>{trap.description}</td>
             </tr>
-        )
-    }
-
+    )
+  }
 }
 
-export default TrapTableRow;
+export default TrapTableRow

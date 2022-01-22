@@ -1,41 +1,37 @@
-import React from 'react';
+import React from 'react'
 
 class PwnagotchiIdentityForm extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            identity: "",
-            errorMessage: "",
-        };
-
-        this._handleUpdate = this._handleUpdate.bind(this);
+    this.state = {
+      identity: '',
+      errorMessage: ''
     }
 
-    _handleUpdate(e) {
-        const identity = e.target.value.replace(/ /g,'');
-        this.setState({identity: identity, errorMessage: ""});
+    this._handleUpdate = this._handleUpdate.bind(this)
+  }
 
-        if (identity.length !== 64) {
-            this.setState({errorMessage: "Invalid Pwnagotchi identity. A valid identity is 64 characters long."});
-            this.props.configurationUpdate({ready: false});
-            return;
-        }
+  _handleUpdate (e) {
+    const identity = e.target.value.replace(/ /g, '')
+    this.setState({ identity: identity, errorMessage: '' })
 
-        const explanation = identity ? "a Pwnagotchi with identity \""+ identity +"\" is recorded" : undefined;
-
-        this.props.configurationUpdate({
-            configuration: {
-                identity: identity
-            },
-            explanation: explanation,
-            ready: true
-        });
+    if (identity.length !== 64) {
+      this.setState({ errorMessage: 'Invalid Pwnagotchi identity. A valid identity is 64 characters long.' })
+      this.props.setFormReady(false);
+      return
     }
 
-    render() {
-        return (
+    const explanation = identity ? 'a Pwnagotchi with identity "' + identity + '" is recorded' : undefined
+
+    this.props.setConfiguration({ identity: identity });
+
+    this.props.setExplanation(explanation);
+    this.props.setFormReady(true);
+  }
+
+  render () {
+    return (
             <form onSubmit={(e) => e.preventDefault()}>
                 <div className="form-group">
                     <label htmlFor="identity">Pwnagotchi Identity</label>
@@ -45,9 +41,8 @@ class PwnagotchiIdentityForm extends React.Component {
                     <span className="text-danger">{this.state.errorMessage}</span>
                 </div>
             </form>
-        )
-    }
-
+    )
+  }
 }
 
-export default PwnagotchiIdentityForm;
+export default PwnagotchiIdentityForm

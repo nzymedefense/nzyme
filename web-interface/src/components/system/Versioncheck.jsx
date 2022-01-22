@@ -1,33 +1,32 @@
-import React from 'react';
+import React from 'react'
 
-import LoadingSpinner from "../misc/LoadingSpinner";
-import VersionInfo from "./VersionInfo";
-import SystemService from "../../services/SystemService";
+import LoadingSpinner from '../misc/LoadingSpinner'
+import VersionInfo from './VersionInfo'
+import SystemService from '../../services/SystemService'
 
 class Versioncheck extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            versionInfo: undefined
-        };
-
-        this.systemService = new SystemService();
-        this.systemService.getVersionInfo = this.systemService.getVersionInfo.bind(this);
+    this.state = {
+      versionInfo: undefined
     }
 
-    componentDidMount() {
-        this.systemService.getVersionInfo();
-    }
+    this.systemService = new SystemService()
+    this.systemService.getVersionInfo = this.systemService.getVersionInfo.bind(this)
+  }
 
-    render() {
-        if (!this.state.versionInfo) {
-            return <LoadingSpinner/>;
-        } else {
-            return <VersionInfo version={this.state.versionInfo} />;
-        }
+  componentDidMount () {
+    this.systemService.getVersionInfo()
+  }
+
+  render () {
+    if (!this.state.versionInfo) {
+      return <LoadingSpinner/>
+    } else {
+      return <VersionInfo version={this.state.versionInfo} />
     }
+  }
 }
 
-export default Versioncheck;
+export default Versioncheck

@@ -1,47 +1,46 @@
-import React from 'react';
+import React from 'react'
 
-import LoadingSpinner from "../misc/LoadingSpinner";
-import ActiveAlertsWidget from "./widgets/ActiveAlertsWidget";
-import ActiveContactsWidget from "./widgets/ActiveContactsWidget";
-import SystemStatusWidget from "./widgets/SystemStatusWidget";
-import FrameThroughputWidget from "./widgets/FrameThroughputWidget";
-import AlertsTable from "../alerts/AlertsTable";
-import ProbesTable from "../system/ProbesTable";
-import DashboardService from "../../services/DashboardService";
-import DeauthFramesWidget from "./widgets/DeauthFramesWidget";
-import BanditContactWidget from "./widgets/BanditContactWidget";
+import LoadingSpinner from '../misc/LoadingSpinner'
+import ActiveAlertsWidget from './widgets/ActiveAlertsWidget'
+import ActiveContactsWidget from './widgets/ActiveContactsWidget'
+import SystemStatusWidget from './widgets/SystemStatusWidget'
+import FrameThroughputWidget from './widgets/FrameThroughputWidget'
+import AlertsTable from '../alerts/AlertsTable'
+import ProbesTable from '../system/ProbesTable'
+import DashboardService from '../../services/DashboardService'
+import DeauthFramesWidget from './widgets/DeauthFramesWidget'
+import BanditContactWidget from './widgets/BanditContactWidget'
 
 class Overview extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            dashboard: undefined
-        }
-
-        this.dashboardService = new DashboardService();
-        this.dashboardService.findAll = this.dashboardService.findAll.bind(this);
-
-        this._loadData = this._loadData.bind(this);
+    this.state = {
+      dashboard: undefined
     }
 
-    componentDidMount() {
-        this._loadData();
+    this.dashboardService = new DashboardService()
+    this.dashboardService.findAll = this.dashboardService.findAll.bind(this)
 
-        setInterval(this._loadData, 5000);
+    this._loadData = this._loadData.bind(this)
+  }
+
+  componentDidMount () {
+    this._loadData()
+
+    setInterval(this._loadData, 5000)
+  }
+
+  _loadData () {
+    this.dashboardService.findAll()
+  }
+
+  render () {
+    if (!this.state.dashboard) {
+      return <LoadingSpinner/>
     }
 
-    _loadData() {
-        this.dashboardService.findAll();
-    }
-
-    render() {
-        if (!this.state.dashboard) {
-            return <LoadingSpinner/>;
-        }
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-4">
@@ -92,12 +91,8 @@ class Overview extends React.Component {
                     </div>
                 </div>
             </div>
-        );
-    }
-
+    )
+  }
 }
 
-export default Overview;
-
-
-
+export default Overview

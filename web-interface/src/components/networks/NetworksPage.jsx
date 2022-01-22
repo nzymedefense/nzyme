@@ -1,10 +1,9 @@
-import React from 'react';
-import NetworksList from "./NetworksList";
+import React from 'react'
+import NetworksList from './NetworksList'
 
 class NetworksPage extends React.Component {
-
-    render() {
-        return (
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -14,12 +13,8 @@ class NetworksPage extends React.Component {
 
                 <NetworksList />
             </div>
-        );
-    }
-
+    )
+  }
 }
 
-export default NetworksPage;
-
-
-
+export default NetworksPage

@@ -1,8 +1,7 @@
-import React from 'react';
+import React from 'react'
 
 class LoadingSpinner extends React.Component {
-
-  render() {
+  render () {
     return (
       <div className="row">
         <div className="col-md-12">
@@ -11,7 +10,6 @@ class LoadingSpinner extends React.Component {
       </div>
     )
   }
-
 }
 
-export default LoadingSpinner;
+export default LoadingSpinner

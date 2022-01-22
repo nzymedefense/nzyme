@@ -1,14 +1,13 @@
-import React from 'react';
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import CSVExportBox from "./CSVExportBox";
+import React from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import CSVExportBox from './CSVExportBox'
 
 class CSVExport extends React.Component {
-
-    render() {
-        if (!this.props.ssids || !this.props.bssids) {
-            return <LoadingSpinner />;
-        } else {
-            return (
+  render () {
+    if (!this.props.ssids || !this.props.bssids) {
+      return <LoadingSpinner />
+    } else {
+      return (
                 <div className="assets-csv-export">
                     <hr />
 
@@ -17,10 +16,9 @@ class CSVExport extends React.Component {
 
                     <hr />
                 </div>
-            )
-        }
+      )
     }
-
+  }
 }
 
-export default CSVExport;
+export default CSVExport

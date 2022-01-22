@@ -1,26 +1,26 @@
-const localStorage = window.localStorage;
+const localStorage = window.localStorage
 
 const Store = {
-    set(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-    },
+  set (key, value) {
+    localStorage.setItem(key, JSON.stringify(value))
+  },
 
-    get(key) {
-        const value = localStorage.getItem(key);
-        if (value === undefined || value === null) {
-            return undefined;
-        }
+  get (key) {
+    const value = localStorage.getItem(key)
+    if (value === undefined || value === null) {
+      return undefined
+    }
 
-        try {
-            return JSON.parse(value);
-        } catch (e) {
-            return value;
-        }
-    },
+    try {
+      return JSON.parse(value)
+    } catch (e) {
+      return value
+    }
+  },
 
-    delete(key) {
-        localStorage.removeItem(key);
-    },
-};
+  delete (key) {
+    localStorage.removeItem(key)
+  }
+}
 
-export default Store;
+export default Store

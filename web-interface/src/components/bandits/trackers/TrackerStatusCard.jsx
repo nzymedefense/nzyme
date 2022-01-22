@@ -1,30 +1,29 @@
-import React from 'react';
+import React from 'react'
 
 class TrackerStatusCard extends React.Component {
+  render () {
+    let bg
+    let statusText
+    switch (this.props.status) {
+      case 'ONLINE':
+        bg = 'bg-success'
+        statusText = 'Online'
+        break
+      case 'DARK':
+        bg = 'bg-danger'
+        statusText = 'Dark'
+        break
+      case 'WEAK':
+        bg = 'bg-warning'
+        statusText = 'Weak Signal'
+        break
+      default:
+        bg = 'bg-info'
+        statusText = 'Unknown (' + this.props.status + ')'
+    }
 
-    render() {
-        let bg;
-        let statusText;
-        switch(this.props.status) {
-            case "ONLINE":
-                bg = "bg-success";
-                statusText = "Online";
-                break;
-            case "DARK":
-                bg = "bg-danger";
-                statusText = "Dark";
-                break;
-            case "WEAK":
-                bg = "bg-warning";
-                statusText = "Weak Signal";
-                break;
-            default:
-                bg = "bg-info";
-                statusText = "Unknown (" + this.props.status + ")";
-        }
-
-        return (
-            <div className={"card text-white " + bg}>
+    return (
+            <div className={'card text-white ' + bg}>
                 <div className="card-body text-center">
                     <h3 className="card-title">Tracker Status</h3>
                     <p className="card-text text-center">
@@ -34,9 +33,8 @@ class TrackerStatusCard extends React.Component {
                     </p>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default TrackerStatusCard;
+export default TrackerStatusCard

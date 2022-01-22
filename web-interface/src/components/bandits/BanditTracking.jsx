@@ -1,16 +1,15 @@
-import React from 'react';
+import React from 'react'
 
-import GroundStationDisabled from "./trackers/GroundStationDisabled";
-import TrackersTable from "./trackers/TrackersTable";
+import GroundStationDisabled from './trackers/GroundStationDisabled'
+import TrackersTable from './trackers/TrackersTable'
 
 class BanditTracking extends React.Component {
+  render () {
+    if (!this.props.groundstationEnabled) {
+      return <GroundStationDisabled />
+    }
 
-    render() {
-        if (!this.props.groundstationEnabled) {
-            return <GroundStationDisabled />;
-        }
-
-        return (
+    return (
             <div className="row">
                 <div className="col-md-12">
                     <p>Instruct idle tracking devices to start locating this bandit:</p>
@@ -18,9 +17,8 @@ class BanditTracking extends React.Component {
                     <TrackersTable forBandit={this.props.bandit}/>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default BanditTracking;
+export default BanditTracking

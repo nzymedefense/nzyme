@@ -1,21 +1,19 @@
-import RESTClient from "../util/RESTClient";
+import RESTClient from '../util/RESTClient'
 
 class ProbesService {
+  findAll () {
+    const self = this
+    RESTClient.get('/system/probes', {}, function (response) {
+      self.setState({ probes: response.data.probes })
+    })
+  }
 
-    findAll() {
-        let self = this;
-        RESTClient.get("/system/probes", {}, function(response) {
-            self.setState({probes: response.data.probes});
-        });
-    }
-
-    findAllTraps() {
-        let self = this;
-        RESTClient.get("/system/probes/traps", {}, function(response) {
-            self.setState({traps: response.data.traps});
-        });
-    }
-
+  findAllTraps () {
+    const self = this
+    RESTClient.get('/system/probes/traps', {}, function (response) {
+      self.setState({ traps: response.data.traps })
+    })
+  }
 }
 
-export default ProbesService;
+export default ProbesService

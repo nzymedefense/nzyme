@@ -1,35 +1,31 @@
-import RESTClient from "../util/RESTClient";
-import {notify} from "react-notify-toast";
+import RESTClient from '../util/RESTClient'
+import { notify } from 'react-notify-toast'
 
 class TrackersService {
+  findAll (setTrackers, setGroundstationEnabled) {
+    RESTClient.get('/trackers', {}, function (response) {
+      setTrackers(response.data.trackers);
+      setGroundstationEnabled(response.data.groundstation_enabled);
+    })
+  }
 
-    findAll() {
-        const self = this;
+  findOne (trackerName, setTracker) {
+    RESTClient.get('/trackers/show/' + trackerName, {}, function (response) {
+      setTracker(response.data);
+    })
+  }
 
-        RESTClient.get("/trackers", {}, function(response) {
-            self.setState({trackers: response.data.trackers, groundstationEnabled: response.data.groundstation_enabled});
-        });
-    }
+  issueStartTrackingRequest (trackerName, banditUUID, successCallback) {
+    RESTClient.post('/trackers/show/' + trackerName + '/command/start_track_request', { bandit_uuid: banditUUID }, successCallback, function () {
+      notify.show('Could not issue cancel tracking request. Please check nzyme log file.', 'error')
+    })
+  }
 
-    findOne(trackerName) {
-        const self = this;
-        RESTClient.get("/trackers/show/" + trackerName, {}, function(response) {
-            self.setState({tracker: response.data});
-        });
-    }
-
-    issueStartTrackingRequest(trackerName, banditUUID, successCallback) {
-        RESTClient.post("/trackers/show/" + trackerName + "/command/start_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
-            notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
-        })
-    }
-
-    issueCancelTrackingRequest(trackerName, banditUUID, successCallback) {
-        RESTClient.post("/trackers/show/" + trackerName + "/command/cancel_track_request", {bandit_uuid:banditUUID}, successCallback, function () {
-            notify.show("Could not issue cancel tracking request. Please check nzyme log file.", "error");
-        })
-    }
-
+  issueCancelTrackingRequest (trackerName, banditUUID, successCallback) {
+    RESTClient.post('/trackers/show/' + trackerName + '/command/cancel_track_request', { bandit_uuid: banditUUID }, successCallback, function () {
+      notify.show('Could not issue cancel tracking request. Please check nzyme log file.', 'error')
+    })
+  }
 }
 
-export default TrackersService;
+export default TrackersService

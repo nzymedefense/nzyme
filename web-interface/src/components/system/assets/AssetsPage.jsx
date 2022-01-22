@@ -1,37 +1,36 @@
-import React from 'react';
-import AssetInventoryService from "../../../services/AssetInventoryService";
-import Dot11NetworkAssetsList from "./Dot11NetworkAssetsList";
-import CSVExport from "./CSVExport";
+import React from 'react'
+import AssetInventoryService from '../../../services/AssetInventoryService'
+import Dot11NetworkAssetsList from './Dot11NetworkAssetsList'
+import CSVExport from './CSVExport'
 
 class AssetsPage extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            ssids: undefined,
-            ssids_csv: undefined,
-            bssids_csv: undefined,
-            csv_visible: false
-        }
-
-        this.assetsService = new AssetInventoryService();
-        this.assetsService.findAllDot11Assets = this.assetsService.findAllDot11Assets.bind(this);
-
-        this._triggerCSV = this._triggerCSV.bind(this);
+    this.state = {
+      ssids: undefined,
+      ssids_csv: undefined,
+      bssids_csv: undefined,
+      csv_visible: false
     }
 
-    componentDidMount() {
-        this.assetsService.findAllDot11Assets();
-    }
+    this.assetsService = new AssetInventoryService()
+    this.assetsService.findAllDot11Assets = this.assetsService.findAllDot11Assets.bind(this)
 
-    _triggerCSV() {
-        const isVisible = this.state.csv_visible;
-        this.setState({csv_visible: !isVisible});
-    }
+    this._triggerCSV = this._triggerCSV.bind(this)
+  }
 
-    render() {
-        return (
+  componentDidMount () {
+    this.assetsService.findAllDot11Assets()
+  }
+
+  _triggerCSV () {
+    const isVisible = this.state.csv_visible
+    this.setState({ csv_visible: !isVisible })
+  }
+
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -51,13 +50,13 @@ class AssetsPage extends React.Component {
                     <div className="col-md-3">
                         <div className="float-right">
                             <button className="btn btn-primary" onClick={this._triggerCSV}>
-                                {this.state.csv_visible ? "Hide" : "Show as"} CSV
+                                {this.state.csv_visible ? 'Hide' : 'Show as'} CSV
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="row" style={{display: this.state.csv_visible ? "block" : "none"}}>
+                <div className="row" style={{ display: this.state.csv_visible ? 'block' : 'none' }}>
                     <div className="col-md-12">
                         <CSVExport ssids={this.state.ssids_csv} bssids={this.state.bssids_csv} />
                     </div>
@@ -75,9 +74,8 @@ class AssetsPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default AssetsPage;
+export default AssetsPage

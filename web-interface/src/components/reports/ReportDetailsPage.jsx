@@ -1,242 +1,148 @@
-import React from 'react';
-import Routes from "../../util/Routes";
-import LoadingSpinner from "../misc/LoadingSpinner";
-import ReportName from "./ReportName";
-import ReportsService from "../../services/ReportsService";
-import moment from "moment";
-import ReportFireTime from "./ReportFireTime";
-import {notify} from "react-notify-toast";
-import EmailReceiversDetailsTable from "./EmailReceiversDetailsTable";
-import {Redirect} from "react-router-dom";
-import ReportExecutionLog from "./ReportExecutionLog";
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 
-class ReportDetailsPage extends React.Component {
+import Routes from '../../util/ApiRoutes'
+import LoadingSpinner from '../misc/LoadingSpinner'
+import ReportName from './ReportName'
+import ReportsService from '../../services/ReportsService'
+import moment from 'moment'
+import ReportFireTime from './ReportFireTime'
+import EmailReceiversDetailsTable from './EmailReceiversDetailsTable'
+import { Navigate } from 'react-router-dom'
+import ReportExecutionLog from './ReportExecutionLog'
+import DeleteReportButton from './DeleteReportButton'
+import AddEmailReceiverForm from './AddEmailReceiverForm'
 
-    constructor(props) {
-        super(props);
+const reportsService = new ReportsService();
 
-        this.reportName = decodeURIComponent(props.match.params.name);
+function ReportDetailsPage() {
 
-        this.state = {
-            report: undefined,
-            reportDeleted: false,
-            addEmailFilled: false
-        }
+  const { reportName } = useParams();
 
-        this.addEmail = React.createRef();
-        this._deleteReport = this._deleteReport.bind(this);
-        this._updateAddEmail = this._updateAddEmail.bind(this);
-        this._addEmailReceiver = this._addEmailReceiver.bind(this);
+  const [ report, setReport ] = useState(null);
+  const [ reportDeleted, setReportDeleted ] = useState(false);
 
-        this.reportsService = new ReportsService();
-        this.reportsService.findOne = this.reportsService.findOne.bind(this);
-        this.reportsService.deleteReport = this.reportsService.deleteReport.bind(this);
+  useEffect(() => {
+    reportsService.findOne(reportName, setReport);
+  }, [reportName]);
 
-        this.deleteEmailReceiver = this.deleteEmailReceiver.bind(this);
-    }
+  if (reportDeleted) {
+    return <Navigate to={Routes.SYSTEM.REPORTS.INDEX} />
+  }
 
-    componentDidMount() {
-        this.reportsService.findOne(this.reportName);
-    }
+  if (!report) {
+    return <LoadingSpinner />
+  }
 
-    deleteEmailReceiver(email) {
-        const self = this;
+  return (
+          <div>
+              <div className="row">
+                  <div className="col-md-12">
+                      <nav aria-label="breadcrumb">
+                          <ol className="breadcrumb">
+                              <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
+                              <li className="breadcrumb-item active" aria-current="page">
+                                  <ReportName name={report.name} />
+                              </li>
+                          </ol>
+                      </nav>
+                  </div>
+              </div>
 
-        this.reportsService.deleteEmailReceiver(self.reportName, email,
-            function() {
-                notify.show("Report receiver deleted.", "success");
+              <div className="row">
+                  <div className="col-md-12">
+                      <h1>Report Details</h1>
+                  </div>
+              </div>
 
-                // Update report data / refresh email receivers.
-                self.reportsService.findOne(self.reportName);
-            },
-            function() {
-                notify.show("Could not delete report receiver. Please check nzyme log file.", "error");
-            }
-        );
-    }
+              <div className="row">
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Name:</dt>
+                          <dd><ReportName name={report.name} /></dd>
+                      </dl>
+                  </div>
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Created at:</dt>
+                          <dd>{moment(report.created_at).format()}</dd>
+                      </dl>
+                  </div>
 
-    _deleteReport() {
-        if (!window.confirm("Delete report?")) {
-            return;
-        }
+                  <div className="col-md-6">
+                      <span className="float-right">
+                          <a href={Routes.SYSTEM.REPORTS.INDEX} className="btn btn-dark">Back</a>&nbsp;
+                          <DeleteReportButton
+                            reportsService={reportsService}
+                            setReportDeleted={setReportDeleted}
+                            reportName={report.name} />
+                      </span>
+                  </div>
+              </div>
 
-        this.reportsService.deleteReport(this.reportName, function() {
-            notify.show("Could not delete report. Please check nzyme log file.", "error");
-        });
-    }
+              <div className="row">
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Next Fire Time:</dt>
+                          <dd><ReportFireTime time={report.next_fire_time} /></dd>
+                      </dl>
+                  </div>
 
-    _addEmailReceiver() {
-        const self = this;
-        const receiver = this.addEmail.current.value;
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Previous Fire Time:</dt>
+                          <dd><ReportFireTime time={report.previous_fire_time} /></dd>
+                      </dl>
+                  </div>
 
-        if (receiver && receiver.trim() !== "") {
-            if (this.state.report.email_receivers.includes(receiver)) {
-                notify.show("Email receiver already exists.", "error");
-                return;
-            }
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Schedule:</dt>
+                          <dd title={report.cron_expression}>{report.schedule_string}</dd>
+                      </dl>
+                  </div>
 
-            this.addEmail.current.value = "";
+                  <div className="col-md-3">
+                      <dl>
+                          <dt>Trigger State:</dt>
+                          <dd>{report.trigger_state}</dd>
+                      </dl>
+                  </div>
+              </div>
 
-            this.reportsService.addEmailReceiver(self.reportName, receiver,
-                function() {
-                    notify.show("Added report receiver.", "success");
+              <hr />
 
-                    self.setState(prevState => ({
-                        addEmailFilled: false // we have to set this because the reset about does not trigger onChange and button is never disabled
-                    }))
+              <div className="row">
+                  <div className="col-md-12">
+                      <h2>Receivers</h2>
+                  </div>
+              </div>
 
-                    // Update report data / refresh email receivers.
-                    self.reportsService.findOne(self.reportName);
-                },
-                function() {
-                    notify.show("Could not add report receiver. Please check nzyme log file.", "error");
-                }
-            );
-        }
-    }
+              <div className="row">
+                  <div className="col-md-6">
+                      <AddEmailReceiverForm report={report} reportsService={reportsService} setReport={setReport} />
+                  </div>
+              </div>
 
-    _updateAddEmail() {
-        this.setState({
-            addEmailFilled: this.addEmail.current && this.addEmail.current.value.trim() !== ""
-        })
-    }
+              <div className="row">
+                  <div className="col-md-12">
+                      <EmailReceiversDetailsTable report={report} reportsService={reportsService} setReport={setReport} />
+                  </div>
+              </div>
 
-    render() {
-        if (this.state.reportDeleted) {
-            return <Redirect to={Routes.SYSTEM.REPORTS.INDEX} />
-        }
+              <div className="row">
+                  <div className="col-md-12">
+                      <h2>Execution Log <small>(previous 14 executions)</small></h2>
+                  </div>
 
-        if (!this.state.report) {
-            return <LoadingSpinner />
-        }
+                  <div className="col-md-12">
+                      <ReportExecutionLog reportName={reportName} logs={report.recent_execution_log} />
+                  </div>
+              </div>
 
-        const self = this;
-        const report = this.state.report;
-
-        return (
-            <div>
-                <div className="row">
-                    <div className="col-md-12">
-                        <nav aria-label="breadcrumb">
-                            <ol className="breadcrumb">
-                                <li className="breadcrumb-item"><a href={Routes.SYSTEM.REPORTS.INDEX}>Reports</a></li>
-                                <li className="breadcrumb-item active" aria-current="page">
-                                    <ReportName name={this.state.report.name} />
-                                </li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <h1>Report Details</h1>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Name:</dt>
-                            <dd><ReportName name={report.name} /></dd>
-                        </dl>
-                    </div>
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Created at:</dt>
-                            <dd>{moment(report.created_at).format()}</dd>
-                        </dl>
-                    </div>
-
-                    <div className="col-md-6">
-                        <span className="float-right">
-                            <a href={Routes.SYSTEM.REPORTS.INDEX} className="btn btn-dark">Back</a>&nbsp;
-                            <button className="btn btn-danger" onClick={this._deleteReport}>Delete Report</button>&nbsp;
-                        </span>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Next Fire Time:</dt>
-                            <dd><ReportFireTime time={report.next_fire_time} /></dd>
-                        </dl>
-                    </div>
-
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Previous Fire Time:</dt>
-                            <dd><ReportFireTime time={report.previous_fire_time} /></dd>
-                        </dl>
-                    </div>
-
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Schedule:</dt>
-                            <dd title={report.cron_expression}>{report.schedule_string}</dd>
-                        </dl>
-                    </div>
-
-                    <div className="col-md-3">
-                        <dl>
-                            <dt>Trigger State:</dt>
-                            <dd>{report.trigger_state}</dd>
-                        </dl>
-                    </div>
-                </div>
-
-                <hr />
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <h2>Receivers</h2>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-6">
-                        <div className="form-group" ref={this.formDetails}>
-                            <label htmlFor="addEmail">Add Email Receiver</label>
-
-                            <div className="input-group">
-                                <input id="addEmail"
-                                       type="text"
-                                       className="form-control"
-                                       placeholder="john@example.org"
-                                       ref={this.addEmail}
-                                       onChange={this._updateAddEmail}
-                                       onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }} />
-                                <div className="input-group-append">
-                                    <button className="btn btn-secondary" type="button" onClick={this._addEmailReceiver} disabled={!this.state.addEmailFilled}>
-                                        Add Email Receiver
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <EmailReceiversDetailsTable report={report} onDeleteEmailReceiver={self.deleteEmailReceiver} />
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-md-12">
-                        <h2>Execution Log <small>(previous 14 executions)</small></h2>
-                    </div>
-
-                    <div className="col-md-12">
-                        <ReportExecutionLog reportName={this.reportName} logs={report.recent_execution_log} />
-                    </div>
-                </div>
-
-            </div>
-        )
-    }
-
+          </div>
+  )
+  
 }
 
-export default ReportDetailsPage;
+export default ReportDetailsPage

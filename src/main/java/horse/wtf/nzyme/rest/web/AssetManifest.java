@@ -51,11 +51,11 @@ public class AssetManifest {
 
             for (String x : manifest.values()) {
                 if (x.endsWith(".css")) {
-                    this.cssFiles.add(x.split("/")[2]);
+                    this.cssFiles.add(x.split("/")[3]);
                 }
 
                 if (x.endsWith(".js")) {
-                    this.jsFiles.add(x.split("/")[2]);
+                    this.jsFiles.add(x.split("/")[3]);
                 }
             }
 

@@ -1,15 +1,14 @@
-import React from 'react';
+import React from 'react'
 
-import SystemStatus from "./SystemStatus";
-import Metrics from "./metrics/Metrics";
-import Probes from "./Probes";
-import AlertConfiguration from "./AlertConfiguration";
-import Versioncheck from "./Versioncheck";
+import SystemStatus from './SystemStatus'
+import Metrics from './metrics/Metrics'
+import Probes from './Probes'
+import AlertConfiguration from './AlertConfiguration'
+import Versioncheck from './Versioncheck'
 
 class SystemPage extends React.Component {
-
-    render() {
-        return (
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -45,9 +44,8 @@ class SystemPage extends React.Component {
                     </div>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default SystemPage;
+export default SystemPage

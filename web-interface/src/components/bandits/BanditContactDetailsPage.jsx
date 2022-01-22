@@ -1,96 +1,80 @@
-import React from 'react';
-import LoadingSpinner from "../misc/LoadingSpinner";
-import BanditsService from "../../services/BanditsService";
-import Routes from "../../util/Routes";
-import moment from "moment";
-import Timespan from "../misc/Timespan";
-import RSSI from "../misc/RSSI";
-import numeral from "numeral";
-import AdvertisedSSIDTable from "./AdvertisedSSIDTable";
-import AdvertisedBSSIDTable from "./AdvertisedBSSIDTable";
-import SimpleBarChart from "../charts/SimpleBarChart";
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 
-class BanditContactDetailsPage extends React.Component {
+import LoadingSpinner from '../misc/LoadingSpinner'
+import BanditsService from '../../services/BanditsService'
+import Routes from '../../util/ApiRoutes'
+import moment from 'moment'
+import Timespan from '../misc/Timespan'
+import RSSI from '../misc/RSSI'
+import numeral from 'numeral'
+import AdvertisedSSIDTable from './AdvertisedSSIDTable'
+import AdvertisedBSSIDTable from './AdvertisedBSSIDTable'
+import SimpleBarChart from '../charts/SimpleBarChart'
 
-    constructor(props) {
-        super(props);
+const banditsService = new BanditsService();
 
-        this.banditUUID = decodeURIComponent(props.match.params.banditUUID);
-        this.contactUUID = decodeURIComponent(props.match.params.contactUUID);
+function fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact) {
+    banditsService.findContactOfBandit(
+        banditUUID,
+        contactUUID,
+        detailedSSIDs.join(),
+        detailedBSSIDs.join(),
+        setContact
+    );
+}
 
-        this.state = {
-            contact: undefined,
-            detailed_ssids: [],
-            detailed_bssids: []
-        }
+function formatHistogram(counts) {
+    const result = []
 
-        this.banditsService = new BanditsService();
-        this.banditsService.findContactOfBandit = this.banditsService.findContactOfBandit.bind(this);
+    Object.keys(counts).forEach(function (key) {
+      const x = []
+      const y = []
 
-        this._loadData = this._loadData.bind(this);
-        this._onNewSSIDSelection = this._onNewSSIDSelection.bind(this);
-        this._onNewBSSIDSelection = this._onNewBSSIDSelection.bind(this);
+      Object.keys(counts[key]).sort().forEach(function (countKey) {
+        x.push(new Date(countKey))
+        y.push(counts[key][countKey])
+      })
+
+      result.push({
+        x: x,
+        y: y,
+        type: 'line',
+        name: key,
+        line: { width: 1, shape: 'linear' }
+      })
+    })
+
+    return result
+}
+
+function BanditContactDetailsPage() {
+
+    const { banditUUID, contactUUID } = useParams();
+
+    const [contact, setContact] = useState(null);
+    const [detailedSSIDs, setDetailedSSIDs] = useState([]);
+    const [detailedBSSIDs, setDetailedBSSIDs] = useState([]);
+
+    useEffect(() => {
+        fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact);
+        const id = setInterval(() => fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact), 5000);
+        return () => clearInterval(id);
+      }, [banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs]);
+
+    if (!contact) {
+      return <LoadingSpinner />
     }
 
-    componentDidMount() {
-        const self = this;
-        self._loadData()
-
-        setInterval(function () {
-            self._loadData()
-        }, 5000);
+    function onNewSSIDSelection(ssids) {
+        setDetailedSSIDs([...ssids]);
     }
 
-    _loadData() {
-        this.banditsService.findContactOfBandit(this.banditUUID, this.contactUUID, this.state.detailed_ssids.join(), this.state.detailed_bssids.join());
+    function onNewBSSIDSelection(bssids) {
+        setDetailedBSSIDs([...bssids]);
     }
 
-    _formatHistogram(counts) {
-        const result = [];
-
-        Object.keys(counts).forEach(function (key) {
-            let x = [];
-            let y = [];
-
-            Object.keys(counts[key]).sort().forEach(function (countKey) {
-                x.push(new Date(countKey));
-                y.push(counts[key][countKey]);
-            });
-
-            result.push({
-                x: x,
-                y: y,
-                type: "line",
-                name: key,
-                line: {width: 1, shape: "linear"},
-            })
-        });
-
-        return result;
-    }
-
-    _onNewSSIDSelection(selection) {
-        const self = this;
-        this.setState({detailed_ssids: selection}, function () {
-            self._loadData();
-        });
-    }
-
-    _onNewBSSIDSelection(selection) {
-        const self = this;
-        this.setState({detailed_bssids: selection}, function () {
-            self._loadData();
-        });
-    }
-
-    render() {
-        if (!this.state.contact) {
-            return <LoadingSpinner />
-        }
-
-        const contact = this.state.contact;
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -144,7 +128,7 @@ class BanditContactDetailsPage extends React.Component {
                         <dl>
                             <dt>First Seen:</dt>
                             <dd title={moment(contact.first_seen).format()}>
-                                {moment(contact.first_seen).format("M/D/YY hh:mm a")}
+                                {moment(contact.first_seen).format('M/D/YY hh:mm a')}
                             </dd>
                         </dl>
                     </div>
@@ -153,7 +137,7 @@ class BanditContactDetailsPage extends React.Component {
                         <dl>
                             <dt>Last Seen:</dt>
                             <dd title={moment(contact.last_seen).format()}>
-                                {moment(contact.last_seen).format("M/D/YY hh:mm a")}
+                                {moment(contact.last_seen).format('M/D/YY hh:mm a')}
                             </dd>
                         </dl>
                     </div>
@@ -175,7 +159,7 @@ class BanditContactDetailsPage extends React.Component {
                     <div className="col-md-2">
                         <dl>
                             <dt>Signal:</dt>
-                            <dd>{contact.is_active ? <RSSI rssi={contact.last_signal} /> : "n/a"}</dd>
+                            <dd>{contact.is_active ? <RSSI rssi={contact.last_signal} /> : 'n/a'}</dd>
                         </dl>
                     </div>
                 </div>
@@ -183,11 +167,11 @@ class BanditContactDetailsPage extends React.Component {
                 <div className="row mt-3">
                     <div className="col-md-6">
                         <h2>Advertised SSIDs</h2>
-                        <AdvertisedSSIDTable ssids={contact.ssids} onNewSelection={this._onNewSSIDSelection} />
+                        <AdvertisedSSIDTable ssids={contact.ssids} onNewSelection={onNewSSIDSelection} />
                     </div>
                     <div className="col-md-6">
                         <h2>Advertised BSSIDs</h2>
-                        <AdvertisedBSSIDTable bssids={contact.bssids} onNewSelection={this._onNewBSSIDSelection} />
+                        <AdvertisedBSSIDTable bssids={contact.bssids} onNewSelection={onNewBSSIDSelection} />
                     </div>
                 </div>
 
@@ -199,7 +183,7 @@ class BanditContactDetailsPage extends React.Component {
                             width={540}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatHistogram(this.state.contact.ssid_frame_count_histograms)}/>
+                            finalData={formatHistogram(contact.ssid_frame_count_histograms)}/>
                     </div>
 
                     <div className="col-md-6">
@@ -209,7 +193,7 @@ class BanditContactDetailsPage extends React.Component {
                             width={545}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatHistogram(this.state.contact.bssid_frame_count_histograms)}/>
+                            finalData={formatHistogram(contact.bssid_frame_count_histograms)}/>
                     </div>
                 </div>
 
@@ -221,7 +205,7 @@ class BanditContactDetailsPage extends React.Component {
                             width={540}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatHistogram(this.state.contact.ssid_signal_strength_histograms)}/>
+                            finalData={formatHistogram(contact.ssid_signal_strength_histograms)}/>
                     </div>
 
                     <div className="col-md-6">
@@ -231,14 +215,13 @@ class BanditContactDetailsPage extends React.Component {
                             width={545}
                             height={150}
                             customMarginTop={30}
-                            finalData={this._formatHistogram(this.state.contact.bssid_signal_strength_histograms)}/>
+                            finalData={formatHistogram(contact.bssid_signal_strength_histograms)}/>
                     </div>
                 </div>
 
             </div>
-        )
-    }
-
+    )
+  
 }
 
-export default BanditContactDetailsPage;
+export default BanditContactDetailsPage

@@ -1,19 +1,17 @@
-import React from 'react';
-import Routes from "../../util/Routes";
-import NavigationLink from "./NavigationLink";
-import AlertsButton from "./AlertsButton";
+import React from 'react'
+import Routes from '../../util/ApiRoutes'
+import NavigationLink from './NavigationLink'
+import AlertsButton from './AlertsButton'
 
 class NavigationBar extends React.Component {
-
-  render() {
-
+  render () {
     return (
         <header>
         <div className="container">
           <nav className="navbar navbar-expand-md">
 
             <a href="/" className="navbar-brand d-flex align-items-center">
-              <img src={window.appConfig.assetsUri + "static/nzyme.png"} alt="nzyme" className="logo" />
+              <img src={window.appConfig.assetsUri + 'static/nzyme.png'} alt="nzyme" className="logo" />
               nzyme - WiFi Defense System
             </a>
 
@@ -30,7 +28,7 @@ class NavigationBar extends React.Component {
                 <li className="nav-item"><NavigationLink href={Routes.BANDITS.INDEX} title="Bandits" /></li>
 
                 <li className="nav-item dropdown">
-                  <button className={"nav-link btn btn-dark dropdown-toggle " + (window.location.pathname.startsWith("/system") ? "active" : "")}
+                  <button className={'nav-link btn btn-dark dropdown-toggle ' + (window.location.pathname.startsWith('/system') ? 'active' : '')}
                      id="navbarDropdown"
                      data-toggle="dropdown"
                      aria-haspopup="true"
@@ -79,7 +77,6 @@ class NavigationBar extends React.Component {
         </header>
     )
   }
-
 }
 
-export default NavigationBar;
+export default NavigationBar

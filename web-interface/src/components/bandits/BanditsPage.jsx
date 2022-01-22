@@ -1,12 +1,11 @@
-import React from 'react';
-import BanditsTable from "./BanditsTable";
-import Routes from "../../util/Routes";
-import TrackersTable from "./trackers/TrackersTable";
+import React from 'react'
+import BanditsTable from './BanditsTable'
+import Routes from '../../util/ApiRoutes'
+import TrackersTable from './trackers/TrackersTable'
 
 class BanditsPage extends React.Component {
-
-    render() {
-        return (
+  render () {
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -54,9 +53,8 @@ class BanditsPage extends React.Component {
                 </div>
 
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default BanditsPage;
+export default BanditsPage

@@ -1,70 +1,69 @@
-import React from 'react';
-import SSIDRow from "./SSIDRow";
-import LoadingSpinner from "../misc/LoadingSpinner";
-import NetworksService from "../../services/NetworksService";
+import React from 'react'
+import SSIDRow from './SSIDRow'
+import LoadingSpinner from '../misc/LoadingSpinner'
+import NetworksService from '../../services/NetworksService'
 
 class SSIDTableRow extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
+    this.service = new NetworksService()
+    this.service.findSSIDOnBSSID = this.service.findSSIDOnBSSID.bind(this)
 
-        this.service = new NetworksService();
-        this.service.findSSIDOnBSSID = this.service.findSSIDOnBSSID.bind(this);
+    this.state = {
+      ssid: undefined
+    }
+  }
 
-        this.state = {
-            ssid: undefined
-        };
+  componentDidMount () {
+    const ssid = this.props.ssid
+    const bssid = this.props.bssid
+
+    if (ssid !== '[not human readable]') {
+      this.service.findSSIDOnBSSID(bssid, ssid)
+    }
+  }
+
+  _findMostActiveChannel (channels) {
+    let mostActive = 0
+
+    for (const x in channels) {
+      const channel = channels[x]
+
+      if (channel.total_frames_recent > mostActive) {
+        mostActive = channel.channel_number
+      }
     }
 
-    componentDidMount() {
-        const ssid = this.props.ssid;
-        const bssid = this.props.bssid;
+    return mostActive
+  }
 
-        if (ssid !== "[not human readable]") {
-            this.service.findSSIDOnBSSID(bssid, ssid);
-        }
-    }
+  render () {
+    const self = this
 
-    _findMostActiveChannel(channels) {
-        let mostActive = 0;
-
-        for(const x in channels) {
-            const channel = channels[x];
-
-            if(channel.total_frames_recent > mostActive) {
-                mostActive = channel.channel_number;
-            }
-        }
-
-        return mostActive;
-    }
-
-    render() {
-        const self = this;
-
-        if (this.props.ssid === "[not human readable]") {
-            return (
+    if (this.props.ssid === '[not human readable]') {
+      return (
                 <tr>
-                    <td colSpan="7" style={{textAlign: "center"}}>
+                    <td colSpan="7" style={{ textAlign: 'center' }}>
                         Not showing details for hidden or not human readable SSIDs.
                     </td>
                 </tr>
-            )
-        }
+      )
+    }
 
-        if (!this.state.ssid) {
-            return (
+    if (!this.state.ssid) {
+      return (
                 <tr>
                     <td colSpan="7">
                         <LoadingSpinner />
                     </td>
                 </tr>
-            )
-        }
+      )
+    }
 
-        const mostActiveChannel = this._findMostActiveChannel(this.state.ssid.channels);
+    const mostActiveChannel = this._findMostActiveChannel(this.state.ssid.channels)
 
-        return (
+    return (
             <tr>
                 <td colSpan="7">
                     <table className="table table-sm table-hover table-striped">
@@ -77,21 +76,20 @@ class SSIDTableRow extends React.Component {
                             </tr>
                         </thead>
                         <tbody>
-                        {Object.keys(this.state.ssid.channels).map(function (key,i) {
-                            return <SSIDRow
-                                key={"ssidrow-" + self.props.bssid + "-" + self.state.ssid.name + "-" + key}
+                        {Object.keys(this.state.ssid.channels).map(function (key, i) {
+                          return <SSIDRow
+                                key={'ssidrow-' + self.props.bssid + '-' + self.state.ssid.name + '-' + key}
                                 ssid={self.state.ssid}
                                 channel={self.state.ssid.channels[key]}
                                 isMostActiveChannel={mostActiveChannel === self.state.ssid.channels[key].channel_number}
-                            />;
+                            />
                         })}
                         </tbody>
                     </table>
                 </td>
             </tr>
-        )
-    }
-
+    )
+  }
 }
 
-export default SSIDTableRow;
+export default SSIDTableRow

@@ -1,58 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import Routes from "../../../util/Routes";
-import moment from "moment";
-import TrackingModeCard from "./TrackingModeCard";
-import TrackerStatusCard from "./TrackerStatusCard";
-import {round} from "lodash";
-import ContactsTable from "../ContactsTable";
-import BanditsService from "../../../services/BanditsService";
-import TrackersService from "../../../services/TrackersService";
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import Routes from '../../../util/ApiRoutes'
+import moment from 'moment'
+import TrackingModeCard from './TrackingModeCard'
+import TrackerStatusCard from './TrackerStatusCard'
+import { round } from 'lodash'
+import ContactsTable from '../ContactsTable'
+import TrackersService from '../../../services/TrackersService'
 
-class TrackerDetailPage extends React.Component {
+const trackersService = new TrackersService();
 
-    constructor(props) {
-        super(props);
+function fetchData(trackerName, setTracker) {
+    trackersService.findOne(trackerName, setTracker);
+}
 
-        this.trackerName = decodeURIComponent(props.match.params.name);
+function TrackerDetailPage(props) {
 
-        this.state = {
-            tracker: undefined,
-            bandits: undefined
-        };
+    const { trackerName } = useParams();
 
-        this._load = this._load.bind(this);
+    const [tracker, setTracker] = useState();
 
-        this.banditsService = new BanditsService();
-        this.banditsService.findAll = this.banditsService.findAll.bind(this);
+    useEffect(() => {
+        fetchData(trackerName, setTracker);
+        const id = setInterval(() => fetchData(trackerName, setTracker), 15000);
+        return () => clearInterval(id);
+      }, []);
 
-        this.trackersService = new TrackersService();
-        this.trackersService.findOne = this.trackersService.findOne.bind(this);
+    if (!tracker) {
+      return <LoadingSpinner />
     }
 
-    componentDidMount() {
-        const self = this;
-        self._load();
-
-        setInterval(function () {
-            self._load();
-        }, 15000);
-    }
-
-    _load() {
-        this.trackersService.findOne(this.trackerName);
-        this.banditsService.findAll();
-    }
-
-    render() {
-        if (!this.state.tracker || !this.state.bandits) {
-            return <LoadingSpinner />
-        }
-
-        const tracker = this.state.tracker;
-
-        return (
+    return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -84,7 +64,7 @@ class TrackerDetailPage extends React.Component {
                     <div className="col-md-2">
                         <dl>
                             <dt>Signal Strength:</dt>
-                            <dd>{round(tracker.rssi/255*100)}%</dd>
+                            <dd>{round(tracker.rssi / 255 * 100)}%</dd>
                         </dl>
                     </div>
 
@@ -107,7 +87,7 @@ class TrackerDetailPage extends React.Component {
                         <TrackerStatusCard
                             status={tracker.state}
                             banditCount={tracker.bandit_count}
-                            totalBandits={this.props.totalBandits} />
+                            totalBandits={props.totalBandits} />
                     </div>
 
                     <div className="col-md-6">
@@ -154,11 +134,9 @@ class TrackerDetailPage extends React.Component {
                     </div>
                 </div>
 
-
             </div>
-        )
-    }
-
+    )
+  
 }
 
-export default TrackerDetailPage;
+export default TrackerDetailPage

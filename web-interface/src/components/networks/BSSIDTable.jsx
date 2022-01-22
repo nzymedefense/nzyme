@@ -1,38 +1,37 @@
-import React from 'react';
-import BSSIDTableRow from "./BSSIDTableRow";
-import Routes from "../../util/Routes";
+import React from 'react'
+import BSSIDTableRow from './BSSIDTableRow'
+import Routes from '../../util/ApiRoutes'
 
 class BSSIDTable extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            bssids: props.bssids,
-            selectedBSSID: undefined
-        };
-
-        this._onBSSIDClick = this._onBSSIDClick.bind(this);
+    this.state = {
+      bssids: props.bssids,
+      selectedBSSID: undefined
     }
 
-    componentWillReceiveProps(newProps) {
-        this.setState({bssids: newProps.bssids});
+    this._onBSSIDClick = this._onBSSIDClick.bind(this)
+  }
+
+  componentWillReceiveProps (newProps) {
+    this.setState({ bssids: newProps.bssids })
+  }
+
+  _onBSSIDClick (e, bssid) {
+    e.preventDefault()
+
+    if (this.state.selectedBSSID === bssid) {
+      // Click on a selected BSSID closes it.
+      this.setState({ selectedBSSID: undefined })
+    } else {
+      this.setState({ selectedBSSID: bssid })
     }
+  }
 
-    _onBSSIDClick(e, bssid) {
-        e.preventDefault();
-
-        if (this.state.selectedBSSID === bssid) {
-            // Click on a selected BSSID closes it.
-            this.setState({selectedBSSID: undefined});
-        } else {
-            this.setState({selectedBSSID: bssid})
-        }
-    }
-
-    render() {
-        if (this.state.bssids.length === 0) {
-            return (
+  render () {
+    if (this.state.bssids.length === 0) {
+      return (
                 <div className="alert alert-warning">
                     <p>
                         No networks discovered yet. Check the <a href={Routes.SYSTEM_STATUS}>system page</a> page to make
@@ -44,11 +43,11 @@ class BSSIDTable extends React.Component {
                         documentation page that explains common reasons for no discovered networks</a>.
                     </p>
                 </div>
-            )
-        }
+      )
+    }
 
-        const self = this;
-        return (
+    const self = this
+    return (
             <div className="row">
                 <div className="col-md-12">
                     <table className="table table-sm table-hover table-striped">
@@ -64,20 +63,19 @@ class BSSIDTable extends React.Component {
                         </tr>
                         </thead>
                         <tbody>
-                        {Object.keys(this.state.bssids).map(function (key,i) {
-                            return <BSSIDTableRow
+                        {Object.keys(this.state.bssids).map(function (key, i) {
+                          return <BSSIDTableRow
                                 key={self.state.bssids[key].bssid}
                                 bssid={self.state.bssids[key]}
                                 displayDetails={self.state.selectedBSSID === self.state.bssids[key].bssid}
-                                onBSSIDClick={self._onBSSIDClick} />;
+                                onBSSIDClick={self._onBSSIDClick} />
                         })}
                         </tbody>
                     </table>
                 </div>
             </div>
-        )
-    }
-
+    )
+  }
 }
 
-export default BSSIDTable;
+export default BSSIDTable
