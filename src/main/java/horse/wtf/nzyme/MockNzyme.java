@@ -93,7 +93,7 @@ public  class MockNzyme implements NzymeLeader {
     private final EventService eventService;
 
     public MockNzyme() {
-        this(5);
+        this(0);
     }
 
     public MockNzyme(int sentryInterval) {
@@ -138,7 +138,12 @@ public  class MockNzyme implements NzymeLeader {
         this.objectMapper = new ObjectMapper();
         this.contactManager = new ContactManager(this);
         this.anonymizer = new Anonymizer(false, "/tmp");
-        this.sentry = new Sentry(this, sentryInterval);
+
+        if (sentryInterval == 0) {
+            this.sentry = null;
+        } else {
+            this.sentry = new Sentry(this, sentryInterval);
+        }
         this.eventService = new EventService(this);
     }
 

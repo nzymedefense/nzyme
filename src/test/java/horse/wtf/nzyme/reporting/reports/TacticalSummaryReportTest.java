@@ -26,7 +26,7 @@ public class TacticalSummaryReportTest {
 
     @Test
     public void testBasicReport() throws Exception, MalformedFrameException {
-        MockNzyme nzyme = new MockNzyme();
+        MockNzyme nzyme = new MockNzyme(5);
 
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusDays(162));
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusSeconds(4));
@@ -36,6 +36,8 @@ public class TacticalSummaryReportTest {
         nzyme.getSentry().tickSSID("MobileHotspot5233", DateTime.now().minusHours(22).minusMinutes(45));
         nzyme.getSentry().tickSSID("MySweetHome", DateTime.now().minusDays(163));
         nzyme.getSentry().tickSSID("MySweetHome", DateTime.now());
+
+        nzyme.getSentry().stop();
 
         nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "Centurion_Lounge", "8F:F0:17:E8:68:28", 11, 1234, 0));
         nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "United_WiFi", "9C:29:9E:C7:74:52", 11, 1234, 0));

@@ -12,7 +12,7 @@ public class WirelessSurveyReportTest {
 
     @Test
     public void testBasicReport() throws Exception, MalformedFrameException {
-        MockNzyme nzyme = new MockNzyme();
+        MockNzyme nzyme = new MockNzyme(5);
 
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusDays(162));
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusSeconds(4));
@@ -22,6 +22,8 @@ public class WirelessSurveyReportTest {
         nzyme.getSentry().tickSSID("MobileHotspot5233", DateTime.now().minusHours(22).minusMinutes(45));
         nzyme.getSentry().tickSSID("MySweetHome", DateTime.now().minusDays(163));
         nzyme.getSentry().tickSSID("MySweetHome", DateTime.now());
+
+        nzyme.getSentry().stop();
 
         WirelessSurveyReport.Report report = new WirelessSurveyReport.Report();
         report.runReport(nzyme, null);
