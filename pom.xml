@@ -51,7 +51,7 @@
         <syslog.version>1.1.7</syslog.version>
         <opencsv.version>5.4</opencsv.version>
         <quartz.version>2.3.2</quartz.version>
-        <cronutils.version>9.1.5</cronutils.version>
+        <cronutils.version>9.1.6</cronutils.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
