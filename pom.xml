@@ -11,7 +11,7 @@
 
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>
-    <version>1.2.3-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
 
     <properties>
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
@@ -34,7 +34,7 @@
         <jersey.version>2.34</jersey.version>
         <typesafeconfig.version>1.3.4</typesafeconfig.version>
         <jdbi.version>3.20.0</jdbi.version>
-        <liquibase.version>4.3.5</liquibase.version>
+        <liquibase.version>4.7.1</liquibase.version>
         <liquibase-slf4j.version>4.0.0</liquibase-slf4j.version>
         <sqlitejdbc.version>3.28.0</sqlitejdbc.version>
         <jmte.version>6.0.0</jmte.version>
@@ -53,8 +53,8 @@
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.1.5</cronutils.version>
 
-        <nodejs.version>v12.3.1</nodejs.version>
-        <yarn.version>v1.16.0</yarn.version>
+        <nodejs.version>v16.13.1</nodejs.version>
+        <npm.version>8.3.0</npm.version>
 
         <skip.web.build>false</skip.web.build>
     </properties>
@@ -616,21 +616,21 @@
                         <configuration>
                             <workingDirectory>web-interface</workingDirectory>
                             <nodeVersion>${nodejs.version}</nodeVersion>
-                            <yarnVersion>${yarn.version}</yarnVersion>
+                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
 
                         <executions>
                             <execution>
-                                <id>install node and yarn</id>
+                                <id>install node and npm</id>
                                 <goals>
-                                    <goal>install-node-and-yarn</goal>
+                                    <goal>install-node-and-npm</goal>
                                 </goals>
                             </execution>
 
                             <execution>
-                                <id>yarn install</id>
+                                <id>npm install</id>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>npm</goal>
                                 </goals>
                                 <configuration>
                                     <arguments>install</arguments>
@@ -638,9 +638,9 @@
                             </execution>
 
                             <execution>
-                                <id>yarn run build</id>
+                                <id>npm run build</id>
                                 <goals>
-                                    <goal>yarn</goal>
+                                    <goal>npm</goal>
                                 </goals>
                                 <configuration>
                                     <arguments>run build</arguments>
