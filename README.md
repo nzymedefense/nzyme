@@ -41,3 +41,11 @@ Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforc
 ## Legal notice
 
 Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on license-free frequencies.
+
+## Sponsors
+
+A big thank you to all [sponsors](https://github.com/sponsors/lennartkoopmann), especially the people in the higher sponsorship tiers:
+
+* [mikkel0x](https://github.com/mikkel0x)
+
+Your ongoing support helps this project move forward. Thank you!
