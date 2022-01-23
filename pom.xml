@@ -26,7 +26,7 @@
         <jcommander.version>1.81</jcommander.version>
         <testng.version>7.4.0</testng.version>
         <okhttp.version>4.9.1</okhttp.version>
-        <jackson.version>2.12.3</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
         <jodatime.version>2.10.10</jodatime.version>
         <semver.version>0.9.0</semver.version>
         <autovalue.version>1.8.1</autovalue.version>
@@ -52,6 +52,7 @@
         <opencsv.version>5.4</opencsv.version>
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.1.6</cronutils.version>
+        <httpcomponents.version>4.5.13</httpcomponents.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -289,7 +290,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <version>${httpcomponents.version}</version>
         </dependency>
         <dependency>
             <groupId>com.cloudbees</groupId>
