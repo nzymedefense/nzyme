@@ -44,7 +44,7 @@ public class UnexpectedFingerprintProbeRespAlertTest extends AlertTest {
                 DateTime.now(),
                 "wtf",
                 "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
-                "00:c0:ca:95:68:3e",
+                "00:c0:ca:95:68:3b",
                 1,
                 1000,
                 -50,
@@ -89,6 +89,19 @@ public class UnexpectedFingerprintProbeRespAlertTest extends AlertTest {
         );
 
         assertFalse(a.sameAs(a6));
+
+        UnexpectedFingerprintProbeRespAlert a7 = UnexpectedFingerprintProbeRespAlert.create(
+                DateTime.now(),
+                "wtf",
+                "ec398735dc99267d453908d81bfe06ce04cfa2573d0b9edf1d940f0dbf850a9c",
+                "00:c0:ca:95:68:00",
+                1,
+                1000,
+                -50,
+                1
+        );
+
+        assertFalse(a.sameAs(a7));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
