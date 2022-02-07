@@ -73,7 +73,9 @@ public class UnexpectedFingerprintProbeRespAlert extends Alert {
 
         UnexpectedFingerprintProbeRespAlert a = (UnexpectedFingerprintProbeRespAlert) alert;
 
-        return a.getSSID().equals(this.getSSID()) && a.getFingerprint().equals(this.getFingerprint());
+        return a.getSSID().equals(this.getSSID())
+                && a.getBSSID().equals(this.getBSSID())
+                && a.getFingerprint().equals(this.getFingerprint());
     }
 
     public static UnexpectedFingerprintProbeRespAlert create(DateTime firstSeen, @NotNull String ssid, String fingerprint, String bssid, int channel, int frequency, int antennaSignal, long frameCount) {
