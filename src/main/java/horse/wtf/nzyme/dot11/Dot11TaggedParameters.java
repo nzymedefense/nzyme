@@ -119,7 +119,7 @@ public class Dot11TaggedParameters {
                     break;
                 }
             } catch (Exception e) {
-                LOG.info("Malformed 802.11 tagged parameters: {}", Tools.byteArrayToHexPrettyPrint(payload));
+                LOG.info("Malformed 802.11 tagged parameters. startPosition: <{}>  Payload: [{}]", startPosition, Tools.byteArrayToHexPrettyPrint(payload));
                 throw new MalformedFrameException("Could not parse 802.11 tagged parameters.", e);
             }
         }
