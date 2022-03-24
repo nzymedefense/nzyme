@@ -69,6 +69,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
@@ -325,6 +326,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(DashboardResource.class);
         resourceConfig.register(AssetInventoryResource.class);
         resourceConfig.register(ReportsResource.class);
+        resourceConfig.register(StatusResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
