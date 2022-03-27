@@ -20,16 +20,26 @@ package horse.wtf.nzyme.rest.resources.taps.reports;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import org.joda.time.DateTime;
 
 @AutoValue
 public abstract class StatusReport {
 
     public abstract String tapName();
+    public abstract DateTime timestamp();
+    public abstract Long processedBytesTotal();
+    public abstract SystemMetrics systemMetrics();
 
     @JsonCreator
-    public static StatusReport create(@JsonProperty("tap_name") String tapName) {
+    public static StatusReport create(@JsonProperty("tap_name") String tapName,
+                                      @JsonProperty("timestamp") DateTime timestamp,
+                                      @JsonProperty("processed_bytes_total") Long processedBytesTotal,
+                                      @JsonProperty("system_metrics") SystemMetrics systemMetrics) {
         return builder()
                 .tapName(tapName)
+                .timestamp(timestamp)
+                .processedBytesTotal(processedBytesTotal)
+                .systemMetrics(systemMetrics)
                 .build();
     }
 
@@ -40,6 +50,12 @@ public abstract class StatusReport {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder tapName(String tapName);
+
+        public abstract Builder timestamp(DateTime timestamp);
+
+        public abstract Builder processedBytesTotal(Long processedBytesTotal);
+
+        public abstract Builder systemMetrics(SystemMetrics systemMetrics);
 
         public abstract StatusReport build();
     }
