@@ -41,13 +41,14 @@ public class StatusResource {
     @POST
     public Response status(StatusReport report) {
         // TODO reject if tap with this name already exists
-        LOG.info("RECEIVED STATUS FROM TAP [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}",
+        LOG.info("RECEIVED STATUS FROM TAP [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, average bytes processed: {}",
                 report.tapName(),
                 report.systemMetrics().memoryTotal(),
                 report.systemMetrics().memoryFree(),
                 report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(),
                 report.systemMetrics().cpuLoad(),
-                report.processedBytesTotal()
+                report.processedBytesTotal(),
+                report.processedBytesAverage()
         );
 
         return Response.status(Response.Status.CREATED).build();
