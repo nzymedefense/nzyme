@@ -35,7 +35,7 @@ class Metrics extends React.Component {
                 <div>
                     <div className="row">
                         <div className="col-md-12">
-                            <h3>Metrics</h3>
+                            <h3>Leader Metrics</h3>
 
                             <div className="row">
                                 <div className="col-md-3">
