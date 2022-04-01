@@ -38,6 +38,7 @@ import ReportExecutionLogDetailsPage from './components/reports/ReportExecutionL
 import NetworkDetailsPageRedirector from './components/networks/details/NetworkDetailsPageRedirector'
 import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
 import NavigationLink from "./components/layout/NavigationLink";
+import Sidebar from "./components/layout/Sidebar";
 
 class App extends React.Component {
   constructor (props) {
@@ -102,59 +103,15 @@ class App extends React.Component {
       if (this.state.authenticated) {
         return (
                     <Router>
-                        <div className="nzyme">
-                            <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
+                        <div className="nzyme d-flex">
 
-                            <div className="container-fluid mt-3">
-                                <div className="row flex-nowrap">
-                                    <div className="col-md-2 px-sm-2 px-0" id="nav-side">
-                                        <div className="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                                            <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
-                                                <li className="nav-item">
-                                                    <NavigationLink
-                                                        href={ApiRoutes.DASHBOARD}
-                                                        title="Dashboard"
-                                                        icon="fa-regular fa-map" />
-                                                </li>
-                                                <li className="nav-item">
-                                                    <NavigationLink
-                                                        href={ApiRoutes.DASHBOARD}
-                                                        title="Ethernet"
-                                                        icon="fa-solid fa-network-wired" />
-                                                </li>
-                                                <li className="nav-item">
-                                                    <NavigationLink
-                                                        href={ApiRoutes.DASHBOARD}
-                                                        title="WiFi"
-                                                        notificationCount={3}
-                                                        icon="fa-solid fa-wifi" />
-                                                </li>
-                                                <li className="nav-item">
-                                                    <ul className="nav-item">
+                            <Sidebar />
 
-                                                        <a href="#submenu-system" data-bs-toggle="collapse" className="nav-link px-0">
+                            <div id="main" className="flex-fill">
+                                <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
 
-                                                            <span className="nav-icon">
-                                                                <i className="fa-solid fa-screwdriver-wrench fa-icon" />
-                                                            </span>
-
-                                                            System
-                                                        </a>
-                                                        <ul className="collapse nav flex-column ms-1 nav-submenu" id="submenu-system" data-bs-parent="#menu">
-                                                            <li>
-                                                                <NavigationLink
-                                                                    href={ApiRoutes.SYSTEM.STATUS}
-                                                                    title="Metrics"
-                                                                    icon="fa-solid fa-stethoscope" />
-                                                            </li>
-                                                        </ul>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div className="col py-3">
+                                <div className="container-fluid">
+                                    <div className="content">
                                         <Routes>
                                             <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
@@ -194,16 +151,8 @@ class App extends React.Component {
                                         </Routes>
 
                                         <Footer />
-
                                     </div>
                                 </div>
-                            </div>
-
-
-
-
-                            <div className='container-fluid'>
-                                <Notifications/>
                             </div>
                         </div>
                     </Router>

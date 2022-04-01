@@ -14,7 +14,7 @@ class SystemPage extends React.Component {
                     </div>
                 </div>
 
-                <div className="row mt-3">
+                <div className="row">
                     <div className="col-md-12">
                         <div className="card">
                             <div className="card-body">

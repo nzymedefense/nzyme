@@ -1,23 +1,29 @@
 import React from 'react'
-import Routes from '../../util/ApiRoutes'
-import NavigationLink from './NavigationLink'
-import AlertsButton from './AlertsButton'
 
 class NavigationBar extends React.Component {
   render () {
     return (
-          <nav className="navbar navbar-expand navbar-dark bg-dark">
+        <nav className="navbar">
             <div className="container-fluid">
-              <a className="navbar-brand" href="#">nzyme</a>
-
-              <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                <form className="d-flex">
-                  <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                    <button className="btn btn-primary" type="submit">Search</button>
+                <form  className="d-flex flex-row">
+                    <div className="input-group">
+                        <input className="form-control" type="search" placeholder="Search" aria-label="Search" />
+                        <button className="btn btn-outline-primary" type="submit">
+                            <i className="fa-solid fa-search" />
+                        </button>
+                    </div>
                 </form>
-              </div>
+
+                <div className="d-flex flex-row">
+                    <button className="btn btn-outline-dark" title="Help">
+                        <i className="fa-solid fa-question" />
+                    </button> &nbsp;
+                    <button className="btn btn-outline-primary" title="Sign out">
+                        <i className="fa-solid fa-arrow-right-from-bracket" />
+                    </button>
+                </div>
             </div>
-          </nav>
+        </nav>
     )
   }
 }
