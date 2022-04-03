@@ -3,12 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="theme-color" content="#ffffff">
 
     <link rel="apple-touch-icon" sizes="180x180" href="${appPrefix}assets/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="${appPrefix}assets/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="${appPrefix}assets/static/favicon-16x16.png">
-    <link rel="mask-icon" href="${appPrefix}assets/static/safari-pinned-tab.svg" color="#5bbad5">
 
     <link rel="stylesheet" href="${appPrefix}assets/static/css/fontawesome.css" />
     <link rel="stylesheet" href="${appPrefix}assets/static/css/fonts.css" />
@@ -24,7 +22,7 @@
       }
     </script>
 
-    <title>nzyme - WiFi Defense System</title>
+    <title>nzyme - Network Defense System</title>
   </head>
   <body>
     <noscript>

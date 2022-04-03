@@ -29,41 +29,54 @@ class LoginPage extends React.Component {
   }
 
   render () {
-    document.body.classList.add('login-page')
-    document.body.style.backgroundImage = 'url(' + window.appConfig.assetsUri + 'static/login_background.jpg)'
-
     return (
-            <div className="d-flex justify-content-center">
-                <div className="card">
-                    <div className="card-header text-center">
-                        <h5>Sign in to nzyme</h5>
-                    </div>
-                    <div className="card-body">
-                        <form onSubmit={this._submitLoginForm}>
-                            <div className="input-group form-group">
-                                <div className="input-group-prepend">
-                                    <span className="input-group-text"><i className="fas fa-user"></i></span>
+        <section className="vh-100 login">
+            <div className="container py-5 h-100">
+                <div className="row d-flex justify-content-center align-items-center h-100">
+                    <div className="col col-xl-10">
+                        <div className="card main-card">
+                            <div className="row g-0">
+
+                                <div className="col-md-6 col-lg-5 d-none d-md-block left-half justify-content-center">
+                                    <img src="/static/logo_small.png" id="logo" alt="nzyme logo" />
                                 </div>
-                                <input type="text" required className="form-control" placeholder="username" ref={this.usernameInput} />
-                            </div>
-                            <div className="input-group form-group">
-                                <div className="input-group-prepend">
-                                    <span className="input-group-text"><i className="fas fa-key"></i></span>
+
+                                <div className="col-md-6 col-lg-7 d-flex align-items-center">
+                                    <div className="card-body p-4 p-lg-5 text-black">
+                                        <form onSubmit={this._submitLoginForm}>
+                                            <h5 className="fw-normal mb-3 pb-3">Sign into your account</h5>
+
+                                            <div className="form-outline mb-4">
+                                                <input type="text" id="username" className="form-control form-control-lg"
+                                                        ref={this.usernameInput} required />
+                                                <label className="form-label" htmlFor="username">
+                                                    Username
+                                                </label>
+                                            </div>
+
+                                            <div className="form-outline mb-4">
+                                                <input type="password" id="password"  className="form-control form-control-lg"
+                                                       ref={this.passwordInput} required />
+                                                <label className="form-label" htmlFor="password">
+                                                    Password
+                                                </label>
+                                            </div>
+
+                                            <div className="pt-1 mb-3">
+                                                <button className="btn btn-dark btn-lg btn-block" type="submit">
+                                                    {this.state.loggingIn ? 'Signing in ...' : 'Sign in'}
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                    </div>
                                 </div>
-                                <input type="password" required className="form-control" placeholder="password" ref={this.passwordInput} />
                             </div>
-                            <div className="form-group">
-                                <input type="submit" value={this.state.loggingIn ? 'Logging in ...' : 'Login'} className="btn float-right btn-primary" />
-                            </div>
-                        </form>
-                    </div>
-                    <div className="card-footer">
-                        <div className="d-flex justify-content-center">
-                            WiFi Defense System
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
     )
   }
 }

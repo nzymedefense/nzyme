@@ -12,6 +12,28 @@ body {
     height: 100%;
 }
 
+section.login div.left-half {
+    background-color: #2B2D42;
+    border-radius: 1rem 0 0 1rem;
+}
+
+section.login div.main-card {
+    border-radius: 1rem;
+}
+
+section.login div.left-half img#logo {
+    width: 350px;
+    margin-top: 35px;
+    margin-left: 45px;
+}
+
+section.login label {
+    font-size: 14px;
+    margin-top: 5px;
+    margin-left: 3px;
+    font-weight: 600;
+}
+
 div.nzyme {
     width: 100%;
     height: 100%;
@@ -103,6 +125,10 @@ div.content {
     padding-left: 13px;
 }
 
+#nav-side li.nav-item-submenu ul.nav-submenu li.nav-item a.nav-link-active {
+    margin-left: -3px;
+}
+
 #nav-side li.nav-item-active {
     background-color: #343642;
     border-left: 3px solid #8D99AE;
@@ -181,4 +207,9 @@ h3 {
 dt {
     font-size: 13px;
     text-transform: uppercase;
+}
+
+a.main-help {
+    margin-left: 3px;
+    margin-right: 3px;
 }

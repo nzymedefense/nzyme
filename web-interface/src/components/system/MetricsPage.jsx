@@ -1,29 +1,17 @@
 import React from 'react'
 
 import Metrics from './metrics/Metrics'
-import Probes from './Probes'
-import Versioncheck from './Versioncheck'
 
-class SystemPage extends React.Component {
+class MetricsPage extends React.Component {
   render () {
     return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
-                        <h1>System Status</h1>
+                        <h1>Metrics</h1>
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-md-12">
-                        <div className="card">
-                            <div className="card-body">
-                                <Versioncheck />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <div className="row mt-3">
                     <div className="col-md-12">
                         <div className="card">
@@ -38,4 +26,4 @@ class SystemPage extends React.Component {
   }
 }
 
-export default SystemPage
+export default MetricsPage;

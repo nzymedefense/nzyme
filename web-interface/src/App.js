@@ -1,9 +1,9 @@
 import React from 'react'
 
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route
+    BrowserRouter as Router,
+    Routes,
+    Route
 } from 'react-router-dom'
 
 import Notifications from 'react-notify-toast'
@@ -15,7 +15,6 @@ import NotFoundPage from './components/misc/NotFoundPage'
 import AlertDetailsPage from './components/alerts/AlertDetailsPage'
 import ApiRoutes from './util/ApiRoutes'
 import Footer from './components/layout/Footer'
-import SystemPage from './components/system/SystemPage'
 import NetworksPage from './components/networks/NetworksPage'
 import NetworkDetailsPage from './components/networks/details/NetworkDetailsPage'
 import LoginPage from './components/authentication/LoginPage'
@@ -37,86 +36,79 @@ import ReportDetailsPage from './components/reports/ReportDetailsPage'
 import ReportExecutionLogDetailsPage from './components/reports/ReportExecutionLogDetailsPage'
 import NetworkDetailsPageRedirector from './components/networks/details/NetworkDetailsPageRedirector'
 import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
-import NavigationLink from "./components/layout/NavigationLink";
 import Sidebar from "./components/layout/Sidebar";
+import VersionPage from "./components/system/VersionPage";
+import MetricsPage from "./components/system/MetricsPage";
+import DarkMode from "./components/layout/DarkMode";
 
 class App extends React.Component {
-  constructor (props) {
-    super(props)
 
-    this.state = {
-      apiConnected: true,
-      authenticated: App._isAuthenticated(),
-      active_alerts: []
+    constructor (props) {
+        super(props)
+
+        this.state = {
+            apiConnected: true,
+            authenticated: App._isAuthenticated(),
+            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode")
+        }
+
+        this.pingService = new PingService()
+        this.pingService.ping = this.pingService.ping.bind(this)
+
+        this.authenticationService = new AuthenticationService()
+        this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
+
+        this._setDarkMode = this._setDarkMode.bind(this);
     }
 
-    this.pingService = new PingService()
-    this.pingService.ping = this.pingService.ping.bind(this)
+    componentDidMount () {
+        const self = this
+        self.pingService.ping()
+        self.setState({ authenticated: App._isAuthenticated() })
 
-    this.authenticationService = new AuthenticationService()
-    this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
+        // Check if we are authenticated, ping.
+        setInterval(function () {
+            self.pingService.ping()
+            self.setState({ authenticated: App._isAuthenticated() })
+        }, 1000)
 
-    this.alertsService = new AlertsService()
-    this.alertsService.findActiveCount = this.alertsService.findActiveCount.bind(this)
-
-    App._handleLogout = App._handleLogout.bind(this)
-  }
-
-  componentDidMount () {
-    const self = this
-    self.pingService.ping()
-    self.setState({ authenticated: App._isAuthenticated() })
-
-    // Check if we are authenticated, ping.
-    setInterval(function () {
-      self.pingService.ping()
-      self.setState({ authenticated: App._isAuthenticated() })
-    }, 1000)
-
-    // Check if session is about to expire and log out if so.
-    this.authenticationService.checkSession()
-    setInterval(function () {
-      self.authenticationService.checkSession()
-    }, 10000)
-
-    if (App._isAuthenticated()) {
-      self.alertsService.findActiveCount()
-      setInterval(self.alertsService.findActiveCount, 5000)
+        // Check if session is about to expire and log out if so.
+        this.authenticationService.checkSession()
+        setInterval(function () {
+            self.authenticationService.checkSession()
+        }, 10000)
     }
-  }
 
-  static _isAuthenticated () {
-    return Store.get('api_token') !== undefined
-  }
+    _setDarkMode(x) {
+        this.setState({darkModeEnabled: x});
+        Store.set("dark_mode", x);
+    }
 
-  static _handleLogout (e) {
-    e.preventDefault()
-    Store.delete('api_token')
-  }
+    static _isAuthenticated () {
+        return Store.get("api_token") !== undefined
+    }
 
-  render () {
-    // TODO: This is fucked but it's currently required to hide the login page styling after initial login.
-    document.body.classList.remove('login-page')
-    document.body.style.backgroundImage = ''
-
-    if (this.state.apiConnected) {
-      if (this.state.authenticated) {
-        return (
+    render () {
+        if (this.state.apiConnected) {
+            if (this.state.authenticated) {
+                return (
                     <Router>
-                        <div className="nzyme d-flex">
+                        <DarkMode enabled={this.state.darkModeEnabled} />
 
+                        <div className="nzyme d-flex">
                             <Sidebar />
 
                             <div id="main" className="flex-fill">
-                                <NavigationBar handleLogout={App._handleLogout} hasAlerts={this.state.active_alerts_count > 0} />
+                                <NavigationBar setDarkMode={this._setDarkMode} />
 
                                 <div className="container-fluid">
                                     <div className="content">
                                         <Routes>
                                             <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
-                                            { /* System Status. */}
-                                            <Route path={ApiRoutes.SYSTEM.STATUS} element={<SystemPage />}/>
+                                            { /* System. */}
+                                            <Route path={ApiRoutes.SYSTEM.METRICS} element={<MetricsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
                                             { /* Networks. */}
                                             <Route path={ApiRoutes.NETWORKS.INDEX} element={<NetworksPage />}/>
@@ -147,7 +139,9 @@ class App extends React.Component {
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
-                                            <Route path="*" element={<NotFoundPage />}/> { /* Catch-all.  */}
+
+                                            { /* Catch-all. */}
+                                            <Route path="*" element={<NotFoundPage />}/>
                                         </Routes>
 
                                         <Footer />
@@ -156,29 +150,28 @@ class App extends React.Component {
                             </div>
                         </div>
                     </Router>
-        )
-      } else {
-        return (
+                )
+            } else {
+                return (
                     <div className="nzyme">
-                        <div className="container container-login">
-                            <Notifications/>
-                            <LoginPage />
-                        </div>
-                    </div>
-        )
-      }
-    } else {
-      return (
-                <div className="nzyme">
-                    <div className="container">
+                        <DarkMode enabled={this.state.darkModeEnabled} />
+
                         <Notifications/>
-                        <NotConnectedPage />
-                        <Footer/>
+                        <LoginPage />
                     </div>
+                )
+            }
+        } else {
+            return (
+            <div className="nzyme">
+                <div className="container">
+                    <Notifications/>
+                    <NotConnectedPage />
                 </div>
-      )
+            </div>
+            )
+        }
     }
-  }
 }
 
 export default App

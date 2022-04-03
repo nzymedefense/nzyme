@@ -7,7 +7,7 @@ import UserProfile from "./UserProfile";
 function Sidebar() {
 
     return (
-        <div id="nav-side" className="">
+        <div id="nav-side">
             <p className="brand">
                 <a href={ApiRoutes.DASHBOARD} >nzyme</a>
             </p>
@@ -40,11 +40,11 @@ function Sidebar() {
                         title="Taps"
                         icon="fa-solid fa-circle-nodes" />
                     <NavigationLink
-                        href="/foo/bar"
+                        href={ApiRoutes.SYSTEM.VERSION}
                         title="Version"
                         icon="fa-solid fa-tag" />
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.STATUS}
+                        href={ApiRoutes.SYSTEM.METRICS}
                         title="Metrics"
                         icon="fa-solid fa-stethoscope" />
                 </SidebarSubmenu>

@@ -1,0 +1,66 @@
+body {
+    background-color: #12131c;
+    color: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #fff;
+}
+
+input.form-control {
+    background-color: #fff !important;
+}
+
+section.login div.left-half {
+    background-color: #1d1e2c;
+}
+
+section.login .card {
+    border: 0;
+}
+
+section.login label {
+    color: #fff;
+}
+
+nav.navbar {
+    background-color: #1d1e2c;
+}
+
+div.card {
+    background-color: #2B2D42;
+}
+
+.table {
+    color: #fff !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    color: #fff !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+    color: #fff !important;
+    background-color: #1d1e2c;
+}
+
+.btn-outline-primary {
+    border-color: #fff;
+    color: #fff;
+}
+
+.btn-outline-dark {
+    border-color: #8D99AE;
+    color: #8D99AE;
+}
+
+.btn-outline-dark:hover {
+    border-color: #8D99AE;
+    color: #8D99AE;
+}
+
+.alert-success {
+    background-color: #174f35;
+    border-color: #0c281b;
+    color: #fff;
+}

@@ -1,7 +1,7 @@
 const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
-    STATUS: '/system',
+    METRICS: '/system/metrics',
     ASSETS: {
       INDEX: '/system/assets/index'
     },
@@ -10,7 +10,8 @@ const ApiRoutes = {
       SCHEDULE: '/system/reports/schedule',
       DETAILS: name => `/system/reports/show/${name}`,
       EXECUTION_LOG_DETAILS: (name, executionId) => `/system/reports/show/${name}/execution/${executionId}`
-    }
+    },
+    VERSION: '/system/version'
   },
   NETWORKS: {
     INDEX: '/networks',
