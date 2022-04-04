@@ -23,6 +23,15 @@ section.login label {
     color: #fff;
 }
 
+section.start div.main-card p {
+    color: #fff;
+}
+
+section.start div.main-card li {
+    margin-top: 6px;
+    color: #fff;
+}
+
 nav.navbar {
     background-color: #1d1e2c;
 }

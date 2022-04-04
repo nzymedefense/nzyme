@@ -2,36 +2,38 @@ const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
     METRICS: '/system/metrics',
-    ASSETS: {
-      INDEX: '/system/assets/index'
-    },
-    REPORTS: {
-      INDEX: '/system/reports',
-      SCHEDULE: '/system/reports/schedule',
-      DETAILS: name => `/system/reports/show/${name}`,
-      EXECUTION_LOG_DETAILS: (name, executionId) => `/system/reports/show/${name}/execution/${executionId}`
-    },
     VERSION: '/system/version'
   },
-  NETWORKS: {
-    INDEX: '/networks',
-    SHOW: (bssid, ssid, channel) => `/networks/show/${bssid}/${ssid}/${channel}`,
-    PROXY: (bssid, ssid) => `/networks/show/${bssid}/${ssid}`
+  REPORTING: {
+    INDEX: '/reporting',
+    SCHEDULE: '/reporting/schedule',
+    DETAILS: name => `/reporting/show/${name}`,
+    EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/${executionId}`
+  },
+  DOT11: {
+    NETWORKS: {
+      INDEX: '/dot11/networks',
+      SHOW: (bssid, ssid, channel) => `/dot11/networks/show/${bssid}/${ssid}/${channel}`,
+      PROXY: (bssid, ssid) => `/dot11/networks/show/${bssid}/${ssid}`
+    },
+    BANDITS: {
+      INDEX: '/dot11/bandits',
+      SHOW_TRACKER: (name) => `/dot11/bandits/trackers/show/${name}`,
+      SHOW: (uuid) => `/dot11/bandits/show/${uuid}`,
+      NEW: '/dot11/bandits/new',
+      EDIT: (uuid) => `/dot11/bandits/edit/${uuid}`,
+      NEW_IDENTIFIER: (banditUUID) => `/dot11/bandits/show/${banditUUID}/identifiers/new`,
+      CONTACT_DETAILS: (banditUUID, contactUUID) => `/dot11/bandits/show/${banditUUID}/contacts/${contactUUID}`
+    },
+    ASSETS: {
+      INDEX: '/system/assets/index'
+    }
   },
   NOT_FOUND: '/notfound',
   ALERTS: {
     INDEX: '/alerts',
     SHOW: id => `/alerts/show/${id}`
   },
-  BANDITS: {
-    INDEX: '/bandits',
-    SHOW_TRACKER: (name) => `/bandits/trackers/show/${name}`,
-    SHOW: (uuid) => `/bandits/show/${uuid}`,
-    NEW: '/bandits/new',
-    EDIT: (uuid) => `/bandits/edit/${uuid}`,
-    NEW_IDENTIFIER: (banditUUID) => `/bandits/show/${banditUUID}/identifiers/new`,
-    CONTACT_DETAILS: (banditUUID, contactUUID) => `/bandits/show/${banditUUID}/contacts/${contactUUID}`
-  }
 }
 
 export default ApiRoutes

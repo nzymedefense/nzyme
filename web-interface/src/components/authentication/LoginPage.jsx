@@ -30,7 +30,7 @@ class LoginPage extends React.Component {
 
   render () {
     return (
-        <section className="vh-100 login">
+        <section className="vh-100 start">
             <div className="container py-5 h-100">
                 <div className="row d-flex justify-content-center align-items-center h-100">
                     <div className="col col-xl-10">
@@ -38,7 +38,8 @@ class LoginPage extends React.Component {
                             <div className="row g-0">
 
                                 <div className="col-md-6 col-lg-5 d-none d-md-block left-half justify-content-center">
-                                    <img src="/static/logo_small.png" id="logo" alt="nzyme logo" />
+                                    <img src="/static/logo_small.png" className="d-block mx-auto"
+                                         id="logo" alt="nzyme logo" />
                                 </div>
 
                                 <div className="col-md-6 col-lg-7 d-flex align-items-center">

@@ -14,7 +14,7 @@ class NavigationLink extends React.Component {
         <li className={"nav-item " + liClassName}>
             <a href={this.props.href} className={className}>
                 <span className="nav-icon">
-                    <i className={this.props.icon + " fa-icon"} />
+                    {this.props.icon}
                 </span>
 
                 {this.props.title}

@@ -26,7 +26,6 @@ import EditBanditPage from './components/bandits/management/EditBanditPage'
 import CreateIdentifierPage from './components/bandits/management/identifiers/CreateIdentifierPage'
 import TrackerDetailPage from './components/bandits/trackers/TrackerDetailPage'
 import AlertsPage from './components/alerts/AlertsPage'
-import AlertsService from './services/AlertsService'
 import AuthenticationService from './services/AuthenticationService'
 import PingService from './services/PingService'
 import AssetsPage from './components/system/assets/AssetsPage'
@@ -111,31 +110,31 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
                                             { /* Networks. */}
-                                            <Route path={ApiRoutes.NETWORKS.INDEX} element={<NetworksPage />}/>
-                                            <Route path={ApiRoutes.NETWORKS.SHOW(':bssid', ':ssid', ':channel')} element={<NetworkDetailsPage />}/>
-                                            <Route path={ApiRoutes.NETWORKS.PROXY(':bssid', ':ssid')} element={<NetworkDetailsPageRedirector />} />
+                                            <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>
+                                            <Route path={ApiRoutes.DOT11.NETWORKS.SHOW(':bssid', ':ssid', ':channel')} element={<NetworkDetailsPage />}/>
+                                            <Route path={ApiRoutes.DOT11.NETWORKS.PROXY(':bssid', ':ssid')} element={<NetworkDetailsPageRedirector />} />
 
                                             { /* Alerts. */}
                                             <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
                                             <Route exact path={ApiRoutes.ALERTS.SHOW(':alertId')} element={<AlertDetailsPage />}/>
 
                                             { /* Bandits. */}
-                                            <Route path={ApiRoutes.BANDITS.INDEX} element={<BanditsPage />}/>
-                                            <Route path={ApiRoutes.BANDITS.NEW} element={<CreateBanditPage />}/>
-                                            <Route path={ApiRoutes.BANDITS.SHOW(':banditId')} element={<BanditDetailPage />} />
-                                            <Route path={ApiRoutes.BANDITS.CONTACT_DETAILS(':banditUUID', ':contactUUID')} element={<BanditContactDetailsPage />} />
-                                            <Route path={ApiRoutes.BANDITS.EDIT(':banditId')} element={<EditBanditPage />} />
-                                            <Route path={ApiRoutes.BANDITS.NEW_IDENTIFIER(':banditId')} element={<CreateIdentifierPage />} />
-                                            <Route path={ApiRoutes.BANDITS.SHOW_TRACKER(':trackerName')} element={<TrackerDetailPage />} />
+                                            <Route path={ApiRoutes.DOT11.BANDITS.INDEX} element={<BanditsPage />}/>
+                                            <Route path={ApiRoutes.DOT11.BANDITS.NEW} element={<CreateBanditPage />}/>
+                                            <Route path={ApiRoutes.DOT11.BANDITS.SHOW(':banditId')} element={<BanditDetailPage />} />
+                                            <Route path={ApiRoutes.DOT11.BANDITS.CONTACT_DETAILS(':banditUUID', ':contactUUID')} element={<BanditContactDetailsPage />} />
+                                            <Route path={ApiRoutes.DOT11.BANDITS.EDIT(':banditId')} element={<EditBanditPage />} />
+                                            <Route path={ApiRoutes.DOT11.BANDITS.NEW_IDENTIFIER(':banditId')} element={<CreateIdentifierPage />} />
+                                            <Route path={ApiRoutes.DOT11.BANDITS.SHOW_TRACKER(':trackerName')} element={<TrackerDetailPage />} />
 
-                                            { /* Assets. */}
-                                            <Route path={ApiRoutes.SYSTEM.ASSETS.INDEX} element={<AssetsPage />}/>
+                                            { /* Wireless Assets. */}
+                                            <Route path={ApiRoutes.DOT11.ASSETS.INDEX} element={<AssetsPage />}/>
 
                                             { /* Reports. */}
-                                            <Route path={ApiRoutes.SYSTEM.REPORTS.INDEX} element={<ReportsPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.REPORTS.SCHEDULE} element={<ScheduleReportPage />} />
-                                            <Route path={ApiRoutes.SYSTEM.REPORTS.DETAILS(':reportName')} element={<ReportDetailsPage />} />
-                                            <Route path={ApiRoutes.SYSTEM.REPORTS.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
+                                            <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportsPage />}/>
+                                            <Route path={ApiRoutes.REPORTING.SCHEDULE} element={<ScheduleReportPage />} />
+                                            <Route path={ApiRoutes.REPORTING.DETAILS(':reportName')} element={<ReportDetailsPage />} />
+                                            <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
@@ -164,10 +163,10 @@ class App extends React.Component {
         } else {
             return (
             <div className="nzyme">
-                <div className="container">
+                    <DarkMode enabled={this.state.darkModeEnabled} />
+
                     <Notifications/>
                     <NotConnectedPage />
-                </div>
             </div>
             )
         }

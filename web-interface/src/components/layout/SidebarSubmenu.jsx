@@ -9,21 +9,23 @@ function SidebarSubmenu(props) {
         expanded = "show";
     }
 
+    let id = props.subhref.replace(/[^a-zA-Z ]/g, "");
+
     return (
         <li className="nav-item nav-item-submenu">
             <ul className="submenu">
                 <li className="nav-item-submenu">
-                    <a href="#submenu-system" data-bs-toggle="collapse" className={"submenu-headline " + className}>
+                    <a href={"#submenu-" + id} data-bs-toggle="collapse" className={"submenu-headline " + className}>
                         <span className="nav-icon">
-                            <i className="fa-solid fa-screwdriver-wrench fa-icon" />
+                            {props.icon}
                         </span>
 
-                        System
+                        {props.title}
 
                         <i className="float-end fa-solid fa-angle-down" />
                     </a>
 
-                    <ul className={"collapse nav flex-column ms-1 nav-submenu " + expanded} id="submenu-system" data-bs-parent="#menu">
+                    <ul className={"collapse nav flex-column ms-1 nav-submenu " + expanded} id={"submenu-" + id}>
                         {props.children}
                     </ul>
                 </li>

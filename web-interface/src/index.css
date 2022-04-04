@@ -12,22 +12,27 @@ body {
     height: 100%;
 }
 
-section.login div.left-half {
+section.start div.left-half {
     background-color: #2B2D42;
     border-radius: 1rem 0 0 1rem;
 }
 
-section.login div.main-card {
+section.start div.main-card {
     border-radius: 1rem;
+    height: 435px;
+    color: #fff !important;
 }
 
-section.login div.left-half img#logo {
+section.start div.main-card li {
+    margin-top: 6px;
+}
+
+section.start div.left-half img#logo {
     width: 350px;
-    margin-top: 35px;
-    margin-left: 45px;
+    margin-top: 30px;
 }
 
-section.login label {
+section.start label {
     font-size: 14px;
     margin-top: 5px;
     margin-left: 3px;
@@ -113,8 +118,11 @@ div.content {
 
 #nav-side li.nav-item-submenu a.submenu-headline {
     padding-left: 20px;
-    margin-bottom: 8px;
     padding-right: 25px;
+}
+
+#nav-side li.nav-item-submenu ul.nav-submenu {
+    margin-top: 8px;
 }
 
 #nav-side li.nav-item-submenu ul.nav-submenu li.nav-item {
