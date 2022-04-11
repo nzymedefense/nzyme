@@ -724,4 +724,63 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="33" author="lennartkoopmann">
+        <createTable tableName="taps" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="local_time" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="processed_bytes_total" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="processed_bytes_10" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="memory_total" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="memory_free" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="memory_used" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="cpu_load" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+        </createTable>
+
+        <createIndex indexName="idx_taps_standard_lookup" tableName="taps" unique="false">
+            <column name="name" />
+        </createIndex>
+
+        <createIndex indexName="idx_taps_active_lookup" tableName="taps" unique="false">
+            <column name="name" />
+            <column name="updated_at" />
+        </createIndex>
+    </changeSet>
+
+
 </databaseChangeLog>
