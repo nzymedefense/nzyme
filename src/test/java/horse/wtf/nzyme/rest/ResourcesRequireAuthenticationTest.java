@@ -20,10 +20,15 @@ package horse.wtf.nzyme.rest;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDAssetsResource;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDResource;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import horse.wtf.nzyme.rest.authentication.TapSecured;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
+import horse.wtf.nzyme.rest.resources.taps.StatusResource;
+import horse.wtf.nzyme.rest.resources.taps.TablesResource;
+import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.TablesReport;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -47,6 +52,11 @@ public class ResourcesRequireAuthenticationTest {
             TrackerWebHIDResource.class
     );
 
+    private final List<Class<?>> TAP_SECRET_AUTHENTICATED = ImmutableList.of(
+            StatusResource.class,
+            TablesResource.class
+    );
+
     @Test
     public void testAllResources() {
         Reflections r = new Reflections(new ConfigurationBuilder()
@@ -59,8 +69,14 @@ public class ResourcesRequireAuthenticationTest {
                 continue;
             }
 
-            if (!resource.isAnnotationPresent(Secured.class)) {
-                fail("REST resource " + resource.getCanonicalName() + " is not annotated with @Secured.");
+            if (TAP_SECRET_AUTHENTICATED.contains(resource)) {
+                if (!resource.isAnnotationPresent(TapSecured.class)) {
+                    fail("REST resource " + resource.getCanonicalName() + " is not annotated with @TapSecured.");
+                }
+            } else {
+                if (!resource.isAnnotationPresent(RESTSecured.class)) {
+                    fail("REST resource " + resource.getCanonicalName() + " is not annotated with @RESTSecured.");
+                }
             }
         }
     }

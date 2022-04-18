@@ -24,7 +24,7 @@ import com.opencsv.CSVWriter;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11AssetInventoryResponse;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11BSSIDAssetResponse;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11SSIDAssetResponse;
@@ -41,7 +41,7 @@ import java.util.List;
 
 @Path("/api/asset-inventory")
 @Produces(MediaType.APPLICATION_JSON)
-@Secured
+@RESTSecured
 public class AssetInventoryResource {
 
     @Inject

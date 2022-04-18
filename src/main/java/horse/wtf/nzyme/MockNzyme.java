@@ -27,6 +27,7 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.IncompleteConfigurationException;
 import horse.wtf.nzyme.configuration.InvalidConfigurationException;
+import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.database.Database;
@@ -50,7 +51,6 @@ import horse.wtf.nzyme.systemstatus.SystemStatus;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import liquibase.exception.LiquibaseException;
-import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -59,7 +59,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
-public  class MockNzyme implements NzymeLeader {
+public class MockNzyme implements NzymeLeader {
 
     private File loadFromResourceFile(String name) {
         URL resource = getClass().getClassLoader().getResource(name);
@@ -91,6 +91,7 @@ public  class MockNzyme implements NzymeLeader {
     private final Anonymizer anonymizer;
     private final Sentry sentry;
     private final EventService eventService;
+    private final BaseConfigurationService configurationService;
 
     public MockNzyme() {
         this(0);
@@ -127,6 +128,9 @@ public  class MockNzyme implements NzymeLeader {
         }
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
+
+        this.configurationService = new BaseConfigurationService(this);
+        this.configurationService.initialize();
 
         this.metricRegistry = new MetricRegistry();
         this.registry = new Registry();
@@ -212,6 +216,11 @@ public  class MockNzyme implements NzymeLeader {
     @Override
     public LeaderConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public BaseConfigurationService getConfigurationService() {
+        return configurationService;
     }
 
     @Override

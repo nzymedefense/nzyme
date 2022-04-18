@@ -20,7 +20,7 @@ package horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.WebHID;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.responses.StateResponse;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
@@ -31,7 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/api/state")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackerWebHIDResource {
 

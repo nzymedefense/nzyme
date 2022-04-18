@@ -23,6 +23,7 @@ import horse.wtf.nzyme.alerts.service.AlertsService;
 import horse.wtf.nzyme.bandits.engine.ContactManager;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
+import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
@@ -55,7 +56,9 @@ public interface NzymeLeader extends RemoteConnector {
 
     void registerUplink(Uplink uplink);
 
-    LeaderConfiguration getConfiguration();
+    LeaderConfiguration getConfiguration(); // TODO remove after switch to DB config
+
+    BaseConfigurationService getConfigurationService();
 
     MetricRegistry getMetrics();
 

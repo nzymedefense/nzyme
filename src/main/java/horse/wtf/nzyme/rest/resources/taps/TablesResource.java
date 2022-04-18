@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.taps;
 
+import horse.wtf.nzyme.rest.authentication.TapSecured;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.TablesReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/api/taps/tables")
+@TapSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class TablesResource {
 

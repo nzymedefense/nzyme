@@ -39,6 +39,7 @@ import Sidebar from "./components/layout/Sidebar";
 import VersionPage from "./components/system/VersionPage";
 import MetricsPage from "./components/system/MetricsPage";
 import DarkMode from "./components/layout/DarkMode";
+import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
 
 class App extends React.Component {
 
@@ -98,6 +99,7 @@ class App extends React.Component {
                             <Sidebar />
 
                             <div id="main" className="flex-fill">
+                                <Notifications/>
                                 <NavigationBar setDarkMode={this._setDarkMode} />
 
                                 <div className="container-fluid">
@@ -108,6 +110,7 @@ class App extends React.Component {
                                             { /* System. */}
                                             <Route path={ApiRoutes.SYSTEM.METRICS} element={<MetricsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION} element={<AuthenticationPage />}/>
 
                                             { /* Networks. */}
                                             <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>

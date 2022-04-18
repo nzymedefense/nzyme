@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources.system;
 import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.Registry;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusStateResponse;
 import horse.wtf.nzyme.rest.responses.system.VersionResponse;
@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/system")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class SystemResource {
 

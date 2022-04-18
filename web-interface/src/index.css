@@ -221,3 +221,11 @@ a.main-help {
     margin-left: 3px;
     margin-right: 3px;
 }
+
+p.help-text {
+    width: 66%;
+}
+
+div.tap-secret input {
+    font-family: 'Share Tech Mono', monospace;
+}

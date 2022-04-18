@@ -2,7 +2,8 @@ const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
     METRICS: '/system/metrics',
-    VERSION: '/system/version'
+    VERSION: '/system/version',
+    AUTHENTICATION: '/system/authentication'
   },
   REPORTING: {
     INDEX: '/reporting',

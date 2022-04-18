@@ -51,8 +51,8 @@ function Sidebar() {
 
                 <SidebarSubmenu title="System" subhref="/system" icon={<i className="fa-solid fa-screwdriver-wrench fa-icon" />}>
                     <NavigationLink
-                        href="/foo/bar"
-                        title="Users"
+                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
+                        title="Authentication"
                         icon={<i className="fa-solid fa-users fa-icon" />} />
                     <NavigationLink
                         href="/foo/bar"

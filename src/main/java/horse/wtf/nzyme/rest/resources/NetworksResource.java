@@ -32,7 +32,7 @@ import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHisto
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogramLoader;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +49,7 @@ import java.util.Optional;
 
 @Path("/api/networks")
 @Produces(MediaType.APPLICATION_JSON)
-@Secured
+@RESTSecured
 public class NetworksResource {
 
     private static final Logger LOG = LogManager.getLogger(NetworksResource.class);

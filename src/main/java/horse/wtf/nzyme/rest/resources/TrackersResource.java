@@ -25,9 +25,8 @@ import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
-import horse.wtf.nzyme.rest.responses.bandits.BanditResponse;
 import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackersListResponse;
@@ -44,7 +43,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/trackers")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackersResource {
 

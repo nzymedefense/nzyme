@@ -782,5 +782,20 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="34" author="lennartkoopmann">
+        <createTable tableName="base_configuration" >
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_secret" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
 
 </databaseChangeLog>

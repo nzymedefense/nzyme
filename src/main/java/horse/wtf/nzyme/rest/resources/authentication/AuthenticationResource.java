@@ -18,7 +18,7 @@
 package horse.wtf.nzyme.rest.resources.authentication;
 
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.requests.CreateSessionRequest;
 import horse.wtf.nzyme.rest.responses.authentication.SessionInformationResponse;
 import horse.wtf.nzyme.rest.responses.authentication.SessionTokenResponse;
@@ -73,7 +73,7 @@ public class AuthenticationResource {
     }
 
     @Path("/session/information")
-    @Secured
+    @RESTSecured
     @GET
     public Response information() {
         try {

@@ -35,6 +35,7 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.base.BaseConfiguration;
+import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
@@ -69,14 +70,16 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
+import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
+import horse.wtf.nzyme.rest.resources.taps.TapsResource;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.rest.CORSFilter;
 import horse.wtf.nzyme.rest.NzymeLeaderInjectionBinder;
 import horse.wtf.nzyme.rest.NzymeExceptionMapper;
 import horse.wtf.nzyme.rest.ObjectMapperProvider;
-import horse.wtf.nzyme.rest.authentication.AuthenticationFilter;
 import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
@@ -107,7 +110,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class NzymeLeaderImpl implements NzymeLeader {
@@ -120,6 +122,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private final LeaderConfiguration configuration;
     private final Database database;
+    private final BaseConfigurationService configurationService;
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
     private final Registry registry;
@@ -163,6 +166,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.database = database;
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
+        this.configurationService = new BaseConfigurationService(this);
 
         this.frameProcessor = new FrameProcessor();
 
@@ -234,6 +238,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
         eventService.recordEvent(new StartupEvent());
+
+        LOG.info("Reading configuration from database.");
+        this.configurationService.initialize();
 
         LOG.info("Active alerts: {}", configuration.dot11Alerts());
 
@@ -307,7 +314,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         ResourceConfig resourceConfig = new ResourceConfig();
-        resourceConfig.register(new AuthenticationFilter(this));
+        resourceConfig.register(new RESTAuthenticationFilter(this));
+        resourceConfig.register(new TapAuthenticationFilter(this));
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new NzymeLeaderInjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
@@ -329,6 +337,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(ReportsResource.class);
         resourceConfig.register(StatusResource.class);
         resourceConfig.register(TablesResource.class);
+        resourceConfig.register(TapsResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -625,6 +634,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public LeaderConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public BaseConfigurationService getConfigurationService() {
+        return configurationService;
     }
 
     @Override

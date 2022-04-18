@@ -2,6 +2,7 @@ package horse.wtf.nzyme.database;
 
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
 import horse.wtf.nzyme.bandits.database.*;
+import horse.wtf.nzyme.configuration.db.BaseConfigurationMapper;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
@@ -11,6 +12,7 @@ import horse.wtf.nzyme.events.db.EventRecordMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntryMapper;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntryMapper;
+import horse.wtf.nzyme.taps.db.TapMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -71,7 +73,9 @@ public class Database {
                 .registerRowMapper(new ExecutionLogEntryMapper())
                 .registerRowMapper(new ContactRecordMapper())
                 .registerRowMapper(new ContactRecordValueAggregationMapper())
-                .registerRowMapper(new ContactRecorderHistogramEntryMapper());
+                .registerRowMapper(new ContactRecorderHistogramEntryMapper())
+                .registerRowMapper(new TapMapper())
+                .registerRowMapper(new BaseConfigurationMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

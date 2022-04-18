@@ -29,7 +29,7 @@ import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.reporting.reports.WirelessInventoryReport;
 import horse.wtf.nzyme.reporting.reports.WirelessSurveyReport;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
 import horse.wtf.nzyme.rest.responses.reports.ExecutionLogEntryResponse;
@@ -48,7 +48,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Path("/api/reports")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class ReportsResource {
 

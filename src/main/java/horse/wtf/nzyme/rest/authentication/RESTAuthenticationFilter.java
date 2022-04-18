@@ -35,33 +35,33 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
 
-@Secured
+@RESTSecured
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class AuthenticationFilter implements ContainerRequestFilter {
+public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
-    private static final Logger LOG = LogManager.getLogger(AuthenticationFilter.class);
+    private static final Logger LOG = LogManager.getLogger(RESTAuthenticationFilter.class);
 
     private final NzymeLeader nzyme;
 
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    public AuthenticationFilter(NzymeLeader nzyme) {
+    public RESTAuthenticationFilter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-
-        if (!isTokenBasedAuthentication(authorizationHeader)) {
-            abortWithUnauthorized(requestContext);
-            return;
-        }
-
-        String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
-
         try {
+            String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+            if (!isTokenBasedAuthentication(authorizationHeader)) {
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
+            String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
+
             validateToken(token);
 
             // Set new security context for later use in resources.
@@ -90,13 +90,13 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
             });
         } catch(SignatureException e) {
-            LOG.debug("Invalid signature of JWT token. This could be an old session running in a browser somewhere. Token was: [{}]", token, e);
+            LOG.debug("Invalid signature of JWT token. This could be an old session running in a browser somewhere.", e);
             abortWithUnauthorized(requestContext);
         } catch(ExpiredJwtException e) {
-            LOG.info("Token is expired. Please create a new session by logging in.  Token was: [{}]", token, e);
+            LOG.info("Token is expired. Please create a new session by logging in.", e);
             abortWithUnauthorized(requestContext);
         } catch (Exception e) {
-            LOG.info("Token parsing failed.  Token was: [{}]", token, e);
+            LOG.info("Token parsing failed.", e);
             abortWithUnauthorized(requestContext);
         }
     }

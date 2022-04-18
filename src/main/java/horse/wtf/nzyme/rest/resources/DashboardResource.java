@@ -27,7 +27,7 @@ import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecording;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.measurements.Measurement;
 import horse.wtf.nzyme.measurements.MeasurementType;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;
 import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
@@ -49,7 +49,7 @@ import javax.ws.rs.core.Response;
 import java.util.*;
 
 @Path("/api/dashboard")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class DashboardResource {
 

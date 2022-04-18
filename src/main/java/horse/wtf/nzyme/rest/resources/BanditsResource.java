@@ -32,7 +32,7 @@ import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
-import horse.wtf.nzyme.rest.authentication.Secured;
+import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
 import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;
@@ -49,7 +49,7 @@ import javax.ws.rs.core.Response;
 import java.util.*;
 
 @Path("/api/bandits")
-@Secured
+@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class BanditsResource {
 
