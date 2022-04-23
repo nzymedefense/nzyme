@@ -55,7 +55,7 @@ function Sidebar() {
                         title="Authentication"
                         icon={<i className="fa-solid fa-users fa-icon" />} />
                     <NavigationLink
-                        href="/foo/bar"
+                        href={ApiRoutes.SYSTEM.TAPS.INDEX}
                         title="Taps"
                         icon={<i className="fa-solid fa-circle-nodes fa-icon" />} />
                     <NavigationLink

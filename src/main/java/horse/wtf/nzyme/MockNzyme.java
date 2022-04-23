@@ -48,6 +48,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.taps.TapManager;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import liquibase.exception.LiquibaseException;
@@ -251,6 +252,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public ContactManager getContactManager() {
         return contactManager;
+    }
+
+    @Override
+    public TapManager getTapManager() {
+        return null;
     }
 
     @Override

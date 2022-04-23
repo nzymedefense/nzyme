@@ -798,4 +798,10 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="35" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="description" type="text" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

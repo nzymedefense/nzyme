@@ -3,7 +3,10 @@ const ApiRoutes = {
   SYSTEM: {
     METRICS: '/system/metrics',
     VERSION: '/system/version',
-    AUTHENTICATION: '/system/authentication'
+    AUTHENTICATION: '/system/authentication',
+    TAPS: {
+      INDEX: '/system/taps'
+    },
   },
   REPORTING: {
     INDEX: '/reporting',

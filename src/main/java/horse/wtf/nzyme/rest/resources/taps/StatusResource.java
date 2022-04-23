@@ -42,7 +42,6 @@ public class StatusResource {
 
     /*
      * TODO: auth system
-     *       reject if tap with this name already exists
      *       reject if tap name > 50chars (do the same in tap config loading)
      */
 
@@ -55,10 +54,10 @@ public class StatusResource {
                 report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(),
                 report.systemMetrics().cpuLoad(),
                 report.processedBytesTotal(),
-                report.processedBytesAverage()
+                report.processedBytes10()
         );
 
-
+        nzyme.getTapManager().registerTapStatus(report);
 
         return Response.status(Response.Status.CREATED).build();
     }

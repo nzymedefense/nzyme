@@ -89,6 +89,7 @@ import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.taps.TapManager;
 import horse.wtf.nzyme.util.MetricNames;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -131,6 +132,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
+    private final TapManager tapManager;
 
     private final FrameProcessor frameProcessor;
 
@@ -167,6 +169,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
         this.configurationService = new BaseConfigurationService(this);
+        this.tapManager = new TapManager(this);
 
         this.frameProcessor = new FrameProcessor();
 
@@ -574,6 +577,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public ContactManager getContactManager() {
         return contactManager;
+    }
+
+    @Override
+    public TapManager getTapManager() {
+        return tapManager;
     }
 
     @Override

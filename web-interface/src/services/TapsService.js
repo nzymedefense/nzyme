@@ -3,6 +3,12 @@ import {notify} from "react-notify-toast";
 
 class TapService {
 
+    findAllTaps(setTaps) {
+        RESTClient.get('/taps', {}, function (response) {
+            setTaps(response.data);
+        })
+    }
+
     getTapSecret (setTapSecret) {
         RESTClient.get('/taps/secret', {}, function (response) {
             setTapSecret(response.data.secret);
