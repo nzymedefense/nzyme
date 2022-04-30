@@ -7,6 +7,7 @@ import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.taps.TapDetailsResponse;
 import horse.wtf.nzyme.rest.responses.taps.TapListResponse;
 import horse.wtf.nzyme.rest.responses.taps.TapSecretResponse;
+import horse.wtf.nzyme.rest.responses.taps.TotalWithAverageResponse;
 import horse.wtf.nzyme.taps.Tap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,8 +36,7 @@ public class TapsResource {
             taps.add(TapDetailsResponse.create(
                     tap.name(),
                     tap.localTime(),
-                    tap.processedBytesTotal(),
-                    tap.processedBytes10(),
+                    TotalWithAverageResponse.create(tap.processedBytes().total(), tap.processedBytes().average()),
                     tap.memoryTotal(),
                     tap.memoryFree(),
                     tap.memoryUsed(),
@@ -62,8 +62,7 @@ public class TapsResource {
             return Response.ok(TapDetailsResponse.create(
                     t.name(),
                     t.localTime(),
-                    t.processedBytesTotal(),
-                    t.processedBytes10(),
+                    TotalWithAverageResponse.create(t.processedBytes().total(), t.processedBytes().average()),
                     t.memoryTotal(),
                     t.memoryFree(),
                     t.memoryUsed(),

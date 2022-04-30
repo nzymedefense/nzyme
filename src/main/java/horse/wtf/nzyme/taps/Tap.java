@@ -8,8 +8,7 @@ public abstract class Tap {
 
     public abstract String name();
     public abstract DateTime localTime();
-    public abstract Long processedBytesTotal();
-    public abstract Long processedBytes10();
+    public abstract TotalWithAverage processedBytes();
     public abstract Long memoryTotal();
     public abstract Long memoryFree();
     public abstract Long memoryUsed();
@@ -17,12 +16,11 @@ public abstract class Tap {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static Tap create(String name, DateTime localTime, Long processedBytesTotal, Long processedBytes10, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt) {
+    public static Tap create(String name, DateTime localTime, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .name(name)
                 .localTime(localTime)
-                .processedBytesTotal(processedBytesTotal)
-                .processedBytes10(processedBytes10)
+                .processedBytes(processedBytes)
                 .memoryTotal(memoryTotal)
                 .memoryFree(memoryFree)
                 .memoryUsed(memoryUsed)
@@ -42,9 +40,7 @@ public abstract class Tap {
 
         public abstract Builder localTime(DateTime localTime);
 
-        public abstract Builder processedBytesTotal(Long processedBytesTotal);
-
-        public abstract Builder processedBytes10(Long processedBytes10);
+        public abstract Builder processedBytes(TotalWithAverage processedBytes);
 
         public abstract Builder memoryTotal(Long memoryTotal);
 

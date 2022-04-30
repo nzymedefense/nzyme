@@ -804,4 +804,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="36" author="lennartkoopmann">
+        <renameColumn tableName="taps" oldColumnName="processed_bytes_10" newColumnName="processed_bytes_average" />
+    </changeSet>
+
 </databaseChangeLog>

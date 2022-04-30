@@ -33,14 +33,14 @@ public class TapManager {
             LOG.info("Registering first report from new tap [{}].", report.tapName());
 
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO taps(name, local_time, processed_bytes_total, processed_bytes_10, " +
+                    handle.createUpdate("INSERT INTO taps(name, local_time, processed_bytes_total, processed_bytes_average, " +
                             "memory_total, memory_free, memory_used, cpu_load, created_at, updated_at) " +
-                            "VALUES(:name, :local_time, :processed_bytes_total, :processed_bytes_10, :memory_total, " +
+                            "VALUES(:name, :local_time, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
                             ":memory_free, :memory_used, :cpu_load, :created_at, :updated_at)")
                             .bind("name", report.tapName())
                             .bind("local_time", report.timestamp())
-                            .bind("processed_bytes_total", report.processedBytesTotal())
-                            .bind("processed_bytes_10", report.processedBytes10())
+                            .bind("processed_bytes_total", report.processedBytes().total())
+                            .bind("processed_bytes_average", report.processedBytes().average())
                             .bind("memory_total", report.systemMetrics().memoryTotal())
                             .bind("memory_free", report.systemMetrics().memoryFree())
                             .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
@@ -60,12 +60,12 @@ public class TapManager {
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("UPDATE taps SET local_time = :local_time, " +
                             "processed_bytes_total = :processed_bytes_total, " +
-                            "processed_bytes_10 = :processed_bytes_10, memory_total = :memory_total, " +
+                            "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                             "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
                             "updated_at = :updated_at WHERE name = :name")
                             .bind("local_time", report.timestamp())
-                            .bind("processed_bytes_total", report.processedBytesTotal())
-                            .bind("processed_bytes_10", report.processedBytes10())
+                            .bind("processed_bytes_total", report.processedBytes().total())
+                            .bind("processed_bytes_average", report.processedBytes().average())
                             .bind("memory_total", report.systemMetrics().memoryTotal())
                             .bind("memory_free", report.systemMetrics().memoryFree())
                             .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())

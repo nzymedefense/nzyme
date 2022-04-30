@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.taps.db;
 
 import horse.wtf.nzyme.taps.Tap;
+import horse.wtf.nzyme.taps.TotalWithAverage;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -15,8 +16,7 @@ public class TapMapper implements RowMapper<Tap>  {
         return Tap.create(
                 rs.getString("name"),
                 new DateTime(rs.getTimestamp("local_time")),
-                rs.getLong("processed_bytes_total"),
-                rs.getLong("processed_bytes_10"),
+                TotalWithAverage.create(rs.getLong("processed_bytes_total"), rs.getLong("processed_bytes_average")),
                 rs.getLong("memory_total"),
                 rs.getLong("memory_free"),
                 rs.getLong("memory_used"),

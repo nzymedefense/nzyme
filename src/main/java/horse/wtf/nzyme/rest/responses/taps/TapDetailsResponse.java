@@ -13,11 +13,8 @@ public abstract class TapDetailsResponse {
     @JsonProperty("local_time")
     public abstract DateTime localTime();
 
-    @JsonProperty("processed_bytes_total")
-    public abstract Long processedBytesTotal();
-
-    @JsonProperty("processed_bytes_10")
-    public abstract Long processedBytes10();
+    @JsonProperty("processed_bytes")
+    public abstract TotalWithAverageResponse processedBytes();
 
     @JsonProperty("memory_total")
     public abstract Long memoryTotal();
@@ -40,12 +37,11 @@ public abstract class TapDetailsResponse {
     @JsonProperty("description")
     public abstract String description();
 
-    public static TapDetailsResponse create(String name, DateTime localTime, Long processedBytesTotal, Long processedBytes10, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt, String description) {
+    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt, String description) {
         return builder()
                 .name(name)
                 .localTime(localTime)
-                .processedBytesTotal(processedBytesTotal)
-                .processedBytes10(processedBytes10)
+                .processedBytes(processedBytes)
                 .memoryTotal(memoryTotal)
                 .memoryFree(memoryFree)
                 .memoryUsed(memoryUsed)
@@ -66,9 +62,7 @@ public abstract class TapDetailsResponse {
 
         public abstract Builder localTime(DateTime localTime);
 
-        public abstract Builder processedBytesTotal(Long processedBytesTotal);
-
-        public abstract Builder processedBytes10(Long processedBytes10);
+        public abstract Builder processedBytes(TotalWithAverageResponse processedBytes);
 
         public abstract Builder memoryTotal(Long memoryTotal);
 

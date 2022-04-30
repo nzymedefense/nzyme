@@ -47,14 +47,14 @@ public class StatusResource {
 
     @POST
     public Response status(StatusReport report) {
-        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, 10s bytes processed: {}",
+        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, avg bytes processed: {}",
                 report.tapName(),
                 report.systemMetrics().memoryTotal(),
                 report.systemMetrics().memoryFree(),
                 report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(),
                 report.systemMetrics().cpuLoad(),
-                report.processedBytesTotal(),
-                report.processedBytes10()
+                report.processedBytes().total(),
+                report.processedBytes().average()
         );
 
         nzyme.getTapManager().registerTapStatus(report);

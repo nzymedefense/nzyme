@@ -27,7 +27,7 @@ function TapsTable(props) {
                     </thead>
                     <tbody>
                     {Object.keys(taps).map(function (key, i) {
-                        return <TapRow tap={taps[i]} />
+                        return <TapRow key={"tap-" + i} tap={taps[i]} />
                     })}
                     </tbody>
                 </table>

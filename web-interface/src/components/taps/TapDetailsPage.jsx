@@ -5,6 +5,7 @@ import LoadingSpinner from "../misc/LoadingSpinner";
 import moment from "moment";
 import Routes from "../../util/ApiRoutes";
 import numeral from "numeral";
+import byteAverageToMbit from "../../util/Tools";
 
 const tapsService = new TapsService();
 
@@ -57,12 +58,12 @@ function TapDetailsPage() {
                             <dl>
                                 <dt>Throughput</dt>
                                 <dd>
-                                    {numeral(tap.processed_bytes_10/10).format('0 b')}/sec
+                                    {numeral(tap.processed_bytes.average/10).format('0 b')}/sec ({byteAverageToMbit(tap.processed_bytes.average)})
                                 </dd>
 
                                 <dt>Total data processed since last restart</dt>
                                 <dd>
-                                    {numeral(tap.processed_bytes_total).format('0 b')}
+                                    {numeral(tap.processed_bytes.total).format('0.0 b')}
                                 </dd>
                             </dl>
                         </div>
