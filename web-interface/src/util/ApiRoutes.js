@@ -5,7 +5,8 @@ const ApiRoutes = {
     VERSION: '/system/version',
     AUTHENTICATION: '/system/authentication',
     TAPS: {
-      INDEX: '/system/taps'
+      INDEX: '/system/taps',
+      DETAILS: tapName => `/system/taps/show/${tapName}`,
     },
   },
   REPORTING: {

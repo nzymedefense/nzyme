@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TapManager {
 
@@ -81,6 +82,17 @@ public class TapManager {
         return nzyme.getDatabase().withHandle(handle -> handle.createQuery("SELECT * FROM taps;")
                 .mapTo(Tap.class)
                 .list());
+    }
+
+    public Optional<Tap> findTap(String name) {
+        Tap tap = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE name = :name")
+                        .bind("name", name)
+                        .mapTo(Tap.class)
+                        .first()
+        );
+
+        return tap == null ? Optional.empty() : Optional.of(tap);
     }
 
 }

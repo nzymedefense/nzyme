@@ -12,13 +12,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 @Path("/api/taps")
 @RESTSecured
@@ -50,6 +48,31 @@ public class TapsResource {
         }
 
         return Response.ok(TapListResponse.create(taps.size(), taps)).build();
+    }
+
+    @GET
+    @Path("/show/{name}")
+    public Response findTap(@PathParam("name") String name) {
+        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            Tap t = tap.get();
+            return Response.ok(TapDetailsResponse.create(
+                    t.name(),
+                    t.localTime(),
+                    t.processedBytesTotal(),
+                    t.processedBytes10(),
+                    t.memoryTotal(),
+                    t.memoryFree(),
+                    t.memoryUsed(),
+                    t.cpuLoad(),
+                    t.createdAt(),
+                    t.updatedAt(),
+                    ""
+            )).build();
+        }
     }
 
     @GET

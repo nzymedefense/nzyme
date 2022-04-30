@@ -228,4 +228,9 @@ p.help-text {
 
 div.tap-secret input {
     font-family: 'Share Tech Mono', monospace;
+    padding-top: 10px !important;
+}
+
+.breadcrumb a {
+    text-decoration: none;
 }

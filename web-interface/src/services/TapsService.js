@@ -9,6 +9,12 @@ class TapService {
         })
     }
 
+    findTap(tapName, setTap) {
+        RESTClient.get('/taps/show/' + tapName, {}, function (response) {
+            setTap(response.data);
+        })
+    }
+
     getTapSecret (setTapSecret) {
         RESTClient.get('/taps/secret', {}, function (response) {
             setTapSecret(response.data.secret);

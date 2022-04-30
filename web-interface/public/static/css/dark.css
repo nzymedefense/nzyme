@@ -73,3 +73,7 @@ div.card {
     border-color: #0c281b;
     color: #fff;
 }
+
+.breadcrumb a {
+    color: #8D99AE;
+}

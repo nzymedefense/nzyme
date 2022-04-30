@@ -1,6 +1,7 @@
 import React from "react";
 import numeral from 'numeral'
 import moment from "moment";
+import ApiRoutes from "../../util/ApiRoutes";
 
 function TapsRow(props) {
 
@@ -8,7 +9,7 @@ function TapsRow(props) {
 
     return (
         <tr>
-            <td>{tap.name}</td>
+            <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
             <td>{numeral(tap.processed_bytes_10/10).format('0 b')}/sec</td>
             <td>{numeral(tap.processed_bytes_total).format('0 b')}</td>
             <td>{numeral(tap.cpu_load).format('0.0')}%</td>
