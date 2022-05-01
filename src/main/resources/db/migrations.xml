@@ -769,7 +769,6 @@
             <column name="updated_at" type="timestamp with time zone">
                 <constraints nullable="false" />
             </column>
-
         </createTable>
 
         <createIndex indexName="idx_taps_standard_lookup" tableName="taps" unique="false">
@@ -806,6 +805,100 @@
 
     <changeSet id="36" author="lennartkoopmann">
         <renameColumn tableName="taps" oldColumnName="processed_bytes_10" newColumnName="processed_bytes_average" />
+    </changeSet>
+
+    <changeSet id="37" author="lennartkoopmann">
+        <createTable tableName="tap_buses">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="taps" columnNames="name" />
+
+        <addForeignKeyConstraint    constraintName="link_taps2buses"
+                                    baseTableName="tap_buses"
+                                    baseColumnNames="tap_name"
+                                    referencedTableName="taps"
+                                    referencedColumnNames="name"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="38" author="lennartkoopmann">
+        <createTable tableName="bus_channels">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bus_id" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="capacity" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="watermark" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="errors_total" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="errors_average" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="throughput_bytes_total" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="throughput_bytes_average" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="throughput_messages_total" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="throughput_messages_average" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_buses2channels"
+                                    baseTableName="bus_channels"
+                                    baseColumnNames="bus_id"
+                                    referencedTableName="tap_buses"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
     </changeSet>
 
 </databaseChangeLog>

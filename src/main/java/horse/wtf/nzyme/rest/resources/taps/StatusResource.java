@@ -40,22 +40,23 @@ public class StatusResource {
     @Inject
     private NzymeLeader nzyme;
 
-    /*
-     * TODO: auth system
-     *       reject if tap name > 50chars (do the same in tap config loading)
-     */
-
     @POST
     public Response status(StatusReport report) {
-        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, avg bytes processed: {}",
+        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, avg bytes processed: {}, bus: {}",
                 report.tapName(),
                 report.systemMetrics().memoryTotal(),
                 report.systemMetrics().memoryFree(),
                 report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(),
                 report.systemMetrics().cpuLoad(),
                 report.processedBytes().total(),
-                report.processedBytes().average()
+                report.processedBytes().average(),
+                report.bus()
         );
+
+        if (report.tapName().length() > 50) {
+            LOG.debug("Tap name [{}] exceeds maximum length of 50 characters.", report.tapName());
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
 
         nzyme.getTapManager().registerTapStatus(report);
 

@@ -28,18 +28,21 @@ public abstract class StatusReport {
     public abstract String tapName();
     public abstract DateTime timestamp();
     public abstract TotalWithAverage processedBytes();
+    public abstract BusReport bus();
     public abstract SystemMetrics systemMetrics();
 
     @JsonCreator
     public static StatusReport create(@JsonProperty("tap_name") String tapName,
                                       @JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("processed_bytes") TotalWithAverage processedBytes,
+                                      @JsonProperty("bus") BusReport bus,
                                       @JsonProperty("system_metrics") SystemMetrics systemMetrics) {
         return builder()
                 .tapName(tapName)
                 .timestamp(timestamp)
                 .processedBytes(processedBytes)
                 .systemMetrics(systemMetrics)
+                .bus(bus)
                 .build();
     }
 
@@ -54,6 +57,8 @@ public abstract class StatusReport {
         public abstract Builder timestamp(DateTime timestamp);
 
         public abstract Builder processedBytes(TotalWithAverage processedBytes);
+
+        public abstract Builder bus(BusReport bus);
 
         public abstract Builder systemMetrics(SystemMetrics systemMetrics);
 

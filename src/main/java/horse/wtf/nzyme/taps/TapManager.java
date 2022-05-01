@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.taps;
 
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.rest.resources.taps.reports.ChannelReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +21,7 @@ public class TapManager {
     }
 
     public void registerTapStatus(StatusReport report) {
-        long count = nzyme.getDatabase().withHandle(handle ->
+        long tapCount = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) AS count FROM taps WHERE name = :name")
                         .bind("name", report.tapName())
                         .mapTo(Long.class)
@@ -29,7 +30,7 @@ public class TapManager {
 
         DateTime now = DateTime.now();
 
-        if (count == 0) {
+        if (tapCount == 0) {
             LOG.info("Registering first report from new tap [{}].", report.tapName());
 
             nzyme.getDatabase().useHandle(handle ->
@@ -50,11 +51,6 @@ public class TapManager {
                             .execute()
             );
         } else {
-            if (count > 1) {
-                LOG.warn("Found multiple tap status entries for tap [{}]. This should never happen and can lead " +
-                        "to inconsistencies.", report.tapName());
-            }
-
             LOG.debug("Registering report from existing tap [{}].", report.tapName());
 
             nzyme.getDatabase().useHandle(handle ->
@@ -76,6 +72,96 @@ public class TapManager {
             );
         }
 
+        // Register bus.
+        long busCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_name = :tap_name")
+                        .bind("tap_name", report.tapName())
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        if (busCount == 0) {
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO tap_buses(tap_name, created_at, updated_at) " +
+                            "VALUES(:tap_name, :created_at, :updated_at)")
+                            .bind("tap_name", report.tapName())
+                            .bind("created_at", now)
+                            .bind("updated_at", now)
+                            .execute()
+            );
+        } else {
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("UPDATE tap_buses SET updated_at = :updated_at WHERE tap_name = :tap_name")
+                            .bind("tap_name", report.tapName())
+                            .bind("updated_at", now)
+                            .execute()
+            );
+        }
+
+        Long busId = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id FROM tap_buses WHERE tap_name = :tap_name")
+                        .bind("tap_name", report.tapName())
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        // Register bus channels.
+        for (ChannelReport channel : report.bus().channels()) {
+            long channelCount = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(*) AS count FROM bus_channels " +
+                                    "WHERE bus_id = :bus_id AND name = :channel_name")
+                            .bind("bus_id", busId)
+                            .bind("channel_name", channel.name())
+                            .mapTo(Long.class)
+                            .one()
+            );
+
+            if (channelCount == 0) {
+                nzyme.getDatabase().withHandle(handle ->
+                        handle.createUpdate("INSERT INTO bus_channels(name, bus_id, capacity, watermark, errors_total, " +
+                                "errors_average, throughput_bytes_total, throughput_bytes_average, " +
+                                "throughput_messages_total, throughput_messages_average, created_at, updated_at) " +
+                                "VALUES(:name, :bus_id, :capacity, :watermark, :errors_total, :errors_average, " +
+                                ":throughput_bytes_total, :throughput_bytes_average, :throughput_messages_total, " +
+                                ":throughput_messages_average, :created_at, :updated_at)")
+                                .bind("name", channel.name())
+                                .bind("bus_id", busId)
+                                .bind("capacity", channel.capacity())
+                                .bind("watermark", channel.watermark())
+                                .bind("errors_total", channel.errors().total())
+                                .bind("errors_average", channel.errors().average())
+                                .bind("throughput_bytes_total", channel.throughputBytes().total())
+                                .bind("throughput_bytes_average", channel.throughputBytes().average())
+                                .bind("throughput_messages_total", channel.throughputMessages().total())
+                                .bind("throughput_messages_average", channel.throughputMessages().average())
+                                .bind("created_at", now)
+                                .bind("updated_at", now)
+                                .execute()
+                );
+            } else {
+                nzyme.getDatabase().withHandle(handle ->
+                        handle.createUpdate("UPDATE bus_channels SET capacity = :capacity, watermark = :watermark, " +
+                                "errors_total = :errors_total, errors_average = :errors_average, " +
+                                "throughput_bytes_total = :throughput_bytes_total, " +
+                                "throughput_bytes_average = :throughput_bytes_average, " +
+                                "throughput_messages_total = :throughput_messages_total, " +
+                                "throughput_messages_average = :throughput_messages_average, " +
+                                "updated_at = :updated_at WHERE bus_id = :bus_id AND name = :name")
+                                .bind("name", channel.name())
+                                .bind("bus_id", busId)
+                                .bind("capacity", channel.capacity())
+                                .bind("watermark", channel.watermark())
+                                .bind("errors_total", channel.errors().total())
+                                .bind("errors_average", channel.errors().average())
+                                .bind("throughput_bytes_total", channel.throughputBytes().total())
+                                .bind("throughput_bytes_average", channel.throughputBytes().average())
+                                .bind("throughput_messages_total", channel.throughputMessages().total())
+                                .bind("throughput_messages_average", channel.throughputMessages().average())
+                                .bind("updated_at", now)
+                                .execute()
+                );
+            }
+        }
     }
 
     public List<Tap> findAllTaps() {
