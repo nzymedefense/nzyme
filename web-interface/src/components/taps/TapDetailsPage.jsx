@@ -7,6 +7,8 @@ import Routes from "../../util/ApiRoutes";
 import numeral from "numeral";
 import byteAverageToMbit from "../../util/Tools";
 
+import Plot from 'react-plotly.js'
+
 const tapsService = new TapsService();
 
 function fetchData(tapName, setTap) {
@@ -80,7 +82,7 @@ function TapDetailsPage() {
                                     {numeral(tap.cpu_load).format('0.0')}%
                                 </dd>
 
-                                <dt>Memory Usage</dt>
+                                <dt>System-Wide Memory Usage</dt>
                                 <dd>
                                     {numeral(tap.memory_used).format('0 b')} / {numeral(tap.memory_total).format('0 b')} ({numeral(tap.memory_used/tap.memory_total*100).format('0.0')}%)
                                 </dd>
@@ -108,6 +110,39 @@ function TapDetailsPage() {
                                     </span>
                                 </dd>
                             </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div className="row mt-3">
+                <div className="col-md-4">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>Test</h3>
+
+                            <Plot
+                                data={[
+                                    {
+                                        domain: { x: [0, 1], y: [0, 1] },
+                                        value: 270,
+                                        title: { text: "Speed" },
+                                        type: "indicator",
+                                        mode: "gauge+number",
+                                        gauge: {
+                                            threshold: {
+                                                line: {color: "red", width: 4},
+                                                thickness: 0.75,
+                                                value: 290
+                                            }
+                                        }
+                                    }
+                                ]}
+
+                                useResizeHandler={true}
+                                style={{width: "100%", height: "100%"}}
+                            />
                         </div>
                     </div>
                 </div>

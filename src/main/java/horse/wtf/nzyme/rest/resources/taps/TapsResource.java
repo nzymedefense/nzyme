@@ -4,10 +4,9 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
-import horse.wtf.nzyme.rest.responses.taps.TapDetailsResponse;
-import horse.wtf.nzyme.rest.responses.taps.TapListResponse;
-import horse.wtf.nzyme.rest.responses.taps.TapSecretResponse;
-import horse.wtf.nzyme.rest.responses.taps.TotalWithAverageResponse;
+import horse.wtf.nzyme.rest.responses.taps.*;
+import horse.wtf.nzyme.taps.Bus;
+import horse.wtf.nzyme.taps.Channel;
 import horse.wtf.nzyme.taps.Tap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,23 +30,15 @@ public class TapsResource {
 
     @GET
     public Response findAll() {
-        List<TapDetailsResponse> taps = Lists.newArrayList();
-        for (Tap tap : nzyme.getTapManager().findAllTaps()) {
-            taps.add(TapDetailsResponse.create(
-                    tap.name(),
-                    tap.localTime(),
-                    TotalWithAverageResponse.create(tap.processedBytes().total(), tap.processedBytes().average()),
-                    tap.memoryTotal(),
-                    tap.memoryFree(),
-                    tap.memoryUsed(),
-                    tap.cpuLoad(),
-                    tap.createdAt(),
-                    tap.updatedAt(),
-                    ""
-            ));
+        List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
+        Optional<List<Tap>> taps = nzyme.getTapManager().findAllTaps();
+        if (taps.isPresent()) {
+            for (Tap tap : taps.get()) {
+                tapsResponse.add(buildTapResponse(tap));
+            }
         }
 
-        return Response.ok(TapListResponse.create(taps.size(), taps)).build();
+        return Response.ok(TapListResponse.create(tapsResponse.size(), tapsResponse)).build();
     }
 
     @GET
@@ -58,19 +49,7 @@ public class TapsResource {
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
-            Tap t = tap.get();
-            return Response.ok(TapDetailsResponse.create(
-                    t.name(),
-                    t.localTime(),
-                    TotalWithAverageResponse.create(t.processedBytes().total(), t.processedBytes().average()),
-                    t.memoryTotal(),
-                    t.memoryFree(),
-                    t.memoryUsed(),
-                    t.cpuLoad(),
-                    t.createdAt(),
-                    t.updatedAt(),
-                    ""
-            )).build();
+            return Response.ok(buildTapResponse(tap.get())).build();
         }
     }
 
@@ -92,6 +71,60 @@ public class TapsResource {
         LOG.info("Cycled tap secret via REST request.");
 
         return Response.ok(TapSecretResponse.create(newSecret)).build();
+    }
+
+    private TapDetailsResponse buildTapResponse(Tap tap) {
+        List<BusDetailsResponse> busesResponse = Lists.newArrayList();
+
+        Optional<List<Bus>> buses = nzyme.getTapManager().findBusesOfTap(tap.name());
+        if (buses.isPresent()) {
+            for (Bus bus : buses.get()) {
+                List<ChannelDetailsResponse> channelsResponse = Lists.newArrayList();
+
+                Optional<List<Channel>> channels = nzyme.getTapManager().findChannelsOfBus(bus.id());
+                if (channels.isPresent()) {
+                    for (Channel channel : channels.get()) {
+                        channelsResponse.add(ChannelDetailsResponse.create(
+                                channel.name(),
+                                channel.capacity(),
+                                channel.watermark(),
+                                TotalWithAverageResponse.create(
+                                        channel.errors().total(),
+                                        channel.errors().average()
+                                ),
+                                TotalWithAverageResponse.create(
+                                        channel.throughputBytes().total(),
+                                        channel.throughputBytes().average()
+                                ),
+                                TotalWithAverageResponse.create(
+                                        channel.throughputMessages().total(),
+                                        channel.throughputMessages().average()
+                                )
+                        ));
+                    }
+                }
+
+                busesResponse.add(BusDetailsResponse.create(
+                        bus.id(),
+                        bus.name(),
+                        channelsResponse
+                ));
+            }
+        }
+
+        return TapDetailsResponse.create(
+                tap.name(),
+                tap.localTime(),
+                TotalWithAverageResponse.create(tap.processedBytes().total(), tap.processedBytes().average()),
+                tap.memoryTotal(),
+                tap.memoryFree(),
+                tap.memoryUsed(),
+                tap.cpuLoad(),
+                tap.createdAt(),
+                tap.updatedAt(),
+                "",
+                busesResponse
+        );
     }
 
 }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class TapDetailsResponse {
 
@@ -37,7 +39,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("description")
     public abstract String description();
 
-    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt, String description) {
+    @JsonProperty("buses")
+    public abstract List<BusDetailsResponse> buses();
+
+    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses) {
         return builder()
                 .name(name)
                 .localTime(localTime)
@@ -49,6 +54,7 @@ public abstract class TapDetailsResponse {
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .description(description)
+                .buses(buses)
                 .build();
     }
 
@@ -77,6 +83,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder description(String description);
+
+        public abstract Builder buses(List<BusDetailsResponse> buses);
 
         public abstract TapDetailsResponse build();
     }

@@ -21,7 +21,7 @@ class BanditContactWidgetTableRow extends React.Component {
                     {moment(contact.last_seen).format('M/D/YY hh:mm a')}
                 </td>
                 <td>
-                    <a href={Routes.BANDITS.SHOW(contact.bandit_uuid)}>Details</a>
+                    <a href={Routes.DOT11.BANDITS.SHOW(contact.bandit_uuid)}>Details</a>
                 </td>
             </tr>
     )

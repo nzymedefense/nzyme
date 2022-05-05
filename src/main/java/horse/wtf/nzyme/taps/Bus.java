@@ -1,19 +1,22 @@
 package horse.wtf.nzyme.taps;
 
 import com.google.auto.value.AutoValue;
-
-import java.util.List;
+import org.joda.time.DateTime;
 
 @AutoValue
 public abstract class Bus {
 
     public abstract Long id();
-    public abstract List<Channel> channels();
+    public abstract String name();
+    public abstract DateTime createdAt();
+    public abstract DateTime updatedAt();
 
-    public static Bus create(Long id, List<Channel> channels) {
+    public static Bus create(Long id, String name, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
-                .channels(channels)
+                .name(name)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .build();
     }
 
@@ -25,7 +28,11 @@ public abstract class Bus {
     public abstract static class Builder {
         public abstract Builder id(Long id);
 
-        public abstract Builder channels(List<Channel> channels);
+        public abstract Builder name(String name);
+
+        public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Bus build();
     }

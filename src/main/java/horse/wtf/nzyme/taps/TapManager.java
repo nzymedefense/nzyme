@@ -166,21 +166,47 @@ public class TapManager {
         }
     }
 
-    public List<Tap> findAllTaps() {
-        return nzyme.getDatabase().withHandle(handle -> handle.createQuery("SELECT * FROM taps;")
+    public Optional<List<Tap>> findAllTaps() {
+        List<Tap> taps = nzyme.getDatabase().withHandle(handle -> handle.createQuery("SELECT * FROM taps;")
                 .mapTo(Tap.class)
                 .list());
+
+        return taps == null || taps.isEmpty() ? Optional.empty() : Optional.of(taps);
     }
 
-    public Optional<Tap> findTap(String name) {
+    public Optional<Tap> findTap(String tapName) {
         Tap tap = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps WHERE name = :name")
-                        .bind("name", name)
+                        .bind("name", tapName)
                         .mapTo(Tap.class)
                         .first()
         );
 
         return tap == null ? Optional.empty() : Optional.of(tap);
+    }
+
+    public Optional<List<Bus>> findBusesOfTap(String tapName) {
+        List<Bus> buses = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tap_buses WHERE tap_name = :tap_name AND updated_at > :last_seen")
+                        .bind("tap_name", tapName)
+                        .bind("last_seen", DateTime.now().minusHours(1))
+                        .mapTo(Bus.class)
+                        .list()
+        );
+
+        return buses == null || buses.isEmpty() ? Optional.empty() : Optional.of(buses);
+    }
+
+    public Optional<List<Channel>> findChannelsOfBus(long busId) {
+        List<Channel> channels = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM bus_channels WHERE bus_id = :bus_id AND updated_at > :last_seen")
+                        .bind("bus_id", busId)
+                        .bind("last_seen", DateTime.now().minusHours(1))
+                        .mapTo(Channel.class)
+                        .list()
+        );
+
+        return channels == null || channels.isEmpty() ? Optional.empty() : Optional.of(channels);
     }
 
 }
