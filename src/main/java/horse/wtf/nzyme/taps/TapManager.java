@@ -82,17 +82,19 @@ public class TapManager {
 
         if (busCount == 0) {
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO tap_buses(tap_name, created_at, updated_at) " +
-                            "VALUES(:tap_name, :created_at, :updated_at)")
+                    handle.createUpdate("INSERT INTO tap_buses(tap_name, name, created_at, updated_at) " +
+                            "VALUES(:tap_name, :name, :created_at, :updated_at)")
                             .bind("tap_name", report.tapName())
+                            .bind("name", report.bus().name())
                             .bind("created_at", now)
                             .bind("updated_at", now)
                             .execute()
             );
         } else {
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE tap_buses SET updated_at = :updated_at WHERE tap_name = :tap_name")
+                    handle.createUpdate("UPDATE tap_buses SET updated_at = :updated_at WHERE tap_name = :tap_name AND name = :name")
                             .bind("tap_name", report.tapName())
+                            .bind("name", report.bus().name())
                             .bind("updated_at", now)
                             .execute()
             );

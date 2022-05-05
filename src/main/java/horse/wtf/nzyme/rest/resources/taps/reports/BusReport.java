@@ -26,11 +26,13 @@ import java.util.List;
 @AutoValue
 public abstract class BusReport {
 
+    public abstract String name();
     public abstract List<ChannelReport> channels();
 
     @JsonCreator
-    public static BusReport create(@JsonProperty("channels") List<ChannelReport> channels) {
+    public static BusReport create(@JsonProperty("name") String name, @JsonProperty("channels") List<ChannelReport> channels) {
         return builder()
+                .name(name)
                 .channels(channels)
                 .build();
     }
@@ -41,6 +43,8 @@ public abstract class BusReport {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder name(String name);
+
         public abstract Builder channels(List<ChannelReport> channels);
 
         public abstract BusReport build();

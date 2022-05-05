@@ -3,6 +3,8 @@ package horse.wtf.nzyme.taps;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class Tap {
 

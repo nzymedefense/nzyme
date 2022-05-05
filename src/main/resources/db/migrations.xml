@@ -901,4 +901,12 @@
                                     onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="39" author="lennartkoopmann">
+        <addColumn tableName="tap_buses">
+            <column name="name" type="varchar(255)" defaultValue="unknown">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
