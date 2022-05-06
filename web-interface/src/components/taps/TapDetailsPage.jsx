@@ -6,8 +6,7 @@ import moment from "moment";
 import Routes from "../../util/ApiRoutes";
 import numeral from "numeral";
 import byteAverageToMbit from "../../util/Tools";
-
-import Plot from 'react-plotly.js'
+import Buses from "./Buses";
 
 const tapsService = new TapsService();
 
@@ -117,32 +116,12 @@ function TapDetailsPage() {
 
 
             <div className="row mt-3">
-                <div className="col-md-4">
+                <div className="col-md-12">
                     <div className="card">
                         <div className="card-body">
-                            <h3>Test</h3>
+                            <h3>Buses &amp; Channels</h3>
 
-                            <Plot
-                                data={[
-                                    {
-                                        domain: { x: [0, 1], y: [0, 1] },
-                                        value: 270,
-                                        title: { text: "Speed" },
-                                        type: "indicator",
-                                        mode: "gauge+number",
-                                        gauge: {
-                                            threshold: {
-                                                line: {color: "red", width: 4},
-                                                thickness: 0.75,
-                                                value: 290
-                                            }
-                                        }
-                                    }
-                                ]}
-
-                                useResizeHandler={true}
-                                style={{width: "100%", height: "100%"}}
-                            />
+                            <Buses buses={tap.buses} />
                         </div>
                     </div>
                 </div>
