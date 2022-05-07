@@ -1,5 +1,6 @@
 import React from "react";
 import numeral from "numeral";
+import byteAverageToMbit from "../../util/Tools";
 
 function ChannelRow(props) {
 
@@ -14,6 +15,7 @@ function ChannelRow(props) {
             </td>
             <td>
                 {numeral(c.throughput_bytes.average/10).format("0,0b")}/sec
+                ({byteAverageToMbit(c.throughput_bytes.average)})
             </td>
             <td>
                 {numeral(c.errors.average/10).format("0,0")} errors/sec

@@ -7,6 +7,7 @@ import Routes from "../../util/ApiRoutes";
 import numeral from "numeral";
 import byteAverageToMbit from "../../util/Tools";
 import Buses from "./Buses";
+import TapInactiveWarning from "./TapInactiveWarning";
 
 const tapsService = new TapsService();
 
@@ -50,6 +51,8 @@ function TapDetailsPage() {
             <div className="row">
                 <h1>Tap "{tap.name}"</h1>
             </div>
+
+            <TapInactiveWarning tap={tap} />
 
             <div className="row mt-3">
                 <div className="col-md-4">
@@ -121,7 +124,7 @@ function TapDetailsPage() {
                         <div className="card-body">
                             <h3>Buses &amp; Channels</h3>
 
-                            <Buses buses={tap.buses} />
+                            <Buses tap={tap} />
                         </div>
                     </div>
                 </div>

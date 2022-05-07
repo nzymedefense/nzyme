@@ -10,6 +10,7 @@ import horse.wtf.nzyme.taps.Channel;
 import horse.wtf.nzyme.taps.Tap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -120,6 +121,7 @@ public class TapsResource {
                 tap.memoryFree(),
                 tap.memoryUsed(),
                 tap.cpuLoad(),
+                tap.updatedAt().isAfter(DateTime.now().minusMinutes(2)),
                 tap.createdAt(),
                 tap.updatedAt(),
                 "",

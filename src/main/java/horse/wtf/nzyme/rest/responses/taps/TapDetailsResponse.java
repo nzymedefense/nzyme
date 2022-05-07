@@ -30,6 +30,9 @@ public abstract class TapDetailsResponse {
     @JsonProperty("cpu_load")
     public abstract Double cpuLoad();
 
+    @JsonProperty("active")
+    public abstract Boolean active();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
@@ -42,7 +45,7 @@ public abstract class TapDetailsResponse {
     @JsonProperty("buses")
     public abstract List<BusDetailsResponse> buses();
 
-    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses) {
+    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses) {
         return builder()
                 .name(name)
                 .localTime(localTime)
@@ -51,6 +54,7 @@ public abstract class TapDetailsResponse {
                 .memoryFree(memoryFree)
                 .memoryUsed(memoryUsed)
                 .cpuLoad(cpuLoad)
+                .active(active)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .description(description)
@@ -77,6 +81,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder memoryUsed(Long memoryUsed);
 
         public abstract Builder cpuLoad(Double cpuLoad);
+
+        public abstract Builder active(Boolean active);
 
         public abstract Builder createdAt(DateTime createdAt);
 
