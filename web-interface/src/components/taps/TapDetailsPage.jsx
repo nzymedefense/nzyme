@@ -8,6 +8,7 @@ import numeral from "numeral";
 import byteAverageToMbit from "../../util/Tools";
 import Buses from "./Buses";
 import TapInactiveWarning from "./TapInactiveWarning";
+import CaptureConfiguration from "./capture/CaptureConfiguration";
 
 const tapsService = new TapsService();
 
@@ -117,6 +118,17 @@ function TapDetailsPage() {
                 </div>
             </div>
 
+            <div className="row mt-3">
+                <div className="col-md-12">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>Capture Configuration</h3>
+
+                            <CaptureConfiguration />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div className="row mt-3">
                 <div className="col-md-12">

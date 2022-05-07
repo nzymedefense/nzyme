@@ -9,6 +9,8 @@ function TapInactiveWarning(props) {
                 offline. Some data you see on this page is likely outdated.
             </div>
         )
+    } else {
+        return null;
     }
 
 }
