@@ -79,7 +79,7 @@ public class Database {
                 .registerRowMapper(new TapMapper())
                 .registerRowMapper(new BaseConfigurationMapper())
                 .registerRowMapper(new BusMapper())
-               .registerRowMapper(new ChannelMapper());
+                .registerRowMapper(new ChannelMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
