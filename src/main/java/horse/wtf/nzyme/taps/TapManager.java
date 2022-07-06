@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.taps;
 
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.rest.resources.taps.reports.CapturesReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.ChannelReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +71,53 @@ public class TapManager {
                             .bind("name", report.tapName())
                             .execute()
             );
+        }
+
+        // Register captures.
+        for (CapturesReport capture : report.captures()) {
+            long captureCount = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(*) AS count FROM tap_captures " +
+                                    "WHERE interface = :interface AND tap_name = :tap_name")
+                            .bind("interface", capture.interfaceName())
+                            .bind("tap_name",  report.tapName())
+                            .mapTo(Long.class)
+                            .one()
+            );
+
+            if (captureCount == 0) {
+                nzyme.getDatabase().withHandle(handle ->
+                    handle.createUpdate("INSERT INTO tap_captures(tap_name, interface, capture_type, is_running, " +
+                            "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_name, " +
+                            ":interface, :capture_type, :is_running, :received, :dropped_buffer, :dropped_interface, " +
+                            ":updated_at, :created_at)")
+                            .bind("tap_name", report.tapName())
+                            .bind("interface", capture.interfaceName())
+                            .bind("capture_type", capture.captureType())
+                            .bind("is_running", capture.isRunning())
+                            .bind("received", capture.received())
+                            .bind("dropped_buffer", capture.droppedBuffer())
+                            .bind("dropped_interface", capture.droppedInterface())
+                            .bind("updated_at", now)
+                            .bind("created_at", now)
+                            .execute()
+                );
+            } else {
+                nzyme.getDatabase().withHandle(handle ->
+                        handle.createUpdate("UPDATE tap_captures SET capture_type = :capture_type, " +
+                                "is_running = :is_running, received = :received, dropped_buffer = :dropped_buffer, " +
+                                "dropped_interface = :dropped_interface, updated_at = :updated_at " +
+                                "WHERE tap_name = :tap_name AND interface = :interface")
+                                .bind("capture_type", capture.captureType())
+                                .bind("is_running", capture.isRunning())
+                                .bind("received", capture.received())
+                                .bind("dropped_buffer", capture.droppedBuffer())
+                                .bind("dropped_interface", capture.droppedInterface())
+                                .bind("updated_at", now)
+                                .bind("tap_name", report.tapName())
+                                .bind("interface", capture.interfaceName())
+                                .execute()
+                );
+            }
         }
 
         // Register bus.
@@ -189,7 +237,7 @@ public class TapManager {
         List<Bus> buses = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM tap_buses WHERE tap_name = :tap_name AND updated_at > :last_seen")
                         .bind("tap_name", tapName)
-                        .bind("last_seen", DateTime.now().minusHours(1))
+                        .bind("last_seen", DateTime.now().minusMinutes(1))
                         .mapTo(Bus.class)
                         .list()
         );
@@ -207,6 +255,18 @@ public class TapManager {
         );
 
         return channels == null || channels.isEmpty() ? Optional.empty() : Optional.of(channels);
+    }
+
+    public Optional<List<Capture>> findCapturesOfTap(String tapName) {
+        List<Capture> captures = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tap_captures WHERE tap_name = :tap_name AND updated_at > :last_seen")
+                        .bind("tap_name", tapName)
+                        .bind("last_seen", DateTime.now().minusMinutes(1))
+                        .mapTo(Capture.class)
+                        .list()
+        );
+
+        return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
     }
 
 }

@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 @AutoValue
 public abstract class StatusReport {
 
@@ -30,19 +32,22 @@ public abstract class StatusReport {
     public abstract TotalWithAverage processedBytes();
     public abstract BusReport bus();
     public abstract SystemMetrics systemMetrics();
+    public abstract List<CapturesReport> captures();
 
     @JsonCreator
     public static StatusReport create(@JsonProperty("tap_name") String tapName,
                                       @JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("processed_bytes") TotalWithAverage processedBytes,
                                       @JsonProperty("bus") BusReport bus,
-                                      @JsonProperty("system_metrics") SystemMetrics systemMetrics) {
+                                      @JsonProperty("system_metrics") SystemMetrics systemMetrics,
+                                      @JsonProperty("captures") List<CapturesReport> captures) {
         return builder()
                 .tapName(tapName)
                 .timestamp(timestamp)
                 .processedBytes(processedBytes)
                 .systemMetrics(systemMetrics)
                 .bus(bus)
+                .captures(captures)
                 .build();
     }
 
@@ -61,6 +66,8 @@ public abstract class StatusReport {
         public abstract Builder bus(BusReport bus);
 
         public abstract Builder systemMetrics(SystemMetrics systemMetrics);
+
+        public abstract Builder captures(List<CapturesReport> captures);
 
         public abstract StatusReport build();
     }

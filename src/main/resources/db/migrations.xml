@@ -909,4 +909,48 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="40" author="lennartkoopmann">
+        <createTable tableName="tap_captures">
+            <column name="id" type="integer" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="interface" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="capture_type" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="is_running" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="received" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="dropped_buffer" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="dropped_interface" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

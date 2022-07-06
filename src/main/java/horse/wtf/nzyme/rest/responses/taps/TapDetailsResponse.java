@@ -45,7 +45,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("buses")
     public abstract List<BusDetailsResponse> buses();
 
-    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses) {
+    @JsonProperty("captures")
+    public abstract List<CaptureDetailsResponse> captures();
+
+    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
         return builder()
                 .name(name)
                 .localTime(localTime)
@@ -59,6 +62,7 @@ public abstract class TapDetailsResponse {
                 .updatedAt(updatedAt)
                 .description(description)
                 .buses(buses)
+                .captures(captures)
                 .build();
     }
 
@@ -91,6 +95,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder description(String description);
 
         public abstract Builder buses(List<BusDetailsResponse> buses);
+
+        public abstract Builder captures(List<CaptureDetailsResponse> captures);
 
         public abstract TapDetailsResponse build();
     }

@@ -57,7 +57,7 @@ public class StatusResource {
             LOG.debug("Tap name [{}] exceeds maximum length of 50 characters.", report.tapName());
             return Response.status(Response.Status.FORBIDDEN).build();
         }
-
+        
         nzyme.getTapManager().registerTapStatus(report);
 
         return Response.status(Response.Status.CREATED).build();

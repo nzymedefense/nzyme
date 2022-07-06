@@ -6,6 +6,7 @@ import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.taps.*;
 import horse.wtf.nzyme.taps.Bus;
+import horse.wtf.nzyme.taps.Capture;
 import horse.wtf.nzyme.taps.Channel;
 import horse.wtf.nzyme.taps.Tap;
 import org.apache.logging.log4j.LogManager;
@@ -113,6 +114,25 @@ public class TapsResource {
             }
         }
 
+        List<CaptureDetailsResponse> capturesResponse = Lists.newArrayList();
+        Optional<List<Capture>> captures = nzyme.getTapManager().findCapturesOfTap(tap.name());
+        if (captures.isPresent()) {
+            for (Capture capture : captures.get()) {
+                capturesResponse.add(
+                        CaptureDetailsResponse.create(
+                                capture.interfaceName(),
+                                capture.captureType(),
+                                capture.isRunning(),
+                                capture.received(),
+                                capture.droppedBuffer(),
+                                capture.droppedInterface(),
+                                capture.updatedAt(),
+                                capture.createdAt()
+                        )
+                );
+            }
+        }
+
         return TapDetailsResponse.create(
                 tap.name(),
                 tap.localTime(),
@@ -125,7 +145,8 @@ public class TapsResource {
                 tap.createdAt(),
                 tap.updatedAt(),
                 "",
-                busesResponse
+                busesResponse,
+                capturesResponse
         );
     }
 
