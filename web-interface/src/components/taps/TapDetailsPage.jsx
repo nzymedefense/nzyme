@@ -124,7 +124,7 @@ function TapDetailsPage() {
                         <div className="card-body">
                             <h3>Capture Configuration</h3>
 
-                            <CaptureConfiguration />
+                            <CaptureConfiguration tap={tap} />
                         </div>
                     </div>
                 </div>
