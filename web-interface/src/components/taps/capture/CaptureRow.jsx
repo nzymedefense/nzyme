@@ -8,8 +8,10 @@ function CaptureRow(props) {
     return (
         <tr>
             <td>{c.interface_name}</td>
+            <td>
+                {c.is_running ? <span className="badge bg-success">Running</span> : <span className="badge bg-danger">Failing</span>}
+            </td>
             <td>{c.capture_type}</td>
-            <td>{c.is_running ? "YES" : "NO"}</td>
             <td>{numeral(c.received).format("0,0")}</td>
             <td>{numeral(c.dropped_interface).format("0,0")}</td>
             <td>{numeral(c.dropped_buffer).format("0,0")}</td>
