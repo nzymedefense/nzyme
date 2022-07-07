@@ -30,7 +30,7 @@ function TapsTable(props) {
                     </tr>
                     </thead>
                     <tbody>
-                    {Object.keys(taps).map(function (key, i) {
+                    {Object.keys(taps.sort((a, b) => a.name.localeCompare(b.name))).map(function (key, i) {
                         return <TapRow key={"tap-" + i} tap={taps[i]} />
                     })}
                     </tbody>
