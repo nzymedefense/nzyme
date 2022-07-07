@@ -31,12 +31,18 @@ public abstract class TablesReport {
     public abstract DateTime timestamp();
     public abstract Map<String, Map<String, Long>> arp();
 
+    public abstract DNSTablesReport dns();
+
     @JsonCreator
-    public static TablesReport create(@JsonProperty("tap_name") String tapName, @JsonProperty("timestamp") DateTime timestamp, @JsonProperty("arp") Map<String, Map<String, Long>> arp) {
+    public static TablesReport create(@JsonProperty("tap_name") String tapName,
+                                      @JsonProperty("timestamp") DateTime timestamp,
+                                      @JsonProperty("arp") Map<String, Map<String, Long>> arp,
+                                      @JsonProperty("dns") DNSTablesReport dns) {
         return builder()
                 .tapName(tapName)
                 .timestamp(timestamp)
                 .arp(arp)
+                .dns(dns)
                 .build();
     }
 
@@ -51,6 +57,8 @@ public abstract class TablesReport {
         public abstract Builder timestamp(DateTime timestamp);
 
         public abstract Builder arp(Map<String, Map<String, Long>> arp);
+
+        public abstract Builder dns(DNSTablesReport dns);
 
         public abstract TablesReport build();
     }

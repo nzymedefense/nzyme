@@ -39,6 +39,8 @@ public class TablesResource {
     public Response status(TablesReport report) {
         LOG.debug("Received table report from [{}]: {}", report.tapName(), report.arp());
 
+        LOG.info("DNS: {}", report.dns());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
