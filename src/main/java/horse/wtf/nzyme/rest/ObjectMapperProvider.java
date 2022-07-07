@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -36,6 +37,8 @@ public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
         // Write DateTime objects as ISO-8601.
         om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        om.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         return om;
     }
