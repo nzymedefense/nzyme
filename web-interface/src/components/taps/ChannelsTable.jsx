@@ -15,7 +15,7 @@ function ChannelsTable(props) {
             </tr>
             </thead>
             <tbody>
-            {Object.keys(props.channels).map(function (key, i) {
+            {Object.keys(props.channels.sort((a, b) => a.name.localeCompare(b.name))).map(function (key, i) {
                 return <ChannelRow key={"channel-" + i} channel={props.channels[i]} />
             })}
             </tbody>
