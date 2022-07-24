@@ -37,9 +37,7 @@ public class TablesResource {
 
     @POST
     public Response status(TablesReport report) {
-        LOG.debug("Received table report from [{}]: {}", report.tapName(), report.arp());
-
-        LOG.info("DNS: {}", report.dns());
+        LOG.info("Received table report from [{}]: {}", report.tapName(), report);
 
         return Response.status(Response.Status.CREATED).build();
     }

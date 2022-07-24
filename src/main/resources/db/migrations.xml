@@ -953,4 +953,76 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="41" author="lennartkoopmann">
+        <createTable tableName="dns_statistics">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ip" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="request_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="request_bytes" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="response_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="response_bytes" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="nxdomain_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="42" author="lennartkoopmann">
+        <createTable tableName="dns_nxdomains_log">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ip" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="query_value" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="data_type" type="varchar(55)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
