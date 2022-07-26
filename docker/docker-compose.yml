@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  nzyme:
+    build: .
+    restart: unless-stopped
+    container_name: nzyme
+    env_file: .env
+    volumes:
+      - ./nzyme.conf:/etc/nzyme/nzyme.conf.tmp #copy in entrypoint
+      - ./logs:/var/log/nzyme/
+    #ports:
+    #  - "22900:22900"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=$DATABASE_URL
+      - ADMIN_PASSWORD_HASH=$ADMIN_PASSWORD_HASH
+      - EXTERNAL_URL=$EXTERNAL_URL
+    network_mode: host #USB Antena
+    privileged: true #USB Antena
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASS
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    network_mode: host #USB Antena
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "$POSTGRES_USER"]
+      interval: 10s
+      start_period: 30s
