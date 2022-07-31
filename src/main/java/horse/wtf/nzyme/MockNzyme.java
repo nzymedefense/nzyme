@@ -48,6 +48,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -267,6 +268,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public void registerIgnoredFingerprint(String fingerprint) {
 
+    }
+
+    @Override
+    public TablesService getTablesService() {
+        return null;
     }
 
     @Override

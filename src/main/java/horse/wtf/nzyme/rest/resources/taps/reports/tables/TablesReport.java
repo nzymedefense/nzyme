@@ -30,7 +30,6 @@ public abstract class TablesReport {
     public abstract String tapName();
     public abstract DateTime timestamp();
     public abstract Map<String, Map<String, Long>> arp();
-
     public abstract DNSTablesReport dns();
 
     @JsonCreator

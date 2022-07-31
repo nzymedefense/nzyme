@@ -1,15 +1,20 @@
 package horse.wtf.nzyme.taps;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.resources.taps.reports.CapturesReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.ChannelReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
+import horse.wtf.nzyme.tables.DataTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TapManager {
 
@@ -19,6 +24,13 @@ public class TapManager {
 
     public TapManager(NzymeLeader nzyme) {
         this.nzyme = nzyme;
+
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("taps-cleaner-%d")
+                        .setDaemon(true)
+                        .build()
+        ).scheduleAtFixedRate(this::retentionClean, 0, 5, TimeUnit.MINUTES);
     }
 
     public void registerTapStatus(StatusReport report) {
@@ -212,6 +224,28 @@ public class TapManager {
                 );
             }
         }
+
+        // Metrics
+        for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
+            nzyme.getDatabase().withHandle(handle ->
+               handle.createUpdate("INSERT INTO metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
+                       "VALUES(:tap_name, :metric_name, :metric_value, :created_at)")
+                       .bind("tap_name", report.tapName())
+                       .bind("metric_name", metric.getKey())
+                       .bind("metric_value", metric.getValue())
+                       .bind("created_at", report.timestamp())
+                       .execute()
+            );
+        }
+
+    }
+
+    private void retentionClean() {
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM metrics_gauges WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(72)) // TODO
+                    .execute();
+        });
     }
 
     public Optional<List<Tap>> findAllTaps() {

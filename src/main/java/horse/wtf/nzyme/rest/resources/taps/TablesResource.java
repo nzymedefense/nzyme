@@ -17,11 +17,14 @@
 
 package horse.wtf.nzyme.rest.resources.taps;
 
+import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.TapSecured;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.TablesReport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -35,9 +38,15 @@ public class TablesResource {
 
     private static final Logger LOG = LogManager.getLogger(StatusResource.class);
 
+    @Inject
+    private NzymeLeader nzyme;
+
     @POST
     public Response status(TablesReport report) {
-        LOG.info("Received table report from [{}]: {}", report.tapName(), report);
+        LOG.debug("Received table report from [{}]: {}", report.tapName(), report);
+
+        // DNS.
+        nzyme.getTablesService().dns().handleReport(report.tapName(), report.timestamp(), report.dns());
 
         return Response.status(Response.Status.CREATED).build();
     }

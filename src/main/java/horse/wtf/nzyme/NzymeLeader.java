@@ -37,6 +37,7 @@ import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 
 import java.security.Key;
@@ -75,6 +76,8 @@ public interface NzymeLeader extends RemoteConnector {
 
     List<String> getIgnoredFingerprints();
     void registerIgnoredFingerprint(String fingerprint);
+
+    TablesService getTablesService();
 
     TrackerManager getTrackerManager();
     GroundStation getGroundStation();

@@ -89,6 +89,7 @@ import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 import horse.wtf.nzyme.util.MetricNames;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -142,6 +143,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final Sentry sentry;
     private final Clients clients;
     private final DeauthenticationMonitor deauthenticationMonitor;
+
+    private final TablesService tablesService;
 
     private final ObjectMapper objectMapper;
 
@@ -212,6 +215,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.alerts = new AlertsService(this);
         this.alerts.registerCallbacks(configuration.alertCallbacks());
         this.contactManager = new ContactManager(this);
+
+        this.tablesService = new TablesService(this);
 
         this.trackerManager = new TrackerManager();
 
@@ -597,6 +602,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
                         .add(fingerprint)
                         .build()
         );
+    }
+
+    @Override
+    public TablesService getTablesService() {
+        return tablesService;
     }
 
     @Override
