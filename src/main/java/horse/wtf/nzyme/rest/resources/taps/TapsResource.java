@@ -1,10 +1,15 @@
 package horse.wtf.nzyme.rest.resources.taps;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import horse.wtf.nzyme.taps.metrics.TapMetrics;
+import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
 import horse.wtf.nzyme.rest.responses.taps.*;
+import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsGaugeResponse;
+import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsResponse;
 import horse.wtf.nzyme.taps.Bus;
 import horse.wtf.nzyme.taps.Capture;
 import horse.wtf.nzyme.taps.Channel;
@@ -18,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/taps")
@@ -52,6 +58,37 @@ public class TapsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         } else {
             return Response.ok(buildTapResponse(tap.get())).build();
+        }
+    }
+
+    @GET
+    @Path("/show/{name}/metrics")
+    public Response tapMetrics(@PathParam("name") String name) {
+        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(tap.get().name());
+            List<TapMetricsGauge> gauges = metrics.gauges();
+
+            Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
+            for (TapMetricsGauge gauge : gauges) {
+                parsedGauges.put(
+                        gauge.metricName(),
+                        TapMetricsGaugeResponse.create(
+                                gauge.metricName(),
+                                gauge.metricValue(),
+                                gauge.createdAt()
+                        )
+                );
+            }
+
+            return Response.ok(
+                    TapMetricsResponse.create(
+                            parsedGauges
+                    )
+            ).build();
         }
     }
 

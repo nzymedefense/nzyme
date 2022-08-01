@@ -2,10 +2,11 @@ package horse.wtf.nzyme.taps;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.taps.metrics.TapMetrics;
+import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
 import horse.wtf.nzyme.rest.resources.taps.reports.CapturesReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.ChannelReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
-import horse.wtf.nzyme.tables.DataTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -265,6 +266,20 @@ public class TapManager {
         );
 
         return tap == null ? Optional.empty() : Optional.of(tap);
+    }
+
+    public TapMetrics findMetricsOfTap(String tapName) {
+        List<TapMetricsGauge> gauges = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_name, metric_value, created_at " +
+                        "FROM metrics_gauges WHERE tap_name = :tap_name AND created_at > :created_at " +
+                        "ORDER BY metric_name, created_at DESC")
+                        .bind("tap_name", tapName)
+                        .bind("created_at", DateTime.now().minusMinutes(1))
+                        .mapTo(TapMetricsGauge.class)
+                        .list()
+        );
+
+        return TapMetrics.create(tapName, gauges);
     }
 
     public Optional<List<Bus>> findBusesOfTap(String tapName) {

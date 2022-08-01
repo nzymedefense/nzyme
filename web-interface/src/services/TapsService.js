@@ -15,6 +15,12 @@ class TapService {
         })
     }
 
+    findMetricsOfTap(tapName, setTapMetrics) {
+        RESTClient.get('/taps/show/' + tapName + '/metrics', {}, function (response) {
+            setTapMetrics(response.data);
+        })
+    }
+
     getTapSecret (setTapSecret) {
         RESTClient.get('/taps/secret', {}, function (response) {
             setTapSecret(response.data.secret);

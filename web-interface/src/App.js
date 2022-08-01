@@ -41,7 +41,7 @@ import MetricsPage from "./components/system/MetricsPage";
 import DarkMode from "./components/layout/DarkMode";
 import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
 import TapsPage from "./components/taps/TapsPage";
-import TapDetailsPage from "./components/taps/TapDetailsPage";
+import TapDetailsPage from "./components/taps/details/TapDetailsPage";
 
 class App extends React.Component {
 
