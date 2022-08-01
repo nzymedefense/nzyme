@@ -8,6 +8,26 @@ function TapsRow(props) {
 
     const tap = props.tap;
 
+    if (!tap.active) {
+        return (
+            <tr>
+                <td>
+                    <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a>
+                    <span>&nbsp;
+                        <i className="fa-solid fa-triangle-exclamation text-danger" title="Tap is offline." />
+                    </span>
+                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td title={moment(tap.updated_at).format()}>
+                    {moment(tap.updated_at).fromNow()}
+                </td>
+            </tr>
+        )
+    }
+
     return (
         <tr>
             <td>

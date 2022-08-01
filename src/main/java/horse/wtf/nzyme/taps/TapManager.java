@@ -282,6 +282,14 @@ public class TapManager {
         return TapMetrics.create(tapName, gauges);
     }
 
+    public Map<DateTime, TapMetricsGaugeAggregation> findMetricsHistogram(String tapName, String metricName, int hours) {
+        List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(metric_value), MAX(metric_value), MIN(metric_value), date_trunc('minute', created_at) AS bucket FROM metrics_gauges " +
+                        "WHERE tap_name = 'local-dev-laptop' AND metric_name = 'processors.dns.entropy.responses.table_size' " +
+                        "GROUP BY date_trunc('minute', created_at) ORDER BY bucket DESC")
+        );
+    }
+
     public Optional<List<Bus>> findBusesOfTap(String tapName) {
         List<Bus> buses = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM tap_buses WHERE tap_name = :tap_name AND updated_at > :last_seen")
