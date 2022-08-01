@@ -1,7 +1,12 @@
 import React from "react";
 import TapMetricsGauges from "./TapMetricsGauges";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
 
 function TapMetrics(props) {
+
+    if (!props.metrics) {
+        return <LoadingSpinner />
+    }
 
     return (
         <div>
