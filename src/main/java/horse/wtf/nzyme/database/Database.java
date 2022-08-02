@@ -13,6 +13,8 @@ import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntryMapper;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntryMapper;
 import horse.wtf.nzyme.taps.db.*;
+import horse.wtf.nzyme.taps.db.metrics.TapMetricsGaugeAggregationMapper;
+import horse.wtf.nzyme.taps.db.metrics.TapMetricsGaugeMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -79,7 +81,8 @@ public class Database {
                 .registerRowMapper(new BusMapper())
                 .registerRowMapper(new ChannelMapper())
                 .registerRowMapper(new CaptureMapper())
-                .registerRowMapper(new TapMetricsGaugeMapper());
+                .registerRowMapper(new TapMetricsGaugeMapper())
+                .registerRowMapper(new TapMetricsGaugeAggregationMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

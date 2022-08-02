@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.taps.db;
+package horse.wtf.nzyme.taps.db.metrics;
 
 import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
 import org.jdbi.v3.core.mapper.RowMapper;

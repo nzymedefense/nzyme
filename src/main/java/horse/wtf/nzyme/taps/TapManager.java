@@ -1,12 +1,15 @@
 package horse.wtf.nzyme.taps;
 
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.taps.metrics.BucketSize;
 import horse.wtf.nzyme.taps.metrics.TapMetrics;
 import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
 import horse.wtf.nzyme.rest.resources.taps.reports.CapturesReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.ChannelReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.StatusReport;
+import horse.wtf.nzyme.taps.metrics.TapMetricsGaugeAggregation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -282,12 +285,26 @@ public class TapManager {
         return TapMetrics.create(tapName, gauges);
     }
 
-    public Map<DateTime, TapMetricsGaugeAggregation> findMetricsHistogram(String tapName, String metricName, int hours) {
+    public Map<DateTime, TapMetricsGaugeAggregation> findMetricsHistogram(String tapName, String metricName, int hours, BucketSize bucketSize) {
+        Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
+
         List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT AVG(metric_value), MAX(metric_value), MIN(metric_value), date_trunc('minute', created_at) AS bucket FROM metrics_gauges " +
-                        "WHERE tap_name = 'local-dev-laptop' AND metric_name = 'processors.dns.entropy.responses.table_size' " +
-                        "GROUP BY date_trunc('minute', created_at) ORDER BY bucket DESC")
+                handle.createQuery("SELECT AVG(metric_value), MAX(metric_value), MIN(metric_value), date_trunc(:bucket_size, created_at) AS bucket FROM metrics_gauges " +
+                        "WHERE tap_name = :tap_name AND metric_name = :metric_name AND created_at > :created_at" +
+                        "GROUP BY date_trunc(:bucket_size, created_at) ORDER BY bucket DESC")
+                        .bind("bucket_size", bucketSize)
+                        .bind("tap_name", tapName)
+                        .bind("metric_name", metricName)
+                        .bind("created_at", DateTime.now().minusHours(hours))
+                        .mapTo(TapMetricsGaugeAggregation.class)
+                        .list()
         );
+
+        for (TapMetricsGaugeAggregation x : agg) {
+            result.put(x.bucket(), x);
+        }
+
+        return result;
     }
 
     public Optional<List<Bus>> findBusesOfTap(String tapName) {
