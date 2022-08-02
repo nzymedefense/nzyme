@@ -285,7 +285,7 @@ public class TapManager {
         return TapMetrics.create(tapName, gauges);
     }
 
-    public Map<DateTime, TapMetricsGaugeAggregation> findMetricsHistogram(String tapName, String metricName, int hours, BucketSize bucketSize) {
+    public Optional<Map<DateTime, TapMetricsGaugeAggregation>> findMetricsHistogram(String tapName, String metricName, int hours, BucketSize bucketSize) {
         Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
 
         List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
@@ -300,11 +300,15 @@ public class TapManager {
                         .list()
         );
 
+        if (agg == null || agg.isEmpty()) {
+            return Optional.empty();
+        }
+
         for (TapMetricsGaugeAggregation x : agg) {
             result.put(x.bucket(), x);
         }
 
-        return result;
+        return Optional.of(result);
     }
 
     public Optional<List<Bus>> findBusesOfTap(String tapName) {

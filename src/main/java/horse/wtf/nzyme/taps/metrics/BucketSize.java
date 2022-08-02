@@ -18,4 +18,7 @@
 package horse.wtf.nzyme.taps.metrics;
 
 public enum BucketSize {
+    DAY,
+    HOUR,
+    MINUTE
 }

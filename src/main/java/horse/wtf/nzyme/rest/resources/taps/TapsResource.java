@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import horse.wtf.nzyme.taps.metrics.BucketSize;
 import horse.wtf.nzyme.taps.metrics.TapMetrics;
 import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
 import horse.wtf.nzyme.rest.responses.taps.*;
@@ -14,6 +15,7 @@ import horse.wtf.nzyme.taps.Bus;
 import horse.wtf.nzyme.taps.Capture;
 import horse.wtf.nzyme.taps.Channel;
 import horse.wtf.nzyme.taps.Tap;
+import horse.wtf.nzyme.taps.metrics.TapMetricsGaugeAggregation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -68,28 +70,48 @@ public class TapsResource {
 
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
-        } else {
-            TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(tap.get().name());
-            List<TapMetricsGauge> gauges = metrics.gauges();
-
-            Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
-            for (TapMetricsGauge gauge : gauges) {
-                parsedGauges.put(
-                        gauge.metricName(),
-                        TapMetricsGaugeResponse.create(
-                                gauge.metricName(),
-                                gauge.metricValue(),
-                                gauge.createdAt()
-                        )
-                );
-            }
-
-            return Response.ok(
-                    TapMetricsResponse.create(
-                            parsedGauges
-                    )
-            ).build();
         }
+
+        TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(tap.get().name());
+        List<TapMetricsGauge> gauges = metrics.gauges();
+
+        Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
+        for (TapMetricsGauge gauge : gauges) {
+            parsedGauges.put(
+                    gauge.metricName(),
+                    TapMetricsGaugeResponse.create(
+                            gauge.metricName(),
+                            gauge.metricValue(),
+                            gauge.createdAt()
+                    )
+            );
+        }
+
+        return Response.ok(
+                TapMetricsResponse.create(
+                        parsedGauges
+                )
+        ).build();
+    }
+
+    @GET
+    @Path("/show/{tapName}/metrics/{metricName}")
+    public Response tapMetrics(@PathParam("tapName") String name, @PathParam("metricName") String metricName) {
+        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Map<DateTime, TapMetricsGaugeAggregation>> histo = nzyme.getTapManager().findMetricsHistogram(
+                tap.get().name(), metricName, 24, BucketSize.MINUTE
+        );
+
+        if (histo.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        
     }
 
     @GET
