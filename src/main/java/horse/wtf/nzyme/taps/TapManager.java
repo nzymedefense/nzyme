@@ -231,17 +231,28 @@ public class TapManager {
 
         // Metrics
         for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
-            nzyme.getDatabase().withHandle(handle ->
-               handle.createUpdate("INSERT INTO metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
-                       "VALUES(:tap_name, :metric_name, :metric_value, :created_at)")
-                       .bind("tap_name", report.tapName())
-                       .bind("metric_name", metric.getKey())
-                       .bind("metric_value", metric.getValue())
-                       .bind("created_at", report.timestamp())
-                       .execute()
-            );
+            writeGauge(report.tapName(), metric.getKey(), metric.getValue(), report.timestamp());
         }
 
+        // Additional metrics.
+        writeGauge(report.tapName(), "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
+        writeGauge(report.tapName(), "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
+        writeGauge(report.tapName(), "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+    }
+
+    private void writeGauge(String tapName, String metricName, Long metricValue, DateTime timestamp) {
+        writeGauge(tapName, metricName, metricValue.doubleValue(), timestamp);
+    }
+
+    private void writeGauge(String tapName, String metricName, Double metricValue, DateTime timestamp) {
+        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
+                        "VALUES(:tap_name, :metric_name, :metric_value, :created_at)")
+                .bind("tap_name", tapName)
+                .bind("metric_name", metricName)
+                .bind("metric_value", metricValue)
+                .bind("created_at", timestamp)
+                .execute()
+        );
     }
 
     private void retentionClean() {
@@ -289,10 +300,10 @@ public class TapManager {
         Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
 
         List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT AVG(metric_value), MAX(metric_value), MIN(metric_value), date_trunc(:bucket_size, created_at) AS bucket FROM metrics_gauges " +
-                        "WHERE tap_name = :tap_name AND metric_name = :metric_name AND created_at > :created_at" +
-                        "GROUP BY date_trunc(:bucket_size, created_at) ORDER BY bucket DESC")
-                        .bind("bucket_size", bucketSize)
+                handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket FROM metrics_gauges " +
+                        "WHERE tap_name = :tap_name AND metric_name = :metric_name AND created_at > :created_at " +
+                        "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("bucket_size", bucketSize.toString().toLowerCase())
                         .bind("tap_name", tapName)
                         .bind("metric_name", metricName)
                         .bind("created_at", DateTime.now().minusHours(hours))

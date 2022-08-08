@@ -1,4 +1,6 @@
 import React from "react";
+import numeral from "numeral";
+import FormattedGauge from "./FormattedGauge";
 
 function TapMetricsGauges(props) {
 
@@ -15,7 +17,7 @@ function TapMetricsGauges(props) {
                 return (
                     <tr key={"metric-gauge-" + i}>
                         <td>{props.gauges[key].metric_name}</td>
-                        <td>{props.gauges[key].metric_value}</td>
+                        <td><FormattedGauge name={props.gauges[key].metric_name} value={props.gauges[key].metric_value} /></td>
                     </tr>
                 )
             })}

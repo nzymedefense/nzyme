@@ -33,7 +33,7 @@ class SimpleLineChart extends React.Component {
           x: x,
           y: y,
           type: 'scatter',
-          line: { width: 1, shape: 'linear', color: '#2983fe' }
+          line: { width: 2, shape: 'linear', color: '#0d6efd' }
         }
       ]
     }
@@ -51,14 +51,14 @@ class SimpleLineChart extends React.Component {
               height: this.props.height,
               width: this.props.width,
               font: {
-                family: "'Inconsolata', monospace",
-                size: 10,
-                color: this.props.textColor ? this.props.textColor : '#ffffff'
+                family: "'Nunito Sans', sans-serif",
+                size: 12,
+                color: this.props.textColor ? this.props.textColor : '#212529'
               },
               margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
               title: { text: this.props.title },
-              paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
-              plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
+              paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#ffffff',
+              plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#ffffff',
               showlegend: false,
               dragmode: false,
               clickmode: 'none',
@@ -72,16 +72,20 @@ class SimpleLineChart extends React.Component {
               xaxis: {
                 fixedrange: true,
                 title: this.props.xaxistitle,
-                zerolinecolor: '#1f2134',
-                linecolor: '#11121f',
-                gridcolor: '#1f2134'
+                linecolor: '#212529',
+                linewidth: 1,
+                gridcolor: '#e3e3e3',
+                zeroline: false
               },
               yaxis: {
+                ticksuffix: this.props.ticksuffix ? this.props.ticksuffix : undefined,
+                tickformat: this.props.tickformat ? this.props.tickformat : undefined,
                 fixedrange: true,
                 title: this.props.yaxistitle,
-                zerolinecolor: '#1f2134',
-                linecolor: '#11121f',
-                gridcolor: '#1f2134'
+                linecolor: '#212529',
+                linewidth: 1,
+                gridcolor: '#e3e3e3',
+                zeroline: false
               },
               annotations: this.props.annotations ? this.props.annotations : [],
               shapes: this.props.shapes

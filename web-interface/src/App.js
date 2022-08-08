@@ -37,7 +37,7 @@ import NetworkDetailsPageRedirector from './components/networks/details/NetworkD
 import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
 import Sidebar from "./components/layout/Sidebar";
 import VersionPage from "./components/system/VersionPage";
-import MetricsPage from "./components/system/MetricsPage";
+import LeaderPage from "./components/system/LeaderPage";
 import DarkMode from "./components/layout/DarkMode";
 import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
 import TapsPage from "./components/taps/TapsPage";
@@ -110,7 +110,7 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
                                             { /* System. */}
-                                            <Route path={ApiRoutes.SYSTEM.METRICS} element={<MetricsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.LEADER} element={<LeaderPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION} element={<AuthenticationPage />}/>
 

@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsGaugeHistogramResponse;
+import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsGaugeHistogramValueResponse;
 import horse.wtf.nzyme.taps.metrics.BucketSize;
 import horse.wtf.nzyme.taps.metrics.TapMetrics;
 import horse.wtf.nzyme.taps.metrics.TapMetricsGauge;
@@ -95,8 +97,8 @@ public class TapsResource {
     }
 
     @GET
-    @Path("/show/{tapName}/metrics/{metricName}")
-    public Response tapMetrics(@PathParam("tapName") String name, @PathParam("metricName") String metricName) {
+    @Path("/show/{tapName}/metrics/gauges/{metricName}/histogram")
+    public Response tapMetricsGauge(@PathParam("tapName") String name, @PathParam("metricName") String metricName) {
         Optional<Tap> tap = nzyme.getTapManager().findTap(name);
 
         if (tap.isEmpty()) {
@@ -111,7 +113,14 @@ public class TapsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        
+        Map<DateTime, TapMetricsGaugeHistogramValueResponse> result = Maps.newHashMap();
+        for (TapMetricsGaugeAggregation value : histo.get().values()) {
+            result.put(value.bucket(), TapMetricsGaugeHistogramValueResponse.create(
+                    value.bucket(), value.average(), value.maximum(), value.minimum()
+            ));
+        }
+
+        return Response.ok(TapMetricsGaugeHistogramResponse.create(result)).build();
     }
 
     @GET

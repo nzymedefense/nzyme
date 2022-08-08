@@ -10,12 +10,14 @@ import Buses from "./Buses";
 import TapInactiveWarning from "./TapInactiveWarning";
 import CaptureConfiguration from "../capture/CaptureConfiguration";
 import TapMetrics from "./metrics/TapMetrics";
+import TapThroughputHistogram from "./TapThroughputHistogram";
 
 const tapsService = new TapsService();
 
-function fetchData(tapName, setTap, setTapMetrics) {
+function fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram) {
     tapsService.findTap(tapName, setTap);
     tapsService.findMetricsOfTap(tapName, setTapMetrics);
+    tapsService.findGaugeMetricHistogramOfTap(tapName, "system.captures.throughput_bit_sec", setThroughputHistogram);
 }
 
 function TapDetailsPage() {
@@ -24,12 +26,13 @@ function TapDetailsPage() {
 
     const [tap, setTap] = useState(null);
     const [tapMetrics, setTapMetrics] = useState(null);
+    const [throughputHistogram, setThroughputHistogram] = useState(null);
 
     useEffect(() => {
-        fetchData(tapName, setTap, setTapMetrics);
-        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000);
+        fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram);
+        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram), 5000);
         return () => clearInterval(id);
-    }, [tapName, setTap, setTapMetrics]);
+    }, [tapName, setTap, setTapMetrics, setThroughputHistogram]);
 
     if (!tap) {
         return <LoadingSpinner />
@@ -116,6 +119,18 @@ function TapDetailsPage() {
                                     </span>
                                 </dd>
                             </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row mt-3">
+                <div className="col-md-12">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>Throughput</h3>
+
+                            <TapThroughputHistogram data={throughputHistogram} />
                         </div>
                     </div>
                 </div>

@@ -51,21 +51,21 @@ function Sidebar() {
 
                 <SidebarSubmenu title="System" subhref="/system" icon={<i className="fa-solid fa-screwdriver-wrench fa-icon" />}>
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
-                        title="Authentication"
-                        icon={<i className="fa-solid fa-users fa-icon" />} />
+                        href={ApiRoutes.SYSTEM.LEADER}
+                        title="Leader"
+                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.TAPS.INDEX}
                         title="Taps"
                         icon={<i className="fa-solid fa-circle-nodes fa-icon" />} />
                     <NavigationLink
+                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
+                        title="Authentication"
+                        icon={<i className="fa-solid fa-users fa-icon" />} />
+                    <NavigationLink
                         href={ApiRoutes.SYSTEM.VERSION}
                         title="Version"
                         icon={<i className="fa-solid fa-tag fa-icon" />} />
-                    <NavigationLink
-                        href={ApiRoutes.SYSTEM.METRICS}
-                        title="Metrics"
-                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
                 </SidebarSubmenu>
             </ul>
         </div>
