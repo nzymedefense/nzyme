@@ -38,7 +38,7 @@ function TapsRow(props) {
                         <i className="fa-solid fa-triangle-exclamation text-danger" title="Tap is offline." />
                     </span>}
             </td>
-            <td>{numeral(tap.processed_bytes.average/10).format('0 b')}/sec ({byteAverageToMbit(tap.processed_bytes.average)})</td>
+            <td>{byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average/10).format('0 b')}/sec)</td>
             <td>{numeral(tap.processed_bytes.total).format('0.0 b')}</td>
             <td>{numeral(tap.cpu_load).format('0.0')}%</td>
             <td>

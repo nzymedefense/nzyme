@@ -69,7 +69,7 @@ function TapDetailsPage() {
                             <dl>
                                 <dt>Throughput</dt>
                                 <dd>
-                                    {numeral(tap.processed_bytes.average/10).format('0 b')}/sec ({byteAverageToMbit(tap.processed_bytes.average)})
+                                    {byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average/10).format('0 b')}/sec)
                                 </dd>
 
                                 <dt>Total data processed since last restart</dt>
