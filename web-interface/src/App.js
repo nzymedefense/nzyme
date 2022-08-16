@@ -42,6 +42,7 @@ import DarkMode from "./components/layout/DarkMode";
 import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
 import TapsPage from "./components/taps/TapsPage";
 import TapDetailsPage from "./components/taps/details/TapDetailsPage";
+import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsDetailsPage";
 
 class App extends React.Component {
 
@@ -117,6 +118,7 @@ class App extends React.Component {
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':tapName')} element={<TapDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':tapName', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 
                                             { /* Networks. */}
                                             <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>

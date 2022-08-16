@@ -14,7 +14,7 @@ function TapMetrics(props) {
                 <div className="col-md-12">
                     <h6>Gauges</h6>
 
-                    <TapMetricsGauges gauges={props.metrics.gauges} />
+                    <TapMetricsGauges tap={props.tap} gauges={props.metrics.gauges} />
                 </div>
             </div>
         </div>

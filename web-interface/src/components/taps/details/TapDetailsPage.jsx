@@ -10,14 +10,13 @@ import Buses from "./Buses";
 import TapInactiveWarning from "./TapInactiveWarning";
 import CaptureConfiguration from "../capture/CaptureConfiguration";
 import TapMetrics from "./metrics/TapMetrics";
-import TapThroughputHistogram from "./TapThroughputHistogram";
+import TapMetricsChartProxy from "./metrics/TapMetricsChartProxy";
 
 const tapsService = new TapsService();
 
-function fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram) {
+function fetchData(tapName, setTap, setTapMetrics) {
     tapsService.findTap(tapName, setTap);
     tapsService.findMetricsOfTap(tapName, setTapMetrics);
-    tapsService.findGaugeMetricHistogramOfTap(tapName, "system.captures.throughput_bit_sec", setThroughputHistogram);
 }
 
 function TapDetailsPage() {
@@ -26,13 +25,12 @@ function TapDetailsPage() {
 
     const [tap, setTap] = useState(null);
     const [tapMetrics, setTapMetrics] = useState(null);
-    const [throughputHistogram, setThroughputHistogram] = useState(null);
 
     useEffect(() => {
-        fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram);
-        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics, setThroughputHistogram), 5000);
+        fetchData(tapName, setTap, setTapMetrics);
+        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000);
         return () => clearInterval(id);
-    }, [tapName, setTap, setTapMetrics, setThroughputHistogram]);
+    }, [tapName, setTap, setTapMetrics]);
 
     if (!tap) {
         return <LoadingSpinner />
@@ -130,7 +128,7 @@ function TapDetailsPage() {
                         <div className="card-body">
                             <h3>Throughput</h3>
 
-                            <TapThroughputHistogram data={throughputHistogram} />
+                            <TapMetricsChartProxy type="gauge" name="system.captures.throughput_bit_sec" tapName={tap.name} />
                         </div>
                     </div>
                 </div>
@@ -166,7 +164,7 @@ function TapDetailsPage() {
                         <div className="card-body">
                             <h3>Metrics</h3>
 
-                            <TapMetrics metrics={tapMetrics} />
+                            <TapMetrics tap={tap} metrics={tapMetrics} />
                         </div>
                     </div>
                 </div>

@@ -34,7 +34,9 @@ module.exports = {
     chunkFilename: 'static/js/[name].[chunkhash:8].chunk.js'
   },
   devServer: {
-    historyApiFallback: true,
+    historyApiFallback: {
+      disableDotRule: true
+    },
     client: {
       overlay: true
     }

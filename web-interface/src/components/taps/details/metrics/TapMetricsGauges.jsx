@@ -1,6 +1,7 @@
 import React from "react";
 import numeral from "numeral";
 import FormattedGauge from "./FormattedGauge";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function TapMetricsGauges(props) {
 
@@ -10,6 +11,7 @@ function TapMetricsGauges(props) {
             <tr>
                 <th>Gauge</th>
                 <th>Value</th>
+                <th>&nbsp;</th>
             </tr>
             </thead>
             <tbody>
@@ -18,6 +20,11 @@ function TapMetricsGauges(props) {
                     <tr key={"metric-gauge-" + i}>
                         <td>{props.gauges[key].metric_name}</td>
                         <td><FormattedGauge name={props.gauges[key].metric_name} value={props.gauges[key].metric_value} /></td>
+                        <td>
+                            <a href={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(props.tap.name, "gauge", props.gauges[key].metric_name)}>
+                                metric
+                            </a>
+                        </td>
                     </tr>
                 )
             })}

@@ -7,6 +7,7 @@ const ApiRoutes = {
     TAPS: {
       INDEX: '/system/taps',
       DETAILS: tapName => `/system/taps/show/${tapName}`,
+      METRICDETAILS: (tapName, metricType, metricName) => `/system/taps/show/${tapName}/metrics/${metricType}/${metricName}`
     },
   },
   REPORTING: {
