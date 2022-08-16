@@ -13,8 +13,7 @@ function throughputConversion(x) {
 }
 
 function byteConversion(x) {
-    // if > 100000 ...
-    return x;
+    return x/1024/1024;
 }
 
 function TapMetricsChartProxy(props) {
@@ -37,8 +36,12 @@ function TapMetricsChartProxy(props) {
         }
 
         if (props.name.includes("byte")) {
-            conversion = byteConversion();
-            valueType = "FOO";
+            conversion = byteConversion;
+            valueType = "MB";
+        }
+
+        if (props.name.includes("percent")) {
+            valueType = "%";
         }
 
         return (

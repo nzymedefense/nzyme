@@ -14,7 +14,7 @@ function TapMetricsGaugeChart(props) {
         customMarginLeft={85}
         customMarginRight={25}
         ticksuffix={props.valueType ? " " + props.valueType : undefined}
-        tickformat={"f"}
+        tickformat={".2~f"}
     />
 
 }

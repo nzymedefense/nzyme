@@ -6,15 +6,28 @@ import numeral from "numeral";
  */
 function FormattedGauge(props) {
 
-    if (props.name.includes("bytes")) {
-        return <span title={props.value}>{numeral(props.value).format("0b")}</span>;
+    let format = "0,0.[00]";
+    let rawValue = props.value;
+    let value = props.value;
+    let suffix = "";
+
+    if (props.name.includes("percent")) {
+        format = "0,0.[00] %";
+        value = value/100;
+    } else if(props.name.includes("bytes")) {
+        format = "0,0.00 b";
+    } else if(props.name.includes("bit_sec")) {
+        format = "0,0.00";
+        if (value > 1_000_000_000) {
+            value = value/1024/1024/1024;
+            suffix = "Gbit/sec";
+        } else {
+            value = value/1024/1024;
+            suffix = "Mbit/sec";
+        }
     }
 
-    if (props.value.toString().includes(".")) {
-        return <span title={props.value}>{numeral(props.value).format("0,0.00")}</span>;
-    }
-
-    return <span title={props.value}>{numeral(props.value).format("0,0")}</span>;
+    return <span title={rawValue}>{numeral(value).format(format)} {suffix}</span>;
 
 }
 

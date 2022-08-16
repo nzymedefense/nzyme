@@ -49,7 +49,7 @@ function TapMetricsDetailsPage() {
             </div>
 
             <div className="row">
-                <h1>Tap "{tap.name}" / Metric "{metricName}" <small>Type: {metricType}</small></h1>
+                <h1>Tap "{tap.name}" / Metric "{metricName}" <small>Type: {metricType}/average</small></h1>
             </div>
 
             <TapInactiveWarning tap={tap} />

@@ -22,7 +22,7 @@ function TapMetricsGauges(props) {
                         <td><FormattedGauge name={props.gauges[key].metric_name} value={props.gauges[key].metric_value} /></td>
                         <td>
                             <a href={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(props.tap.name, "gauge", props.gauges[key].metric_name)}>
-                                metric
+                                Chart
                             </a>
                         </td>
                     </tr>
