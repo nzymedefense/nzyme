@@ -22,10 +22,12 @@ function Sidebar() {
                     title="Dashboard"
                     icon={<i className="fa-regular fa-map fa-icon" />} />
 
-                <NavigationLink
-                    href="/foo/bar"
-                    title="Ethernet"
-                    icon={<i className="fa-solid fa-network-wired fa-icon" />} />
+                <SidebarSubmenu title="Ethernet" subhref="/ethernet" icon={<i className="fa-solid fa-network-wired fa-icon" />}>
+                    <NavigationLink
+                        href={ApiRoutes.ETHERNET.DNS.INDEX}
+                        title="DNS"
+                        icon={<i className="fa-solid fa-signs-post fa-icon" />} />
+                </SidebarSubmenu>
 
                 <SidebarSubmenu title="WiFi" subhref="/dot11" icon={<i className="fa-solid fa-wifi fa-icon" />}>
                     <NavigationLink

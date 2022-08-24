@@ -16,6 +16,11 @@ const ApiRoutes = {
     DETAILS: name => `/reporting/show/${name}`,
     EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/${executionId}`
   },
+  ETHERNET: {
+    DNS: {
+      INDEX: '/ethernet/dns'
+    }
+  },
   DOT11: {
     NETWORKS: {
       INDEX: '/dot11/networks',

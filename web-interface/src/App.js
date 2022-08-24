@@ -43,6 +43,7 @@ import AuthenticationPage from "./components/system/authentication/Authenticatio
 import TapsPage from "./components/taps/TapsPage";
 import TapDetailsPage from "./components/taps/details/TapDetailsPage";
 import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsDetailsPage";
+import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
 
 class App extends React.Component {
 
@@ -119,6 +120,9 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':tapName')} element={<TapDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':tapName', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+
+                                            { /* Ethernet/DNS. */}
+                                            <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
 
                                             { /* Networks. */}
                                             <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>
