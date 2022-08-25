@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Plot from 'react-plotly.js'
+import Store from "../../util/Store";
 
 class SimpleLineChart extends React.Component {
   constructor (props) {
@@ -43,6 +44,13 @@ class SimpleLineChart extends React.Component {
     const marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25
     const marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50
 
+    let bgColor;
+    if (Store.get("dark_mode")) {
+        bgColor = "#2B2D42";
+    } else {
+        bgColor = "#ffffff";
+    }
+
     return (
         <Plot
             style={{ width: '100%', height: '100%' }}
@@ -57,8 +65,8 @@ class SimpleLineChart extends React.Component {
               },
               margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
               title: { text: this.props.title },
-              paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#ffffff',
-              plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#ffffff',
+              paper_bgcolor: bgColor,
+              plot_bgcolor: bgColor,
               showlegend: false,
               dragmode: false,
               clickmode: 'none',
