@@ -44,11 +44,17 @@ class SimpleLineChart extends React.Component {
     const marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25
     const marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50
 
-    let bgColor;
+    let colors = {};
     if (Store.get("dark_mode")) {
-        bgColor = "#2B2D42";
+        colors.background = "#2B2D42";
+        colors.text = "#ffffff";
+        colors.lines = "#8D99AE";
+        colors.grid = "#8D99AE";
     } else {
-        bgColor = "#ffffff";
+        colors.background = "#ffffff";
+        colors.text = "#212529";
+        colors.lines = "#212529";
+        colors.grid = "#e3e3e3";
     }
 
     return (
@@ -61,12 +67,12 @@ class SimpleLineChart extends React.Component {
               font: {
                 family: "'Nunito Sans', sans-serif",
                 size: 12,
-                color: this.props.textColor ? this.props.textColor : '#212529'
+                color: colors.text
               },
               margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
               title: { text: this.props.title },
-              paper_bgcolor: bgColor,
-              plot_bgcolor: bgColor,
+              paper_bgcolor: colors.background,
+              plot_bgcolor: colors.background,
               showlegend: false,
               dragmode: false,
               clickmode: 'none',
@@ -90,9 +96,9 @@ class SimpleLineChart extends React.Component {
                 tickformat: this.props.tickformat ? this.props.tickformat : undefined,
                 fixedrange: true,
                 title: this.props.yaxistitle,
-                linecolor: '#212529',
+                linecolor: colors.lines,
                 linewidth: 1,
-                gridcolor: '#e3e3e3',
+                gridcolor: colors.grid,
                 zeroline: false
               },
               annotations: this.props.annotations ? this.props.annotations : [],
