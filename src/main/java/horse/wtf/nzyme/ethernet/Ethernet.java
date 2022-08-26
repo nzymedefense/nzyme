@@ -18,4 +18,8 @@ public class Ethernet {
         return this.nzyme;
     }
 
+    public DNS dns() {
+        return dns;
+    }
+
 }

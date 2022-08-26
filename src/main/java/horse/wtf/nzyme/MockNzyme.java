@@ -38,6 +38,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.events.ShutdownEvent;
 import horse.wtf.nzyme.events.StartupEvent;
@@ -166,6 +167,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public String getNodeID() {
         return nodeID;
+    }
+
+    @Override
+    public Ethernet getEthernet() {
+        return null;
     }
 
     @Override

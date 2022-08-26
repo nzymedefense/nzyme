@@ -50,6 +50,7 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.*;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -72,6 +73,7 @@ import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
+import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
 import horse.wtf.nzyme.rest.resources.taps.TapsResource;
@@ -135,6 +137,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final List<Forwarder> forwarders;
     private final TapManager tapManager;
 
+    private final Ethernet ethernet;
+
     private final FrameProcessor frameProcessor;
 
     private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
@@ -169,6 +173,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
+
+        this.ethernet = new Ethernet(this);
+
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
         this.configurationService = new BaseConfigurationService(this);
@@ -346,6 +353,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(StatusResource.class);
         resourceConfig.register(TablesResource.class);
         resourceConfig.register(TapsResource.class);
+        resourceConfig.register(DNSResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -567,6 +575,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public String getNodeID() {
         return nodeId;
+    }
+
+    @Override
+    public Ethernet getEthernet() {
+        return ethernet;
     }
 
     @Override

@@ -19,8 +19,6 @@ function TapMetricsGaugeChart(props) {
 
 }
 
-// todo detect byte etc
-
 function formatData(data, conversion) {
     const result = {};
 

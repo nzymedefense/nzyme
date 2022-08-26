@@ -31,6 +31,7 @@ import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
@@ -49,6 +50,8 @@ public interface NzymeLeader extends RemoteConnector {
     void shutdown();
 
     String getNodeID();
+
+    Ethernet getEthernet();
 
     FrameProcessor getFrameProcessor();
 
