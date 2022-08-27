@@ -1,6 +1,6 @@
 import React from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import SimpleLineChart from "../../charts/SimpleLineChart";
+import SimpleBarChart from "../../charts/SimpleBarChart";
 
 function DNSStatisticsChart(props) {
 
@@ -8,7 +8,7 @@ function DNSStatisticsChart(props) {
         return <LoadingSpinner />
     }
 
-    return <SimpleLineChart
+    return <SimpleBarChart
         height={150}
         lineWidth={1}
         data={formatData(props.statistics.buckets, props.attribute)}

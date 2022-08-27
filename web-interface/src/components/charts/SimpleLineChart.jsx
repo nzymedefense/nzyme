@@ -86,9 +86,9 @@ class SimpleLineChart extends React.Component {
               xaxis: {
                 fixedrange: true,
                 title: this.props.xaxistitle,
-                linecolor: '#212529',
+                linecolor: colors.lines,
                 linewidth: 1,
-                gridcolor: '#e3e3e3',
+                gridcolor: colors.grid,
                 zeroline: false
               },
               yaxis: {
