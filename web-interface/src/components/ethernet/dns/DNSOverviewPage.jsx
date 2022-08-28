@@ -2,6 +2,10 @@ import React, {useEffect, useState} from "react";
 import DNSStatisticsChart from "./DNSStatisticsChart";
 import EthernetService from "../../../services/EthernetService";
 
+function byteConversion(x) {
+    return x/1024;
+}
+
 const ethernetService = new EthernetService();
 
 function fetchData(hours, setStatistics) {
@@ -55,7 +59,10 @@ function DNSOverviewPage() {
                         <div className="card-body">
                             <h3>Query Bytes/Minute</h3>
 
-                            <DNSStatisticsChart statistics={statistics} attribute="request_bytes" />
+                            <DNSStatisticsChart statistics={statistics}
+                                                attribute="request_bytes"
+                                                conversion={byteConversion}
+                                                valueType="KB" />
                         </div>
                     </div>
                 </div>
@@ -65,7 +72,10 @@ function DNSOverviewPage() {
                         <div className="card-body">
                             <h3>Response Bytes/Minute</h3>
 
-                            <DNSStatisticsChart statistics={statistics} attribute="response_bytes" />
+                            <DNSStatisticsChart statistics={statistics}
+                                                attribute="response_bytes"
+                                                conversion={byteConversion}
+                                                valueType="KB" />
                         </div>
                     </div>
                 </div>

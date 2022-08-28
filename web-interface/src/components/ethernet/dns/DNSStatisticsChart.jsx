@@ -11,16 +11,23 @@ function DNSStatisticsChart(props) {
     return <SimpleBarChart
         height={150}
         lineWidth={1}
-        data={formatData(props.statistics.buckets, props.attribute)}
+        customMarginLeft={45}
+        data={formatData(props.statistics.buckets, props.attribute, props.conversion)}
+        ticksuffix={props.valueType ? " " + props.valueType : undefined}
+        tickformat={".2~f"}
     />
 
 }
 
-function formatData(data, attribute) {
+function formatData(data, attribute, conversion) {
     const result = {};
 
     Object.keys(data).sort().forEach(function (key) {
-        result[key] = data[key][attribute];
+        if (conversion) {
+            result[key] = conversion(data[key][attribute]);
+        } else {
+            result[key] = data[key][attribute];
+        }
     })
 
     return result;

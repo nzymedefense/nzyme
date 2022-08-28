@@ -91,6 +91,8 @@ class SimpleBarChart extends React.Component {
                 gridcolor: colors.grid
               },
               yaxis: {
+                ticksuffix: this.props.ticksuffix ? this.props.ticksuffix : undefined,
+                tickformat: this.props.tickformat ? this.props.tickformat : undefined,
                 fixedrange: true,
                 title: this.props.yaxistitle,
                 zerolinecolor: colors.lines,
