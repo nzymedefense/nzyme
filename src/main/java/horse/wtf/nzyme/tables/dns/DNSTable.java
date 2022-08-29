@@ -135,14 +135,17 @@ public class DNSTable implements DataTable {
     @Override
     public void retentionClean() {
         tablesService.getNzyme().getDatabase().useHandle(handle -> {
-                    handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
-                            .bind("created_at", DateTime.now().minusHours(24)) // TODO
-                            .execute();
+            handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
 
-                    handle.createUpdate("DELETE FROM dns_nxdomains_log WHERE created_at < :created_at")
-                            .bind("created_at", DateTime.now().minusHours(24)) // TODO
-                            .execute();
-                }
-        );
+            handle.createUpdate("DELETE FROM dns_nxdomains_log WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+
+            handle.createUpdate("DELETE FROM dns_pairs WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+        });
     }
 }
