@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import DNSStatisticsChart from "./DNSStatisticsChart";
 import EthernetService from "../../../services/EthernetService";
+import DNSNumbers from "./DNSNumbers";
 
 function byteConversion(x) {
     return x/1024;
@@ -27,8 +28,12 @@ function DNSOverviewPage() {
         <div>
             <div className="row">
                 <div className="col-md-12">
-                    <h1>DNS</h1>
+                    <h1>DNS - Last 24 hours</h1>
                 </div>
+            </div>
+
+            <div className="row mt-3">
+                <DNSNumbers data={statistics} />
             </div>
 
             <div className="row mt-3">

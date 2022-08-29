@@ -15,14 +15,18 @@ public abstract class DNSTablesReport {
 
     public abstract List<DNSEntropyLogReport> entropyLog();
 
+    public abstract Map<String, Map<String, Long>> pairs();
+
     @JsonCreator
     public static DNSTablesReport create(@JsonProperty("ips") Map<String, DNSIPStatisticsReport> ips,
                                          @JsonProperty("nxdomains") List<DNSNxDomainLogReport> nxdomains,
-                                         @JsonProperty("entropy_log") List<DNSEntropyLogReport> entropyLog) {
+                                         @JsonProperty("entropy_log") List<DNSEntropyLogReport> entropyLog,
+                                         @JsonProperty("pairs") Map<String, Map<String, Long>> pairs) {
         return builder()
                 .ips(ips)
                 .nxdomains(nxdomains)
                 .entropyLog(entropyLog)
+                .pairs(pairs)
                 .build();
     }
 
@@ -37,6 +41,8 @@ public abstract class DNSTablesReport {
         public abstract Builder nxdomains(List<DNSNxDomainLogReport> nxdomains);
 
         public abstract Builder entropyLog(List<DNSEntropyLogReport> entropyLog);
+
+        public abstract Builder pairs(Map<String, Map<String, Long>> pairs);
 
         public abstract DNSTablesReport build();
     }

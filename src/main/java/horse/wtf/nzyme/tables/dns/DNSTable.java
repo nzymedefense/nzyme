@@ -79,6 +79,19 @@ public class DNSTable implements DataTable {
         );
     }
 
+    private void registerPair(String tapName, String ip, String server, long count, DateTime timestamp) {
+        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dns_pairs(tap_name, ip, server, count, created_at) " +
+                                "VALUES(:tap_name, :ip, :server, :count, :timestamp)")
+                        .bind("tap_name", tapName)
+                        .bind("ip", ip)
+                        .bind("server", server)
+                        .bind("count", count)
+                        .bind("timestamp", timestamp)
+                        .execute()
+        );
+    }
+
     public void handleReport(String tapName, DateTime timestamp, DNSTablesReport report) {
         for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
             DNSIPStatisticsReport stats = x.getValue();
@@ -95,7 +108,6 @@ public class DNSTable implements DataTable {
             );
         }
 
-
         for (DNSNxDomainLogReport nxdomain : report.nxdomains()) {
             if (nxdomain.dataType().equals("PTR")) {
                 // We are not interested in reverse lookup NXDOMAINs.
@@ -111,6 +123,13 @@ public class DNSTable implements DataTable {
                     timestamp
             );
         }
+
+        for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
+            for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
+                registerPair(tapName, pair.getKey(), server.getKey(), server.getValue(), timestamp);
+            }
+        }
+
     }
 
     @Override

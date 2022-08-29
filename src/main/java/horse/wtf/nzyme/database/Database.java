@@ -9,6 +9,7 @@ import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucketMapper;
+import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummaryMapper;
 import horse.wtf.nzyme.events.db.EventRecordMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntryMapper;
@@ -59,6 +60,7 @@ public class Database {
     }
 
     public void initializeAndMigrate() throws LiquibaseException {
+        // TODO use reflection here at some point.
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
@@ -84,7 +86,8 @@ public class Database {
                 .registerRowMapper(new CaptureMapper())
                 .registerRowMapper(new TapMetricsGaugeMapper())
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
-                .registerRowMapper(new DNSStatisticsBucketMapper());
+                .registerRowMapper(new DNSStatisticsBucketMapper())
+                .registerRowMapper(new DNSTrafficSummaryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

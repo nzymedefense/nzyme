@@ -12,9 +12,13 @@ public abstract class DNSStatisticsResponse {
     @JsonProperty("buckets")
     public abstract Map<DateTime, DNSStatisticsBucketResponse> buckets();
 
-    public static DNSStatisticsResponse create(Map<DateTime, DNSStatisticsBucketResponse> buckets) {
+    @JsonProperty("traffic_summary")
+    public abstract DNSTrafficSummaryResponse trafficSummary();
+
+    public static DNSStatisticsResponse create(Map<DateTime, DNSStatisticsBucketResponse> buckets, DNSTrafficSummaryResponse trafficSummary) {
         return builder()
                 .buckets(buckets)
+                .trafficSummary(trafficSummary)
                 .build();
     }
 
@@ -25,6 +29,8 @@ public abstract class DNSStatisticsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder buckets(Map<DateTime, DNSStatisticsBucketResponse> buckets);
+
+        public abstract Builder trafficSummary(DNSTrafficSummaryResponse trafficSummary);
 
         public abstract DNSStatisticsResponse build();
     }

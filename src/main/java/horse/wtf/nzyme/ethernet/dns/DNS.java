@@ -2,6 +2,7 @@ package horse.wtf.nzyme.ethernet.dns;
 
 import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucket;
+import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummary;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -25,6 +26,18 @@ public class DNS {
                         .bind("created_at", DateTime.now().minusHours(hours))
                         .mapTo(DNSStatisticsBucket.class)
                         .list()
+        );
+    }
+
+    public DNSTrafficSummary getTrafficSummary(int hours) {
+        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT (SUM(request_count)+SUM(response_count)) AS total_dns_packets, " +
+                                "(SUM(request_bytes)+SUM(response_bytes)) AS total_dns_traffic_bytes, " +
+                                "SUM(nxdomain_count) AS nxdomain_count " +
+                                "FROM dns_statistics WHERE created_at > :created_at")
+                        .bind("created_at", DateTime.now().minusHours(hours))
+                        .mapTo(DNSTrafficSummary.class)
+                        .one()
         );
     }
 

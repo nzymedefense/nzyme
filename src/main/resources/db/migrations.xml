@@ -1057,4 +1057,36 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="45" author="lennartkoopmann">
+        <createTable tableName="dns_pairs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="ip" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="46" author="lennartkoopmann">
+        <addColumn tableName="dns_pairs">
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

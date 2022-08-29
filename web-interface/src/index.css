@@ -234,3 +234,18 @@ div.tap-secret input {
 .breadcrumb a {
     text-decoration: none;
 }
+
+div.card div.card-number {
+    text-align: center;
+}
+
+div.card div.card-number span.title {
+    font-size: 17px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 13px;
+}
+
+div.card div.card-number span.value {
+    font-size: 32px;
+}

@@ -3,10 +3,12 @@ package horse.wtf.nzyme.rest.resources.ethernet;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucket;
+import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummary;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSStatisticsResponse;
+import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSTrafficSummaryResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -38,7 +40,7 @@ public class DNSResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(24);
+        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(hours);
 
         Map<DateTime, DNSStatisticsBucketResponse> buckets = Maps.newHashMap();
         for (DNSStatisticsBucket b : statistics) {
@@ -52,7 +54,18 @@ public class DNSResource {
             ));
         }
 
-        return Response.ok(DNSStatisticsResponse.create(buckets)).build();
+        DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(hours);
+
+        return Response.ok(
+                DNSStatisticsResponse.create(
+                        buckets,
+                        DNSTrafficSummaryResponse.create(
+                                trafficSummary.totalPackets(),
+                                trafficSummary.totalTrafficBytes(),
+                                trafficSummary.totalNxdomains()
+                        )
+                )
+        ).build();
     }
 
 }
