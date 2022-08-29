@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import DNSStatisticsChart from "./DNSStatisticsChart";
 import EthernetService from "../../../services/EthernetService";
 import DNSNumbers from "./DNSNumbers";
+import DNSContactAttempsSummaryTable from "./DNSContactAttempsSummaryTable";
 
 function byteConversion(x) {
     return x/1024;
@@ -85,6 +86,19 @@ function DNSOverviewPage() {
                     </div>
                 </div>
             </div>
+
+            <div className="row mt-3">
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>DNS Server Contact Attempts <small>(Top 10)</small></h3>
+
+                            <DNSContactAttempsSummaryTable data={statistics} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     )
 

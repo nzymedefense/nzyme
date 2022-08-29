@@ -1089,4 +1089,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="47" author="lennartkoopmann">
+        <createIndex indexName="idx_dns_pairs_std_lookup" tableName="metrics_gauges" unique="false">
+            <column name="tap_name"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

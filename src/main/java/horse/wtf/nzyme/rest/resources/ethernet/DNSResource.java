@@ -1,11 +1,14 @@
 package horse.wtf.nzyme.rest.resources.ethernet;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.ethernet.dns.db.DNSPairSummary;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucket;
 import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummary;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
+import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSPairSummaryResponse;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSStatisticsResponse;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSTrafficSummaryResponse;
@@ -56,6 +59,11 @@ public class DNSResource {
 
         DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(hours);
 
+        List<DNSPairSummaryResponse> pairSummary = Lists.newArrayList();
+        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(hours, 10)) {
+            pairSummary.add(DNSPairSummaryResponse.create(ps.server(), ps.requestCount(), ps.clientCount()));
+        }
+
         return Response.ok(
                 DNSStatisticsResponse.create(
                         buckets,
@@ -63,7 +71,8 @@ public class DNSResource {
                                 trafficSummary.totalPackets(),
                                 trafficSummary.totalTrafficBytes(),
                                 trafficSummary.totalNxdomains()
-                        )
+                        ),
+                        pairSummary
                 )
         ).build();
     }

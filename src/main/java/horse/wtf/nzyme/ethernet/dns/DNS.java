@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.ethernet.dns;
 
 import horse.wtf.nzyme.ethernet.Ethernet;
+import horse.wtf.nzyme.ethernet.dns.db.DNSPairSummary;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucket;
 import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummary;
 import org.joda.time.DateTime;
@@ -38,6 +39,18 @@ public class DNS {
                         .bind("created_at", DateTime.now().minusHours(hours))
                         .mapTo(DNSTrafficSummary.class)
                         .one()
+        );
+    }
+
+    public List<DNSPairSummary> getPairSummary(int hours, int limit) {
+        return ethernet.getNzyme().getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT server, SUM(count) AS request_count, COUNT(DISTINCT(ip)) AS client_count " +
+                                "FROM dns_pairs WHERE created_at > :created_at GROUP BY server " +
+                                "ORDER BY request_count DESC LIMIT :limit")
+                        .bind("created_at", DateTime.now().minusHours(hours))
+                        .bind("limit", limit)
+                        .mapTo(DNSPairSummary.class)
+                        .list()
         );
     }
 

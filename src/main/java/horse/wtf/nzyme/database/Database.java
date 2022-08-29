@@ -8,6 +8,7 @@ import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
+import horse.wtf.nzyme.ethernet.dns.db.DNSPairSummaryMapper;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucketMapper;
 import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummaryMapper;
 import horse.wtf.nzyme.events.db.EventRecordMapper;
@@ -87,7 +88,8 @@ public class Database {
                 .registerRowMapper(new TapMetricsGaugeMapper())
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
                 .registerRowMapper(new DNSStatisticsBucketMapper())
-                .registerRowMapper(new DNSTrafficSummaryMapper());
+                .registerRowMapper(new DNSTrafficSummaryMapper())
+                .registerRowMapper(new DNSPairSummaryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
