@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.Plugin;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
@@ -67,6 +68,7 @@ import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramCleaner;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
+import horse.wtf.nzyme.plugin.loading.PluginLoader;
 import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
@@ -109,6 +111,7 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.Key;
 import java.util.List;
@@ -387,9 +390,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
         compressionConfig.setCompressionMinSize(1);
         compressionConfig.setCompressibleMimeTypes();
 
-        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
-                configuration.restListenUri(),
-                configuration.httpExternalUri());
+        // Load plugins.
+        PluginLoader pl = new PluginLoader(new File("plugin/")); // TODO
+        for (Plugin plugin : pl.loadPlugins()) {
+            // Initialize plugin
+        }
+
 
         // Start server.
         try {
@@ -397,6 +403,10 @@ public class NzymeLeaderImpl implements NzymeLeader {
         } catch (IOException e) {
             throw new RuntimeException("Could not start REST API.", e);
         }
+
+        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
+                configuration.restListenUri(),
+                configuration.httpExternalUri());
 
         // Ground Station.
         if (configuration.groundstationDevice() != null) {
