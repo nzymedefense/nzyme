@@ -17,10 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.system;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
+import com.codahale.metrics.*;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
@@ -167,6 +164,11 @@ public class MetricsResource {
                 GaugeResponse.fromGauge(getGauge(MetricNames.DATABASE_SIZE))
         );
 
+        metrics.put(
+                "tap_table_report_sizes",
+                HistogramResponse.fromSnapshot(getHistogram(MetricNames.TAP_TABLE_REQUEST_SIZES).getSnapshot())
+        );
+
         return Response.ok(MetricsListResponse.create(metrics.size(), metrics)).build();
     }
 
@@ -188,6 +190,11 @@ public class MetricsResource {
     private Gauge getGauge(String name) {
         Gauge gauge = nzyme.getMetrics().getGauges().get(name);
         return gauge == null ? (Gauge<String>) () -> "" : gauge;
+    }
+
+    private Histogram getHistogram(String name) {
+        Histogram histogram = nzyme.getMetrics().getHistograms().get(name);
+        return histogram == null ? new Histogram(new UniformReservoir()) : histogram;
     }
 
 }

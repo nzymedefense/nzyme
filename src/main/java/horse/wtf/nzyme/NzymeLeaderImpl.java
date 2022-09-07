@@ -73,6 +73,7 @@ import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
+import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
 import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
@@ -98,6 +99,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
@@ -336,6 +338,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(new ObjectMapperProvider());
         resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
+        resourceConfig.register(new TapTableSizeInterceptor(this));
 
         // Register REST API resources.
         resourceConfig.register(AuthenticationResource.class);
@@ -378,6 +381,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         } catch(Exception e) {
             throw new RuntimeException("Could not start web server.", e);
         }
+
+        CompressionConfig compressionConfig = httpServer.getListener("grizzly").getCompressionConfig();
+        compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
+        compressionConfig.setCompressionMinSize(1);
+        compressionConfig.setCompressibleMimeTypes();
 
         LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
                 configuration.restListenUri(),

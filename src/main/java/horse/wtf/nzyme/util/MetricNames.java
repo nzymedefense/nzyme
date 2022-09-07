@@ -28,6 +28,7 @@ import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import horse.wtf.nzyme.periodicals.alerting.tracks.SignalTrackMonitor;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -61,5 +62,7 @@ public class MetricNames {
     public static final String REMOTE_FRAMES_RECEIVED = name(RemoteFrameInput.class, "frames-received");
     public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
     public static final String DATABASE_SIZE = name(Database.class, "size");
+
+    public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
 
 }

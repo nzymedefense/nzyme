@@ -5,6 +5,7 @@ import LoadingSpinner from '../ProbesTable'
 
 import numeral from 'numeral'
 import SystemService from '../../../services/SystemService'
+import HistogramRow from "./HistogramRow";
 
 class Metrics extends React.Component {
   constructor (props) {
@@ -116,6 +117,28 @@ class Metrics extends React.Component {
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <div className="row">
+                                    <div className="col-md-12">
+                                        <table className="table table-sm table-hover table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>Metric</th>
+                                                <th>Maximum</th>
+                                                <th>Minimum</th>
+                                                <th>Mean</th>
+                                                <th>95th Percentile</th>
+                                                <th>99th Percentile</th>
+                                                <th>999th Percentile</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <HistogramRow title="Taps Table Report Sizes" histogram={this.state.systemMetrics.tap_table_report_sizes}/>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
