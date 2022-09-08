@@ -1,14 +1,14 @@
 import React from 'react'
 
-import Metrics from './metrics/Metrics'
+import Metrics from './leadermetrics/Metrics'
 
-class MetricsPage extends React.Component {
+class LeaderPage extends React.Component {
   render () {
     return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
-                        <h1>Metrics</h1>
+                        <h1>Leader</h1>
                     </div>
                 </div>
 
@@ -26,4 +26,4 @@ class MetricsPage extends React.Component {
   }
 }
 
-export default MetricsPage;
+export default LeaderPage;

@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Plot from 'react-plotly.js'
+import Store from "../../util/Store";
 
 class SimpleBarChart extends React.Component {
   constructor (props) {
@@ -43,6 +44,19 @@ class SimpleBarChart extends React.Component {
     const marginTop = this.props.customMarginTop ? this.props.customMarginTop : 25
     const marginBottom = this.props.customMarginBottom ? this.props.customMarginBottom : 50
 
+    let colors = {};
+    if (Store.get("dark_mode")) {
+        colors.background = "#2B2D42";
+        colors.text = "#ffffff";
+        colors.lines = "#8D99AE";
+        colors.grid = "#8D99AE";
+    } else {
+        colors.background = "#ffffff";
+        colors.text = "#212529";
+        colors.lines = "#212529";
+        colors.grid = "#e3e3e3";
+    }
+
     return (
         <Plot
             style={{ width: '100%', height: '100%' }}
@@ -51,14 +65,14 @@ class SimpleBarChart extends React.Component {
               height: this.props.height,
               width: this.props.width,
               font: {
-                family: "'Inconsolata', monospace",
-                size: 10,
-                color: this.props.textColor ? this.props.textColor : '#ffffff'
+                family: "'Nunito Sans', sans-serif",
+                size: 12,
+                  color: colors.text
               },
               margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
               title: { text: this.props.title },
-              paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
-              plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
+              paper_bgcolor: colors.background,
+              plot_bgcolor: colors.background,
               showlegend: false,
               dragmode: false,
               clickmode: 'none',
@@ -72,16 +86,18 @@ class SimpleBarChart extends React.Component {
               xaxis: {
                 fixedrange: true,
                 title: this.props.xaxistitle,
-                zerolinecolor: '#1f2134',
-                linecolor: '#11121f',
-                gridcolor: '#1f2134'
+                zerolinecolor: colors.lines,
+                linecolor: colors.lines,
+                gridcolor: colors.grid
               },
               yaxis: {
+                ticksuffix: this.props.ticksuffix ? this.props.ticksuffix : undefined,
+                tickformat: this.props.tickformat ? this.props.tickformat : undefined,
                 fixedrange: true,
                 title: this.props.yaxistitle,
-                zerolinecolor: '#1f2134',
-                linecolor: '#11121f',
-                gridcolor: '#1f2134'
+                zerolinecolor: colors.lines,
+                linecolor: colors.lines,
+                gridcolor: colors.grid
               },
               annotations: this.props.annotations ? this.props.annotations : [],
               shapes: this.props.shapes

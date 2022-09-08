@@ -2,6 +2,7 @@
 *.iml
 nzyme*.conf
 dependency-reduced-pom.xml
+/plugin/
 
 .DS_Store
 hs_err_*.log

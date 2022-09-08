@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -38,6 +39,7 @@ import horse.wtf.nzyme.dot11.frames.Dot11Frame;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.events.ShutdownEvent;
 import horse.wtf.nzyme.events.StartupEvent;
@@ -48,6 +50,7 @@ import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -59,6 +62,7 @@ import java.net.URL;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class MockNzyme implements NzymeLeader {
 
@@ -168,6 +172,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public Ethernet getEthernet() {
+        return null;
+    }
+
+    @Override
     public FrameProcessor getFrameProcessor() {
         return frameProcessor;
     }
@@ -270,6 +279,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public TablesService getTablesService() {
+        return null;
+    }
+
+    @Override
     public TrackerManager getTrackerManager() {
         return null;
     }
@@ -305,6 +319,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public Optional<RetroService> retroService() {
+        return Optional.empty();
+    }
+
+    @Override
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
@@ -319,5 +338,7 @@ public class MockNzyme implements NzymeLeader {
         return version;
     }
 
-
+    @Override
+    public void registerRetroService(RetroService retroService) {
+    }
 }

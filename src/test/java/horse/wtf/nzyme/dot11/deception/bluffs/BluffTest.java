@@ -50,7 +50,7 @@ public class BluffTest {
         );
     }
 
-    private static final LeaderConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_");
+    private static final LeaderConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/python2.7", "/tmp", "nzyme_");
 
 
     @Test
@@ -60,10 +60,10 @@ public class BluffTest {
             return;
         }
 
-        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/env python", "/tmp", "nzyme_"), "mock");
+        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python2.7", "/tmp", "nzyme_"), "mock");
         mock.execute();
 
-        assertEquals(mock.getInvokedCommand(), "/usr/bin/env python /tmp/nzyme_MockBluff --test mock");
+        assertEquals(mock.getInvokedCommand(), "/usr/bin/python2.7 /tmp/nzyme_MockBluff --test mock");
     }
 
     @Test
@@ -73,10 +73,10 @@ public class BluffTest {
             return;
         }
 
-        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "tmp", "nzyme_"), "mock");
+        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python2.7", "tmp", "nzyme_"), "mock");
         mock.execute();
 
-        assertEquals(mock.getInvokedCommand(), "/usr/bin/python /tmp/nzyme_MockBluff --test mock");
+        assertEquals(mock.getInvokedCommand(), "/usr/bin/python2.7 /tmp/nzyme_MockBluff --test mock");
     }
 
     @Test
@@ -86,10 +86,10 @@ public class BluffTest {
             return;
         }
 
-        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/var/tmp", "nzyme_"), "mock");
+        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python2.7", "/var/tmp", "nzyme_"), "mock");
         mock.execute();
 
-        assertEquals(mock.getInvokedCommand(), "/usr/bin/python /var/tmp/nzyme_MockBluff --test mock");
+        assertEquals(mock.getInvokedCommand(), "/usr/bin/python2.7 /var/tmp/nzyme_MockBluff --test mock");
     }
 
     @Test
@@ -99,10 +99,10 @@ public class BluffTest {
             return;
         }
 
-        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python", "/tmp", "nzymeTEST_"), "mock");
+        Bluff mock = new MockBluff(buildConfiguration("/usr/bin/python2.7", "/tmp", "nzymeTEST_"), "mock");
         mock.execute();
 
-        assertEquals(mock.getInvokedCommand(), "/usr/bin/python /tmp/nzymeTEST_MockBluff --test mock");
+        assertEquals(mock.getInvokedCommand(), "/usr/bin/python2.7 /tmp/nzymeTEST_MockBluff --test mock");
     }
 
     public void testParameterValueValidation() throws Bluff.BluffExecutionException, Bluff.InsecureParametersException, InvalidConfigurationException, IncompleteConfigurationException {

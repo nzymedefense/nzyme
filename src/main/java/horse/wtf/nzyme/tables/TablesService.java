@@ -17,19 +17,50 @@
 
 package horse.wtf.nzyme.tables;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.tables.dns.DNSTable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TablesService {
 
+    private static final Logger LOG = LogManager.getLogger(TablesService.class);
+
     private final NzymeLeader nzyme;
 
-    private final DNSTable dns;
+    private final Map<String, DataTable> tables;
 
     public TablesService(NzymeLeader nzyme) {
         this.nzyme = nzyme;
 
-        this.dns = new DNSTable(this);
+        this.tables = new ImmutableMap.Builder<String, DataTable>()
+                .put("dns", new DNSTable(this))
+                .build();
+
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("tables-cleaner-%d")
+                        .setDaemon(true)
+                        .build()
+        ).scheduleAtFixedRate(this::retentionClean, 0, 1, TimeUnit.HOURS);
+    }
+
+    private void retentionClean() {
+        for (Map.Entry<String, DataTable> table : tables.entrySet()) {
+            LOG.debug("Retention cleaning data table [{}].", table.getKey());
+            table.getValue().retentionClean();
+        }
+
+    }
+
+    public DNSTable dns() {
+        return (DNSTable) tables.get("dns");
     }
 
     public NzymeLeader getNzyme() {

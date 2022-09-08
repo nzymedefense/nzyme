@@ -22,10 +22,12 @@ function Sidebar() {
                     title="Dashboard"
                     icon={<i className="fa-regular fa-map fa-icon" />} />
 
-                <NavigationLink
-                    href="/foo/bar"
-                    title="Ethernet"
-                    icon={<i className="fa-solid fa-network-wired fa-icon" />} />
+                <SidebarSubmenu title="Ethernet" subhref="/ethernet" icon={<i className="fa-solid fa-network-wired fa-icon" />}>
+                    <NavigationLink
+                        href={ApiRoutes.ETHERNET.DNS.INDEX}
+                        title="DNS"
+                        icon={<i className="fa-solid fa-signs-post fa-icon" />} />
+                </SidebarSubmenu>
 
                 <SidebarSubmenu title="WiFi" subhref="/dot11" icon={<i className="fa-solid fa-wifi fa-icon" />}>
                     <NavigationLink
@@ -51,21 +53,21 @@ function Sidebar() {
 
                 <SidebarSubmenu title="System" subhref="/system" icon={<i className="fa-solid fa-screwdriver-wrench fa-icon" />}>
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
-                        title="Authentication"
-                        icon={<i className="fa-solid fa-users fa-icon" />} />
+                        href={ApiRoutes.SYSTEM.LEADER}
+                        title="Leader"
+                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.TAPS.INDEX}
                         title="Taps"
                         icon={<i className="fa-solid fa-circle-nodes fa-icon" />} />
                     <NavigationLink
+                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
+                        title="Authentication"
+                        icon={<i className="fa-solid fa-users fa-icon" />} />
+                    <NavigationLink
                         href={ApiRoutes.SYSTEM.VERSION}
                         title="Version"
                         icon={<i className="fa-solid fa-tag fa-icon" />} />
-                    <NavigationLink
-                        href={ApiRoutes.SYSTEM.METRICS}
-                        title="Metrics"
-                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
                 </SidebarSubmenu>
             </ul>
         </div>

@@ -1,12 +1,13 @@
 const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
-    METRICS: '/system/metrics',
+    LEADER: '/system/leader',
     VERSION: '/system/version',
     AUTHENTICATION: '/system/authentication',
     TAPS: {
       INDEX: '/system/taps',
       DETAILS: tapName => `/system/taps/show/${tapName}`,
+      METRICDETAILS: (tapName, metricType, metricName) => `/system/taps/show/${tapName}/metrics/${metricType}/${metricName}`
     },
   },
   REPORTING: {
@@ -14,6 +15,11 @@ const ApiRoutes = {
     SCHEDULE: '/reporting/schedule',
     DETAILS: name => `/reporting/show/${name}`,
     EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/${executionId}`
+  },
+  ETHERNET: {
+    DNS: {
+      INDEX: '/ethernet/dns'
+    }
   },
   DOT11: {
     NETWORKS: {

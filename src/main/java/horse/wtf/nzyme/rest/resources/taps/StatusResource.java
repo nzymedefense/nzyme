@@ -42,7 +42,8 @@ public class StatusResource {
 
     @POST
     public Response status(StatusReport report) {
-        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, cpu: {}%, bytes processed: {}, avg bytes processed: {}, bus: {}",
+        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, " +
+                        "cpu: {}%, bytes processed: {}, avg bytes processed: {}, bus: {}, gauges_long: {}",
                 report.tapName(),
                 report.systemMetrics().memoryTotal(),
                 report.systemMetrics().memoryFree(),
@@ -50,7 +51,8 @@ public class StatusResource {
                 report.systemMetrics().cpuLoad(),
                 report.processedBytes().total(),
                 report.processedBytes().average(),
-                report.bus()
+                report.bus(),
+                report.gaugesLong()
         );
 
         if (report.tapName().length() > 50) {

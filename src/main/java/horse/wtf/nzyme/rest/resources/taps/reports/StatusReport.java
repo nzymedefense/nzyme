@@ -23,6 +23,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class StatusReport {
@@ -33,6 +34,7 @@ public abstract class StatusReport {
     public abstract BusReport bus();
     public abstract SystemMetrics systemMetrics();
     public abstract List<CapturesReport> captures();
+    public abstract Map<String, Long> gaugesLong();
 
     @JsonCreator
     public static StatusReport create(@JsonProperty("tap_name") String tapName,
@@ -40,7 +42,8 @@ public abstract class StatusReport {
                                       @JsonProperty("processed_bytes") TotalWithAverage processedBytes,
                                       @JsonProperty("bus") BusReport bus,
                                       @JsonProperty("system_metrics") SystemMetrics systemMetrics,
-                                      @JsonProperty("captures") List<CapturesReport> captures) {
+                                      @JsonProperty("captures") List<CapturesReport> captures,
+                                      @JsonProperty("gauges_long") Map<String, Long> gaugesLong) {
         return builder()
                 .tapName(tapName)
                 .timestamp(timestamp)
@@ -48,6 +51,7 @@ public abstract class StatusReport {
                 .systemMetrics(systemMetrics)
                 .bus(bus)
                 .captures(captures)
+                .gaugesLong(gaugesLong)
                 .build();
     }
 
@@ -68,6 +72,8 @@ public abstract class StatusReport {
         public abstract Builder systemMetrics(SystemMetrics systemMetrics);
 
         public abstract Builder captures(List<CapturesReport> captures);
+
+        public abstract Builder gaugesLong( Map<String, Long> gaugesLong);
 
         public abstract StatusReport build();
     }

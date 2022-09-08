@@ -37,11 +37,13 @@ import NetworkDetailsPageRedirector from './components/networks/details/NetworkD
 import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
 import Sidebar from "./components/layout/Sidebar";
 import VersionPage from "./components/system/VersionPage";
-import MetricsPage from "./components/system/MetricsPage";
+import LeaderPage from "./components/system/LeaderPage";
 import DarkMode from "./components/layout/DarkMode";
 import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
 import TapsPage from "./components/taps/TapsPage";
-import TapDetailsPage from "./components/taps/TapDetailsPage";
+import TapDetailsPage from "./components/taps/details/TapDetailsPage";
+import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsDetailsPage";
+import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
 
 class App extends React.Component {
 
@@ -110,13 +112,17 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
                                             { /* System. */}
-                                            <Route path={ApiRoutes.SYSTEM.METRICS} element={<MetricsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.LEADER} element={<LeaderPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION} element={<AuthenticationPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':tapName')} element={<TapDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':tapName', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+
+                                            { /* Ethernet/DNS. */}
+                                            <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
 
                                             { /* Networks. */}
                                             <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>

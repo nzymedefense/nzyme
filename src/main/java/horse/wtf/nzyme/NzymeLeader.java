@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.PluginEntryPoint;
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.service.AlertsService;
@@ -31,23 +33,28 @@ import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.EventService;
 import horse.wtf.nzyme.notifications.Uplink;
 import horse.wtf.nzyme.ouis.OUIManager;
 import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.scheduler.SchedulingService;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 
 import java.security.Key;
 import java.util.List;
+import java.util.Optional;
 
-public interface NzymeLeader extends RemoteConnector {
+public interface NzymeLeader extends RemoteConnector, PluginEntryPoint {
 
     void initialize();
     void shutdown();
 
     String getNodeID();
+
+    Ethernet getEthernet();
 
     FrameProcessor getFrameProcessor();
 
@@ -76,6 +83,8 @@ public interface NzymeLeader extends RemoteConnector {
     List<String> getIgnoredFingerprints();
     void registerIgnoredFingerprint(String fingerprint);
 
+    TablesService getTablesService();
+
     TrackerManager getTrackerManager();
     GroundStation getGroundStation();
 
@@ -86,6 +95,8 @@ public interface NzymeLeader extends RemoteConnector {
     OUIManager getOUIManager();
 
     Anonymizer getAnonymizer();
+
+    Optional<RetroService> retroService();
 
     ObjectMapper getObjectMapper();
 

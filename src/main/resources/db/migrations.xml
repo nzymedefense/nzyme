@@ -1025,4 +1025,75 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="43" author="lennartkoopmann">
+        <createTable tableName="metrics_gauges">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="metric_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_value" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="44" author="lennartkoopmann">
+        <createIndex indexName="idx_metrics_std_lookup" tableName="metrics_gauges" unique="false">
+            <column name="metric_name"/>
+            <column name="tap_name"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="45" author="lennartkoopmann">
+        <createTable tableName="dns_pairs">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="ip" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="server" type="varchar(39)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="count" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="46" author="lennartkoopmann">
+        <addColumn tableName="dns_pairs">
+            <column name="tap_name" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="47" author="lennartkoopmann">
+        <createIndex indexName="idx_dns_pairs_std_lookup" tableName="metrics_gauges" unique="false">
+            <column name="tap_name"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

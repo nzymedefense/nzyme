@@ -8,14 +8,16 @@ import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
+import horse.wtf.nzyme.ethernet.dns.db.DNSPairSummaryMapper;
+import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucketMapper;
+import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummaryMapper;
 import horse.wtf.nzyme.events.db.EventRecordMapper;
 import horse.wtf.nzyme.measurements.mappers.MeasurementMapper;
 import horse.wtf.nzyme.reporting.db.ExecutionLogEntryMapper;
 import horse.wtf.nzyme.reporting.db.ScheduledReportEntryMapper;
-import horse.wtf.nzyme.taps.db.BusMapper;
-import horse.wtf.nzyme.taps.db.CaptureMapper;
-import horse.wtf.nzyme.taps.db.ChannelMapper;
-import horse.wtf.nzyme.taps.db.TapMapper;
+import horse.wtf.nzyme.taps.db.*;
+import horse.wtf.nzyme.taps.db.metrics.TapMetricsGaugeAggregationMapper;
+import horse.wtf.nzyme.taps.db.metrics.TapMetricsGaugeMapper;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -59,6 +61,7 @@ public class Database {
     }
 
     public void initializeAndMigrate() throws LiquibaseException {
+        // TODO use reflection here at some point.
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
@@ -81,7 +84,12 @@ public class Database {
                 .registerRowMapper(new BaseConfigurationMapper())
                 .registerRowMapper(new BusMapper())
                 .registerRowMapper(new ChannelMapper())
-                .registerRowMapper(new CaptureMapper());
+                .registerRowMapper(new CaptureMapper())
+                .registerRowMapper(new TapMetricsGaugeMapper())
+                .registerRowMapper(new TapMetricsGaugeAggregationMapper())
+                .registerRowMapper(new DNSStatisticsBucketMapper())
+                .registerRowMapper(new DNSTrafficSummaryMapper())
+                .registerRowMapper(new DNSPairSummaryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

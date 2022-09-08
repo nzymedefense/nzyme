@@ -1,19 +1,22 @@
 import React, {useEffect, useState} from "react";
-import TapsService from "../../services/TapsService";
+import TapsService from "../../../services/TapsService";
 import {useParams} from "react-router-dom";
-import LoadingSpinner from "../misc/LoadingSpinner";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 import moment from "moment";
-import Routes from "../../util/ApiRoutes";
+import Routes from "../../../util/ApiRoutes";
 import numeral from "numeral";
-import byteAverageToMbit from "../../util/Tools";
+import byteAverageToMbit from "../../../util/Tools";
 import Buses from "./Buses";
 import TapInactiveWarning from "./TapInactiveWarning";
-import CaptureConfiguration from "./capture/CaptureConfiguration";
+import CaptureConfiguration from "../capture/CaptureConfiguration";
+import TapMetrics from "./metrics/TapMetrics";
+import TapMetricsChartProxy from "./metrics/TapMetricsChartProxy";
 
 const tapsService = new TapsService();
 
-function fetchData(tapName, setTap) {
+function fetchData(tapName, setTap, setTapMetrics) {
     tapsService.findTap(tapName, setTap);
+    tapsService.findMetricsOfTap(tapName, setTapMetrics);
 }
 
 function TapDetailsPage() {
@@ -21,12 +24,13 @@ function TapDetailsPage() {
     const { tapName } = useParams();
 
     const [tap, setTap] = useState(null);
+    const [tapMetrics, setTapMetrics] = useState(null);
 
     useEffect(() => {
-        fetchData(tapName, setTap);
-        const id = setInterval(() =>  fetchData(tapName, setTap), 5000);
+        fetchData(tapName, setTap, setTapMetrics);
+        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000);
         return () => clearInterval(id);
-    }, [tapName, setTap]);
+    }, [tapName, setTap, setTapMetrics]);
 
     if (!tap) {
         return <LoadingSpinner />
@@ -63,7 +67,7 @@ function TapDetailsPage() {
                             <dl>
                                 <dt>Throughput</dt>
                                 <dd>
-                                    {numeral(tap.processed_bytes.average/10).format('0 b')}/sec ({byteAverageToMbit(tap.processed_bytes.average)})
+                                    {byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average/10).format('0 b')}/sec)
                                 </dd>
 
                                 <dt>Total data processed since last restart</dt>
@@ -122,6 +126,18 @@ function TapDetailsPage() {
                 <div className="col-md-12">
                     <div className="card">
                         <div className="card-body">
+                            <h3>Throughput</h3>
+
+                            <TapMetricsChartProxy type="gauge" name="system.captures.throughput_bit_sec" tapName={tap.name} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row mt-3">
+                <div className="col-md-12">
+                    <div className="card">
+                        <div className="card-body">
                             <h3>Capture Configuration</h3>
 
                             <CaptureConfiguration tap={tap} />
@@ -137,6 +153,18 @@ function TapDetailsPage() {
                             <h3>Buses &amp; Channels</h3>
 
                             <Buses tap={tap} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row mt-3">
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>Metrics</h3>
+
+                            <TapMetrics tap={tap} metrics={tapMetrics} />
                         </div>
                     </div>
                 </div>

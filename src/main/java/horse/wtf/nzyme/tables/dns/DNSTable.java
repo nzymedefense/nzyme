@@ -17,11 +17,16 @@
 
 package horse.wtf.nzyme.tables.dns;
 
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSIPStatisticsReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSTablesReport;
+import horse.wtf.nzyme.tables.DataTable;
 import horse.wtf.nzyme.tables.TablesService;
 import org.joda.time.DateTime;
 
-public class DNSTable {
+import java.util.Map;
+
+public class DNSTable implements DataTable {
 
     private final TablesService tablesService;
 
@@ -29,7 +34,7 @@ public class DNSTable {
         this.tablesService = tablesService;
     }
 
-    public void registerStatistics(String tapName,
+    private void registerStatistics(String tapName,
                                    String ip,
                                    Long requestCount,
                                    Long requestBytes,
@@ -38,16 +43,31 @@ public class DNSTable {
                                    Long nxdomainCount,
                                    DateTime timestamp) {
 
+        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dns_statistics(tap_name, ip, request_count, request_bytes, " +
+                            "response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_name, :ip, :request_count, " +
+                            ":request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)")
+                        .bind("tap_name", tapName)
+                        .bind("ip", ip)
+                        .bind("request_count", requestCount)
+                        .bind("request_bytes", requestBytes)
+                        .bind("response_count", responseCount)
+                        .bind("response_bytes", responseBytes)
+                        .bind("nxdomain_count", nxdomainCount)
+                        .bind("created_at", timestamp)
+                        .execute()
+        );
+
     }
 
-    public void registerNxdomainLog(String tapName,
+    private void registerNxdomainLog(String tapName,
                                     String ip,
                                     String server,
                                     String queryValue,
                                     String dataType,
                                     DateTime timestamp) {
         tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_nxdomain_log(tap_name, ip, server, query_value, data_type, " +
+                handle.createUpdate("INSERT INTO dns_nxdomains_log(tap_name, ip, server, query_value, data_type, " +
                                 "created_at) VALUES(:tap_name, :ip, :server, :query_value, :data_type, :created_at)")
                         .bind("tap_name", tapName)
                         .bind("ip", ip)
@@ -59,4 +79,73 @@ public class DNSTable {
         );
     }
 
+    private void registerPair(String tapName, String ip, String server, long count, DateTime timestamp) {
+        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dns_pairs(tap_name, ip, server, count, created_at) " +
+                                "VALUES(:tap_name, :ip, :server, :count, :timestamp)")
+                        .bind("tap_name", tapName)
+                        .bind("ip", ip)
+                        .bind("server", server)
+                        .bind("count", count)
+                        .bind("timestamp", timestamp)
+                        .execute()
+        );
+    }
+
+    public void handleReport(String tapName, DateTime timestamp, DNSTablesReport report) {
+        for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
+            DNSIPStatisticsReport stats = x.getValue();
+
+            registerStatistics(
+                    tapName,
+                    x.getKey(),
+                    stats.requestCount(),
+                    stats.requestBytes(),
+                    stats.responseCount(),
+                    stats.responseBytes(),
+                    stats.nxDomainCount(),
+                    timestamp
+            );
+        }
+
+        for (DNSNxDomainLogReport nxdomain : report.nxdomains()) {
+            if (nxdomain.dataType().equals("PTR")) {
+                // We are not interested in reverse lookup NXDOMAINs.
+                continue;
+            }
+
+            registerNxdomainLog(
+                    tapName,
+                    nxdomain.ip(),
+                    nxdomain.server(),
+                    nxdomain.queryValue(),
+                    nxdomain.dataType(),
+                    timestamp
+            );
+        }
+
+        for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
+            for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
+                registerPair(tapName, pair.getKey(), server.getKey(), server.getValue(), timestamp);
+            }
+        }
+
+    }
+
+    @Override
+    public void retentionClean() {
+        tablesService.getNzyme().getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM dns_statistics WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+
+            handle.createUpdate("DELETE FROM dns_nxdomains_log WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+
+            handle.createUpdate("DELETE FROM dns_pairs WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24)) // TODO
+                    .execute();
+        });
+    }
 }

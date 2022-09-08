@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.Plugin;
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
@@ -50,6 +52,7 @@ import horse.wtf.nzyme.dot11.interceptors.*;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
 import horse.wtf.nzyme.dot11.probes.*;
 import horse.wtf.nzyme.dot11.networks.Networks;
+import horse.wtf.nzyme.ethernet.Ethernet;
 import horse.wtf.nzyme.events.*;
 import horse.wtf.nzyme.notifications.Notification;
 import horse.wtf.nzyme.notifications.Uplink;
@@ -66,12 +69,15 @@ import horse.wtf.nzyme.periodicals.PeriodicalManager;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramCleaner;
 import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
+import horse.wtf.nzyme.plugin.loading.PluginLoader;
 import horse.wtf.nzyme.processing.FrameProcessor;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
+import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
+import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
 import horse.wtf.nzyme.rest.resources.taps.TapsResource;
@@ -89,24 +95,29 @@ import horse.wtf.nzyme.rest.resources.system.ProbesResource;
 import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
+import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;
 import horse.wtf.nzyme.util.MetricNames;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.Key;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -134,6 +145,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final List<Forwarder> forwarders;
     private final TapManager tapManager;
 
+    private final Ethernet ethernet;
+
     private final FrameProcessor frameProcessor;
 
     private final AtomicReference<ImmutableList<String>> ignoredFingerprints;
@@ -142,6 +155,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final Sentry sentry;
     private final Clients clients;
     private final DeauthenticationMonitor deauthenticationMonitor;
+
+    private final TablesService tablesService;
 
     private final ObjectMapper objectMapper;
 
@@ -156,6 +171,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private GroundStation groundStation;
 
+    private Optional<RetroService> retroService = Optional.empty();
+
     private HttpServer httpServer;
 
     private SchedulingService schedulingService;
@@ -166,6 +183,9 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
+
+        this.ethernet = new Ethernet(this);
+
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
         this.configurationService = new BaseConfigurationService(this);
@@ -212,6 +232,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.alerts = new AlertsService(this);
         this.alerts.registerCallbacks(configuration.alertCallbacks());
         this.contactManager = new ContactManager(this);
+
+        this.tablesService = new TablesService(this);
 
         this.trackerManager = new TrackerManager();
 
@@ -324,6 +346,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(new ObjectMapperProvider());
         resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
+        resourceConfig.register(new TapTableSizeInterceptor(this));
 
         // Register REST API resources.
         resourceConfig.register(AuthenticationResource.class);
@@ -341,6 +364,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(StatusResource.class);
         resourceConfig.register(TablesResource.class);
         resourceConfig.register(TapsResource.class);
+        resourceConfig.register(DNSResource.class);
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -366,9 +390,19 @@ public class NzymeLeaderImpl implements NzymeLeader {
             throw new RuntimeException("Could not start web server.", e);
         }
 
-        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
-                configuration.restListenUri(),
-                configuration.httpExternalUri());
+        CompressionConfig compressionConfig = httpServer.getListener("grizzly").getCompressionConfig();
+        compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
+        compressionConfig.setCompressionMinSize(1);
+        compressionConfig.setCompressibleMimeTypes();
+
+        // Load plugins.
+        PluginLoader pl = new PluginLoader(new File("plugin/")); // TODO make path configurable
+        for (Plugin plugin : pl.loadPlugins()) {
+            // Initialize plugin
+            LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
+            plugin.initialize(this);
+        }
+
 
         // Start server.
         try {
@@ -376,6 +410,10 @@ public class NzymeLeaderImpl implements NzymeLeader {
         } catch (IOException e) {
             throw new RuntimeException("Could not start REST API.", e);
         }
+
+        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
+                configuration.restListenUri(),
+                configuration.httpExternalUri());
 
         // Ground Station.
         if (configuration.groundstationDevice() != null) {
@@ -565,6 +603,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
+    public Ethernet getEthernet() {
+        return ethernet;
+    }
+
+    @Override
     public FrameProcessor getFrameProcessor() {
         return this.frameProcessor;
     }
@@ -600,6 +643,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
+    public TablesService getTablesService() {
+        return tablesService;
+    }
+
+    @Override
     public TrackerManager getTrackerManager() {
         return trackerManager;
     }
@@ -632,6 +680,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Anonymizer getAnonymizer() {
         return anonymizer;
+    }
+
+    @Nullable
+    @Override
+    public Optional<RetroService> retroService() {
+        return retroService;
     }
 
     @Override
@@ -723,6 +777,16 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Version getVersion() {
         return version;
+    }
+
+    @Override
+    public void registerRetroService(RetroService service) {
+        if (this.retroService.isPresent()) {
+            LOG.error("Attempt to register a new RetroService but one already exists. Aborting.");
+            return;
+        }
+
+        this.retroService = Optional.of(service);
     }
 
 }

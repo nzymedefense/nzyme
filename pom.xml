@@ -53,6 +53,7 @@
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.1.6</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
+        <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -311,6 +312,11 @@
             <groupId>com.cronutils</groupId>
             <artifactId>cron-utils</artifactId>
             <version>${cronutils.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>app.nzyme</groupId>
+            <artifactId>nzyme-plugin</artifactId>
+            <version>${nzymeplugin.version}</version>
         </dependency>
     </dependencies>
 
