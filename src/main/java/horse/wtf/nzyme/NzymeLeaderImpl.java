@@ -18,6 +18,7 @@
 package horse.wtf.nzyme;
 
 import app.nzyme.plugin.Plugin;
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
@@ -108,6 +109,7 @@ import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.jetbrains.annotations.Nullable;
 import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
@@ -115,6 +117,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Key;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -167,6 +170,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final Anonymizer anonymizer;
 
     private GroundStation groundStation;
+
+    private Optional<RetroService> retroService = Optional.empty();
 
     private HttpServer httpServer;
 
@@ -391,9 +396,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         compressionConfig.setCompressibleMimeTypes();
 
         // Load plugins.
-        PluginLoader pl = new PluginLoader(new File("plugin/")); // TODO
+        PluginLoader pl = new PluginLoader(new File("plugin/")); // TODO make path configurable
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
+            LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
+            plugin.initialize(this);
         }
 
 
@@ -675,6 +682,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
         return anonymizer;
     }
 
+    @Nullable
+    @Override
+    public Optional<RetroService> retroService() {
+        return retroService;
+    }
+
     @Override
     public ObjectMapper getObjectMapper() {
         return objectMapper;
@@ -764,6 +777,16 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Version getVersion() {
         return version;
+    }
+
+    @Override
+    public void registerRetroService(RetroService service) {
+        if (this.retroService.isPresent()) {
+            LOG.error("Attempt to register a new RetroService but one already exists. Aborting.");
+            return;
+        }
+
+        this.retroService = Optional.of(service);
     }
 
 }

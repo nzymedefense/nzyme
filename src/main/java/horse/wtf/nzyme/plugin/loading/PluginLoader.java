@@ -1,6 +1,7 @@
 package horse.wtf.nzyme.plugin.loading;
 
 import app.nzyme.plugin.Plugin;
+import app.nzyme.plugin.PluginEntryPoint;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;

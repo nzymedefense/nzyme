@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.PluginEntryPoint;
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.alerts.service.AlertsService;
@@ -43,8 +45,9 @@ import horse.wtf.nzyme.taps.TapManager;
 
 import java.security.Key;
 import java.util.List;
+import java.util.Optional;
 
-public interface NzymeLeader extends RemoteConnector {
+public interface NzymeLeader extends RemoteConnector, PluginEntryPoint {
 
     void initialize();
     void shutdown();
@@ -92,6 +95,8 @@ public interface NzymeLeader extends RemoteConnector {
     OUIManager getOUIManager();
 
     Anonymizer getAnonymizer();
+
+    Optional<RetroService> retroService();
 
     ObjectMapper getObjectMapper();
 

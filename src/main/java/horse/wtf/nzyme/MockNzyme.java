@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -61,6 +62,7 @@ import java.net.URL;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class MockNzyme implements NzymeLeader {
 
@@ -317,6 +319,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public Optional<RetroService> retroService() {
+        return Optional.empty();
+    }
+
+    @Override
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
@@ -331,5 +338,7 @@ public class MockNzyme implements NzymeLeader {
         return version;
     }
 
-
+    @Override
+    public void registerRetroService(RetroService retroService) {
+    }
 }
