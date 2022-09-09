@@ -4,6 +4,8 @@ services:
     build: .
     restart: unless-stopped
     container_name: nzyme
+    security_opt:
+      - no-new-privileges:true
     env_file: .env
     volumes:
       - ./nzyme.conf:/etc/nzyme/nzyme.conf.tmp #copy in entrypoint
@@ -13,22 +15,29 @@ services:
     depends_on:
       - db
     environment:
+      - TZ=Europe/Berlin
       - DATABASE_URL=$DATABASE_URL
       - ADMIN_PASSWORD_HASH=$ADMIN_PASSWORD_HASH
       - EXTERNAL_URL=$EXTERNAL_URL
     network_mode: host #USB Antena
-    privileged: true #USB Antena
+    cap_add: # full access to wifi interface
+      - NET_ADMIN
+      - NET_RAW
 
   db:
     image: postgres:latest
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
+      - TZ=Europe/Berlin
       - POSTGRES_DB=$POSTGRES_DB
       - POSTGRES_USER=$POSTGRES_USER
       - POSTGRES_PASSWORD=$POSTGRES_PASS
     volumes:
       - ./data:/var/lib/postgresql/data
-    network_mode: host #USB Antena
+    ports:
+      - 127.0.0.1:5432:5432 # Since we use host net on nzyme, listen only locally
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "$POSTGRES_USER"]
       interval: 10s
