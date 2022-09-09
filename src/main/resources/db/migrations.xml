@@ -1096,4 +1096,20 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="48" author="lennartkoopmann">
+        <createTable tableName="registry">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="key" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="value" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

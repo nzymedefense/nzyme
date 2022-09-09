@@ -1,5 +1,7 @@
 package horse.wtf.nzyme.rest.resources.taps.reports.tables;
 
+import app.nzyme.plugin.retro.dns.rest.DNSRetroQueryLogReport;
+import app.nzyme.plugin.retro.dns.rest.DNSRetroResponseLogReport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -16,17 +18,17 @@ public abstract class DNSTablesReport {
     public abstract List<DNSEntropyLogReport> entropyLog();
 
     public abstract Map<String, Map<String, Long>> pairs();
-    public abstract List<DNSRetroQueryLog> retroQueries();
+    public abstract List<DNSRetroQueryLogReport> retroQueries();
 
-    public abstract List<DNSRetroResponseLog> retroResponses();
+    public abstract List<DNSRetroResponseLogReport> retroResponses();
 
     @JsonCreator
     public static DNSTablesReport create(@JsonProperty("ips") Map<String, DNSIPStatisticsReport> ips,
                                          @JsonProperty("nxdomains") List<DNSNxDomainLogReport> nxdomains,
                                          @JsonProperty("entropy_log") List<DNSEntropyLogReport> entropyLog,
                                          @JsonProperty("pairs") Map<String, Map<String, Long>> pairs,
-                                         @JsonProperty("retro_queries") List<DNSRetroQueryLog> retroQueries,
-                                         @JsonProperty("retro_responses") List<DNSRetroResponseLog> retroResponses) {
+                                         @JsonProperty("retro_queries") List<DNSRetroQueryLogReport> retroQueries,
+                                         @JsonProperty("retro_responses") List<DNSRetroResponseLogReport> retroResponses) {
         return builder()
                 .ips(ips)
                 .nxdomains(nxdomains)
@@ -51,9 +53,9 @@ public abstract class DNSTablesReport {
 
         public abstract Builder pairs(Map<String, Map<String, Long>> pairs);
 
-        public abstract Builder retroQueries(List<DNSRetroQueryLog> retroQueries);
+        public abstract Builder retroQueries(List<DNSRetroQueryLogReport> retroQueries);
 
-        public abstract Builder retroResponses(List<DNSRetroResponseLog> retroResponses);
+        public abstract Builder retroResponses(List<DNSRetroResponseLogReport> retroResponses);
 
         public abstract DNSTablesReport build();
     }

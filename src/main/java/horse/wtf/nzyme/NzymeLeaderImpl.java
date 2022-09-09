@@ -19,6 +19,7 @@ package horse.wtf.nzyme;
 
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.Plugin;
+import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
@@ -72,6 +73,7 @@ import horse.wtf.nzyme.periodicals.sigidx.SignalIndexHistogramWriter;
 import horse.wtf.nzyme.periodicals.versioncheck.VersioncheckThread;
 import horse.wtf.nzyme.plugin.loading.PluginLoader;
 import horse.wtf.nzyme.processing.FrameProcessor;
+import horse.wtf.nzyme.registry.RegistryImpl;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
@@ -138,7 +140,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final BaseConfigurationService configurationService;
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
-    private final Registry registry;
+    private final MemoryRegistry memoryRegistry;
     private final SystemStatus systemStatus;
     private final EventService eventService;
     private final OUIManager ouiManager;
@@ -197,7 +199,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
         this.metrics = new MetricRegistry();
-        this.registry = new Registry();
+        this.memoryRegistry = new MemoryRegistry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
         this.eventService = new EventService(this);
@@ -401,7 +403,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this);
+            plugin.initialize(this, this);
         }
 
 
@@ -710,8 +712,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
-    public Registry getRegistry() {
-        return registry;
+    public MemoryRegistry getRegistry() {
+        return memoryRegistry;
     }
 
     @Override
@@ -788,6 +790,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         this.retroService = Optional.of(service);
+    }
+
+    @Override
+    public Registry getRegistry(String namespace) {
+        return new RegistryImpl(this, namespace);
     }
 
 }

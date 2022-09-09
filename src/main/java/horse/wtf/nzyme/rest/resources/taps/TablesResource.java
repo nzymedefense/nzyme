@@ -48,6 +48,12 @@ public class TablesResource {
         // DNS.
         nzyme.getTablesService().dns().handleReport(report.tapName(), report.timestamp(), report.dns());
 
+        // Submit to Retro if service is present.
+        if (nzyme.retroService().isPresent()) {
+            nzyme.retroService().get().dns().handleQueryLogReport(report.dns().retroQueries());
+            nzyme.retroService().get().dns().handleResponseLogReport(report.dns().retroResponses());
+        }
+
         return Response.status(Response.Status.CREATED).build();
     }
 

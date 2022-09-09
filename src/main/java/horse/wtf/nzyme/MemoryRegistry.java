@@ -21,7 +21,9 @@ import com.google.common.collect.Maps;
 
 import java.util.Map;
 
-public class Registry {
+public class MemoryRegistry {
+
+    // TODO probably move this to the new DB-backed registry.
 
     public enum KEY {
         NEW_VERSION_AVAILABLE
@@ -29,7 +31,7 @@ public class Registry {
 
     private final Map<KEY, Boolean> booleans;
 
-    public Registry() {
+    public MemoryRegistry() {
         this.booleans = Maps.newConcurrentMap();
     }
 

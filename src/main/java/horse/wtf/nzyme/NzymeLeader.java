@@ -20,6 +20,7 @@ package horse.wtf.nzyme;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.DatabaseProvider;
 import app.nzyme.plugin.PluginEntryPoint;
+import app.nzyme.plugin.RegistryProvider;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +49,7 @@ import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 
-public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, DatabaseProvider {
+public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, DatabaseProvider, RegistryProvider {
 
     void initialize();
     void shutdown();
@@ -71,7 +72,7 @@ public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, Database
 
     MetricRegistry getMetrics();
 
-    Registry getRegistry();
+    MemoryRegistry getRegistry();
 
     Database getDatabase();
 

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.Registry;
+import horse.wtf.nzyme.MemoryRegistry;
 import horse.wtf.nzyme.Version;
 import horse.wtf.nzyme.periodicals.Periodical;
 import horse.wtf.nzyme.util.Wall;
@@ -97,7 +97,7 @@ public class VersioncheckThread extends Periodical {
                             versionResponse.releasedAt + ").";
                     LOG.info("\n" + Wall.build("WARNING! OUTDATED VERSION!", text));
 
-                    nzyme.getRegistry().setBool(Registry.KEY.NEW_VERSION_AVAILABLE, true);
+                    nzyme.getRegistry().setBool(MemoryRegistry.KEY.NEW_VERSION_AVAILABLE, true);
                 }
 
                 LOG.info("Successfully completed version check. Everything seems up to date.");

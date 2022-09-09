@@ -18,6 +18,7 @@
 package horse.wtf.nzyme;
 
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +89,7 @@ public class MockNzyme implements NzymeLeader {
     private final ContactManager contactManager;
     private final Key signingKey;
     private final ObjectMapper objectMapper;
-    private final Registry registry;
+    private final MemoryRegistry memoryRegistry;
     private final Version version;
     private final Database database;
     private final List<Uplink> uplinks;
@@ -139,7 +140,7 @@ public class MockNzyme implements NzymeLeader {
         this.configurationService.initialize();
 
         this.metricRegistry = new MetricRegistry();
-        this.registry = new Registry();
+        this.memoryRegistry = new MemoryRegistry();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
         this.clients = new Clients(this);
@@ -240,8 +241,8 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
-    public Registry getRegistry() {
-        return registry;
+    public MemoryRegistry getRegistry() {
+        return memoryRegistry;
     }
 
     @Override
@@ -341,5 +342,10 @@ public class MockNzyme implements NzymeLeader {
 
     @Override
     public void registerRetroService(RetroService retroService) {
+    }
+
+    @Override
+    public Registry getRegistry(String s) {
+        return null;
     }
 }

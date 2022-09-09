@@ -19,7 +19,7 @@ package horse.wtf.nzyme.rest.resources.system;
 
 import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.Registry;
+import horse.wtf.nzyme.MemoryRegistry;
 import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusStateResponse;
@@ -62,7 +62,7 @@ public class SystemResource {
     public Response getVersion() {
         return Response.ok(VersionResponse.create(
                 nzyme.getVersion().getVersionString(),
-                nzyme.getRegistry().getBool(Registry.KEY.NEW_VERSION_AVAILABLE),
+                nzyme.getRegistry().getBool(MemoryRegistry.KEY.NEW_VERSION_AVAILABLE),
                 nzyme.getConfiguration().versionchecksEnabled()
         )).build();
     }
