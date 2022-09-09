@@ -19,7 +19,7 @@ package horse.wtf.nzyme.util;
 
 import horse.wtf.nzyme.bandits.engine.ContactIdentifierEngine;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.signalstrength.SignalStrengthTable;
@@ -61,7 +61,7 @@ public class MetricNames {
     public static final String GROUNDSTATION_QUEUE_SIZE = name(GroundStation.class, "queue_size");
     public static final String REMOTE_FRAMES_RECEIVED = name(RemoteFrameInput.class, "frames-received");
     public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
-    public static final String DATABASE_SIZE = name(Database.class, "size");
+    public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
 
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
 

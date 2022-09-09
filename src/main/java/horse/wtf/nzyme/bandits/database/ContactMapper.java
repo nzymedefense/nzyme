@@ -19,7 +19,7 @@ package horse.wtf.nzyme.bandits.database;
 
 import horse.wtf.nzyme.Role;
 import horse.wtf.nzyme.bandits.Contact;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -34,8 +34,8 @@ public class ContactMapper implements RowMapper<Contact> {
     public Contact map(ResultSet rs, StatementContext ctx) throws SQLException {
         return Contact.create(
                 UUID.fromString(rs.getString("contact_uuid")),
-                DateTime.parse(rs.getString("first_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
-                DateTime.parse(rs.getString("last_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("first_seen"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("last_seen"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
                 rs.getLong("frame_count"),
                 Role.valueOf(rs.getString("source_role")),
                 rs.getString("source_name"),

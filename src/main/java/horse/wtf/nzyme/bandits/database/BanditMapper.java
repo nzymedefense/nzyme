@@ -19,7 +19,7 @@ package horse.wtf.nzyme.bandits.database;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import horse.wtf.nzyme.bandits.Bandit;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -44,8 +44,8 @@ public class BanditMapper implements RowMapper<Bandit> {
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getBoolean("read_only"),
-                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER),
-                DateTime.parse(rs.getString("updated_at"), Database.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("created_at"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("updated_at"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
                 null
         );
     }

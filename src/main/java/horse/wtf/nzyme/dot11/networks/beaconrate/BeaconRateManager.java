@@ -17,8 +17,8 @@
 
 package horse.wtf.nzyme.dot11.networks.beaconrate;
 
+import app.nzyme.plugin.Database;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.util.Tools;
 

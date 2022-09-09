@@ -1,6 +1,6 @@
 package horse.wtf.nzyme.dot11.networks.signalstrength;
 
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -14,7 +14,7 @@ public class SignalIndexHistogramHistoryDBEntryMapper implements RowMapper<Signa
     public SignalIndexHistogramHistoryDBEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return SignalIndexHistogramHistoryDBEntry.create(
                 rs.getString("histogram"),
-                DateTime.parse(rs.getString("created_at"), Database.DATABASE_DATE_TIME_FORMATTER)
+                DateTime.parse(rs.getString("created_at"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER)
         );
 
     }

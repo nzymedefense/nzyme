@@ -19,7 +19,7 @@ package horse.wtf.nzyme.alerts.service;
 
 import horse.wtf.nzyme.Subsystem;
 import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -38,8 +38,8 @@ public class AlertDatabaseEntryMapper implements RowMapper<AlertDatabaseEntry> {
                 Alert.TYPE.valueOf(rs.getString("alert_type")),
                 Subsystem.valueOf(rs.getString("subsystem")),
                 rs.getString("fields"),
-                DateTime.parse(rs.getString("first_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
-                DateTime.parse(rs.getString("last_seen"), Database.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("first_seen"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
+                DateTime.parse(rs.getString("last_seen"), DatabaseImpl.DATABASE_DATE_TIME_FORMATTER),
                 rs.getLong("frame_count")
         );
     }

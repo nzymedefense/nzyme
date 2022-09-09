@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.dot11.deauth.db;
 
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -31,7 +31,7 @@ public class DeauthenticationMonitorRecordingMapper implements RowMapper<Deauthe
     public DeauthenticationMonitorRecording map(ResultSet rs, StatementContext ctx) throws SQLException {
         return DeauthenticationMonitorRecording.create(
                 rs.getLong("total_frame_count"),
-                DateTime.parse(rs.getString("created_at"), Database.DEAUTH_MONITOR_TIME_FORMATTER)
+                DateTime.parse(rs.getString("created_at"), DatabaseImpl.DEAUTH_MONITOR_TIME_FORMATTER)
         );
     }
 

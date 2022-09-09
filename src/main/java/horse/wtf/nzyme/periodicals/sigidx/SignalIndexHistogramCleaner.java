@@ -1,7 +1,7 @@
 package horse.wtf.nzyme.periodicals.sigidx;
 
+import app.nzyme.plugin.Database;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

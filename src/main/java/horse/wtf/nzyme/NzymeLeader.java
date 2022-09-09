@@ -17,6 +17,8 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.Database;
+import app.nzyme.plugin.DatabaseProvider;
 import app.nzyme.plugin.PluginEntryPoint;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
@@ -27,7 +29,6 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
-import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
@@ -47,7 +48,7 @@ import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 
-public interface NzymeLeader extends RemoteConnector, PluginEntryPoint {
+public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, DatabaseProvider {
 
     void initialize();
     void shutdown();

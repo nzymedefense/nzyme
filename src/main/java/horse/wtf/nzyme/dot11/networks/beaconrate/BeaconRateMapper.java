@@ -17,11 +17,10 @@
 
 package horse.wtf.nzyme.dot11.networks.beaconrate;
 
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,7 +31,7 @@ public class BeaconRateMapper implements RowMapper<AverageBeaconRate> {
     public AverageBeaconRate map(ResultSet rs, StatementContext ctx) throws SQLException {
         return AverageBeaconRate.create(
                 rs.getFloat("avg_beacon_rate"),
-                DateTime.parse(rs.getString("bucket"), Database.BUCKET_DATE_TIME_FORMATTER)
+                DateTime.parse(rs.getString("bucket"), DatabaseImpl.BUCKET_DATE_TIME_FORMATTER)
         );
 
     }

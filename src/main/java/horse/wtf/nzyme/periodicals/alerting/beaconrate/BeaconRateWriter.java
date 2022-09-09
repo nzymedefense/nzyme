@@ -17,8 +17,8 @@
 
 package horse.wtf.nzyme.periodicals.alerting.beaconrate;
 
+import app.nzyme.plugin.Database;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.database.Database;
 import horse.wtf.nzyme.dot11.networks.BSSID;
 import horse.wtf.nzyme.dot11.networks.Networks;
 import horse.wtf.nzyme.dot11.networks.SSID;

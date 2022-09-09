@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.Database;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +32,7 @@ import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -125,7 +126,7 @@ public class MockNzyme implements NzymeLeader {
 
         this.frameProcessor = new FrameProcessor();
 
-        this.database = new Database(configuration);
+        this.database = new DatabaseImpl(configuration);
         try {
             this.database.initializeAndMigrate();
         } catch (LiquibaseException e) {

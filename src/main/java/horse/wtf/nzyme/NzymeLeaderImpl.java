@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme;
 
+import app.nzyme.plugin.Database;
 import app.nzyme.plugin.Plugin;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
@@ -39,7 +40,7 @@ import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
@@ -133,7 +134,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     private final String nodeId;
 
     private final LeaderConfiguration configuration;
-    private final Database database;
+    private final DatabaseImpl database;
     private final BaseConfigurationService configurationService;
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
@@ -177,7 +178,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private SchedulingService schedulingService;
 
-    public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, Database database) {
+    public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, DatabaseImpl database) {
         this.version = new Version();
         this.nodeId = baseConfiguration.nodeId();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);

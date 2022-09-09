@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.database;
 
+import app.nzyme.plugin.Database;
 import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
 import horse.wtf.nzyme.bandits.database.*;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationMapper;
@@ -33,7 +34,7 @@ import org.jdbi.v3.postgres.PostgresPlugin;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 
-public class Database {
+public class DatabaseImpl implements Database {
 
     public static final DateTimeFormatter DATABASE_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ss")
@@ -56,7 +57,7 @@ public class Database {
 
     private Jdbi jdbi;
 
-    public Database(LeaderConfiguration configuration) {
+    public DatabaseImpl(LeaderConfiguration configuration) {
         this.configuration = configuration;
     }
 

@@ -28,7 +28,7 @@ import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfiguration;
 import horse.wtf.nzyme.configuration.tracker.TrackerConfigurationLoader;
-import horse.wtf.nzyme.database.Database;
+import horse.wtf.nzyme.database.DatabaseImpl;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -94,7 +94,7 @@ public class Main {
 
 
                 // Database.
-                Database database = new Database(leaderConfiguration);
+                DatabaseImpl database = new DatabaseImpl(leaderConfiguration);
                 try {
                     database.initializeAndMigrate();
                 } catch (LiquibaseException e) {
