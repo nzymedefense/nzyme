@@ -35,6 +35,7 @@ public class BluffTest {
                 false,
                 new File("").toPath(),
                 new File("").toPath(),
+                "plugin",
                 new InetSocketAddress("0.0.0.0", 9001),
                 ImmutableList.of(),
                 ImmutableList.of(),

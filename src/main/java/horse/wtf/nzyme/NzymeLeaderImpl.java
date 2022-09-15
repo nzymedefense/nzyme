@@ -399,11 +399,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         compressionConfig.setCompressibleMimeTypes();
 
         // Load plugins.
-        PluginLoader pl = new PluginLoader(new File("plugin/")); // TODO make path configurable
+        PluginLoader pl = new PluginLoader(new File(configuration.pluginDirectory())); // TODO make path configurable
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, this);
+            plugin.initialize(this, getRegistry(plugin.getId()));
         }
 
 
@@ -792,7 +792,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.retroService = Optional.of(service);
     }
 
-    @Override
     public Registry getRegistry(String namespace) {
         return new RegistryImpl(this, namespace);
     }

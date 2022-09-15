@@ -100,6 +100,7 @@ public class LeaderConfigurationLoader {
                 parseUseTls(),
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
+                parsePluginDirectory(),
                 parseRemoteInputAddress(),
                 parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
@@ -262,6 +263,10 @@ public class LeaderConfigurationLoader {
         }
     }
 
+    private String parsePluginDirectory() {
+        return general.getString(ConfigurationKeys.PLUGIN_DIRECTORY);
+    }
+
     private URI parseRestListenUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.REST_LISTEN_URI));
     }
@@ -414,6 +419,17 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_NETWORKS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.GROUNDSTATION_DEVICE, "<root>", Config.class);
+
+
+        // Plugin directory exists and is readable?
+        File pluginDirectory = new File(parsePluginDirectory());
+        if (!pluginDirectory.exists()) {
+            throw new InvalidConfigurationException("Plugin directory [" + parsePluginDirectory() + "] does not exist.");
+        }
+
+        if (!pluginDirectory.isDirectory()) {
+            throw new InvalidConfigurationException("Plugin directory [" + parsePluginDirectory() + "] is not a directory.");
+        }
 
         if (root.hasPath(ConfigurationKeys.UPLINKS)) {
             ConfigurationValidator.expect(root, ConfigurationKeys.UPLINKS, "<root>", List.class);

@@ -20,6 +20,9 @@ general: {
   # Path to directory that the tracker will use to store some temporary information. (must be writable)
   data_directory: /usr/share/nzyme
 
+  # Path to nzyme plugin directory.
+  plugin_directory: /usr/share/nzyme/plugins
+
   # We use Python to inject frames for traps.
   python {
     # Path to python executable. (nzyme supports both Python 3 and 2)
