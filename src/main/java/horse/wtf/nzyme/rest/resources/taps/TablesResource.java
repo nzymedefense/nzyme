@@ -50,6 +50,7 @@ public class TablesResource {
 
         // Submit to Retro if service is present.
         if (nzyme.retroService().isPresent()) {
+            // TODO queue this. Don't wait for completion.
             nzyme.retroService().get().dns().handleQueryLogReport(report.dns().retroQueries());
             nzyme.retroService().get().dns().handleResponseLogReport(report.dns().retroResponses());
         }
