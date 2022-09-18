@@ -1,10 +1,10 @@
 package horse.wtf.nzyme.rest.resources.taps.reports.tables;
 
-import app.nzyme.plugin.retro.dns.rest.DNSRetroQueryLogReport;
-import app.nzyme.plugin.retro.dns.rest.DNSRetroResponseLogReport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroQueryLogReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroResponseLogReport;
 
 import java.util.List;
 import java.util.Map;

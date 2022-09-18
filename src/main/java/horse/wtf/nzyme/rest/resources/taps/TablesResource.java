@@ -21,6 +21,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.TapSecured;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.TablesReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroReportConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,8 +52,12 @@ public class TablesResource {
         // Submit to Retro if service is present.
         if (nzyme.retroService().isPresent()) {
             // TODO queue this. Don't wait for completion.
-            nzyme.retroService().get().dns().handleQueryLogReport(report.dns().retroQueries());
-            nzyme.retroService().get().dns().handleResponseLogReport(report.dns().retroResponses());
+            nzyme.retroService().get().dns().handleQueryLogReport(
+                    DNSRetroReportConverter.queryReportToEntries(report.tapName(), report.dns().retroQueries())
+            );
+            nzyme.retroService().get().dns().handleResponseLogReport(
+                    DNSRetroReportConverter.responseReportToEntries(report.tapName(), report.dns().retroResponses())
+            );
         }
 
         return Response.status(Response.Status.CREATED).build();
