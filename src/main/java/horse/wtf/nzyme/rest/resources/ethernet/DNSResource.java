@@ -6,7 +6,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.ethernet.dns.db.DNSPairSummary;
 import horse.wtf.nzyme.ethernet.dns.db.DNSStatisticsBucket;
 import horse.wtf.nzyme.ethernet.dns.db.DNSTrafficSummary;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.resources.NetworksResource;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSPairSummaryResponse;
 import horse.wtf.nzyme.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;

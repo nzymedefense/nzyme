@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import app.nzyme.plugin.RESTSecured;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -32,7 +33,6 @@ import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.identifiers.BanditIdentifierFactory;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.requests.CreateBanditIdentifierRequest;
 import horse.wtf.nzyme.rest.requests.CreateBanditRequest;
 import horse.wtf.nzyme.rest.requests.UpdateBanditRequest;

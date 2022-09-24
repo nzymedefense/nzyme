@@ -29,7 +29,7 @@ import horse.wtf.nzyme.reporting.db.ScheduledReportEntry;
 import horse.wtf.nzyme.reporting.reports.TacticalSummaryReport;
 import horse.wtf.nzyme.reporting.reports.WirelessInventoryReport;
 import horse.wtf.nzyme.reporting.reports.WirelessSurveyReport;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.requests.ModifyReportReceiverEmailRequest;
 import horse.wtf.nzyme.rest.requests.ScheduleReportRequest;
 import horse.wtf.nzyme.rest.responses.reports.ExecutionLogEntryResponse;

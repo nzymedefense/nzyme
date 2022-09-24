@@ -17,12 +17,12 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import app.nzyme.plugin.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.alerts.Alert;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
 import horse.wtf.nzyme.rest.responses.alerts.AlertConfigurationResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;

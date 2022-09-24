@@ -24,7 +24,7 @@ import com.opencsv.CSVWriter;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.Dot11BSSIDDefinition;
 import horse.wtf.nzyme.configuration.Dot11NetworkDefinition;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11AssetInventoryResponse;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11BSSIDAssetResponse;
 import horse.wtf.nzyme.rest.responses.assetinventory.Dot11SSIDAssetResponse;

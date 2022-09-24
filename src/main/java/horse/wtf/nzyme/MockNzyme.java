@@ -344,6 +344,11 @@ public class MockNzyme implements NzymeLeader {
     public void registerRetroService(RetroService retroService) {
     }
 
+    @Override
+    public void registerRestResource(Class aClass) {
+
+    }
+
     public Registry getRegistry(String s) {
         return null;
     }

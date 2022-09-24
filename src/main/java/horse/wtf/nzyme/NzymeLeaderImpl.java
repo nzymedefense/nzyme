@@ -176,6 +176,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private Optional<RetroService> retroService = Optional.empty();
 
+    private final List<Object> pluginRestResources;
+
     private HttpServer httpServer;
 
     private SchedulingService schedulingService;
@@ -186,6 +188,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.database = database;
+        this.pluginRestResources = Lists.newArrayList();
 
         this.ethernet = new Ethernet(this);
 
@@ -339,8 +342,18 @@ public class NzymeLeaderImpl implements NzymeLeader {
             periodicalManager.scheduleAtFixedRate(new SignalTrackMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
+        // Load plugins.
+        PluginLoader pl = new PluginLoader(new File(configuration.pluginDirectory())); // TODO make path configurable
+        for (Plugin plugin : pl.loadPlugins()) {
+            // Initialize plugin
+            LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
+            plugin.initialize(this, getRegistry(plugin.getId()), this);
+        }
+
+
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
+        java.util.logging.Logger.getLogger("org.glassfish.jersey.internal.inject.Providers").setLevel(Level.SEVERE);
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new RESTAuthenticationFilter(this));
         resourceConfig.register(new TapAuthenticationFilter(this));
@@ -368,6 +381,16 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(TablesResource.class);
         resourceConfig.register(TapsResource.class);
         resourceConfig.register(DNSResource.class);
+
+        // Plugin-supplied REST resources.
+        for (Object resource : pluginRestResources) {
+            try {
+                resourceConfig.register(resource);
+                LOG.info("Loaded plugin REST resource [{}].", resource.getClass().getCanonicalName());
+            } catch(Exception e) {
+                LOG.error("Could not register plugin REST resource [{}].", resource.getClass().getCanonicalName(), e);
+            }
+        }
 
         // Enable GZIP.
         resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
@@ -397,15 +420,6 @@ public class NzymeLeaderImpl implements NzymeLeader {
         compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
         compressionConfig.setCompressionMinSize(1);
         compressionConfig.setCompressibleMimeTypes();
-
-        // Load plugins.
-        PluginLoader pl = new PluginLoader(new File(configuration.pluginDirectory())); // TODO make path configurable
-        for (Plugin plugin : pl.loadPlugins()) {
-            // Initialize plugin
-            LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, getRegistry(plugin.getId()), this);
-        }
-
 
         // Start server.
         try {
@@ -790,6 +804,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
         }
 
         this.retroService = Optional.of(service);
+    }
+
+    @Override
+    public void registerRestResource(Object resource) {
+        this.pluginRestResources.add(resource);
     }
 
     public Registry getRegistry(String namespace) {

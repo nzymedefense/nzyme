@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources.system;
 import com.codahale.metrics.*;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.responses.metrics.*;
 import horse.wtf.nzyme.util.MetricNames;
 

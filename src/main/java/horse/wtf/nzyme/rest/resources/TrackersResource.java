@@ -25,7 +25,7 @@ import horse.wtf.nzyme.bandits.identifiers.BanditIdentifier;
 import horse.wtf.nzyme.bandits.trackers.Tracker;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.bandits.trackers.protobuf.TrackerMessage;
-import horse.wtf.nzyme.rest.authentication.RESTSecured;
+import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.requests.BanditTrackRequest;
 import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;
 import horse.wtf.nzyme.rest.responses.trackers.TrackerResponse;
