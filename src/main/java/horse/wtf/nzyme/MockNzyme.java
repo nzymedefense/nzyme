@@ -345,7 +345,7 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
-    public void registerRestResource(Class aClass) {
+    public void registerRestResource(Object o) {
 
     }
 
