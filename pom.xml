@@ -9,20 +9,6 @@
       <tag>1.2.0</tag>
     </scm>
 
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/lennartkoopmann/nzyme-plugin</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <groupId>horse.wtf.nzyme</groupId>
     <artifactId>nzyme</artifactId>
     <version>2.0.0-SNAPSHOT</version>
