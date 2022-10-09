@@ -20,6 +20,8 @@ general: {
 
   fetch_ouis: true
   versionchecks: true
+
+  plugin_directory: "plugin"
 }
 
 interfaces: {
