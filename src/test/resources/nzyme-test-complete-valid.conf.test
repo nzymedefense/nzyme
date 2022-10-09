@@ -21,7 +21,7 @@ general: {
   fetch_ouis: true
   versionchecks: true
 
-  plugin_directory: "plugin"
+  plugin_directory: "plugin_test"
 }
 
 interfaces: {
