@@ -81,6 +81,7 @@ import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
 import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
+import horse.wtf.nzyme.rest.resources.system.*;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
 import horse.wtf.nzyme.rest.resources.taps.TapsResource;
@@ -92,10 +93,6 @@ import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
-import horse.wtf.nzyme.rest.resources.system.AssetInventoryResource;
-import horse.wtf.nzyme.rest.resources.system.MetricsResource;
-import horse.wtf.nzyme.rest.resources.system.ProbesResource;
-import horse.wtf.nzyme.rest.resources.system.SystemResource;
 import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.tables.TablesService;
@@ -174,6 +171,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private GroundStation groundStation;
 
+    private List<String> plugins;
+
     private Optional<RetroService> retroService = Optional.empty();
 
     private final List<Object> pluginRestResources;
@@ -189,6 +188,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.configuration = configuration;
         this.database = database;
         this.pluginRestResources = Lists.newArrayList();
+        this.plugins = Lists.newArrayList();
 
         this.ethernet = new Ethernet(this);
 
@@ -348,6 +348,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
             plugin.initialize(this, getRegistry(plugin.getId()), this);
+
+            this.plugins.add(plugin.getId());
         }
 
 
@@ -381,6 +383,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(TablesResource.class);
         resourceConfig.register(TapsResource.class);
         resourceConfig.register(DNSResource.class);
+        resourceConfig.register(PluginResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
@@ -697,6 +700,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Anonymizer getAnonymizer() {
         return anonymizer;
+    }
+
+    @Override
+    public List<String> getInitializedPlugins() {
+        return plugins;
     }
 
     @Nullable

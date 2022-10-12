@@ -321,6 +321,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public List<String> getInitializedPlugins() {
+        return null;
+    }
+
+    @Override
     public Optional<RetroService> retroService() {
         return Optional.empty();
     }

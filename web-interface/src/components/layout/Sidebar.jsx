@@ -47,6 +47,11 @@ function Sidebar() {
                 </SidebarSubmenu>
 
                 <NavigationLink
+                    href={ApiRoutes.RETRO.INDEX}
+                    title="Retrospective"
+                    icon={<i className="fa-solid fa-magnifying-glass fa-icon" />} />
+
+                <NavigationLink
                     href={ApiRoutes.REPORTING.INDEX}
                     title="Reporting"
                     icon={<i className="fa-solid fa-file-circle-check fa-icon" />} />

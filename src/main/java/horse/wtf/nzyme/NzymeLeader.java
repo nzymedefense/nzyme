@@ -98,6 +98,8 @@ public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, Database
 
     Anonymizer getAnonymizer();
 
+    List<String> getInitializedPlugins();
+
     Optional<RetroService> retroService();
 
     ObjectMapper getObjectMapper();

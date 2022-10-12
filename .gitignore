@@ -4,6 +4,8 @@ nzyme*.conf
 dependency-reduced-pom.xml
 /plugin/
 /retro/
+/data/
+/tmp/
 
 .DS_Store
 hs_err_*.log

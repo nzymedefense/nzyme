@@ -40,6 +40,9 @@ const ApiRoutes = {
       INDEX: '/system/assets/index'
     }
   },
+  RETRO: {
+    INDEX: '/retro'
+  },
   NOT_FOUND: '/notfound',
   ALERTS: {
     INDEX: '/alerts',
