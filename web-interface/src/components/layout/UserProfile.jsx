@@ -1,10 +1,14 @@
 import React from 'react'
+import AssetImage from "../misc/AssetImage";
 
 function UserProfile() {
 
     return (
         <div className="user-profile">
-            <img className="avatar float-start" src="/static/lennart_test.jpg" />
+            <AssetImage filename="lennart_test.jpg"
+                        className="avatar float-start"
+                        alt="User Avatar" />
+
             <div className="name">
                 Lennart Koopmann<br />
                 <a href="/">

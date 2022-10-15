@@ -1,5 +1,6 @@
 import React from 'react'
 import AuthenticationService from '../../services/AuthenticationService'
+import AssetImage from "../misc/AssetImage";
 
 class LoginPage extends React.Component {
   constructor (props) {
@@ -38,8 +39,10 @@ class LoginPage extends React.Component {
                             <div className="row g-0">
 
                                 <div className="col-md-6 col-lg-5 d-none d-md-block left-half justify-content-center">
-                                    <img src="/static/logo_small.png" className="d-block mx-auto"
-                                         id="logo" alt="nzyme logo" />
+                                    <AssetImage filename="logo_small.png"
+                                                className="d-block mx-auto"
+                                                alt="nzyme logo"
+                                                id="logo" />
                                 </div>
 
                                 <div className="col-md-6 col-lg-7 d-flex align-items-center">

@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,10 @@ public class AssetManifest {
 
     private final List<String> jsFiles;
     private final List<String> cssFiles;
+
+    private static final List<String> CSS_FILE_EXCLUDES = new ArrayList<>() {{
+        add("/static/css/dark.css");
+    }};
 
     public AssetManifest() {
         this.jsFiles = Lists.newArrayList();
@@ -50,7 +55,7 @@ public class AssetManifest {
             }
 
             for (String x : manifest.values()) {
-                if (x.endsWith(".css")) {
+                if (x.endsWith(".css") && !CSS_FILE_EXCLUDES.contains(x)) {
                     this.cssFiles.add(x.split("/")[3]);
                 }
 
