@@ -30,8 +30,8 @@ public class NzymeLeaderInjectionBinder extends AbstractBinder {
 
     private final NzymeLeader nzyme;
 
-    public NzymeLeaderInjectionBinder(NzymeLeader nzmye) {
-        this.nzyme = nzmye;
+    public NzymeLeaderInjectionBinder(NzymeLeader nzyme) {
+        this.nzyme = nzyme;
     }
 
     @Override

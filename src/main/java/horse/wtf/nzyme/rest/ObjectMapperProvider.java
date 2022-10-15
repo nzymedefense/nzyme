@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
@@ -34,6 +35,7 @@ public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
         // Enable serialization of DateTime objects.
         om.registerModule(new JodaModule());
+        om.registerModule(new JavaTimeModule());
 
         // Write DateTime objects as ISO-8601.
         om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
