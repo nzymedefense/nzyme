@@ -44,7 +44,8 @@ import TapsPage from "./components/taps/TapsPage";
 import TapDetailsPage from "./components/taps/details/TapDetailsPage";
 import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsDetailsPage";
 import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
-import RetroPage from "./components/retro/RetroPage";
+import SearchPage from "./components/retro/SearchPage";
+import ServiceSummaryPage from "./components/retro/servicesummary/ServiceSummaryPage";
 
 class App extends React.Component {
 
@@ -153,7 +154,8 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                                             { /* Retro. */ }
-                                            <Route path={ApiRoutes.RETRO.INDEX} element={<RetroPage />}/>
+                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={<SearchPage />}/>
+                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={<ServiceSummaryPage />}/>
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

@@ -217,6 +217,11 @@ dt {
     text-transform: uppercase;
 }
 
+pre.json {
+    padding: 10px 10px 10px 15px;
+    border-left: 2px dotted #ccc;
+}
+
 a.main-help {
     margin-left: 3px;
     margin-right: 3px;
@@ -248,4 +253,12 @@ div.card div.card-number span.title {
 
 div.card div.card-number span.value {
     font-size: 32px;
+}
+
+dl.retro-servicesummary-topmetrics dt {
+    float: left;
+}
+
+dl.retro-servicesummary-topmetrics dd {
+    margin-left: 150px;
 }

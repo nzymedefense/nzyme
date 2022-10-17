@@ -41,7 +41,10 @@ const ApiRoutes = {
     }
   },
   RETRO: {
-    INDEX: '/retro'
+    SEARCH: {
+      INDEX: '/retro/search'
+    },
+    SERVICE_SUMMARY: '/retro/servicesummary'
   },
   NOT_FOUND: '/notfound',
   ALERTS: {
