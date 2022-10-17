@@ -38,19 +38,17 @@ function TapDetailsPage() {
 
     return (
 
-        <div>
-            <div className="row">
-                <div className="col-md-10">
-                    <nav aria-label="breadcrumb">
-                        <ol className="breadcrumb">
-                            <li className="breadcrumb-item"><a href={Routes.SYSTEM.TAPS.INDEX}>Taps</a></li>
-                            <li className="breadcrumb-item active" aria-current="page">{tap.name}</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div className="col-md-2">
-                    <a className="btn btn-primary float-end" href={Routes.SYSTEM.TAPS.INDEX}>Back</a>
-                </div>
+        <div className="row">
+            <div className="col-md-10">
+                <nav aria-label="breadcrumb">
+                    <ol className="breadcrumb">
+                        <li className="breadcrumb-item"><a href={Routes.SYSTEM.TAPS.INDEX}>Taps</a></li>
+                        <li className="breadcrumb-item active" aria-current="page">{tap.name}</li>
+                    </ol>
+                </nav>
+            </div>
+            <div className="col-md-2">
+                <a className="btn btn-primary float-end" href={Routes.SYSTEM.TAPS.INDEX}>Back</a>
             </div>
 
             <div className="row">

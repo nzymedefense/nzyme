@@ -1,11 +1,10 @@
 import React, {useState, useEffect} from "react";
 import PluginsService from "../../services/PluginsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
-import ServiceSummary from "./ServiceSummary";
 
 const pluginsService = new PluginsService();
 
-function RetroPage() {
+function SearchPage() {
 
     const [plugins, setPlugins] = useState(null);
 
@@ -37,8 +36,7 @@ function RetroPage() {
                 <div className="col-md-6">
                     <div className="card">
                         <div className="card-body">
-                            <h3>Service Summary</h3>
-                            <ServiceSummary />
+                            <h3>Test</h3>
                         </div>
                     </div>
                 </div>
@@ -49,4 +47,4 @@ function RetroPage() {
 
 }
 
-export default RetroPage;
+export default SearchPage;

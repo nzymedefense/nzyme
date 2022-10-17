@@ -46,10 +46,17 @@ function Sidebar() {
                         icon={<i className="fa-solid fa-clipboard-list fa-icon" />} />
                 </SidebarSubmenu>
 
-                <NavigationLink
-                    href={ApiRoutes.RETRO.INDEX}
-                    title="Retrospective"
-                    icon={<i className="fa-solid fa-magnifying-glass fa-icon" />} />
+                <SidebarSubmenu title="Retrospective" subhref="/retro" icon={<i className="fa-solid fa-box-archive fa-icon" />}>
+                    <NavigationLink
+                        href={ApiRoutes.RETRO.SEARCH.INDEX}
+                        title="Search"
+                        icon={<i className="fa-solid fa-magnifying-glass fa-icon" />} />
+
+                    <NavigationLink
+                        href={ApiRoutes.RETRO.SERVICE_SUMMARY}
+                        title="Service Summary"
+                        icon={<i className="fa-solid fa-gear fa-icon" />} />
+                </SidebarSubmenu>
 
                 <NavigationLink
                     href={ApiRoutes.REPORTING.INDEX}
