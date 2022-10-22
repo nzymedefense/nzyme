@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.rest.resources.taps.reports.tables.retro;
+package horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns;
 
 import app.nzyme.plugin.retro.dns.entries.DNSRetroQueryLogEntry;
 import app.nzyme.plugin.retro.dns.entries.DNSRetroResponseLogEntry;

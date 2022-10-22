@@ -3,8 +3,8 @@ package horse.wtf.nzyme.rest.resources.taps.reports.tables;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroQueryLogReport;
-import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroResponseLogReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns.DNSRetroQueryLogReport;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns.DNSRetroResponseLogReport;
 
 import java.util.List;
 import java.util.Map;

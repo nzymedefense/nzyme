@@ -15,12 +15,13 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.rest.resources.taps.reports.tables.retro;
+package horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns.AutoValue_DNSRetroResponseLogReport;
 import org.joda.time.DateTime;
 
 @AutoValue

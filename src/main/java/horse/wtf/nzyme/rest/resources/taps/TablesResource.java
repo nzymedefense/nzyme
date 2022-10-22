@@ -19,9 +19,9 @@ package horse.wtf.nzyme.rest.resources.taps;
 
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.authentication.TapSecured;
-import horse.wtf.nzyme.rest.resources.taps.reports.tables.DNSNxDomainLogReport;
 import horse.wtf.nzyme.rest.resources.taps.reports.tables.TablesReport;
-import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.DNSRetroReportConverter;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.dns.DNSRetroReportConverter;
+import horse.wtf.nzyme.rest.resources.taps.reports.tables.retro.l4.L4RetroReportConverter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,9 +52,14 @@ public class TablesResource {
         // Submit to Retro if service is present.
         if (nzyme.retroService().isPresent()) {
             // TODO queue this. Don't wait for completion.
+            nzyme.retroService().get().l4().handleL4ConnectionPairReport(
+                    L4RetroReportConverter.pairReportToEntries(report.tapName(), report.l4().retroPairs())
+            );
+
             nzyme.retroService().get().dns().handleQueryLogReport(
                     DNSRetroReportConverter.queryReportToEntries(report.tapName(), report.dns().retroQueries())
             );
+
             nzyme.retroService().get().dns().handleResponseLogReport(
                     DNSRetroReportConverter.responseReportToEntries(report.tapName(), report.dns().retroResponses())
             );

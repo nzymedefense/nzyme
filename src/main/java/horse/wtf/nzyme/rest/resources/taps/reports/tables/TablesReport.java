@@ -32,16 +32,20 @@ public abstract class TablesReport {
     public abstract Map<String, Map<String, Long>> arp();
     public abstract DNSTablesReport dns();
 
+    public abstract L4TablesReport l4();
+
     @JsonCreator
     public static TablesReport create(@JsonProperty("tap_name") String tapName,
                                       @JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("arp") Map<String, Map<String, Long>> arp,
-                                      @JsonProperty("dns") DNSTablesReport dns) {
+                                      @JsonProperty("dns") DNSTablesReport dns,
+                                      @JsonProperty("l4") L4TablesReport l4) {
         return builder()
                 .tapName(tapName)
                 .timestamp(timestamp)
                 .arp(arp)
                 .dns(dns)
+                .l4(l4)
                 .build();
     }
 
@@ -58,6 +62,8 @@ public abstract class TablesReport {
         public abstract Builder arp(Map<String, Map<String, Long>> arp);
 
         public abstract Builder dns(DNSTablesReport dns);
+
+        public abstract Builder l4(L4TablesReport l4);
 
         public abstract TablesReport build();
     }
