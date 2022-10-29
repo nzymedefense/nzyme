@@ -56,6 +56,11 @@ function Sidebar() {
                         href={ApiRoutes.RETRO.SERVICE_SUMMARY}
                         title="Service Summary"
                         icon={<i className="fa-solid fa-gear fa-icon" />} />
+
+                    <NavigationLink
+                        href={ApiRoutes.RETRO.CONFIGURATION}
+                        title="Configuration"
+                        icon={<i className="fa-solid fa-wrench fa-icon" />} />
                 </SidebarSubmenu>
 
                 <NavigationLink

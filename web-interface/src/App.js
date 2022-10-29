@@ -46,6 +46,7 @@ import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsD
 import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
 import SearchPage from "./components/retro/SearchPage";
 import ServiceSummaryPage from "./components/retro/servicesummary/ServiceSummaryPage";
+import RetroConfigurationPage from "./components/retro/RetroConfigurationPage";
 
 class App extends React.Component {
 
@@ -156,6 +157,7 @@ class App extends React.Component {
                                             { /* Retro. */ }
                                             <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={<SearchPage />}/>
                                             <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={<ServiceSummaryPage />}/>
+                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={<RetroConfigurationPage />}/>
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
