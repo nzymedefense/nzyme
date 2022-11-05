@@ -6,6 +6,7 @@ import horse.wtf.nzyme.NzymeLeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class RegistryImpl implements Registry {
@@ -29,6 +30,12 @@ public class RegistryImpl implements Registry {
                         .mapTo(String.class)
                         .findOne()
         );
+    }
+
+    @Override
+    @Nullable
+    public String getValueOrNull(String key) {
+        return getValue(key).orElse(null);
     }
 
     @Override
