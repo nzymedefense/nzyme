@@ -19,8 +19,7 @@ function ServiceSummaryOverview(props) {
         return (
             <div className="alert alert-warning">
                 Service summary metrics have not been calculated yet. An nzyme leader node is calculating the
-                service summary metrics regularly and immediately after the system starts. Please try again
-                in a few minutes.
+                service summary metrics regularly and immediately after the system starts.
             </div>
         )
     }

@@ -262,3 +262,7 @@ dl.retro-servicesummary-topmetrics dt {
 dl.retro-servicesummary-topmetrics dd {
     margin-left: 150px;
 }
+
+i.inline-help {
+    font-size: 13px;
+}

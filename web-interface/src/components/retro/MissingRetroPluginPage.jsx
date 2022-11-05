@@ -1,12 +1,9 @@
 import React from "react";
-import RetroNotReadyAlert from "./RetroNotReadyAlert";
 
-function SearchPage() {
+function MissingRetroPluginPage() {
 
     return (
         <div>
-            <RetroNotReadyAlert />
-
             <div className="row">
                 <div className="col-md-12">
                     <h1>Retrospective</h1>
@@ -14,18 +11,19 @@ function SearchPage() {
             </div>
 
             <div className="row mt-3">
-                <div className="col-md-6">
+                <div className="col-md-12">
                     <div className="card">
                         <div className="card-body">
-                            <h3>Test</h3>
+                            <h3>Plugin not installed</h3>
+
+                            TODO explain
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
     )
 
 }
 
-export default SearchPage;
+export default MissingRetroPluginPage;

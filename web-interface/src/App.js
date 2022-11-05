@@ -46,7 +46,9 @@ import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsD
 import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
 import SearchPage from "./components/retro/SearchPage";
 import ServiceSummaryPage from "./components/retro/servicesummary/ServiceSummaryPage";
-import RetroConfigurationPage from "./components/retro/RetroConfigurationPage";
+import RetroConfigurationPage from "./components/retro/configuration/RetroConfigurationPage";
+import PluginsService from "./services/PluginsService";
+import MissingRetroPluginPage from "./components/retro/MissingRetroPluginPage";
 
 class App extends React.Component {
 
@@ -56,7 +58,8 @@ class App extends React.Component {
         this.state = {
             apiConnected: true,
             authenticated: App._isAuthenticated(),
-            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode")
+            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode"),
+            plugins: []
         }
 
         this.pingService = new PingService()
@@ -64,6 +67,9 @@ class App extends React.Component {
 
         this.authenticationService = new AuthenticationService()
         this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
+
+        this.pluginsService = new PluginsService()
+        this.pluginsService.findInitializedPlugins = this.pluginsService.findInitializedPlugins.bind(this)
 
         this._setDarkMode = this._setDarkMode.bind(this);
     }
@@ -84,6 +90,9 @@ class App extends React.Component {
         setInterval(function () {
             self.authenticationService.checkSession()
         }, 10000)
+
+        // Check if plugins are installed and initialized.
+        this.pluginsService.findInitializedPlugins();
     }
 
     _setDarkMode(x) {
@@ -155,9 +164,9 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                                             { /* Retro. */ }
-                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={<SearchPage />}/>
-                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={<ServiceSummaryPage />}/>
-                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={<RetroConfigurationPage />}/>
+                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={this.state.plugins.includes("retroplugin") ? <SearchPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={this.state.plugins.includes("retroplugin") ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={this.state.plugins.includes("retroplugin") ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

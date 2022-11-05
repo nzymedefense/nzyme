@@ -3,6 +3,7 @@ import Routes from "../../../util/ApiRoutes";
 import ServiceSummaryOverview from "./ServiceSummaryOverview";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import RetroService from "../../../services/RetroService";
+import RetroNotReadyAlert from "../RetroNotReadyAlert";
 
 const retroService = new RetroService();
 
@@ -30,6 +31,8 @@ function ServiceSummaryPage() {
                     </nav>
                 </div>
             </div>
+
+            <RetroNotReadyAlert />
 
             <div className="row">
                 <div className="col-md-12">

@@ -1,5 +1,6 @@
-import React from "react";
-import Routes from "../../util/ApiRoutes";
+import React, {useEffect, useState} from "react";
+import Routes from "../../../util/ApiRoutes";
+import InlineHelp from "../../misc/InlineHelp";
 
 function RetroConfigurationPage() {
 
@@ -26,9 +27,14 @@ function RetroConfigurationPage() {
                 <div className="col-md-12">
                     <div className="card">
                         <div className="card-body">
-                            <h3>All Settings</h3>
+                            <h3>Data Store</h3>
 
-
+                            <dl>
+                                <dt>Type</dt>
+                                <dd>
+                                    Filesystem <InlineHelp text="This is currently the only available retro storage type." />
+                                </dd>
+                            </dl>
                         </div>
                     </div>
                 </div>
