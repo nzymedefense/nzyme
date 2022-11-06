@@ -49,6 +49,7 @@ import ServiceSummaryPage from "./components/retro/servicesummary/ServiceSummary
 import RetroConfigurationPage from "./components/retro/configuration/RetroConfigurationPage";
 import PluginsService from "./services/PluginsService";
 import MissingRetroPluginPage from "./components/retro/MissingRetroPluginPage";
+import LoadingSpinner from "./components/misc/LoadingSpinner";
 
 class App extends React.Component {
 
@@ -58,8 +59,7 @@ class App extends React.Component {
         this.state = {
             apiConnected: true,
             authenticated: App._isAuthenticated(),
-            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode"),
-            plugins: []
+            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode")
         }
 
         this.pingService = new PingService()
@@ -92,7 +92,7 @@ class App extends React.Component {
         }, 10000)
 
         // Check if plugins are installed and initialized.
-        this.pluginsService.findInitializedPlugins();
+        this.pluginsService.loadInitializedPluginsIntoStore();
     }
 
     _setDarkMode(x) {
@@ -105,6 +105,17 @@ class App extends React.Component {
     }
 
     render () {
+        const plugins = Store.get("plugins");
+
+        if (plugins == null) {
+            return (
+                <div>
+                    <DarkMode enabled={this.state.darkModeEnabled} />
+                    <LoadingSpinner />
+                </div>
+            )
+        }
+
         if (this.state.apiConnected) {
             if (this.state.authenticated) {
                 return (
@@ -164,9 +175,9 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                                             { /* Retro. */ }
-                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={this.state.plugins.includes("retroplugin") ? <SearchPage /> : <MissingRetroPluginPage /> }/>
-                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={this.state.plugins.includes("retroplugin") ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
-                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={this.state.plugins.includes("retroplugin") ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes("retroplugin") ? <SearchPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes("retroplugin") ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes("retroplugin") ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
