@@ -1,4 +1,5 @@
 import RESTClient from '../util/RESTClient'
+import Store from "../util/Store";
 
 class PluginsService {
 
@@ -8,11 +9,9 @@ class PluginsService {
         })
     }
 
-    // TODO change App.js to functional component and remove this
-    findInitializedPlugins() {
-        const self = this;
+    loadInitializedPluginsIntoStore() {
         RESTClient.get('/system/plugins/names', {}, function (response) {
-            self.setState({plugins: response.data});
+            Store.set("plugins", response.data);
         })
     }
 

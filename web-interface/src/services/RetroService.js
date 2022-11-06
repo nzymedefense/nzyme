@@ -8,6 +8,12 @@ class RetroService {
         })
     }
 
+    getConfiguration(setConfiguration) {
+        RESTClient.get('/retro/configuration', {}, function (response) {
+            setConfiguration(response.data);
+        })
+    }
+
 }
 
 export default RetroService;
