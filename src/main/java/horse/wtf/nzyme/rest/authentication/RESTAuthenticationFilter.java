@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.rest.authentication;
 
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
 import horse.wtf.nzyme.NzymeLeader;
 import io.jsonwebtoken.ExpiredJwtException;

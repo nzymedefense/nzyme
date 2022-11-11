@@ -17,6 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources;
 
+import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
@@ -32,7 +33,6 @@ import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHisto
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.SignalWaterfallHistogramLoader;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.Track;
 import horse.wtf.nzyme.dot11.networks.signalstrength.tracks.TrackDetector;
-import app.nzyme.plugin.RESTSecured;
 import horse.wtf.nzyme.rest.responses.networks.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

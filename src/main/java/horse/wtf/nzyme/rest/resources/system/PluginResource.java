@@ -1,6 +1,6 @@
 package horse.wtf.nzyme.rest.resources.system;
 
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.NzymeLeader;
 
 import javax.inject.Inject;

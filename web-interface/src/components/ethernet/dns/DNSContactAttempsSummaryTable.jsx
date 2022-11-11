@@ -13,9 +13,9 @@ function DNSContactAttempsSummaryTable(props) {
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
-                <td>DNS Server</td>
-                <td>Contact Attempts</td>
-                <td>Unique Clients</td>
+                <th>DNS Server</th>
+                <th>Contact Attempts</th>
+                <th>Unique Clients</th>
             </tr>
             </thead>
             <tbody>

@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.rest.resources.authentication;
 
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.rest.requests.CreateSessionRequest;
 import horse.wtf.nzyme.rest.responses.authentication.SessionInformationResponse;

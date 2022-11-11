@@ -27,7 +27,7 @@ import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecording;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.measurements.Measurement;
 import horse.wtf.nzyme.measurements.MeasurementType;
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.rest.responses.alerts.AlertDetailsResponse;
 import horse.wtf.nzyme.rest.responses.alerts.AlertsListResponse;
 import horse.wtf.nzyme.rest.responses.bandits.ContactResponse;

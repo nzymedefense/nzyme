@@ -17,7 +17,7 @@
 
 package horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources;
 
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.NzymeTracker;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.WebHID;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.responses.StateResponse;

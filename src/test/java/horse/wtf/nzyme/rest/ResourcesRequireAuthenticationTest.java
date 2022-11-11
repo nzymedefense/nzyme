@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest;
 import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDAssetsResource;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDResource;
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.rest.authentication.TapSecured;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;

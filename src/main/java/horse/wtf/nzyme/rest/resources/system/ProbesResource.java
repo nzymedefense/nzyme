@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.dot11.probes.Dot11Probe;
 import horse.wtf.nzyme.dot11.probes.Dot11SenderProbe;
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.rest.responses.system.ProbeResponse;
 import horse.wtf.nzyme.rest.responses.system.ProbesListResponse;
 import horse.wtf.nzyme.rest.responses.system.TrapResponse;

@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsGaugeHistogramResponse;
 import horse.wtf.nzyme.rest.responses.taps.metrics.TapMetricsGaugeHistogramValueResponse;
 import horse.wtf.nzyme.taps.metrics.BucketSize;

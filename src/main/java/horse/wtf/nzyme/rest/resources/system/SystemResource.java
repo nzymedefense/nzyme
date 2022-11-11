@@ -20,7 +20,7 @@ package horse.wtf.nzyme.rest.resources.system;
 import com.beust.jcommander.internal.Lists;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.MemoryRegistry;
-import app.nzyme.plugin.RESTSecured;
+import app.nzyme.plugin.rest.security.RESTSecured;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusResponse;
 import horse.wtf.nzyme.rest.responses.system.SystemStatusStateResponse;
 import horse.wtf.nzyme.rest.responses.system.VersionResponse;
