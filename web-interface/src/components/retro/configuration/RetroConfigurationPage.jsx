@@ -3,7 +3,7 @@ import Routes from "../../../util/ApiRoutes";
 import InlineHelp from "../../misc/InlineHelp";
 import RetroService from "../../../services/RetroService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import ConfigurationModal from "../../configuration/ConfigurationModal";
+import ConfigurationModal from "../../configuration/modal/ConfigurationModal";
 
 const retroService = new RetroService();
 
@@ -69,7 +69,7 @@ function RetroConfigurationPage() {
                                     <td>Searcher Threads</td>
                                     <td>{configuration.searcher_fs_threadpool.value}</td>
                                     <td>
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#configuration-dialog">Edit</a>
+                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} />
                                     </td>
                                 </tr>
                                 </tbody>

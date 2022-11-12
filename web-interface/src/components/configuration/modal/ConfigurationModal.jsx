@@ -1,4 +1,6 @@
 import React from "react";
+import DefaultValue from "./DefaultValue";
+import RestartRequired from "./RestartRequired";
 
 function ConfigurationModal(props) {
 
@@ -6,13 +8,13 @@ function ConfigurationModal(props) {
 
     return (
         <React.Fragment>
-            <a href="#"
+            <a href="web-interface/src/components/configuration/modal/ConfigurationModal#"
                data-bs-toggle="modal"
-               data-bs-target="#configuration-dialog">
+               data-bs-target={"#configuration-dialog-" + props.config.key}>
                 Edit
             </a>
 
-            <div className="modal fade" id="configuration-dialog" data-bs-backdrop="static" data-bs-keyboard="false"
+            <div className="modal fade" id={"configuration-dialog-" + props.config.key} data-bs-keyboard="true"
                  tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
@@ -22,17 +24,17 @@ function ConfigurationModal(props) {
                                     aria-label="Close"></button>
                         </div>
                         <div className="modal-body">
-                            <label htmlFor="config-value" className="form-label">{props.config.key}</label>
+                            <label htmlFor="config-value" className="form-label">
+                                {props.config.key_human_readable}
+                            </label>
 
-                            <input type="text" className="form-control" id="config-value" />
+                            <input type="text" className="form-control" id="config-value" value={props.config.value} />
 
                             <div id="passwordHelpBlock" className="form-text">
-                                Default Value: {props.config.default_value ? props.config.default_value : "None" }
+                                <DefaultValue value={props.config.default_value} />
                             </div>
 
-                            <div className="alert alert-primary mt-2">
-                                Changing this configuration does <strong>not</strong> require a restart of nzyme.
-                            </div>
+                            <RestartRequired required={props.config.requires_restart} />
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
