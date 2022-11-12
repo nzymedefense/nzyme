@@ -81,3 +81,12 @@ div.card {
 i.inline-help {
     color: #8D99AE;
 }
+
+div.modal-dialog div.modal-content {
+    background-color: #2B2D42;
+}
+
+div.modal-dialog div.modal-content button.modal-close {
+    background-color: #2B2D42;
+    color: #fff;
+}
