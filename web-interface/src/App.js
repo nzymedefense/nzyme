@@ -90,9 +90,6 @@ class App extends React.Component {
         setInterval(function () {
             self.authenticationService.checkSession()
         }, 10000)
-
-        // Check if plugins are installed and initialized.
-        this.pluginsService.loadInitializedPluginsIntoStore();
     }
 
     _setDarkMode(x) {
@@ -105,19 +102,20 @@ class App extends React.Component {
     }
 
     render () {
-        const plugins = Store.get("plugins");
-
-        if (plugins == null) {
-            return (
-                <div>
-                    <DarkMode enabled={this.state.darkModeEnabled} />
-                    <LoadingSpinner />
-                </div>
-            )
-        }
-
         if (this.state.apiConnected) {
             if (this.state.authenticated) {
+                const plugins = Store.get("plugins");
+
+                this.pluginsService.loadInitializedPluginsIntoStore();
+                if (plugins == null) {
+                    return (
+                        <div>
+                            <DarkMode enabled={this.state.darkModeEnabled} />
+                            <LoadingSpinner />
+                        </div>
+                    )
+                }
+
                 return (
                     <Router>
                         <DarkMode enabled={this.state.darkModeEnabled} />
