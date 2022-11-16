@@ -60,7 +60,10 @@ function RetroConfigurationPage() {
                                 </tr>
                                 <tr>
                                     <td>Fileystem Path</td>
-                                    <td>{configuration.writer_fs_base_path.value} ({configuration.writer_fs_base_path_computed_absolute})</td>
+                                    <td>
+                                        {configuration.writer_fs_base_path.value ? configuration.writer_fs_base_path.value : <i>(none)</i>}
+                                        {configuration.writer_fs_base_path_computed_absolute ? "(" + configuration.writer_fs_base_path_computed_absolute + ")" : null }
+                                    </td>
                                     <td>
                                         <ConfigurationModal config={configuration.writer_fs_base_path} />
                                     </td>

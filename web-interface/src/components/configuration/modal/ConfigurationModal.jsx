@@ -1,11 +1,22 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import DefaultValue from "./DefaultValue";
 import RestartRequired from "./RestartRequired";
 import ConfigurationInputField from "./ConfigurationInputField";
 
 function ConfigurationModal(props) {
 
-    // TODO add field constraints
+    const [formDisabled, setFormDisabled] = useState(true);
+    const [inputValue, setInputValue] = useState(props.config.value);
+
+    useEffect(() => {
+        const config = props.config;
+
+        if (config.constraints && config.constraints.length > 0) {
+
+        } else {
+            setFormDisabled(false);
+        }
+    }, [props]);
 
     return (
         <React.Fragment>
@@ -41,7 +52,7 @@ function ConfigurationModal(props) {
                                 </span>
                             </div>
 
-                            <ConfigurationInputField type={props.config.value_type} value={props.config.value} />
+                            <ConfigurationInputField type={props.config.value_type} value={inputValue} setValue={setInputValue} />
 
                             <div className="form-text">
                                 <DefaultValue value={props.config.default_value} />
@@ -52,7 +63,7 @@ function ConfigurationModal(props) {
 
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" className="btn btn-primary">Save Changes</button>
+                            <button type="button" className="btn btn-primary" disabled={formDisabled}>Save Changes</button>
                         </div>
                     </div>
                 </div>
