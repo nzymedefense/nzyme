@@ -1,7 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import DefaultValue from "./DefaultValue";
 import RestartRequired from "./RestartRequired";
 import ConfigurationInputField from "./ConfigurationInputField";
+import RetroService from "../../../services/RetroService";
+
+const retroService = new RetroService();
 
 function ConfigurationModal(props) {
 
@@ -11,12 +14,37 @@ function ConfigurationModal(props) {
     useEffect(() => {
         const config = props.config;
 
-        if (config.constraints && config.constraints.length > 0) {
-
+        if (inputValue === undefined) {
+            setFormDisabled(true);
         } else {
-            setFormDisabled(false);
+            if (config.constraints && config.constraints.length > 0) {
+                for (const constraint of config.constraints) {
+                    const cData = constraint.data;
+
+                    switch (constraint.type) {
+                        case "STRING_LENGTH":
+                            setFormDisabled(inputValue < cData.min || inputValue > cData.max)
+                            break;
+                        case "NUMBER_RANGE":
+                            const numValue = parseInt(inputValue, 10);
+                            setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max);
+                            break;
+                        default:
+                            setFormDisabled(true);
+                    }
+                }
+            } else {
+                setFormDisabled(false);
+            }
         }
-    }, [props]);
+    }, [inputValue, props.config])
+
+    const updateValue = useCallback(() => {
+        const updated = [];
+        updated[props.config.key] = inputValue;
+
+        //retroService.setConfiguration(updated)
+    }, [inputValue, props]);
 
     return (
         <React.Fragment>
@@ -63,7 +91,12 @@ function ConfigurationModal(props) {
 
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" className="btn btn-primary" disabled={formDisabled}>Save Changes</button>
+                            <button type="button"
+                                    className="btn btn-primary"
+                                    onClick={updateValue}
+                                    disabled={formDisabled}>
+                                Save Changes
+                            </button>
                         </div>
                     </div>
                 </div>
