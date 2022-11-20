@@ -12,6 +12,7 @@ const retroService = new RetroService();
 
 function ConfigurationModal(props) {
 
+    const [inputDisabled, setInputDisabled] = useState(false);
     const [formDisabled, setFormDisabled] = useState(true);
     const [formSubmitting, setFormSubmitting] = useState(false);
     const [formSubmittedSuccessfully, setFormSubmittedSuccessfully] = useState(false);
@@ -57,6 +58,7 @@ function ConfigurationModal(props) {
         setFormSubmittedWithError(false);
         setFormSubmitting(true);
         setFormDisabled(true);
+        setInputDisabled(true);
 
         retroService.updateConfiguration({
             [props.config.key]: inputValue
@@ -68,6 +70,7 @@ function ConfigurationModal(props) {
             setFormSubmittedWithError(true);
             setFormSubmitting(false);
             setFormDisabled(false);
+            setInputDisabled(false);
         });
     }, [inputValue, props]);
 
@@ -80,6 +83,8 @@ function ConfigurationModal(props) {
     const resetOnFinish = useCallback(() => {
         setChangeWarningAck(false);
         setFormSubmittedSuccessfully(false);
+        setInputDisabled(false);
+        props.setLocalRevision(prevRev => prevRev+1)
     }, []);
 
     return (
@@ -114,7 +119,7 @@ function ConfigurationModal(props) {
                                 </span>
                             </div>
 
-                            <ConfigurationInputField type={props.config.value_type} value={inputValue} setValue={setInputValue} />
+                            <ConfigurationInputField type={props.config.value_type} value={inputValue} setValue={setInputValue} disabled={inputDisabled} />
 
                             <div className="form-text">
                                 <DefaultValue value={props.config.default_value} />

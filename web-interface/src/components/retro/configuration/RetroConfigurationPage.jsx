@@ -4,18 +4,24 @@ import InlineHelp from "../../misc/InlineHelp";
 import RetroService from "../../../services/RetroService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import ConfigurationModal from "../../configuration/modal/ConfigurationModal";
+import ConfigurationValue from "../../configuration/ConfigurationValue";
+import IncompleteConfigurationWarning from "./IncompleteConfigurationWarning";
+import RestartRequiredWarning from "../../configuration/RestartRequiredWarning";
 
 const retroService = new RetroService();
 
 function RetroConfigurationPage() {
 
     const [configuration, setConfiguration] = useState(null);
+    const [serviceSummary, setServiceSummary] = useState(null);
+    const [localRevision, setLocalRevision] = useState(0);
 
     useEffect(() => {
         retroService.getConfiguration(setConfiguration);
-    }, [setConfiguration, configuration]);
+        retroService.getServiceSummary(setServiceSummary);
+    }, [localRevision]);
 
-    if (!configuration) {
+    if (!configuration || !serviceSummary) {
         return <LoadingSpinner />;
     }
 
@@ -37,6 +43,9 @@ function RetroConfigurationPage() {
                     <h1>Configuration</h1>
                 </div>
             </div>
+
+            <IncompleteConfigurationWarning show={!serviceSummary.is_configured} />
+            <RestartRequiredWarning awaiting={serviceSummary.config_awaiting_restart} />
 
             <div className="row mt-3">
                 <div className="col-md-6">
@@ -61,18 +70,18 @@ function RetroConfigurationPage() {
                                 <tr>
                                     <td>Fileystem Path</td>
                                     <td>
-                                        {configuration.writer_fs_base_path.value ? configuration.writer_fs_base_path.value : <i>(none)</i>}&nbsp;
+                                        <ConfigurationValue value={configuration.writer_fs_base_path.value} configKey={configuration.writer_fs_base_path.key} required={true} awaitingRestart={serviceSummary.config_awaiting_restart} />{' '}
                                         {configuration.writer_fs_base_path_computed_absolute ? "(" + configuration.writer_fs_base_path_computed_absolute + ")" : null }
                                     </td>
                                     <td>
-                                        <ConfigurationModal config={configuration.writer_fs_base_path} setGlobalConfig={setConfiguration} changeWarning={true} />
+                                        <ConfigurationModal config={configuration.writer_fs_base_path} setGlobalConfig={setConfiguration} setLocalRevision={setLocalRevision} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Searcher Threads</td>
-                                    <td>{configuration.searcher_fs_threadpool.value}</td>
+                                    <td><ConfigurationValue value={configuration.searcher_fs_threadpool.value} configKey={configuration.searcher_fs_threadpool.key} required={true} awaitingRestart={serviceSummary.config_awaiting_restart} /></td>
                                     <td>
-                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} setGlobalConfig={setConfiguration} />
+                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} setGlobalConfig={setConfiguration} changeWarning={true}  setLocalRevision={setLocalRevision} />
                                     </td>
                                 </tr>
                                 </tbody>

@@ -15,7 +15,7 @@ function RetroNotReadyAlert() {
     if (!summary) {
         return null;
     } else {
-        if (true) {
+        if (!summary.is_configured) {
             return (
                 <div className="alert alert-danger">
                     Retrospective is not fully configured yet and will not run or store any data. Please set all
