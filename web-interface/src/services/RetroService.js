@@ -14,6 +14,10 @@ class RetroService {
         })
     }
 
+    updateConfiguration(newConfig, successCallback, errorCallback) {
+        RESTClient.put("/retro/configuration", { change: newConfig }, successCallback, errorCallback);
+    }
+
 }
 
 export default RetroService;

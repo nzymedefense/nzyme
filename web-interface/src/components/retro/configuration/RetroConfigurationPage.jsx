@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import Routes from "../../../util/ApiRoutes";
 import InlineHelp from "../../misc/InlineHelp";
 import RetroService from "../../../services/RetroService";
@@ -13,7 +13,7 @@ function RetroConfigurationPage() {
 
     useEffect(() => {
         retroService.getConfiguration(setConfiguration);
-    }, [setConfiguration]);
+    }, [setConfiguration, configuration]);
 
     if (!configuration) {
         return <LoadingSpinner />;
@@ -65,14 +65,14 @@ function RetroConfigurationPage() {
                                         {configuration.writer_fs_base_path_computed_absolute ? "(" + configuration.writer_fs_base_path_computed_absolute + ")" : null }
                                     </td>
                                     <td>
-                                        <ConfigurationModal config={configuration.writer_fs_base_path} />
+                                        <ConfigurationModal config={configuration.writer_fs_base_path} setGlobalConfig={setConfiguration} changeWarning={true} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Searcher Threads</td>
                                     <td>{configuration.searcher_fs_threadpool.value}</td>
                                     <td>
-                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} />
+                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} setGlobalConfig={setConfiguration} />
                                     </td>
                                 </tr>
                                 </tbody>

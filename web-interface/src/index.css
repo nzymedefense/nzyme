@@ -272,9 +272,28 @@ div.configuration-dialog a.configuration-help {
     text-decoration: none !important;
 }
 
-div.modal-dialog div.modal-content button.modal-close {
-    background-color: #fff;
-    color: #000;
+div.configuration-dialog button.configuration-submit {
+    width: 130px;
+}
+
+div.configuration-dialog button.configuration-submitted {
+    width: 100%;
+}
+
+div.bg-threatlevelmidnight {
+    background-color: #ffa600;
+    background-image: repeating-linear-gradient(120deg, transparent, transparent 25px, #000 25px, #000 50px);
     border: 0;
-    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+div.bg-threatlevelmidnight div.text-overlay {
+    background-color: #000;
+    padding: 12px;
+}
+
+div.bg-threatlevelmidnight div.text-overlay div.form-switch {
+    margin-top: 12px;
 }

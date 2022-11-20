@@ -3,18 +3,32 @@ import DefaultValue from "./DefaultValue";
 import RestartRequired from "./RestartRequired";
 import ConfigurationInputField from "./ConfigurationInputField";
 import RetroService from "../../../services/RetroService";
+import ConfigurationSubmitButton from "./ConfigurationSubmitButton";
+import ConfigurationCloseButton from "./ConfigurationCloseButton";
+import ConfigurationUpdateFailedWarning from "./ConfigurationUpdateFailedWarning";
+import ThreatLevelMidnight from "./ThreatLevelMidnight";
 
 const retroService = new RetroService();
 
 function ConfigurationModal(props) {
 
     const [formDisabled, setFormDisabled] = useState(true);
+    const [formSubmitting, setFormSubmitting] = useState(false);
+    const [formSubmittedSuccessfully, setFormSubmittedSuccessfully] = useState(false);
+    const [formSubmittedWithError, setFormSubmittedWithError] = useState(false);
+    const [changeWarningAck, setChangeWarningAck] = useState(false);
+
     const [inputValue, setInputValue] = useState(props.config.value);
 
     useEffect(() => {
         const config = props.config;
 
-        if (inputValue === undefined) {
+        if (props.changeWarning && !changeWarningAck) {
+            setFormDisabled(true);
+            return;
+        }
+
+        if (inputValue === undefined || inputValue === props.config.value) {
             setFormDisabled(true);
         } else {
             if (config.constraints && config.constraints.length > 0) {
@@ -37,14 +51,36 @@ function ConfigurationModal(props) {
                 setFormDisabled(false);
             }
         }
-    }, [inputValue, props.config])
+    }, [inputValue, changeWarningAck, props.config])
 
     const updateValue = useCallback(() => {
-        const updated = [];
-        updated[props.config.key] = inputValue;
+        setFormSubmittedWithError(false);
+        setFormSubmitting(true);
+        setFormDisabled(true);
 
-        //retroService.setConfiguration(updated)
+        retroService.updateConfiguration({
+            [props.config.key]: inputValue
+        }, function () {
+            setFormSubmitting(false);
+            setFormDisabled(false);
+            setFormSubmittedSuccessfully(true);
+        }, function () {
+            setFormSubmittedWithError(true);
+            setFormSubmitting(false);
+            setFormDisabled(false);
+        });
     }, [inputValue, props]);
+
+    const resetOnCancel = useCallback(() => {
+        setInputValue(props.config.value);
+        setChangeWarningAck(false);
+        setFormSubmittedWithError(false);
+    }, [props.config]);
+
+    const resetOnFinish = useCallback(() => {
+        setChangeWarningAck(false);
+        setFormSubmittedSuccessfully(false);
+    }, []);
 
     return (
         <React.Fragment>
@@ -54,15 +90,13 @@ function ConfigurationModal(props) {
                 Edit
             </a>
 
-            <div className="modal fade configuration-dialog" id={"configuration-dialog-" + props.config.key} data-bs-keyboard="true"
-                 tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div className="modal configuration-dialog" id={"configuration-dialog-" + props.config.key}
+                 data-bs-keyboard="false" data-bs-backdrop="static" tabIndex="-1"
+                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">Edit Configuration Value</h5>
-                            <button type="button" data-bs-dismiss="modal" aria-label="Close" className="modal-close">
-                                <i className="fa-solid fa-xmark"></i>
-                            </button>
                         </div>
 
                         <div className="modal-body">
@@ -87,16 +121,27 @@ function ConfigurationModal(props) {
                             </div>
 
                             <RestartRequired required={props.config.requires_restart} />
+                            <ConfigurationUpdateFailedWarning failed={formSubmittedWithError} />
+                            <ThreatLevelMidnight
+                                enabled={props.changeWarning}
+                                helpTag={props.config.help_tag}
+                                configKey={props.config.key}
+                                changeWarningAck={changeWarningAck}
+                                setChangeWarningAck={setChangeWarningAck} />
                         </div>
 
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button"
-                                    className="btn btn-primary"
-                                    onClick={updateValue}
-                                    disabled={formDisabled}>
-                                Save Changes
-                            </button>
+                            <ConfigurationCloseButton
+                                submitting={formSubmitting}
+                                submittedSuccessfully={formSubmittedSuccessfully}
+                                onClick={resetOnCancel} />
+
+                            <ConfigurationSubmitButton
+                                onClick={updateValue}
+                                disabled={formDisabled}
+                                submitting={formSubmitting}
+                                submittedSuccessfully={formSubmittedSuccessfully}
+                                onFinishedClick={resetOnFinish} />
                         </div>
                     </div>
                 </div>
