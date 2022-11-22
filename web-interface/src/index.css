@@ -188,16 +188,15 @@ div.content {
 }
 
 #footer a {
-    color: #d91c3e;
     text-decoration: none;
 }
 
-#footer a:hover {
-    color: #0067ff;
+a {
+    color: #0E42B0;
 }
 
-a {
-    color: #D90429;
+a:hover {
+    color: #144FD7;
 }
 
 h1 {
@@ -296,4 +295,8 @@ div.bg-threatlevelmidnight div.text-overlay {
 
 div.bg-threatlevelmidnight div.text-overlay div.form-switch {
     margin-top: 12px;
+}
+
+.collapsing {
+    transition: none !important;
 }
