@@ -347,7 +347,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, getRegistry(plugin.getId()), this);
+            plugin.initialize(this, getRegistry(plugin.getId()), this, this);
 
             this.plugins.add(plugin.getId());
         }
