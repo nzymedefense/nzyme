@@ -21,6 +21,7 @@ import app.nzyme.plugin.Database;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import horse.wtf.nzyme.alerts.Alert;
@@ -140,6 +141,15 @@ public class MockNzyme implements NzymeLeader {
         this.configurationService.initialize();
 
         this.metricRegistry = new MetricRegistry();
+
+        // Register JVM metrics.
+        this.metricRegistry.register("gc", new GarbageCollectorMetricSet());
+        this.metricRegistry.register("classes", new ClassLoadingGaugeSet());
+        this.metricRegistry.register("fds", new FileDescriptorRatioGauge());
+        this.metricRegistry.register("jvm", new JvmAttributeGaugeSet());
+        this.metricRegistry.register("mem", new MemoryUsageGaugeSet());
+        this.metricRegistry.register("threadstates", new ThreadStatesGaugeSet());
+
         this.memoryRegistry = new MemoryRegistry();
         this.systemStatus = new SystemStatus();
         this.networks = new Networks(this);
