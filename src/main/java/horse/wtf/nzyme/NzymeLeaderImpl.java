@@ -81,6 +81,7 @@ import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
 import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
+import horse.wtf.nzyme.rest.resources.monitoring.PrometheusResource;
 import horse.wtf.nzyme.rest.resources.system.*;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
 import horse.wtf.nzyme.rest.resources.taps.TablesResource;
@@ -384,6 +385,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(TapsResource.class);
         resourceConfig.register(DNSResource.class);
         resourceConfig.register(PluginResource.class);
+        resourceConfig.register(PrometheusResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

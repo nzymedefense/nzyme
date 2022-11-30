@@ -1,16 +1,13 @@
 package horse.wtf.nzyme.monitoring.prometheus;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
-import horse.wtf.nzyme.dot11.MalformedFrameException;
 import org.testng.annotations.Test;
 
 public class PrometheusFormatterTest {
 
     @Test
-    public void testFormat() throws Exception, MalformedFrameException {
+    public void testFormat() {
         NzymeLeader nzyme = new MockNzyme();
 
         // Create some metrics data.
@@ -20,8 +17,8 @@ public class PrometheusFormatterTest {
         nzyme.getMetrics().counter("app.nzyme.test.some-counter_from--somewhere").inc(100);
         nzyme.getMetrics().meter("app.nzyme.test.some-meter_from--somewhere").mark();
 
-        PrometheusFormatter f = new PrometheusFormatter(nzyme);
-        System.out.println(f.format());
+        PrometheusFormatter f = new PrometheusFormatter(nzyme.getMetrics());
+        f.format(); // Currently only running to make sure there are no exceptions. Needs some better tests.
     }
 
 }

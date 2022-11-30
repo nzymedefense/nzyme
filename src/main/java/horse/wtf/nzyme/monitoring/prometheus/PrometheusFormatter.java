@@ -13,13 +13,11 @@ public class PrometheusFormatter {
 
     private static final Logger LOG = LogManager.getLogger(PrometheusFormatter.class);
 
-    private final NzymeLeader nzyme;
+    private final MetricRegistry metrics;
 
-    public PrometheusFormatter(NzymeLeader nzyme) {
-        this.nzyme = nzyme;
+    public PrometheusFormatter(MetricRegistry metrics) {
+        this.metrics = metrics;
     }
-
-    // TODO apply number parsing to all nunbers.
 
     @SuppressWarnings("rawtypes")
     public String format() {
@@ -27,35 +25,19 @@ public class PrometheusFormatter {
 
         // Gauges.
         sb.append("# Gauges\n");
-        for (Map.Entry<String, Gauge> x : nzyme.getMetrics().getGauges().entrySet()) {
+        for (Map.Entry<String, Gauge> x : metrics.getGauges().entrySet()) {
             try {
                 Gauge gauge = x.getValue();
-                String printableValue;
 
-                if (gauge.getValue() instanceof Integer) {
-                    printableValue = String.valueOf(gauge.getValue());
-                } else if (gauge.getValue() instanceof Long) {
-                    printableValue = BigDecimal.valueOf((Long) gauge.getValue()).toPlainString();
-                } else if (gauge.getValue() instanceof Double) {
-                    Double dVal = (Double) gauge.getValue();
-                    if (dVal.isNaN() || dVal.isInfinite()) {
-                        continue;
-                    }
-
-                    printableValue = BigDecimal.valueOf(dVal).toPlainString();
-                } else if (gauge.getValue() instanceof String || gauge.getValue() instanceof Set) {
+                if (gauge.getValue() instanceof String || gauge.getValue() instanceof Set) {
                     LOG.debug("Skipping gauge [{}] of type [{}].",
                             x.getKey(), gauge.getValue().getClass().getCanonicalName());
-                    continue;
-                } else {
-                    LOG.warn("Unknown gauge value type [{}] of [{}]. Skipping.",
-                            gauge.getValue().getClass().getCanonicalName(), x.getKey());
                     continue;
                 }
 
                 sb.append(formatKey(x.getKey()))
                         .append(" ")
-                        .append(printableValue)
+                        .append(formatNumber(gauge.getValue()))
                         .append("\n");
             } catch(Exception e) {
                 LOG.error("Could not process gauge [{}]. Skipping. Value was: [{}].",
@@ -65,7 +47,7 @@ public class PrometheusFormatter {
 
         // Counters.
         sb.append("# Counters\n");
-        for (Map.Entry<String, Counter> x : nzyme.getMetrics().getCounters().entrySet()) {
+        for (Map.Entry<String, Counter> x : metrics.getCounters().entrySet()) {
             Counter counter = x.getValue();
             sb.append(formatKey(x.getKey()))
                     .append(" ")
@@ -75,179 +57,179 @@ public class PrometheusFormatter {
 
         // Meters
         sb.append("# Meters\n");
-        for (Map.Entry<String, Meter> x : nzyme.getMetrics().getMeters().entrySet()) {
+        for (Map.Entry<String, Meter> x : metrics.getMeters().entrySet()) {
             Meter meter = x.getValue();
             String key = formatKey(x.getKey());
 
             sb.append(key)
                     .append("_count ")
-                    .append(meter.getCount())
+                    .append(formatNumber(meter.getCount()))
                     .append("\n");
 
             sb.append(key)
                     .append("_mean ")
-                    .append(meter.getMeanRate())
+                    .append(formatNumber(meter.getMeanRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"1\"} ")
-                    .append(meter.getOneMinuteRate())
+                    .append(formatNumber(meter.getOneMinuteRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"5\"} ")
-                    .append(meter.getFiveMinuteRate())
+                    .append(formatNumber(meter.getFiveMinuteRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"15\"} ")
-                    .append(meter.getFifteenMinuteRate())
+                    .append(formatNumber(meter.getFifteenMinuteRate()))
                     .append("\n");
         }
 
         // Histograms
         sb.append("# Histograms\n");
-        for (Map.Entry<String, Histogram> x : nzyme.getMetrics().getHistograms().entrySet()) {
+        for (Map.Entry<String, Histogram> x : metrics.getHistograms().entrySet()) {
             Histogram histogram = x.getValue();
             Snapshot snap = histogram.getSnapshot();
             String key = formatKey(x.getKey());
 
             sb.append(key)
                     .append("_count ")
-                    .append(histogram.getCount())
+                    .append(formatNumber(histogram.getCount()))
                     .append("\n");
 
             sb.append(key)
                     .append("_mean ")
-                    .append(snap.getMean())
+                    .append(formatNumber(snap.getMean()))
                     .append("\n");
 
             sb.append(key)
                     .append("_median ")
-                    .append(snap.getMedian())
+                    .append(formatNumber(snap.getMedian()))
                     .append("\n");
 
             sb.append(key)
                     .append("_max ")
-                    .append(snap.getMax())
+                    .append(formatNumber(snap.getMax()))
                     .append("\n");
 
             sb.append(key)
                     .append("_min ")
-                    .append(snap.getMin())
+                    .append(formatNumber(snap.getMin()))
                     .append("\n");
 
             sb.append(key)
                     .append("_stddev ")
-                    .append(snap.getStdDev())
+                    .append(formatNumber(snap.getStdDev()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"75\"} ")
-                    .append(snap.get75thPercentile())
+                    .append(formatNumber(snap.get75thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"95\"} ")
-                    .append(snap.get95thPercentile())
+                    .append(formatNumber(snap.get95thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"98\"} ")
-                    .append(snap.get98thPercentile())
+                    .append(formatNumber(snap.get98thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"99\"} ")
-                    .append(snap.get99thPercentile())
+                    .append(formatNumber(snap.get99thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"999\"} ")
-                    .append(snap.get999thPercentile())
+                    .append(formatNumber(snap.get999thPercentile()))
                     .append("\n");
         }
 
         // Timers
         sb.append("# Timers\n");
-        for (Map.Entry<String, Timer> x : nzyme.getMetrics().getTimers().entrySet()) {
+        for (Map.Entry<String, Timer> x : metrics.getTimers().entrySet()) {
             Timer timer = x.getValue();
             Snapshot snap = timer.getSnapshot();
             String key = formatKey(x.getKey());
 
             sb.append(key)
                     .append("_count ")
-                    .append(timer.getCount())
+                    .append(formatNumber(timer.getCount()))
                     .append("\n");
 
             sb.append(key)
                     .append("_mean_rate ")
-                    .append(timer.getMeanRate())
+                    .append(formatNumber(timer.getMeanRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"1\"} ")
-                    .append(timer.getOneMinuteRate())
+                    .append(formatNumber(timer.getOneMinuteRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"5\"} ")
-                    .append(timer.getFiveMinuteRate())
+                    .append(formatNumber(timer.getFiveMinuteRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_rate{ma=\"15\"} ")
-                    .append(timer.getFifteenMinuteRate())
+                    .append(formatNumber(timer.getFifteenMinuteRate()))
                     .append("\n");
 
             sb.append(key)
                     .append("_mean ")
-                    .append(snap.getMean())
+                    .append(formatNumber(snap.getMean()))
                     .append("\n");
 
             sb.append(key)
                     .append("_median ")
-                    .append(snap.getMedian())
+                    .append(formatNumber(snap.getMedian()))
                     .append("\n");
 
             sb.append(key)
                     .append("_max ")
-                    .append(snap.getMax())
+                    .append(formatNumber(snap.getMax()))
                     .append("\n");
 
             sb.append(key)
                     .append("_min ")
-                    .append(snap.getMin())
+                    .append(formatNumber(snap.getMin()))
                     .append("\n");
 
             sb.append(key)
                     .append("_stddev ")
-                    .append(snap.getStdDev())
+                    .append(formatNumber(snap.getStdDev()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"75\"} ")
-                    .append(snap.get75thPercentile())
+                    .append(formatNumber(snap.get75thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"95\"} ")
-                    .append(snap.get95thPercentile())
+                    .append(formatNumber(snap.get95thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"98\"} ")
-                    .append(snap.get98thPercentile())
+                    .append(formatNumber(snap.get98thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"99\"} ")
-                    .append(snap.get99thPercentile())
+                    .append(formatNumber(snap.get99thPercentile()))
                     .append("\n");
 
             sb.append(key)
                     .append("_dist{percentile=\"999\"} ")
-                    .append(snap.get999thPercentile())
+                    .append(formatNumber(snap.get999thPercentile()))
                     .append("\n");
         }
 
@@ -257,11 +239,31 @@ public class PrometheusFormatter {
 
     private String formatKey(String key) {
         return key
-                .replace(".", "_")
-                .replace("-", "_")
-                .replace("'", "")
-                .replaceAll("\\s+", "_")
+                .replaceAll("[^A-Za-z0-9\\s]", "_")
+                .replace("__", "_")
                 .toLowerCase();
+    }
+
+    private String formatNumber(Object o) {
+        if (o instanceof Integer) {
+            return String.valueOf(o);
+        } else if (o instanceof Long) {
+            return BigDecimal.valueOf((Long) o).toPlainString();
+        } else if (o instanceof Double) {
+            Double dVal = (Double) o;
+            if (dVal.isNaN()) {
+                return "NaN";
+            }
+
+            if (dVal.isInfinite()) {
+                return "+Inf";
+            }
+
+            return BigDecimal.valueOf(dVal).toPlainString();
+        } else {
+            LOG.warn("Unknown gauge value type [{}]. Skipping.", o.getClass().getCanonicalName());
+            return "0";
+        }
     }
 
 }
