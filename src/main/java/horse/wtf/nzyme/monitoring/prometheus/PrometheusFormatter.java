@@ -2,18 +2,24 @@ package horse.wtf.nzyme.monitoring.prometheus;
 
 import com.codahale.metrics.*;
 import horse.wtf.nzyme.NzymeLeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Set;
 
 public class PrometheusFormatter {
 
-    private final NzymeLeader nzyme;
+    private static final Logger LOG = LogManager.getLogger(PrometheusFormatter.class);
 
-    // use reporting template engine
+    private final NzymeLeader nzyme;
 
     public PrometheusFormatter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
+
+    // TODO apply number parsing to all nunbers.
 
     @SuppressWarnings("rawtypes")
     public String format() {
@@ -22,12 +28,38 @@ public class PrometheusFormatter {
         // Gauges.
         sb.append("# Gauges\n");
         for (Map.Entry<String, Gauge> x : nzyme.getMetrics().getGauges().entrySet()) {
-            Gauge gauge = x.getValue();
-            if (gauge.getValue() instanceof Number) {
+            try {
+                Gauge gauge = x.getValue();
+                String printableValue;
+
+                if (gauge.getValue() instanceof Integer) {
+                    printableValue = String.valueOf(gauge.getValue());
+                } else if (gauge.getValue() instanceof Long) {
+                    printableValue = BigDecimal.valueOf((Long) gauge.getValue()).toPlainString();
+                } else if (gauge.getValue() instanceof Double) {
+                    Double dVal = (Double) gauge.getValue();
+                    if (dVal.isNaN() || dVal.isInfinite()) {
+                        continue;
+                    }
+
+                    printableValue = BigDecimal.valueOf(dVal).toPlainString();
+                } else if (gauge.getValue() instanceof String || gauge.getValue() instanceof Set) {
+                    LOG.debug("Skipping gauge [{}] of type [{}].",
+                            x.getKey(), gauge.getValue().getClass().getCanonicalName());
+                    continue;
+                } else {
+                    LOG.warn("Unknown gauge value type [{}] of [{}]. Skipping.",
+                            gauge.getValue().getClass().getCanonicalName(), x.getKey());
+                    continue;
+                }
+
                 sb.append(formatKey(x.getKey()))
                         .append(" ")
-                        .append(gauge.getValue().toString())
+                        .append(printableValue)
                         .append("\n");
+            } catch(Exception e) {
+                LOG.error("Could not process gauge [{}]. Skipping. Value was: [{}].",
+                        x.getKey(), x.getValue().getValue().toString(), e);
             }
         }
 
@@ -136,8 +168,8 @@ public class PrometheusFormatter {
                     .append("\n");
         }
 
-
         // Timers
+        sb.append("# Timers\n");
         for (Map.Entry<String, Timer> x : nzyme.getMetrics().getTimers().entrySet()) {
             Timer timer = x.getValue();
             Snapshot snap = timer.getSnapshot();
