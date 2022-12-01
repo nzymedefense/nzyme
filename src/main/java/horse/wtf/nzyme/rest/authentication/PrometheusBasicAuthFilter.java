@@ -1,20 +1,3 @@
-/*
- * This file is part of nzyme.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the Server Side Public License, version 1,
- * as published by MongoDB, Inc.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Server Side Public License for more details.
- *
- * You should have received a copy of the Server Side Public License
- * along with this program. If not, see
- * <http://www.mongodb.com/licensing/server-side-public-license>.
- */
-
 package horse.wtf.nzyme.rest.authentication;
 
 import com.google.common.net.HttpHeaders;
@@ -32,40 +15,34 @@ import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
 
-
-@TapSecured
+@PrometheusBasicAuthSecured
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class TapAuthenticationFilter implements ContainerRequestFilter {
+public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
 
-    private static final Logger LOG = LogManager.getLogger(TapAuthenticationFilter.class);
-
-    private static final String AUTHENTICATION_SCHEME = "Bearer";
+    private static final Logger LOG = LogManager.getLogger(PrometheusBasicAuthFilter.class);
 
     private final NzymeLeader nzyme;
 
-    public TapAuthenticationFilter(NzymeLeader nzyme) {
+    public PrometheusBasicAuthFilter(NzymeLeader nzyme) {
         this.nzyme = nzyme;
     }
-    
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         try {
             String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+            HTTPBasicAuthParser.Credentials creds = HTTPBasicAuthParser.parse(authorizationHeader);
 
-            if (!isTokenBasedAuthentication(authorizationHeader)) {
-                abortWithUnauthorized(requestContext);
-                return;
-            }
+            // abort if no creds configured in registry
 
-            String tapSecret = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
-            if (nzyme.getConfigurationService().getConfiguration().tapSecret().equals(tapSecret)) {
+            if (creds.getUsername().equals("lennart") && creds.getPassword().equals("123123123")) {
                 // Set new security context for later use in resources.
                 final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
                 requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {
-                        return () -> tapSecret;
+                        return () -> creds.getUsername();
                     }
 
                     @Override
@@ -80,26 +57,22 @@ public class TapAuthenticationFilter implements ContainerRequestFilter {
 
                     @Override
                     public String getAuthenticationScheme() {
-                        return AUTHENTICATION_SCHEME;
+                        return SecurityContext.BASIC_AUTH;
                     }
 
                 });
             } else {
-                LOG.warn("Rejected attempted authentication using invalid tap secret.");
+                LOG.warn("Rejected attempted authentication using invalid Prometheus basic auth.");
                 abortWithUnauthorized(requestContext);
             }
         } catch (Exception e) {
-            LOG.info("Could not authenticate using tap secret.", e);
+            LOG.info("Could not authenticate using Prometheus HTTP basic authentication.", e);
             abortWithUnauthorized(requestContext);
         }
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
         requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-    }
-
-    private boolean isTokenBasedAuthentication(String authorizationHeader) {
-        return authorizationHeader != null && authorizationHeader.toLowerCase().startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
     }
 
 }

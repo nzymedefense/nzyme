@@ -2,6 +2,7 @@ package horse.wtf.nzyme.rest.resources.monitoring;
 
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.monitoring.prometheus.PrometheusFormatter;
+import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthSecured;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -10,6 +11,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@PrometheusBasicAuthSecured
 @Path("/api/monitoring/prometheus")
 public class PrometheusResource {
 

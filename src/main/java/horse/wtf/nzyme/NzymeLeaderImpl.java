@@ -77,6 +77,8 @@ import horse.wtf.nzyme.registry.RegistryImpl;
 import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
+import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthFilter;
+import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthSecured;
 import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
@@ -360,6 +362,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(new RESTAuthenticationFilter(this));
         resourceConfig.register(new TapAuthenticationFilter(this));
+        resourceConfig.register(new PrometheusBasicAuthFilter(this));
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new NzymeLeaderInjectionBinder(this));
         resourceConfig.register(new ObjectMapperProvider());
