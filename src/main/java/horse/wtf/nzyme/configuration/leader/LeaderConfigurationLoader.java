@@ -101,6 +101,7 @@ public class LeaderConfigurationLoader {
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
                 parsePluginDirectory(),
+                parseCryptoKeyDirectory(),
                 parseRemoteInputAddress(),
                 parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
@@ -267,6 +268,10 @@ public class LeaderConfigurationLoader {
         return general.getString(ConfigurationKeys.PLUGIN_DIRECTORY);
     }
 
+    private String parseCryptoKeyDirectory() {
+        return general.getString(ConfigurationKeys.CRYPTO_KEY_DIRECTORY);
+    }
+
     private URI parseRestListenUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.REST_LISTEN_URI));
     }
@@ -409,6 +414,8 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(general, ConfigurationKeys.DATABASE_PATH, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_KEY_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
@@ -420,7 +427,6 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(root, ConfigurationKeys.DOT11_ALERTS, "<root>", List.class);
         ConfigurationValidator.expect(root, ConfigurationKeys.GROUNDSTATION_DEVICE, "<root>", Config.class);
 
-
         // Plugin directory exists and is readable?
         File pluginDirectory = new File(parsePluginDirectory());
         if (!pluginDirectory.exists()) {
@@ -429,6 +435,28 @@ public class LeaderConfigurationLoader {
 
         if (!pluginDirectory.isDirectory()) {
             throw new InvalidConfigurationException("Plugin directory [" + parsePluginDirectory() + "] is not a directory.");
+        }
+
+        if (!pluginDirectory.canRead()) {
+            throw new InvalidConfigurationException("Plugin directory [" + parsePluginDirectory() + "] is not readable.");
+        }
+
+        // Crypto key directory exists and is readable?
+        File cryptoKeyDirectory = new File(parseCryptoKeyDirectory());
+        if (!cryptoKeyDirectory.exists()) {
+            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] does not exist.");
+        }
+
+        if (!cryptoKeyDirectory.isDirectory()) {
+            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not a directory.");
+        }
+
+        if (!cryptoKeyDirectory.canRead()) {
+            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not readable.");
+        }
+
+        if (!cryptoKeyDirectory.canWrite()) {
+            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not writable.");
         }
 
         if (root.hasPath(ConfigurationKeys.UPLINKS)) {

@@ -17,11 +17,14 @@ general: {
   # Download current list of manufacturers and enable MAC address to manufacturer lookup?
   fetch_ouis: true
 
-  # Path to directory that the tracker will use to store some temporary information. (must be writable)
+  # Path to directory that nzyme will use to store some temporary information. (must be writable)
   data_directory: /usr/share/nzyme
 
   # Path to nzyme plugin directory.
   plugin_directory: /usr/share/nzyme/plugins
+
+  # Path to nzyme cryptographic key directory.
+  crypto_key_directory: /usr/share/nzyme/crypto
 
   # We use Python to inject frames for traps.
   python {

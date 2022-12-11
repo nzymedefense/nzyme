@@ -27,6 +27,7 @@ import horse.wtf.nzyme.bandits.trackers.GroundStation;
 import horse.wtf.nzyme.bandits.trackers.TrackerManager;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.crypto.Crypto;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
 import horse.wtf.nzyme.dot11.clients.Clients;
 import horse.wtf.nzyme.dot11.networks.sentry.Sentry;
@@ -98,6 +99,8 @@ public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, Database
     List<String> getInitializedPlugins();
 
     Optional<RetroService> retroService();
+
+    Crypto getCrypto();
 
     ObjectMapper getObjectMapper();
 

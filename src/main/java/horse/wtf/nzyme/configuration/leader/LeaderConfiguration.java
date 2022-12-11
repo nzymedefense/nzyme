@@ -42,6 +42,8 @@ public abstract class LeaderConfiguration {
 
     public abstract String pluginDirectory();
 
+    public abstract String cryptoKeyDirectory();
+
     @Nullable
     public abstract InetSocketAddress remoteInputAddress();
 
@@ -73,7 +75,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, String pluginDirectory, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
+    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, String pluginDirectory, String cryptoKeyDirectory, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -89,6 +91,7 @@ public abstract class LeaderConfiguration {
                 .tlsCertificatePath(tlsCertificatePath)
                 .tlsKeyPath(tlsKeyPath)
                 .pluginDirectory(pluginDirectory)
+                .cryptoKeyDirectory(cryptoKeyDirectory)
                 .remoteInputAddress(remoteInputAddress)
                 .uplinks(uplinks)
                 .dot11Monitors(dot11Monitors)
@@ -162,6 +165,8 @@ public abstract class LeaderConfiguration {
         public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
         public abstract Builder pluginDirectory(String pluginDirectory);
+
+        public abstract Builder cryptoKeyDirectory(String cryptoKeyDirectory);
 
         public abstract Builder remoteInputAddress(InetSocketAddress remoteInputAddress);
 

@@ -41,6 +41,7 @@ import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.configuration.base.BaseConfiguration;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.crypto.Crypto;
 import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
@@ -78,7 +79,6 @@ import horse.wtf.nzyme.remote.forwarders.Forwarder;
 import horse.wtf.nzyme.remote.forwarders.ForwarderFactory;
 import horse.wtf.nzyme.remote.inputs.RemoteFrameInput;
 import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthFilter;
-import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthSecured;
 import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
@@ -178,6 +178,8 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private Optional<RetroService> retroService = Optional.empty();
 
+    private final Crypto crypto;
+
     private final List<Object> pluginRestResources;
 
     private HttpServer httpServer;
@@ -205,6 +207,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
         this.metrics = new MetricRegistry();
+        this.crypto = new Crypto(this);
         this.memoryRegistry = new MemoryRegistry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
@@ -716,6 +719,11 @@ public class NzymeLeaderImpl implements NzymeLeader {
     @Override
     public Optional<RetroService> retroService() {
         return retroService;
+    }
+
+    @Override
+    public Crypto getCrypto() {
+        return crypto;
     }
 
     @Override

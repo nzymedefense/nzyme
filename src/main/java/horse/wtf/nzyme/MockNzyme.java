@@ -34,6 +34,7 @@ import horse.wtf.nzyme.configuration.InvalidConfigurationException;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationService;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
 import horse.wtf.nzyme.configuration.leader.LeaderConfigurationLoader;
+import horse.wtf.nzyme.crypto.Crypto;
 import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11MetaInformation;
 import horse.wtf.nzyme.dot11.anonymization.Anonymizer;
@@ -338,6 +339,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public Optional<RetroService> retroService() {
         return Optional.empty();
+    }
+
+    @Override
+    public Crypto getCrypto() {
+        return null;
     }
 
     @Override

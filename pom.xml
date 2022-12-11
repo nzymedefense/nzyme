@@ -54,6 +54,7 @@
         <cronutils.version>9.1.6</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
         <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
+        <bouncycastle.version>1.72.2</bouncycastle.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -322,6 +323,11 @@
             <groupId>app.nzyme</groupId>
             <artifactId>nzyme-plugin</artifactId>
             <version>${nzymeplugin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpg-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
         </dependency>
     </dependencies>
 

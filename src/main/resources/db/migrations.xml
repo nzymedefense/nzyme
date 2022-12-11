@@ -1112,4 +1112,28 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="49" author="lennartkoopmann">
+        <createTable tableName="crypto_keys">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="node" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="key_type" type="varchar(25)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="key_signature" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
