@@ -32,7 +32,6 @@ import horse.wtf.nzyme.alerts.service.callbacks.FileCallback;
 import horse.wtf.nzyme.bandits.trackers.devices.TrackerDevice;
 import horse.wtf.nzyme.configuration.*;
 import horse.wtf.nzyme.dot11.deception.traps.Trap;
-import horse.wtf.nzyme.notifications.uplinks.graylog.GraylogAddress;
 import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,14 +39,12 @@ import org.simplejavamail.api.email.Recipient;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
 
 import javax.annotation.Nullable;
-import javax.mail.Message;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 
 public class LeaderConfigurationLoader {
@@ -101,7 +98,7 @@ public class LeaderConfigurationLoader {
                 parseTlsCertificatePath(),
                 parseTlsKeyPath(),
                 parsePluginDirectory(),
-                parseCryptoKeyDirectory(),
+                parseCryptoDirectory(),
                 parseRemoteInputAddress(),
                 parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
@@ -268,8 +265,8 @@ public class LeaderConfigurationLoader {
         return general.getString(ConfigurationKeys.PLUGIN_DIRECTORY);
     }
 
-    private String parseCryptoKeyDirectory() {
-        return general.getString(ConfigurationKeys.CRYPTO_KEY_DIRECTORY);
+    private String parseCryptoDirectory() {
+        return general.getString(ConfigurationKeys.CRYPTO_DIRECTORY);
     }
 
     private URI parseRestListenUri() {
@@ -415,7 +412,7 @@ public class LeaderConfigurationLoader {
         ConfigurationValidator.expect(general, ConfigurationKeys.VERSIONCHECKS, ConfigurationKeys.GENERAL, Boolean.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
-        ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_KEY_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
@@ -441,22 +438,22 @@ public class LeaderConfigurationLoader {
             throw new InvalidConfigurationException("Plugin directory [" + parsePluginDirectory() + "] is not readable.");
         }
 
-        // Crypto key directory exists and is readable?
-        File cryptoKeyDirectory = new File(parseCryptoKeyDirectory());
+        // Crypto directory exists and is readable?
+        File cryptoKeyDirectory = new File(parseCryptoDirectory());
         if (!cryptoKeyDirectory.exists()) {
-            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] does not exist.");
+            throw new InvalidConfigurationException("Crypto directory [" + parseCryptoDirectory() + "] does not exist.");
         }
 
         if (!cryptoKeyDirectory.isDirectory()) {
-            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not a directory.");
+            throw new InvalidConfigurationException("Crypto directory [" + parseCryptoDirectory() + "] is not a directory.");
         }
 
         if (!cryptoKeyDirectory.canRead()) {
-            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not readable.");
+            throw new InvalidConfigurationException("Crypto directory [" + parseCryptoDirectory() + "] is not readable.");
         }
 
         if (!cryptoKeyDirectory.canWrite()) {
-            throw new InvalidConfigurationException("Crypto key directory [" + parseCryptoKeyDirectory() + "] is not writable.");
+            throw new InvalidConfigurationException("Crypto directory [" + parseCryptoDirectory() + "] is not writable.");
         }
 
         if (root.hasPath(ConfigurationKeys.UPLINKS)) {

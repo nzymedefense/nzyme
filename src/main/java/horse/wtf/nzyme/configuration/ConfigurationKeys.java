@@ -35,7 +35,7 @@ public class ConfigurationKeys {
 
     public static final String PLUGIN_DIRECTORY = "plugin_directory";
 
-    public static final String CRYPTO_KEY_DIRECTORY = "crypto_key_directory";
+    public static final String CRYPTO_DIRECTORY = "crypto_directory";
 
     public static final String REMOTE_INPUT = "remote_input";
     public static final String REPORTING = "reporting";

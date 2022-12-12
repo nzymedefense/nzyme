@@ -26,12 +26,12 @@ public class Crypto {
         PGP
     }
 
-    private final File cryptoKeyDirectoryConfig;
+    private final File cryptoDirectoryConfig;
     private final Database database;
     private final String nodeId;
 
     public Crypto(NzymeLeader nzyme) {
-        this.cryptoKeyDirectoryConfig = new File(nzyme.getConfiguration().cryptoKeyDirectory());
+        this.cryptoDirectoryConfig = new File(nzyme.getConfiguration().cryptoDirectory());
         this.database = nzyme.getDatabase();
         this.nodeId = nzyme.getNodeID();
 
@@ -39,8 +39,8 @@ public class Crypto {
     }
 
     public void initialize() throws CryptoInitializationException {
-        File secretKeyLocation = Paths.get(cryptoKeyDirectoryConfig.toString(), "secret.asc").toFile();
-        File publicKeyLocation = Paths.get(cryptoKeyDirectoryConfig.toString(), "public.asc").toFile();
+        File secretKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), "pgp_secret.asc").toFile();
+        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), "pgp_public.asc").toFile();
 
         if (!secretKeyLocation.exists() || !publicKeyLocation.exists()) {
             LOG.warn("PGP secret or public key missing. Re-generating pair. This will make existing encrypted registry " +
@@ -139,36 +139,45 @@ public class Crypto {
         }
     }
 
-    private PGPPublicKey readPublicKey(File file) throws IOException, PGPException
-    {
+
+    /*
+     * The readPublicKey methods are Copyright (c) 2000-2021 The Legion of the Bouncy Castle Inc. (https://www.bouncycastle.org)
+     * and were copied under the terms of the MIT license:
+     *
+     * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+     * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+     * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+     * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+     * The above copyright notice and this permission notice shall be included in all copies or substantial portions
+     * of the Software.
+     *
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+     * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+     * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+     * DEALINGS IN THE SOFTWARE.
+     *
+     * https://github.com/bcgit/bc-java/tree/master/pg/src/main/java/org/bouncycastle/openpgp/examples
+     *
+     */
+
+    private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
         InputStream keyIn = new BufferedInputStream(new FileInputStream(file));
         PGPPublicKey pubKey = readPublicKey(keyIn);
         keyIn.close();
         return pubKey;
     }
 
-    static PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException
-    {
-        PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(
-                PGPUtil.getDecoderStream(input), new JcaKeyFingerprintCalculator());
-
-        //
-        // we just loop through the collection till we find a key suitable for encryption, in the real
-        // world you would probably want to be a bit smarter about this.
-        //
+    static PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException {
+        PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(input), new JcaKeyFingerprintCalculator());
 
         Iterator keyRingIter = pgpPub.getKeyRings();
-        while (keyRingIter.hasNext())
-        {
+        while (keyRingIter.hasNext()) {
             PGPPublicKeyRing keyRing = (PGPPublicKeyRing)keyRingIter.next();
-
             Iterator keyIter = keyRing.getPublicKeys();
-            while (keyIter.hasNext())
-            {
+            while (keyIter.hasNext()) {
                 PGPPublicKey key = (PGPPublicKey)keyIter.next();
-
-                if (key.isEncryptionKey())
-                {
+                if (key.isEncryptionKey()) {
                     return key;
                 }
             }

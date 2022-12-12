@@ -23,8 +23,8 @@ general: {
   # Path to nzyme plugin directory.
   plugin_directory: /usr/share/nzyme/plugins
 
-  # Path to nzyme cryptographic key directory.
-  crypto_key_directory: /usr/share/nzyme/crypto
+  # Path to nzyme cryptographic key/certificate directory.
+  crypto_directory: /usr/share/nzyme/crypto
 
   # We use Python to inject frames for traps.
   python {
