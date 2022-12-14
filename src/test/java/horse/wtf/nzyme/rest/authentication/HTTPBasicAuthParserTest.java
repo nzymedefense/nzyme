@@ -57,6 +57,19 @@ public class HTTPBasicAuthParserTest {
         HTTPBasicAuthParser.parse("Basic Zm9vYmFyOg==");
     }
 
+    @Test(expectedExceptions = { IllegalArgumentException.class }, expectedExceptionsMessageRegExp = "No Authorization header set.")
+    public void testExceptionForEmptyAuthorizationHeader() {
+        HTTPBasicAuthParser.parse("");
+    }
 
+    @Test(expectedExceptions = { IllegalArgumentException.class }, expectedExceptionsMessageRegExp = "No Authorization header set.")
+    public void testExceptionForWhitespaceAuthorizationHeader() {
+        HTTPBasicAuthParser.parse(" ");
+    }
+
+    @Test(expectedExceptions = { IllegalArgumentException.class }, expectedExceptionsMessageRegExp = "No Authorization header set.")
+    public void testExceptionForNullAuthorizationHeader() {
+        HTTPBasicAuthParser.parse(null);
+    }
 
 }

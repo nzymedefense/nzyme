@@ -3,14 +3,14 @@ package horse.wtf.nzyme.rest.authentication;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class HTTPBasicAuthParser {
 
-    private static final Logger LOG = LogManager.getLogger(HTTPBasicAuthParser.class);
-
     public static Credentials parse(String header) throws IllegalArgumentException {
+        if (Strings.isNullOrEmpty(header) || header.trim().isEmpty()) {
+            throw new IllegalArgumentException("No Authorization header set.");
+        }
+
         if (!header.startsWith("Basic ")) {
             throw new IllegalArgumentException("Invalid header format: Scheme");
         }

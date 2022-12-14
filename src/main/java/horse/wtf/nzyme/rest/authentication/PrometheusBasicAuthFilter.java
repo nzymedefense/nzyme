@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.rest.authentication;
 
+import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
 import horse.wtf.nzyme.NzymeLeader;
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +33,13 @@ public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
     public void filter(ContainerRequestContext requestContext) throws IOException {
         try {
             String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+            // No Authorization header supplied.
+            if (Strings.isNullOrEmpty(authorizationHeader) || authorizationHeader.trim().isEmpty()) {
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
             HTTPBasicAuthParser.Credentials creds = HTTPBasicAuthParser.parse(authorizationHeader);
 
             // abort if no creds configured in registry
