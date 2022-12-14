@@ -5,6 +5,7 @@ import horse.wtf.nzyme.alerts.service.AlertDatabaseEntryMapper;
 import horse.wtf.nzyme.bandits.database.*;
 import horse.wtf.nzyme.configuration.db.BaseConfigurationMapper;
 import horse.wtf.nzyme.configuration.leader.LeaderConfiguration;
+import horse.wtf.nzyme.crypto.database.PGPKeyFingerprintMapper;
 import horse.wtf.nzyme.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import horse.wtf.nzyme.dot11.networks.beaconrate.BeaconRateMapper;
 import horse.wtf.nzyme.dot11.networks.sentry.db.SentrySSIDMapper;
@@ -90,7 +91,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TapMetricsGaugeAggregationMapper())
                 .registerRowMapper(new DNSStatisticsBucketMapper())
                 .registerRowMapper(new DNSTrafficSummaryMapper())
-                .registerRowMapper(new DNSPairSummaryMapper());
+                .registerRowMapper(new DNSPairSummaryMapper())
+                .registerRowMapper(new PGPKeyFingerprintMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

@@ -17,6 +17,8 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class Crypto {
 
@@ -142,6 +144,15 @@ public class Crypto {
         }
     }
 
+    public List<PGPKeyFingerprint> getPGPKeysByNode() {
+        return database.withHandle(handle ->
+                handle.createQuery("SELECT node, key_signature, created_at " +
+                        "FROM crypto_keys WHERE key_type = :key_type")
+                        .bind("key_type", KeyType.PGP)
+                        .mapTo(PGPKeyFingerprint.class)
+                        .list()
+        );
+    }
 
     /*
      * The readPublicKey methods are Copyright (c) 2000-2021 The Legion of the Bouncy Castle Inc. (https://www.bouncycastle.org)

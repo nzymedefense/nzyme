@@ -276,6 +276,12 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
         eventService.recordEvent(new StartupEvent());
 
+        try {
+            this.crypto.initialize();
+        } catch (Crypto.CryptoInitializationException e) {
+            throw new RuntimeException("Could not load cryptographic subsystem.", e);
+        }
+
         LOG.info("Reading configuration from database.");
         this.configurationService.initialize();
 
@@ -392,6 +398,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(DNSResource.class);
         resourceConfig.register(PluginResource.class);
         resourceConfig.register(PrometheusResource.class);
+        resourceConfig.register(CryptoResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
