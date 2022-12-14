@@ -21,7 +21,7 @@ general: {
   fetch_ouis: true
   versionchecks: true
 
-  crypto_key_directory: "crypto_test"
+  crypto_directory: "crypto_test"
   plugin_directory: "plugin_test"
 }
 

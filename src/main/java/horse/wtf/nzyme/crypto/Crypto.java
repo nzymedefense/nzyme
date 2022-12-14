@@ -26,6 +26,9 @@ public class Crypto {
         PGP
     }
 
+    public static final String PGP_PRIVATE_KEY_NAME = "pgp_private.asc";
+    public static final String PGP_PUBLIC_KEY_NAME = "pgp_public.asc";
+
     private final File cryptoDirectoryConfig;
     private final Database database;
     private final String nodeId;
@@ -39,11 +42,11 @@ public class Crypto {
     }
 
     public void initialize() throws CryptoInitializationException {
-        File secretKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), "pgp_secret.asc").toFile();
-        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), "pgp_public.asc").toFile();
+        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
+        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
 
-        if (!secretKeyLocation.exists() || !publicKeyLocation.exists()) {
-            LOG.warn("PGP secret or public key missing. Re-generating pair. This will make existing encrypted registry " +
+        if (!privateKeyLocation.exists() || !publicKeyLocation.exists()) {
+            LOG.warn("PGP private or public key missing. Re-generating pair. This will make existing encrypted registry " +
                     "values unreadable. Please consult the nzyme documentation.");
 
             try {
@@ -51,8 +54,8 @@ public class Crypto {
                 keyPairGenerator.initialize(4096);
                 KeyPair pair = keyPairGenerator.generateKeyPair();
 
-                FileOutputStream secretOut = new FileOutputStream(secretKeyLocation);
-                ArmoredOutputStream armoredSecretOut = new ArmoredOutputStream(secretOut);
+                FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
+                ArmoredOutputStream armoredPrivateOut = new ArmoredOutputStream(privateOut);
                 FileOutputStream publicOut = new FileOutputStream(publicKeyLocation);
                 ArmoredOutputStream armoredPublicOut = new ArmoredOutputStream(publicOut);
 
@@ -60,7 +63,7 @@ public class Crypto {
                         .build()
                         .get(HashAlgorithmTags.SHA1);
                 PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
-                PGPSecretKey secretKey = new PGPSecretKey(
+                PGPSecretKey privateKey = new PGPSecretKey(
                         PGPSignature.DEFAULT_CERTIFICATION,
                         keyPair,
                         "nzyme-leader",
@@ -75,16 +78,16 @@ public class Crypto {
                                 .build("".toCharArray())
                 );
 
-                // Write secret key.
-                secretKey.encode(armoredSecretOut);
+                // Write private key.
+                privateKey.encode(armoredPrivateOut);
 
                 // Write public key.
-                PGPPublicKey key = secretKey.getPublicKey();
+                PGPPublicKey key = privateKey.getPublicKey();
                 key.encode(armoredPublicOut);
 
-                armoredSecretOut.close();
+                armoredPrivateOut.close();
                 armoredPublicOut.close();
-                secretOut.close();
+                privateOut.close();
                 publicOut.close();
             } catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e) {
                 throw new CryptoInitializationException("Unexpected crypto provider exception when trying " +

@@ -52,15 +52,15 @@ public class CryptoTest {
     public void testInitialize() throws Crypto.CryptoInitializationException, IOException {
         NzymeLeader mockNzyme = new MockNzyme();
 
-        File secretFile = Paths.get(FOLDER.toString(), "secret.asc").toFile();
-        File publicFile = Paths.get(FOLDER.toString(), "public.asc").toFile();
+        File privateFile = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME).toFile();
+        File publicFile = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME).toFile();
 
         new Crypto(mockNzyme).initialize();
 
-        assertTrue(secretFile.exists());
+        assertTrue(privateFile.exists());
         assertTrue(publicFile.exists());
 
-        assertTrue(Files.readString(secretFile.toPath()).startsWith("-----BEGIN PGP PRIVATE KEY BLOCK-----"));
+        assertTrue(Files.readString(privateFile.toPath()).startsWith("-----BEGIN PGP PRIVATE KEY BLOCK-----"));
         assertTrue(Files.readString(publicFile.toPath()).startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"));
         assertFalse(Strings.isNullOrEmpty(readKeyIdFromDB(mockNzyme)));
     }
@@ -69,16 +69,16 @@ public class CryptoTest {
     public void testInitializeDoesNotRegenerateKeysOnEachInit() throws Crypto.CryptoInitializationException, IOException {
         NzymeLeader mockNzyme = new MockNzyme();
 
-        Path secretPath = Paths.get(FOLDER.toString(), "secret.asc");
-        Path publicPath = Paths.get(FOLDER.toString(), "public.asc");
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(secretPath);
+        String secret1 = Files.readString(privatePath);
         String public1 = Files.readString(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(secretPath);
+        String secret2 = Files.readString(privatePath);
         String public2 = Files.readString(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
@@ -93,18 +93,18 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfSecretMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeLeader mockNzyme = new MockNzyme();
 
-        Path secretPath = Paths.get(FOLDER.toString(), "secret.asc");
-        Path publicPath = Paths.get(FOLDER.toString(), "public.asc");
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(secretPath);
+        String secret1 = Files.readString(privatePath);
         String public1 = Files.readString(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
-        secretPath.toFile().delete();
+        privatePath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(secretPath);
+        String secret2 = Files.readString(privatePath);
         String public2 = Files.readString(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
@@ -119,18 +119,18 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfPublicMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeLeader mockNzyme = new MockNzyme();
 
-        Path secretPath = Paths.get(FOLDER.toString(), "secret.asc");
-        Path publicPath = Paths.get(FOLDER.toString(), "public.asc");
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(secretPath);
+        String secret1 = Files.readString(privatePath);
         String public1 = Files.readString(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         publicPath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(secretPath);
+        String secret2 = Files.readString(privatePath);
         String public2 = Files.readString(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
@@ -145,19 +145,19 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfPublicAndSecretMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeLeader mockNzyme = new MockNzyme();
 
-        Path secretPath = Paths.get(FOLDER.toString(), "secret.asc");
-        Path publicPath = Paths.get(FOLDER.toString(), "public.asc");
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(secretPath);
+        String secret1 = Files.readString(privatePath);
         String public1 = Files.readString(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
-        secretPath.toFile().delete();
+        privatePath.toFile().delete();
         publicPath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(secretPath);
+        String secret2 = Files.readString(privatePath);
         String public2 = Files.readString(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
