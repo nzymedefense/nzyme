@@ -50,6 +50,7 @@ import RetroConfigurationPage from "./components/retro/configuration/RetroConfig
 import PluginsService from "./services/PluginsService";
 import MissingRetroPluginPage from "./components/retro/MissingRetroPluginPage";
 import LoadingSpinner from "./components/misc/LoadingSpinner";
+import CryptoSummaryPage from "./components/system/crypto/CryptoSummaryPage";
 
 class App extends React.Component {
 
@@ -141,6 +142,9 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':tapName')} element={<TapDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':tapName', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+
+                                            { /* System/Crypto. */ }
+                                            <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
 
                                             { /* Ethernet/DNS. */}
                                             <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

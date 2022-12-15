@@ -83,7 +83,7 @@ function Sidebar() {
                         icon={<i className="fa-solid fa-users fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.CRYPTO.INDEX}
-                        title="Certificates & Keys"
+                        title="Keys &amp; Certificates"
                         icon={<i className="fa-solid fa-key fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.VERSION}
