@@ -1,7 +1,18 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import PGPKeyTable from "./PGPKeyTable";
+import PGPMetrics from "./PGPMetrics";
+import CryptoService from "../../../services/CryptoService";
+
+const cryptoService = new CryptoService();
 
 function CryptoSummaryPage() {
+
+    const [pgpKeys, setPGPKeys] = useState(null);
+    const [pgpMetrics, setPGPMetrics] = useState(null);
+
+    useEffect(() => {
+        cryptoService.getPGPSummary(setPGPKeys, setPGPMetrics);
+    }, []);
 
     return (
         <div>
@@ -19,13 +30,21 @@ function CryptoSummaryPage() {
 
                             <p>
                                 The nzyme system will automatically generate PGP keys for you to encrypt sensitive
-                                information in the database. It is important to have the same keys on all nzyme leader
-                                nodes or decryption will not work and configuration breaks. If you run multiple nzyme
-                                leader nodes, you must copy the existing keys from another node. Learn more about PGP keys
+                                information in the database. Learn more about PGP keys
                                 in the <a href="https://go.nzyme.org/crypto-pgp" target="_blank">nzyme documentation</a>.
                             </p>
 
-                            <PGPKeyTable />
+                            <PGPKeyTable keys={pgpKeys} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-md-6">
+                    <div className="card">
+                        <div className="card-body">
+                            <h3>PGP Metrics</h3>
+
+                            <PGPMetrics metrics={pgpMetrics} />
                         </div>
                     </div>
                 </div>

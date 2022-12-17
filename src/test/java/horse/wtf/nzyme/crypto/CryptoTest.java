@@ -3,6 +3,8 @@ package horse.wtf.nzyme.crypto;
 import com.google.common.base.Strings;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -15,6 +17,8 @@ import java.nio.file.Paths;
 import static org.testng.Assert.*;
 
 public class CryptoTest {
+
+    private static final Logger LOG = LogManager.getLogger(CryptoTest.class);
 
     private static final Path FOLDER = Paths.get("crypto_test");
 
@@ -166,6 +170,37 @@ public class CryptoTest {
         assertNotNull(sig1);
         assertNotNull(sig2);
         assertNotEquals(sig1, sig2);
+    }
+
+    @Test
+    public void testEncryptionDecryption() throws Crypto.CryptoInitializationException, Crypto.CryptoOperationException {
+        NzymeLeader mockNzyme = new MockNzyme();
+        Crypto crypto = new Crypto(mockNzyme);
+        crypto.initialize();
+
+        byte[] value = "IT IS A SECRET.".getBytes();
+
+        byte[] encrypted = crypto.encrypt(value);
+        byte[] decrypted = crypto.decrypt(encrypted);
+
+        assertEquals(decrypted, value);
+    }
+
+    @Test(expectedExceptions = { Crypto.CryptoOperationException.class }, expectedExceptionsMessageRegExp = "Cannot decrypt value.")
+    public void testEncryptionDecryptionFailsWithWrongKey() throws Crypto.CryptoInitializationException, Crypto.CryptoOperationException {
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+
+        NzymeLeader mockNzyme = new MockNzyme();
+        Crypto crypto = new Crypto(mockNzyme);
+        crypto.initialize();
+
+        byte[] value = "IT IS A SECRET.".getBytes();
+        byte[] encrypted = crypto.encrypt(value);
+
+        privatePath.toFile().delete();
+        crypto.initialize();
+
+        crypto.decrypt(encrypted);
     }
 
 }

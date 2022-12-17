@@ -1,16 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import CryptoService from "../../../services/CryptoService";
+import React from 'react';
 import LoadingSpinner from "../../misc/LoadingSpinner";
 
-const cryptoService = new CryptoService();
+function PGPKeyTable(props) {
 
-function PGPKeyTable() {
-
-    const [keys, setKeys] = useState(null);
-
-    useEffect(() => {
-        cryptoService.findAllPGPKeys(setKeys);
-    }, []);
+    const keys = props.keys;
 
     if (!keys) {
         return <LoadingSpinner />

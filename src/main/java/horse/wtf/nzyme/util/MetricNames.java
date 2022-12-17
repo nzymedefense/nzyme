@@ -19,6 +19,7 @@ package horse.wtf.nzyme.util;
 
 import horse.wtf.nzyme.bandits.engine.ContactIdentifierEngine;
 import horse.wtf.nzyme.bandits.trackers.GroundStation;
+import horse.wtf.nzyme.crypto.Crypto;
 import horse.wtf.nzyme.database.DatabaseImpl;
 import horse.wtf.nzyme.dot11.Dot11TaggedParameters;
 import horse.wtf.nzyme.dot11.networks.Networks;
@@ -62,6 +63,9 @@ public class MetricNames {
     public static final String REMOTE_FRAMES_RECEIVED = name(RemoteFrameInput.class, "frames-received");
     public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
     public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
+
+    public static final String PGP_ENCRYPTION_TIMING = name(Crypto.class, "encryption-timing");
+    public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");
 
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
 
