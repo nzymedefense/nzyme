@@ -3,9 +3,8 @@ package horse.wtf.nzyme.crypto;
 import com.google.common.base.Strings;
 import horse.wtf.nzyme.MockNzyme;
 import horse.wtf.nzyme.NzymeLeader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -18,19 +17,19 @@ import static org.testng.Assert.*;
 
 public class CryptoTest {
 
-    private static final Logger LOG = LogManager.getLogger(CryptoTest.class);
-
     private static final Path FOLDER = Paths.get("crypto_test");
 
     @SuppressWarnings({"resource", "ResultOfMethodCallIgnored"})
     @BeforeMethod
-    public void cleanDirectory() throws IOException {
+    public void cleanDirectory() throws IOException, InterruptedException {
         Files.walk(FOLDER)
                 .map(Path::toFile)
                 .forEach(file -> {
                     // Don't delete the entire crypto_test root directory.
                     if (!file.toPath().equals(FOLDER)) {
-                        file.delete();
+                        if (!file.delete()) {
+                            throw new RuntimeException("Could not delete key file [" + file.getAbsolutePath() + "] to prepare tests.");
+                        }
                     }
                 });
 

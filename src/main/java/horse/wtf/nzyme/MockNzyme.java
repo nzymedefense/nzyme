@@ -102,6 +102,8 @@ public class MockNzyme implements NzymeLeader {
     private final EventService eventService;
     private final BaseConfigurationService configurationService;
 
+    private final Crypto crypto;
+
     public MockNzyme() {
         this(0);
     }
@@ -142,6 +144,7 @@ public class MockNzyme implements NzymeLeader {
         this.configurationService.initialize();
 
         this.metricRegistry = new MetricRegistry();
+        this.crypto = new Crypto(this);
 
         // Register JVM metrics.
         this.metricRegistry.register("gc", new GarbageCollectorMetricSet());
@@ -172,6 +175,11 @@ public class MockNzyme implements NzymeLeader {
     @Override
     public void initialize() {
         eventService.recordEvent(new StartupEvent());
+        try {
+            this.crypto.initialize();
+        } catch (Crypto.CryptoInitializationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -343,7 +351,7 @@ public class MockNzyme implements NzymeLeader {
 
     @Override
     public Crypto getCrypto() {
-        return null;
+        return crypto;
     }
 
     @Override

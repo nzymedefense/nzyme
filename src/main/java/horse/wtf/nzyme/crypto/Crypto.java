@@ -301,6 +301,16 @@ public class Crypto {
         );
     }
 
+    public String getLocalPGPKeyFingerprint() {
+        return database.withHandle(handle ->
+                handle.createQuery("SELECT key_signature FROM crypto_keys WHERE key_type = :key_type AND node = :node")
+                        .bind("key_type", KeyType.PGP)
+                        .bind("node", nodeId)
+                        .mapTo(String.class)
+                        .one()
+        );
+    }
+
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
         InputStream keyIn = new BufferedInputStream(new FileInputStream(file));
         PGPPublicKey pubKey = readPublicKey(keyIn);

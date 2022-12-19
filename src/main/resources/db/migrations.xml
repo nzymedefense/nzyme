@@ -1136,4 +1136,24 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="50" author="lennartkoopmann">
+        <createTable tableName="registry_encrypted">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="key" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="value" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="key_signature" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
