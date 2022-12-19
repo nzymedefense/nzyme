@@ -3,11 +3,9 @@ package horse.wtf.nzyme.registry;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import horse.wtf.nzyme.NzymeLeader;
 import horse.wtf.nzyme.crypto.Crypto;
-import horse.wtf.nzyme.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

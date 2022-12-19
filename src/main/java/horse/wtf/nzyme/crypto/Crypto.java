@@ -86,13 +86,11 @@ public class Crypto {
             LOG.warn("PGP private or public key missing. Re-generating pair. This will make existing encrypted registry " +
                     "values unreadable. Please consult the nzyme documentation.");
 
-            try {
+            try (FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
+                 FileOutputStream publicOut = new FileOutputStream(publicKeyLocation)) {
                 KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
                 keyPairGenerator.initialize(4096);
                 KeyPair pair = keyPairGenerator.generateKeyPair();
-
-                FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
-                FileOutputStream publicOut = new FileOutputStream(publicKeyLocation);
 
                 PGPDigestCalculator shaCalc = new JcaPGPDigestCalculatorProviderBuilder()
                         .build()
@@ -119,9 +117,6 @@ public class Crypto {
                 // Write public key.
                 PGPPublicKey key = privateKey.getPublicKey();
                 key.encode(publicOut);
-
-                privateOut.close();
-                publicOut.close();
             } catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e) {
                 throw new CryptoInitializationException("Unexpected crypto provider exception when trying " +
                         "to create key.", e);
@@ -176,21 +171,17 @@ public class Crypto {
     }
 
     public byte[] encrypt(byte[] value) throws CryptoOperationException {
-        try {
+        try(ByteArrayOutputStream out = new ByteArrayOutputStream(); ByteArrayOutputStream literalData = new ByteArrayOutputStream();){
             Timer.Context timer = encryptionTimer.time();
             File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
             PGPPublicKey publicKey = readPublicKey(publicKeyLocation);
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-
             // Write header and literal data.
-            ByteArrayOutputStream literalData = new ByteArrayOutputStream();
             PGPLiteralDataGenerator literalDataGenerator = new PGPLiteralDataGenerator();
             OutputStream literalOut = literalDataGenerator.open(literalData, PGPLiteralData.BINARY, "nzymepgp", value.length, DateTime.now().toDate());
             literalOut.write(value);
             byte[] bytes = literalData.toByteArray();
             literalDataGenerator.close();
-            literalData.close();
 
             PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
                     new JcePGPDataEncryptorBuilder(PGPEncryptedData.AES_256)
@@ -202,12 +193,8 @@ public class Crypto {
             encGen.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(publicKey).setProvider("BC"));
 
             OutputStream enc = encGen.open(out, bytes.length);
-
             enc.write(bytes);
             enc.close();
-
-            out.close();
-
 
             timer.stop();
             return out.toByteArray();
@@ -217,11 +204,10 @@ public class Crypto {
     }
 
     public byte[] decrypt(byte[] value) throws CryptoOperationException {
-        try {
+        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
+
+        try(InputStream dataIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(value)); InputStream keyIn = new FileInputStream(privateKeyLocation)) {
             Timer.Context timer = decryptionTimer.time();
-            File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
-            InputStream dataIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(value));
-            InputStream keyIn = new FileInputStream(privateKeyLocation);
 
             JcaPGPObjectFactory pgpF = new JcaPGPObjectFactory(dataIn);
             PGPEncryptedDataList enc;
@@ -281,10 +267,8 @@ public class Crypto {
             }
 
             data.close();
-            keyIn.close();
-            dataIn.close();
-
             timer.stop();
+
             return data.toByteArray();
         } catch(IOException | PGPException | IllegalArgumentException e) {
             throw new CryptoOperationException("Cannot decrypt value.", e);
@@ -312,10 +296,9 @@ public class Crypto {
     }
 
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
-        InputStream keyIn = new BufferedInputStream(new FileInputStream(file));
-        PGPPublicKey pubKey = readPublicKey(keyIn);
-        keyIn.close();
-        return pubKey;
+        try(InputStream keyIn = new BufferedInputStream(new FileInputStream(file))) {
+            return readPublicKey(keyIn);
+        }
     }
 
     private PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException {
