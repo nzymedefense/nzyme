@@ -11,6 +11,12 @@ const ApiRoutes = {
     },
     CRYPTO: {
       INDEX: '/system/crypto'
+    },
+    MONITORING: {
+      INDEX: '/system/monitoring',
+      PROMETHEUS: {
+        INDEX: '/system/monitoring/prometheus'
+      }
     }
   },
   REPORTING: {

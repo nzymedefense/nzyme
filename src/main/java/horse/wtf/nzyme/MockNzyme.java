@@ -360,6 +360,11 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
+    public Registry getDatabaseCoreRegistry() {
+        return null;
+    }
+
+    @Override
     public Key getSigningKey() {
         return signingKey;
     }

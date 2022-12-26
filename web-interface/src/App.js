@@ -51,6 +51,8 @@ import PluginsService from "./services/PluginsService";
 import MissingRetroPluginPage from "./components/retro/MissingRetroPluginPage";
 import LoadingSpinner from "./components/misc/LoadingSpinner";
 import CryptoSummaryPage from "./components/system/crypto/CryptoSummaryPage";
+import MonitoringPage from "./components/system/monitoring/MonitoringPage";
+import PrometheusMetricsPage from "./components/system/monitoring/prometheus/PrometheusMetricsPage";
 
 class App extends React.Component {
 
@@ -145,6 +147,10 @@ class App extends React.Component {
 
                                             { /* System/Crypto. */ }
                                             <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
+
+                                            { /* System/Monitoring. */ }
+                                            <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
+                                            <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
 
                                             { /* Ethernet/DNS. */}
                                             <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

@@ -52,7 +52,9 @@ function TapDetailsPage() {
             </div>
 
             <div className="row">
-                <h1>Tap "{tap.name}"</h1>
+                <div className="col-md-12">
+                    <h1>Tap "{tap.name}"</h1>
+                </div>
             </div>
 
             <TapInactiveWarning tap={tap} />

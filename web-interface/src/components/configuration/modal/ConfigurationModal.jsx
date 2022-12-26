@@ -7,6 +7,7 @@ import ConfigurationSubmitButton from "./ConfigurationSubmitButton";
 import ConfigurationCloseButton from "./ConfigurationCloseButton";
 import ConfigurationUpdateFailedWarning from "./ConfigurationUpdateFailedWarning";
 import ThreatLevelMidnight from "./ThreatLevelMidnight";
+import InputLabel from "./InputLabel";
 
 const retroService = new RetroService();
 
@@ -44,6 +45,9 @@ function ConfigurationModal(props) {
                             const numValue = parseInt(inputValue, 10);
                             setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max);
                             break;
+                        case "SIMPLE_BOOLEAN":
+                            setFormDisabled(!(inputValue === true || inputValue === false));
+                            break;
                         default:
                             setFormDisabled(true);
                     }
@@ -52,7 +56,7 @@ function ConfigurationModal(props) {
                 setFormDisabled(false);
             }
         }
-    }, [inputValue, changeWarningAck, props.config])
+    }, [inputValue, changeWarningAck])
 
     const updateValue = useCallback(() => {
         setFormSubmittedWithError(false);
@@ -60,7 +64,7 @@ function ConfigurationModal(props) {
         setFormDisabled(true);
         setInputDisabled(true);
 
-        retroService.updateConfiguration({
+        props.dbUpdateCallback({
             [props.config.key]: inputValue
         }, function () {
             setFormSubmitting(false);
@@ -72,7 +76,7 @@ function ConfigurationModal(props) {
             setFormDisabled(false);
             setInputDisabled(false);
         });
-    }, [inputValue, props]);
+    }, [inputValue]);
 
     const resetOnCancel = useCallback(() => {
         setInputValue(props.config.value);
@@ -105,21 +109,15 @@ function ConfigurationModal(props) {
                         </div>
 
                         <div className="modal-body">
-                            <div>
-                                <label htmlFor="config-value" className="form-label float-start">
-                                    {props.config.key_human_readable}
-                                </label>
+                            <InputLabel config={props.config} />
 
-                                <span className="float-end">
-                                    {props.config.help_tag ?
-                                        <a href={"https://go.nzyme.org/" + props.config.help_tag} className="configuration-help" target="_blank">
-                                            Help
-                                        </a>
-                                        : null }
-                                </span>
-                            </div>
-
-                            <ConfigurationInputField type={props.config.value_type} value={inputValue} setValue={setInputValue} disabled={inputDisabled} />
+                            <ConfigurationInputField
+                                type={props.config.value_type}
+                                title={props.config.key_human_readable}
+                                fieldKey={props.config.key}
+                                value={inputValue}
+                                setValue={setInputValue}
+                                disabled={inputDisabled} />
 
                             <div className="form-text">
                                 <DefaultValue value={props.config.default_value} />

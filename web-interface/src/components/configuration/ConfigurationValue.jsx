@@ -11,18 +11,22 @@ function ConfigurationValue(props) {
                 </React.Fragment>
             )
         } else {
-            return <span>{props.value}</span>
+            return <span>{String(props.value)}</span>
         }
     } else {
-        if (props.required) {
-            return (
-                <React.Fragment>
-                    <i>(none)</i>{' '}
-                    <strong className="text-danger">(required setting)</strong>
-                </React.Fragment>
-            )
+        if (props.boolean) {
+            return <span>false</span>
         } else {
-            return <i>(none)</i>
+            if (props.required) {
+                return (
+                    <React.Fragment>
+                        <i>(none)</i>{' '}
+                        <strong className="text-danger">(required setting)</strong>
+                    </React.Fragment>
+                )
+            } else {
+                return <i>(none)</i>
+            }
         }
     }
 

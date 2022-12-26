@@ -104,6 +104,8 @@ public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, Database
 
     ObjectMapper getObjectMapper();
 
+    Registry getDatabaseCoreRegistry();
+
     Key getSigningKey();
     Version getVersion();
 

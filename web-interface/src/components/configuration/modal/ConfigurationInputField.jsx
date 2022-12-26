@@ -19,6 +19,21 @@ function ConfigurationInputField(props) {
                           className="form-control"
                           autoComplete="off"
                           value={props.value ? props.value : ""} onChange={(e) => updateValue(parseInt(e.target.value, 10))} />;
+        case "BOOLEAN":
+            return (
+                <div className="form-check form-switch">
+                    <input className="form-check-input"
+                           autoComplete="off"
+                           type="checkbox"
+                           role="switch"
+                           id={"switch-" + props.fieldKey}
+                           checked={ props.value }
+                           onChange={(e) => { updateValue(e.target.checked) } } />
+                    <label className="form-check-label" htmlFor={"switch-" + props.fieldKey}>
+                        {props.title}
+                    </label>
+                </div>
+            )
         default:
             return <div>Unknown field type.</div>;
     }

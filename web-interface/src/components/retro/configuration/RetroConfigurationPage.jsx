@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Routes from "../../../util/ApiRoutes";
 import InlineHelp from "../../misc/InlineHelp";
 import RetroService from "../../../services/RetroService";
@@ -70,18 +70,38 @@ function RetroConfigurationPage() {
                                 <tr>
                                     <td>Fileystem Path</td>
                                     <td>
-                                        <ConfigurationValue value={configuration.writer_fs_base_path.value} configKey={configuration.writer_fs_base_path.key} required={true} awaitingRestart={serviceSummary.config_awaiting_restart} />{' '}
-                                        {configuration.writer_fs_base_path_computed_absolute ? "(" + configuration.writer_fs_base_path_computed_absolute + ")" : null }
+                                        <ConfigurationValue value={configuration.writer_fs_base_path.value}
+                                                            configKey={configuration.writer_fs_base_path.key}
+                                                            required={true}
+                                                            awaitingRestart={serviceSummary.config_awaiting_restart} />{' '}
+                                        {
+                                            configuration.writer_fs_base_path_computed_absolute ?
+                                                "(" + configuration.writer_fs_base_path_computed_absolute + ")"
+                                                : null
+                                        }
                                     </td>
                                     <td>
-                                        <ConfigurationModal config={configuration.writer_fs_base_path} setGlobalConfig={setConfiguration} setLocalRevision={setLocalRevision} />
+                                        <ConfigurationModal config={configuration.writer_fs_base_path}
+                                                            setGlobalConfig={setConfiguration}
+                                                            changeWarning={true}
+                                                            setLocalRevision={setLocalRevision}
+                                                            dbUpdateCallback={retroService.updateConfiguration} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Searcher Threads</td>
-                                    <td><ConfigurationValue value={configuration.searcher_fs_threadpool.value} configKey={configuration.searcher_fs_threadpool.key} required={true} awaitingRestart={serviceSummary.config_awaiting_restart} /></td>
                                     <td>
-                                        <ConfigurationModal config={configuration.searcher_fs_threadpool} setGlobalConfig={setConfiguration} changeWarning={true}  setLocalRevision={setLocalRevision} />
+                                        <ConfigurationValue value={configuration.searcher_fs_threadpool.value}
+                                                            configKey={configuration.searcher_fs_threadpool.key}
+                                                            required={true}
+                                                            awaitingRestart={serviceSummary.config_awaiting_restart}/>
+                                    </td>
+                                    <td>
+                                        <ConfigurationModal config={configuration.searcher_fs_threadpool}
+                                                            setGlobalConfig={setConfiguration}
+                                                            changeWarning={false}
+                                                            setLocalRevision={setLocalRevision}
+                                                            dbUpdateCallback={retroService.updateConfiguration} />
                                     </td>
                                 </tr>
                                 </tbody>

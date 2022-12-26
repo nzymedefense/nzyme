@@ -83,6 +83,7 @@ import horse.wtf.nzyme.rest.authentication.RESTAuthenticationFilter;
 import horse.wtf.nzyme.rest.authentication.TapAuthenticationFilter;
 import horse.wtf.nzyme.rest.interceptors.TapTableSizeInterceptor;
 import horse.wtf.nzyme.rest.resources.ethernet.DNSResource;
+import horse.wtf.nzyme.rest.resources.monitoring.MonitoringResource;
 import horse.wtf.nzyme.rest.resources.monitoring.PrometheusResource;
 import horse.wtf.nzyme.rest.resources.system.*;
 import horse.wtf.nzyme.rest.resources.taps.StatusResource;
@@ -359,7 +360,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, getRegistry(plugin.getId()), this, this);
+            plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
 
             this.plugins.add(plugin.getId());
         }
@@ -399,6 +400,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         resourceConfig.register(PluginResource.class);
         resourceConfig.register(PrometheusResource.class);
         resourceConfig.register(CryptoResource.class);
+        resourceConfig.register(MonitoringResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
@@ -839,8 +841,13 @@ public class NzymeLeaderImpl implements NzymeLeader {
         this.pluginRestResources.add(resource);
     }
 
-    public Registry getRegistry(String namespace) {
+    public Registry getDatabaseRegistry(String namespace) {
         return new RegistryImpl(this, namespace);
+    }
+
+    @Override
+    public Registry getDatabaseCoreRegistry() {
+        return new RegistryImpl(this, "core");
     }
 
 }
