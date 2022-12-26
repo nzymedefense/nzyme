@@ -39,7 +39,7 @@ function ConfigurationModal(props) {
 
                     switch (constraint.type) {
                         case "STRING_LENGTH":
-                            setFormDisabled(inputValue < cData.min || inputValue > cData.max)
+                            setFormDisabled(inputValue.length < cData.min || inputValue.length > cData.max)
                             break;
                         case "NUMBER_RANGE":
                             const numValue = parseInt(inputValue, 10);

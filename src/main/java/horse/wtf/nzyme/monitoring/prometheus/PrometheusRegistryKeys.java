@@ -14,7 +14,25 @@ public class PrometheusRegistryKeys {
                 add(ConfigurationEntryConstraint.createSimpleBooleanConstraint());
             }}),
             Optional.of("false"),
-            true
+            false
+    );
+
+    public static final RegistryKey REST_REPORT_USERNAME = RegistryKey.create(
+            "prometheus_rest_report_username",
+            Optional.of(new ArrayList<>(){{
+                add(ConfigurationEntryConstraint.createStringLengthConstraint(1, 255));
+            }}),
+            Optional.empty(),
+            false
+    );
+
+    public static final RegistryKey REST_REPORT_PASSWORD = RegistryKey.create(
+            "prometheus_rest_report_password",
+            Optional.of(new ArrayList<>(){{
+                add(ConfigurationEntryConstraint.createStringLengthConstraint(1, 255));
+            }}),
+            Optional.empty(),
+            false
     );
 
 }

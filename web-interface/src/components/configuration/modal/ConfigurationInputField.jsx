@@ -14,6 +14,11 @@ function ConfigurationInputField(props) {
                           className="form-control"
                           autoComplete="off"
                           value={props.value ? props.value : ""} onChange={(e) => updateValue(e.target.value) }/>;
+        case "STRING_ENCRYPTED":
+            return <input type="text"
+                          className="form-control"
+                          autoComplete="off"
+                          value={props.value ? props.value : ""} onChange={(e) => updateValue(e.target.value) }/>;
         case "NUMBER":
             return <input type="number"
                           className="form-control"

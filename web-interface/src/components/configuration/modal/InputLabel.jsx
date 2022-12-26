@@ -1,9 +1,10 @@
 import React from "react";
+import ConfigurationValueHelp from "./ConfigurationValueHelp";
 
 function InputLabel(props) {
 
     if (props.config.value_type === "BOOLEAN") {
-        return null;
+        return <ConfigurationValueHelp helpTag={props.config.help_tag} />;
     }
 
     return (
@@ -12,13 +13,7 @@ function InputLabel(props) {
                 {props.config.key_human_readable}
             </label>
 
-            <span className="float-end">
-                {props.config.help_tag ?
-                    <a href={"https://go.nzyme.org/" + props.config.help_tag} className="configuration-help" target="_blank">
-                        Help
-                    </a>
-                    : null }
-            </span>
+            <ConfigurationValueHelp helpTag={props.config.help_tag} />
         </div>
     )
 

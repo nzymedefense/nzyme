@@ -4,6 +4,7 @@ import ConfigurationValue from "../../../configuration/ConfigurationValue";
 import MonitoringService from "../../../../services/MonitoringService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
+import EncryptedConfigurationValue from "../../../configuration/EncryptedConfigurationValue";
 
 const monitoringService = new MonitoringService();
 
@@ -62,13 +63,39 @@ function PrometheusMetricsPage() {
                                         <ConfigurationValue value={configuration.prometheus_rest_report_enabled.value}
                                                             configKey={configuration.prometheus_rest_report_enabled.key}
                                                             required={true}
-                                                            awaitingRestart={false}
                                                             boolean={true} />
                                     </td>
                                     <td>
                                         <ConfigurationModal config={configuration.prometheus_rest_report_enabled}
                                                             setGlobalConfig={setConfiguration}
-                                                            changeWarning={false}
+                                                            setLocalRevision={setLocalRevision}
+                                                            dbUpdateCallback={monitoringService.updateConfiguration} />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Basic authentication username</td>
+                                    <td>
+                                        <ConfigurationValue value={configuration.prometheus_rest_report_username.value}
+                                                            configKey={configuration.prometheus_rest_report_username.key}
+                                                            required={true} />
+                                    </td>
+                                    <td>
+                                        <ConfigurationModal config={configuration.prometheus_rest_report_username}
+                                                            setGlobalConfig={setConfiguration}
+                                                            setLocalRevision={setLocalRevision}
+                                                            dbUpdateCallback={monitoringService.updateConfiguration} />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Basic authentication password</td>
+                                    <td>
+                                        <EncryptedConfigurationValue isSet={configuration.prometheus_rest_report_password.value_is_set}
+                                                            configKey={configuration.prometheus_rest_report_password.key}
+                                                            required={true} />
+                                    </td>
+                                    <td>
+                                        <ConfigurationModal config={configuration.prometheus_rest_report_password}
+                                                            setGlobalConfig={setConfiguration}
                                                             setLocalRevision={setLocalRevision}
                                                             dbUpdateCallback={monitoringService.updateConfiguration} />
                                     </td>
