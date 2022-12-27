@@ -17,7 +17,7 @@
 
 // BASED ON THE GPLv3-LICENSED GRAYLOG CODE.
 
-package horse.wtf.nzyme.rest.tls;
+package horse.wtf.nzyme.rest.responses.dashboard.tls;
 
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;

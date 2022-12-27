@@ -1,8 +1,10 @@
 package horse.wtf.nzyme.rest.authentication;
 
+import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
 import horse.wtf.nzyme.NzymeLeader;
+import horse.wtf.nzyme.monitoring.prometheus.PrometheusRegistryKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,6 +17,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Optional;
 
 @PrometheusBasicAuthSecured
 @Provider
@@ -40,11 +43,37 @@ public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
                 return;
             }
 
+            boolean prometheusReportEnabled = Boolean.parseBoolean(nzyme.getDatabaseCoreRegistry()
+                    .getValue(PrometheusRegistryKeys.REST_REPORT_ENABLED.key())
+                    .orElse("false"));
+
+            if (!prometheusReportEnabled) {
+                abortWithNotFound(requestContext);
+                return;
+            }
+
+            Optional<String> username;
+            Optional<String> password;
+            try {
+                username = nzyme.getDatabaseCoreRegistry()
+                        .getValue(PrometheusRegistryKeys.REST_REPORT_USERNAME.key());
+                password = nzyme.getDatabaseCoreRegistry()
+                        .getEncryptedValue(PrometheusRegistryKeys.REST_REPORT_PASSWORD.key());
+                if (username.isEmpty() || password.isEmpty()) {
+                    abortWithNotFound(requestContext);
+                    return;
+                }
+            } catch(RegistryCryptoException e) {
+                LOG.error("Could not decrypt registry value.", e);
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
             HTTPBasicAuthParser.Credentials creds = HTTPBasicAuthParser.parse(authorizationHeader);
 
             // abort if no creds configured in registry
 
-            if (creds.getUsername().equals("lennart") && creds.getPassword().equals("123123123")) {
+            if (creds.getUsername().equals(username.get()) && creds.getPassword().equals(password.get())) {
                 // Set new security context for later use in resources.
                 final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
                 requestContext.setSecurityContext(new SecurityContext() {
@@ -74,13 +103,17 @@ public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
                 abortWithUnauthorized(requestContext);
             }
         } catch (Exception e) {
-            LOG.info("Could not authenticate using Prometheus HTTP basic authentication.", e);
+            LOG.debug("Could not authenticate using Prometheus HTTP basic authentication.", e);
             abortWithUnauthorized(requestContext);
         }
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
         requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+    }
+
+    private void abortWithNotFound(ContainerRequestContext requestContext) {
+        requestContext.abortWith(Response.status(Response.Status.NOT_FOUND).build());
     }
 
 }

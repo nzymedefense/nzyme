@@ -97,7 +97,7 @@ import horse.wtf.nzyme.rest.ObjectMapperProvider;
 import horse.wtf.nzyme.rest.resources.*;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
 import horse.wtf.nzyme.rest.resources.authentication.AuthenticationResource;
-import horse.wtf.nzyme.rest.tls.SSLEngineConfiguratorBuilder;
+import horse.wtf.nzyme.rest.responses.dashboard.tls.SSLEngineConfiguratorBuilder;
 import horse.wtf.nzyme.systemstatus.SystemStatus;
 import horse.wtf.nzyme.tables.TablesService;
 import horse.wtf.nzyme.taps.TapManager;

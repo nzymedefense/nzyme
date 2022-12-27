@@ -17,7 +17,7 @@
 
 // BASED ON THE GPLv3-LICENSED GRAYLOG CODE.
 
-package horse.wtf.nzyme.rest.tls;
+package horse.wtf.nzyme.rest.responses.dashboard.tls;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

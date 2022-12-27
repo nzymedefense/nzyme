@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package horse.wtf.nzyme.rest.tls;
+package horse.wtf.nzyme.rest.responses.dashboard.tls;
 
 import com.google.common.base.CharMatcher;
 
