@@ -18,7 +18,7 @@
 syntax = "proto3";
 
 option java_outer_classname = "TrackerMessage";
-option java_package = "horse.wtf.nzyme.bandits.trackers.protobuf";
+option java_package = "app.nzyme.core.bandits.trackers.protobuf";
 
 /*
  * Because we are writing all message types across the same transport, we need to be able to de-serialize

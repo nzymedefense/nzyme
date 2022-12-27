@@ -18,7 +18,7 @@
 syntax = "proto3";
 
 option java_outer_classname = "NzymeMessage";
-option java_package = "horse.wtf.nzyme.remote.protobuf";
+option java_package = "app.nzyme.core.remote.protobuf";
 
 message Message {
   string MessageType = 1;
