@@ -62,8 +62,8 @@ public class CryptoTest {
         assertTrue(privateFile.exists());
         assertTrue(publicFile.exists());
 
-        assertTrue(Files.readString(privateFile.toPath()).startsWith("-----BEGIN PGP PRIVATE KEY BLOCK-----"));
-        assertTrue(Files.readString(publicFile.toPath()).startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"));
+        assertTrue(Files.readAllBytes(privateFile.toPath()).length > 0);
+        assertTrue(Files.readAllBytes(publicFile.toPath()).length > 0);
         assertFalse(Strings.isNullOrEmpty(readKeyIdFromDB(mockNzyme)));
     }
 
@@ -75,13 +75,13 @@ public class CryptoTest {
         Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(privatePath);
-        String public1 = Files.readString(publicPath);
+        byte[] secret1 = Files.readAllBytes(privatePath);
+        byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(privatePath);
-        String public2 = Files.readString(publicPath);
+        byte[] secret2 = Files.readAllBytes(privatePath);
+        byte[] public2 = Files.readAllBytes(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
         assertEquals(secret1, secret2);
@@ -99,15 +99,15 @@ public class CryptoTest {
         Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(privatePath);
-        String public1 = Files.readString(publicPath);
+        byte[] secret1 = Files.readAllBytes(privatePath);
+        byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         privatePath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(privatePath);
-        String public2 = Files.readString(publicPath);
+        byte[] secret2 = Files.readAllBytes(privatePath);
+        byte[] public2 = Files.readAllBytes(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
         assertNotEquals(secret1, secret2);
@@ -125,15 +125,15 @@ public class CryptoTest {
         Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(privatePath);
-        String public1 = Files.readString(publicPath);
+        byte[] secret1 = Files.readAllBytes(privatePath);
+        byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         publicPath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(privatePath);
-        String public2 = Files.readString(publicPath);
+        byte[] secret2 = Files.readAllBytes(privatePath);
+        byte[] public2 = Files.readAllBytes(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
         assertNotEquals(secret1, secret2);
@@ -151,16 +151,16 @@ public class CryptoTest {
         Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
 
         new Crypto(mockNzyme).initialize();
-        String secret1 = Files.readString(privatePath);
-        String public1 = Files.readString(publicPath);
+        byte[] secret1 = Files.readAllBytes(privatePath);
+        byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
         privatePath.toFile().delete();
         publicPath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
-        String secret2 = Files.readString(privatePath);
-        String public2 = Files.readString(publicPath);
+        byte[] secret2 = Files.readAllBytes(privatePath);
+        byte[] public2 = Files.readAllBytes(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
 
         assertNotEquals(secret1, secret2);
