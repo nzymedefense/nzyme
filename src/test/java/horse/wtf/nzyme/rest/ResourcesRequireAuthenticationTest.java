@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDAssetsResource;
 import horse.wtf.nzyme.bandits.trackers.hid.webhid.rest.resources.TrackerWebHIDResource;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import horse.wtf.nzyme.rest.authentication.PrometheusBasicAuthSecured;
 import horse.wtf.nzyme.rest.authentication.TapSecured;
 import horse.wtf.nzyme.rest.resources.PingResource;
 import horse.wtf.nzyme.rest.resources.assets.WebInterfaceAssetsResource;
@@ -36,25 +37,38 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.testng.Assert.fail;
 
 public class ResourcesRequireAuthenticationTest {
 
-    private final List<Class<?>> WHITELIST = ImmutableList.of(
-            WebInterfaceAssetsResource.class,
-            PingResource.class,
-            AuthenticationResource.class,
-            TrackerWebHIDAssetsResource.class,
-            TrackerWebHIDResource.class
+    private final List<String> WHITELIST = ImmutableList.of(
+            "WebInterfaceAssetsResource.getIndex",
+            "WebInterfaceAssetsResource.get",
+            "PingResource.ping",
+            "AuthenticationResource.createSession",
+            "TrackerWebHIDAssetsResource.getPage",
+            "TrackerWebHIDAssetsResource.getFavicon",
+            "TrackerWebHIDAssetsResource.getCSS",
+            "TrackerWebHIDAssetsResource.getFont",
+            "TrackerWebHIDAssetsResource.getPNG",
+            "TrackerWebHIDAssetsResource.getJS"
     );
 
-    private final List<Class<?>> TAP_SECRET_AUTHENTICATED = ImmutableList.of(
-            StatusResource.class,
-            TablesResource.class
+    private final List<String> TAP_SECRET_AUTHENTICATED = ImmutableList.of(
+            "StatusResource.status",
+            "TablesResource.report"
+    );
+
+    private final List<String> PROMETHEUS_BASIC_AUTHENTICATED = ImmutableList.of(
+            "PrometheusResource.metrics"
     );
 
     @Test
@@ -64,18 +78,32 @@ public class ResourcesRequireAuthenticationTest {
                 .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner())
         );
 
-        for (Class<?> resource : r.getTypesAnnotatedWith(Path.class)) {
-            if (WHITELIST.contains(resource)) {
-                continue;
-            }
+        for (Class<?> clazz : r.getTypesAnnotatedWith(Path.class)) {
+            for (Method method : clazz.getMethods()) {
+                String id = method.getDeclaringClass().getSimpleName() + "." + method.getName();
 
-            if (TAP_SECRET_AUTHENTICATED.contains(resource)) {
-                if (!resource.isAnnotationPresent(TapSecured.class)) {
-                    fail("REST resource " + resource.getCanonicalName() + " is not annotated with @TapSecured.");
+                if (!method.isAnnotationPresent(GET.class) && !method.isAnnotationPresent(POST.class)
+                    && !method.isAnnotationPresent(PUT.class)) {
+                    // Don't compare non-REST resources.
+                    continue;
                 }
-            } else {
-                if (!resource.isAnnotationPresent(RESTSecured.class)) {
-                    fail("REST resource " + resource.getCanonicalName() + " is not annotated with @RESTSecured.");
+
+                if (WHITELIST.contains(id)) {
+                    continue;
+                }
+
+                if (TAP_SECRET_AUTHENTICATED.contains(id)) {
+                    if (!method.isAnnotationPresent(TapSecured.class) && !clazz.isAnnotationPresent(TapSecured.class)) {
+                        fail("REST resource " + id + " is not annotated with @TapSecured.");
+                    }
+                } else if (PROMETHEUS_BASIC_AUTHENTICATED.contains(id)) {
+                    if (!method.isAnnotationPresent(PrometheusBasicAuthSecured.class) && !clazz.isAnnotationPresent(PrometheusBasicAuthSecured.class)) {
+                        fail("REST resource " + id + " is not annotated with @PrometheusBasicAuthSecured.");
+                    }
+                } else {
+                    if (!method.isAnnotationPresent(RESTSecured.class) && !clazz.isAnnotationPresent(RESTSecured.class)) {
+                        fail("REST resource " + id + " is not annotated with @RESTSecured.");
+                    }
                 }
             }
         }
