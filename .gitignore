@@ -4,7 +4,7 @@ nzyme*.conf
 dependency-reduced-pom.xml
 /plugin/
 /crypto/
-/crypto_test/*
+/crypto_test/*.pgp
 /retro/
 /data/
 /tmp/
