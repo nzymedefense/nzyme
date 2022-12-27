@@ -66,7 +66,7 @@ public class PrometheusFormatter {
                     .append("\n");
 
             sb.append(key)
-                    .append("_mean ")
+                    .append("_mean_rate ")
                     .append(formatNumber(meter.getMeanRate()))
                     .append("\n");
 
@@ -182,22 +182,22 @@ public class PrometheusFormatter {
                     .append("\n");
 
             sb.append(key)
-                    .append("_mean ")
+                    .append("_mean_seconds ")
                     .append(formatNumber(snap.getMean()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_median ")
+                    .append("_median_seconds ")
                     .append(formatNumber(snap.getMedian()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_max ")
+                    .append("_max_seconds ")
                     .append(formatNumber(snap.getMax()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_min ")
+                    .append("_min_seconds ")
                     .append(formatNumber(snap.getMin()))
                     .append("\n");
 
@@ -207,27 +207,27 @@ public class PrometheusFormatter {
                     .append("\n");
 
             sb.append(key)
-                    .append("_dist{percentile=\"75\"} ")
+                    .append("_dist_seconds{percentile=\"75\"} ")
                     .append(formatNumber(snap.get75thPercentile()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_dist{percentile=\"95\"} ")
+                    .append("_dist_seconds{percentile=\"95\"} ")
                     .append(formatNumber(snap.get95thPercentile()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_dist{percentile=\"98\"} ")
+                    .append("_dist_seconds{percentile=\"98\"} ")
                     .append(formatNumber(snap.get98thPercentile()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_dist{percentile=\"99\"} ")
+                    .append("_dist_seconds{percentile=\"99\"} ")
                     .append(formatNumber(snap.get99thPercentile()))
                     .append("\n");
 
             sb.append(key)
-                    .append("_dist{percentile=\"999\"} ")
+                    .append("_dist_seconds{percentile=\"999\"} ")
                     .append(formatNumber(snap.get999thPercentile()))
                     .append("\n");
         }
