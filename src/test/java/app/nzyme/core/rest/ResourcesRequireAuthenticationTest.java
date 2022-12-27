@@ -65,10 +65,11 @@ public class ResourcesRequireAuthenticationTest {
     @Test
     public void testAllResources() {
         Reflections r = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("horse.wtf.nzyme.rest.resources"))
+                .setUrls(ClasspathHelper.forPackage("app.nzyme.core.rest.resources"))
                 .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner())
         );
 
+        int checked = 0;
         for (Class<?> clazz : r.getTypesAnnotatedWith(Path.class)) {
             for (Method method : clazz.getMethods()) {
                 String id = method.getDeclaringClass().getSimpleName() + "." + method.getName();
@@ -96,7 +97,13 @@ public class ResourcesRequireAuthenticationTest {
                         fail("REST resource " + id + " is not annotated with @RESTSecured.");
                     }
                 }
+
+                checked++;
             }
+        }
+
+        if (checked == 0) {
+            fail("Did not check any resources. Wrong package name?");
         }
     }
 
