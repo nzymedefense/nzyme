@@ -5,6 +5,7 @@ import MonitoringService from "../../../../services/MonitoringService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
 import EncryptedConfigurationValue from "../../../configuration/EncryptedConfigurationValue";
+import IncompleteConfigurationWarning from "../../../retro/configuration/IncompleteConfigurationWarning";
 
 const monitoringService = new MonitoringService();
 
@@ -42,7 +43,13 @@ function PrometheusMetricsPage() {
                 </div>
             </div>
 
-            <div className="row">
+            <IncompleteConfigurationWarning show={
+                configuration.prometheus_rest_report_enabled.value
+                && (!configuration.prometheus_rest_report_username.value
+                    || !configuration.prometheus_rest_report_password.value_is_set)
+            } />
+
+            <div className="row mt-3">
                 <div className="col-md-6">
                     <div className="card">
                         <div className="card-body">

@@ -1,5 +1,6 @@
 package horse.wtf.nzyme.rest.resources.monitoring;
 
+import app.nzyme.plugin.RegistryCryptoException;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
 import horse.wtf.nzyme.NzymeLeader;
@@ -24,12 +25,25 @@ public class MonitoringResource {
     @Inject
     private NzymeLeader nzyme;
 
+    private static final Logger LOG = LogManager.getLogger(MonitoringResource.class);
+
     @GET
     @Path("/summary")
     public Response summary() {
-        boolean prometheusReportEnabled = nzyme.getDatabaseCoreRegistry()
-                .getValue(PrometheusRegistryKeys.REST_REPORT_ENABLED.key())
-                .filter(Boolean::parseBoolean).isPresent();
+        boolean prometheusReportEnabled;
+        try {
+            prometheusReportEnabled = nzyme.getDatabaseCoreRegistry()
+                    .getValue(PrometheusRegistryKeys.REST_REPORT_ENABLED.key())
+                    .filter(Boolean::parseBoolean)
+                    .isPresent()
+                    && nzyme.getDatabaseCoreRegistry().getValue(PrometheusRegistryKeys.REST_REPORT_USERNAME.key())
+                    .isPresent()
+                    && nzyme.getDatabaseCoreRegistry().getEncryptedValue(PrometheusRegistryKeys.REST_REPORT_PASSWORD.key())
+                    .isPresent();
+        } catch(RegistryCryptoException e) {
+            LOG.error("Could not decrypt encrypted registry value", e);
+            return Response.serverError().build();
+        }
 
         Map<String, Boolean> exporters = Maps.newHashMap();
         exporters.put("prometheus", prometheusReportEnabled);
