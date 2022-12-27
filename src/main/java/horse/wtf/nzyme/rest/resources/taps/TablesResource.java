@@ -43,7 +43,7 @@ public class TablesResource {
     private NzymeLeader nzyme;
 
     @POST
-    public Response status(TablesReport report) {
+    public Response report(TablesReport report) {
         LOG.debug("Received table report from [{}]: {}", report.tapName(), report);
 
         // DNS.
