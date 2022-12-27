@@ -136,28 +136,34 @@ public class Crypto {
                     "to read existing key.", e);
         }
 
-        // Update DB.
-        long keyCount = database.withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM crypto_keys " +
+        // Does this node have keys in the database?
+        List<String> signatures = database.withHandle(handle ->
+                handle.createQuery("SELECT key_signature FROM crypto_keys " +
                         "WHERE node = :node AND key_type = :key_type")
                         .bind("node", nodeId)
                         .bind("key_type", KeyType.PGP)
-                        .mapTo(Long.class)
-                        .one()
+                        .mapTo(String.class)
+                        .list()
         );
 
-        if (keyCount > 0) {
-            // Update existing key entry.
-            database.useHandle(handle ->
-                    handle.createUpdate("UPDATE crypto_keys SET key_signature = :key_signature, " +
-                                    "created_at = :created_at WHERE key_type = :key_type AND node = :node")
-                            .bind("node", nodeId)
-                            .bind("key_type", KeyType.PGP)
-                            .bind("key_signature", keySignature)
-                            .bind("created_at", DateTime.now())
-                            .execute()
-            );
-        } else {
+        if (signatures.size() == 1) {
+            /*
+             * This node already has a key in the database. Check if it's another key than the one on disk.
+             * If so, someone re-generated it, and we have to update it. If it's the same key, we can leave it
+             * alone because nothing changed.
+             */
+            if (!signatures.contains(keySignature)) {
+                database.useHandle(handle ->
+                        handle.createUpdate("UPDATE crypto_keys SET key_signature = :key_signature, " +
+                                        "created_at = :created_at WHERE key_type = :key_type AND node = :node")
+                                .bind("node", nodeId)
+                                .bind("key_type", KeyType.PGP)
+                                .bind("key_signature", keySignature)
+                                .bind("created_at", DateTime.now())
+                                .execute()
+                );
+            }
+        } else if(signatures.size() == 0) {
             database.useHandle(handle ->
                     handle.createUpdate("INSERT INTO crypto_keys(node, key_type, key_signature, created_at) " +
                                     "VALUES(:node, :key_type, :key_signature, :created_at)")
@@ -167,6 +173,8 @@ public class Crypto {
                             .bind("created_at", DateTime.now())
                             .execute()
             );
+        } else {
+            throw new CryptoInitializationException("Unexpected number of PGP keys for this node in database. Cannot continue.");
         }
     }
 
@@ -334,6 +342,10 @@ public class Crypto {
     }
 
     public static final class CryptoInitializationException extends Throwable {
+        public CryptoInitializationException(String msg) {
+            super(msg);
+        }
+
         public CryptoInitializationException(String msg, Throwable e) {
             super(msg, e);
         }
