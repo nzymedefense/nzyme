@@ -1,28 +1,27 @@
-import React, {useEffect, useState} from "react";
-import Routes from "../../../../util/ApiRoutes";
-import ConfigurationValue from "../../../configuration/ConfigurationValue";
-import MonitoringService from "../../../../services/MonitoringService";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
-import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
-import EncryptedConfigurationValue from "../../../configuration/EncryptedConfigurationValue";
-import IncompleteConfigurationWarning from "../../../retro/configuration/IncompleteConfigurationWarning";
+import React, { useEffect, useState } from 'react'
+import Routes from '../../../../util/ApiRoutes'
+import ConfigurationValue from '../../../configuration/ConfigurationValue'
+import MonitoringService from '../../../../services/MonitoringService'
+import LoadingSpinner from '../../../misc/LoadingSpinner'
+import ConfigurationModal from '../../../configuration/modal/ConfigurationModal'
+import EncryptedConfigurationValue from '../../../configuration/EncryptedConfigurationValue'
+import IncompleteConfigurationWarning from '../../../retro/configuration/IncompleteConfigurationWarning'
 
-const monitoringService = new MonitoringService();
+const monitoringService = new MonitoringService()
 
-function PrometheusMetricsPage() {
+function PrometheusMetricsPage () {
+  const [configuration, setConfiguration] = useState(null)
+  const [localRevision, setLocalRevision] = useState(0)
 
-    const [configuration, setConfiguration] = useState(null);
-    const [localRevision, setLocalRevision] = useState(0);
+  useEffect(() => {
+    monitoringService.getPrometheusExporterConfiguration(setConfiguration)
+  }, [localRevision])
 
-    useEffect(() => {
-        monitoringService.getPrometheusExporterConfiguration(setConfiguration);
-    }, [localRevision]);
+  if (!configuration) {
+    return <LoadingSpinner />
+  }
 
-    if (!configuration) {
-        return <LoadingSpinner />;
-    }
-
-    return (
+  return (
         <div className="row">
             <div className="col-md-10">
                 <nav aria-label="breadcrumb">
@@ -44,9 +43,9 @@ function PrometheusMetricsPage() {
             </div>
 
             <IncompleteConfigurationWarning show={
-                configuration.prometheus_rest_report_enabled.value
-                && (!configuration.prometheus_rest_report_username.value
-                    || !configuration.prometheus_rest_report_password.value_is_set)
+                configuration.prometheus_rest_report_enabled.value &&
+                (!configuration.prometheus_rest_report_username.value ||
+                    !configuration.prometheus_rest_report_password.value_is_set)
             } />
 
             <div className="row mt-3">
@@ -115,8 +114,7 @@ function PrometheusMetricsPage() {
             </div>
 
         </div>
-    )
-
+  )
 }
 
-export default PrometheusMetricsPage;
+export default PrometheusMetricsPage

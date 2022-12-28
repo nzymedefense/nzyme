@@ -26,4 +26,4 @@ class LeaderPage extends React.Component {
   }
 }
 
-export default LeaderPage;
+export default LeaderPage

@@ -1,9 +1,9 @@
 import React from 'react'
 
 import {
-    BrowserRouter as Router,
-    Routes,
-    Route
+  BrowserRouter as Router,
+  Routes,
+  Route
 } from 'react-router-dom'
 
 import Notifications from 'react-notify-toast'
@@ -35,91 +35,90 @@ import ReportDetailsPage from './components/reports/ReportDetailsPage'
 import ReportExecutionLogDetailsPage from './components/reports/ReportExecutionLogDetailsPage'
 import NetworkDetailsPageRedirector from './components/networks/details/NetworkDetailsPageRedirector'
 import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
-import Sidebar from "./components/layout/Sidebar";
-import VersionPage from "./components/system/VersionPage";
-import LeaderPage from "./components/system/LeaderPage";
-import DarkMode from "./components/layout/DarkMode";
-import AuthenticationPage from "./components/system/authentication/AuthenticationPage";
-import TapsPage from "./components/taps/TapsPage";
-import TapDetailsPage from "./components/taps/details/TapDetailsPage";
-import TapMetricsDetailsPage from "./components/taps/details/metrics/TapMetricsDetailsPage";
-import DNSOverviewPage from "./components/ethernet/dns/DNSOverviewPage";
-import SearchPage from "./components/retro/SearchPage";
-import ServiceSummaryPage from "./components/retro/servicesummary/ServiceSummaryPage";
-import RetroConfigurationPage from "./components/retro/configuration/RetroConfigurationPage";
-import PluginsService from "./services/PluginsService";
-import MissingRetroPluginPage from "./components/retro/MissingRetroPluginPage";
-import LoadingSpinner from "./components/misc/LoadingSpinner";
-import CryptoSummaryPage from "./components/system/crypto/CryptoSummaryPage";
-import MonitoringPage from "./components/system/monitoring/MonitoringPage";
-import PrometheusMetricsPage from "./components/system/monitoring/prometheus/PrometheusMetricsPage";
+import Sidebar from './components/layout/Sidebar'
+import VersionPage from './components/system/VersionPage'
+import LeaderPage from './components/system/LeaderPage'
+import DarkMode from './components/layout/DarkMode'
+import AuthenticationPage from './components/system/authentication/AuthenticationPage'
+import TapsPage from './components/taps/TapsPage'
+import TapDetailsPage from './components/taps/details/TapDetailsPage'
+import TapMetricsDetailsPage from './components/taps/details/metrics/TapMetricsDetailsPage'
+import DNSOverviewPage from './components/ethernet/dns/DNSOverviewPage'
+import SearchPage from './components/retro/SearchPage'
+import ServiceSummaryPage from './components/retro/servicesummary/ServiceSummaryPage'
+import RetroConfigurationPage from './components/retro/configuration/RetroConfigurationPage'
+import PluginsService from './services/PluginsService'
+import MissingRetroPluginPage from './components/retro/MissingRetroPluginPage'
+import LoadingSpinner from './components/misc/LoadingSpinner'
+import CryptoSummaryPage from './components/system/crypto/CryptoSummaryPage'
+import MonitoringPage from './components/system/monitoring/MonitoringPage'
+import PrometheusMetricsPage from './components/system/monitoring/prometheus/PrometheusMetricsPage'
 
 class App extends React.Component {
+  constructor (props) {
+    super(props)
 
-    constructor (props) {
-        super(props)
-
-        this.state = {
-            apiConnected: true,
-            authenticated: App._isAuthenticated(),
-            darkModeEnabled: Store.get("dark_mode") === undefined ? false : Store.get("dark_mode")
-        }
-
-        this.pingService = new PingService()
-        this.pingService.ping = this.pingService.ping.bind(this)
-
-        this.authenticationService = new AuthenticationService()
-        this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
-
-        this.pluginsService = new PluginsService()
-        this.pluginsService.findInitializedPlugins = this.pluginsService.findInitializedPlugins.bind(this)
-
-        this._setDarkMode = this._setDarkMode.bind(this);
+    this.state = {
+      apiConnected: true,
+      authenticated: App._isAuthenticated(),
+      darkModeEnabled: Store.get('dark_mode') === undefined ? false : Store.get('dark_mode')
     }
 
-    componentDidMount () {
-        const self = this
-        self.pingService.ping()
-        self.setState({ authenticated: App._isAuthenticated() })
+    this.pingService = new PingService()
+    this.pingService.ping = this.pingService.ping.bind(this)
 
-        // Check if we are authenticated, ping.
-        setInterval(function () {
-            self.pingService.ping()
-            self.setState({ authenticated: App._isAuthenticated() })
-        }, 1000)
+    this.authenticationService = new AuthenticationService()
+    this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
 
-        // Check if session is about to expire and log out if so.
-        this.authenticationService.checkSession()
-        setInterval(function () {
-            self.authenticationService.checkSession()
-        }, 10000)
-    }
+    this.pluginsService = new PluginsService()
+    this.pluginsService.findInitializedPlugins = this.pluginsService.findInitializedPlugins.bind(this)
 
-    _setDarkMode(x) {
-        this.setState({darkModeEnabled: x});
-        Store.set("dark_mode", x);
-    }
+    this._setDarkMode = this._setDarkMode.bind(this)
+  }
 
-    static _isAuthenticated () {
-        return Store.get("api_token") !== undefined
-    }
+  componentDidMount () {
+    const self = this
+    self.pingService.ping()
+    self.setState({ authenticated: App._isAuthenticated() })
 
-    render () {
-        if (this.state.apiConnected) {
-            if (this.state.authenticated) {
-                const plugins = Store.get("plugins");
+    // Check if we are authenticated, ping.
+    setInterval(function () {
+      self.pingService.ping()
+      self.setState({ authenticated: App._isAuthenticated() })
+    }, 1000)
 
-                this.pluginsService.loadInitializedPluginsIntoStore();
-                if (plugins == null) {
-                    return (
+    // Check if session is about to expire and log out if so.
+    this.authenticationService.checkSession()
+    setInterval(function () {
+      self.authenticationService.checkSession()
+    }, 10000)
+  }
+
+  _setDarkMode (x) {
+    this.setState({ darkModeEnabled: x })
+    Store.set('dark_mode', x)
+  }
+
+  static _isAuthenticated () {
+    return Store.get('api_token') !== undefined
+  }
+
+  render () {
+    if (this.state.apiConnected) {
+      if (this.state.authenticated) {
+        const plugins = Store.get('plugins')
+
+        this.pluginsService.loadInitializedPluginsIntoStore()
+        if (plugins == null) {
+          return (
                         <div>
                             <DarkMode enabled={this.state.darkModeEnabled} />
                             <LoadingSpinner />
                         </div>
-                    )
-                }
+          )
+        }
 
-                return (
+        return (
                     <Router>
                         <DarkMode enabled={this.state.darkModeEnabled} />
 
@@ -183,9 +182,9 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                                             { /* Retro. */ }
-                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes("retroplugin") ? <SearchPage /> : <MissingRetroPluginPage /> }/>
-                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes("retroplugin") ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
-                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes("retroplugin") ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
+                                            <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
 
                                             { /* 404. */}
                                             <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
@@ -200,28 +199,28 @@ class App extends React.Component {
                             </div>
                         </div>
                     </Router>
-                )
-            } else {
-                return (
+        )
+      } else {
+        return (
                     <div className="nzyme">
                         <DarkMode enabled={this.state.darkModeEnabled} />
 
                         <Notifications/>
                         <LoginPage />
                     </div>
-                )
-            }
-        } else {
-            return (
+        )
+      }
+    } else {
+      return (
             <div className="nzyme">
                     <DarkMode enabled={this.state.darkModeEnabled} />
 
                     <Notifications/>
                     <NotConnectedPage />
             </div>
-            )
-        }
+      )
     }
+  }
 }
 
 export default App

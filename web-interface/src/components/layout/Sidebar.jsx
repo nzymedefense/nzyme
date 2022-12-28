@@ -1,12 +1,11 @@
 import React from 'react'
-import ApiRoutes from "../../util/ApiRoutes";
-import NavigationLink from "./NavigationLink";
-import SidebarSubmenu from "./SidebarSubmenu";
-import UserProfile from "./UserProfile";
+import ApiRoutes from '../../util/ApiRoutes'
+import NavigationLink from './NavigationLink'
+import SidebarSubmenu from './SidebarSubmenu'
+import UserProfile from './UserProfile'
 
-function Sidebar() {
-
-    return (
+function Sidebar () {
+  return (
         <div id="nav-side">
             <p className="brand">
                 <a href={ApiRoutes.DASHBOARD} >nzyme</a>
@@ -96,8 +95,7 @@ function Sidebar() {
                 </SidebarSubmenu>
             </ul>
         </div>
-    );
-
+  )
 }
 
-export default Sidebar;
+export default Sidebar

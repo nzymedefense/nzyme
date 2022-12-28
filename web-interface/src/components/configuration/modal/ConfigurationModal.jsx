@@ -1,105 +1,104 @@
-import React, {useCallback, useEffect, useState} from "react";
-import DefaultValue from "./DefaultValue";
-import RestartRequired from "./RestartRequired";
-import ConfigurationInputField from "./ConfigurationInputField";
-import RetroService from "../../../services/RetroService";
-import ConfigurationSubmitButton from "./ConfigurationSubmitButton";
-import ConfigurationCloseButton from "./ConfigurationCloseButton";
-import ConfigurationUpdateFailedWarning from "./ConfigurationUpdateFailedWarning";
-import ThreatLevelMidnight from "./ThreatLevelMidnight";
-import InputLabel from "./InputLabel";
+import React, { useCallback, useEffect, useState } from 'react'
+import DefaultValue from './DefaultValue'
+import RestartRequired from './RestartRequired'
+import ConfigurationInputField from './ConfigurationInputField'
+import RetroService from '../../../services/RetroService'
+import ConfigurationSubmitButton from './ConfigurationSubmitButton'
+import ConfigurationCloseButton from './ConfigurationCloseButton'
+import ConfigurationUpdateFailedWarning from './ConfigurationUpdateFailedWarning'
+import ThreatLevelMidnight from './ThreatLevelMidnight'
+import InputLabel from './InputLabel'
 
-const retroService = new RetroService();
+const retroService = new RetroService()
 
-function ConfigurationModal(props) {
+function ConfigurationModal (props) {
+  const [inputDisabled, setInputDisabled] = useState(false)
+  const [formDisabled, setFormDisabled] = useState(true)
+  const [formSubmitting, setFormSubmitting] = useState(false)
+  const [formSubmittedSuccessfully, setFormSubmittedSuccessfully] = useState(false)
+  const [formSubmittedWithError, setFormSubmittedWithError] = useState(false)
+  const [changeWarningAck, setChangeWarningAck] = useState(false)
 
-    const [inputDisabled, setInputDisabled] = useState(false);
-    const [formDisabled, setFormDisabled] = useState(true);
-    const [formSubmitting, setFormSubmitting] = useState(false);
-    const [formSubmittedSuccessfully, setFormSubmittedSuccessfully] = useState(false);
-    const [formSubmittedWithError, setFormSubmittedWithError] = useState(false);
-    const [changeWarningAck, setChangeWarningAck] = useState(false);
+  const [inputValue, setInputValue] = useState(props.config.value)
 
-    const [inputValue, setInputValue] = useState(props.config.value);
+  useEffect(() => {
+    const config = props.config
 
-    useEffect(() => {
-        const config = props.config;
+    if (props.changeWarning && !changeWarningAck) {
+      setFormDisabled(true)
+      return
+    }
 
-        if (props.changeWarning && !changeWarningAck) {
-            setFormDisabled(true);
-            return;
+    if (inputValue === undefined || inputValue === props.config.value) {
+      setFormDisabled(true)
+    } else {
+      if (config.constraints && config.constraints.length > 0) {
+        for (const constraint of config.constraints) {
+          const cData = constraint.data
+
+          switch (constraint.type) {
+            case 'STRING_LENGTH':
+              setFormDisabled(inputValue.length < cData.min || inputValue.length > cData.max)
+              break
+            case 'NUMBER_RANGE':
+              const numValue = parseInt(inputValue, 10)
+              setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max)
+              break
+            case 'SIMPLE_BOOLEAN':
+              setFormDisabled(!(inputValue === true || inputValue === false))
+              break
+            default:
+              setFormDisabled(true)
+          }
         }
+      } else {
+        setFormDisabled(false)
+      }
+    }
+  }, [inputValue, changeWarningAck])
 
-        if (inputValue === undefined || inputValue === props.config.value) {
-            setFormDisabled(true);
-        } else {
-            if (config.constraints && config.constraints.length > 0) {
-                for (const constraint of config.constraints) {
-                    const cData = constraint.data;
+  const updateValue = useCallback(() => {
+    setFormSubmittedWithError(false)
+    setFormSubmitting(true)
+    setFormDisabled(true)
+    setInputDisabled(true)
 
-                    switch (constraint.type) {
-                        case "STRING_LENGTH":
-                            setFormDisabled(inputValue.length < cData.min || inputValue.length > cData.max)
-                            break;
-                        case "NUMBER_RANGE":
-                            const numValue = parseInt(inputValue, 10);
-                            setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max);
-                            break;
-                        case "SIMPLE_BOOLEAN":
-                            setFormDisabled(!(inputValue === true || inputValue === false));
-                            break;
-                        default:
-                            setFormDisabled(true);
-                    }
-                }
-            } else {
-                setFormDisabled(false);
-            }
-        }
-    }, [inputValue, changeWarningAck])
+    props.dbUpdateCallback({
+      [props.config.key]: inputValue
+    }, function () {
+      setFormSubmitting(false)
+      setFormDisabled(false)
+      setFormSubmittedSuccessfully(true)
+    }, function () {
+      setFormSubmittedWithError(true)
+      setFormSubmitting(false)
+      setFormDisabled(false)
+      setInputDisabled(false)
+    })
+  }, [inputValue])
 
-    const updateValue = useCallback(() => {
-        setFormSubmittedWithError(false);
-        setFormSubmitting(true);
-        setFormDisabled(true);
-        setInputDisabled(true);
+  const resetOnCancel = useCallback(() => {
+    setInputValue(props.config.value)
+    setChangeWarningAck(false)
+    setFormSubmittedWithError(false)
+  }, [props.config])
 
-        props.dbUpdateCallback({
-            [props.config.key]: inputValue
-        }, function () {
-            setFormSubmitting(false);
-            setFormDisabled(false);
-            setFormSubmittedSuccessfully(true);
-        }, function () {
-            setFormSubmittedWithError(true);
-            setFormSubmitting(false);
-            setFormDisabled(false);
-            setInputDisabled(false);
-        });
-    }, [inputValue]);
+  const resetOnFinish = useCallback(() => {
+    setChangeWarningAck(false)
+    setFormSubmittedSuccessfully(false)
+    setInputDisabled(false)
+    props.setLocalRevision(prevRev => prevRev + 1)
+  }, [])
 
-    const resetOnCancel = useCallback(() => {
-        setInputValue(props.config.value);
-        setChangeWarningAck(false);
-        setFormSubmittedWithError(false);
-    }, [props.config]);
-
-    const resetOnFinish = useCallback(() => {
-        setChangeWarningAck(false);
-        setFormSubmittedSuccessfully(false);
-        setInputDisabled(false);
-        props.setLocalRevision(prevRev => prevRev+1)
-    }, []);
-
-    return (
+  return (
         <React.Fragment>
             <a href="web-interface/src/components/configuration/modal/ConfigurationModal#"
                data-bs-toggle="modal"
-               data-bs-target={"#configuration-dialog-" + props.config.key}>
+               data-bs-target={'#configuration-dialog-' + props.config.key}>
                 Edit
             </a>
 
-            <div className="modal configuration-dialog" id={"configuration-dialog-" + props.config.key}
+            <div className="modal configuration-dialog" id={'configuration-dialog-' + props.config.key}
                  data-bs-keyboard="false" data-bs-backdrop="static" tabIndex="-1"
                  aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
@@ -150,8 +149,7 @@ function ConfigurationModal(props) {
                 </div>
             </div>
         </React.Fragment>
-    )
-
+  )
 }
 
-export default ConfigurationModal;
+export default ConfigurationModal

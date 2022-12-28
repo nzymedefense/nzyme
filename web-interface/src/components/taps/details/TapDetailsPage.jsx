@@ -1,42 +1,41 @@
-import React, {useEffect, useState} from "react";
-import TapsService from "../../../services/TapsService";
-import {useParams} from "react-router-dom";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import moment from "moment";
-import Routes from "../../../util/ApiRoutes";
-import numeral from "numeral";
-import byteAverageToMbit from "../../../util/Tools";
-import Buses from "./Buses";
-import TapInactiveWarning from "./TapInactiveWarning";
-import CaptureConfiguration from "../capture/CaptureConfiguration";
-import TapMetrics from "./metrics/TapMetrics";
-import TapMetricsChartProxy from "./metrics/TapMetricsChartProxy";
+import React, { useEffect, useState } from 'react'
+import TapsService from '../../../services/TapsService'
+import { useParams } from 'react-router-dom'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import moment from 'moment'
+import Routes from '../../../util/ApiRoutes'
+import numeral from 'numeral'
+import byteAverageToMbit from '../../../util/Tools'
+import Buses from './Buses'
+import TapInactiveWarning from './TapInactiveWarning'
+import CaptureConfiguration from '../capture/CaptureConfiguration'
+import TapMetrics from './metrics/TapMetrics'
+import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 
-const tapsService = new TapsService();
+const tapsService = new TapsService()
 
-function fetchData(tapName, setTap, setTapMetrics) {
-    tapsService.findTap(tapName, setTap);
-    tapsService.findMetricsOfTap(tapName, setTapMetrics);
+function fetchData (tapName, setTap, setTapMetrics) {
+  tapsService.findTap(tapName, setTap)
+  tapsService.findMetricsOfTap(tapName, setTapMetrics)
 }
 
-function TapDetailsPage() {
+function TapDetailsPage () {
+  const { tapName } = useParams()
 
-    const { tapName } = useParams();
+  const [tap, setTap] = useState(null)
+  const [tapMetrics, setTapMetrics] = useState(null)
 
-    const [tap, setTap] = useState(null);
-    const [tapMetrics, setTapMetrics] = useState(null);
+  useEffect(() => {
+    fetchData(tapName, setTap, setTapMetrics)
+    const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000)
+    return () => clearInterval(id)
+  }, [tapName, setTap, setTapMetrics])
 
-    useEffect(() => {
-        fetchData(tapName, setTap, setTapMetrics);
-        const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000);
-        return () => clearInterval(id);
-    }, [tapName, setTap, setTapMetrics]);
+  if (!tap) {
+    return <LoadingSpinner />
+  }
 
-    if (!tap) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
 
         <div className="row">
             <div className="col-md-10">
@@ -67,7 +66,7 @@ function TapDetailsPage() {
                             <dl>
                                 <dt>Throughput</dt>
                                 <dd>
-                                    {byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average/10).format('0 b')}/sec)
+                                    {byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average / 10).format('0 b')}/sec)
                                 </dd>
 
                                 <dt>Total data processed since last restart</dt>
@@ -91,7 +90,7 @@ function TapDetailsPage() {
 
                                 <dt>System-Wide Memory Usage</dt>
                                 <dd>
-                                    {numeral(tap.memory_used).format('0 b')} / {numeral(tap.memory_total).format('0 b')} ({numeral(tap.memory_used/tap.memory_total*100).format('0.0')}%)
+                                    {numeral(tap.memory_used).format('0 b')} / {numeral(tap.memory_total).format('0 b')} ({numeral(tap.memory_used / tap.memory_total * 100).format('0.0')}%)
                                 </dd>
                             </dl>
                         </div>
@@ -170,8 +169,7 @@ function TapDetailsPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapDetailsPage;
+export default TapDetailsPage

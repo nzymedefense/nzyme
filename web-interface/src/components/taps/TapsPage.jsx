@@ -1,24 +1,23 @@
-import React, {useEffect, useState} from "react";
-import TapsService from "../../services/TapsService";
-import TapsTable from "./TapsTable";
+import React, { useEffect, useState } from 'react'
+import TapsService from '../../services/TapsService'
+import TapsTable from './TapsTable'
 
-const tapsService = new TapsService();
+const tapsService = new TapsService()
 
-function fetchData(setTaps) {
-    tapsService.findAllTaps(setTaps);
+function fetchData (setTaps) {
+  tapsService.findAllTaps(setTaps)
 }
 
-function TapsPage() {
+function TapsPage () {
+  const [taps, setTaps] = useState(null)
 
-    const [taps, setTaps] = useState(null);
+  useEffect(() => {
+    fetchData(setTaps)
+    const id = setInterval(() => fetchData(setTaps), 5000)
+    return () => clearInterval(id)
+  }, [setTaps])
 
-    useEffect(() => {
-        fetchData(setTaps);
-        const id = setInterval(() =>  fetchData(setTaps), 5000);
-        return () => clearInterval(id);
-    }, [setTaps]);
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -38,8 +37,7 @@ function TapsPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapsPage;
+export default TapsPage

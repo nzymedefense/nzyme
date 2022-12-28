@@ -1,8 +1,7 @@
-import React from "react";
+import React from 'react'
 
-function MissingRetroPluginPage() {
-
-    return (
+function MissingRetroPluginPage () {
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -22,8 +21,7 @@ function MissingRetroPluginPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default MissingRetroPluginPage;
+export default MissingRetroPluginPage

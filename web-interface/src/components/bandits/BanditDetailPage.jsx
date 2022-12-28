@@ -1,41 +1,39 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 
 import LoadingSpinner from '../misc/LoadingSpinner'
 import moment from 'moment'
 import Routes from '../../util/ApiRoutes'
 import BanditIdentifiersTable from './BanditIdentifiersTable'
 import ContactsTable from './ContactsTable'
-import { Navigate } from 'react-router-dom'
 import BanditTracking from './BanditTracking'
 import BanditsService from '../../services/BanditsService'
 import TrackersService from '../../services/TrackersService'
-import DeleteBanditButton from './DeleteBanditButton';
+import DeleteBanditButton from './DeleteBanditButton'
 import EditBanditButton from './EditBanditButton'
 import CreateIdentifierButton from './CreateIdentifierButton'
 
-const banditsService = new BanditsService();
-const trackersService = new TrackersService();
+const banditsService = new BanditsService()
+const trackersService = new TrackersService()
 
-function fetchData(banditId, setBandit, setTrackers, setGroundstationEnabled) {
-  banditsService.findOne(banditId, setBandit);
-  trackersService.findAll(setTrackers, setGroundstationEnabled);
+function fetchData (banditId, setBandit, setTrackers, setGroundstationEnabled) {
+  banditsService.findOne(banditId, setBandit)
+  trackersService.findAll(setTrackers, setGroundstationEnabled)
 }
 
-function BanditDetailPage() {
+function BanditDetailPage () {
+  const { banditId } = useParams()
 
-  const { banditId } = useParams();
-
-  const [bandit, setBandit] = useState(null);
-  const [trackers, setTrackers] = useState(null);
-  const [deleted, setDeleted] = useState(false);
-  const [groundstationEnabled, setGroundstationEnabled] = useState(null);
+  const [bandit, setBandit] = useState(null)
+  const [trackers, setTrackers] = useState(null)
+  const [deleted, setDeleted] = useState(false)
+  const [groundstationEnabled, setGroundstationEnabled] = useState(null)
 
   useEffect(() => {
-    fetchData(banditId, setBandit, setTrackers, setGroundstationEnabled);
-    const id = setInterval(() => fetchData(banditId, setBandit, setTrackers, setGroundstationEnabled), 5000);
-    return () => clearInterval(id);
-  }, [banditId, bandit]);
+    fetchData(banditId, setBandit, setTrackers, setGroundstationEnabled)
+    const id = setInterval(() => fetchData(banditId, setBandit, setTrackers, setGroundstationEnabled), 5000)
+    return () => clearInterval(id)
+  }, [banditId, bandit])
 
   if (deleted) {
     return <Navigate to={Routes.BANDITS.INDEX} />
@@ -155,7 +153,6 @@ function BanditDetailPage() {
         </div>
     </div>
   )
-
 }
 
 export default BanditDetailPage

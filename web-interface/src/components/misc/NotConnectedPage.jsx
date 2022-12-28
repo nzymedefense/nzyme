@@ -1,9 +1,9 @@
 import React from 'react'
-import AssetImage from "./AssetImage";
+import AssetImage from './AssetImage'
 
 class NotConnectedPage extends React.Component {
-    render () {
-        return (
+  render () {
+    return (
             <section className="vh-100 start">
                 <div className="container py-5 h-100">
                     <div className="row d-flex justify-content-center align-items-center h-100">
@@ -37,7 +37,7 @@ class NotConnectedPage extends React.Component {
                                             </div>
 
                                             <p className="mt-4">
-                                                <a href="https://go.nzyme.org/help" className="btn btn-sm btn-dark" target="_blank">
+                                                <a href="https://go.nzyme.org/help" className="btn btn-sm btn-dark" target="_blank" rel="noreferrer">
                                                     Help
                                                 </a>
                                             </p>
@@ -49,8 +49,8 @@ class NotConnectedPage extends React.Component {
                     </div>
                 </div>
             </section>
-        )
-    }
+    )
+  }
 }
 
 export default NotConnectedPage

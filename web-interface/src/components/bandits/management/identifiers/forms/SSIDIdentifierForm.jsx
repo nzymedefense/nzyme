@@ -21,10 +21,10 @@ class SSIDIdentifierForm extends React.Component {
 
     this.props.setConfiguration({
       ssids: compact(ssids)
-    });
+    })
 
-    this.props.setExplanation(explanation);
-    this.props.setFormReady(true);
+    this.props.setExplanation(explanation)
+    this.props.setFormReady(true)
   }
 
   render () {

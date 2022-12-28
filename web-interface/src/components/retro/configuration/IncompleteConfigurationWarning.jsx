@@ -1,9 +1,8 @@
-import React from "react";
+import React from 'react'
 
-function IncompleteConfigurationWarning(props) {
-
-    if (props.show) {
-        return (
+function IncompleteConfigurationWarning (props) {
+  if (props.show) {
+    return (
             <div className="row">
                 <div className="col-md-12">
                     <div className="alert alert-warning mb-0">
@@ -13,11 +12,10 @@ function IncompleteConfigurationWarning(props) {
                     </div>
                 </div>
             </div>
-        )
-    } else {
-        return null;
-    }
-
+    )
+  } else {
+    return null
+  }
 }
 
-export default IncompleteConfigurationWarning;
+export default IncompleteConfigurationWarning

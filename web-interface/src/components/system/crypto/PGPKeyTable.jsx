@@ -1,15 +1,14 @@
-import React from 'react';
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import React from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
 
-function PGPKeyTable(props) {
+function PGPKeyTable (props) {
+  const keys = props.keys
 
-    const keys = props.keys;
+  if (!keys) {
+    return <LoadingSpinner />
+  }
 
-    if (!keys) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
@@ -20,18 +19,17 @@ function PGPKeyTable(props) {
             </thead>
             <tbody>
             {Object.keys(keys.sort((a, b) => a.node.localeCompare(b.node))).map(function (key, i) {
-                return (
-                    <tr key={"ppgkey-" + i}>
+              return (
+                    <tr key={'ppgkey-' + i}>
                         <td>{keys[i].node}</td>
-                        <td>{keys[i].fingerprint.match(/.{1,2}/g).join(" ")}</td>
+                        <td>{keys[i].fingerprint.match(/.{1,2}/g).join(' ')}</td>
                         <td>{keys[i].created_at}</td>
                     </tr>
-                )
+              )
             })}
             </tbody>
         </table>
-    )
-
+  )
 }
 
-export default PGPKeyTable;
+export default PGPKeyTable

@@ -20,9 +20,9 @@ function AlertDetailsPage () {
   const { alertId } = useParams()
 
   useEffect(() => {
-    fetchData(alertId, setAlert);
-    const id = setInterval(() => fetchData(alertId, setAlert), 5000);
-    return () => clearInterval(id);
+    fetchData(alertId, setAlert)
+    const id = setInterval(() => fetchData(alertId, setAlert), 5000)
+    return () => clearInterval(id)
   }, [alertId])
 
   if (!alert) {

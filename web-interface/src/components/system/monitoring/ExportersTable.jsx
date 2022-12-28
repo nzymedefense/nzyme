@@ -1,17 +1,16 @@
-import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import ExporterStatus from "./ExporterStatus";
-import ApiRoutes from "../../../util/ApiRoutes";
+import React from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import ExporterStatus from './ExporterStatus'
+import ApiRoutes from '../../../util/ApiRoutes'
 
-function ExportersTable(props) {
+function ExportersTable (props) {
+  if (!props.summary || !props.summary.exporters) {
+    return <LoadingSpinner />
+  }
 
-    if (!props.summary || !props.summary.exporters) {
-        return <LoadingSpinner />
-    }
+  const exporters = props.summary.exporters
 
-    const exporters = props.summary.exporters;
-
-    return (
+  return (
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
@@ -30,8 +29,7 @@ function ExportersTable(props) {
             </tr>
             </tbody>
         </table>
-    )
-
+  )
 }
 
-export default ExportersTable;
+export default ExportersTable

@@ -1,15 +1,14 @@
-import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import NumberCard from "../../presentation/NumberCard";
-import ByteSizeCard from "../../presentation/ByteSizeCard";
+import React from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import NumberCard from '../../presentation/NumberCard'
+import ByteSizeCard from '../../presentation/ByteSizeCard'
 
-function DNSNumbers(props) {
+function DNSNumbers (props) {
+  if (!props.data || !props.data.traffic_summary) {
+    return <LoadingSpinner />
+  }
 
-    if (!props.data || !props.data.traffic_summary) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
         <React.Fragment>
             <div className="col-md-3">
                 <NumberCard title="Recorded DNS Packets" value={props.data.traffic_summary.total_packets} />
@@ -27,8 +26,7 @@ function DNSNumbers(props) {
                 <NumberCard title="Alerts Triggered" value={0} />
             </div>
         </React.Fragment>
-    )
-
+  )
 }
 
-export default DNSNumbers;
+export default DNSNumbers

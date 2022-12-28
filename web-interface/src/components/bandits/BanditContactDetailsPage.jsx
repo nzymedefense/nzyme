@@ -12,69 +12,68 @@ import AdvertisedSSIDTable from './AdvertisedSSIDTable'
 import AdvertisedBSSIDTable from './AdvertisedBSSIDTable'
 import SimpleBarChart from '../charts/SimpleBarChart'
 
-const banditsService = new BanditsService();
+const banditsService = new BanditsService()
 
-function fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact) {
-    banditsService.findContactOfBandit(
-        banditUUID,
-        contactUUID,
-        detailedSSIDs.join(),
-        detailedBSSIDs.join(),
-        setContact
-    );
+function fetchData (banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact) {
+  banditsService.findContactOfBandit(
+    banditUUID,
+    contactUUID,
+    detailedSSIDs.join(),
+    detailedBSSIDs.join(),
+    setContact
+  )
 }
 
-function formatHistogram(counts) {
-    const result = []
+function formatHistogram (counts) {
+  const result = []
 
-    Object.keys(counts).forEach(function (key) {
-      const x = []
-      const y = []
+  Object.keys(counts).forEach(function (key) {
+    const x = []
+    const y = []
 
-      Object.keys(counts[key]).sort().forEach(function (countKey) {
-        x.push(new Date(countKey))
-        y.push(counts[key][countKey])
-      })
-
-      result.push({
-        x: x,
-        y: y,
-        type: 'line',
-        name: key,
-        line: { width: 1, shape: 'linear' }
-      })
+    Object.keys(counts[key]).sort().forEach(function (countKey) {
+      x.push(new Date(countKey))
+      y.push(counts[key][countKey])
     })
 
-    return result
+    result.push({
+      x: x,
+      y: y,
+      type: 'line',
+      name: key,
+      line: { width: 1, shape: 'linear' }
+    })
+  })
+
+  return result
 }
 
-function BanditContactDetailsPage() {
+function BanditContactDetailsPage () {
+  const { banditUUID, contactUUID } = useParams()
 
-    const { banditUUID, contactUUID } = useParams();
+  const [contact, setContact] = useState(null)
+  const [detailedSSIDs, setDetailedSSIDs] = useState([])
+  const [detailedBSSIDs, setDetailedBSSIDs] = useState([])
 
-    const [contact, setContact] = useState(null);
-    const [detailedSSIDs, setDetailedSSIDs] = useState([]);
-    const [detailedBSSIDs, setDetailedBSSIDs] = useState([]);
+  useEffect(() => {
+    fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact)
+    const id = setInterval(() => fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact), 5000)
+    return () => clearInterval(id)
+  }, [banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs])
 
-    useEffect(() => {
-        fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact);
-        const id = setInterval(() => fetchData(banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact), 5000);
-        return () => clearInterval(id);
-      }, [banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs]);
+  if (!contact) {
+    return <LoadingSpinner />
+  }
 
-    if (!contact) {
-      return <LoadingSpinner />
-    }
+  function onNewSSIDSelection (ssids) {
+    setDetailedSSIDs([...ssids])
+  }
 
-    function onNewSSIDSelection(ssids) {
-        setDetailedSSIDs([...ssids]);
-    }
+  function onNewBSSIDSelection (bssids) {
+    setDetailedBSSIDs([...bssids])
+  }
 
-    function onNewBSSIDSelection(bssids) {
-        setDetailedBSSIDs([...bssids]);
-    }
-
-    return (
+  return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -220,8 +219,7 @@ function BanditContactDetailsPage() {
                 </div>
 
             </div>
-    )
-  
+  )
 }
 
 export default BanditContactDetailsPage

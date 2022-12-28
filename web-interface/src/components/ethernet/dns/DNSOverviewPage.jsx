@@ -1,31 +1,29 @@
-import React, {useEffect, useState} from "react";
-import DNSStatisticsChart from "./DNSStatisticsChart";
-import EthernetService from "../../../services/EthernetService";
-import DNSNumbers from "./DNSNumbers";
-import DNSContactAttempsSummaryTable from "./DNSContactAttempsSummaryTable";
+import React, { useEffect, useState } from 'react'
+import DNSStatisticsChart from './DNSStatisticsChart'
+import EthernetService from '../../../services/EthernetService'
+import DNSNumbers from './DNSNumbers'
+import DNSContactAttempsSummaryTable from './DNSContactAttempsSummaryTable'
 
-function byteConversion(x) {
-    return x/1024;
+function byteConversion (x) {
+  return x / 1024
 }
 
-const ethernetService = new EthernetService();
+const ethernetService = new EthernetService()
 
-function fetchData(hours, setStatistics) {
-    ethernetService.findDNSStatistics(hours, setStatistics);
+function fetchData (hours, setStatistics) {
+  ethernetService.findDNSStatistics(hours, setStatistics)
 }
 
-function DNSOverviewPage() {
+function DNSOverviewPage () {
+  const [statistics, setStatistics] = useState(null)
 
-    const [statistics, setStatistics] = useState(null);
+  useEffect(() => {
+    fetchData(24, setStatistics)
+    const id = setInterval(() => fetchData(24, setStatistics), 5000)
+    return () => clearInterval(id)
+  }, [setStatistics])
 
-    useEffect(() => {
-        fetchData(24, setStatistics);
-        const id = setInterval(() =>  fetchData(24, setStatistics), 5000);
-        return () => clearInterval(id);
-    }, [setStatistics]);
-
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -53,7 +51,7 @@ function DNSOverviewPage() {
                         <div className="card-body">
                             <h3>NXDOMAIN/Minute</h3>
 
-                            <DNSStatisticsChart statistics={statistics} attribute="nxdomain_count"  />
+                            <DNSStatisticsChart statistics={statistics} attribute="nxdomain_count" />
                         </div>
                     </div>
                 </div>
@@ -100,8 +98,7 @@ function DNSOverviewPage() {
             </div>
 
         </div>
-    )
-
+  )
 }
 
-export default DNSOverviewPage;
+export default DNSOverviewPage

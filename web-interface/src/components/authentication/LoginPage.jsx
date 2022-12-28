@@ -1,6 +1,6 @@
 import React from 'react'
 import AuthenticationService from '../../services/AuthenticationService'
-import AssetImage from "../misc/AssetImage";
+import AssetImage from '../misc/AssetImage'
 
 class LoginPage extends React.Component {
   constructor (props) {
@@ -59,7 +59,7 @@ class LoginPage extends React.Component {
                                             </div>
 
                                             <div className="form-outline mb-4">
-                                                <input type="password" id="password"  className="form-control form-control-lg"
+                                                <input type="password" id="password" className="form-control form-control-lg"
                                                        ref={this.passwordInput} required />
                                                 <label className="form-label" htmlFor="password">
                                                     Password

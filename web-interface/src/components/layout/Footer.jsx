@@ -18,7 +18,7 @@ class Footer extends React.Component {
             <div className="col-md-4 text-end">
                 <hr />
 
-                Icons are <a href="https://fontawesome.com/" target="_blank">FontAwesome CC BY 4.0</a>
+                Icons are <a href="https://fontawesome.com/" target="_blank" rel="noreferrer">FontAwesome CC BY 4.0</a>
             </div>
         </div>
     )

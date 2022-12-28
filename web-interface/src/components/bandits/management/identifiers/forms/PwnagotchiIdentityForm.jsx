@@ -18,16 +18,16 @@ class PwnagotchiIdentityForm extends React.Component {
 
     if (identity.length !== 64) {
       this.setState({ errorMessage: 'Invalid Pwnagotchi identity. A valid identity is 64 characters long.' })
-      this.props.setFormReady(false);
+      this.props.setFormReady(false)
       return
     }
 
     const explanation = identity ? 'a Pwnagotchi with identity "' + identity + '" is recorded' : undefined
 
-    this.props.setConfiguration({ identity: identity });
+    this.props.setConfiguration({ identity: identity })
 
-    this.props.setExplanation(explanation);
-    this.props.setFormReady(true);
+    this.props.setExplanation(explanation)
+    this.props.setFormReady(true)
   }
 
   render () {

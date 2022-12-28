@@ -1,31 +1,30 @@
-import React, {useEffect, useState} from "react";
-import Routes from "../../../util/ApiRoutes";
-import InlineHelp from "../../misc/InlineHelp";
-import RetroService from "../../../services/RetroService";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import ConfigurationModal from "../../configuration/modal/ConfigurationModal";
-import ConfigurationValue from "../../configuration/ConfigurationValue";
-import IncompleteConfigurationWarning from "./IncompleteConfigurationWarning";
-import RestartRequiredWarning from "../../configuration/RestartRequiredWarning";
+import React, { useEffect, useState } from 'react'
+import Routes from '../../../util/ApiRoutes'
+import InlineHelp from '../../misc/InlineHelp'
+import RetroService from '../../../services/RetroService'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import ConfigurationModal from '../../configuration/modal/ConfigurationModal'
+import ConfigurationValue from '../../configuration/ConfigurationValue'
+import IncompleteConfigurationWarning from './IncompleteConfigurationWarning'
+import RestartRequiredWarning from '../../configuration/RestartRequiredWarning'
 
-const retroService = new RetroService();
+const retroService = new RetroService()
 
-function RetroConfigurationPage() {
+function RetroConfigurationPage () {
+  const [configuration, setConfiguration] = useState(null)
+  const [serviceSummary, setServiceSummary] = useState(null)
+  const [localRevision, setLocalRevision] = useState(0)
 
-    const [configuration, setConfiguration] = useState(null);
-    const [serviceSummary, setServiceSummary] = useState(null);
-    const [localRevision, setLocalRevision] = useState(0);
+  useEffect(() => {
+    retroService.getConfiguration(setConfiguration)
+    retroService.getServiceSummary(setServiceSummary)
+  }, [localRevision])
 
-    useEffect(() => {
-        retroService.getConfiguration(setConfiguration);
-        retroService.getServiceSummary(setServiceSummary);
-    }, [localRevision]);
+  if (!configuration || !serviceSummary) {
+    return <LoadingSpinner />
+  }
 
-    if (!configuration || !serviceSummary) {
-        return <LoadingSpinner />;
-    }
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -75,9 +74,9 @@ function RetroConfigurationPage() {
                                                             required={true}
                                                             awaitingRestart={serviceSummary.config_awaiting_restart} />{' '}
                                         {
-                                            configuration.writer_fs_base_path_computed_absolute ?
-                                                "(" + configuration.writer_fs_base_path_computed_absolute + ")"
-                                                : null
+                                            configuration.writer_fs_base_path_computed_absolute
+                                              ? '(' + configuration.writer_fs_base_path_computed_absolute + ')'
+                                              : null
                                         }
                                     </td>
                                     <td>
@@ -111,8 +110,7 @@ function RetroConfigurationPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default RetroConfigurationPage;
+export default RetroConfigurationPage

@@ -1,9 +1,8 @@
-import React from "react";
-import RetroNotReadyAlert from "./RetroNotReadyAlert";
+import React from 'react'
+import RetroNotReadyAlert from './RetroNotReadyAlert'
 
-function SearchPage() {
-
-    return (
+function SearchPage () {
+  return (
         <div>
             <RetroNotReadyAlert />
 
@@ -24,8 +23,7 @@ function SearchPage() {
             </div>
 
         </div>
-    )
-
+  )
 }
 
-export default SearchPage;
+export default SearchPage

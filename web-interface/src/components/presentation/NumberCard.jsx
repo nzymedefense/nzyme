@@ -1,10 +1,9 @@
-import React from "react";
+import React from 'react'
 
-import numeral from "numeral";
+import numeral from 'numeral'
 
-function NumberCard(props) {
-
-    return (
+function NumberCard (props) {
+  return (
         <div className="card">
             <div className="card-body card-number">
                 <div className="card-number-title">
@@ -16,8 +15,7 @@ function NumberCard(props) {
                 </span>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default NumberCard;
+export default NumberCard

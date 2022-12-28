@@ -1,14 +1,13 @@
-import React from "react";
-import TapMetricsGauges from "./TapMetricsGauges";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
+import React from 'react'
+import TapMetricsGauges from './TapMetricsGauges'
+import LoadingSpinner from '../../../misc/LoadingSpinner'
 
-function TapMetrics(props) {
+function TapMetrics (props) {
+  if (!props.metrics) {
+    return <LoadingSpinner />
+  }
 
-    if (!props.metrics) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
         <div>
             <div className="row mt-3">
                 <div className="col-md-12">
@@ -18,8 +17,7 @@ function TapMetrics(props) {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapMetrics;
+export default TapMetrics

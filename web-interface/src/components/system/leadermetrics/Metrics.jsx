@@ -5,7 +5,7 @@ import LoadingSpinner from '../ProbesTable'
 
 import numeral from 'numeral'
 import SystemService from '../../../services/SystemService'
-import HistogramRow from "./HistogramRow";
+import HistogramRow from './HistogramRow'
 
 class Metrics extends React.Component {
   constructor (props) {

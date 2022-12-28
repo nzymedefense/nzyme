@@ -4,14 +4,14 @@ import { notify } from 'react-notify-toast'
 class TrackersService {
   findAll (setTrackers, setGroundstationEnabled) {
     RESTClient.get('/trackers', {}, function (response) {
-      setTrackers(response.data.trackers);
-      setGroundstationEnabled(response.data.groundstation_enabled);
+      setTrackers(response.data.trackers)
+      setGroundstationEnabled(response.data.groundstation_enabled)
     })
   }
 
   findOne (trackerName, setTracker) {
     RESTClient.get('/trackers/show/' + trackerName, {}, function (response) {
-      setTracker(response.data);
+      setTracker(response.data)
     })
   }
 

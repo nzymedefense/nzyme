@@ -7,25 +7,24 @@ import ReportsService from '../../services/ReportsService'
 import LoadingSpinner from '../misc/LoadingSpinner'
 import moment from 'moment'
 
-const reportsService = new ReportsService();
+const reportsService = new ReportsService()
 
-function ReportExecutionLogDetailsPage() {
+function ReportExecutionLogDetailsPage () {
+  const { reportName, executionId } = useParams()
 
-    const{ reportName, executionId }= useParams();
+  const [report, setReport] = useState(null)
+  const [log, setLog] = useState(null)
 
-    const [report, setReport] = useState(null);
-    const [log, setLog] = useState(null);
+  useEffect(() => {
+    reportsService.findOne(reportName, setReport)
+    reportsService.findExecutionLog(reportName, executionId, setLog)
+  }, [reportName, executionId, setReport, setLog])
 
-    useEffect(() => {
-        reportsService.findOne(reportName, setReport);
-        reportsService.findExecutionLog(reportName, executionId, setLog);
-    }, [reportName, executionId, setReport, setLog]);
+  if (!report || !log) {
+    return <LoadingSpinner />
+  }
 
-    if (!report || !log) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -74,8 +73,7 @@ function ReportExecutionLogDetailsPage() {
                     </div>
                 </div>
             </div>
-    )
-
+  )
 }
 
 export default ReportExecutionLogDetailsPage

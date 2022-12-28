@@ -1,20 +1,19 @@
-import React, {useEffect, useState} from 'react';
-import PGPKeyTable from "./PGPKeyTable";
-import PGPMetrics from "./PGPMetrics";
-import CryptoService from "../../../services/CryptoService";
+import React, { useEffect, useState } from 'react'
+import PGPKeyTable from './PGPKeyTable'
+import PGPMetrics from './PGPMetrics'
+import CryptoService from '../../../services/CryptoService'
 
-const cryptoService = new CryptoService();
+const cryptoService = new CryptoService()
 
-function CryptoSummaryPage() {
+function CryptoSummaryPage () {
+  const [pgpKeys, setPGPKeys] = useState(null)
+  const [pgpMetrics, setPGPMetrics] = useState(null)
 
-    const [pgpKeys, setPGPKeys] = useState(null);
-    const [pgpMetrics, setPGPMetrics] = useState(null);
+  useEffect(() => {
+    cryptoService.getPGPSummary(setPGPKeys, setPGPMetrics)
+  }, [])
 
-    useEffect(() => {
-        cryptoService.getPGPSummary(setPGPKeys, setPGPMetrics);
-    }, []);
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -31,7 +30,7 @@ function CryptoSummaryPage() {
                             <p>
                                 The nzyme system will automatically generate PGP keys for you to encrypt sensitive
                                 information in the database. Learn more about PGP keys
-                                in the <a href="https://go.nzyme.org/crypto-pgp" target="_blank">nzyme documentation</a>.
+                                in the <a href="https://go.nzyme.org/crypto-pgp" target="_blank" rel="noreferrer">nzyme documentation</a>.
                             </p>
 
                             <PGPKeyTable keys={pgpKeys} />
@@ -51,8 +50,7 @@ function CryptoSummaryPage() {
             </div>
 
         </div>
-    )
-
+  )
 }
 
-export default CryptoSummaryPage;
+export default CryptoSummaryPage

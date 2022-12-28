@@ -1,21 +1,19 @@
-import React from "react";
-import LoadingSpinner from "../misc/LoadingSpinner";
-import TapRow from "./TapRow";
+import React from 'react'
+import LoadingSpinner from '../misc/LoadingSpinner'
+import TapRow from './TapRow'
 
+function TapsTable (props) {
+  if (!props.taps) {
+    return <LoadingSpinner />
+  }
 
-function TapsTable(props) {
+  const taps = props.taps.taps
 
-    if (!props.taps) {
-        return <LoadingSpinner />
-    }
+  if (taps.length == 0) {
+    return <div className="alert alert-warning">No nzyme taps have reported in. Install a tap and point it to the nzyme leader.</div>
+  }
 
-    const taps = props.taps.taps;
-
-    if (taps.length == 0) {
-        return <div className="alert alert-warning">No nzyme taps have reported in. Install a tap and point it to the nzyme leader.</div>
-    }
-
-    return (
+  return (
         <div className="row">
             <div className="col-md-12">
                 <table className="table table-sm table-hover table-striped">
@@ -31,14 +29,13 @@ function TapsTable(props) {
                     </thead>
                     <tbody>
                     {Object.keys(taps.sort((a, b) => a.name.localeCompare(b.name))).map(function (key, i) {
-                        return <TapRow key={"tap-" + i} tap={taps[i]} />
+                      return <TapRow key={'tap-' + i} tap={taps[i]} />
                     })}
                     </tbody>
                 </table>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapsTable;
+export default TapsTable

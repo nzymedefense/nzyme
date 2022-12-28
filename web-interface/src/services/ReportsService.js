@@ -11,7 +11,7 @@ class ReportsService {
 
   findOne (name, setReport) {
     RESTClient.get('/reports/show/' + name, {}, function (response) {
-      setReport(response.data);
+      setReport(response.data)
     })
   }
 
@@ -34,7 +34,7 @@ class ReportsService {
     const self = this
 
     RESTClient.delete('/reports/show/' + name, {}, function () {
-      setReportDeleted(true);
+      setReportDeleted(true)
     }, function () {
       errorCallback()
     })
@@ -68,7 +68,7 @@ class ReportsService {
     const self = this
 
     RESTClient.get('/reports/show/' + reportName + '/execution/' + executionId, {}, function (response) {
-      setLog(response.data);
+      setLog(response.data)
     })
   }
 }

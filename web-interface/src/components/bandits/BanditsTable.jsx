@@ -4,21 +4,20 @@ import BanditsTableRow from './BanditsTableRow'
 import Routes from '../../util/ApiRoutes'
 import BanditsService from '../../services/BanditsService'
 
-const banditsService = new BanditsService();
+const banditsService = new BanditsService()
 
-function fetchData(setBandits) {
-  banditsService.findAll(setBandits);
+function fetchData (setBandits) {
+  banditsService.findAll(setBandits)
 }
 
-function BanditsTable() {
-
-  const [bandits, setBandits] = useState();
+function BanditsTable () {
+  const [bandits, setBandits] = useState()
 
   useEffect(() => {
-    fetchData(setBandits);
-    const id = setInterval(() => fetchData(setBandits), 5000);
-    return () => clearInterval(id);
-  }, []);
+    fetchData(setBandits)
+    const id = setInterval(() => fetchData(setBandits), 5000)
+    return () => clearInterval(id)
+  }, [])
 
   if (!bandits) {
     return <LoadingSpinner />
@@ -55,7 +54,6 @@ function BanditsTable() {
               </div>
           </div>
   )
-  
 }
 
 export default BanditsTable

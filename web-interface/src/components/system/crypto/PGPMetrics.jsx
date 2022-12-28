@@ -1,14 +1,13 @@
-import React from 'react';
-import TimerRow from "../leadermetrics/TimerRow";
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import React from 'react'
+import TimerRow from '../leadermetrics/TimerRow'
+import LoadingSpinner from '../../misc/LoadingSpinner'
 
-function PGPMetrics(props) {
+function PGPMetrics (props) {
+  if (!props.metrics) {
+    return <LoadingSpinner />
+  }
 
-    if (!props.metrics) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
@@ -26,8 +25,7 @@ function PGPMetrics(props) {
             <TimerRow title="Decryption Operations" timer={props.metrics.pgp_decryption_timer}/>
             </tbody>
         </table>
-    );
-
+  )
 }
 
-export default PGPMetrics;
+export default PGPMetrics

@@ -1,34 +1,33 @@
-import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
-import ApiRoutes from "../../../../util/ApiRoutes";
-import TapInactiveWarning from "../TapInactiveWarning";
-import TapsService from "../../../../services/TapsService";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
-import TapMetricsChartProxy from "./TapMetricsChartProxy";
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import ApiRoutes from '../../../../util/ApiRoutes'
+import TapInactiveWarning from '../TapInactiveWarning'
+import TapsService from '../../../../services/TapsService'
+import LoadingSpinner from '../../../misc/LoadingSpinner'
+import TapMetricsChartProxy from './TapMetricsChartProxy'
 
-const tapsService = new TapsService();
+const tapsService = new TapsService()
 
-function fetchData(tapName, setTap) {
-    tapsService.findTap(tapName, setTap);
+function fetchData (tapName, setTap) {
+  tapsService.findTap(tapName, setTap)
 }
 
-function TapMetricsDetailsPage() {
+function TapMetricsDetailsPage () {
+  const { tapName, metricType, metricName } = useParams()
 
-    const { tapName, metricType, metricName } = useParams();
+  const [tap, setTap] = useState(null)
 
-    const [tap, setTap] = useState(null);
+  useEffect(() => {
+    fetchData(tapName, setTap)
+    const id = setInterval(() => fetchData(tapName, setTap), 5000)
+    return () => clearInterval(id)
+  }, [tapName, setTap])
 
-    useEffect(() => {
-        fetchData(tapName, setTap);
-        const id = setInterval(() => fetchData(tapName, setTap), 5000);
-        return () => clearInterval(id);
-    }, [tapName, setTap]);
+  if (!tap) {
+    return <LoadingSpinner />
+  }
 
-    if (!tap) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-10">
@@ -66,8 +65,7 @@ function TapMetricsDetailsPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapMetricsDetailsPage;
+export default TapMetricsDetailsPage

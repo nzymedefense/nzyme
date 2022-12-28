@@ -1,9 +1,8 @@
 import React from 'react'
-import AssetImage from "../misc/AssetImage";
+import AssetImage from '../misc/AssetImage'
 
-function UserProfile() {
-
-    return (
+function UserProfile () {
+  return (
         <div className="user-profile">
             <AssetImage filename="lennart_test.jpg"
                         className="avatar float-start"
@@ -17,8 +16,7 @@ function UserProfile() {
                 </a>
             </div>
         </div>
-    );
-
+  )
 }
 
-export default UserProfile;
+export default UserProfile

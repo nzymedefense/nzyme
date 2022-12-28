@@ -6,6 +6,7 @@
   "scripts": {
     "start": "webpack serve --progress --config webpack.config.js",
     "lint": "eslint --ext .jsx --ext .js src/",
+    "lintfix": "eslint --fix --ext .jsx --ext .js src/",
     "build": "webpack --config webpack.prod.js"
   },
   "devDependencies": {

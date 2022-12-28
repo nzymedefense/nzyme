@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 
 import Routes from '../../util/ApiRoutes'
 import LoadingSpinner from '../misc/LoadingSpinner'
@@ -8,23 +8,21 @@ import ReportsService from '../../services/ReportsService'
 import moment from 'moment'
 import ReportFireTime from './ReportFireTime'
 import EmailReceiversDetailsTable from './EmailReceiversDetailsTable'
-import { Navigate } from 'react-router-dom'
 import ReportExecutionLog from './ReportExecutionLog'
 import DeleteReportButton from './DeleteReportButton'
 import AddEmailReceiverForm from './AddEmailReceiverForm'
 
-const reportsService = new ReportsService();
+const reportsService = new ReportsService()
 
-function ReportDetailsPage() {
+function ReportDetailsPage () {
+  const { reportName } = useParams()
 
-  const { reportName } = useParams();
-
-  const [ report, setReport ] = useState(null);
-  const [ reportDeleted, setReportDeleted ] = useState(false);
+  const [report, setReport] = useState(null)
+  const [reportDeleted, setReportDeleted] = useState(false)
 
   useEffect(() => {
-    reportsService.findOne(reportName, setReport);
-  }, [reportName]);
+    reportsService.findOne(reportName, setReport)
+  }, [reportName])
 
   if (reportDeleted) {
     return <Navigate to={Routes.SYSTEM.REPORTS.INDEX} />
@@ -142,7 +140,6 @@ function ReportDetailsPage() {
 
           </div>
   )
-  
 }
 
 export default ReportDetailsPage

@@ -1,11 +1,10 @@
-import React from "react";
+import React from 'react'
 
-function ConfigurationCloseButton(props) {
-
-    if (props.submittedSuccessfully) {
-        return null;
-    } else {
-        return (
+function ConfigurationCloseButton (props) {
+  if (props.submittedSuccessfully) {
+    return null
+  } else {
+    return (
             <button type="button"
                     className="btn btn-secondary"
                     data-bs-dismiss="modal"
@@ -13,9 +12,8 @@ function ConfigurationCloseButton(props) {
                     disabled={props.submitting}>
                 Cancel
             </button>
-        )
-    }
-
+    )
+  }
 }
 
-export default ConfigurationCloseButton;
+export default ConfigurationCloseButton

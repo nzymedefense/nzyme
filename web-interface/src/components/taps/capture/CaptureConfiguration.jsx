@@ -1,13 +1,12 @@
-import React from "react";
-import CaptureRow from "./CaptureRow";
+import React from 'react'
+import CaptureRow from './CaptureRow'
 
-function CaptureConfiguration(props) {
+function CaptureConfiguration (props) {
+  if (!props.tap.active) {
+    return <div className="alert alert-danger">No recent data.</div>
+  }
 
-    if (!props.tap.active) {
-        return <div className="alert alert-danger">No recent data.</div>
-    }
-
-    return (
+  return (
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
@@ -21,12 +20,11 @@ function CaptureConfiguration(props) {
             </thead>
             <tbody>
             {Object.keys(props.tap.captures.sort((a, b) => a.interface_name.localeCompare(b.interface_name))).map(function (key, i) {
-                return <CaptureRow key={"capture-" + i} capture={props.tap.captures[i]} />
+              return <CaptureRow key={'capture-' + i} capture={props.tap.captures[i]} />
             })}
             </tbody>
         </table>
-    )
-
+  )
 }
 
-export default CaptureConfiguration;
+export default CaptureConfiguration

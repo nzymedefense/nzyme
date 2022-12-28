@@ -60,7 +60,7 @@ const ApiRoutes = {
   ALERTS: {
     INDEX: '/alerts',
     SHOW: id => `/alerts/show/${id}`
-  },
+  }
 }
 
 export default ApiRoutes

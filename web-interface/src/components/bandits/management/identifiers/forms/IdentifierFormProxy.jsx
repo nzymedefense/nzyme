@@ -18,7 +18,7 @@ class IdentifierFormProxy extends React.Component {
 
     if (formType === 'SIGNAL_STRENGTH') {
       return (
-                <SignalStrengthIdentifierForm 
+                <SignalStrengthIdentifierForm
                   setConfiguration={this.props.setConfiguration}
                   setExplanation={this.props.setExplanation}
                   setFormReady={this.props.setFormReady} />
@@ -36,7 +36,7 @@ class IdentifierFormProxy extends React.Component {
 
     if (formType === 'PWNAGOTCHI_IDENTITY') {
       return (
-                <PwnagotchiIdentityForm 
+                <PwnagotchiIdentityForm
                   setConfiguration={this.props.setConfiguration}
                   setExplanation={this.props.setExplanation}
                   setFormReady={this.props.setFormReady} />

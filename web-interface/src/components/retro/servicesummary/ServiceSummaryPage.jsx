@@ -1,25 +1,24 @@
-import React, {useEffect, useState} from "react";
-import Routes from "../../../util/ApiRoutes";
-import ServiceSummaryOverview from "./ServiceSummaryOverview";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import RetroService from "../../../services/RetroService";
-import RetroNotReadyAlert from "../RetroNotReadyAlert";
+import React, { useEffect, useState } from 'react'
+import Routes from '../../../util/ApiRoutes'
+import ServiceSummaryOverview from './ServiceSummaryOverview'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import RetroService from '../../../services/RetroService'
+import RetroNotReadyAlert from '../RetroNotReadyAlert'
 
-const retroService = new RetroService();
+const retroService = new RetroService()
 
-function ServiceSummaryPage() {
+function ServiceSummaryPage () {
+  const [summary, setSummary] = useState(null)
 
-    const [summary, setSummary] = useState(null);
+  useEffect(() => {
+    retroService.getServiceSummary(setSummary)
+  }, [setSummary])
 
-    useEffect(() => {
-        retroService.getServiceSummary(setSummary);
-    }, [setSummary]);
+  if (!summary) {
+    return <LoadingSpinner />
+  }
 
-    if (!summary) {
-        return <LoadingSpinner />;
-    }
-
-    return (
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -66,8 +65,7 @@ function ServiceSummaryPage() {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default ServiceSummaryPage;
+export default ServiceSummaryPage

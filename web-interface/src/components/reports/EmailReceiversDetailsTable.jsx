@@ -2,7 +2,6 @@ import React from 'react'
 import DeleteEmailReceiverButton from './DeleteEmailReceiverButton'
 
 class EmailReceiversDetailsTable extends React.Component {
-
   render () {
     const receivers = this.props.report.email_receivers
     const self = this
