@@ -24,7 +24,7 @@ function TapSecret (props) {
     if (toggled) {
       setSecret(props.secret)
     }
-  }, [props.secret])
+  }, [toggled, props.secret])
 
   if (!props.secret) {
     return <LoadingSpinner />

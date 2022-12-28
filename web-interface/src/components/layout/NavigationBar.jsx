@@ -3,9 +3,6 @@ import Store from '../../util/Store'
 import DarkModeButton from './DarkModeButton'
 
 class NavigationBar extends React.Component {
-  constructor (props) {
-    super(props)
-  }
 
   static _handleLogout (e) {
     e.preventDefault()

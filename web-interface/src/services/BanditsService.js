@@ -51,8 +51,6 @@ class BanditsService {
   }
 
   createIdentifier (banditUUID, createRequest, successCallback, errorCallback) {
-    const self = this
-
     RESTClient.post('/bandits/show/' + banditUUID + '/identifiers', createRequest, successCallback, errorCallback)
   }
 

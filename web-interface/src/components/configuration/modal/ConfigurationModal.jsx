@@ -2,14 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import DefaultValue from './DefaultValue'
 import RestartRequired from './RestartRequired'
 import ConfigurationInputField from './ConfigurationInputField'
-import RetroService from '../../../services/RetroService'
 import ConfigurationSubmitButton from './ConfigurationSubmitButton'
 import ConfigurationCloseButton from './ConfigurationCloseButton'
 import ConfigurationUpdateFailedWarning from './ConfigurationUpdateFailedWarning'
 import ThreatLevelMidnight from './ThreatLevelMidnight'
 import InputLabel from './InputLabel'
-
-const retroService = new RetroService()
 
 function ConfigurationModal (props) {
   const [inputDisabled, setInputDisabled] = useState(false)
@@ -21,15 +18,21 @@ function ConfigurationModal (props) {
 
   const [inputValue, setInputValue] = useState(props.config.value)
 
-  useEffect(() => {
-    const config = props.config
+  const config = props.config
 
-    if (props.changeWarning && !changeWarningAck) {
+  const key = props.config.key
+  const value = props.config.value
+  const changeWarning = props.changeWarning
+  const dbUpdateCallback = props.dbUpdateCallback
+  const setLocalRevision = props.setLocalRevision
+
+  useEffect(() => {
+    if (changeWarning && !changeWarningAck) {
       setFormDisabled(true)
       return
     }
 
-    if (inputValue === undefined || inputValue === props.config.value) {
+    if (inputValue === undefined || inputValue === value) {
       setFormDisabled(true)
     } else {
       if (config.constraints && config.constraints.length > 0) {
@@ -41,6 +44,7 @@ function ConfigurationModal (props) {
               setFormDisabled(inputValue.length < cData.min || inputValue.length > cData.max)
               break
             case 'NUMBER_RANGE':
+              /* eslint-disable no-case-declarations */
               const numValue = parseInt(inputValue, 10)
               setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max)
               break
@@ -55,7 +59,7 @@ function ConfigurationModal (props) {
         setFormDisabled(false)
       }
     }
-  }, [inputValue, changeWarningAck])
+  }, [inputValue, value, changeWarningAck, changeWarning, config])
 
   const updateValue = useCallback(() => {
     setFormSubmittedWithError(false)
@@ -63,8 +67,8 @@ function ConfigurationModal (props) {
     setFormDisabled(true)
     setInputDisabled(true)
 
-    props.dbUpdateCallback({
-      [props.config.key]: inputValue
+    dbUpdateCallback({
+      [key]: inputValue
     }, function () {
       setFormSubmitting(false)
       setFormDisabled(false)
@@ -75,30 +79,30 @@ function ConfigurationModal (props) {
       setFormDisabled(false)
       setInputDisabled(false)
     })
-  }, [inputValue])
+  }, [inputValue, key, dbUpdateCallback])
 
   const resetOnCancel = useCallback(() => {
-    setInputValue(props.config.value)
+    setInputValue(value)
     setChangeWarningAck(false)
     setFormSubmittedWithError(false)
-  }, [props.config])
+  }, [value])
 
   const resetOnFinish = useCallback(() => {
     setChangeWarningAck(false)
     setFormSubmittedSuccessfully(false)
     setInputDisabled(false)
-    props.setLocalRevision(prevRev => prevRev + 1)
-  }, [])
+    setLocalRevision(prevRev => prevRev + 1)
+  }, [setLocalRevision])
 
   return (
         <React.Fragment>
             <a href="web-interface/src/components/configuration/modal/ConfigurationModal#"
                data-bs-toggle="modal"
-               data-bs-target={'#configuration-dialog-' + props.config.key}>
+               data-bs-target={'#configuration-dialog-' + key}>
                 Edit
             </a>
 
-            <div className="modal configuration-dialog" id={'configuration-dialog-' + props.config.key}
+            <div className="modal configuration-dialog" id={'configuration-dialog-' + key}
                  data-bs-keyboard="false" data-bs-backdrop="static" tabIndex="-1"
                  aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
@@ -113,7 +117,7 @@ function ConfigurationModal (props) {
                             <ConfigurationInputField
                                 type={props.config.value_type}
                                 title={props.config.key_human_readable}
-                                fieldKey={props.config.key}
+                                fieldKey={key}
                                 value={inputValue}
                                 setValue={setInputValue}
                                 disabled={inputDisabled} />
@@ -127,7 +131,7 @@ function ConfigurationModal (props) {
                             <ThreatLevelMidnight
                                 enabled={props.changeWarning}
                                 helpTag={props.config.help_tag}
-                                configKey={props.config.key}
+                                configKey={key}
                                 changeWarningAck={changeWarningAck}
                                 setChangeWarningAck={setChangeWarningAck} />
                         </div>

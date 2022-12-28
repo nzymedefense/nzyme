@@ -5,12 +5,12 @@ import numeral from 'numeral'
 function sumValues (sizes) {
   const vals = Object.values(sizes)
 
-  let total_size = 0
+  let totalSize = 0
   vals.forEach((size) => {
-    total_size += size
+    totalSize += size
   })
 
-  return total_size
+  return totalSize
 }
 
 function ServiceSummaryOverview (props) {

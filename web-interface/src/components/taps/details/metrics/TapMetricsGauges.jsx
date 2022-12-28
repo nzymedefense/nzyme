@@ -1,5 +1,4 @@
 import React from 'react'
-import numeral from 'numeral'
 import FormattedGauge from './FormattedGauge'
 import ApiRoutes from '../../../../util/ApiRoutes'
 

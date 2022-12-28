@@ -31,8 +31,6 @@ class ReportsService {
   }
 
   deleteReport (name, setReportDeleted, errorCallback) {
-    const self = this
-
     RESTClient.delete('/reports/show/' + name, {}, function () {
       setReportDeleted(true)
     }, function () {
@@ -65,8 +63,6 @@ class ReportsService {
   }
 
   findExecutionLog (reportName, executionId, setLog) {
-    const self = this
-
     RESTClient.get('/reports/show/' + reportName + '/execution/' + executionId, {}, function (response) {
       setLog(response.data)
     })

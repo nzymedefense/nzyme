@@ -9,7 +9,7 @@ function TapsTable (props) {
 
   const taps = props.taps.taps
 
-  if (taps.length == 0) {
+  if (taps.length === 0) {
     return <div className="alert alert-warning">No nzyme taps have reported in. Install a tap and point it to the nzyme leader.</div>
   }
 

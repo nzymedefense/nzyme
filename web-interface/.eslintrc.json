@@ -24,7 +24,9 @@
         {
             "files": ["*"],
             "rules": {
-                "react/prop-types": "off"
+                "padded-blocks": "off",
+                "react/prop-types": "off",
+                "react/no-deprecated": "off"
             }
         }
    ],

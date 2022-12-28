@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import ApiRoutes from '../../../util/ApiRoutes'
 import MonitoringService from '../../../services/MonitoringService'
 import ExportersTable from './ExportersTable'
 
