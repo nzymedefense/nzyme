@@ -523,10 +523,11 @@
 
                                 <data>
                                     <src>src/deb/systemd/defaults_debian</src>
+                                    <dst>nzyme</dst>
                                     <type>file</type>
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>/etc/default/nzyme</prefix>
+                                        <prefix>/etc/default</prefix>
                                         <filemode>644</filemode>
                                         <user>root</user>
                                         <group>root</group>
