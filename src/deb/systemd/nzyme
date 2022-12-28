@@ -2,4 +2,8 @@
 
 set -e
 
-${JAVA:=/usr/bin/java} -Xmx1g -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-debian.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf
+if [ -f "/etc/default/nzyme" ]; then
+    . "/etc/default/nzyme"
+fi
+
+${JAVA:=/usr/bin/java} $NZYME_JAVA_OPTS -jar -Dlog4j.configurationFile=file:///etc/nzyme/log4j2-debian.xml /usr/share/nzyme/nzyme.jar -c /etc/nzyme/nzyme.conf

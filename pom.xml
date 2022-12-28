@@ -522,6 +522,18 @@
                                 </data>
 
                                 <data>
+                                    <src>src/deb/systemd/defaults_debian</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/default/nzyme</prefix>
+                                        <filemode>644</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
                                     <src>src/deb/systemd/nzyme.service</src>
                                     <type>file</type>
                                     <mapper>
