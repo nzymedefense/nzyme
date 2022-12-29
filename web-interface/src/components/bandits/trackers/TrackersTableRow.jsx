@@ -7,23 +7,29 @@ import TrackerStatus from './TrackerStatus'
 import TrackingMode from './TrackingMode'
 import Routes from '../../../util/ApiRoutes'
 import TrackBanditButton from './TrackBanditButton'
+import TrackersService from '../../../services/TrackersService'
+
+const trackersService = new TrackersService()
 
 function TrackersTableRow (props) {
   const tracker = props.tracker
 
+  const forBandit = props.forBandit
+  const setTrackers = props.setTrackers
+
   const onTrackingStartButtonClicked = useCallback(() => {
-    props.trackersService.issueStartTrackingRequest(tracker.name, props.forBandit.uuid, function () {
+    trackersService.issueStartTrackingRequest(tracker.name, forBandit.uuid, function () {
       notify.show('Issued start tracking request for this bandit to tracker device.', 'success')
-      props.setTrackers(undefined)
+      setTrackers(undefined)
     })
-  }, [tracker, props.trackersService, props.forBandit, props.setTrackers])
+  }, [tracker, forBandit, setTrackers])
 
   const onTrackingStopButtonClicked = useCallback(() => {
-    props.trackersService.issueCancelTrackingRequest(tracker.name, props.forBandit.uuid, function () {
+    trackersService.issueCancelTrackingRequest(tracker.name, forBandit.uuid, function () {
       notify.show('Issued cancel tracking request for this bandit to tracker device.', 'success')
-      props.setTrackers(undefined)
+      setTrackers(undefined)
     })
-  }, [tracker, props.trackersService, props.forBandit, props.setTrackers])
+  }, [tracker, forBandit, setTrackers])
 
   return (
             <tr>

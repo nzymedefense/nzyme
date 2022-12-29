@@ -43,4 +43,4 @@ function ConfigurationInputField (props) {
   }
 }
 
-export default ConfigurationInputField; 2
+export default ConfigurationInputField

@@ -31,7 +31,6 @@ function BanditsTable () {
     )
   }
 
-  const self = this
   return (
           <div className="row">
               <div className="col-md-12">

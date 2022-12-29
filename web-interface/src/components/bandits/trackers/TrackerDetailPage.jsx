@@ -25,7 +25,7 @@ function TrackerDetailPage (props) {
     fetchData(trackerName, setTracker)
     const id = setInterval(() => fetchData(trackerName, setTracker), 15000)
     return () => clearInterval(id)
-  }, [])
+  }, [trackerName])
 
   if (!tracker) {
     return <LoadingSpinner />

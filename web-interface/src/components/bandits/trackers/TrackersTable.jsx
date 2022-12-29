@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import LoadingSpinner from '../../misc/LoadingSpinner'
 import TrackersTableRow from './TrackersTableRow'
@@ -57,7 +57,6 @@ function TrackersTable (props) {
                                 key={'tracker-' + key}
                                 tracker={trackers[key]}
                                 forBandit={props.forBandit}
-                                trackersService={trackersService}
                                 setTrackers={setTrackers}
                             />
                         })}

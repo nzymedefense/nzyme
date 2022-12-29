@@ -7,15 +7,21 @@ import BanditsService from '../../../../services/BanditsService'
 const banditsService = new BanditsService()
 
 function DeleteIdentifierButton (props) {
+
+  const bandit = props.bandit
+  const trackers = props.tracker
+  const identifierUUID = props.identifierUUID
+  const setBandit = props.setBandit
+
   const deleteIdentifier = useCallback((e) => {
     e.preventDefault()
 
-    if (props.bandit.read_only) {
+    if (bandit.read_only) {
       alert('Cannot delete identifier of a built-in bandit.')
       return
     }
 
-    if (anyTrackerTrackingBandit(props.bandit, props.trackers)) {
+    if (anyTrackerTrackingBandit(bandit, trackers)) {
       alert('Cannot delete a bandit that is currently tracked by trackers. Please stop tracking first.')
       return
     }
@@ -24,11 +30,11 @@ function DeleteIdentifierButton (props) {
       return
     }
 
-    banditsService.deleteIdentifier(props.bandit.uuid, props.identifier.uuid, function () {
+    banditsService.deleteIdentifier(bandit.uuid, identifierUUID, function () {
       notify.show('Identifier deleted.', 'success')
-      props.setBandit(undefined)
+      setBandit(undefined)
     })
-  }, [props.bandit, props.trackers, banditsService, props.identifierUUID, props.setBandit])
+  }, [bandit, trackers, identifierUUID, setBandit])
   return (
         <button className="btn btn-sm btn-danger" onClick={deleteIdentifier}>Delete</button>
   )
