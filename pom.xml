@@ -500,7 +500,8 @@
                                 </data>
 
                                 <data>
-                                    <src>nzyme.conf</src>
+                                    <src>nzyme.conf.example</src>
+                                    <dst>nzyme.conf</dst>
                                     <type>file</type>
                                     <conffile>true</conffile>
                                     <mapper>
