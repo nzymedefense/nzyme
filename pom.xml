@@ -500,8 +500,9 @@
                                 </data>
 
                                 <data>
-                                    <src>nzyme.conf.example</src>
+                                    <src>nzyme.conf</src>
                                     <type>file</type>
+                                    <conffile>true</conffile>
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/etc/nzyme</prefix>
@@ -525,6 +526,7 @@
                                     <src>src/deb/systemd/defaults_debian</src>
                                     <dst>nzyme</dst>
                                     <type>file</type>
+                                    <conffile>true</conffile>
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/etc/default</prefix>
