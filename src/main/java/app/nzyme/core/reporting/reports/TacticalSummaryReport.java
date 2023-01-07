@@ -17,12 +17,12 @@
 
 package app.nzyme.core.reporting.reports;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Template;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.dot11.networks.sentry.db.SentrySSID;
 import app.nzyme.core.events.Event;
@@ -60,7 +60,7 @@ public class TacticalSummaryReport extends ReportBase {
 
     public static final class Report extends ReportJob {
 
-        public String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
+        public String runReport(NzymeNode nzyme, List<String> emailReceivers) throws JobExecutionException {
             try {
                 List<Map<String, String>> alerts = buildAlerts(nzyme);
 
@@ -89,7 +89,7 @@ public class TacticalSummaryReport extends ReportBase {
             return NAME;
         }
 
-        private List<Map<String, String>> buildAlerts(NzymeLeader nzyme) {
+        private List<Map<String, String>> buildAlerts(NzymeNode nzyme) {
             List<Map<String, String>> result = Lists.newArrayList();
 
             for (Alert alert : nzyme.getAlertsService().findAllAlertsSince24HoursAgo(100).values()) {
@@ -104,7 +104,7 @@ public class TacticalSummaryReport extends ReportBase {
             return result;
         }
 
-        private List<Map<String, Object>> buildNetworks(NzymeLeader nzyme) {
+        private List<Map<String, Object>> buildNetworks(NzymeNode nzyme) {
             List<Map<String, Object>> result = Lists.newArrayList();
 
             ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();

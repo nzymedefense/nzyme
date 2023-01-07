@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.frames.Dot11AssociationRequestFrame;
 import app.nzyme.core.dot11.frames.Dot11ProbeRequestFrame;
 import org.apache.logging.log4j.LogManager;
@@ -20,9 +20,9 @@ public class Clients {
     private static final Logger LOG = LogManager.getLogger(Clients.class);
 
     private final Map<String, Client> clients;
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public Clients(NzymeLeader nzyme) {
+    public Clients(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.clients = Maps.newHashMap();

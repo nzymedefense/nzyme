@@ -17,12 +17,12 @@
 
 package app.nzyme.core.bandits.engine;
 
+import app.nzyme.core.NzymeNode;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.math.Stats;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,12 +49,12 @@ public class ContactRecorder {
 
     private final Object mutex = new Object();
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final Map<UUID, Map<String, List<Integer>>> ssids;
     private final Map<UUID, Map<String, List<Integer>>> bssids;
 
-    public ContactRecorder(int cleaningFrequencySeconds, NzymeLeader nzyme) {
+    public ContactRecorder(int cleaningFrequencySeconds, NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.ssids = Maps.newHashMap();

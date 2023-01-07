@@ -1,7 +1,7 @@
 package app.nzyme.core.configuration.db;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeTest;
@@ -13,7 +13,7 @@ public class BaseConfigurationServiceTest {
 
     @BeforeTest
     public void resetConfig() {
-        NzymeLeader nzyme = new MockNzyme(10);
+        NzymeNode nzyme = new MockNzyme(10);
         nzyme.getDatabase().useHandle(handle -> handle.execute("TRUNCATE base_configuration"));
     }
 

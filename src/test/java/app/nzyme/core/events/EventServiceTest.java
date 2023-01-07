@@ -1,7 +1,7 @@
 package app.nzyme.core.events;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -14,13 +14,13 @@ public class EventServiceTest {
 
     @BeforeMethod
     public void cleanEvents() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM events"));
     }
 
     @Test
     public void testRecordEvent() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         EventService events = nzyme.getEventService();
 
         assertEquals(events.countAll(), 0);
@@ -34,7 +34,7 @@ public class EventServiceTest {
 
     @Test
     public void testFindAllEventsOfLast24Hours() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         EventService events = nzyme.getEventService();
 
         assertEquals(events.countAll(), 0);
@@ -58,7 +58,7 @@ public class EventServiceTest {
 
     @Test
     public void testCountAllOfTypeOfLast24Hours() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         EventService events = nzyme.getEventService();
 
         assertEquals(events.countAllOfTypeOfLast24Hours(Event.TYPE.SHUTDOWN), 0);
@@ -83,7 +83,7 @@ public class EventServiceTest {
 
     @Test
     public void testSubscribe() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         EventService events = nzyme.getEventService();
 
         assertEquals(events.getSubscribers().size(), 0);

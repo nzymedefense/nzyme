@@ -21,7 +21,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Template;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.configuration.Dot11BSSIDDefinition;
 import app.nzyme.core.configuration.Dot11NetworkDefinition;
 import app.nzyme.core.reporting.ReportBase;
@@ -55,7 +55,7 @@ public class WirelessInventoryReport extends ReportBase {
     public static final class Report extends ReportJob {
 
         @Override
-        public String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
+        public String runReport(NzymeNode nzyme, List<String> emailReceivers) throws JobExecutionException {
             try {
                 Map<String, Object> parameters = Maps.newHashMap();
                 parameters.put("title", "nzyme - " + NAME);

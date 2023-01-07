@@ -17,12 +17,12 @@
 
 package app.nzyme.core.reporting.reports;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import freemarker.template.Template;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.networks.sentry.db.SentrySSID;
 import app.nzyme.core.reporting.ReportBase;
 import app.nzyme.core.reporting.ReportJob;
@@ -59,7 +59,7 @@ public class WirelessSurveyReport extends ReportBase {
     public static final class Report extends ReportJob {
 
         @Override
-        public String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException {
+        public String runReport(NzymeNode nzyme, List<String> emailReceivers) throws JobExecutionException {
             try {
                 Map<String, Object> parameters = Maps.newHashMap();
                 parameters.put("title", "nzyme - " + NAME);
@@ -77,7 +77,7 @@ public class WirelessSurveyReport extends ReportBase {
             }
         }
 
-        private List<Map<String, Object>> buildNetworks(NzymeLeader nzyme) {
+        private List<Map<String, Object>> buildNetworks(NzymeNode nzyme) {
             List<Map<String, Object>> result = Lists.newArrayList();
 
             ImmutableList.Builder<String> ssids = new ImmutableList.Builder<>();

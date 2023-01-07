@@ -17,12 +17,12 @@
 
 package app.nzyme.core.configuration;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.google.common.collect.ImmutableList;
 import app.nzyme.core.ResourcesAccessingTest;
 import app.nzyme.core.Role;
 import app.nzyme.core.alerts.Alert;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
-import app.nzyme.core.configuration.leader.LeaderConfigurationLoader;
+import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import org.simplejavamail.api.email.Recipient;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.testng.annotations.Test;
@@ -36,11 +36,11 @@ import java.util.ArrayList;
 
 import static org.testng.Assert.*;
 
-public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
+public class NzymeNodeConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test(expectedExceptions = FileNotFoundException.class)
     public void testGetConfigWithNonExistentFile() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
-        new LeaderConfigurationLoader(new File("idontexist.conf"), false).get();
+        new NodeConfigurationLoader(new File("idontexist.conf"), false).get();
     }
 
     @Test
@@ -51,9 +51,9 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
             System.out.println("loading Windows nzyme configuration file");
         }
 
-        LeaderConfiguration c = new LeaderConfigurationLoader(loadFromResourceFile(configFile), false).get();
+        NodeConfiguration c = new NodeConfigurationLoader(loadFromResourceFile(configFile), false).get();
 
-        assertEquals(c.role(), Role.LEADER);
+        assertEquals(c.role(), Role.NODE);
         assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
         assertEquals(c.pythonScriptPrefix(), "nzyme_");
         assertEquals(c.alertingTrainingPeriodSeconds(), 300);
@@ -127,7 +127,7 @@ public class NzymeLeaderConfigurationLoaderTest extends ResourcesAccessingTest {
 
     @Test(expectedExceptions = IncompleteConfigurationException.class)
     public void testGetInvalidConfigIncomplete() throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
-        new LeaderConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf.test"), false).get();
+        new NodeConfigurationLoader(loadFromResourceFile("nzyme-test-incomplete.conf.test"), false).get();
     }
 
 }

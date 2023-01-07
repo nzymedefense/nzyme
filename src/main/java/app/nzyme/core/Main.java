@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.beust.jcommander.JCommander;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.configuration.CLIArguments;
@@ -24,8 +25,7 @@ import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.configuration.base.BaseConfigurationLoader;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
-import app.nzyme.core.configuration.leader.LeaderConfigurationLoader;
+import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import app.nzyme.core.configuration.tracker.TrackerConfiguration;
 import app.nzyme.core.configuration.tracker.TrackerConfigurationLoader;
 import app.nzyme.core.database.DatabaseImpl;
@@ -77,10 +77,10 @@ public class Main {
         }
 
         switch (baseConfiguration.mode()) {
-            case LEADER:
-                LeaderConfiguration leaderConfiguration = null;
+            case NODE:
+                NodeConfiguration nodeConfiguration = null;
                 try {
-                    leaderConfiguration = new LeaderConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+                    nodeConfiguration = new NodeConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
                 } catch (InvalidConfigurationException | ConfigException e) {
                     LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
                     System.exit(FAILURE);
@@ -94,7 +94,7 @@ public class Main {
 
 
                 // Database.
-                DatabaseImpl database = new DatabaseImpl(leaderConfiguration);
+                DatabaseImpl database = new DatabaseImpl(nodeConfiguration);
                 try {
                     database.initializeAndMigrate();
                 } catch (LiquibaseException e) {
@@ -102,7 +102,7 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-                NzymeLeader nzyme = new NzymeLeaderImpl(baseConfiguration, leaderConfiguration, database);
+                NzymeNode nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
 
                 try {
                     nzyme.initialize();

@@ -17,10 +17,10 @@
 
 package app.nzyme.core.rest.web;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.floreysoft.jmte.Engine;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
 import app.nzyme.core.rest.RestTools;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -34,13 +34,13 @@ import static java.util.Objects.requireNonNull;
 public class IndexHtmlGenerator {
 
     private final String template;
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
     private final Engine templateEngine;
 
     private final List<String> jsFiles;
     private final List<String> cssFiles;
 
-    public IndexHtmlGenerator(final LeaderConfiguration configuration, AssetManifest assetManifest) throws IOException {
+    public IndexHtmlGenerator(final NodeConfiguration configuration, AssetManifest assetManifest) throws IOException {
         this(
                 Resources.toString(Resources.getResource("web-interface/index.html.template"), StandardCharsets.UTF_8),
                 assetManifest.getJsFiles(),
@@ -54,7 +54,7 @@ public class IndexHtmlGenerator {
                                final List<String> jsFiles,
                                final List<String> cssFiles,
                                final Engine templateEngine,
-                               final LeaderConfiguration configuration) throws IOException {
+                               final NodeConfiguration configuration) throws IOException {
         this.template = requireNonNull(template, "template");
         this.jsFiles = requireNonNull(jsFiles, "jsFiles");
         this.cssFiles = requireNonNull(cssFiles, "cssFiles");

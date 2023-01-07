@@ -1,7 +1,7 @@
 package app.nzyme.core.bandits.engine;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -15,13 +15,13 @@ public class ContactRecorderTest {
 
     @BeforeMethod
     public void cleanAlerts() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM bandits;"));
     }
 
     @Test
     public void testRecordFrame() throws InterruptedException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         ContactRecorder rec = new ContactRecorder(5, nzyme);
 
         assertTrue(rec.getSSIDs().isEmpty());

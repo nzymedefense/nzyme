@@ -19,7 +19,7 @@ package app.nzyme.core.bandits.engine;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.Role;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.alerts.BanditContactAlert;
@@ -41,7 +41,7 @@ public class ContactManager implements ContactIdentifierProcess {
 
     private static final Logger LOG = LogManager.getLogger(ContactManager.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private ImmutableMap<UUID, Contact> contacts;
     private ImmutableMap<UUID, Bandit> bandits;
@@ -51,7 +51,7 @@ public class ContactManager implements ContactIdentifierProcess {
 
     private static final int CONTACT_RECORDER_SYNC_FREQ = 60;
 
-    public ContactManager(NzymeLeader nzyme) {
+    public ContactManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.identifierEngine = new ContactIdentifierEngine(nzyme.getMetrics());
@@ -462,7 +462,7 @@ public class ContactManager implements ContactIdentifierProcess {
                                 now,
                                 now,
                                 1L,
-                                Role.LEADER,
+                                Role.NODE,
                                 nzyme.getNodeID(),
                                 frame.meta().getAntennaSignal(),
                                 null,

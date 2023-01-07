@@ -17,13 +17,13 @@
 
 package app.nzyme.core.ouis;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.util.MetricNames;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,11 +47,11 @@ public class OUIManager {
 
     private ImmutableMap<String, String> ouis;
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final Timer lookupTimer;
 
-    public OUIManager(NzymeLeader nzyme) {
+    public OUIManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.ouis = ImmutableMap.<String, String>builder().build();

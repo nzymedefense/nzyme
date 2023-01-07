@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.core.NzymeNode;
 import com.beust.jcommander.internal.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.MemoryRegistry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.system.SystemStatusResponse;
@@ -40,7 +40,7 @@ import java.util.List;
 public class SystemResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Path("/status")

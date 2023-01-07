@@ -17,12 +17,12 @@
 
 package app.nzyme.core.periodicals.alerting.beaconrate;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.service.AlertsService;
 import app.nzyme.core.alerts.BeaconRateAnomalyAlert;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.configuration.Dot11NetworkDefinition;
 import app.nzyme.core.dot11.networks.BSSID;
 import app.nzyme.core.dot11.networks.Networks;
@@ -39,12 +39,12 @@ public class BeaconRateAnomalyAlertMonitor extends Periodical {
     private static final Logger LOG = LogManager.getLogger(BeaconRateAnomalyAlertMonitor.class);
 
     private final Networks networks;
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
     private final AlertsService alertsService;
 
     private final Timer timer;
 
-    public BeaconRateAnomalyAlertMonitor(NzymeLeader nzyme) {
+    public BeaconRateAnomalyAlertMonitor(NzymeNode nzyme) {
         this.networks = nzyme.getNetworks();
         this.configuration = nzyme.getConfiguration();
         this.alertsService = nzyme.getAlertsService();

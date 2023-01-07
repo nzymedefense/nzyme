@@ -1,9 +1,9 @@
 package app.nzyme.core.alerts;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.service.AlertsService;
 import app.nzyme.core.notifications.uplinks.misc.LoopbackUplink;
 import org.joda.time.DateTime;
@@ -22,13 +22,13 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @BeforeMethod
     public void cleanAlerts() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute(CLEAR_QUERY));
     }
 
     @Test
     public void testSameAlertsAreNotDuplicatedAndLastSeenIsUpdated() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         AlertsService as = new AlertsService(nzyme);
 
@@ -77,7 +77,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void testGetActiveAlertsReturnsImmutableCopyPut() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         new AlertsService(nzyme).findActiveAlerts().put(UUID.randomUUID(), UnexpectedSSIDBeaconAlert.create(
                 DateTime.now(),
@@ -97,7 +97,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testSetsUUID() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         AlertsService as = new AlertsService(nzyme);
 
@@ -118,7 +118,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testUplinkConnection() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
@@ -141,7 +141,7 @@ public class AlertsServiceTest extends AlertTestHelper {
 
     @Test
     public void testDoesNotFailOnMissingMilliseconds() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);

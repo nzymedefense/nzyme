@@ -17,9 +17,9 @@
 
 package app.nzyme.core.dot11.deception.traps;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.dot11.Dot11FrameInterceptor;
 import app.nzyme.core.dot11.deception.bluffs.ProbeRequest;
@@ -38,11 +38,11 @@ public class ProbeRequestTrap extends Trap {
     private final String transmitter;
     private final int delaySeconds;
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final int framesPerExecution;
 
-    public ProbeRequestTrap(NzymeLeader nzyme, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
+    public ProbeRequestTrap(NzymeNode nzyme, String interfaceName, List<String> ssids, String transmitter, int delaySeconds) {
         this.nzyme = nzyme;
 
         this.interfaceName = interfaceName;

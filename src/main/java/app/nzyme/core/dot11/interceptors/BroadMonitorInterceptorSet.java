@@ -17,10 +17,10 @@
 
 package app.nzyme.core.dot11.interceptors;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.dot11.Dot11FrameInterceptor;
 import app.nzyme.core.dot11.Dot11FrameSubtype;
@@ -39,9 +39,9 @@ public class BroadMonitorInterceptorSet {
 
     private static final Logger LOG = LogManager.getLogger(BroadMonitorInterceptorSet.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public BroadMonitorInterceptorSet(NzymeLeader nzyme) {
+    public BroadMonitorInterceptorSet(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

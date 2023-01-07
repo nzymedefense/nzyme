@@ -17,8 +17,8 @@
 
 package app.nzyme.core.dot11.deception.bluffs;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.google.common.collect.ImmutableMap;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class ProbeRequest extends Bluff {
     private final String ssid;
     private final String mac;
 
-    public ProbeRequest(LeaderConfiguration configuration, String interfaceName, String ssid, String mac) {
+    public ProbeRequest(NodeConfiguration configuration, String interfaceName, String ssid, String mac) {
         super(configuration);
 
         this.interfaceName = interfaceName;

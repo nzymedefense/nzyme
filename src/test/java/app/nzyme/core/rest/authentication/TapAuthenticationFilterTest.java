@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.annotations.Test;
 
@@ -13,7 +13,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterLetsValidSecretPass() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -26,7 +26,7 @@ public class TapAuthenticationFilterTest {
 
     @Test()
     public void testFilterRejectsInvalidSecret() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -39,7 +39,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsEmptySecret() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("Bearer ");
@@ -50,7 +50,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsEmptyAuthHeader() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("");
@@ -61,7 +61,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsUnknownAuthScheme() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(

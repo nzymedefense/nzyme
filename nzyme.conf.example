@@ -2,7 +2,7 @@
 
 # General nzyme configuration.
 general: {
-  role: LEADER
+  role: NODE
 
   # The ID or name of this nzyme instance. Must be unique and contain only alphanumeric characters, underscores and dashes.
   id: nzyme-node-01

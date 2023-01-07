@@ -19,7 +19,7 @@ package app.nzyme.core.tables;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.tables.dns.DNSTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,11 +32,11 @@ public class TablesService {
 
     private static final Logger LOG = LogManager.getLogger(TablesService.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final Map<String, DataTable> tables;
 
-    public TablesService(NzymeLeader nzyme) {
+    public TablesService(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.tables = new ImmutableMap.Builder<String, DataTable>()
@@ -63,7 +63,7 @@ public class TablesService {
         return (DNSTable) tables.get("dns");
     }
 
-    public NzymeLeader getNzyme() {
+    public NzymeNode getNzyme() {
         return nzyme;
     }
 

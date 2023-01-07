@@ -17,7 +17,7 @@
 
 package app.nzyme.core.rest.resources.taps;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.StatusReport;
 import org.apache.logging.log4j.LogManager;
@@ -38,7 +38,7 @@ public class StatusResource {
     private static final Logger LOG = LogManager.getLogger(StatusResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @POST
     public Response status(StatusReport report) {

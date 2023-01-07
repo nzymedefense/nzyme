@@ -17,10 +17,10 @@
 
 package app.nzyme.core.remote.inputs;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.InvalidProtocolBufferException;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.MalformedFrameException;
 import app.nzyme.core.dot11.frames.Dot11FrameFactory;
 import app.nzyme.core.processing.FrameProcessor;
@@ -54,7 +54,7 @@ public class RemoteFrameInput {
 
     private DatagramSocket socket;
 
-    public RemoteFrameInput(NzymeLeader nzyme, InetSocketAddress address) {
+    public RemoteFrameInput(NzymeNode nzyme, InetSocketAddress address) {
         this.address = address;
         this.processor = nzyme.getFrameProcessor();
         this.frameFactory = new Dot11FrameFactory(nzyme.getMetrics(), nzyme.getAnonymizer());

@@ -18,7 +18,7 @@
 package app.nzyme.core.rest.resources.system;
 
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import app.nzyme.core.dot11.probes.Dot11SenderProbe;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -41,7 +41,7 @@ import java.util.List;
 public class ProbesResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @RESTSecured

@@ -1,8 +1,8 @@
 package app.nzyme.core.dot11.deauth;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.DeauthFloodAlert;
 import app.nzyme.core.dot11.Dot11MetaInformation;
 import app.nzyme.core.dot11.MalformedFrameException;
@@ -25,13 +25,13 @@ public class DeauthenticationMonitorTest {
 
     @BeforeMethod
     public void cleanDatabase() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM deauth_monitor;"));
     }
 
     @Test
     public void testRecordFrame() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme,2);
 
         try {
@@ -74,7 +74,7 @@ public class DeauthenticationMonitorTest {
 
     @Test
     public void testAlerting() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 

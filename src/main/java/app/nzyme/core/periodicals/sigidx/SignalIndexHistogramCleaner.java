@@ -1,7 +1,7 @@
 package app.nzyme.core.periodicals.sigidx;
 
 import app.nzyme.plugin.Database;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +12,7 @@ public class SignalIndexHistogramCleaner extends Periodical {
 
     private final Database database;
 
-    public SignalIndexHistogramCleaner(NzymeLeader nzyme) {
+    public SignalIndexHistogramCleaner(NzymeNode nzyme) {
         this.database = nzyme.getDatabase();
     }
 

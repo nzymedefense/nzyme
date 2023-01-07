@@ -17,7 +17,7 @@
 
 package app.nzyme.core.periodicals.measurements;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +26,9 @@ public class MeasurementsCleaner extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(MeasurementsCleaner.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public MeasurementsCleaner(NzymeLeader nzyme) {
+    public MeasurementsCleaner(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

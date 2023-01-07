@@ -21,7 +21,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.opencsv.CSVWriter;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.configuration.Dot11BSSIDDefinition;
 import app.nzyme.core.configuration.Dot11NetworkDefinition;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -45,7 +45,7 @@ import java.util.List;
 public class AssetInventoryResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response dot11Assets() {

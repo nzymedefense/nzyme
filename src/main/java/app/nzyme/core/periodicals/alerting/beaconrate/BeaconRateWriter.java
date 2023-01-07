@@ -18,7 +18,7 @@
 package app.nzyme.core.periodicals.alerting.beaconrate;
 
 import app.nzyme.plugin.Database;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.networks.BSSID;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.dot11.networks.SSID;
@@ -33,7 +33,7 @@ public class BeaconRateWriter extends Periodical {
     private final Networks networks;
     private final Database database;
 
-    public BeaconRateWriter(NzymeLeader nzyme) {
+    public BeaconRateWriter(NzymeNode nzyme) {
         this.networks = nzyme.getNetworks();
         this.database = nzyme.getDatabase();
     }

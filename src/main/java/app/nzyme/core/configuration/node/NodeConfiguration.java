@@ -1,4 +1,4 @@
-package app.nzyme.core.configuration.leader;
+package app.nzyme.core.configuration.node;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 
 @AutoValue
-public abstract class LeaderConfiguration {
+public abstract class NodeConfiguration {
 
     public abstract boolean versionchecksEnabled();
     public abstract boolean fetchOuis();
@@ -75,7 +75,7 @@ public abstract class LeaderConfiguration {
         return ssids.build();
     }
 
-    public static LeaderConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, String pluginDirectory, String cryptoDirectory, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, String pluginDirectory, String cryptoDirectory, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -133,7 +133,7 @@ public abstract class LeaderConfiguration {
     }
 
     public static Builder builder() {
-        return new AutoValue_LeaderConfiguration.Builder();
+        return new AutoValue_NodeConfiguration.Builder();
     }
 
     @AutoValue.Builder
@@ -192,7 +192,7 @@ public abstract class LeaderConfiguration {
 
         public abstract Builder deauth(DeauthenticationMonitorConfiguration deauth);
 
-        public abstract LeaderConfiguration build();
+        public abstract NodeConfiguration build();
     }
 
 }

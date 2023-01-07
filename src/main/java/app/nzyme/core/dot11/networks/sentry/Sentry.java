@@ -19,7 +19,7 @@ package app.nzyme.core.dot11.networks.sentry;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.networks.sentry.db.SentrySSID;
 import app.nzyme.core.util.Tools;
 import org.apache.logging.log4j.LogManager;
@@ -33,11 +33,11 @@ public class Sentry {
 
     private static final Logger LOG = LogManager.getLogger(Sentry.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
     private final ScheduledExecutorService executor;
     private final ConcurrentMap<String, SentrySSID> table;
 
-    public Sentry(NzymeLeader nzyme, int syncInterval) {
+    public Sentry(NzymeNode nzyme, int syncInterval) {
         this.nzyme = nzyme;
         this.table = new ConcurrentHashMap<>();
 

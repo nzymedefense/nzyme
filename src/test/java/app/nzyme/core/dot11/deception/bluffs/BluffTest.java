@@ -1,11 +1,11 @@
 package app.nzyme.core.dot11.deception.bluffs;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import com.google.common.collect.ImmutableList;
 import app.nzyme.core.Role;
 import app.nzyme.core.configuration.DeauthenticationMonitorConfiguration;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -18,11 +18,11 @@ import static org.testng.Assert.*;
 
 public class BluffTest {
 
-    private static LeaderConfiguration buildConfiguration(String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix) {
-        return LeaderConfiguration.create(
+    private static NodeConfiguration buildConfiguration(String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix) {
+        return NodeConfiguration.create(
                 false,
                 false,
-                Role.LEADER,
+                Role.NODE,
                 "95d30169a59c418b52013315fc81bc99fdf0a7b03a116f346ab628496f349ed5",
                 "nzyme-test.db",
                 pythonExecutable,
@@ -50,7 +50,7 @@ public class BluffTest {
         );
     }
 
-    private static final LeaderConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/python2.7", "/tmp", "nzyme_");
+    private static final NodeConfiguration STANDARD_CONFIG = buildConfiguration("/usr/bin/python2.7", "/tmp", "nzyme_");
 
 
     @Test
@@ -144,7 +144,7 @@ public class BluffTest {
 
         private String parameterKey = "--test";
 
-        public MockBluff(LeaderConfiguration configuration, String testParam) {
+        public MockBluff(NodeConfiguration configuration, String testParam) {
             super(configuration);
 
             this.testParam = testParam;

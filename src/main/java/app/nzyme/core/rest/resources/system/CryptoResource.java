@@ -2,7 +2,7 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.rest.responses.crypto.CryptoMetricsResponse;
 import app.nzyme.core.rest.responses.crypto.CryptoResponse;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class CryptoResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Path("summary")

@@ -1,8 +1,8 @@
 package app.nzyme.core.dot11.interceptors;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.UnknownSSIDAlert;
 import app.nzyme.core.dot11.Dot11FrameInterceptor;
 import app.nzyme.core.dot11.MalformedFrameException;
@@ -22,7 +22,7 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
 
     @BeforeMethod
     public void cleanSentry() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM sentry_ssids;"));
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts;"));
     }
@@ -30,7 +30,7 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
     @Test
     public void testBeaconWithAlertDisabled() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
         LoopbackUplink uplink = new LoopbackUplink();
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.registerUplink(uplink);
         Sentry sentry = new Sentry(nzyme, 2);
 
@@ -57,7 +57,7 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
     @Test
     public void testBeaconWithAlertEnabled() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
         LoopbackUplink uplink = new LoopbackUplink();
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.registerUplink(uplink);
         Sentry sentry = new Sentry(nzyme, 2);
 
@@ -86,7 +86,7 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
     public void testProbeRespWithAlertDisabled() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
 
         LoopbackUplink uplink = new LoopbackUplink();
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.registerUplink(uplink);
         Sentry sentry = new Sentry(nzyme, 2);
 
@@ -114,7 +114,7 @@ public class SentryInterceptorSetTest extends InterceptorSetTest {
     public void testProbeRespWithAlertEnabled() throws MalformedFrameException, IllegalRawDataException, InterruptedException {
 
         LoopbackUplink uplink = new LoopbackUplink();
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.registerUplink(uplink);
         Sentry sentry = new Sentry(nzyme, 2);
 

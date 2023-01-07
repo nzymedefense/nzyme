@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest.authentication;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.NzymeLeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,9 +42,9 @@ public class TapAuthenticationFilter implements ContainerRequestFilter {
 
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public TapAuthenticationFilter(NzymeLeader nzyme) {
+    public TapAuthenticationFilter(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
     

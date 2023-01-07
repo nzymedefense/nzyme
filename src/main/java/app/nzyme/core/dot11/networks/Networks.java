@@ -17,11 +17,11 @@
 
 package app.nzyme.core.dot11.networks;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.Gauge;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.Dot11FrameSubtype;
 import app.nzyme.core.dot11.Dot11TaggedParameters;
 import app.nzyme.core.dot11.frames.*;
@@ -46,11 +46,11 @@ public class Networks {
 
     private final Map<String, BSSID> bssids;
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final BeaconRateManager beaconRateManager;
 
-    public Networks(NzymeLeader nzyme) {
+    public Networks(NzymeNode nzyme) {
         this.nzyme = nzyme;
         this.bssids = Maps.newConcurrentMap();
         this.beaconRateManager = new BeaconRateManager(nzyme);

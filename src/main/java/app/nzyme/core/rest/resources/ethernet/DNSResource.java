@@ -1,8 +1,8 @@
 package app.nzyme.core.rest.resources.ethernet;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.ethernet.dns.db.DNSPairSummary;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucket;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummary;
@@ -34,7 +34,7 @@ public class DNSResource {
     private static final Logger LOG = LogManager.getLogger(NetworksResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Path("/statistics")

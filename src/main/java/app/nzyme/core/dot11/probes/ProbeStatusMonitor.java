@@ -17,9 +17,9 @@
 
 package app.nzyme.core.dot11.probes;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.events.BrokenProbeEvent;
 import app.nzyme.core.periodicals.Periodical;
 
@@ -27,9 +27,9 @@ import java.util.List;
 
 public class ProbeStatusMonitor extends Periodical {
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public ProbeStatusMonitor(NzymeLeader nzyme) {
+    public ProbeStatusMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

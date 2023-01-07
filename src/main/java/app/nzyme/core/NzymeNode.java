@@ -26,7 +26,7 @@ import app.nzyme.core.bandits.engine.ContactManager;
 import app.nzyme.core.bandits.trackers.GroundStation;
 import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.db.BaseConfigurationService;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.dot11.anonymization.Anonymizer;
 import app.nzyme.core.dot11.clients.Clients;
@@ -47,7 +47,7 @@ import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 
-public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdProvider, MetricsRegistryProvider {
+public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdProvider, MetricsRegistryProvider {
 
     void initialize();
     void shutdown();
@@ -64,7 +64,7 @@ public interface NzymeLeader extends RemoteConnector, PluginEntryPoint, Database
 
     void registerUplink(Uplink uplink);
 
-    LeaderConfiguration getConfiguration(); // TODO remove after switch to DB config
+    NodeConfiguration getConfiguration();
 
     BaseConfigurationService getConfigurationService();
 

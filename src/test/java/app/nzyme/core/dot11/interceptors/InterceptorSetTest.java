@@ -17,7 +17,7 @@
 
 package app.nzyme.core.dot11.interceptors;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11MetaInformation;
 import app.nzyme.core.notifications.uplinks.misc.LoopbackUplink;
 
@@ -25,7 +25,7 @@ public class InterceptorSetTest {
 
     protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
 
-    protected void reset(LoopbackUplink loopback, NzymeLeader nzyme) {
+    protected void reset(LoopbackUplink loopback, NzymeNode nzyme) {
         loopback.clear();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts"));
     }

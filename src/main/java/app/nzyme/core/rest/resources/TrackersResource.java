@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest.resources;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.bandits.Bandit;
 import app.nzyme.core.bandits.Contact;
 import app.nzyme.core.bandits.identifiers.BanditIdentifier;
@@ -50,7 +50,7 @@ public class TrackersResource {
     private static final Logger LOG = LogManager.getLogger(TrackersResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response findAll() {

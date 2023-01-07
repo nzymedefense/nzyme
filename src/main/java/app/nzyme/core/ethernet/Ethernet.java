@@ -1,20 +1,20 @@
 package app.nzyme.core.ethernet;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.ethernet.dns.DNS;
 
 public class Ethernet {
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final DNS dns;
 
-    public Ethernet(NzymeLeader nzyme) {
+    public Ethernet(NzymeNode nzyme) {
         this.nzyme = nzyme;
         this.dns = new DNS(this);
     }
 
-    public NzymeLeader getNzyme() {
+    public NzymeNode getNzyme() {
         return this.nzyme;
     }
 

@@ -21,7 +21,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.rest.responses.alerts.AlertConfigurationResponse;
 import app.nzyme.core.rest.responses.alerts.AlertDetailsResponse;
@@ -47,7 +47,7 @@ public class AlertsResource {
     private static final int PAGE_SIZE = 25;
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Path("/configuration")

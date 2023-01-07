@@ -17,9 +17,9 @@
 
 package app.nzyme.core.periodicals.alerting.tracks;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.MultipleTrackAlert;
 import app.nzyme.core.configuration.Dot11BSSIDDefinition;
 import app.nzyme.core.configuration.Dot11NetworkDefinition;
@@ -41,11 +41,11 @@ public class SignalTrackMonitor extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(SignalTrackMonitor.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final Timer timer;
 
-    public SignalTrackMonitor(NzymeLeader nzyme) {
+    public SignalTrackMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.timer = nzyme.getMetrics().timer(MetricRegistry.name(MetricNames.SIGNAL_TRACK_MONITOR_TIMING));

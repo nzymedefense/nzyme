@@ -1,8 +1,8 @@
 package app.nzyme.core.taps;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.taps.metrics.BucketSize;
 import app.nzyme.core.taps.metrics.TapMetrics;
 import app.nzyme.core.taps.metrics.TapMetricsGauge;
@@ -24,9 +24,9 @@ public class TapManager {
 
     private static final Logger LOG = LogManager.getLogger(TapManager.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public TapManager(NzymeLeader nzyme) {
+    public TapManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         Executors.newSingleThreadScheduledExecutor(

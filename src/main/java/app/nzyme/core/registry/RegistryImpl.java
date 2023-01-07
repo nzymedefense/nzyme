@@ -4,7 +4,7 @@ import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Charsets;
 import com.google.common.io.BaseEncoding;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,10 +16,10 @@ public class RegistryImpl implements Registry {
 
     private static final Logger LOG = LogManager.getLogger(RegistryImpl.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
     private final String namespace;
 
-    public RegistryImpl(NzymeLeader nzyme, String namespace) {
+    public RegistryImpl(NzymeNode nzyme, String namespace) {
         this.nzyme = nzyme;
         this.namespace = namespace;
     }

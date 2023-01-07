@@ -18,7 +18,7 @@
 package app.nzyme.core.dot11.deception.bluffs;
 
 import com.google.common.collect.ImmutableMap;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class Beacon extends Bluff {
     private final String ssid;
     private final String mac;
 
-    public Beacon(LeaderConfiguration configuration, String interfaceName, String ssid, String mac) {
+    public Beacon(NodeConfiguration configuration, String interfaceName, String ssid, String mac) {
         super(configuration);
 
         this.interfaceName = interfaceName;

@@ -18,7 +18,7 @@
 package app.nzyme.core.security.sessions;
 
 import com.google.common.hash.Hashing;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ public class StaticHashAuthenticator {
 
     private final String hash;
 
-    public StaticHashAuthenticator(LeaderConfiguration configuration) {
+    public StaticHashAuthenticator(NodeConfiguration configuration) {
         this.hash = configuration.adminPasswordHash();
     }
 

@@ -17,9 +17,9 @@
 
 package app.nzyme.core.dot11.deception.traps;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.dot11.Dot11FrameInterceptor;
 import app.nzyme.core.dot11.deception.bluffs.Beacon;
@@ -39,11 +39,11 @@ public class BeaconTrap extends Trap {
     private final int delayMilliseconds;
     private final String ourFingerprint;
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final int framesPerExecution;
 
-    public BeaconTrap(NzymeLeader nzyme, String interfaceName, List<String> ssids, String transmitter, int delayMilliseconds, String ourFingerprint) {
+    public BeaconTrap(NzymeNode nzyme, String interfaceName, List<String> ssids, String transmitter, int delayMilliseconds, String ourFingerprint) {
         this.nzyme = nzyme;
 
         this.interfaceName = interfaceName;

@@ -17,9 +17,9 @@
 
 package app.nzyme.core.dot11.interceptors;
 
+import app.nzyme.core.NzymeNode;
 import com.codahale.metrics.MetricRegistry;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.MalformedFrameException;
 import app.nzyme.core.dot11.anonymization.Anonymizer;
 import app.nzyme.core.dot11.frames.*;
@@ -36,7 +36,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11ProbeResponseFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -65,7 +65,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11ProbeResponseFrameWPA3() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -94,7 +94,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11ProbeReqFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -117,7 +117,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11ProbeReqBroadcastFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -141,7 +141,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11DisassocFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -166,7 +166,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11DeauthFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -192,7 +192,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11BeaconFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -221,7 +221,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11BeaconFrameBroadcast() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -250,7 +250,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11BeaconFrameWPA3() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -279,7 +279,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameOpenSystemSeq1() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -304,7 +304,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameOpenSystemSeq2() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -331,7 +331,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameSharedKmySeq1() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -356,7 +356,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameSharedKmySeq2() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -381,7 +381,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameSharedKmySeq4() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -408,7 +408,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameSharedKmySeq4Failure() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -435,7 +435,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameWPA3CommitSeqSuccess() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -460,7 +460,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameWPA3ConfirmSeqSuccess() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -487,7 +487,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AuthFrameWPA3ConfirmSeqFailure() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -514,7 +514,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AssocResponseSuccessResponse() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -539,7 +539,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testDot11AssocResponseFailResponse() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 
@@ -564,7 +564,7 @@ public class BroadMonitorInterceptorSetTest extends InterceptorSetTest {
 
     @Test
     public void testHandleDot11AssocReqFrame() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
 

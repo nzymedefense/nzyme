@@ -1,9 +1,9 @@
 package app.nzyme.core.rest.authentication;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.monitoring.prometheus.PrometheusRegistryKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +26,9 @@ public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
 
     private static final Logger LOG = LogManager.getLogger(PrometheusBasicAuthFilter.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public PrometheusBasicAuthFilter(NzymeLeader nzyme) {
+    public PrometheusBasicAuthFilter(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

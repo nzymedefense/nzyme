@@ -17,10 +17,10 @@
 
 package app.nzyme.core.dot11.networks;
 
+import app.nzyme.core.NzymeNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.networks.signalstrength.SignalStrengthTable;
 
 import java.util.ArrayList;
@@ -82,7 +82,7 @@ public abstract class Channel {
         this.totalFramesRecent().set(0);
     }
 
-    public static Channel create(NzymeLeader nzyme,
+    public static Channel create(NzymeNode nzyme,
                                  int channelNumber,
                                  String bssid,
                                  String ssid,

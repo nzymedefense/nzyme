@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.configuration.leader;
+package app.nzyme.core.configuration.node;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Enums;
@@ -47,9 +47,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class LeaderConfigurationLoader {
+public class NodeConfigurationLoader {
 
-    private static final Logger LOG = LogManager.getLogger(LeaderConfigurationLoader.class);
+    private static final Logger LOG = LogManager.getLogger(NodeConfigurationLoader.class);
 
     private final Config root;
     private final Config general;
@@ -59,7 +59,7 @@ public class LeaderConfigurationLoader {
 
     private final BaseDot11ConfigurationLoader baseDot11ConfigurationLoader;
 
-    public LeaderConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
+    public NodeConfigurationLoader(File configFile, boolean skipValidation) throws InvalidConfigurationException, IncompleteConfigurationException, FileNotFoundException {
         if (!Files.isReadable(configFile.toPath())) {
             throw new FileNotFoundException("File at [" + configFile.getPath() + "] does not exist or is not readable. Check path and permissions.");
         }
@@ -82,8 +82,8 @@ public class LeaderConfigurationLoader {
         }
     }
 
-    public LeaderConfiguration get() {
-        return LeaderConfiguration.create(
+    public NodeConfiguration get() {
+        return NodeConfiguration.create(
                 parseVersionchecksEnabled(),
                 parseFetchOUIsEnabled(),
                 parseRole(),

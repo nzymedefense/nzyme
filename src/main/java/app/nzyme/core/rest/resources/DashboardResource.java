@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest.resources;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.bandits.Contact;
 import app.nzyme.core.bandits.engine.ContactRecordAggregation;
@@ -59,7 +59,7 @@ public class DashboardResource {
     private static final String DEAUTH_QUERY = "SELECT * FROM deauth_monitor WHERE created_at > (current_timestamp - interval '1 day') ORDER BY created_at ASC;";
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response dashboard() {

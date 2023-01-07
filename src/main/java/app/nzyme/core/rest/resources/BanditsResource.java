@@ -23,7 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.bandits.Bandit;
 import app.nzyme.core.bandits.Contact;
 import app.nzyme.core.bandits.engine.ContactRecordAggregation;
@@ -56,7 +56,7 @@ public class BanditsResource {
     private static final Logger LOG = LogManager.getLogger(BanditsResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response findAll() {

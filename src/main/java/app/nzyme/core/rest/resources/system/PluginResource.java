@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.NzymeLeader;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 public class PluginResource {
 
     @Inject
-    NzymeLeader nzyme;
+    NzymeNode nzyme;
 
     @GET
     @Path("/names")

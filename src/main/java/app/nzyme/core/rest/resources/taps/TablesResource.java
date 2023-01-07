@@ -17,7 +17,7 @@
 
 package app.nzyme.core.rest.resources.taps;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.retro.dns.DNSRetroReportConverter;
@@ -40,7 +40,7 @@ public class TablesResource {
     private static final Logger LOG = LogManager.getLogger(StatusResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @POST
     public Response report(TablesReport report) {

@@ -20,7 +20,7 @@ package app.nzyme.core.dot11.networks.signalstrength.tracks;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.networks.BSSID;
 import app.nzyme.core.dot11.networks.Channel;
 import app.nzyme.core.dot11.networks.SSID;
@@ -41,9 +41,9 @@ public class SignalWaterfallHistogramLoader {
             "WHERE bssid = ? AND ssid = ? AND channel = ? AND created_at > (current_timestamp at time zone 'UTC' - interval <lookback>) " +
             "ORDER BY created_at ASC";
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public SignalWaterfallHistogramLoader(NzymeLeader nzyme) {
+    public SignalWaterfallHistogramLoader(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

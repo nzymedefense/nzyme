@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest.resources.authentication;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.rest.requests.CreateSessionRequest;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
@@ -47,7 +47,7 @@ public class AuthenticationResource {
     private static final Logger LOG = LogManager.getLogger(AuthenticationResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @Context
     SecurityContext securityContext;

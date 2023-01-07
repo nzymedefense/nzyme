@@ -18,7 +18,7 @@
 package app.nzyme.core.dot11.networks.beaconrate;
 
 import app.nzyme.plugin.Database;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.util.Tools;
 
@@ -30,7 +30,7 @@ public class BeaconRateManager {
     private final Database database;
     private final SystemStatus systemStatus;
 
-    public BeaconRateManager(NzymeLeader nzyme) {
+    public BeaconRateManager(NzymeNode nzyme) {
         this.database = nzyme.getDatabase();
         this.systemStatus = nzyme.getSystemStatus();
     }

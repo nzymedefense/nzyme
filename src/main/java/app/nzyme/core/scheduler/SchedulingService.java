@@ -17,7 +17,7 @@
 
 package app.nzyme.core.scheduler;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.reporting.ReportBase;
 import app.nzyme.core.reporting.db.ExecutionLogEntry;
 import app.nzyme.core.reporting.db.ScheduledReportEntry;
@@ -45,9 +45,9 @@ public class SchedulingService {
     }
 
     private final Scheduler scheduler;
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public SchedulingService(NzymeLeader nzyme) throws SchedulerException {
+    public SchedulingService(NzymeNode nzyme) throws SchedulerException {
         Properties config = new Properties();
         config.setProperty("org.quartz.scheduler.instanceName", "NzymeScheduler");
         config.setProperty("org.quartz.threadPool.threadCount", "15");

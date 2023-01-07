@@ -6,7 +6,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitoring.prometheus.PrometheusFormatter;
 import app.nzyme.core.monitoring.prometheus.PrometheusRegistryKeys;
 import app.nzyme.core.rest.authentication.PrometheusBasicAuthSecured;
@@ -34,7 +34,7 @@ public class PrometheusResource {
     private static final Logger LOG = LogManager.getLogger(PrometheusResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)

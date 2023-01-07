@@ -1,14 +1,14 @@
 package app.nzyme.core.monitoring.prometheus;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.testng.annotations.Test;
 
 public class PrometheusFormatterTest {
 
     @Test
     public void testFormat() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
 
         // Create some metrics data.
         nzyme.getMetrics().timer("app.nzyme.test.some-timer_from--somewhere").time().stop();

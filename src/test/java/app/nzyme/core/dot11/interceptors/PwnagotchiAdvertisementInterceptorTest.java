@@ -2,7 +2,7 @@ package app.nzyme.core.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.alerts.PwnagotchiAdvertisementAlert;
 import app.nzyme.core.dot11.MalformedFrameException;
@@ -21,7 +21,7 @@ public class PwnagotchiAdvertisementInterceptorTest extends InterceptorSetTest {
 
     @Test
     public void testInterceptor() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         LoopbackUplink loopback = new LoopbackUplink();
         nzyme.registerUplink(loopback);
         PwnagotchiAdvertisementInterceptor interceptor = new PwnagotchiAdvertisementInterceptor(nzyme.getAlertsService());

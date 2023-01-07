@@ -3,7 +3,7 @@ package app.nzyme.core.rest.resources.monitoring;
 import app.nzyme.plugin.RegistryCryptoException;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitoring.prometheus.PrometheusRegistryKeys;
 import app.nzyme.core.rest.responses.monitoring.MonitoringSummaryResponse;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class MonitoringResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     private static final Logger LOG = LogManager.getLogger(MonitoringResource.class);
 

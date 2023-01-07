@@ -1,6 +1,6 @@
 package app.nzyme.core.configuration.db;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,12 +12,12 @@ public class BaseConfigurationService {
 
     private static final Logger LOG = LogManager.getLogger(BaseConfigurationService.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
     private final AtomicReference<BaseConfiguration> cache;
 
     private boolean initialized = false;
 
-    public BaseConfigurationService(NzymeLeader nzyme) {
+    public BaseConfigurationService(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.cache = new AtomicReference<>(null);

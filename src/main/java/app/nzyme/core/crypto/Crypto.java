@@ -2,7 +2,7 @@ package app.nzyme.core.crypto;
 
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,7 +67,7 @@ public class Crypto {
     private final Timer encryptionTimer;
     private final Timer decryptionTimer;
 
-    public Crypto(NzymeLeader nzyme) {
+    public Crypto(NzymeNode nzyme) {
         this.cryptoDirectoryConfig = new File(nzyme.getConfiguration().cryptoDirectory());
         this.database = nzyme.getDatabase();
         this.nodeId = nzyme.getNodeID();

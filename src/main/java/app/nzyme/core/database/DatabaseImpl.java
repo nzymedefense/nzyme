@@ -1,10 +1,10 @@
 package app.nzyme.core.database;
 
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
 import app.nzyme.core.configuration.db.BaseConfigurationMapper;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import app.nzyme.core.dot11.networks.beaconrate.BeaconRateMapper;
@@ -54,11 +54,11 @@ public class DatabaseImpl implements Database {
             .appendPattern("yyyy-MM-dd HH:mm:ss")
             .toFormatter().withZoneUTC();
 
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
 
     private Jdbi jdbi;
 
-    public DatabaseImpl(LeaderConfiguration configuration) {
+    public DatabaseImpl(NodeConfiguration configuration) {
         this.configuration = configuration;
     }
 

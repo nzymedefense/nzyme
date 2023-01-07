@@ -17,11 +17,11 @@
 
 package app.nzyme.core.periodicals.versioncheck;
 
+import app.nzyme.core.NzymeNode;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.MemoryRegistry;
 import app.nzyme.core.Version;
 import app.nzyme.core.periodicals.Periodical;
@@ -48,10 +48,10 @@ public class VersioncheckThread extends Periodical {
 
     private final OkHttpClient httpClient;
     private final Version version;
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
     private final ObjectMapper om;
 
-    public VersioncheckThread(Version version, NzymeLeader nzyme) {
+    public VersioncheckThread(Version version, NzymeNode nzyme) {
         this.httpClient = new OkHttpClient.Builder()
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)

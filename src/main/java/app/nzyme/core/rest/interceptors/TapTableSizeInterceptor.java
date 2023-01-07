@@ -1,6 +1,6 @@
 package app.nzyme.core.rest.interceptors;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,9 +21,9 @@ public class TapTableSizeInterceptor implements ReaderInterceptor {
     @Context
     private UriInfo uriInfo;
 
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
-    public TapTableSizeInterceptor(NzymeLeader nzyme) {
+    public TapTableSizeInterceptor(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

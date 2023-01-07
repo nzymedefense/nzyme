@@ -1,7 +1,7 @@
 package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.sessions.Session;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -15,7 +15,7 @@ public class RESTAuthenticationFilterTest {
 
     @Test
     public void testFilterLetsValidTokenPass() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -28,7 +28,7 @@ public class RESTAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsInvalidSigningKey() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -41,7 +41,7 @@ public class RESTAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsEmptyToken() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("Bearer ");
@@ -52,7 +52,7 @@ public class RESTAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsEmptyAuthHeader() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("");
@@ -63,7 +63,7 @@ public class RESTAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsUnknownAuthScheme() throws IOException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(

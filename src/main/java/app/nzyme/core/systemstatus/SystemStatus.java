@@ -17,8 +17,8 @@
 
 package app.nzyme.core.systemstatus;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Sets;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,7 @@ public class SystemStatus {
 
     private Set<TYPE> currentStatus;
 
-    public HEALTH decideHealth(NzymeLeader nzyme) {
+    public HEALTH decideHealth(NzymeNode nzyme) {
         for (Dot11Probe probe : nzyme.getProbes()) {
             if (!probe.isInLoop() || !probe.isActive()) {
                 return HEALTH.RED;

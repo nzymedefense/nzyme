@@ -3,7 +3,7 @@ package app.nzyme.core.periodicals.sigidx;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.networks.BSSID;
 import app.nzyme.core.dot11.networks.Channel;
 import app.nzyme.core.dot11.networks.SSID;
@@ -17,10 +17,10 @@ public class SignalIndexHistogramWriter extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(SignalIndexHistogramWriter.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
     private final ObjectMapper om;
 
-    public SignalIndexHistogramWriter(NzymeLeader nzyme) {
+    public SignalIndexHistogramWriter(NzymeNode nzyme) {
         this.nzyme = nzyme;
         this.om = new ObjectMapper();
     }

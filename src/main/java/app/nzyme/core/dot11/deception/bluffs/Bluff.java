@@ -21,7 +21,7 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.util.Tools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,14 +43,14 @@ public abstract class Bluff {
     protected abstract String scriptName();
     protected abstract Map<String, String> parameters();
 
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
 
     @Nullable
     private String invokedCommand;
 
     private final List<String> stderr;
 
-    public Bluff(LeaderConfiguration configuration) {
+    public Bluff(NodeConfiguration configuration) {
         this.configuration = configuration;
         this.stderr = Lists.newArrayList();
     }

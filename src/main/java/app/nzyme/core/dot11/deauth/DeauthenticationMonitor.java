@@ -17,8 +17,8 @@
 
 package app.nzyme.core.dot11.deauth;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.alerts.DeauthFloodAlert;
 import app.nzyme.core.dot11.frames.Dot11DeauthenticationFrame;
@@ -36,16 +36,16 @@ public class DeauthenticationMonitor {
 
     private static final Logger LOG = LogManager.getLogger(DeauthenticationMonitor.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final AtomicInteger counter;
     private final ScheduledExecutorService service;
 
-    public DeauthenticationMonitor(NzymeLeader nzyme) {
+    public DeauthenticationMonitor(NzymeNode nzyme) {
         this(nzyme, 60);
     }
 
-    public DeauthenticationMonitor(NzymeLeader nzyme, int syncIntervalSeconds) {
+    public DeauthenticationMonitor(NzymeNode nzyme, int syncIntervalSeconds) {
         this.nzyme = nzyme;
         this.counter = new AtomicInteger(0);
 

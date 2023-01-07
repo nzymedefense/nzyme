@@ -17,8 +17,8 @@
 
 package app.nzyme.core.rest;
 
+import app.nzyme.core.NzymeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.rest.web.AssetManifest;
 import app.nzyme.core.rest.web.IndexHtmlGenerator;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -28,15 +28,15 @@ import java.io.IOException;
 
 public class NzymeLeaderInjectionBinder extends AbstractBinder {
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public NzymeLeaderInjectionBinder(NzymeLeader nzyme) {
+    public NzymeLeaderInjectionBinder(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 
     @Override
     protected void configure() {
-        bind(nzyme).to(NzymeLeader.class);
+        bind(nzyme).to(NzymeNode.class);
         bind(new MimetypesFileTypeMap()).to(MimetypesFileTypeMap.class);
         bind(nzyme.getObjectMapper()).to(ObjectMapper.class);
 

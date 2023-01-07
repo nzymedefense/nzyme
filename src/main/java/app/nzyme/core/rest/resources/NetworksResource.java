@@ -20,7 +20,7 @@ package app.nzyme.core.rest.resources;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.configuration.Dot11BSSIDDefinition;
 import app.nzyme.core.configuration.Dot11NetworkDefinition;
 import app.nzyme.core.dot11.Dot11SecurityConfiguration;
@@ -61,7 +61,7 @@ public class NetworksResource {
             "ORDER BY bucket ASC";
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     @Path("/bssids")

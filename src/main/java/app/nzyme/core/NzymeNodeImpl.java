@@ -40,7 +40,7 @@ import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.*;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.configuration.db.BaseConfigurationService;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
+import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.dot11.Dot11MetaInformation;
@@ -128,15 +128,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
-public class NzymeLeaderImpl implements NzymeLeader {
+public class NzymeNodeImpl implements NzymeNode {
 
-    private static final Logger LOG = LogManager.getLogger(NzymeLeaderImpl.class);
+    private static final Logger LOG = LogManager.getLogger(NzymeNodeImpl.class);
 
     private final Version version;
 
     private final String nodeId;
 
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
     private final DatabaseImpl database;
     private final BaseConfigurationService configurationService;
     private final ExecutorService probeExecutor;
@@ -187,7 +187,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
 
     private SchedulingService schedulingService;
 
-    public NzymeLeaderImpl(BaseConfiguration baseConfiguration, LeaderConfiguration configuration, DatabaseImpl database) {
+    public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
         this.version = new Version();
         this.nodeId = baseConfiguration.nodeId();
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
@@ -456,7 +456,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
         if (configuration.groundstationDevice() != null) {
             try {
                 this.groundStation = new GroundStation(
-                        Role.LEADER,
+                        Role.NODE,
                         getNodeID(),
                         version.getVersion().toString(),
                         metrics,
@@ -741,7 +741,7 @@ public class NzymeLeaderImpl implements NzymeLeader {
     }
 
     @Override
-    public LeaderConfiguration getConfiguration() {
+    public NodeConfiguration getConfiguration() {
         return configuration;
     }
 

@@ -1,7 +1,7 @@
 package app.nzyme.core.reporting.reports;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.alerts.PwnagotchiAdvertisementAlert;
 import app.nzyme.core.alerts.UnknownSSIDAlert;
 import app.nzyme.core.dot11.Dot11MetaInformation;
@@ -19,7 +19,7 @@ public class TacticalSummaryReportTest {
 
     @BeforeMethod
     public void cleanDatabase() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts"));
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM events"));
     }

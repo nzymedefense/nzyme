@@ -1,8 +1,8 @@
 package app.nzyme.core.rest.resources.taps;
 
+import app.nzyme.core.NzymeNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.configuration.db.BaseConfigurationService;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.taps.metrics.TapMetricsGaugeHistogramResponse;
@@ -38,7 +38,7 @@ public class TapsResource {
     private static final Logger LOG = LogManager.getLogger(TapsResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response findAll() {

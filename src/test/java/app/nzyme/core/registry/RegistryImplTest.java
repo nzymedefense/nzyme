@@ -1,9 +1,9 @@
 package app.nzyme.core.registry;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.RegistryCryptoException;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.crypto.Crypto;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -43,7 +43,7 @@ public class RegistryImplTest {
 
     @Test
     public void testValueEncrypted() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(nzyme, "test");
@@ -61,7 +61,7 @@ public class RegistryImplTest {
     public void testValueEncryptedFailsAfterKeyChange() throws RegistryCryptoException, Crypto.CryptoInitializationException {
         Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
 
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(nzyme, "test");
@@ -95,7 +95,7 @@ public class RegistryImplTest {
 
     @Test
     public void testUpdatedEncryptedValue() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -122,7 +122,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry key\\.")
     public void testSetEncryptedNullKey() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -139,7 +139,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry key\\.")
     public void testSetEncryptedEmptyKey() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -156,7 +156,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry key\\.")
     public void testSetEncryptedEmptyKeyTrim() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -173,7 +173,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry value for key \\[test\\.foo\\]\\.")
     public void testSetEncryptedNullValue() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -190,7 +190,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry value for key \\[test\\.foo\\]\\.")
     public void testSetEncryptedEmptyValue() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -207,7 +207,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Empty or null registry value for key \\[test\\.foo\\]\\.")
     public void testSetEncryptedEmptyValueTrim() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -224,7 +224,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Key length exceeded\\.")
     public void testSetEncryptedExceedinglyLongKey() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
@@ -241,7 +241,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {IllegalArgumentException.class},
             expectedExceptionsMessageRegExp = "Value length exceeded\\.")
     public void testSetEncryptedExceedinglyLongValue() throws RegistryCryptoException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");

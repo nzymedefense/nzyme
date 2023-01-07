@@ -18,7 +18,7 @@
 package app.nzyme.core.rest.resources.system;
 
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.metrics.*;
 import app.nzyme.core.util.MetricNames;
@@ -38,7 +38,7 @@ import java.util.Map;
 public class MetricsResource {
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response all() {

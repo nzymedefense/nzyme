@@ -17,9 +17,9 @@
 
 package app.nzyme.core.rest.authentication;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.NzymeLeader;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureException;
@@ -43,11 +43,11 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     private static final Logger LOG = LogManager.getLogger(RESTAuthenticationFilter.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    public RESTAuthenticationFilter(NzymeLeader nzyme) {
+    public RESTAuthenticationFilter(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

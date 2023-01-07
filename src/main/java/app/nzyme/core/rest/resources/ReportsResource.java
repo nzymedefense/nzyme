@@ -17,12 +17,12 @@
 
 package app.nzyme.core.rest.resources;
 
+import app.nzyme.core.NzymeNode;
 import com.cronutils.descriptor.CronDescriptor;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.reporting.ReportBase;
 import app.nzyme.core.reporting.db.ExecutionLogEntry;
 import app.nzyme.core.reporting.db.ScheduledReportEntry;
@@ -55,7 +55,7 @@ public class ReportsResource {
     private static final Logger LOG = LogManager.getLogger(ReportsResource.class);
 
     @Inject
-    private NzymeLeader nzyme;
+    private NzymeNode nzyme;
 
     @GET
     public Response findAllScheduledReports() {

@@ -17,10 +17,10 @@
 
 package app.nzyme.core.alerts.service;
 
+import app.nzyme.core.NzymeNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.alerts.service.callbacks.AlertCallback;
 import org.apache.logging.log4j.LogManager;
@@ -42,11 +42,11 @@ public class AlertsService {
     private static final String ACTIVE_ALERTS_QUERY = "SELECT * FROM alerts WHERE last_seen >(current_timestamp at time zone 'UTC' - interval '" + EXPIRY_MINUTES + " minutes') " +
             "ORDER BY last_seen DESC";
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final List<AlertCallback> callbacks;
 
-    public AlertsService(NzymeLeader nzyme) {
+    public AlertsService(NzymeNode nzyme) {
         this.nzyme = nzyme;
         this.callbacks = Lists.newArrayList();
     }

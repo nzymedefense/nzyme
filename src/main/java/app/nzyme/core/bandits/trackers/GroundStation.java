@@ -202,7 +202,7 @@ public class GroundStation implements Runnable {
         // Bandit track request loop.
         // We cannot assume that a track request is received by a tracker, so we have to keep on sending them
         // until a tracker confirms the tracking status in a ping.
-        if (nzymeRole == Role.LEADER) {
+        if (nzymeRole == Role.NODE) {
             Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                     .setDaemon(true)
                     .setNameFormat("groundstation-track-requests-%d")

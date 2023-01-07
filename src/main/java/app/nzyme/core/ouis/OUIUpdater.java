@@ -17,7 +17,7 @@
 
 package app.nzyme.core.ouis;
 
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,9 +28,9 @@ public class OUIUpdater extends Periodical {
 
     private static final Logger LOG = LogManager.getLogger(OUIUpdater.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
-    public OUIUpdater(NzymeLeader nzyme) {
+    public OUIUpdater(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 

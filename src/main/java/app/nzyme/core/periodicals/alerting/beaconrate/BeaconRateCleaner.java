@@ -17,8 +17,8 @@
 
 package app.nzyme.core.periodicals.alerting.beaconrate;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.Database;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.periodicals.Periodical;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +29,7 @@ public class BeaconRateCleaner extends Periodical {
 
     private final Database database;
 
-    public BeaconRateCleaner(NzymeLeader nzyme) {
+    public BeaconRateCleaner(NzymeNode nzyme) {
         this.database = nzyme.getDatabase();
     }
 

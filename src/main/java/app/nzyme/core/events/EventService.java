@@ -19,7 +19,7 @@ package app.nzyme.core.events;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.db.EventRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,11 +33,11 @@ public class EventService {
 
     private static final Logger LOG = LogManager.getLogger(EventService.class);
 
-    private final NzymeLeader nzyme;
+    private final NzymeNode nzyme;
 
     private final Map<Event.TYPE, List<Consumer<Event>>> subscribers;
 
-    public EventService(NzymeLeader nzyme) {
+    public EventService(NzymeNode nzyme) {
         this.nzyme = nzyme;
         this.subscribers = Maps.newHashMap();
     }

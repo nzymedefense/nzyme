@@ -32,8 +32,8 @@ import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.configuration.db.BaseConfigurationService;
-import app.nzyme.core.configuration.leader.LeaderConfiguration;
-import app.nzyme.core.configuration.leader.LeaderConfigurationLoader;
+import app.nzyme.core.configuration.node.NodeConfiguration;
+import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.dot11.Dot11MetaInformation;
@@ -68,7 +68,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class MockNzyme implements NzymeLeader {
+public class MockNzyme implements NzymeNode {
 
     private File loadFromResourceFile(String name) {
         URL resource = getClass().getClassLoader().getResource(name);
@@ -81,7 +81,7 @@ public class MockNzyme implements NzymeLeader {
 
     private final String nodeID;
 
-    private final LeaderConfiguration configuration;
+    private final NodeConfiguration configuration;
     private final SystemStatus systemStatus;
     private final Networks networks;
     private final Clients clients;
@@ -119,7 +119,7 @@ public class MockNzyme implements NzymeLeader {
                 System.out.println("loading Windows nzyme configuration file");
             }
 
-            this.configuration = new LeaderConfigurationLoader(loadFromResourceFile(configFile), false).get();
+            this.configuration = new NodeConfigurationLoader(loadFromResourceFile(configFile), false).get();
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
@@ -245,7 +245,7 @@ public class MockNzyme implements NzymeLeader {
     }
 
     @Override
-    public LeaderConfiguration getConfiguration() {
+    public NodeConfiguration getConfiguration() {
         return configuration;
     }
 

@@ -1,7 +1,7 @@
 package app.nzyme.core.dot11.networks.sentry;
 
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -12,13 +12,13 @@ public class SentryTest {
 
     @BeforeMethod
     public void cleanSentry() {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM sentry_ssids;"));
     }
 
     @Test
     public void testTickSSID() throws InterruptedException {
-        NzymeLeader nzyme = new MockNzyme(1);
+        NzymeNode nzyme = new MockNzyme(1);
         Sentry sentry = nzyme.getSentry();
 
         assertFalse(sentry.knowsSSID("foo1"));

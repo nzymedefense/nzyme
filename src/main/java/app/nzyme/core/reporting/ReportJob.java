@@ -17,9 +17,9 @@
 
 package app.nzyme.core.reporting;
 
+import app.nzyme.core.NzymeNode;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
-import app.nzyme.core.NzymeLeader;
 import app.nzyme.core.configuration.ReportingConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,13 +61,13 @@ public abstract class ReportJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        NzymeLeader nzyme = null;
+        NzymeNode nzyme = null;
         String jobName = null;
         List<String> emailReceivers;
 
         try {
             SchedulerContext schedContext = context.getScheduler().getContext();
-            nzyme = (NzymeLeader) schedContext.get("nzyme");
+            nzyme = (NzymeNode) schedContext.get("nzyme");
 
             jobName = context.getJobDetail().getKey().getName();
             emailReceivers = nzyme.getSchedulingService().findEmailReceiversOfReport(jobName);
@@ -141,7 +141,7 @@ public abstract class ReportJob implements Job {
         }
     }
 
-    public abstract String runReport(NzymeLeader nzyme, List<String> emailReceivers) throws JobExecutionException;
+    public abstract String runReport(NzymeNode nzyme, List<String> emailReceivers) throws JobExecutionException;
     public abstract String getName();
 
 }

@@ -2,7 +2,7 @@ package app.nzyme.core.dot11.interceptors;
 
 import com.codahale.metrics.MetricRegistry;
 import app.nzyme.core.MockNzyme;
-import app.nzyme.core.NzymeLeader;
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11MetaInformation;
 import app.nzyme.core.dot11.MalformedFrameException;
 import app.nzyme.core.dot11.anonymization.Anonymizer;
@@ -23,7 +23,7 @@ public class DeauthFrameCounterInterceptorTest {
 
     @Test
     public void testIntercept() throws MalformedFrameException, IllegalRawDataException {
-        NzymeLeader nzyme = new MockNzyme();
+        NzymeNode nzyme = new MockNzyme();
         DeauthenticationMonitor monitor = new DeauthenticationMonitor(nzyme);
 
         Dot11DeauthenticationFrame deauth = new Dot11DeauthenticationFrameParser(new MetricRegistry(), new Anonymizer(false, ""))
