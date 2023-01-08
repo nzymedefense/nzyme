@@ -113,7 +113,7 @@ public class ContactIdentifierTest {
         UUID bandit1UUID = UUID.randomUUID();
         i.registerBandit(Bandit.create(null, bandit1UUID, "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.NODE, nzyme.getNodeID(), 0,bandit1.databaseId(), bandit1));
+        i.registerContact(Contact.create(UUID.randomUUID(), DateTime.now(), DateTime.now(), 0L, Role.NODE, nzyme.getNodeInformation().name(), 0,bandit1.databaseId(), bandit1));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -125,9 +125,9 @@ public class ContactIdentifierTest {
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+2);
         assertEquals(i.findContacts().size(), 1);
 
-        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeID()));
-        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeID()));
-        assertFalse(i.banditHasActiveContactOnSource(Bandit.create(null, UUID.randomUUID(), "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()), nzyme.getNodeID()));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeInformation().name()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeInformation().name()));
+        assertFalse(i.banditHasActiveContactOnSource(Bandit.create(null, UUID.randomUUID(), "foo", "foo", false, DateTime.now(), DateTime.now(), Lists.newArrayList()), nzyme.getNodeInformation().name()));
     }
 
     @Test
@@ -143,7 +143,7 @@ public class ContactIdentifierTest {
 
         UUID contactUUID = UUID.randomUUID();
         Bandit bandit = i.findBanditByUUID(banditUUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
-        i.registerContact(Contact.create(contactUUID, DateTime.now(), DateTime.now(), 0L, Role.NODE, nzyme.getNodeID(), 0,bandit.databaseId(), bandit));
+        i.registerContact(Contact.create(contactUUID, DateTime.now(), DateTime.now(), 0L, Role.NODE, nzyme.getNodeInformation().name(), 0,bandit.databaseId(), bandit));
 
         assertEquals(i.getBandits().size(), DefaultBandits.BANDITS.size()+1);
         assertEquals(i.findContacts().size(), 1);
@@ -152,15 +152,15 @@ public class ContactIdentifierTest {
         assertTrue(i.findRecordValuesOfContact(contactUUID, ContactRecorder.RECORD_TYPE.SSID).isEmpty());
         assertTrue(i.findRecordValuesOfContact(contactUUID, ContactRecorder.RECORD_TYPE.BSSID).isEmpty());
 
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
+        i.registerContactFrame(bandit, nzyme.getNodeInformation().name(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 1);
 
         // Frame with no SSID should not change SSIDs but increase frame count.
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.empty());
+        i.registerContactFrame(bandit, nzyme.getNodeInformation().name(), 0, "7C:75:5C:AF:E4:71", Optional.empty());
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 2);
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0,"7C:75:5C:AF:E4:71", Optional.of("bar"));
+        i.registerContactFrame(bandit, nzyme.getNodeInformation().name(), 0,"7C:75:5C:AF:E4:71", Optional.of("bar"));
 
-        i.registerContactFrame(bandit, nzyme.getNodeID(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
+        i.registerContactFrame(bandit, nzyme.getNodeInformation().name(), 0, "7C:75:5C:AF:E4:71", Optional.of("foo"));
         assertEquals(i.findContacts().get(contactUUID).frameCount().longValue(), 4);
     }
 
@@ -175,10 +175,10 @@ public class ContactIdentifierTest {
         }}));
         Bandit bandit1 = i.findBanditByUUID(bandit1UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
-        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeID()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeInformation().name()));
 
         i.identify(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
-        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeID()));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeInformation().name()));
     }
 
     @Test
@@ -202,12 +202,12 @@ public class ContactIdentifierTest {
         }}));
         Bandit bandit2 = i.findBanditByUUID(bandit2UUID).orElseThrow((Supplier<Exception>) RuntimeException::new);
 
-        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeID()));
-        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeID()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeInformation().name()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeInformation().name()));
 
         i.identify(new Dot11BeaconFrameParser(new MetricRegistry(), new Anonymizer(false, "")).parse(Frames.BEACON_1_PAYLOAD, Frames.BEACON_1_HEADER, META_NO_WEP));
-        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeID()));
-        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeID()));
+        assertTrue(i.banditHasActiveContactOnSource(bandit1, nzyme.getNodeInformation().name()));
+        assertFalse(i.banditHasActiveContactOnSource(bandit2, nzyme.getNodeInformation().name()));
     }
 
 }

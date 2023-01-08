@@ -17,7 +17,9 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
@@ -119,6 +121,7 @@ import org.quartz.SchedulerException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.Key;
 import java.util.List;
 import java.util.Optional;
@@ -134,11 +137,17 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final Version version;
 
-    private final String nodeId;
+    private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
+
+    private final Path dataDirectory;
+
     private final DatabaseImpl database;
     private final BaseConfigurationService configurationService;
+
+    private final NodeManager nodeManager;
+
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
     private final MemoryRegistry memoryRegistry;
@@ -189,9 +198,18 @@ public class NzymeNodeImpl implements NzymeNode {
 
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
         this.version = new Version();
-        this.nodeId = baseConfiguration.nodeId();
+        this.nodeManager = new NodeManager(this);
+        try {
+            nodeManager.initialize();
+            nodeManager.registerSelf();
+        } catch (NodeManager.NodeInitializationException e) {
+            throw new RuntimeException("Could not initialize distributed subsystem.", e);
+        }
+
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getNodeId(), baseConfiguration.name());
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
+        this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
         this.database = database;
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
@@ -303,13 +321,13 @@ public class NzymeNodeImpl implements NzymeNode {
         metrics.register(MetricNames.DATABASE_SIZE, (Gauge<Long>) database::getTotalSize);
 
         // Register configured uplinks.
-        UplinkFactory uplinkFactory = new UplinkFactory(getNodeID());
+        UplinkFactory uplinkFactory = new UplinkFactory(nodeIdentification.name());
         for (UplinkDefinition uplinkDefinition : configuration.uplinks()) {
             registerUplink(uplinkFactory.fromConfigurationDefinition(uplinkDefinition));
         }
 
         // Register configured forwarders.
-        ForwarderFactory forwarderFactory = new ForwarderFactory(getNodeID());
+        ForwarderFactory forwarderFactory = new ForwarderFactory(nodeIdentification.name());
         for (ForwarderDefinition forwarderDefinition : configuration.forwarders()) {
             this.forwarders.add(forwarderFactory.fromConfigurationDefinition(forwarderDefinition));
         }
@@ -457,7 +475,7 @@ public class NzymeNodeImpl implements NzymeNode {
             try {
                 this.groundStation = new GroundStation(
                         Role.NODE,
-                        getNodeID(),
+                        nodeIdentification.name(),
                         version.getVersion().toString(),
                         metrics,
                         contactManager,
@@ -514,7 +532,7 @@ public class NzymeNodeImpl implements NzymeNode {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     getUplinks(),
-                    getNodeID(),
+                    getNodeInformation().name(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),
@@ -616,7 +634,7 @@ public class NzymeNodeImpl implements NzymeNode {
                     Dot11ProbeConfiguration.create(
                             "trap-sender-" + td.device() + "-" + tc.type(),
                             getUplinks(),
-                            getNodeID(),
+                            getNodeInformation().name(),
                             td.device(),
                             ImmutableList.copyOf(td.channels()),
                             td.channelHopInterval(),
@@ -632,11 +650,6 @@ public class NzymeNodeImpl implements NzymeNode {
             probeExecutor.submit(probe.loop());
             probes.add(probe);
         }
-    }
-
-    @Override
-    public String getNodeID() {
-        return nodeId;
     }
 
     @Override
@@ -751,6 +764,11 @@ public class NzymeNodeImpl implements NzymeNode {
     }
 
     @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
+    }
+
+    @Override
     public MetricRegistry getMetrics() {
         return metrics;
     }
@@ -850,4 +868,8 @@ public class NzymeNodeImpl implements NzymeNode {
         return new RegistryImpl(this, "core");
     }
 
+    @Override
+    public NodeIdentification getNodeInformation() {
+        return nodeIdentification;
+    }
 }

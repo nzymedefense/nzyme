@@ -23,14 +23,14 @@ import app.nzyme.core.Role;
 @AutoValue
 public abstract class BaseConfiguration {
 
-    public abstract String nodeId();
+    public abstract String name();
     public abstract Role mode();
     public abstract String dataDirectory();
     public abstract Boolean anonymize();
 
-    public static BaseConfiguration create(String nodeId, Role mode, String dataDirectory, Boolean anonymize) {
+    public static BaseConfiguration create(String name, Role mode, String dataDirectory, Boolean anonymize) {
         return builder()
-                .nodeId(nodeId)
+                .name(name)
                 .mode(mode)
                 .dataDirectory(dataDirectory)
                 .anonymize(anonymize)
@@ -43,7 +43,7 @@ public abstract class BaseConfiguration {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder nodeId(String nodeId);
+        public abstract Builder name(String name);
 
         public abstract Builder mode(Role mode);
 

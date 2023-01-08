@@ -1156,4 +1156,32 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="51" author="lennartkoopmann">
+        <createTable tableName="nodes">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transport_address" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="nodes" indexName="idx_node_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

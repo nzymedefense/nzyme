@@ -94,8 +94,16 @@ public class Tools {
         return SAFE_PARAMETER.matchesAllOf(x);
     }
 
-    public static boolean isSafeID(String x) {
-        return SAFE_ID.matcher(x).matches();
+    public static boolean isSafeNodeName(String x) {
+        if (x == null) {
+            return false;
+        }
+
+        if (x.trim().isEmpty()) {
+            return false;
+        }
+
+        return x.length() < 255 && SAFE_ID.matcher(x).matches();
     }
 
     public static String byteArrayToHexPrettyPrint(byte[] a) {

@@ -52,11 +52,11 @@ public class BaseConfigurationLoader {
     }
 
     public BaseConfiguration get() {
-        return BaseConfiguration.create(parseNodeID(), parseRole(), parseDataDirectory(), parseAnonymize());
+        return BaseConfiguration.create(parseNodeName(), parseRole(), parseDataDirectory(), parseAnonymize());
     }
 
-    public String parseNodeID() {
-        return general.getString(ConfigurationKeys.ID);
+    public String parseNodeName() {
+        return general.getString(ConfigurationKeys.NAME);
     }
 
     public Role parseRole() {
@@ -79,8 +79,8 @@ public class BaseConfigurationLoader {
         ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
 
         // Node ID exists and is valid.
-        ConfigurationValidator.expect(general, ConfigurationKeys.ID, ConfigurationKeys.GENERAL, String.class);
-        if(!Tools.isSafeID(parseNodeID())) {
+        ConfigurationValidator.expect(general, ConfigurationKeys.NAME, ConfigurationKeys.GENERAL, String.class);
+        if(!Tools.isSafeNodeName(parseNodeName())) {
             throw new InvalidConfigurationException("Node ID must only contain alphanumeric characters, underscores or dashes.");
         }
 

@@ -17,7 +17,9 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
@@ -63,6 +65,7 @@ import liquibase.exception.LiquibaseException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +82,9 @@ public class MockNzyme implements NzymeNode {
         return new File(resource.getFile());
     }
 
-    private final String nodeID;
+    private final NodeManager nodeManager;
+
+    private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
     private final SystemStatus systemStatus;
@@ -101,6 +106,7 @@ public class MockNzyme implements NzymeNode {
     private final Sentry sentry;
     private final EventService eventService;
     private final BaseConfigurationService configurationService;
+    private final Path dataDirectory;
 
     private final Crypto crypto;
 
@@ -110,7 +116,6 @@ public class MockNzyme implements NzymeNode {
 
     public MockNzyme(int sentryInterval) {
         this.version = new Version();
-        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
             String configFile = "nzyme-test-complete-valid.conf.test";
@@ -123,20 +128,30 @@ public class MockNzyme implements NzymeNode {
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
-
-        this.nodeID = "mocky-mock";
-
-        this.uplinks = Lists.newArrayList();
-        this.forwarders = Lists.newArrayList();
-
-        this.frameProcessor = new FrameProcessor();
-
         this.database = new DatabaseImpl(configuration);
+
         try {
             this.database.initializeAndMigrate();
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }
+
+        this.nodeManager = new NodeManager(this);
+        try {
+            this.nodeManager.initialize();
+        } catch (NodeManager.NodeInitializationException e) {
+            throw new RuntimeException(e);
+        }
+
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getNodeId(), "mocky-mock");
+
+        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+        this.dataDirectory = Path.of("test_data_dir");
+
+        this.uplinks = Lists.newArrayList();
+        this.forwarders = Lists.newArrayList();
+
+        this.frameProcessor = new FrameProcessor();
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
 
@@ -186,12 +201,6 @@ public class MockNzyme implements NzymeNode {
     public void shutdown() {
         eventService.recordEvent(new ShutdownEvent());
     }
-
-    @Override
-    public String getNodeID() {
-        return nodeID;
-    }
-
     @Override
     public Ethernet getEthernet() {
         return null;
@@ -252,6 +261,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public BaseConfigurationService getConfigurationService() {
         return configurationService;
+    }
+
+    @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
     }
 
     @Override
@@ -385,5 +399,10 @@ public class MockNzyme implements NzymeNode {
 
     public Registry getRegistry(String s) {
         return null;
+    }
+
+    @Override
+    public NodeIdentification getNodeInformation() {
+        return nodeIdentification;
     }
 }

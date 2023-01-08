@@ -8,6 +8,7 @@ dependency-reduced-pom.xml
 /retro/
 /data/
 /tmp/
+/test_data_dir/
 
 .DS_Store
 hs_err_*.log
