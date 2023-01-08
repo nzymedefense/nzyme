@@ -206,7 +206,7 @@ public class NzymeNodeImpl implements NzymeNode {
             throw new RuntimeException("Could not initialize distributed subsystem.", e);
         }
 
-        this.nodeIdentification = NodeIdentification.create(nodeManager.getNodeId(), baseConfiguration.name());
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.configuration = configuration;
         this.dataDirectory = Path.of(baseConfiguration.dataDirectory());

@@ -144,7 +144,7 @@ public class MockNzyme implements NzymeNode {
             throw new RuntimeException(e);
         }
 
-        this.nodeIdentification = NodeIdentification.create(nodeManager.getNodeId(), "mocky-mock");
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), "mocky-mock");
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 

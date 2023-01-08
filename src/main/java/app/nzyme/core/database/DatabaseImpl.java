@@ -1,6 +1,7 @@
 package app.nzyme.core.database;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
+import app.nzyme.core.distributed.database.NodeMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
@@ -92,7 +93,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSStatisticsBucketMapper())
                 .registerRowMapper(new DNSTrafficSummaryMapper())
                 .registerRowMapper(new DNSPairSummaryMapper())
-                .registerRowMapper(new PGPKeyFingerprintMapper());
+                .registerRowMapper(new PGPKeyFingerprintMapper())
+                .registerRowMapper(new NodeMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

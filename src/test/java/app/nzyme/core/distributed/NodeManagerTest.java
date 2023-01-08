@@ -2,13 +2,14 @@ package app.nzyme.core.distributed;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
+import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 import static org.testng.Assert.*;
@@ -16,7 +17,14 @@ import static org.testng.Assert.*;
 public class NodeManagerTest {
 
     @BeforeMethod
-    public void cleanDataDirectory() throws IOException {
+    public void cleanData() throws IOException {
+        // Always make sure to run this first. Code below has to delete node_id file created by this MockNzyme.
+        NzymeNode nzyme = new MockNzyme();
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("TRUNCATE nodes;")
+                        .execute()
+        );
+
         Path dataDir = Path.of("test_data_dir");
 
         Files.walk(dataDir)
@@ -50,11 +58,11 @@ public class NodeManagerTest {
 
         assertTrue(Files.exists(nodeIdFile));
 
-        UUID nodeId1 = nm.getNodeId();
+        UUID nodeId1 = nm.getLocalNodeId();
         assertNotNull(nodeId1);
 
         nm.initialize();
-        UUID nodeId2 = nm.getNodeId();
+        UUID nodeId2 = nm.getLocalNodeId();
         assertEquals(nodeId1, nodeId2);
     }
 
@@ -70,20 +78,83 @@ public class NodeManagerTest {
 
         assertTrue(Files.exists(nodeIdFile));
 
-        UUID nodeId1 = nm.getNodeId();
+        UUID nodeId1 = nm.getLocalNodeId();
         assertNotNull(nodeId1);
 
         nm.initialize();
-        UUID nodeId2 = nm.getNodeId();
+        UUID nodeId2 = nm.getLocalNodeId();
         assertEquals(nodeId1, nodeId2);
 
         Files.delete(nodeIdFile);
         assertFalse(Files.exists(nodeIdFile));
 
         nm.initialize();
-        UUID nodeId3 = nm.getNodeId();
+        UUID nodeId3 = nm.getLocalNodeId();
         assertNotNull(nodeId3);
         assertNotEquals(nodeId1, nodeId3);
+    }
+
+    @Test
+    public void testRegistersSelf() throws NodeManager.NodeInitializationException {
+        NzymeNode nzyme = new MockNzyme();
+        NodeManager nm = new NodeManager(nzyme);
+        assertTrue(nm.getNodes().isEmpty());
+
+        nm.initialize();
+
+        assertTrue(nm.getNodes().isEmpty());
+
+        nm.registerSelf();
+
+        assertEquals(nm.getNodes().size(), 1);
+        Node node = nm.getNodes().get(0);
+
+        assertEquals(node.uuid(), nm.getLocalNodeId());
+        assertEquals(node.name(), "mocky-mock");
+        assertEquals(node.version(), nzyme.getVersion().getVersion().toString());
+        assertEquals(node.transportAddress(), URI.create("http://127.0.0.1:22900/"));
+        assertTrue(node.lastSeen().isBefore(DateTime.now()));
+        assertTrue(node.lastSeen().isAfter(DateTime.now().minusMinutes(1)));
+    }
+
+    @Test
+    public void testUpdatesSelf() throws NodeManager.NodeInitializationException, InterruptedException {
+        NzymeNode nzyme = new MockNzyme();
+        NodeManager nm = new NodeManager(nzyme);
+        assertTrue(nm.getNodes().isEmpty());
+
+        nm.initialize();
+
+        assertTrue(nm.getNodes().isEmpty());
+
+        nm.registerSelf();
+
+        assertEquals(nm.getNodes().size(), 1);
+        Node node = nm.getNodes().get(0);
+
+        UUID firstUUID = node.uuid();
+        String firstName = node.name();
+        URI firstTransportAddress = node.transportAddress();
+        String firstVersion = node.version();
+        DateTime firstTs = node.lastSeen();
+        assertEquals(firstUUID, nm.getLocalNodeId());
+        assertEquals(firstName, "mocky-mock");
+        assertEquals(firstVersion, nzyme.getVersion().getVersion().toString());
+        assertEquals(firstTransportAddress, URI.create("http://127.0.0.1:22900/"));
+        assertTrue(firstTs.isBefore(DateTime.now()));
+        assertTrue(firstTs.isAfter(DateTime.now().minusMinutes(1)));
+
+        Thread.sleep(1000);
+
+        nm.registerSelf();
+
+        assertEquals(nm.getNodes().size(), 1);
+        node = nm.getNodes().get(0);
+        assertEquals(node.uuid(), firstUUID);
+        assertEquals(node.name(), firstName);
+        assertEquals(node.version(), firstVersion);
+        assertEquals(node.transportAddress(), firstTransportAddress);
+        assertNotEquals(node.lastSeen(), firstTs);
     }
 
 }
