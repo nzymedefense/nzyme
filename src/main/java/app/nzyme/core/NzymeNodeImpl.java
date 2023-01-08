@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
@@ -198,19 +199,21 @@ public class NzymeNodeImpl implements NzymeNode {
 
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
         this.version = new Version();
+        this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
+        this.database = database;
+        this.configuration = configuration;
+
         this.nodeManager = new NodeManager(this);
         try {
-            nodeManager.initialize();
-            nodeManager.registerSelf();
+            this.nodeManager.initialize();
+            this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
+            this.nodeManager.registerSelf();
         } catch (NodeManager.NodeInitializationException e) {
             throw new RuntimeException("Could not initialize distributed subsystem.", e);
         }
 
-        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        this.configuration = configuration;
-        this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
-        this.database = database;
+
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
 
@@ -351,6 +354,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
         // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
+        periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
@@ -524,6 +528,11 @@ public class NzymeNodeImpl implements NzymeNode {
         }
 
         LOG.info("Shutdown complete.");
+    }
+
+    @Override
+    public NodeManager getNodeManager() {
+        return nodeManager;
     }
 
     private void initializeProbes() {

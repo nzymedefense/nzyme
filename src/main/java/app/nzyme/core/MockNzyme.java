@@ -202,6 +202,12 @@ public class MockNzyme implements NzymeNode {
     public void shutdown() {
         eventService.recordEvent(new ShutdownEvent());
     }
+
+    @Override
+    public NodeManager getNodeManager() {
+        return nodeManager;
+    }
+
     @Override
     public Ethernet getEthernet() {
         return null;
