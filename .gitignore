@@ -8,7 +8,7 @@ dependency-reduced-pom.xml
 /retro/
 /data/
 /tmp/
-/test_data_dir/*
+/test_data_dir/node_id
 
 .DS_Store
 hs_err_*.log

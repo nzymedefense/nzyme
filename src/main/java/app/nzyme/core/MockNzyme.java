@@ -125,6 +125,7 @@ public class MockNzyme implements NzymeNode {
             }
 
             this.configuration = new NodeConfigurationLoader(loadFromResourceFile(configFile), false).get();
+            this.dataDirectory = Path.of("test_data_dir");
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
@@ -146,7 +147,7 @@ public class MockNzyme implements NzymeNode {
         this.nodeIdentification = NodeIdentification.create(nodeManager.getNodeId(), "mocky-mock");
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        this.dataDirectory = Path.of("test_data_dir");
+
 
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
