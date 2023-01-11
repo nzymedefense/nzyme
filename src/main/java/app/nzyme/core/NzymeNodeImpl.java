@@ -423,6 +423,7 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(PrometheusResource.class);
         resourceConfig.register(CryptoResource.class);
         resourceConfig.register(MonitoringResource.class);
+        resourceConfig.register(NodesResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
