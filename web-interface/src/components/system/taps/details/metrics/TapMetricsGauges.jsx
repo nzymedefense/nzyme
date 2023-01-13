@@ -1,6 +1,6 @@
 import React from 'react'
 import FormattedGauge from './FormattedGauge'
-import ApiRoutes from '../../../../util/ApiRoutes'
+import ApiRoutes from '../../../../../util/ApiRoutes'
 
 function TapMetricsGauges (props) {
   return (

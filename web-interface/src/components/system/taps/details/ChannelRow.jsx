@@ -1,6 +1,6 @@
 import React from 'react'
 import numeral from 'numeral'
-import byteAverageToMbit from '../../../util/Tools'
+import byteAverageToMbit from '../../../../util/Tools'
 
 function ChannelRow (props) {
   const c = props.channel

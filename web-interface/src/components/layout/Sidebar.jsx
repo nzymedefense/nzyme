@@ -69,6 +69,10 @@ function Sidebar () {
 
                 <SidebarSubmenu title="System" subhref="/system" icon={<i className="fa-solid fa-screwdriver-wrench fa-icon" />}>
                     <NavigationLink
+                        href={ApiRoutes.SYSTEM.CLUSTER.INDEX}
+                        title="Cluster &amp; Nodes"
+                        icon={<i className="fa-solid fa-circle-nodes" />} />
+                    <NavigationLink
                         href={ApiRoutes.SYSTEM.LEADER}
                         title="Leader"
                         icon={<i className="fa-solid fa-stethoscope fa-icon" />} />

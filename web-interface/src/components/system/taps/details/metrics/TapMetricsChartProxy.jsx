@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import TapMetricsGaugeChart from './charts/TapMetricGaugeChart'
-import TapsService from '../../../../services/TapsService'
+import TapsService from '../../../../../services/TapsService'
 
 const tapsService = new TapsService()
 

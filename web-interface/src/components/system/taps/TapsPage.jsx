@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import TapsService from '../../services/TapsService'
+import TapsService from '../../../services/TapsService'
 import TapsTable from './TapsTable'
 
 const tapsService = new TapsService()
 
-function fetchData (setTaps) {
+function fetchData(setTaps) {
   tapsService.findAllTaps(setTaps)
 }
 

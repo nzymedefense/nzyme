@@ -17,6 +17,9 @@ const ApiRoutes = {
       PROMETHEUS: {
         INDEX: '/system/monitoring/prometheus'
       }
+    },
+    CLUSTER: {
+      INDEX: '/system/cluster'
     }
   },
   REPORTING: {

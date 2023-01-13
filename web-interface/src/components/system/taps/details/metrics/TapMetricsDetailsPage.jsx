@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import ApiRoutes from '../../../../util/ApiRoutes'
+import ApiRoutes from '../../../../../util/ApiRoutes'
 import TapInactiveWarning from '../TapInactiveWarning'
-import TapsService from '../../../../services/TapsService'
-import LoadingSpinner from '../../../misc/LoadingSpinner'
+import TapsService from '../../../../../services/TapsService'
+import LoadingSpinner from '../../../../misc/LoadingSpinner'
 import TapMetricsChartProxy from './TapMetricsChartProxy'
 
 const tapsService = new TapsService()

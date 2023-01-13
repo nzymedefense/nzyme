@@ -1,6 +1,6 @@
 import React from 'react'
-import SimpleLineChart from '../../../../charts/SimpleLineChart'
-import LoadingSpinner from '../../../../misc/LoadingSpinner'
+import SimpleLineChart from '../../../../../charts/SimpleLineChart'
+import LoadingSpinner from '../../../../../misc/LoadingSpinner'
 
 function TapMetricsGaugeChart (props) {
   if (!props.data) {

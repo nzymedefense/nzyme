@@ -1192,4 +1192,24 @@
         </addColumn>
     </changeSet>
 
+    <!--<changeSet id="53" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_total" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_available" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_used" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>-->
+
 </databaseChangeLog>

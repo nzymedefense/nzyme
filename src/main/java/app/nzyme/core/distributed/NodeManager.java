@@ -74,9 +74,11 @@ public class NodeManager {
         );
     }
 
-    public List<Node> getNodes() {
+    public List<Node> getActiveNodes() {
         List<NodeEntry> dbEntries = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, name, transport_address, version, last_seen FROM nodes ORDER BY name DESC")
+                handle.createQuery("SELECT uuid, name, transport_address, version, last_seen FROM nodes " +
+                                "WHERE last_seen > :timeout ORDER BY name DESC")
+                        .bind("timeout", DateTime.now().minusSeconds(30))
                         .mapTo(NodeEntry.class)
                         .list()
         );

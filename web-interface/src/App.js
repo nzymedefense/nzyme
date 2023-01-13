@@ -40,9 +40,9 @@ import VersionPage from './components/system/VersionPage'
 import LeaderPage from './components/system/LeaderPage'
 import DarkMode from './components/layout/DarkMode'
 import AuthenticationPage from './components/system/authentication/AuthenticationPage'
-import TapsPage from './components/taps/TapsPage'
-import TapDetailsPage from './components/taps/details/TapDetailsPage'
-import TapMetricsDetailsPage from './components/taps/details/metrics/TapMetricsDetailsPage'
+import TapsPage from './components/system/taps/TapsPage'
+import TapDetailsPage from './components/system/taps/details/TapDetailsPage'
+import TapMetricsDetailsPage from './components/system/taps/details/metrics/TapMetricsDetailsPage'
 import DNSOverviewPage from './components/ethernet/dns/DNSOverviewPage'
 import SearchPage from './components/retro/SearchPage'
 import ServiceSummaryPage from './components/retro/servicesummary/ServiceSummaryPage'
@@ -53,6 +53,7 @@ import LoadingSpinner from './components/misc/LoadingSpinner'
 import CryptoSummaryPage from './components/system/crypto/CryptoSummaryPage'
 import MonitoringPage from './components/system/monitoring/MonitoringPage'
 import PrometheusMetricsPage from './components/system/monitoring/prometheus/PrometheusMetricsPage'
+import NodesPage from "./components/system/cluster/nodes/NodesPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -150,6 +151,9 @@ class App extends React.Component {
                                             { /* System/Monitoring. */ }
                                             <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
                                             <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
+
+                                            { /* System/Cluster */ }
+                                            <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
 
                                             { /* Ethernet/DNS. */}
                                             <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
