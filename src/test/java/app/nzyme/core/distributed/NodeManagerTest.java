@@ -120,6 +120,9 @@ public class NodeManagerTest {
         assertTrue(node.memoryBytesTotal() > 0);
         assertTrue(node.memoryBytesAvailable() > 0);
         assertTrue(node.memoryBytesUsed() > 0);
+        assertTrue(node.heapBytesTotal() > 0);
+        assertTrue(node.heapBytesAvailable() > 0);
+        assertTrue(node.heapBytesUsed() > 0);
         assertTrue(node.cpuSystemLoad() > 0);
         assertTrue(node.cpuThreadCount() > 0);
         assertTrue(node.processStartTime().isBefore(DateTime.now()));
@@ -158,6 +161,9 @@ public class NodeManagerTest {
         assertTrue(node.memoryBytesTotal() > 0);
         assertTrue(node.memoryBytesAvailable() > 0);
         assertTrue(node.memoryBytesUsed() > 0);
+        assertTrue(node.heapBytesTotal() > 0);
+        assertTrue(node.heapBytesAvailable() > 0);
+        assertTrue(node.heapBytesUsed() > 0);
         assertTrue(node.cpuSystemLoad() > 0);
         assertTrue(node.cpuThreadCount() > 0);
         assertTrue(node.processStartTime().isBefore(DateTime.now()));

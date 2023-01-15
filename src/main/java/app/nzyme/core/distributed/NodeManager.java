@@ -61,18 +61,24 @@ public class NodeManager {
         }
 
         NodeInformation.Info ni = new NodeInformation().collect();
+        long heapSize = Runtime.getRuntime().totalMemory();
+        long heapMax = Runtime.getRuntime().maxMemory();
+        long heapFree = Runtime.getRuntime().freeMemory();
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO nodes(uuid, name, transport_address, version, last_seen, " +
-                                "memory_bytes_total, memory_bytes_available, memory_bytes_used, cpu_system_load, " +
-                                "cpu_thread_count, process_start_time, process_virtual_size, process_arguments, " +
-                                "os_information) VALUES(:uuid, :name, :transport_address, :version, NOW(), " +
-                                ":memory_bytes_total, :memory_bytes_available, :memory_bytes_used, :cpu_system_load, " +
-                                ":cpu_thread_count, :process_start_time, :process_virtual_size, :process_arguments, " +
-                                ":os_information) ON CONFLICT(uuid) DO UPDATE SET name = :name, " +
-                                "transport_address = :transport_address, version = :version, last_seen = NOW(), " +
-                                "memory_bytes_total = :memory_bytes_total, memory_bytes_available = :memory_bytes_available, " +
-                                "memory_bytes_used = :memory_bytes_used, cpu_system_load = :cpu_system_load, " +
+                                "memory_bytes_total, memory_bytes_available, memory_bytes_used, heap_bytes_total, " +
+                                "heap_bytes_available, heap_bytes_used, cpu_system_load, cpu_thread_count, " +
+                                "process_start_time, process_virtual_size, process_arguments, os_information) " +
+                                "VALUES(:uuid, :name, :transport_address, :version, NOW(), :memory_bytes_total, " +
+                                ":memory_bytes_available, :memory_bytes_used, :heap_bytes_total, :heap_bytes_available, " +
+                                " :heap_bytes_used, :cpu_system_load, :cpu_thread_count, :process_start_time, " +
+                                ":process_virtual_size, :process_arguments, :os_information) " +
+                                "ON CONFLICT(uuid) DO UPDATE SET name = :name, transport_address = :transport_address, " +
+                                "version = :version, last_seen = NOW(), memory_bytes_total = :memory_bytes_total, " +
+                                "memory_bytes_available = :memory_bytes_available, memory_bytes_used = :memory_bytes_used, " +
+                                "heap_bytes_total = :heap_bytes_total, heap_bytes_available = :heap_bytes_available, " +
+                                "heap_bytes_used = :heap_bytes_used, cpu_system_load = :cpu_system_load, " +
                                 "cpu_thread_count = :cpu_thread_count, process_start_time = :process_start_time, " +
                                 "process_virtual_size = :process_virtual_size, process_arguments = :process_arguments, " +
                                 "os_information = :os_information")
@@ -83,6 +89,9 @@ public class NodeManager {
                         .bind("memory_bytes_total", ni.memoryTotal())
                         .bind("memory_bytes_available", ni.memoryAvailable())
                         .bind("memory_bytes_used", ni.memoryUsed())
+                        .bind("heap_bytes_total", heapMax)
+                        .bind("heap_bytes_available", heapFree)
+                        .bind("heap_bytes_used", heapSize)
                         .bind("cpu_system_load", ni.cpuSystemLoad())
                         .bind("cpu_thread_count", ni.cpuThreadCount())
                         .bind("process_start_time", ni.processStartTime())
@@ -112,6 +121,9 @@ public class NodeManager {
                         dbEntry.memoryBytesTotal(),
                         dbEntry.memoryBytesAvailable(),
                         dbEntry.memoryBytesUsed(),
+                        dbEntry.heapBytesTotal(),
+                        dbEntry.heapBytesAvailable(),
+                        dbEntry.heapBytesUsed(),
                         dbEntry.cpuSystemLoad(),
                         dbEntry.cpuThreadCount(),
                         dbEntry.processStartTime(),

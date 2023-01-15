@@ -1,9 +1,12 @@
 import React from "react";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
+import NodeRow from "./NodeRow";
 
 function NodesTable(props) {
 
-  if (!props.nodes) {
+  const nodes = props.nodes
+
+  if (!nodes) {
     return <LoadingSpinner />
   }
 
@@ -17,10 +20,14 @@ function NodesTable(props) {
               <th>CPU Load</th>
               <th>Memory Used</th>
               <th>Heap Used</th>
-              <th>Uptime</th>
+              <th>Process Size</th>
+              <th>Version</th>
             </tr>
             </thead>
             <tbody>
+            {Object.keys(nodes.sort((a, b) => a.name.localeCompare(b.name))).map(function (key, i) {
+              return <NodeRow key={'node-' + i} node={nodes[i]} />
+            })}
             </tbody>
           </table>
         </div>

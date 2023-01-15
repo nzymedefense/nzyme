@@ -15,6 +15,9 @@ public abstract class NodeEntry {
     public abstract long memoryBytesTotal();
     public abstract long memoryBytesAvailable();
     public abstract long memoryBytesUsed();
+    public abstract long heapBytesTotal();
+    public abstract long heapBytesAvailable();
+    public abstract long heapBytesUsed();
     public abstract double cpuSystemLoad();
     public abstract int cpuThreadCount();
     public abstract DateTime processStartTime();
@@ -25,7 +28,7 @@ public abstract class NodeEntry {
     public abstract String version();
     public abstract DateTime lastSeen();
 
-    public static NodeEntry create(UUID uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeEntry create(UUID uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -33,6 +36,9 @@ public abstract class NodeEntry {
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
+                .heapBytesTotal(heapBytesTotal)
+                .heapBytesAvailable(heapBytesAvailable)
+                .heapBytesUsed(heapBytesUsed)
                 .cpuSystemLoad(cpuSystemLoad)
                 .cpuThreadCount(cpuThreadCount)
                 .processStartTime(processStartTime)
@@ -61,6 +67,12 @@ public abstract class NodeEntry {
         public abstract Builder memoryBytesAvailable(long memoryBytesAvailable);
 
         public abstract Builder memoryBytesUsed(long memoryBytesUsed);
+
+        public abstract Builder heapBytesTotal(long heapBytesTotal);
+
+        public abstract Builder heapBytesAvailable(long heapBytesAvailable);
+
+        public abstract Builder heapBytesUsed(long heapBytesUsed);
 
         public abstract Builder cpuSystemLoad(double cpuSystemLoad);
 

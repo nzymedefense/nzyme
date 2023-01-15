@@ -25,6 +25,15 @@ public abstract class NodeResponse {
     @JsonProperty("memory_bytes_used")
     public abstract long memoryBytesUsed();
 
+    @JsonProperty("heap_bytes_total")
+    public abstract long heapBytesTotal();
+
+    @JsonProperty("heap_bytes_available")
+    public abstract long heapBytesAvailable();
+
+    @JsonProperty("heap_bytes_used")
+    public abstract long heapBytesUsed();
+
     @JsonProperty("cpu_system_load")
     public abstract double cpuSystemLoad();
 
@@ -49,7 +58,7 @@ public abstract class NodeResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static NodeResponse create(String uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeResponse create(String uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -57,6 +66,9 @@ public abstract class NodeResponse {
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
+                .heapBytesTotal(heapBytesTotal)
+                .heapBytesAvailable(heapBytesAvailable)
+                .heapBytesUsed(heapBytesUsed)
                 .cpuSystemLoad(cpuSystemLoad)
                 .cpuThreadCount(cpuThreadCount)
                 .processStartTime(processStartTime)
@@ -85,6 +97,12 @@ public abstract class NodeResponse {
         public abstract Builder memoryBytesAvailable(long memoryBytesAvailable);
 
         public abstract Builder memoryBytesUsed(long memoryBytesUsed);
+
+        public abstract Builder heapBytesTotal(long heapBytesTotal);
+
+        public abstract Builder heapBytesAvailable(long heapBytesAvailable);
+
+        public abstract Builder heapBytesUsed(long heapBytesUsed);
 
         public abstract Builder cpuSystemLoad(double cpuSystemLoad);
 

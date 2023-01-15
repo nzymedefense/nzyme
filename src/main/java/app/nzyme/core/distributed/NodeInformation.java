@@ -23,7 +23,7 @@ public class NodeInformation {
         GlobalMemory memory = s.getHardware().getMemory();
 
         CentralProcessor cpu = s.getHardware().getProcessor();
-        double cpuSystemLoad = cpu.getSystemCpuLoad(500);
+        double cpuSystemLoad = cpu.getSystemCpuLoad(1000)*100;
 
         OSProcess currentProcess = s.getOperatingSystem().getCurrentProcess();
 
