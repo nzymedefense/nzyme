@@ -13,8 +13,8 @@ public abstract class NodeResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    @JsonProperty("transport_address")
-    public abstract String transportAddress();
+    @JsonProperty("http_external_uri")
+    public abstract String httpExternalUri();
 
     @JsonProperty("memory_bytes_total")
     public abstract long memoryBytesTotal();
@@ -58,11 +58,11 @@ public abstract class NodeResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static NodeResponse create(String uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeResponse create(String uuid, String name, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
-                .transportAddress(transportAddress)
+                .httpExternalUri(httpExternalUri)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
@@ -90,7 +90,7 @@ public abstract class NodeResponse {
 
         public abstract Builder name(String name);
 
-        public abstract Builder transportAddress(String transportAddress);
+        public abstract Builder httpExternalUri(String httpExternalUri);
 
         public abstract Builder memoryBytesTotal(long memoryBytesTotal);
 
@@ -122,5 +122,4 @@ public abstract class NodeResponse {
 
         public abstract NodeResponse build();
     }
-
 }

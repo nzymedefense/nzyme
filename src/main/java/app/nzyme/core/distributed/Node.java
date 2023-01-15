@@ -11,7 +11,7 @@ public abstract class Node {
 
     public abstract UUID uuid();
     public abstract String name();
-    public abstract URI transportAddress();
+    public abstract URI httpExternalUri();
 
     public abstract long memoryBytesTotal();
     public abstract long memoryBytesAvailable();
@@ -29,11 +29,11 @@ public abstract class Node {
     public abstract String version();
     public abstract DateTime lastSeen();
 
-    public static Node create(UUID uuid, String name, URI transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static Node create(UUID uuid, String name, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
-                .transportAddress(transportAddress)
+                .httpExternalUri(httpExternalUri)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
@@ -61,7 +61,7 @@ public abstract class Node {
 
         public abstract Builder name(String name);
 
-        public abstract Builder transportAddress(URI transportAddress);
+        public abstract Builder httpExternalUri(URI httpExternalUri);
 
         public abstract Builder memoryBytesTotal(long memoryBytesTotal);
 
@@ -93,5 +93,4 @@ public abstract class Node {
 
         public abstract Node build();
     }
-
 }

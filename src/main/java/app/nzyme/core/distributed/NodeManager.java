@@ -66,15 +66,15 @@ public class NodeManager {
         long heapFree = Runtime.getRuntime().freeMemory();
 
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO nodes(uuid, name, transport_address, version, last_seen, " +
+                handle.createUpdate("INSERT INTO nodes(uuid, name, http_external_uri, version, last_seen, " +
                                 "memory_bytes_total, memory_bytes_available, memory_bytes_used, heap_bytes_total, " +
                                 "heap_bytes_available, heap_bytes_used, cpu_system_load, cpu_thread_count, " +
                                 "process_start_time, process_virtual_size, process_arguments, os_information) " +
-                                "VALUES(:uuid, :name, :transport_address, :version, NOW(), :memory_bytes_total, " +
+                                "VALUES(:uuid, :name, :http_external_uri, :version, NOW(), :memory_bytes_total, " +
                                 ":memory_bytes_available, :memory_bytes_used, :heap_bytes_total, :heap_bytes_available, " +
                                 " :heap_bytes_used, :cpu_system_load, :cpu_thread_count, :process_start_time, " +
                                 ":process_virtual_size, :process_arguments, :os_information) " +
-                                "ON CONFLICT(uuid) DO UPDATE SET name = :name, transport_address = :transport_address, " +
+                                "ON CONFLICT(uuid) DO UPDATE SET name = :name, http_external_uri = :http_external_uri, " +
                                 "version = :version, last_seen = NOW(), memory_bytes_total = :memory_bytes_total, " +
                                 "memory_bytes_available = :memory_bytes_available, memory_bytes_used = :memory_bytes_used, " +
                                 "heap_bytes_total = :heap_bytes_total, heap_bytes_available = :heap_bytes_available, " +
@@ -84,7 +84,7 @@ public class NodeManager {
                                 "os_information = :os_information")
                         .bind("uuid", localNodeId)
                         .bind("name", nzyme.getNodeInformation().name())
-                        .bind("transport_address", nzyme.getConfiguration().httpExternalUri().toString())
+                        .bind("http_external_uri", nzyme.getConfiguration().httpExternalUri().toString())
                         .bind("version", nzyme.getVersion().getVersion().toString())
                         .bind("memory_bytes_total", ni.memoryTotal())
                         .bind("memory_bytes_available", ni.memoryAvailable())
@@ -113,11 +113,11 @@ public class NodeManager {
         List<Node> nodes = Lists.newArrayList();
         for (NodeEntry dbEntry : dbEntries) {
             try {
-                URI transportAddress = URI.create(dbEntry.transportAddress());
+                URI httpExternalUri = URI.create(dbEntry.httpExternalUri());
                 nodes.add(Node.create(
                         dbEntry.uuid(),
                         dbEntry.name(),
-                        transportAddress,
+                        httpExternalUri,
                         dbEntry.memoryBytesTotal(),
                         dbEntry.memoryBytesAvailable(),
                         dbEntry.memoryBytesUsed(),

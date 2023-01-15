@@ -30,7 +30,7 @@ public class NodesResource {
             nodes.add(NodeResponse.create(
                     node.uuid().toString(),
                     node.name(),
-                    node.transportAddress().toString(),
+                    node.httpExternalUri().toString(),
                     node.memoryBytesTotal(),
                     node.memoryBytesAvailable(),
                     node.memoryBytesUsed(),

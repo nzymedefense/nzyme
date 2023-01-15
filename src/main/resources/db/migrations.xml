@@ -1268,4 +1268,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="55" author="lennartkoopmann">
+        <renameColumn tableName="nodes" oldColumnName="transport_address" newColumnName="http_external_uri" />
+    </changeSet>
+
 </databaseChangeLog>

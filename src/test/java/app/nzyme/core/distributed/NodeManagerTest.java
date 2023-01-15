@@ -113,7 +113,7 @@ public class NodeManagerTest {
         assertEquals(node.uuid(), nm.getLocalNodeId());
         assertEquals(node.name(), "mocky-mock");
         assertEquals(node.version(), nzyme.getVersion().getVersion().toString());
-        assertEquals(node.transportAddress(), URI.create("http://127.0.0.1:22900/"));
+        assertEquals(node.httpExternalUri(), URI.create("http://127.0.0.1:22900/"));
         assertTrue(node.lastSeen().isBefore(DateTime.now()));
         assertTrue(node.lastSeen().isAfter(DateTime.now().minusMinutes(1)));
 
@@ -148,13 +148,13 @@ public class NodeManagerTest {
 
         UUID firstUUID = node.uuid();
         String firstName = node.name();
-        URI firstTransportAddress = node.transportAddress();
+        URI firstHttpExternalUri = node.httpExternalUri();
         String firstVersion = node.version();
         DateTime firstTs = node.lastSeen();
         assertEquals(firstUUID, nm.getLocalNodeId());
         assertEquals(firstName, "mocky-mock");
         assertEquals(firstVersion, nzyme.getVersion().getVersion().toString());
-        assertEquals(firstTransportAddress, URI.create("http://127.0.0.1:22900/"));
+        assertEquals(firstHttpExternalUri, URI.create("http://127.0.0.1:22900/"));
         assertTrue(firstTs.isBefore(DateTime.now()));
         assertTrue(firstTs.isAfter(DateTime.now().minusMinutes(1)));
 
@@ -180,7 +180,7 @@ public class NodeManagerTest {
         assertEquals(node.uuid(), firstUUID);
         assertEquals(node.name(), firstName);
         assertEquals(node.version(), firstVersion);
-        assertEquals(node.transportAddress(), firstTransportAddress);
+        assertEquals(node.httpExternalUri(), firstHttpExternalUri);
         assertNotEquals(node.lastSeen(), firstTs);
 
         assertTrue(node.memoryBytesTotal() > 0);

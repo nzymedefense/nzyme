@@ -10,7 +10,7 @@ public abstract class NodeEntry {
 
     public abstract UUID uuid();
     public abstract String name();
-    public abstract String transportAddress();
+    public abstract String httpExternalUri();
 
     public abstract long memoryBytesTotal();
     public abstract long memoryBytesAvailable();
@@ -28,11 +28,11 @@ public abstract class NodeEntry {
     public abstract String version();
     public abstract DateTime lastSeen();
 
-    public static NodeEntry create(UUID uuid, String name, String transportAddress, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeEntry create(UUID uuid, String name, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
-                .transportAddress(transportAddress)
+                .httpExternalUri(httpExternalUri)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
@@ -60,7 +60,7 @@ public abstract class NodeEntry {
 
         public abstract Builder name(String name);
 
-        public abstract Builder transportAddress(String transportAddress);
+        public abstract Builder httpExternalUri(String httpExternalUri);
 
         public abstract Builder memoryBytesTotal(long memoryBytesTotal);
 
@@ -92,5 +92,4 @@ public abstract class NodeEntry {
 
         public abstract NodeEntry build();
     }
-
 }

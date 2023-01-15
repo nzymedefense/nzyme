@@ -15,7 +15,7 @@ public class NodeMapper implements RowMapper<NodeEntry> {
         return NodeEntry.create(
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
-                rs.getString("transport_address"),
+                rs.getString("http_external_uri"),
                 rs.getLong("memory_bytes_total"),
                 rs.getLong("memory_bytes_available"),
                 rs.getLong("memory_bytes_used"),
