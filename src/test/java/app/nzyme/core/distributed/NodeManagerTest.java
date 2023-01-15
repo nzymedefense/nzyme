@@ -2,6 +2,7 @@ package app.nzyme.core.distributed;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
+import com.google.common.base.Strings;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -115,6 +116,16 @@ public class NodeManagerTest {
         assertEquals(node.transportAddress(), URI.create("http://127.0.0.1:22900/"));
         assertTrue(node.lastSeen().isBefore(DateTime.now()));
         assertTrue(node.lastSeen().isAfter(DateTime.now().minusMinutes(1)));
+
+        assertTrue(node.memoryBytesTotal() > 0);
+        assertTrue(node.memoryBytesAvailable() > 0);
+        assertTrue(node.memoryBytesUsed() > 0);
+        assertTrue(node.cpuSystemLoad() > 0);
+        assertTrue(node.cpuThreadCount() > 0);
+        assertTrue(node.processStartTime().isBefore(DateTime.now()));
+        assertTrue(node.processVirtualSize() > 0);
+        assertFalse(Strings.isNullOrEmpty(node.processArguments()));
+        assertFalse(Strings.isNullOrEmpty(node.osInformation()));
     }
 
     @Test
@@ -144,6 +155,16 @@ public class NodeManagerTest {
         assertTrue(firstTs.isBefore(DateTime.now()));
         assertTrue(firstTs.isAfter(DateTime.now().minusMinutes(1)));
 
+        assertTrue(node.memoryBytesTotal() > 0);
+        assertTrue(node.memoryBytesAvailable() > 0);
+        assertTrue(node.memoryBytesUsed() > 0);
+        assertTrue(node.cpuSystemLoad() > 0);
+        assertTrue(node.cpuThreadCount() > 0);
+        assertTrue(node.processStartTime().isBefore(DateTime.now()));
+        assertTrue(node.processVirtualSize() > 0);
+        assertFalse(Strings.isNullOrEmpty(node.processArguments()));
+        assertFalse(Strings.isNullOrEmpty(node.osInformation()));
+
         Thread.sleep(1000);
 
         nm.registerSelf();
@@ -155,6 +176,16 @@ public class NodeManagerTest {
         assertEquals(node.version(), firstVersion);
         assertEquals(node.transportAddress(), firstTransportAddress);
         assertNotEquals(node.lastSeen(), firstTs);
+
+        assertTrue(node.memoryBytesTotal() > 0);
+        assertTrue(node.memoryBytesAvailable() > 0);
+        assertTrue(node.memoryBytesUsed() > 0);
+        assertTrue(node.cpuSystemLoad() > 0);
+        assertTrue(node.cpuThreadCount() > 0);
+        assertTrue(node.processStartTime().isBefore(DateTime.now()));
+        assertTrue(node.processVirtualSize() > 0);
+        assertFalse(Strings.isNullOrEmpty(node.processArguments()));
+        assertFalse(Strings.isNullOrEmpty(node.osInformation()));
     }
 
 }

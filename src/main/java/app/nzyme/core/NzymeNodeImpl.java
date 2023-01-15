@@ -383,7 +383,13 @@ public class NzymeNodeImpl implements NzymeNode {
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
+
+            try {
+                plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
+            } catch(Exception e) {
+                LOG.error("Could not load plugin. Skipping.", e);
+                continue;
+            }
 
             this.plugins.add(plugin.getId());
         }

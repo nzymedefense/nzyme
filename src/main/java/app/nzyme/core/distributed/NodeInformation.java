@@ -21,7 +21,6 @@ public class NodeInformation {
                 " (" + osV.getBuildNumber() + ")";
 
         GlobalMemory memory = s.getHardware().getMemory();
-        long memoryUsed = memory.getTotal()-memory.getAvailable();
 
         CentralProcessor cpu = s.getHardware().getProcessor();
         double cpuSystemLoad = cpu.getSystemCpuLoad(500);
@@ -31,11 +30,10 @@ public class NodeInformation {
         return Info.create(
                 memory.getTotal(),
                 memory.getAvailable(),
-                memoryUsed,
-                (memoryUsed*100.0)/ memory.getTotal(),
+                memory.getTotal()-memory.getAvailable(),
                 cpuSystemLoad,
                 cpu.getLogicalProcessorCount(),
-                new DateTime(s.getOperatingSystem().getSystemBootTime()*1000),
+                new DateTime(currentProcess.getStartTime()),
                 currentProcess.getVirtualSize(),
                 Joiner.on(", ").join(currentProcess.getArguments()),
                 osVersion
@@ -49,7 +47,6 @@ public class NodeInformation {
         public abstract long memoryTotal();
         public abstract long memoryAvailable();
         public abstract long memoryUsed();
-        public abstract double memoryUsedPercent();
 
         // CPU.
         public abstract double cpuSystemLoad();
@@ -63,12 +60,11 @@ public class NodeInformation {
         // OS.
         public abstract String osInformation();
 
-        public static Info create(long memoryTotal, long memoryAvailable, long memoryUsed, double memoryUsedPercent, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation) {
+        public static Info create(long memoryTotal, long memoryAvailable, long memoryUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation) {
             return builder()
                     .memoryTotal(memoryTotal)
                     .memoryAvailable(memoryAvailable)
                     .memoryUsed(memoryUsed)
-                    .memoryUsedPercent(memoryUsedPercent)
                     .cpuSystemLoad(cpuSystemLoad)
                     .cpuThreadCount(cpuThreadCount)
                     .processStartTime(processStartTime)
@@ -89,8 +85,6 @@ public class NodeInformation {
             public abstract Builder memoryAvailable(long memoryAvailable);
 
             public abstract Builder memoryUsed(long memoryUsed);
-
-            public abstract Builder memoryUsedPercent(double memoryUsedPercent);
 
             public abstract Builder cpuSystemLoad(double cpuSystemLoad);
 

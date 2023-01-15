@@ -60,24 +60,42 @@ public class NodeManager {
             throw new RuntimeException("Not initialized. Cannot register myself.");
         }
 
+        NodeInformation.Info ni = new NodeInformation().collect();
+
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO nodes(uuid, name, transport_address, version, last_seen) " +
-                        "VALUES(:uuid, :name, :transport_address, :version, :last_seen) " +
-                        "ON CONFLICT(uuid) DO UPDATE SET name = :name, transport_address = :transport_address, " +
-                        "version = :version, last_seen = :last_seen")
+                handle.createUpdate("INSERT INTO nodes(uuid, name, transport_address, version, last_seen, " +
+                                "memory_bytes_total, memory_bytes_available, memory_bytes_used, cpu_system_load, " +
+                                "cpu_thread_count, process_start_time, process_virtual_size, process_arguments, " +
+                                "os_information) VALUES(:uuid, :name, :transport_address, :version, NOW(), " +
+                                ":memory_bytes_total, :memory_bytes_available, :memory_bytes_used, :cpu_system_load, " +
+                                ":cpu_thread_count, :process_start_time, :process_virtual_size, :process_arguments, " +
+                                ":os_information) ON CONFLICT(uuid) DO UPDATE SET name = :name, " +
+                                "transport_address = :transport_address, version = :version, last_seen = NOW(), " +
+                                "memory_bytes_total = :memory_bytes_total, memory_bytes_available = :memory_bytes_available, " +
+                                "memory_bytes_used = :memory_bytes_used, cpu_system_load = :cpu_system_load, " +
+                                "cpu_thread_count = :cpu_thread_count, process_start_time = :process_start_time, " +
+                                "process_virtual_size = :process_virtual_size, process_arguments = :process_arguments, " +
+                                "os_information = :os_information")
                         .bind("uuid", localNodeId)
                         .bind("name", nzyme.getNodeInformation().name())
                         .bind("transport_address", nzyme.getConfiguration().httpExternalUri().toString())
                         .bind("version", nzyme.getVersion().getVersion().toString())
-                        .bind("last_seen", DateTime.now())
+                        .bind("memory_bytes_total", ni.memoryTotal())
+                        .bind("memory_bytes_available", ni.memoryAvailable())
+                        .bind("memory_bytes_used", ni.memoryUsed())
+                        .bind("cpu_system_load", ni.cpuSystemLoad())
+                        .bind("cpu_thread_count", ni.cpuThreadCount())
+                        .bind("process_start_time", ni.processStartTime())
+                        .bind("process_virtual_size", ni.processVirtualSize())
+                        .bind("process_arguments", ni.processArguments())
+                        .bind("os_information", ni.osInformation())
                         .execute()
         );
     }
 
     public List<Node> getActiveNodes() {
         List<NodeEntry> dbEntries = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, name, transport_address, version, last_seen FROM nodes " +
-                                "WHERE last_seen > :timeout ORDER BY name DESC")
+                handle.createQuery("SELECT * FROM nodes WHERE last_seen > :timeout ORDER BY name DESC")
                         .bind("timeout", DateTime.now().minusSeconds(30))
                         .mapTo(NodeEntry.class)
                         .list()
@@ -87,7 +105,22 @@ public class NodeManager {
         for (NodeEntry dbEntry : dbEntries) {
             try {
                 URI transportAddress = URI.create(dbEntry.transportAddress());
-                nodes.add(Node.create(dbEntry.uuid(), dbEntry.name(), transportAddress, dbEntry.version(), dbEntry.lastSeen()));
+                nodes.add(Node.create(
+                        dbEntry.uuid(),
+                        dbEntry.name(),
+                        transportAddress,
+                        dbEntry.memoryBytesTotal(),
+                        dbEntry.memoryBytesAvailable(),
+                        dbEntry.memoryBytesUsed(),
+                        dbEntry.cpuSystemLoad(),
+                        dbEntry.cpuThreadCount(),
+                        dbEntry.processStartTime(),
+                        dbEntry.processVirtualSize(),
+                        dbEntry.processArguments(),
+                        dbEntry.osInformation(),
+                        dbEntry.version(),
+                        dbEntry.lastSeen()
+                ));
             } catch (Exception e) {
                 LOG.error("Could not create node from database entry. Skipping.", e);
             }

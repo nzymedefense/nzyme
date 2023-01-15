@@ -31,6 +31,15 @@ public class NodesResource {
                     node.uuid().toString(),
                     node.name(),
                     node.transportAddress().toString(),
+                    node.memoryBytesTotal(),
+                    node.memoryBytesAvailable(),
+                    node.memoryBytesUsed(),
+                    node.cpuSystemLoad(),
+                    node.cpuThreadCount(),
+                    node.processStartTime(),
+                    node.processVirtualSize(),
+                    node.processArguments(),
+                    node.osInformation(),
                     node.version(),
                     node.lastSeen()
             ));
