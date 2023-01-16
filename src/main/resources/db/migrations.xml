@@ -1272,4 +1272,44 @@
         <renameColumn tableName="nodes" oldColumnName="transport_address" newColumnName="http_external_uri" />
     </changeSet>
 
+    <changeSet id="56" author="lennartkoopmann">
+        <dropTable tableName="measurements" />
+    </changeSet>
+
+    <changeSet id="57" author="lennartkoopmann">
+        <renameTable oldTableName="metrics_gauges" newTableName="tap_metrics_gauges" />
+    </changeSet>
+
+    <!-- Switching from numbers to text for migration IDs to avoid merge problems. -->
+
+    <changeSet id="create_node_metrics" author="lennartkoopmann">
+        <createTable tableName="node_metrics_gauges">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="node_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_value" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_nodemetrics_std_lookup" tableName="node_metrics_gauges" unique="false">
+            <column name="metric_name"/>
+            <column name="node_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

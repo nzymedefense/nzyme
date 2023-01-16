@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.database.NodeEntry;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -15,6 +16,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class NodeManager {
 
@@ -51,6 +54,13 @@ public class NodeManager {
             localNodeId = newNodeId;
             LOG.info("Created node ID: [{}]", localNodeId);
         }
+
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("node-metrics-updater-%d")
+                        .setDaemon(true)
+                        .build()
+        ).scheduleAtFixedRate(this::writeMetrics, 1, 1, TimeUnit.MINUTES);
 
         LOG.info("Node ID: [{}]", localNodeId);
     }
@@ -139,6 +149,48 @@ public class NodeManager {
         }
 
         return nodes;
+    }
+
+    private void writeMetrics() {
+        try {
+            NodeInformation.Info ni = new NodeInformation().collect();
+            long heapSize = Runtime.getRuntime().totalMemory();
+            long heapMax = Runtime.getRuntime().maxMemory();
+            long heapFree = Runtime.getRuntime().freeMemory();
+
+            writeGauge("memory_bytes_total", ni.memoryTotal());
+            writeGauge("memory_bytes_available", ni.memoryAvailable());
+            writeGauge("memory_bytes_used", ni.memoryUsed());
+            writeGauge("heap_bytes_total", heapMax);
+            writeGauge("heap_bytes_available", heapFree);
+            writeGauge("heap_bytes_used", heapSize);
+            writeGauge("cpu_system_load", ni.cpuSystemLoad());
+            writeGauge("process_virtual_size", ni.processVirtualSize());
+        } catch(Exception e) {
+            LOG.error("Could not write node metrics.", e);
+        }
+
+        // Retention clean old metrics.
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("DELETE FROM node_metrics_gauges WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24))
+                    .execute();
+        });
+    }
+
+    private void writeGauge(String metricName, Long metricValue) {
+        writeGauge(metricName, metricValue.doubleValue());
+    }
+
+    private void writeGauge(String metricName, Double metricValue) {
+        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO node_metrics_gauges(node_id, metric_name, metric_value, created_at) " +
+                        "VALUES(:node_id, :metric_name, :metric_value, :created_at)")
+                .bind("node_id", nzyme.getNodeInformation().id())
+                .bind("metric_name", metricName)
+                .bind("metric_value", metricValue)
+                .bind("created_at", DateTime.now())
+                .execute()
+        );
     }
 
     public UUID getLocalNodeId() {

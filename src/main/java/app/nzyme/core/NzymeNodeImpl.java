@@ -68,8 +68,6 @@ import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMoni
 import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateCleaner;
 import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateWriter;
 import app.nzyme.core.periodicals.alerting.tracks.SignalTrackMonitor;
-import app.nzyme.core.periodicals.measurements.MeasurementsCleaner;
-import app.nzyme.core.periodicals.measurements.MeasurementsWriter;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.ouis.OUIUpdater;
 import app.nzyme.core.periodicals.PeriodicalManager;
@@ -357,8 +355,6 @@ public class NzymeNodeImpl implements NzymeNode {
         PeriodicalManager periodicalManager = new PeriodicalManager();
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
-        periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);

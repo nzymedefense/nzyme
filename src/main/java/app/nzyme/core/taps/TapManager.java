@@ -245,7 +245,7 @@ public class TapManager {
     }
 
     private void writeGauge(String tapName, String metricName, Double metricValue, DateTime timestamp) {
-        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
+        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
                         "VALUES(:tap_name, :metric_name, :metric_value, :created_at)")
                 .bind("tap_name", tapName)
                 .bind("metric_name", metricName)
@@ -257,8 +257,8 @@ public class TapManager {
 
     private void retentionClean() {
         nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM metrics_gauges WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(72)) // TODO
+            handle.createUpdate("DELETE FROM tap_metrics_gauges WHERE created_at < :created_at")
+                    .bind("created_at", DateTime.now().minusHours(24))
                     .execute();
         });
     }
@@ -285,7 +285,7 @@ public class TapManager {
     public TapMetrics findMetricsOfTap(String tapName) {
         List<TapMetricsGauge> gauges = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_name, metric_value, created_at " +
-                        "FROM metrics_gauges WHERE tap_name = :tap_name AND created_at > :created_at " +
+                        "FROM tap_metrics_gauges WHERE tap_name = :tap_name AND created_at > :created_at " +
                         "ORDER BY metric_name, created_at DESC")
                         .bind("tap_name", tapName)
                         .bind("created_at", DateTime.now().minusMinutes(1))
@@ -300,9 +300,10 @@ public class TapManager {
         Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
 
         List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket FROM metrics_gauges " +
-                        "WHERE tap_name = :tap_name AND metric_name = :metric_name AND created_at > :created_at " +
-                        "GROUP BY bucket ORDER BY bucket DESC")
+                handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
+                                "MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
+                                "FROM tap_metrics_gauges WHERE tap_name = :tap_name AND metric_name = :metric_name " +
+                                "AND created_at > :created_at GROUP BY bucket ORDER BY bucket DESC")
                         .bind("bucket_size", bucketSize.toString().toLowerCase())
                         .bind("tap_name", tapName)
                         .bind("metric_name", metricName)
