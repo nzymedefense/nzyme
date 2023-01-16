@@ -27,10 +27,17 @@ public class NodeInformation {
 
         OSProcess currentProcess = s.getOperatingSystem().getCurrentProcess();
 
+        long heapMax = Runtime.getRuntime().maxMemory();
+        long heapFree = Runtime.getRuntime().freeMemory();
+        long heapSize = Runtime.getRuntime().totalMemory();
+
         return Info.create(
                 memory.getTotal(),
                 memory.getAvailable(),
                 memory.getTotal()-memory.getAvailable(),
+                heapMax,
+                heapFree,
+                heapSize-heapFree,
                 cpuSystemLoad,
                 cpu.getLogicalProcessorCount(),
                 new DateTime(currentProcess.getStartTime()),
@@ -48,6 +55,11 @@ public class NodeInformation {
         public abstract long memoryAvailable();
         public abstract long memoryUsed();
 
+        // Heap.
+        public abstract long heapTotal();
+        public abstract long heapAvailable();
+        public abstract long heapUsed();
+
         // CPU.
         public abstract double cpuSystemLoad();
         public abstract int cpuThreadCount();
@@ -60,11 +72,14 @@ public class NodeInformation {
         // OS.
         public abstract String osInformation();
 
-        public static Info create(long memoryTotal, long memoryAvailable, long memoryUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation) {
+        public static Info create(long memoryTotal, long memoryAvailable, long memoryUsed, long heapTotal, long heapAvailable, long heapUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation) {
             return builder()
                     .memoryTotal(memoryTotal)
                     .memoryAvailable(memoryAvailable)
                     .memoryUsed(memoryUsed)
+                    .heapTotal(heapTotal)
+                    .heapAvailable(heapAvailable)
+                    .heapUsed(heapUsed)
                     .cpuSystemLoad(cpuSystemLoad)
                     .cpuThreadCount(cpuThreadCount)
                     .processStartTime(processStartTime)
@@ -86,6 +101,12 @@ public class NodeInformation {
 
             public abstract Builder memoryUsed(long memoryUsed);
 
+            public abstract Builder heapTotal(long heapTotal);
+
+            public abstract Builder heapAvailable(long heapAvailable);
+
+            public abstract Builder heapUsed(long heapUsed);
+
             public abstract Builder cpuSystemLoad(double cpuSystemLoad);
 
             public abstract Builder cpuThreadCount(int cpuThreadCount);
@@ -100,6 +121,7 @@ public class NodeInformation {
 
             public abstract Info build();
         }
+
     }
 
 }

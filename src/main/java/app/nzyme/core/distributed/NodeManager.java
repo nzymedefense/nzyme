@@ -71,9 +71,6 @@ public class NodeManager {
         }
 
         NodeInformation.Info ni = new NodeInformation().collect();
-        long heapSize = Runtime.getRuntime().totalMemory();
-        long heapMax = Runtime.getRuntime().maxMemory();
-        long heapFree = Runtime.getRuntime().freeMemory();
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO nodes(uuid, name, http_external_uri, version, last_seen, " +
@@ -99,9 +96,9 @@ public class NodeManager {
                         .bind("memory_bytes_total", ni.memoryTotal())
                         .bind("memory_bytes_available", ni.memoryAvailable())
                         .bind("memory_bytes_used", ni.memoryUsed())
-                        .bind("heap_bytes_total", heapMax)
-                        .bind("heap_bytes_available", heapFree)
-                        .bind("heap_bytes_used", heapSize)
+                        .bind("heap_bytes_total", ni.heapTotal())
+                        .bind("heap_bytes_available", ni.heapAvailable())
+                        .bind("heap_bytes_used", ni.heapUsed())
                         .bind("cpu_system_load", ni.cpuSystemLoad())
                         .bind("cpu_thread_count", ni.cpuThreadCount())
                         .bind("process_start_time", ni.processStartTime())
@@ -154,16 +151,13 @@ public class NodeManager {
     private void writeMetrics() {
         try {
             NodeInformation.Info ni = new NodeInformation().collect();
-            long heapSize = Runtime.getRuntime().totalMemory();
-            long heapMax = Runtime.getRuntime().maxMemory();
-            long heapFree = Runtime.getRuntime().freeMemory();
 
             writeGauge("memory_bytes_total", ni.memoryTotal());
             writeGauge("memory_bytes_available", ni.memoryAvailable());
             writeGauge("memory_bytes_used", ni.memoryUsed());
-            writeGauge("heap_bytes_total", heapMax);
-            writeGauge("heap_bytes_available", heapFree);
-            writeGauge("heap_bytes_used", heapSize);
+            writeGauge("heap_bytes_total", ni.heapTotal());
+            writeGauge("heap_bytes_available", ni.heapAvailable());
+            writeGauge("heap_bytes_used", ni.heapUsed());
             writeGauge("cpu_system_load", ni.cpuSystemLoad());
             writeGauge("process_virtual_size", ni.processVirtualSize());
         } catch(Exception e) {
