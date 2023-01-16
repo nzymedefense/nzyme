@@ -7,8 +7,6 @@ import app.nzyme.core.alerts.UnknownSSIDAlert;
 import app.nzyme.core.dot11.Dot11MetaInformation;
 import app.nzyme.core.dot11.MalformedFrameException;
 import app.nzyme.core.dot11.interceptors.misc.PwnagotchiAdvertisement;
-import app.nzyme.core.events.BrokenProbeEvent;
-import app.nzyme.core.events.StartupEvent;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -42,9 +40,6 @@ public class TacticalSummaryReportTest {
         nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "Centurion_Lounge", "8F:F0:17:E8:68:28", 11, 1234, 0));
         nzyme.getAlertsService().handle(UnknownSSIDAlert.create(new DateTime(), "United_WiFi", "9C:29:9E:C7:74:52", 11, 1234, 0));
         nzyme.getAlertsService().handle(PwnagotchiAdvertisementAlert.create(new DateTime(), PwnagotchiAdvertisement.create("james", "1.1", "123", 0D, 0, 0), 11, 1234, 0, 1));
-
-        nzyme.getEventService().recordEvent(new StartupEvent());
-        nzyme.getEventService().recordEvent(new BrokenProbeEvent("foo-probe-1", "foo,bar"));
 
         TacticalSummaryReport.Report report = new TacticalSummaryReport.Report();
         report.runReport(nzyme, null);

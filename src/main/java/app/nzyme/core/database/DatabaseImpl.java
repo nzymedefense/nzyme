@@ -14,7 +14,6 @@ import app.nzyme.core.dot11.networks.signalstrength.SignalIndexHistogramHistoryD
 import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
-import app.nzyme.core.events.db.EventRecordMapper;
 import app.nzyme.core.measurements.mappers.MeasurementMapper;
 import app.nzyme.core.reporting.db.ExecutionLogEntryMapper;
 import app.nzyme.core.reporting.db.ScheduledReportEntryMapper;
@@ -77,7 +76,6 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ContactMapper())
                 .registerRowMapper(new SentrySSIDMapper())
                 .registerRowMapper(new DeauthenticationMonitorRecordingMapper())
-                .registerRowMapper(new EventRecordMapper())
                 .registerRowMapper(new ScheduledReportEntryMapper())
                 .registerRowMapper(new ExecutionLogEntryMapper())
                 .registerRowMapper(new ContactRecordMapper())

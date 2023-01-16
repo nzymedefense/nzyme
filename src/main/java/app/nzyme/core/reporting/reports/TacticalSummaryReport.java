@@ -25,7 +25,6 @@ import com.google.common.collect.Maps;
 import freemarker.template.Template;
 import app.nzyme.core.alerts.Alert;
 import app.nzyme.core.dot11.networks.sentry.db.SentrySSID;
-import app.nzyme.core.events.Event;
 import app.nzyme.core.reporting.ReportBase;
 import app.nzyme.core.reporting.ReportJob;
 import org.apache.logging.log4j.LogManager;
@@ -71,8 +70,6 @@ public class TacticalSummaryReport extends ReportBase {
                 parameters.put("networks", buildNetworks(nzyme));
                 parameters.put("alerts", alerts);
                 parameters.put("alerts_count", alerts.size());
-                parameters.put("system_restarts", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.STARTUP));
-                parameters.put("probe_malfunctions", nzyme.getEventService().countAllOfTypeOfLast24Hours(Event.TYPE.BROKEN_PROBE));
 
                 Template template = getTemplateConfig().getTemplate("reports/tactical_summary_report.ftl");
 

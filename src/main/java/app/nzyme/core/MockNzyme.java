@@ -46,9 +46,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.EventService;
-import app.nzyme.core.events.ShutdownEvent;
-import app.nzyme.core.events.StartupEvent;
 import app.nzyme.core.notifications.Notification;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
@@ -104,7 +101,6 @@ public class MockNzyme implements NzymeNode {
     private final FrameProcessor frameProcessor;
     private final Anonymizer anonymizer;
     private final Sentry sentry;
-    private final EventService eventService;
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
 
@@ -185,12 +181,10 @@ public class MockNzyme implements NzymeNode {
         } else {
             this.sentry = new Sentry(this, sentryInterval);
         }
-        this.eventService = new EventService(this);
     }
 
     @Override
     public void initialize() {
-        eventService.recordEvent(new StartupEvent());
         try {
             this.crypto.initialize();
         } catch (Crypto.CryptoInitializationException e) {
@@ -200,7 +194,6 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public void shutdown() {
-        eventService.recordEvent(new ShutdownEvent());
     }
 
     @Override
@@ -338,11 +331,6 @@ public class MockNzyme implements NzymeNode {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
-    }
-
-    @Override
-    public EventService getEventService() {
-        return eventService;
     }
 
     @Override

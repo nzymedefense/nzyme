@@ -35,7 +35,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.EventService;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.processing.FrameProcessor;
@@ -93,7 +92,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     GroundStation getGroundStation();
 
     SystemStatus getSystemStatus();
-    EventService getEventService();
+
     SchedulingService getSchedulingService();
 
     OUIManager getOUIManager();

@@ -1312,4 +1312,8 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="drop_events" author="lennartkoopmann">
+        <dropTable tableName="events" />
+    </changeSet>
+
 </databaseChangeLog>

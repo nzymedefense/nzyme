@@ -60,7 +60,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.*;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.*;
 import app.nzyme.core.notifications.Notification;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.notifications.uplinks.UplinkFactory;
@@ -152,7 +151,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final MetricRegistry metrics;
     private final MemoryRegistry memoryRegistry;
     private final SystemStatus systemStatus;
-    private final EventService eventService;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
@@ -232,7 +230,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.memoryRegistry = new MemoryRegistry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
-        this.eventService = new EventService(this);
         this.networks = new Networks(this);
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
@@ -270,14 +267,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.trackerManager = new TrackerManager();
 
-        // Register event callbacks.
-        this.eventService.subscribe(Event.TYPE.BROKEN_PROBE, event -> {
-            BrokenProbeEvent bpe = (BrokenProbeEvent) event;
-            getAlertsService().handle(
-                    ProbeFailureAlert.create(DateTime.now(), bpe.getProbeName(), bpe.getErrorDescription())
-            );
-        });
-
         // Disable TRAINING status when training period is over.
         LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
@@ -294,8 +283,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
-
-        eventService.recordEvent(new StartupEvent());
 
         try {
             this.crypto.initialize();
@@ -359,7 +346,6 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 1, 1, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
@@ -517,8 +503,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.systemStatus.unsetStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.SHUTTING_DOWN);
-
-        eventService.recordEvent(new ShutdownEvent());
 
         // Shutdown REST API.
         if (httpServer != null) {
@@ -723,11 +707,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public SystemStatus getSystemStatus() {
         return systemStatus;
-    }
-
-    @Override
-    public EventService getEventService() {
-        return eventService;
     }
 
     @Override
