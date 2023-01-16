@@ -112,7 +112,7 @@ public class NodeManager {
     public List<Node> getActiveNodes() {
         List<NodeEntry> dbEntries = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM nodes WHERE last_seen > :timeout ORDER BY name DESC")
-                        .bind("timeout", DateTime.now().minusSeconds(30))
+                        .bind("timeout", DateTime.now().minusHours(24))
                         .mapTo(NodeEntry.class)
                         .list()
         );

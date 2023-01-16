@@ -30,8 +30,6 @@ function NodesPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>All Nodes</h3>
-
                 <NodesTable nodes={nodes} />
               </div>
             </div>

@@ -13,6 +13,9 @@ public abstract class NodeResponse {
     @JsonProperty("name")
     public abstract String name();
 
+    @JsonProperty("active")
+    public abstract Boolean active();
+
     @JsonProperty("http_external_uri")
     public abstract String httpExternalUri();
 
@@ -58,10 +61,11 @@ public abstract class NodeResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static NodeResponse create(String uuid, String name, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
         return builder()
                 .uuid(uuid)
                 .name(name)
+                .active(active)
                 .httpExternalUri(httpExternalUri)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
@@ -89,6 +93,8 @@ public abstract class NodeResponse {
         public abstract Builder uuid(String uuid);
 
         public abstract Builder name(String name);
+
+        public abstract Builder active(Boolean active);
 
         public abstract Builder httpExternalUri(String httpExternalUri);
 
@@ -122,4 +128,5 @@ public abstract class NodeResponse {
 
         public abstract NodeResponse build();
     }
+
 }

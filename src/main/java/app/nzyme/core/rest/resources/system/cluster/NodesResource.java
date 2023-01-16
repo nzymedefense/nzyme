@@ -6,6 +6,7 @@ import app.nzyme.core.rest.responses.system.NodeResponse;
 import app.nzyme.core.rest.responses.system.NodesListResponse;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -30,6 +31,7 @@ public class NodesResource {
             nodes.add(NodeResponse.create(
                     node.uuid().toString(),
                     node.name(),
+                    node.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
                     node.httpExternalUri().toString(),
                     node.memoryBytesTotal(),
                     node.memoryBytesAvailable(),

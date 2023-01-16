@@ -300,3 +300,7 @@ div.bg-threatlevelmidnight div.text-overlay div.form-switch {
 .collapsing {
     transition: none !important;
 }
+
+label.form-check-label {
+   padding-top: 2px;
+}
