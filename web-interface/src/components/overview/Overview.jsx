@@ -4,7 +4,6 @@ import LoadingSpinner from '../misc/LoadingSpinner'
 import ActiveAlertsWidget from './widgets/ActiveAlertsWidget'
 import ActiveContactsWidget from './widgets/ActiveContactsWidget'
 import SystemStatusWidget from './widgets/SystemStatusWidget'
-import FrameThroughputWidget from './widgets/FrameThroughputWidget'
 import AlertsTable from '../alerts/AlertsTable'
 import ProbesTable from '../system/ProbesTable'
 import DashboardService from '../../services/DashboardService'
@@ -53,13 +52,6 @@ class Overview extends React.Component {
 
                     <div className="col-md-4">
                         <SystemStatusWidget systemHealthStatus={this.state.dashboard.system_health_status} />
-                    </div>
-                </div>
-
-                <div className="row mt-md-3">
-                    <div className="col-md-12">
-                        <h4>802.11 Frame Throughput</h4>
-                        <FrameThroughputWidget frameThroughputHistogram={this.state.dashboard.frame_throughput_histogram} />
                     </div>
                 </div>
 

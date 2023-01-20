@@ -25,8 +25,6 @@ import app.nzyme.core.bandits.engine.ContactRecordAggregation;
 import app.nzyme.core.bandits.engine.ContactRecorder;
 import app.nzyme.core.dot11.deauth.db.DeauthenticationMonitorRecording;
 import app.nzyme.core.dot11.probes.Dot11Probe;
-import app.nzyme.core.measurements.Measurement;
-import app.nzyme.core.measurements.MeasurementType;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.responses.alerts.AlertDetailsResponse;
 import app.nzyme.core.rest.responses.alerts.AlertsListResponse;
@@ -79,13 +77,6 @@ public class DashboardResource {
 
         SystemStatus.HEALTH systemHealthStatus = nzyme.getSystemStatus().decideHealth(nzyme);
 
-        Map<String, Long> frameThroughputHistogram = buildMeasurementHistogram(nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery(MEASUREMENTS_QUERY)
-                        .bind(0, MeasurementType.DOT11_FRAME_COUNT)
-                        .mapTo(Measurement.class)
-                        .list()
-        ));
-
         Map<String, Long> deauthHistogram = buildDeauthHistogram(nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery(DEAUTH_QUERY)
                         .mapTo(DeauthenticationMonitorRecording.class)
@@ -137,7 +128,6 @@ public class DashboardResource {
                         activeAlerts,
                         activeContacts,
                         systemHealthStatus,
-                        frameThroughputHistogram,
                         deauthHistogram,
                         nzyme.getConfiguration().deauth() == null ? null : nzyme.getConfiguration().deauth().globalThreshold(),
                         AlertsListResponse.create(alerts.size(), alerts),
@@ -145,18 +135,6 @@ public class DashboardResource {
                         ProbesListResponse.create(probes.size(), probes)
                 )
         ).build();
-    }
-
-    private Map<String, Long> buildMeasurementHistogram(List<Measurement> measurements) {
-        Map<String, Long> clientCountHistogram = buildEmptyDailyHistogram();
-
-        if (measurements != null && !measurements.isEmpty()) {
-            for (Measurement measurement : measurements) {
-                clientCountHistogram.put(measurement.createdAt().withZone(DateTimeZone.UTC).withSecondOfMinute(0).withMillisOfSecond(0).toString(), measurement.value());
-            }
-        }
-
-        return clientCountHistogram;
     }
 
     private Map<String, Long> buildDeauthHistogram(List<DeauthenticationMonitorRecording> recordings) {

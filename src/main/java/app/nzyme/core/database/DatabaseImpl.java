@@ -14,7 +14,6 @@ import app.nzyme.core.dot11.networks.signalstrength.SignalIndexHistogramHistoryD
 import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
-import app.nzyme.core.measurements.mappers.MeasurementMapper;
 import app.nzyme.core.reporting.db.ExecutionLogEntryMapper;
 import app.nzyme.core.reporting.db.ScheduledReportEntryMapper;
 import app.nzyme.core.taps.db.*;
@@ -67,7 +66,6 @@ public class DatabaseImpl implements Database {
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
-                .registerRowMapper(new MeasurementMapper())
                 .registerRowMapper(new BeaconRateMapper())
                 .registerRowMapper(new SignalIndexHistogramHistoryDBEntryMapper())
                 .registerRowMapper(new AlertDatabaseEntryMapper())
