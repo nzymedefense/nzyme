@@ -73,13 +73,9 @@ function Sidebar () {
                         title="Cluster &amp; Nodes"
                         icon={<i className="fa-solid fa-circle-nodes" />} />
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.LEADER}
-                        title="Leader"
-                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
-                    <NavigationLink
                         href={ApiRoutes.SYSTEM.TAPS.INDEX}
                         title="Taps"
-                        icon={<i className="fa-solid fa-circle-nodes fa-icon" />} />
+                        icon={<i className="fa-solid fa-server fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.AUTHENTICATION}
                         title="Authentication"

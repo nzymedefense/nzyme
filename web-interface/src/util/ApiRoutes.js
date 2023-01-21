@@ -1,7 +1,6 @@
 const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
-    LEADER: '/system/leader',
     VERSION: '/system/version',
     AUTHENTICATION: '/system/authentication',
     TAPS: {
