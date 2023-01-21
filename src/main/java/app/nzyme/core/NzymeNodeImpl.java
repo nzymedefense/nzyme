@@ -36,7 +36,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.alerts.Alert;
-import app.nzyme.core.alerts.ProbeFailureAlert;
 import app.nzyme.core.alerts.service.AlertsService;
 import app.nzyme.core.bandits.engine.ContactManager;
 import app.nzyme.core.bandits.trackers.GroundStation;
@@ -115,7 +114,6 @@ import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
 import java.io.File;
@@ -398,7 +396,6 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(BanditsResource.class);
         resourceConfig.register(ProbesResource.class);
         resourceConfig.register(TrackersResource.class);
-        resourceConfig.register(MetricsResource.class);
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
