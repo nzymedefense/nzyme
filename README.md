@@ -1,26 +1,11 @@
-# nzyme - WiFi Defense System
+# nzyme - Network Defense System
+
 [![Codecov](https://img.shields.io/codecov/c/github/lennartkoopmann/nzyme.svg)](https://codecov.io/gh/lennartkoopmann/nzyme/)
 [![License](https://img.shields.io/badge/license-SSPL-brightgreen)](http://www.mongodb.com/licensing/server-side-public-license)
 
-![Screenshot](screenshot.png)
+Learn more at https://www.nzyme.org/.
 
-## Introduction
-
-### What is nzyme?
-
-The nzyme project uses WiFi adapters in monitor mode to scan the frequencies for suspicious behavior, specifically rogue access points and known WiFi attack platforms. Each recorded wireless frame is parsed and optionally sent to a [Graylog](https://www.graylog.org/) log management system for long-term storage that allows you to perform forensics and incident response. Ever wondered what to do if you catch a malicious wireless actor? With nzyme, you will be able to reconstruct what happened, who was targeted, and who was successfully compromised.
-
-Several [types of alerts](https://go.nzyme.org/alerting) are automatically raised. The employed techniques range from signature based analysis of expected network infrastructure, threat landscape assessment with fingerprinting to setting traps with deception capabilities.
-
-### What is nzyme not?
-
-nzyme is not designed to be physically moving around in any way. It is supposed to stay stationary and constantly observe the WiFi radio frequency spectrum. If you are looking for a WiFi recon or wardriving tool, you should check out [Kismet](https://www.kismetwireless.net/).
-
-(It obviously won't break from moving around but the interface and some of the functionality won't make much sense anymore.)
-
-## Getting Started
-
-Please visit the [getting started page](https://www.nzyme.org/docs/intro) to get started.
+**Version 2.0.0 of nzyme is currently in development. The previous website for v1.x is archived [here](https://v1.nzyme.org/).**
 
 ## Contributing
 
@@ -39,7 +24,7 @@ Please be aware of the [Code of Conduct](CODE_OF_CONDUCT.md) that will be enforc
 
 ## Legal notice
 
-Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data on license-free frequencies.
+Make sure to comply with local laws, especially with regards to wiretapping, when running nzyme. Note that nzyme is never decrypting any data but only reading unencrypted data.
 
 ## Sponsors
 
