@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -146,6 +147,45 @@ public class NodeManager {
         }
 
         return nodes;
+    }
+
+    public Optional<Node> getNode(UUID nodeId) {
+        Optional<NodeEntry> result = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM nodes WHERE uuid = :uuid")
+                        .bind("uuid", nodeId)
+                        .mapTo(NodeEntry.class)
+                        .findFirst()
+        );
+
+        if (result.isPresent()) {
+            NodeEntry ne = result.get();
+            try {
+                URI httpExternalUri = URI.create(ne.httpExternalUri());
+                return Optional.of(Node.create(
+                        ne.uuid(),
+                        ne.name(),
+                        httpExternalUri,
+                        ne.memoryBytesTotal(),
+                        ne.memoryBytesAvailable(),
+                        ne.memoryBytesUsed(),
+                        ne.heapBytesTotal(),
+                        ne.heapBytesAvailable(),
+                        ne.heapBytesUsed(),
+                        ne.cpuSystemLoad(),
+                        ne.cpuThreadCount(),
+                        ne.processStartTime(),
+                        ne.processVirtualSize(),
+                        ne.processArguments(),
+                        ne.osInformation(),
+                        ne.version(),
+                        ne.lastSeen()
+                ));
+            } catch (Exception e) {
+                throw new RuntimeException("Could not create node from database entry.", e);
+            }
+        } else {
+            return Optional.empty();
+        }
     }
 
     private void writeMetrics() {
