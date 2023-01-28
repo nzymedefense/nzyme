@@ -308,3 +308,7 @@ div.bg-threatlevelmidnight div.text-overlay div.form-switch {
 label.form-check-label {
    padding-top: 2px;
 }
+
+div.node-metrics-gauge-summary {
+    text-align: center;
+}

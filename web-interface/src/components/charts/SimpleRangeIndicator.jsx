@@ -4,9 +4,20 @@ import Store from "../../util/Store";
 
 function SimpleRangeIndicator(props) {
 
-  var suffix = props.suffix ? props.suffix : undefined
-  var valueformat = props.valueformat ? props.valueformat : undefined
-  var tickformat = props.tickformat ? props.tickformat : undefined
+  const suffix = props.suffix ? props.suffix : undefined
+  const valueformat = props.valueformat ? props.valueformat : undefined
+  const tickformat = props.tickformat ? props.tickformat : undefined
+
+  const colors = {}
+  if (Store.get('dark_mode')) {
+    colors.background = '#2B2D42'
+    colors.text = '#FFFFFF'
+    colors.bar = '#0D6EFD'
+  } else {
+    colors.background = '#ffffff'
+    colors.text = '#212529'
+    colors.bar = '#0D6EFD'
+  }
 
   var data = [
     {
@@ -15,22 +26,9 @@ function SimpleRangeIndicator(props) {
       type: "indicator",
       mode: "gauge+number",
       number: { suffix: suffix, font: { size: 34 }, valueformat: valueformat },
-      gauge: { axis: { range: props.range, ticksuffix: suffix, tickformat: tickformat } }
+      gauge: { axis: { range: props.range, ticksuffix: suffix, tickformat: tickformat }, bar: {color: colors.bar} }
     }
   ]
-
-  const colors = {}
-  if (Store.get('dark_mode')) {
-    colors.background = '#2B2D42'
-    colors.text = '#ffffff'
-    colors.lines = '#8D99AE'
-    colors.grid = '#8D99AE'
-  } else {
-    colors.background = '#ffffff'
-    colors.text = '#212529'
-    colors.lines = '#212529'
-    colors.grid = '#e3e3e3'
-  }
 
   return (
       <Plot

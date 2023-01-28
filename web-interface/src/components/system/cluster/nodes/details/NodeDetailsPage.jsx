@@ -5,6 +5,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import NodeInactiveWarning from "./NodeInactiveWarning";
 import Routes from "../../../../../util/ApiRoutes";
 import moment from "moment/moment";
+import numeral from "numeral";
 import ProcessArguments from "./ProcessArguments";
 import CpuLoadChart from "./CpuLoadChart";
 import MemoryUseChart from "./MemoryUseChart";
@@ -104,6 +105,10 @@ function NodeDetailsPage() {
               <div className="card-body">
                 <h3>System CPU Load</h3>
                 <CpuLoadChart load={node.cpu_system_load} />
+
+                <div className="node-metrics-gauge-summary">
+                  {numeral(node.cpu_system_load).format("0")}% system CPU load
+                </div>
               </div>
             </div>
           </div>
@@ -113,6 +118,11 @@ function NodeDetailsPage() {
               <div className="card-body">
                 <h3>System Memory Use</h3>
                 <MemoryUseChart total={node.memory_bytes_total} used={node.memory_bytes_used} />
+
+                <div className="node-metrics-gauge-summary">
+                  {numeral(node.memory_bytes_used).format("0.0b")} of {' '}
+                  {numeral(node.memory_bytes_total).format("0.0b")} system memory used
+                </div>
               </div>
             </div>
           </div>
@@ -122,6 +132,11 @@ function NodeDetailsPage() {
               <div className="card-body">
                 <h3>JVM Heap Memory Use</h3>
                 <MemoryUseChart total={node.heap_bytes_total} used={node.heap_bytes_used} />
+
+                <div className="node-metrics-gauge-summary">
+                  {numeral(node.heap_bytes_used).format("0.0b")} of {' '}
+                  {numeral(node.heap_bytes_total).format("0.0b")} system memory used
+                </div>
               </div>
             </div>
           </div>
