@@ -4,6 +4,10 @@ body {
     background-color: #edf2f4;
 }
 
+code {
+    color: #212529;
+}
+
 .bg-danger {
     background-color: #EF233C !important;
 }

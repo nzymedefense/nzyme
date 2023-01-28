@@ -8,6 +8,12 @@ class ClusterService {
     })
   }
 
+  findNode(nodeUuid, setNode) {
+    RESTClient.get('/system/cluster/nodes/show/' + nodeUuid, {}, function (response) {
+      setNode(response.data)
+    })
+  }
+
 }
 
 export default ClusterService

@@ -53,6 +53,7 @@ import CryptoSummaryPage from './components/system/crypto/CryptoSummaryPage'
 import MonitoringPage from './components/system/monitoring/MonitoringPage'
 import PrometheusMetricsPage from './components/system/monitoring/prometheus/PrometheusMetricsPage'
 import NodesPage from "./components/system/cluster/nodes/NodesPage";
+import NodeDetailsPage from "./components/system/cluster/nodes/details/NodeDetailsPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -152,6 +153,7 @@ class App extends React.Component {
 
                                             { /* System/Cluster */ }
                                             <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
+                                            <Route path={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(':uuid')} element={<NodeDetailsPage />} />
 
                                             { /* Ethernet/DNS. */}
                                             <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

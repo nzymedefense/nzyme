@@ -18,7 +18,10 @@ const ApiRoutes = {
       }
     },
     CLUSTER: {
-      INDEX: '/system/cluster'
+      INDEX: '/system/cluster',
+      NODES: {
+        DETAILS: uuid => `/system/cluster/nodes/show/${uuid}`,
+      }
     }
   },
   REPORTING: {

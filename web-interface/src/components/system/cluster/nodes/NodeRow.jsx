@@ -2,6 +2,7 @@ import React from "react";
 
 import numeral from "numeral";
 import moment from "moment/moment";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function NodeRow(props) {
 
@@ -11,7 +12,7 @@ function NodeRow(props) {
   if (node.active) {
     return (
         <tr>
-          <td><a href="#">{node.name}</a></td>
+          <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
           <td>{numeral(node.cpu_system_load).format("0.0")}%</td>
           <td>
             {numeral(node.memory_bytes_used).format("0.0b")} of {numeral(node.memory_bytes_total).format("0.0b")}{' '}
@@ -29,9 +30,7 @@ function NodeRow(props) {
     if (showOfflineNodes) {
       return (
           <tr>
-            <td>
-              <a href="#">{node.name}</a>
-            </td>
+            <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
             <td colSpan={5} style={{"textAlign": "center"}} title={moment(node.last_seen).format()}>
               <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
               Last seen {moment(node.last_seen).fromNow()}

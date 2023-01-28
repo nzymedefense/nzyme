@@ -65,7 +65,7 @@ public class NodesResource {
         return NodeResponse.create(
                 node.uuid().toString(),
                 node.name(),
-                node.lastSeen().isAfter(DateTime.now().minusMinutes(5)),
+                node.lastSeen().isAfter(DateTime.now().minusMinutes(2)),
                 node.httpExternalUri().toString(),
                 node.memoryBytesTotal(),
                 node.memoryBytesAvailable(),
