@@ -312,3 +312,8 @@ label.form-check-label {
 div.node-metrics-gauge-summary {
     text-align: center;
 }
+
+div.node-process-arguments .btn-link {
+    padding: 0;
+    font-size: 13px;
+}
