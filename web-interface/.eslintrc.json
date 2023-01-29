@@ -26,7 +26,11 @@
             "rules": {
                 "padded-blocks": "off",
                 "react/prop-types": "off",
-                "react/no-deprecated": "off"
+                "react/no-deprecated": "off",
+                "quotes": "off",
+                "semi": "off",
+                "object-curly-spacing": "off",
+                "space-before-function-paren": "off"
             }
         }
    ],
