@@ -69,17 +69,21 @@ function Sidebar () {
 
                 <SidebarSubmenu title="System" subhref="/system" icon={<i className="fa-solid fa-screwdriver-wrench fa-icon" />}>
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.LEADER}
-                        title="Leader"
-                        icon={<i className="fa-solid fa-stethoscope fa-icon" />} />
+                        href={ApiRoutes.SYSTEM.CLUSTER.INDEX}
+                        title="Cluster &amp; Nodes"
+                        icon={<i className="fa-solid fa-circle-nodes" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.TAPS.INDEX}
                         title="Taps"
-                        icon={<i className="fa-solid fa-circle-nodes fa-icon" />} />
+                        icon={<i className="fa-solid fa-server fa-icon" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.AUTHENTICATION}
                         title="Authentication"
                         icon={<i className="fa-solid fa-users fa-icon" />} />
+                    <NavigationLink
+                        href="/foo"
+                        title="Database"
+                        icon={<i className="fa-solid fa-database" />} />
                     <NavigationLink
                         href={ApiRoutes.SYSTEM.MONITORING.INDEX}
                         title="Monitoring &amp; Metrics"

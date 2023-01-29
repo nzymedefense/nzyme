@@ -1,6 +1,8 @@
 package app.nzyme.core.database;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
+import app.nzyme.core.distributed.database.NodeMapper;
+import app.nzyme.core.distributed.database.metrics.NodeMetricsGaugeAggregationMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
@@ -13,8 +15,6 @@ import app.nzyme.core.dot11.networks.signalstrength.SignalIndexHistogramHistoryD
 import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
-import app.nzyme.core.events.db.EventRecordMapper;
-import app.nzyme.core.measurements.mappers.MeasurementMapper;
 import app.nzyme.core.reporting.db.ExecutionLogEntryMapper;
 import app.nzyme.core.reporting.db.ScheduledReportEntryMapper;
 import app.nzyme.core.taps.db.*;
@@ -67,7 +67,6 @@ public class DatabaseImpl implements Database {
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
-                .registerRowMapper(new MeasurementMapper())
                 .registerRowMapper(new BeaconRateMapper())
                 .registerRowMapper(new SignalIndexHistogramHistoryDBEntryMapper())
                 .registerRowMapper(new AlertDatabaseEntryMapper())
@@ -76,7 +75,6 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ContactMapper())
                 .registerRowMapper(new SentrySSIDMapper())
                 .registerRowMapper(new DeauthenticationMonitorRecordingMapper())
-                .registerRowMapper(new EventRecordMapper())
                 .registerRowMapper(new ScheduledReportEntryMapper())
                 .registerRowMapper(new ExecutionLogEntryMapper())
                 .registerRowMapper(new ContactRecordMapper())
@@ -92,7 +90,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSStatisticsBucketMapper())
                 .registerRowMapper(new DNSTrafficSummaryMapper())
                 .registerRowMapper(new DNSPairSummaryMapper())
-                .registerRowMapper(new PGPKeyFingerprintMapper());
+                .registerRowMapper(new PGPKeyFingerprintMapper())
+                .registerRowMapper(new NodeMapper())
+                .registerRowMapper(new NodeMetricsGaugeAggregationMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

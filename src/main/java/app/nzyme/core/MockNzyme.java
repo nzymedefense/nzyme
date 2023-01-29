@@ -17,7 +17,9 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
@@ -44,9 +46,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.EventService;
-import app.nzyme.core.events.ShutdownEvent;
-import app.nzyme.core.events.StartupEvent;
 import app.nzyme.core.notifications.Notification;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
@@ -63,6 +62,7 @@ import liquibase.exception.LiquibaseException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
@@ -79,7 +79,9 @@ public class MockNzyme implements NzymeNode {
         return new File(resource.getFile());
     }
 
-    private final String nodeID;
+    private final NodeManager nodeManager;
+
+    private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
     private final SystemStatus systemStatus;
@@ -99,8 +101,8 @@ public class MockNzyme implements NzymeNode {
     private final FrameProcessor frameProcessor;
     private final Anonymizer anonymizer;
     private final Sentry sentry;
-    private final EventService eventService;
     private final BaseConfigurationService configurationService;
+    private final Path dataDirectory;
 
     private final Crypto crypto;
 
@@ -110,7 +112,6 @@ public class MockNzyme implements NzymeNode {
 
     public MockNzyme(int sentryInterval) {
         this.version = new Version();
-        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         try {
             String configFile = "nzyme-test-complete-valid.conf.test";
@@ -120,23 +121,34 @@ public class MockNzyme implements NzymeNode {
             }
 
             this.configuration = new NodeConfigurationLoader(loadFromResourceFile(configFile), false).get();
+            this.dataDirectory = Path.of("test_data_dir");
         } catch (InvalidConfigurationException | IncompleteConfigurationException | FileNotFoundException e) {
             throw new RuntimeException("Could not load test config file from resources.", e);
         }
-
-        this.nodeID = "mocky-mock";
-
-        this.uplinks = Lists.newArrayList();
-        this.forwarders = Lists.newArrayList();
-
-        this.frameProcessor = new FrameProcessor();
-
         this.database = new DatabaseImpl(configuration);
+
         try {
             this.database.initializeAndMigrate();
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }
+
+        this.nodeManager = new NodeManager(this);
+        try {
+            this.nodeManager.initialize();
+        } catch (NodeManager.NodeInitializationException e) {
+            throw new RuntimeException(e);
+        }
+
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), "mocky-mock");
+
+        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
+
+        this.uplinks = Lists.newArrayList();
+        this.forwarders = Lists.newArrayList();
+
+        this.frameProcessor = new FrameProcessor();
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
 
@@ -169,12 +181,10 @@ public class MockNzyme implements NzymeNode {
         } else {
             this.sentry = new Sentry(this, sentryInterval);
         }
-        this.eventService = new EventService(this);
     }
 
     @Override
     public void initialize() {
-        eventService.recordEvent(new StartupEvent());
         try {
             this.crypto.initialize();
         } catch (Crypto.CryptoInitializationException e) {
@@ -184,12 +194,11 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public void shutdown() {
-        eventService.recordEvent(new ShutdownEvent());
     }
 
     @Override
-    public String getNodeID() {
-        return nodeID;
+    public NodeManager getNodeManager() {
+        return nodeManager;
     }
 
     @Override
@@ -252,6 +261,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public BaseConfigurationService getConfigurationService() {
         return configurationService;
+    }
+
+    @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
     }
 
     @Override
@@ -320,11 +334,6 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Override
     public SchedulingService getSchedulingService() {
         return null;
     }
@@ -385,5 +394,10 @@ public class MockNzyme implements NzymeNode {
 
     public Registry getRegistry(String s) {
         return null;
+    }
+
+    @Override
+    public NodeIdentification getNodeInformation() {
+        return nodeIdentification;
     }
 }

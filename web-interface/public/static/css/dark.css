@@ -15,6 +15,10 @@ a:hover {
     color: #71769F;
 }
 
+code {
+    color: #ffffff;
+}
+
 input.form-control {
     background-color: #fff !important;
 }

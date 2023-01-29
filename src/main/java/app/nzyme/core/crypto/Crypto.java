@@ -70,7 +70,7 @@ public class Crypto {
     public Crypto(NzymeNode nzyme) {
         this.cryptoDirectoryConfig = new File(nzyme.getConfiguration().cryptoDirectory());
         this.database = nzyme.getDatabase();
-        this.nodeId = nzyme.getNodeID();
+        this.nodeId = nzyme.getNodeInformation().name(); // TODO
 
         this.encryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_ENCRYPTION_TIMING);
         this.decryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_DECRYPTION_TIMING);

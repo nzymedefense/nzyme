@@ -4,6 +4,10 @@ body {
     background-color: #edf2f4;
 }
 
+code {
+    color: #212529;
+}
+
 .bg-danger {
     background-color: #EF233C !important;
 }
@@ -299,4 +303,17 @@ div.bg-threatlevelmidnight div.text-overlay div.form-switch {
 
 .collapsing {
     transition: none !important;
+}
+
+label.form-check-label {
+   padding-top: 2px;
+}
+
+div.node-metrics-gauge-summary {
+    text-align: center;
+}
+
+div.node-process-arguments .btn-link {
+    padding: 0;
+    font-size: 13px;
 }

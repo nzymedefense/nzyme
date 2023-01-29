@@ -1,7 +1,6 @@
 const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
-    LEADER: '/system/leader',
     VERSION: '/system/version',
     AUTHENTICATION: '/system/authentication',
     TAPS: {
@@ -16,6 +15,12 @@ const ApiRoutes = {
       INDEX: '/system/monitoring',
       PROMETHEUS: {
         INDEX: '/system/monitoring/prometheus'
+      }
+    },
+    CLUSTER: {
+      INDEX: '/system/cluster',
+      NODES: {
+        DETAILS: uuid => `/system/cluster/nodes/show/${uuid}`,
       }
     }
   },

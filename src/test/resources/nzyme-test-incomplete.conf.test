@@ -1,6 +1,6 @@
 general: {
   role: NODE
-  id: nzyme-testng
+  name: nzyme-testng
 
   python {
     path: /usr/bin/python2.7

@@ -38,6 +38,7 @@ public class TapTableSizeInterceptor implements ReaderInterceptor {
             LOG.debug("Tap table report size: {}", size);
 
             nzyme.getMetrics().histogram(MetricNames.TAP_TABLE_REQUEST_SIZES).update(size);
+            nzyme.getNodeManager().recordTapReportSize(size);
 
             // Stick another clone right back into the request context.
             context.setInputStream(new ByteArrayInputStream(cloner.toByteArray()));

@@ -40,9 +40,6 @@ public abstract class DashboardResponse {
     @JsonProperty("system_health_status")
     public abstract SystemStatus.HEALTH systemHealthStatus();
 
-    @JsonProperty("frame_throughput_histogram")
-    public abstract Map<String, Long> frameThroughputHistogram();
-
     @JsonProperty("deauth_frame_histogram")
     public abstract Map<String, Long> deauthFrameHistogram();
 
@@ -59,12 +56,11 @@ public abstract class DashboardResponse {
     @JsonProperty("probes")
     public abstract ProbesListResponse probes();
 
-    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> frameThroughputHistogram, Map<String, Long> deauthFrameHistogram, Integer deauthThreshold, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
+    public static DashboardResponse create(long activeAlerts, long activeContacts, SystemStatus.HEALTH systemHealthStatus, Map<String, Long> deauthFrameHistogram, Integer deauthThreshold, AlertsListResponse alerts, List<ContactResponse> contacts, ProbesListResponse probes) {
         return builder()
                 .activeAlerts(activeAlerts)
                 .activeContacts(activeContacts)
                 .systemHealthStatus(systemHealthStatus)
-                .frameThroughputHistogram(frameThroughputHistogram)
                 .deauthFrameHistogram(deauthFrameHistogram)
                 .deauthThreshold(deauthThreshold)
                 .alerts(alerts)
@@ -85,8 +81,6 @@ public abstract class DashboardResponse {
 
         public abstract Builder systemHealthStatus(SystemStatus.HEALTH systemHealthStatus);
 
-        public abstract Builder frameThroughputHistogram(Map<String, Long> frameThroughputHistogram);
-
         public abstract Builder deauthFrameHistogram(Map<String, Long> deauthFrameHistogram);
 
         public abstract Builder deauthThreshold(Integer deauthThreshold);
@@ -99,5 +93,4 @@ public abstract class DashboardResponse {
 
         public abstract DashboardResponse build();
     }
-
 }

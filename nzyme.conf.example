@@ -5,7 +5,7 @@ general: {
   role: NODE
 
   # The ID or name of this nzyme instance. Must be unique and contain only alphanumeric characters, underscores and dashes.
-  id: nzyme-node-01
+  name: nzyme-node-01
 
   # Admin password SHA256 hash. (64 characters) - generate with, for example, sha256sum on Linux: $ echo -n secretpassword | sha256sum
   # You will use this password to log in to the web interface.

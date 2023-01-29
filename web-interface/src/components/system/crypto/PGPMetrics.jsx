@@ -1,5 +1,5 @@
 import React from 'react'
-import TimerRow from '../leadermetrics/TimerRow'
+import TimerRow from '../../misc/metrics/TimerRow'
 import LoadingSpinner from '../../misc/LoadingSpinner'
 
 function PGPMetrics (props) {

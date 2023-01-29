@@ -1156,4 +1156,164 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="51" author="lennartkoopmann">
+        <createTable tableName="nodes">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="transport_address" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="nodes" indexName="idx_node_uuid" unique="true">
+            <column name="uuid" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="52" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="version" type="varchar(50)" afterColumn="transport_address" defaultValue="0.0.0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="53" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_total" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_available" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="memory_bytes_used" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="cpu_system_load" type="double" defaultValue="0.0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="cpu_thread_count" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="process_start_time" type="timestamp with time zone" defaultValue="1970-01-01 00:00:00 America/Chicago">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="process_virtual_size" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="process_arguments" type="text" defaultValue="">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="os_information" type="varchar(255)" defaultValue="">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="54" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="heap_bytes_total" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="heap_bytes_available" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="nodes">
+            <column name="heap_bytes_used" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="55" author="lennartkoopmann">
+        <renameColumn tableName="nodes" oldColumnName="transport_address" newColumnName="http_external_uri" />
+    </changeSet>
+
+    <changeSet id="56" author="lennartkoopmann">
+        <dropTable tableName="measurements" />
+    </changeSet>
+
+    <changeSet id="57" author="lennartkoopmann">
+        <renameTable oldTableName="metrics_gauges" newTableName="tap_metrics_gauges" />
+    </changeSet>
+
+    <!-- Switching from numbers to text for migration IDs to avoid merge problems. -->
+
+    <changeSet id="create_node_metrics" author="lennartkoopmann">
+        <createTable tableName="node_metrics_gauges">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="node_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_value" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_nodemetrics_std_lookup" tableName="node_metrics_gauges" unique="false">
+            <column name="metric_name"/>
+            <column name="node_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="drop_events" author="lennartkoopmann">
+        <dropTable tableName="events" />
+    </changeSet>
+
 </databaseChangeLog>

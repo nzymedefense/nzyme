@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
@@ -34,7 +35,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.Dot11Probe;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.EventService;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.processing.FrameProcessor;
@@ -43,16 +43,17 @@ import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 
+import java.nio.file.Path;
 import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 
-public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdProvider, MetricsRegistryProvider {
+public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdentificationProvider, MetricsRegistryProvider {
 
     void initialize();
     void shutdown();
 
-    String getNodeID();
+    NodeManager getNodeManager();
 
     Ethernet getEthernet();
 
@@ -67,6 +68,8 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     NodeConfiguration getConfiguration();
 
     BaseConfigurationService getConfigurationService();
+
+    Path getDataDirectory();
 
     MetricRegistry getMetrics();
 
@@ -89,7 +92,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     GroundStation getGroundStation();
 
     SystemStatus getSystemStatus();
-    EventService getEventService();
+
     SchedulingService getSchedulingService();
 
     OUIManager getOUIManager();

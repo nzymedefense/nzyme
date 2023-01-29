@@ -4,10 +4,15 @@ nzyme*.conf
 dependency-reduced-pom.xml
 /plugin/
 /crypto/
+/plugin-node*/
+/crypto-node*/
 /crypto_test/*.pgp
 /retro/
 /data/
+/data-node*/
 /tmp/
+/tmp-node*/
+/test_data_dir/node_id
 
 .DS_Store
 hs_err_*.log

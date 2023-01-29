@@ -17,7 +17,11 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.periodicals.distributed.NodeUpdater;
+import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
 import app.nzyme.plugin.Registry;
 import app.nzyme.plugin.retro.RetroService;
@@ -32,7 +36,6 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.typesafe.config.ConfigException;
 import app.nzyme.core.alerts.Alert;
-import app.nzyme.core.alerts.ProbeFailureAlert;
 import app.nzyme.core.alerts.service.AlertsService;
 import app.nzyme.core.bandits.engine.ContactManager;
 import app.nzyme.core.bandits.trackers.GroundStation;
@@ -56,7 +59,6 @@ import app.nzyme.core.dot11.networks.sentry.Sentry;
 import app.nzyme.core.dot11.probes.*;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.events.*;
 import app.nzyme.core.notifications.Notification;
 import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.notifications.uplinks.UplinkFactory;
@@ -64,8 +66,6 @@ import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMoni
 import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateCleaner;
 import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateWriter;
 import app.nzyme.core.periodicals.alerting.tracks.SignalTrackMonitor;
-import app.nzyme.core.periodicals.measurements.MeasurementsCleaner;
-import app.nzyme.core.periodicals.measurements.MeasurementsWriter;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.ouis.OUIUpdater;
 import app.nzyme.core.periodicals.PeriodicalManager;
@@ -114,11 +114,11 @@ import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.jetbrains.annotations.Nullable;
-import org.joda.time.DateTime;
 import org.quartz.SchedulerException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.Key;
 import java.util.List;
 import java.util.Optional;
@@ -134,16 +134,21 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final Version version;
 
-    private final String nodeId;
+    private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
+
+    private final Path dataDirectory;
+
     private final DatabaseImpl database;
     private final BaseConfigurationService configurationService;
+
+    private final NodeManager nodeManager;
+
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
     private final MemoryRegistry memoryRegistry;
     private final SystemStatus systemStatus;
-    private final EventService eventService;
     private final OUIManager ouiManager;
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
@@ -189,10 +194,21 @@ public class NzymeNodeImpl implements NzymeNode {
 
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
         this.version = new Version();
-        this.nodeId = baseConfiguration.nodeId();
-        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        this.configuration = configuration;
+        this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
         this.database = database;
+        this.configuration = configuration;
+
+        this.nodeManager = new NodeManager(this);
+        try {
+            this.nodeManager.initialize();
+            this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
+            this.nodeManager.registerSelf();
+        } catch (NodeManager.NodeInitializationException e) {
+            throw new RuntimeException("Could not initialize distributed subsystem.", e);
+        }
+
+        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
 
@@ -212,7 +228,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.memoryRegistry = new MemoryRegistry();
         this.probes = Lists.newArrayList();
         this.systemStatus = new SystemStatus();
-        this.eventService = new EventService(this);
         this.networks = new Networks(this);
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
@@ -250,14 +265,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.trackerManager = new TrackerManager();
 
-        // Register event callbacks.
-        this.eventService.subscribe(Event.TYPE.BROKEN_PROBE, event -> {
-            BrokenProbeEvent bpe = (BrokenProbeEvent) event;
-            getAlertsService().handle(
-                    ProbeFailureAlert.create(DateTime.now(), bpe.getProbeName(), bpe.getErrorDescription())
-            );
-        });
-
         // Disable TRAINING status when training period is over.
         LOG.info("Training period ends in <{}> seconds.", configuration.alertingTrainingPeriodSeconds());
         Executors.newSingleThreadScheduledExecutor().schedule(() -> {
@@ -274,8 +281,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
-
-        eventService.recordEvent(new StartupEvent());
 
         try {
             this.crypto.initialize();
@@ -303,13 +308,13 @@ public class NzymeNodeImpl implements NzymeNode {
         metrics.register(MetricNames.DATABASE_SIZE, (Gauge<Long>) database::getTotalSize);
 
         // Register configured uplinks.
-        UplinkFactory uplinkFactory = new UplinkFactory(getNodeID());
+        UplinkFactory uplinkFactory = new UplinkFactory(nodeIdentification.name());
         for (UplinkDefinition uplinkDefinition : configuration.uplinks()) {
             registerUplink(uplinkFactory.fromConfigurationDefinition(uplinkDefinition));
         }
 
         // Register configured forwarders.
-        ForwarderFactory forwarderFactory = new ForwarderFactory(getNodeID());
+        ForwarderFactory forwarderFactory = new ForwarderFactory(nodeIdentification.name());
         for (ForwarderDefinition forwarderDefinition : configuration.forwarders()) {
             this.forwarders.add(forwarderFactory.fromConfigurationDefinition(forwarderDefinition));
         }
@@ -333,14 +338,12 @@ public class NzymeNodeImpl implements NzymeNode {
 
         // Periodicals. (TODO: Replace with scheduler service)
         PeriodicalManager periodicalManager = new PeriodicalManager();
+        periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
-        periodicalManager.scheduleAtFixedRate(new MeasurementsWriter(this), 1, 1, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new MeasurementsCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new BeaconRateWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new BeaconRateCleaner(this), 0, 10, TimeUnit.MINUTES);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramWriter(this), 60, 60, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new SignalIndexHistogramCleaner(this), 0, 10, TimeUnit.MINUTES);
-        periodicalManager.scheduleAtFixedRate(new ProbeStatusMonitor(this), 1, 1, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {
@@ -360,7 +363,13 @@ public class NzymeNodeImpl implements NzymeNode {
         for (Plugin plugin : pl.loadPlugins()) {
             // Initialize plugin
             LOG.info("Initializing plugin of type [{}]: [{}]", plugin.getClass().getCanonicalName(), plugin.getName());
-            plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
+
+            try {
+                plugin.initialize(this, getDatabaseRegistry(plugin.getId()), this, this);
+            } catch(Exception e) {
+                LOG.error("Could not load plugin. Skipping.", e);
+                continue;
+            }
 
             this.plugins.add(plugin.getId());
         }
@@ -387,7 +396,6 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(BanditsResource.class);
         resourceConfig.register(ProbesResource.class);
         resourceConfig.register(TrackersResource.class);
-        resourceConfig.register(MetricsResource.class);
         resourceConfig.register(NetworksResource.class);
         resourceConfig.register(SystemResource.class);
         resourceConfig.register(DashboardResource.class);
@@ -401,6 +409,7 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(PrometheusResource.class);
         resourceConfig.register(CryptoResource.class);
         resourceConfig.register(MonitoringResource.class);
+        resourceConfig.register(NodesResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
@@ -457,7 +466,7 @@ public class NzymeNodeImpl implements NzymeNode {
             try {
                 this.groundStation = new GroundStation(
                         Role.NODE,
-                        getNodeID(),
+                        nodeIdentification.name(),
                         version.getVersion().toString(),
                         metrics,
                         contactManager,
@@ -492,8 +501,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.systemStatus.unsetStatus(SystemStatus.TYPE.RUNNING);
         this.systemStatus.setStatus(SystemStatus.TYPE.SHUTTING_DOWN);
 
-        eventService.recordEvent(new ShutdownEvent());
-
         // Shutdown REST API.
         if (httpServer != null) {
             LOG.info("Stopping REST API.");
@@ -508,13 +515,18 @@ public class NzymeNodeImpl implements NzymeNode {
         LOG.info("Shutdown complete.");
     }
 
+    @Override
+    public NodeManager getNodeManager() {
+        return nodeManager;
+    }
+
     private void initializeProbes() {
         // Broad monitor probes.
         for (Dot11MonitorDefinition m : configuration.dot11Monitors()) {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     getUplinks(),
-                    getNodeID(),
+                    getNodeInformation().name(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),
@@ -616,7 +628,7 @@ public class NzymeNodeImpl implements NzymeNode {
                     Dot11ProbeConfiguration.create(
                             "trap-sender-" + td.device() + "-" + tc.type(),
                             getUplinks(),
-                            getNodeID(),
+                            getNodeInformation().name(),
                             td.device(),
                             ImmutableList.copyOf(td.channels()),
                             td.channelHopInterval(),
@@ -632,11 +644,6 @@ public class NzymeNodeImpl implements NzymeNode {
             probeExecutor.submit(probe.loop());
             probes.add(probe);
         }
-    }
-
-    @Override
-    public String getNodeID() {
-        return nodeId;
     }
 
     @Override
@@ -700,11 +707,6 @@ public class NzymeNodeImpl implements NzymeNode {
     }
 
     @Override
-    public EventService getEventService() {
-        return eventService;
-    }
-
-    @Override
     public SchedulingService getSchedulingService() {
         return schedulingService;
     }
@@ -748,6 +750,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public BaseConfigurationService getConfigurationService() {
         return configurationService;
+    }
+
+    @Override
+    public Path getDataDirectory() {
+        return dataDirectory;
     }
 
     @Override
@@ -850,4 +857,8 @@ public class NzymeNodeImpl implements NzymeNode {
         return new RegistryImpl(this, "core");
     }
 
+    @Override
+    public NodeIdentification getNodeInformation() {
+        return nodeIdentification;
+    }
 }

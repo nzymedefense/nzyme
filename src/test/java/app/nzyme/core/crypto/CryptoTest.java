@@ -44,7 +44,7 @@ public class CryptoTest {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT key_signature FROM crypto_keys " +
                         "WHERE node = :node AND key_type = 'PGP'")
-                        .bind("node", nzyme.getNodeID())
+                        .bind("node", nzyme.getNodeInformation().name())
                         .mapTo(String.class)
                         .one()
         );

@@ -80,7 +80,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
 
     public NzymeTrackerImpl(BaseConfiguration baseConfiguration, TrackerConfiguration configuration) {
         this.version = new Version();
-        this.nodeID = baseConfiguration.nodeId();
+        this.nodeID = baseConfiguration.name();
         this.configuration = configuration;
         this.baseConfiguration = baseConfiguration;
 
@@ -105,7 +105,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
         try {
             this.groundStation = new GroundStation(
                     Role.TRACKER,
-                    baseConfiguration.nodeId(),
+                    baseConfiguration.name(),
                     version.getVersion().toString(),
                     metrics,
                     banditManager,
@@ -183,7 +183,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
                             TrackerTrackSummary trackSummary = banditManager.getTrackSummary();
                             groundStation.transmit(TrackerMessage.Wrapper.newBuilder().setContactStatus(
                                     TrackerMessage.ContactStatus.newBuilder()
-                                            .setSource(baseConfiguration.nodeId())
+                                            .setSource(baseConfiguration.name())
                                             .setUuid(bandit.uuid().toString())
                                             .setRssi(trackSummary.lastSignal())
                                             .setLastSeen(trackSummary.lastContact().getMillis())
@@ -207,7 +207,7 @@ public class NzymeTrackerImpl implements NzymeTracker {
             Dot11MonitorProbe probe = new Dot11MonitorProbe(Dot11ProbeConfiguration.create(
                     "broad-monitor-" + m.device(),
                     null,
-                    baseConfiguration.nodeId(),
+                    baseConfiguration.name(),
                     m.device(),
                     m.channels(),
                     m.channelHopInterval(),

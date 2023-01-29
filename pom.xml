@@ -55,6 +55,7 @@
         <httpcomponents.version>4.5.13</httpcomponents.version>
         <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
         <bouncycastle.version>1.72.2</bouncycastle.version>
+        <oshi.version>6.4.0</oshi.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -82,6 +83,12 @@
             <groupId>org.pcap4j</groupId>
             <artifactId>pcap4j-core</artifactId>
             <version>${pcap4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.pcap4j</groupId>
@@ -328,6 +335,11 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpg-jdk18on</artifactId>
             <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>${oshi.version}</version>
         </dependency>
     </dependencies>
 
