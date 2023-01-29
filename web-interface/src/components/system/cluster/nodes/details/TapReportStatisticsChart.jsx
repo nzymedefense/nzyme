@@ -13,7 +13,7 @@ function formatData(data) {
   const result = {}
 
   Object.keys(data).sort().forEach(function (key) {
-      result[key] = data[key].sum / 1024 / 1024
+    result[key] = data[key].sum / 1024 / 1024
   })
 
   return result
@@ -26,8 +26,8 @@ function TapReportStatisticsChart(props) {
   const [histogram, setHistogram] = useState(null)
 
   useEffect(() => {
-    fetchData(props.nodeId, metricName, setHistogram)
-    const id = setInterval(() => fetchData(props.nodeId, metricName, setHistogram), 30000)
+    fetchData(nodeId, metricName, setHistogram)
+    const id = setInterval(() => fetchData(nodeId, metricName, setHistogram), 30000)
     return () => clearInterval(id)
   }, [nodeId, setHistogram])
 

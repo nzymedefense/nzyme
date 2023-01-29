@@ -20,7 +20,6 @@ class ClusterService {
     })
   }
 
-
 }
 
 export default ClusterService

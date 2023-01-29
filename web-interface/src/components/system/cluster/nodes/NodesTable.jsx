@@ -20,7 +20,7 @@ function NodesTable(props) {
       <div className="row">
         <div className="col-md-12">
 
-          <h3 style={{"display": "inline-block"}}>All Nodes</h3>
+          <h3 style={{display: "inline-block"}}>All Nodes</h3>
 
           <div className="form-check form-switch float-end">
             <input className="form-check-input" type="checkbox" role="switch"

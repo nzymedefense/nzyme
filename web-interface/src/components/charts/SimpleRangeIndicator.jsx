@@ -19,7 +19,7 @@ function SimpleRangeIndicator(props) {
     colors.bar = '#0D6EFD'
   }
 
-  var data = [
+  const data = [
     {
       domain: { x: [0, 1], y: [0, 1] },
       value: props.value,
@@ -42,7 +42,7 @@ function SimpleRangeIndicator(props) {
               color: colors.text
             },
             paper_bgcolor: colors.background,
-            plot_bgcolor: colors.background,
+            plot_bgcolor: colors.background
           }}
           config={{
             displayModeBar: false,

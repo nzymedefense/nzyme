@@ -31,7 +31,7 @@ function NodeRow(props) {
       return (
           <tr>
             <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
-            <td colSpan={5} style={{"textAlign": "center"}} title={moment(node.last_seen).format()}>
+            <td colSpan={5} style={{textAlign: "center"}} title={moment(node.last_seen).format()}>
               <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
               Last seen {moment(node.last_seen).fromNow()}
             </td>

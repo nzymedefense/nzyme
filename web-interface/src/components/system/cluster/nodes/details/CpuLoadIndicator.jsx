@@ -3,7 +3,7 @@ import SimpleRangeIndicator from "../../../../charts/SimpleRangeIndicator";
 
 function CpuLoadIndicator(props) {
 
-  return <SimpleRangeIndicator value={Math.round(props.load)} range={[0,100]} suffix="%" />
+  return <SimpleRangeIndicator value={Math.round(props.load)} range={[0, 100]} suffix="%" />
 
 }
 
