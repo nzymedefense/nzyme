@@ -113,7 +113,7 @@ public class TapsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Map<DateTime, TapMetricsGaugeHistogramValueResponse> result = Maps.newHashMap();
+        Map<DateTime, TapMetricsGaugeHistogramValueResponse> result = Maps.newTreeMap();
         for (TapMetricsGaugeAggregation value : histo.get().values()) {
             result.put(value.bucket(), TapMetricsGaugeHistogramValueResponse.create(
                     value.bucket(), value.average(), value.maximum(), value.minimum()

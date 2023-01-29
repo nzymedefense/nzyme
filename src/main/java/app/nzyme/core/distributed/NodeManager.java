@@ -2,8 +2,11 @@ package app.nzyme.core.distributed;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.database.NodeEntry;
+import app.nzyme.core.distributed.database.metrics.NodeMetricsGaugeAggregation;
+import app.nzyme.core.taps.metrics.BucketSize;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,10 +18,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NodeManager {
 
@@ -28,8 +33,12 @@ public class NodeManager {
 
     private UUID localNodeId;
 
+    private final AtomicLong tapReportSize;
+
     public NodeManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
+
+        this.tapReportSize = new AtomicLong(0);
     }
 
     public void initialize() throws NodeInitializationException {
@@ -61,7 +70,7 @@ public class NodeManager {
                         .setNameFormat("node-metrics-updater-%d")
                         .setDaemon(true)
                         .build()
-        ).scheduleAtFixedRate(this::writeMetrics, 1, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::runMetrics, 1, 1, TimeUnit.MINUTES);
 
         LOG.info("Node ID: [{}]", localNodeId);
     }
@@ -188,18 +197,20 @@ public class NodeManager {
         }
     }
 
-    private void writeMetrics() {
+    private void runMetrics() {
         try {
+            long tapReportSize = this.tapReportSize.getAndSet(0);
             NodeInformation.Info ni = new NodeInformation().collect();
 
-            writeGauge("memory_bytes_total", ni.memoryTotal());
-            writeGauge("memory_bytes_available", ni.memoryAvailable());
-            writeGauge("memory_bytes_used", ni.memoryUsed());
-            writeGauge("heap_bytes_total", ni.heapTotal());
-            writeGauge("heap_bytes_available", ni.heapAvailable());
-            writeGauge("heap_bytes_used", ni.heapUsed());
-            writeGauge("cpu_system_load", ni.cpuSystemLoad());
-            writeGauge("process_virtual_size", ni.processVirtualSize());
+            writeGauge(NodeMetricName.MEMORY_BYTES_TOTAL.database_label, ni.memoryTotal());
+            writeGauge(NodeMetricName.MEMORY_BYTES_AVAILABLE.database_label, ni.memoryAvailable());
+            writeGauge(NodeMetricName.MEMORY_BYTES_USED.database_label, ni.memoryUsed());
+            writeGauge(NodeMetricName.HEAP_BYTES_TOTAL.database_label, ni.heapTotal());
+            writeGauge(NodeMetricName.HEAP_BYTES_AVAILABLE.database_label, ni.heapAvailable());
+            writeGauge(NodeMetricName.HEAP_BYTES_USED.database_label, ni.heapUsed());
+            writeGauge(NodeMetricName.CPU_SYSTEM_LOAD.database_label, ni.cpuSystemLoad());
+            writeGauge(NodeMetricName.PROCESS_VIRTUAL_SIZE.database_label, ni.processVirtualSize());
+            writeGauge(NodeMetricName.TAP_REPORT_SIZE.database_label, tapReportSize);
         } catch(Exception e) {
             LOG.error("Could not write node metrics.", e);
         }
@@ -227,8 +238,40 @@ public class NodeManager {
         );
     }
 
+    public Optional<Map<DateTime, NodeMetricsGaugeAggregation>> findMetricsHistogram(UUID nodeId, String metricName, int hours, BucketSize bucketSize) {
+        Map<DateTime, NodeMetricsGaugeAggregation> result = Maps.newHashMap();
+
+        List<NodeMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
+                                "MIN(metric_value) AS minimum, SUM(metric_value) AS sum, " +
+                                "date_trunc(:bucket_size, created_at) AS bucket " +
+                                "FROM node_metrics_gauges WHERE node_id = :node_id AND metric_name = :metric_name " +
+                                "AND created_at > :created_at GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("bucket_size", bucketSize.toString().toLowerCase())
+                        .bind("node_id", nodeId)
+                        .bind("metric_name", metricName)
+                        .bind("created_at", DateTime.now().minusHours(hours))
+                        .mapTo(NodeMetricsGaugeAggregation.class)
+                        .list()
+        );
+
+        if (agg == null || agg.isEmpty()) {
+            return Optional.empty();
+        }
+
+        for (NodeMetricsGaugeAggregation x : agg) {
+            result.put(x.bucket(), x);
+        }
+
+        return Optional.of(result);
+    }
+
     public UUID getLocalNodeId() {
         return localNodeId;
+    }
+
+    public void recordTapReportSize(long size) {
+        this.tapReportSize.addAndGet(size);
     }
 
     public static final class NodeInitializationException extends Throwable {

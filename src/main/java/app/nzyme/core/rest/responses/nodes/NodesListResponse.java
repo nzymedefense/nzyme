@@ -1,4 +1,4 @@
-package app.nzyme.core.rest.responses.system;
+package app.nzyme.core.rest.responses.nodes;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -27,4 +27,5 @@ public abstract class NodesListResponse {
 
         public abstract NodesListResponse build();
     }
+
 }

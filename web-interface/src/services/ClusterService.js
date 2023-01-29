@@ -14,6 +14,13 @@ class ClusterService {
     })
   }
 
+  findGaugeMetricHistogramOfNode(nodeId, metricName, setHistogram) {
+    RESTClient.get('/system/cluster/nodes/show/' + nodeId + '/metrics/gauges/' + metricName + '/histogram', {}, function (response) {
+      setHistogram(response.data)
+    })
+  }
+
+
 }
 
 export default ClusterService

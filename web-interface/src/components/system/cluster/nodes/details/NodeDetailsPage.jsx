@@ -7,8 +7,9 @@ import Routes from "../../../../../util/ApiRoutes";
 import moment from "moment/moment";
 import numeral from "numeral";
 import ProcessArguments from "./ProcessArguments";
-import CpuLoadChart from "./CpuLoadChart";
-import MemoryUseChart from "./MemoryUseChart";
+import CpuLoadIndicator from "./CpuLoadIndicator";
+import MemoryUseIndicator from "./MemoryUseIndicator";
+import TapReportStatisticsChart from "./TapReportStatisticsChart";
 
 const clusterService = new ClusterService()
 
@@ -104,7 +105,7 @@ function NodeDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>System CPU Load</h3>
-                <CpuLoadChart load={node.cpu_system_load} />
+                <CpuLoadIndicator load={node.cpu_system_load} />
 
                 <div className="node-metrics-gauge-summary">
                   {numeral(node.cpu_system_load).format("0")}% system CPU load
@@ -117,7 +118,7 @@ function NodeDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>System Memory Use</h3>
-                <MemoryUseChart total={node.memory_bytes_total} used={node.memory_bytes_used} />
+                <MemoryUseIndicator total={node.memory_bytes_total} used={node.memory_bytes_used} />
 
                 <div className="node-metrics-gauge-summary">
                   {numeral(node.memory_bytes_used).format("0.0b")} of {' '}
@@ -131,12 +132,24 @@ function NodeDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>JVM Heap Memory Use</h3>
-                <MemoryUseChart total={node.heap_bytes_total} used={node.heap_bytes_used} />
+                <MemoryUseIndicator total={node.heap_bytes_total} used={node.heap_bytes_used} />
 
                 <div className="node-metrics-gauge-summary">
                   {numeral(node.heap_bytes_used).format("0.0b")} of {' '}
-                  {numeral(node.heap_bytes_total).format("0.0b")} system memory used
+                  {numeral(node.heap_bytes_total).format("0.0b")} JVM heap memory used
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Total Data Received from Taps</h3>
+
+                <TapReportStatisticsChart nodeId={node.uuid} />
               </div>
             </div>
           </div>

@@ -81,6 +81,10 @@ function Sidebar () {
                         title="Authentication"
                         icon={<i className="fa-solid fa-users fa-icon" />} />
                     <NavigationLink
+                        href="/foo"
+                        title="Database"
+                        icon={<i className="fa-solid fa-database" />} />
+                    <NavigationLink
                         href={ApiRoutes.SYSTEM.MONITORING.INDEX}
                         title="Monitoring &amp; Metrics"
                         icon={<i className="fa-solid fa-heart-pulse fa-icon" />} />

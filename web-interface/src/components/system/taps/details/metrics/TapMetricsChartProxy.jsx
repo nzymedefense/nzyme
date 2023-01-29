@@ -19,11 +19,14 @@ function byteConversion (x) {
 function TapMetricsChartProxy (props) {
   const [data, setData] = useState(null)
 
+  const tapName = props.tapName;
+  const name = props.name;
+
   useEffect(() => {
-    fetchData(props.tapName, props.name, setData)
-    const id = setInterval(() => fetchData(props.tapName, props.name, setData), 5000)
+    fetchData(tapName, name, setData)
+    const id = setInterval(() => fetchData(tapName, name, setData), 30000)
     return () => clearInterval(id)
-  }, [props, setData])
+  }, [tapName, name, setData])
 
   if (props.type === 'gauge') {
     let conversion
@@ -44,7 +47,7 @@ function TapMetricsChartProxy (props) {
     }
 
     return (
-            <TapMetricsGaugeChart data={data} conversion={conversion} valueType={valueType} />
+      <TapMetricsGaugeChart data={data} conversion={conversion} valueType={valueType} />
     )
   } else {
     return <div className="alert alert-danger">Unknown metric type.</div>
