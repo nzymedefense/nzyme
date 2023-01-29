@@ -19,7 +19,6 @@ public class TacticalSummaryReportTest {
     public void cleanDatabase() {
         NzymeNode nzyme = new MockNzyme();
         nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM alerts"));
-        nzyme.getDatabase().useHandle(handle -> handle.execute("DELETE FROM events"));
     }
 
     @Test
