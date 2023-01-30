@@ -10,7 +10,9 @@ public enum NodeMetricName {
     HEAP_BYTES_USED("heap_bytes_used"),
     CPU_SYSTEM_LOAD("cpu_system_load"),
     PROCESS_VIRTUAL_SIZE("process_virtual_size"),
-    TAP_REPORT_SIZE("tap_report_size");
+    TAP_REPORT_SIZE("tap_report_size"),
+    PGP_ENCRYPTION_TIMER("pgp_encryption_timer"),
+    PGP_DECRYPTION_TIMER("pgp_decryption_timer");
 
     public final String database_label;
 

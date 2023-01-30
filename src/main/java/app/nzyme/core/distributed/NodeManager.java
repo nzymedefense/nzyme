@@ -4,6 +4,10 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.database.NodeEntry;
 import app.nzyme.core.distributed.database.metrics.NodeMetricsGaugeAggregation;
 import app.nzyme.core.taps.metrics.BucketSize;
+import app.nzyme.core.util.MetricNames;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -199,6 +204,7 @@ public class NodeManager {
 
     private void runMetrics() {
         try {
+            MetricRegistry metrics = nzyme.getMetrics();
             long tapReportSize = this.tapReportSize.getAndSet(0);
             NodeInformation.Info ni = new NodeInformation().collect();
 
@@ -211,28 +217,64 @@ public class NodeManager {
             writeGauge(NodeMetricName.CPU_SYSTEM_LOAD.database_label, ni.cpuSystemLoad());
             writeGauge(NodeMetricName.PROCESS_VIRTUAL_SIZE.database_label, ni.processVirtualSize());
             writeGauge(NodeMetricName.TAP_REPORT_SIZE.database_label, tapReportSize);
+
+            writeTimer(NodeMetricName.PGP_ENCRYPTION_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.PGP_ENCRYPTION_TIMING));
+            writeTimer(NodeMetricName.PGP_DECRYPTION_TIMER.database_label,
+                    metrics.getTimers().get(MetricNames.PGP_DECRYPTION_TIMING));
         } catch(Exception e) {
             LOG.error("Could not write node metrics.", e);
         }
 
         // Retention clean old metrics.
-        nzyme.getDatabase().useHandle(handle -> {
-            handle.createUpdate("DELETE FROM node_metrics_gauges WHERE created_at < :created_at")
-                    .bind("created_at", DateTime.now().minusHours(24))
-                    .execute();
-        });
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM node_metrics_gauges WHERE created_at < :created_at")
+                        .bind("created_at", DateTime.now().minusHours(24))
+                        .execute());
     }
 
-    private void writeGauge(String metricName, Long metricValue) {
-        writeGauge(metricName, metricValue.doubleValue());
-    }
-
-    private void writeGauge(String metricName, Double metricValue) {
-        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO node_metrics_gauges(node_id, metric_name, metric_value, created_at) " +
-                        "VALUES(:node_id, :metric_name, :metric_value, :created_at)")
+    private void writeGauge(String metricName, double metricValue) {
+        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO node_metrics_gauges(node_id, " +
+                        "metric_name, metric_value, created_at) VALUES(:node_id, :metric_name, :metric_value, " +
+                        ":created_at)")
                 .bind("node_id", nzyme.getNodeInformation().id())
                 .bind("metric_name", metricName)
                 .bind("metric_value", metricValue)
+                .bind("created_at", DateTime.now())
+                .execute()
+        );
+    }
+
+    private void writeTimer(String metricName, @Nullable Timer timer) {
+        if (timer == null) {
+            return;
+        }
+
+        Snapshot s = timer.getSnapshot();
+        writeTimer(
+                metricName,
+                TimeUnit.MICROSECONDS.convert(s.getMax(), TimeUnit.NANOSECONDS),
+                TimeUnit.MICROSECONDS.convert(s.getMin(), TimeUnit.NANOSECONDS),
+                TimeUnit.MICROSECONDS.convert((long) s.getMean(), TimeUnit.NANOSECONDS),
+                TimeUnit.MICROSECONDS.convert((long) s.get99thPercentile(), TimeUnit.NANOSECONDS),
+                TimeUnit.MICROSECONDS.convert((long) s.getStdDev(), TimeUnit.NANOSECONDS),
+                timer.getCount()
+        );
+    }
+
+    private void writeTimer(String metricName, long max, long min, long mean, long p99, long stddev, long counter) {
+        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO node_metrics_timers(node_id, " +
+                        "metric_name, metric_max, metric_min, metric_mean, metric_p99, metric_stddev, metric_counter, " +
+                        "created_at) VALUES(:node_id, :metric_name, :metric_max, :metric_min, :metric_mean, " +
+                        ":metric_p99, :metric_stddev, :metric_counter, :created_at)")
+                .bind("node_id", nzyme.getNodeInformation().id())
+                .bind("metric_name", metricName)
+                .bind("metric_max", max)
+                .bind("metric_min", min)
+                .bind("metric_mean", mean)
+                .bind("metric_p99", p99)
+                .bind("metric_stddev", stddev)
+                .bind("metric_counter", counter)
                 .bind("created_at", DateTime.now())
                 .execute()
         );

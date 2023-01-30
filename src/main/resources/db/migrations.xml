@@ -1316,4 +1316,63 @@
         <dropTable tableName="events" />
     </changeSet>
 
+    <changeSet id="create_node_metrics_timers" author="lennartkoopmann">
+        <createTable tableName="node_metrics_timers">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="node_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_max" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_min" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_mean" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_p99" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_stddev" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="metric_counter" type="double">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_nodemetricstimers_std_lookup" tableName="node_metrics_timers" unique="false">
+            <column name="metric_name"/>
+            <column name="node_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="change_node_metrics_timers_1" author="lennartkoopmann">
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_max" newDataType="bigint" />
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_min" newDataType="bigint" />
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_mean" newDataType="bigint" />
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_p99" newDataType="bigint" />
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_stddev" newDataType="bigint" />
+        <modifyDataType tableName="node_metrics_timers" columnName="metric_counter" newDataType="bigint" />
+    </changeSet>
+
 </databaseChangeLog>

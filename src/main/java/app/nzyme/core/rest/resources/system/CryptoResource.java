@@ -35,6 +35,7 @@ public class CryptoResource {
             fingerprints.put(fp.node(), PGPKeyResponse.create(fp.node(), fp.fingerprint(), fp.createdAt()));
         }
 
+        // TODO pull from database.
         CryptoMetricsResponse metrics = CryptoMetricsResponse.create(
                 TimerResponse.fromTimer(MetricTools.getTimer(nzyme.getMetrics(), MetricNames.PGP_ENCRYPTION_TIMING)),
                 TimerResponse.fromTimer(MetricTools.getTimer(nzyme.getMetrics(), MetricNames.PGP_DECRYPTION_TIMING))
