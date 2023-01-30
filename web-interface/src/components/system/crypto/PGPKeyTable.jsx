@@ -12,7 +12,7 @@ function PGPKeyTable (props) {
         <table className="table table-sm table-hover table-striped">
             <thead>
             <tr>
-                <th>Leader Node</th>
+                <th>Node</th>
                 <th>Key Fingerprint</th>
                 <th>Generated at</th>
             </tr>
