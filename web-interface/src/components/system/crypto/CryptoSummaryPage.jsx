@@ -41,7 +41,7 @@ function CryptoSummaryPage () {
                 <div className="col-md-6">
                     <div className="card">
                         <div className="card-body">
-                            <h3>PGP Metrics</h3>
+                            <h3 style={{display: "inline-block"}}>PGP Metrics</h3>
 
                             <PGPMetrics metrics={pgpMetrics} />
                         </div>

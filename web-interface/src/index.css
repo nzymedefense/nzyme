@@ -309,6 +309,10 @@ label.form-check-label {
    padding-top: 2px;
 }
 
+div.form-switch label.form-check-label {
+    padding-top: 0px !important;
+}
+
 div.node-metrics-gauge-summary {
     text-align: center;
 }
@@ -316,4 +320,11 @@ div.node-metrics-gauge-summary {
 div.node-process-arguments .btn-link {
     padding: 0;
     font-size: 13px;
+}
+
+table tr.table-span-heading td {
+    text-align: center;
+    font-style: italic;
+    --bs-table-accent-bg: #fff !important;
+    border-bottom: 1px solid #000;
 }

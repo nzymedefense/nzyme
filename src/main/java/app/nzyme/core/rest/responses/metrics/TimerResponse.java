@@ -17,12 +17,8 @@
 
 package app.nzyme.core.rest.responses.metrics;
 
-import com.codahale.metrics.Snapshot;
-import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-
-import java.util.concurrent.TimeUnit;
 
 @AutoValue
 public abstract class TimerResponse {

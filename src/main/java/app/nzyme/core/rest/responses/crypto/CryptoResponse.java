@@ -10,12 +10,12 @@ import java.util.Map;
 public abstract class CryptoResponse {
 
     @JsonProperty("metrics")
-    public abstract Map<String, CryptoMetricsResponse> metrics();
+    public abstract CryptoNodeMetricsResponse metrics();
 
     @JsonProperty("pgp_keys")
     public abstract Map<String, PGPKeyResponse> pgpKeys();
 
-    public static CryptoResponse create(Map<String, CryptoMetricsResponse> metrics, Map<String, PGPKeyResponse> pgpKeys) {
+    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys) {
         return builder()
                 .metrics(metrics)
                 .pgpKeys(pgpKeys)
@@ -28,11 +28,10 @@ public abstract class CryptoResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder metrics(Map<String, CryptoMetricsResponse> metrics);
+        public abstract Builder metrics(CryptoNodeMetricsResponse metrics);
 
         public abstract Builder pgpKeys(Map<String, PGPKeyResponse> pgpKeys);
 
         public abstract CryptoResponse build();
     }
-
 }

@@ -9,11 +9,15 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Charsets;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,10 +45,31 @@ public class NodeManager {
 
     private final AtomicLong tapReportSize;
 
+    private final LoadingCache<UUID, String> nodeNameCache;
+
     public NodeManager(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
         this.tapReportSize = new AtomicLong(0);
+        this.nodeNameCache = CacheBuilder.newBuilder().
+                expireAfterAccess(10, TimeUnit.SECONDS)
+                .build(new CacheLoader<>() {
+                    @Override
+                    public String load(@NotNull UUID nodeId) {
+                        String nodeName = nzyme.getDatabase().withHandle(handle ->
+                            handle.createQuery("SELECT name FROM nodes WHERE uuid = :uuid")
+                                    .bind("uuid", nodeId)
+                                    .mapTo(String.class)
+                                    .one()
+                        );
+
+                        if (nodeName == null) {
+                            return "[invalid node]";
+                        }
+
+                        return nodeName;
+                    }
+                });
     }
 
     public void initialize() throws NodeInitializationException {
@@ -314,6 +340,14 @@ public class NodeManager {
 
     public void recordTapReportSize(long size) {
         this.tapReportSize.addAndGet(size);
+    }
+
+    public String findNameOfNode(UUID nodeId) {
+        try {
+            return nodeNameCache.get(nodeId);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static final class NodeInitializationException extends Throwable {

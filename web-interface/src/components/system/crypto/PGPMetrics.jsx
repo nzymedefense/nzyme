@@ -1,30 +1,30 @@
-import React from 'react'
-import TimerRow from '../../misc/metrics/TimerRow'
+import React, {useState} from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
+import PGPMetricsTable from "./PGPMetricsTable";
 
 function PGPMetrics (props) {
+  const [showNodes, setShowNodes] = useState(false)
+
   if (!props.metrics) {
     return <LoadingSpinner />
   }
 
+  const updateNodeDetailsSelection = function(e) {
+    setShowNodes(e.target.checked)
+  }
+
   return (
-        <table className="table table-sm table-hover table-striped">
-            <thead>
-            <tr>
-                <th>Metric</th>
-                <th>Maximum</th>
-                <th>Minimum</th>
-                <th>Mean</th>
-                <th>99th Percentile</th>
-                <th>Standard Deviation</th>
-                <th>Calls</th>
-            </tr>
-            </thead>
-            <tbody>
-            <TimerRow title="Encryption Operations" timer={props.metrics.pgp_encryption_timer}/>
-            <TimerRow title="Decryption Operations" timer={props.metrics.pgp_decryption_timer}/>
-            </tbody>
-        </table>
+      <React.Fragment>
+        <div className="form-check form-switch float-end">
+          <input className="form-check-input" type="checkbox" role="switch"
+                 id="showOfflineNodes" onChange={updateNodeDetailsSelection} />
+          <label className="form-check-label" htmlFor="showOfflineNodes">
+            Expand Individual Node Metrics
+          </label>
+        </div>
+
+        <PGPMetricsTable metrics={props.metrics} showNodes={showNodes} />
+      </React.Fragment>
   )
 }
 
