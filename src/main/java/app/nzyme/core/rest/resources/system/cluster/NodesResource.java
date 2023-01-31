@@ -2,8 +2,8 @@ package app.nzyme.core.rest.resources.system.cluster;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.Node;
-import app.nzyme.core.distributed.NodeMetricName;
-import app.nzyme.core.distributed.database.metrics.NodeMetricsGaugeAggregation;
+import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
+import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.rest.responses.nodes.NodeMetricsGaugeHistogramResponse;
 import app.nzyme.core.rest.responses.nodes.NodeMetricsGaugeHistogramValueResponse;
 import app.nzyme.core.rest.responses.nodes.NodeResponse;
@@ -71,11 +71,11 @@ public class NodesResource {
     @GET
     @Path("/show/{uuid}/metrics/gauges/{metricname}/histogram")
     public Response findMetricsGaugeHistogram(@PathParam("uuid") String uuid, @PathParam("metricname") String n) {
-        NodeMetricName metricName;
+        MetricExternalName metricName;
         UUID nodeId;
 
         try {
-            metricName = NodeMetricName.valueOf(n.toUpperCase());
+            metricName = MetricExternalName.valueOf(n.toUpperCase());
         } catch(IllegalArgumentException e) {
             LOG.warn("Unknown node metric name [{}].", n);
             return Response.status(Response.Status.FORBIDDEN).build();
@@ -88,7 +88,7 @@ public class NodesResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        Optional<Map<DateTime, NodeMetricsGaugeAggregation>> histo = nzyme.getNodeManager().findMetricsHistogram(
+        Optional<Map<DateTime, GaugeHistogramBucket>> histo = nzyme.getNodeManager().findMetricsHistogram(
                 nodeId, metricName.database_label, 24, BucketSize.MINUTE
         );
 
@@ -97,7 +97,7 @@ public class NodesResource {
         }
 
         Map<DateTime, NodeMetricsGaugeHistogramValueResponse> result = Maps.newTreeMap();
-        for (NodeMetricsGaugeAggregation value : histo.get().values()) {
+        for (GaugeHistogramBucket value : histo.get().values()) {
             result.put(value.bucket(), NodeMetricsGaugeHistogramValueResponse.create(
                     value.bucket(), value.sum(), value.average(), value.maximum(), value.minimum()
             ));

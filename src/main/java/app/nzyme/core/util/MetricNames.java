@@ -35,16 +35,6 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 public class MetricNames {
 
-    // Standard/provided metrics.
-    public static final String MEMORY_HEAP_INIT = "mem.heap.init";
-    public static final String MEMORY_HEAP_MAX = "mem.heap.max";
-    public static final String MEMORY_HEAP_USAGE_PERCENT = "mem.heap.usage";
-    public static final String MEMORY_HEAP_USED = "mem.heap.used";
-    public static final String MEMORY_NONHEAP_INIT = "mem.non-heap.init";
-    public static final String MEMORY_NONHEAP_MAX = "mem.non-heap.max";
-    public static final String MEMORY_NONHEAP_USAGE_PERCENT = "mem.non-heap.usage";
-    public static final String MEMORY_NONHEAP_USED = "mem.non-heap.used";
-
     // Custom.
     public static final String FRAME_COUNT = name(Dot11MonitorProbe.class, "frames");
     public static final String FRAME_TIMER = name(Dot11MonitorProbe.class, "timing");

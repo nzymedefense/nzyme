@@ -45,16 +45,14 @@ public abstract class TimerResponse {
     @JsonProperty
     public abstract long count();
 
-    public static TimerResponse fromTimer(Timer t) {
-        Snapshot s = t.getSnapshot();
-
+    public static TimerResponse create(double mean, double max, double min, double stddev, double percentile99, long count) {
         return builder()
-                .mean(TimeUnit.MICROSECONDS.convert((long) s.getMean(), TimeUnit.NANOSECONDS))
-                .max(TimeUnit.MICROSECONDS.convert(s.getMax(), TimeUnit.NANOSECONDS))
-                .min(TimeUnit.MICROSECONDS.convert(s.getMin(), TimeUnit.NANOSECONDS))
-                .stddev(TimeUnit.MICROSECONDS.convert((long) s.getStdDev(), TimeUnit.NANOSECONDS))
-                .percentile99(TimeUnit.MICROSECONDS.convert((long) s.get99thPercentile(), TimeUnit.NANOSECONDS))
-                .count(t.getCount())
+                .mean(mean)
+                .max(max)
+                .min(min)
+                .stddev(stddev)
+                .percentile99(percentile99)
+                .count(count)
                 .build();
     }
 

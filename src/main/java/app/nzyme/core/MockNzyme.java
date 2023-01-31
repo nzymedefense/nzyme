@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
@@ -199,6 +200,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public NodeManager getNodeManager() {
         return nodeManager;
+    }
+
+    @Override
+    public ClusterManager getClusterManager() {
+        return null;
     }
 
     @Override

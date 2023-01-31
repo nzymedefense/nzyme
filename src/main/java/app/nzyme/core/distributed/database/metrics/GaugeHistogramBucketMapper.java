@@ -7,11 +7,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class NodeMetricsGaugeAggregationMapper implements RowMapper<NodeMetricsGaugeAggregation> {
+public class GaugeHistogramBucketMapper implements RowMapper<GaugeHistogramBucket> {
 
     @Override
-    public NodeMetricsGaugeAggregation map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return NodeMetricsGaugeAggregation.create(
+    public GaugeHistogramBucket map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return GaugeHistogramBucket.create(
                 new DateTime(rs.getTimestamp("bucket")),
                 rs.getDouble("sum"),
                 rs.getDouble("average"),

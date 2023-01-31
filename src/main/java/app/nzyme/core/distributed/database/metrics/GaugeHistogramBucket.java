@@ -4,7 +4,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 @AutoValue
-public abstract class NodeMetricsGaugeAggregation {
+public abstract class GaugeHistogramBucket {
     public abstract DateTime bucket();
 
     public abstract Double sum();
@@ -12,7 +12,7 @@ public abstract class NodeMetricsGaugeAggregation {
     public abstract Double maximum();
     public abstract Double minimum();
 
-    public static NodeMetricsGaugeAggregation create(DateTime bucket, Double sum, Double average, Double maximum, Double minimum) {
+    public static GaugeHistogramBucket create(DateTime bucket, Double sum, Double average, Double maximum, Double minimum) {
         return builder()
                 .bucket(bucket)
                 .sum(sum)
@@ -23,7 +23,7 @@ public abstract class NodeMetricsGaugeAggregation {
     }
 
     public static Builder builder() {
-        return new AutoValue_NodeMetricsGaugeAggregation.Builder();
+        return new AutoValue_GaugeHistogramBucket.Builder();
     }
 
     @AutoValue.Builder
@@ -38,7 +38,7 @@ public abstract class NodeMetricsGaugeAggregation {
 
         public abstract Builder minimum(Double minimum);
 
-        public abstract NodeMetricsGaugeAggregation build();
+        public abstract GaugeHistogramBucket build();
     }
 
 }

@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
@@ -144,6 +145,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final BaseConfigurationService configurationService;
 
     private final NodeManager nodeManager;
+    private final ClusterManager clusterManager;
 
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
@@ -206,6 +208,8 @@ public class NzymeNodeImpl implements NzymeNode {
         } catch (NodeManager.NodeInitializationException e) {
             throw new RuntimeException("Could not initialize distributed subsystem.", e);
         }
+
+        this.clusterManager = new ClusterManager(this);
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -518,6 +522,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public NodeManager getNodeManager() {
         return nodeManager;
+    }
+
+    @Override
+    public ClusterManager getClusterManager() {
+        return clusterManager;
     }
 
     private void initializeProbes() {

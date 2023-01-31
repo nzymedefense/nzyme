@@ -2,7 +2,7 @@ package app.nzyme.core.distributed;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.database.NodeEntry;
-import app.nzyme.core.distributed.database.metrics.NodeMetricsGaugeAggregation;
+import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.taps.metrics.BucketSize;
 import app.nzyme.core.util.MetricNames;
 import com.codahale.metrics.MetricRegistry;
@@ -208,19 +208,19 @@ public class NodeManager {
             long tapReportSize = this.tapReportSize.getAndSet(0);
             NodeInformation.Info ni = new NodeInformation().collect();
 
-            writeGauge(NodeMetricName.MEMORY_BYTES_TOTAL.database_label, ni.memoryTotal());
-            writeGauge(NodeMetricName.MEMORY_BYTES_AVAILABLE.database_label, ni.memoryAvailable());
-            writeGauge(NodeMetricName.MEMORY_BYTES_USED.database_label, ni.memoryUsed());
-            writeGauge(NodeMetricName.HEAP_BYTES_TOTAL.database_label, ni.heapTotal());
-            writeGauge(NodeMetricName.HEAP_BYTES_AVAILABLE.database_label, ni.heapAvailable());
-            writeGauge(NodeMetricName.HEAP_BYTES_USED.database_label, ni.heapUsed());
-            writeGauge(NodeMetricName.CPU_SYSTEM_LOAD.database_label, ni.cpuSystemLoad());
-            writeGauge(NodeMetricName.PROCESS_VIRTUAL_SIZE.database_label, ni.processVirtualSize());
-            writeGauge(NodeMetricName.TAP_REPORT_SIZE.database_label, tapReportSize);
+            writeGauge(MetricExternalName.MEMORY_BYTES_TOTAL.database_label, ni.memoryTotal());
+            writeGauge(MetricExternalName.MEMORY_BYTES_AVAILABLE.database_label, ni.memoryAvailable());
+            writeGauge(MetricExternalName.MEMORY_BYTES_USED.database_label, ni.memoryUsed());
+            writeGauge(MetricExternalName.HEAP_BYTES_TOTAL.database_label, ni.heapTotal());
+            writeGauge(MetricExternalName.HEAP_BYTES_AVAILABLE.database_label, ni.heapAvailable());
+            writeGauge(MetricExternalName.HEAP_BYTES_USED.database_label, ni.heapUsed());
+            writeGauge(MetricExternalName.CPU_SYSTEM_LOAD.database_label, ni.cpuSystemLoad());
+            writeGauge(MetricExternalName.PROCESS_VIRTUAL_SIZE.database_label, ni.processVirtualSize());
+            writeGauge(MetricExternalName.TAP_REPORT_SIZE.database_label, tapReportSize);
 
-            writeTimer(NodeMetricName.PGP_ENCRYPTION_TIMER.database_label,
+            writeTimer(MetricExternalName.PGP_ENCRYPTION_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.PGP_ENCRYPTION_TIMING));
-            writeTimer(NodeMetricName.PGP_DECRYPTION_TIMER.database_label,
+            writeTimer(MetricExternalName.PGP_DECRYPTION_TIMER.database_label,
                     metrics.getTimers().get(MetricNames.PGP_DECRYPTION_TIMING));
         } catch(Exception e) {
             LOG.error("Could not write node metrics.", e);
@@ -280,10 +280,10 @@ public class NodeManager {
         );
     }
 
-    public Optional<Map<DateTime, NodeMetricsGaugeAggregation>> findMetricsHistogram(UUID nodeId, String metricName, int hours, BucketSize bucketSize) {
-        Map<DateTime, NodeMetricsGaugeAggregation> result = Maps.newHashMap();
+    public Optional<Map<DateTime, GaugeHistogramBucket>> findMetricsHistogram(UUID nodeId, String metricName, int hours, BucketSize bucketSize) {
+        Map<DateTime, GaugeHistogramBucket> result = Maps.newHashMap();
 
-        List<NodeMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
+        List<GaugeHistogramBucket> agg = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
                                 "MIN(metric_value) AS minimum, SUM(metric_value) AS sum, " +
                                 "date_trunc(:bucket_size, created_at) AS bucket " +
@@ -293,7 +293,7 @@ public class NodeManager {
                         .bind("node_id", nodeId)
                         .bind("metric_name", metricName)
                         .bind("created_at", DateTime.now().minusHours(hours))
-                        .mapTo(NodeMetricsGaugeAggregation.class)
+                        .mapTo(GaugeHistogramBucket.class)
                         .list()
         );
 
@@ -301,7 +301,7 @@ public class NodeManager {
             return Optional.empty();
         }
 
-        for (NodeMetricsGaugeAggregation x : agg) {
+        for (GaugeHistogramBucket x : agg) {
             result.put(x.bucket(), x);
         }
 

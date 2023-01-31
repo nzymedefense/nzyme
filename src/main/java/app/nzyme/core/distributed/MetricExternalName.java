@@ -1,6 +1,6 @@
 package app.nzyme.core.distributed;
 
-public enum NodeMetricName {
+public enum MetricExternalName {
 
     MEMORY_BYTES_TOTAL("memory_bytes_total"),
     MEMORY_BYTES_AVAILABLE("memory_bytes_available"),
@@ -16,7 +16,7 @@ public enum NodeMetricName {
 
     public final String database_label;
 
-    NodeMetricName(String database_label) {
+    MetricExternalName(String database_label) {
         this.database_label = database_label;
     }
 

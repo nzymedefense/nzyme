@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.retro.RetroService;
@@ -54,6 +55,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     void shutdown();
 
     NodeManager getNodeManager();
+    ClusterManager getClusterManager();
 
     Ethernet getEthernet();
 
