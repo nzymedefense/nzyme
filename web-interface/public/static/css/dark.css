@@ -86,6 +86,10 @@ div.card {
     color: #fff;
 }
 
+.alert-danger a {
+    color: #000;
+}
+
 .breadcrumb a {
     color: #8D99AE;
 }

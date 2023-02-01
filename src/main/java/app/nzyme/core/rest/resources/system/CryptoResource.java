@@ -38,8 +38,10 @@ public class CryptoResource {
     @Path("summary")
     public Response summary() {
         Map<String, PGPKeyResponse> fingerprints = Maps.newHashMap();
+        List<String> uniqueFingerprints = Lists.newArrayList();
         for (PGPKeyFingerprint fp : nzyme.getCrypto().getPGPKeysByNode()) {
             fingerprints.put(fp.node(), PGPKeyResponse.create(fp.node(), fp.fingerprint(), fp.createdAt()));
+            uniqueFingerprints.add(fp.fingerprint());
         }
 
         Map<UUID, TimerSnapshot> encryption = nzyme.getClusterManager().findMetricTimer(
@@ -129,7 +131,10 @@ public class CryptoResource {
 
         CryptoNodeMetricsResponse metrics = CryptoNodeMetricsResponse.create(nodeMetrics, clusterMetrics);
 
-        return Response.ok(CryptoResponse.create(metrics, fingerprints)).build();
+
+        return Response.ok(
+                CryptoResponse.create(metrics, fingerprints, uniqueFingerprints.size() == 1)
+        ).build();
     }
 
 }
