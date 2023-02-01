@@ -73,23 +73,19 @@ public class CryptoResource {
             TimerSnapshot nodeEncryption = encryption.get(nodeId);
             TimerSnapshot nodeDecryption = decryption.get(nodeId);
             if (nodeEncryption != null) {
-                encryptionMeans.add(nodeEncryption.mean());
-                encryptionMaxs.add(nodeEncryption.max());
-                if (nodeEncryption.min() > 0) {
-                    encryptionMins.add(nodeEncryption.min());
-                }
-                encryptionStddevs.add(nodeEncryption.stddev());
-                encryptionP99s.add(nodeEncryption.p99());
-                encryptionCounters.add(nodeEncryption.counter());
+                if (nodeEncryption.mean() > 0) encryptionMeans.add(nodeEncryption.mean());
+                if (nodeEncryption.max() > 0) encryptionMaxs.add(nodeEncryption.max());
+                if (nodeEncryption.min() > 0) encryptionMins.add(nodeEncryption.min());
+                if (nodeEncryption.stddev() > 0) encryptionStddevs.add(nodeEncryption.stddev());
+                if (nodeEncryption.p99() > 0) encryptionP99s.add(nodeEncryption.p99());
+                if (nodeEncryption.counter() > 0) encryptionCounters.add(nodeEncryption.counter());
 
-                decryptionMeans.add(nodeDecryption.mean());
-                decryptionMaxs.add(nodeDecryption.max());
-                if (nodeDecryption.min() > 0) {
-                    decryptionMins.add(nodeDecryption.min());
-                }
-                decryptionStddevs.add(nodeDecryption.stddev());
-                decryptionP99s.add(nodeDecryption.p99());
-                decryptionCounters.add(nodeDecryption.counter());
+                if (nodeDecryption.mean() > 0) decryptionMeans.add(nodeDecryption.mean());
+                if (nodeDecryption.max() > 0) decryptionMaxs.add(nodeDecryption.max());
+                if (nodeDecryption.min() > 0) decryptionMins.add(nodeDecryption.min());
+                if (nodeDecryption.stddev() > 0) decryptionStddevs.add(nodeDecryption.stddev());
+                if (nodeDecryption.p99() > 0) decryptionP99s.add(nodeDecryption.p99());
+                if (nodeDecryption.counter() > 0) decryptionCounters.add(nodeDecryption.counter());
 
                 nodeMetrics.put(nzyme.getNodeManager().findNameOfNode(nodeId), CryptoMetricsResponse.create(
                         TimerResponse.create(
