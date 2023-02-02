@@ -61,7 +61,13 @@ public abstract class NodeResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    @JsonProperty("clock")
+    public abstract DateTime clock();
+
+    @JsonProperty("clock_drift_ms")
+    public abstract long clockDriftMs();
+
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, long clockDriftMs) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -81,6 +87,8 @@ public abstract class NodeResponse {
                 .osInformation(osInformation)
                 .version(version)
                 .lastSeen(lastSeen)
+                .clock(clock)
+                .clockDriftMs(clockDriftMs)
                 .build();
     }
 
@@ -125,6 +133,10 @@ public abstract class NodeResponse {
         public abstract Builder version(String version);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder clock(DateTime clock);
+
+        public abstract Builder clockDriftMs(long clockDriftMs);
 
         public abstract NodeResponse build();
     }

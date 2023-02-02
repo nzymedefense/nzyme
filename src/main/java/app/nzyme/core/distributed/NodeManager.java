@@ -19,6 +19,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTime;
+import org.joda.time.Period;
+import org.joda.time.PeriodType;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -117,11 +119,11 @@ public class NodeManager {
                 handle.createUpdate("INSERT INTO nodes(uuid, name, http_external_uri, version, last_seen, " +
                                 "memory_bytes_total, memory_bytes_available, memory_bytes_used, heap_bytes_total, " +
                                 "heap_bytes_available, heap_bytes_used, cpu_system_load, cpu_thread_count, " +
-                                "process_start_time, process_virtual_size, process_arguments, os_information) " +
+                                "process_start_time, process_virtual_size, process_arguments, os_information, clock) " +
                                 "VALUES(:uuid, :name, :http_external_uri, :version, NOW(), :memory_bytes_total, " +
                                 ":memory_bytes_available, :memory_bytes_used, :heap_bytes_total, :heap_bytes_available, " +
                                 " :heap_bytes_used, :cpu_system_load, :cpu_thread_count, :process_start_time, " +
-                                ":process_virtual_size, :process_arguments, :os_information) " +
+                                ":process_virtual_size, :process_arguments, :os_information, :clock) " +
                                 "ON CONFLICT(uuid) DO UPDATE SET name = :name, http_external_uri = :http_external_uri, " +
                                 "version = :version, last_seen = NOW(), memory_bytes_total = :memory_bytes_total, " +
                                 "memory_bytes_available = :memory_bytes_available, memory_bytes_used = :memory_bytes_used, " +
@@ -129,7 +131,7 @@ public class NodeManager {
                                 "heap_bytes_used = :heap_bytes_used, cpu_system_load = :cpu_system_load, " +
                                 "cpu_thread_count = :cpu_thread_count, process_start_time = :process_start_time, " +
                                 "process_virtual_size = :process_virtual_size, process_arguments = :process_arguments, " +
-                                "os_information = :os_information")
+                                "os_information = :os_information, clock = :clock")
                         .bind("uuid", localNodeId)
                         .bind("name", nzyme.getNodeInformation().name())
                         .bind("http_external_uri", nzyme.getConfiguration().httpExternalUri().toString())
@@ -146,6 +148,7 @@ public class NodeManager {
                         .bind("process_virtual_size", ni.processVirtualSize())
                         .bind("process_arguments", ni.processArguments())
                         .bind("os_information", ni.osInformation())
+                        .bind("clock", DateTime.now())
                         .execute()
         );
     }
@@ -179,7 +182,9 @@ public class NodeManager {
                         dbEntry.processArguments(),
                         dbEntry.osInformation(),
                         dbEntry.version(),
-                        dbEntry.lastSeen()
+                        dbEntry.lastSeen(),
+                        dbEntry.clock(),
+                        (long) new Period(dbEntry.lastSeen(), dbEntry.clock(), PeriodType.millis()).getMillis()
                 ));
             } catch (Exception e) {
                 LOG.error("Could not create node from database entry. Skipping.", e);
@@ -218,7 +223,9 @@ public class NodeManager {
                         ne.processArguments(),
                         ne.osInformation(),
                         ne.version(),
-                        ne.lastSeen()
+                        ne.lastSeen(),
+                        ne.clock(),
+                        (long) new Period(ne.lastSeen(), ne.clock(), PeriodType.millis()).getMillis()
                 ));
             } catch (Exception e) {
                 throw new RuntimeException("Could not create node from database entry.", e);

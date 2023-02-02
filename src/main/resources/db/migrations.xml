@@ -1375,4 +1375,12 @@
         <modifyDataType tableName="node_metrics_timers" columnName="metric_counter" newDataType="bigint" />
     </changeSet>
 
+    <changeSet id="add_clock_to_nodes" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="clock" type="timestamp with time zone" defaultValue="1970-01-01 00:00:00 America/Chicago">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

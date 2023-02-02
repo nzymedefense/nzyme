@@ -27,8 +27,9 @@ public abstract class NodeEntry {
 
     public abstract String version();
     public abstract DateTime lastSeen();
+    public abstract DateTime clock();
 
-    public static NodeEntry create(UUID uuid, String name, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen) {
+    public static NodeEntry create(UUID uuid, String name, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -47,6 +48,7 @@ public abstract class NodeEntry {
                 .osInformation(osInformation)
                 .version(version)
                 .lastSeen(lastSeen)
+                .clock(clock)
                 .build();
     }
 
@@ -90,6 +92,9 @@ public abstract class NodeEntry {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
+        public abstract Builder clock(DateTime clock);
+
         public abstract NodeEntry build();
     }
+
 }

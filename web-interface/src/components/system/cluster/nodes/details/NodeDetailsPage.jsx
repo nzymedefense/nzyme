@@ -80,6 +80,8 @@ function NodeDetailsPage() {
                       </span>
                     </span>
                   </dd>
+                  <dt>nzyme Version</dt>
+                  <dd>{node.version}</dd>
                 </dl>
               </div>
             </div>
@@ -94,6 +96,8 @@ function NodeDetailsPage() {
                   <dd>{node.os_information}</dd>
                   <dt>Maximum CPU Threads</dt>
                   <dd>{node.cpu_thread_count}</dd>
+                  <dt>Drift From nzyme Clock</dt>
+                  <dd>{numeral(node.clock_drift_ms).format("0,0")} ms</dd>
                 </dl>
               </div>
             </div>

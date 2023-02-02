@@ -125,7 +125,9 @@ public class NodesResource {
                 node.processArguments(),
                 node.osInformation(),
                 node.version(),
-                node.lastSeen()
+                node.lastSeen(),
+                node.clock(),
+                node.clockDriftMs()
         );
     }
 

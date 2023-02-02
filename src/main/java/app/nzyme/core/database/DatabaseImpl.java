@@ -1,7 +1,7 @@
 package app.nzyme.core.database;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
-import app.nzyme.core.distributed.database.NodeMapper;
+import app.nzyme.core.distributed.database.NodeEntryMapper;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucketMapper;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshotMapper;
 import app.nzyme.plugin.Database;
@@ -92,7 +92,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DNSTrafficSummaryMapper())
                 .registerRowMapper(new DNSPairSummaryMapper())
                 .registerRowMapper(new PGPKeyFingerprintMapper())
-                .registerRowMapper(new NodeMapper())
+                .registerRowMapper(new NodeEntryMapper())
                 .registerRowMapper(new GaugeHistogramBucketMapper())
                 .registerRowMapper(new TimerSnapshotMapper());
 

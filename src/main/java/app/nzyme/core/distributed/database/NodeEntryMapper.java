@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class NodeMapper implements RowMapper<NodeEntry> {
+public class NodeEntryMapper implements RowMapper<NodeEntry> {
 
     @Override
     public NodeEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
@@ -29,7 +29,8 @@ public class NodeMapper implements RowMapper<NodeEntry> {
                 rs.getString("process_arguments"),
                 rs.getString("os_information"),
                 rs.getString("version"),
-                new DateTime(rs.getTimestamp("last_seen"))
+                new DateTime(rs.getTimestamp("last_seen")),
+                new DateTime(rs.getTimestamp("clock"))
         );
     }
 
