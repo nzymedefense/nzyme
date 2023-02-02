@@ -328,3 +328,146 @@ table tr.table-span-heading td {
     --bs-table-accent-bg: #fff !important;
     border-bottom: 1px solid #000;
 }
+
+div.health-console div.hc-row {
+    clear: both;
+}
+
+div.health-console div.hc-row div.hc-indicator {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    width: 15%;
+    padding: 6px 6px 3px;
+    margin: 5px;
+    float: left;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+div.health-console div.hc-row div.hc-green {
+    background-color: #367E18;
+    border: 1px solid #1E460E;
+}
+
+div.health-console div.hc-row div.hc-orange {
+    background-color: #F57328;
+    border: 1px solid #A14E1D;
+}
+
+div.health-console div.hc-row div.hc-red {
+    background-color: #CC3636;
+    border: 1px solid #802424;
+}
+
+div.health-consequence {
+    font-family: 'Share Tech Mono', monospace;
+    border: 1px dashed #ccc;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+div.health-consequence-orange {
+    border-color: #F57328;
+}
+
+div.health-consequence-red {
+    border-color: #CC3636;
+}
+
+div.health-consequence h4 {
+    display: inline-block;
+    font-size: 16px;
+    padding: 6px 8px 4px;
+}
+
+div.health-consequence h4 span.health-consequence-indicator {
+    text-transform: uppercase;
+}
+
+div.health-consequence h4.health-consequence-orange {
+    background-color: #F57328;
+    border: 1px solid #A14E1D;
+    color: #fff;
+}
+
+div.health-consequence h4.health-consequence-red {
+    background-color: #CC3636;
+    border: 1px solid #802424;
+    color: #fff;
+}
+
+div.health-consequence div.health-consequence-left {
+    width: 50%;
+    float: left;
+}
+
+div.health-consequence div.health-consequence-right {
+    width: 50%;
+    padding-left: 12px;
+    float: left;
+}
+
+div.health-consequence div.health-consequence-consequence {
+    margin-top: 8px;
+}
+
+div.health-consequence div.health-consequence-consequence ul {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+div.health-consequence div.health-consequence-range {
+    margin-top: 8px;
+}
+
+div.health-consequence div.health-consequence-range ul {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure {
+    margin-top: 8px;
+    margin-left: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    list-style-type: none;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure li {
+    margin-top: 2px;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure ol li.consequence-solution-or {
+    margin-left: 10px;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure span.consequence-solution-conditional {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-style: italic;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure ol {
+    list-style-type: none;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure span.consequence-solution-counter {
+    text-decoration: underline;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure span.consequence-solution-secondary-indicator {
+    background-color: #000;
+    color: #fff;
+    padding-left: 3px;
+    padding-right: 3px;
+    text-transform: uppercase;
+}
+
+div.health-consequence div.health-consequence-solutions ol.consequence-solution-procedure code {
+    background-color: #E3E3E3;
+    color: #FF4D4C;
+    font-size: 13px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
