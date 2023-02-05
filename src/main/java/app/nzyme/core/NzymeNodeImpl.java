@@ -19,6 +19,7 @@ package app.nzyme.core;
 
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.plugin.Database;
@@ -178,6 +179,8 @@ public class NzymeNodeImpl implements NzymeNode {
     private final ContactManager contactManager;
     private final TrackerManager trackerManager;
 
+    private final HealthMonitor healthMonitor;
+
     private final Anonymizer anonymizer;
 
     private GroundStation groundStation;
@@ -236,6 +239,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.sentry = new Sentry(this, 5);
         this.clients = new Clients(this);
         this.objectMapper = new ObjectMapper();
+
+        this.healthMonitor = new HealthMonitor(this);
 
         this.deauthenticationMonitor = new DeauthenticationMonitor(this);
 
@@ -362,6 +367,8 @@ public class NzymeNodeImpl implements NzymeNode {
             periodicalManager.scheduleAtFixedRate(new SignalTrackMonitor(this), 60, 60, TimeUnit.SECONDS);
         }
 
+        healthMonitor.initialize();
+
         // Load plugins.
         PluginLoader pl = new PluginLoader(new File(configuration.pluginDirectory())); // TODO make path configurable
         for (Plugin plugin : pl.loadPlugins()) {
@@ -414,6 +421,7 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(CryptoResource.class);
         resourceConfig.register(MonitoringResource.class);
         resourceConfig.register(NodesResource.class);
+        resourceConfig.register(HealthResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
@@ -527,6 +535,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public ClusterManager getClusterManager() {
         return clusterManager;
+    }
+
+    @Override
+    public HealthMonitor getHealthMonitor() {
+        return healthMonitor;
     }
 
     private void initializeProbes() {

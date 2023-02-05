@@ -1383,4 +1383,34 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_health_indicators" author="lennartkoopmann">
+        <createTable tableName="health_indicators">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="indicator_id" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="indicator_name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="level" type="varchar(25)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_checked" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="make_health_indicators_id_unique" author="lennartkoopmann">
+        <createIndex tableName="health_indicators" indexName="idx_healthindicators_indicatorid" unique="true">
+            <column name="indicator_id" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

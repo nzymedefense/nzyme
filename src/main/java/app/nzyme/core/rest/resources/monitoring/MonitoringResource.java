@@ -4,7 +4,7 @@ import app.nzyme.plugin.RegistryCryptoException;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.monitoring.prometheus.PrometheusRegistryKeys;
+import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
 import app.nzyme.core.rest.responses.monitoring.MonitoringSummaryResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

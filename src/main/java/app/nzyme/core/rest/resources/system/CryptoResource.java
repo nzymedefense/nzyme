@@ -7,7 +7,6 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.rest.responses.crypto.CryptoMetricsResponse;
 import app.nzyme.core.rest.responses.crypto.CryptoResponse;
 import app.nzyme.core.rest.responses.crypto.PGPKeyResponse;
@@ -38,11 +37,6 @@ public class CryptoResource {
     @Path("summary")
     public Response summary() {
         Map<String, PGPKeyResponse> fingerprints = Maps.newHashMap();
-        List<String> uniqueFingerprints = Lists.newArrayList();
-        for (PGPKeyFingerprint fp : nzyme.getCrypto().getPGPKeysByNode()) {
-            fingerprints.put(fp.node(), PGPKeyResponse.create(fp.node(), fp.fingerprint(), fp.createdAt()));
-            uniqueFingerprints.add(fp.fingerprint());
-        }
 
         Map<UUID, TimerSnapshot> encryption = nzyme.getClusterManager().findMetricTimer(
                 MetricExternalName.PGP_ENCRYPTION_TIMER.database_label
@@ -131,9 +125,8 @@ public class CryptoResource {
 
         CryptoNodeMetricsResponse metrics = CryptoNodeMetricsResponse.create(nodeMetrics, clusterMetrics);
 
-
         return Response.ok(
-                CryptoResponse.create(metrics, fingerprints, uniqueFingerprints.size() == 1)
+                CryptoResponse.create(metrics, fingerprints, nzyme.getCrypto().allPGPKeysEqualAcrossCluster())
         ).build();
     }
 

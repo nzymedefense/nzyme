@@ -1,9 +1,11 @@
 package app.nzyme.core.crypto;
 
+import app.nzyme.core.rest.responses.crypto.PGPKeyResponse;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
@@ -301,6 +303,15 @@ public class Crypto {
                         .mapTo(String.class)
                         .one()
         );
+    }
+
+    public boolean allPGPKeysEqualAcrossCluster() {
+        List<String> uniqueFingerprints = Lists.newArrayList();
+        for (PGPKeyFingerprint fp : getPGPKeysByNode()) {
+            uniqueFingerprints.add(fp.fingerprint());
+        }
+
+        return uniqueFingerprints.size() == 1;
     }
 
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {

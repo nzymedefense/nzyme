@@ -1,8 +1,15 @@
 import React from "react";
 import Consequence from "./Consequence";
 import NodeClockProcedure from "./procedures/NodeClockProcedure";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 function Consequences(props) {
+
+  const indicators = props.indicators
+
+  if (!indicators) {
+    return <LoadingSpinner />
+  }
 
   return (
       <div className="health-consequences">

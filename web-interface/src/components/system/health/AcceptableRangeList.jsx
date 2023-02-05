@@ -7,8 +7,8 @@ function AcceptableRangeList(props) {
   } else {
     return (
         <ul>
-          {props.range.map(function (key) {
-            return <li>{key}</li>
+          {props.range.map(function (key, i) {
+            return <li key={"ar-" + i}>{key}</li>
           })}
         </ul>
     )

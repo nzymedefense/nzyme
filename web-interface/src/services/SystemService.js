@@ -9,6 +9,13 @@ class SystemService {
       self.setState({ versionInfo: response.data })
     })
   }
+
+  getHealthIndicators(setHealthIndicators) {
+    RESTClient.get('/system/health/indicators', {}, function (response) {
+      setHealthIndicators(response.data.indicators)
+    })
+  }
+
 }
 
 export default SystemService

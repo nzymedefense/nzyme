@@ -1,4 +1,4 @@
-package app.nzyme.core.monitoring.prometheus;
+package app.nzyme.core.monitoring.exporters.prometheus;
 
 public class RegistryKeys {
 

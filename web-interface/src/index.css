@@ -360,19 +360,16 @@ div.health-console div.hc-row div.hc-red {
     border: 1px solid #802424;
 }
 
+div.health-console div.hc-row div.hc-invalid {
+    background-color: #707070;
+    border: 1px solid #000000;
+}
+
 div.health-consequence {
     font-family: 'Share Tech Mono', monospace;
     border: 1px dashed #ccc;
     padding: 10px;
     margin-bottom: 8px;
-}
-
-div.health-consequence-orange {
-    border-color: #F57328;
-}
-
-div.health-consequence-red {
-    border-color: #CC3636;
 }
 
 div.health-consequence h4 {

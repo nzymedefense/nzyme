@@ -4,7 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
-import app.nzyme.core.monitoring.prometheus.PrometheusRegistryKeys;
+import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

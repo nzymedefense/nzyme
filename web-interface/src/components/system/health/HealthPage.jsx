@@ -1,8 +1,23 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import HealthConsole from "./HealthConsole";
 import Consequences from "./Consequences";
+import SystemService from "../../../services/SystemService";
+
+const systemService = new SystemService();
+
+function fetchData(setIndicators) {
+  systemService.getHealthIndicators(setIndicators)
+}
 
 function HealthPage(props) {
+
+  const [indicators, setIndicators] = useState(null)
+
+  useEffect(() => {
+    fetchData(setIndicators)
+    const id = setInterval(() => fetchData(setIndicators), 5000)
+    return () => clearInterval(id)
+  }, [setIndicators])
 
   return (
       <div>
@@ -16,7 +31,7 @@ function HealthPage(props) {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <HealthConsole />
+                <HealthConsole indicators={indicators} />
               </div>
             </div>
           </div>
@@ -28,7 +43,7 @@ function HealthPage(props) {
               <div className="card-body">
                 <h3>Consequences</h3>
 
-                <Consequences />
+                <Consequences indicators={indicators} />
               </div>
             </div>
           </div>

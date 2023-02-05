@@ -19,6 +19,7 @@ package app.nzyme.core;
 
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
@@ -56,6 +57,8 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     NodeManager getNodeManager();
     ClusterManager getClusterManager();
+
+    HealthMonitor getHealthMonitor();
 
     Ethernet getEthernet();
 

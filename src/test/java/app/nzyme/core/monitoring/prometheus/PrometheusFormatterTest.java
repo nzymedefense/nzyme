@@ -2,6 +2,7 @@ package app.nzyme.core.monitoring.prometheus;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.monitoring.exporters.prometheus.PrometheusFormatter;
 import org.testng.annotations.Test;
 
 public class PrometheusFormatterTest {

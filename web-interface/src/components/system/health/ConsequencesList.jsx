@@ -7,8 +7,8 @@ function ConsequencesList(props) {
   } else {
     return (
         <ul>
-          {props.consequences.map(function (key) {
-            return <li>{key}</li>
+          {props.consequences.map(function (key, i) {
+            return <li key={"conq-" + i}>{key}</li>
           })}
         </ul>
     )
