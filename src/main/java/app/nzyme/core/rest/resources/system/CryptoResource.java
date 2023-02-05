@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
 import app.nzyme.core.rest.responses.crypto.CryptoNodeMetricsResponse;
@@ -37,6 +38,9 @@ public class CryptoResource {
     @Path("summary")
     public Response summary() {
         Map<String, PGPKeyResponse> fingerprints = Maps.newHashMap();
+        for (PGPKeyFingerprint fp : nzyme.getCrypto().getPGPKeysByNode()) {
+            fingerprints.put(fp.node(), PGPKeyResponse.create(fp.node(), fp.fingerprint(), fp.createdAt()));
+        }
 
         Map<UUID, TimerSnapshot> encryption = nzyme.getClusterManager().findMetricTimer(
                 MetricExternalName.PGP_ENCRYPTION_TIMER.database_label
