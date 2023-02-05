@@ -30,7 +30,8 @@
                 "quotes": "off",
                 "semi": "off",
                 "object-curly-spacing": "off",
-                "space-before-function-paren": "off"
+                "space-before-function-paren": "off",
+                "eol-last": "off"
             }
         }
    ],

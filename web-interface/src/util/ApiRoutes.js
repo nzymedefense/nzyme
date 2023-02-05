@@ -25,7 +25,7 @@ const ApiRoutes = {
     },
     HEALTH: {
       INDEX: "/system/health"
-    },
+    }
   },
   REPORTING: {
     INDEX: '/reporting',
