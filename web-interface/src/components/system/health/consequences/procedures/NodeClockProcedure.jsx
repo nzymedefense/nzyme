@@ -1,5 +1,5 @@
 import React from "react";
-import ApiRoutes from "../../../../util/ApiRoutes";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 import SolutionCounter from "./layout/SolutionCounter";
 import Conditional from "./layout/Conditional";
 import Indicator from "./layout/Indicator";

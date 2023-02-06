@@ -6,6 +6,7 @@ import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
@@ -23,6 +24,8 @@ import java.security.*;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -69,7 +72,11 @@ public class Crypto {
     private final Timer encryptionTimer;
     private final Timer decryptionTimer;
 
+    private final NzymeNode nzyme;
+
     public Crypto(NzymeNode nzyme) {
+        this.nzyme = nzyme;
+
         this.cryptoDirectoryConfig = new File(nzyme.getConfiguration().cryptoDirectory());
         this.database = nzyme.getDatabase();
         this.nodeId = nzyme.getNodeInformation().name(); // TODO
@@ -178,6 +185,14 @@ public class Crypto {
         } else {
             throw new CryptoInitializationException("Unexpected number of PGP keys for this node in database. Cannot continue.");
         }
+
+
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("pgp-retentionclean-%d")
+                        .setDaemon(true)
+                        .build()
+        ).scheduleAtFixedRate(this::retentionCleanPGPKeys, 0, 5, TimeUnit.MINUTES);
     }
 
     public byte[] encrypt(byte[] value) throws CryptoOperationException {
@@ -350,6 +365,16 @@ public class Crypto {
                         .setProvider("BC")
                         .build("nzyme".toCharArray())
         );
+    }
+
+    private void retentionCleanPGPKeys() {
+        /*List<UUID>
+        nzyme.getNodeManager().getActiveNodes();
+
+        for (PGPKeyFingerprint fingerprint : getPGPKeysByNode()) {
+
+        }*/
+
     }
 
     public static final class CryptoInitializationException extends Throwable {

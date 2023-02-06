@@ -4,7 +4,7 @@ function Indicator(props) {
 
   const indicator = props.indicator;
 
-  if (!indicator || indicator.expired) {
+  if (!indicator || indicator.expired || indicator.level === "UNAVAILABLE") {
     return <div className="hc-indicator hc-invalid">{props.name}</div>
   }
 

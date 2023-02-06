@@ -3,6 +3,7 @@ package app.nzyme.core.monitoring.health;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.monitoring.health.indicators.CryptoSyncIndicator;
+import app.nzyme.core.monitoring.health.indicators.DatabaseClockIndicator;
 import app.nzyme.core.monitoring.health.indicators.NodeClockIndicator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -11,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +42,7 @@ public class HealthMonitor {
         List<Indicator> indicators = new ImmutableList.Builder<Indicator>()
                 .add(new NodeClockIndicator(nzyme.getNodeManager()))
                 .add(new CryptoSyncIndicator(nzyme.getCrypto()))
+                .add(new DatabaseClockIndicator(nzyme.getDatabase()))
                 .build();
 
         for (Indicator indicator : indicators) {

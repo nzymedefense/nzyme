@@ -34,8 +34,11 @@ import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.jodatime2.JodaTimePlugin;
 import org.jdbi.v3.postgres.PostgresPlugin;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
+
+import java.sql.Timestamp;
 
 public class DatabaseImpl implements Database {
 
@@ -110,11 +113,21 @@ public class DatabaseImpl implements Database {
     }
 
     public long getTotalSize() {
-        return withHandle(handle -> {
-            return handle.createQuery("SELECT pg_database_size(current_database())")
-                    .mapTo(Long.class)
-                    .first();
-        });
+        return withHandle(handle ->
+                handle.createQuery("SELECT pg_database_size(current_database())")
+                .mapTo(Long.class)
+                .first());
+    }
+
+    @Override
+    public DateTime getDatabaseClock() {
+        Timestamp now = withHandle(handle ->
+                handle.createQuery("SELECT NOW()")
+                        .mapTo(Timestamp.class)
+                        .one()
+        );
+
+        return new DateTime(now);
     }
 
     public <R, X extends Exception> R withHandle(HandleCallback<R, X> callback) throws X {

@@ -1,7 +1,7 @@
-import React from "react";
-import Consequence from "./Consequence";
-import NodeClockProcedure from "./procedures/NodeClockProcedure";
+import React, {useEffect} from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import NodeClockConsequence from "./consequences/NodeClockConsequence";
+import CryptoSyncConsequence from "./consequences/CryptoSyncConsequence";
 
 function Consequences(props) {
 
@@ -11,21 +11,24 @@ function Consequences(props) {
     return <LoadingSpinner />
   }
 
+  const consequences = []
+
+  useEffect(() => {
+    for (const k in indicators) {
+      const indicator = indicators[k];
+
+      if (indicator.level === 'RED' || indicator.level === 'ORANGE') {
+        consequences.push(indicator.id)
+      }
+    }
+
+    console.log(consequences);
+  }, [indicators])
+
   return (
       <div className="health-consequences">
-          <Consequence
-              indicator="Node Clock"
-              color="red"
-              problem="At least one nzyme node has a local system clock that is not synchronized with reference world time."
-              acceptableRange={[
-                String.fromCharCode(177) + "5000 ms of drift from reference world time"
-              ]}
-              consequences={[
-                "Node will not reliably participate in cluster task work queue processing",
-                "Node will not reliably be detected as online or offline"
-              ]}
-              procedure={<NodeClockProcedure />}
-          />
+        <CryptoSyncConsequence show={true} />
+        <NodeClockConsequence show={false} />
       </div>
   )
 

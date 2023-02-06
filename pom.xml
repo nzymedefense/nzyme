@@ -56,6 +56,7 @@
         <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
         <bouncycastle.version>1.72.2</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
+        <commonsnet.version>3.9.0</commonsnet.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -340,6 +341,11 @@
             <groupId>com.github.oshi</groupId>
             <artifactId>oshi-core</artifactId>
             <version>${oshi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>${commonsnet.version}</version>
         </dependency>
     </dependencies>
 

@@ -8,7 +8,7 @@ function Consequence(props) {
   return (
       <div className={"health-consequence health-consequence-" + props.color}>
         <div className="health-consequence-left">
-          <ConsequenceTitle title="Node Clock" color={props.color} />
+          <ConsequenceTitle title={props.indicator} color={props.color} />
 
           <div className="health-consequence-description">
             <strong>Problem:</strong> {props.problem}
