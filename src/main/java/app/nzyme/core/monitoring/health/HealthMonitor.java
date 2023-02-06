@@ -5,6 +5,7 @@ import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.monitoring.health.indicators.CryptoSyncIndicator;
 import app.nzyme.core.monitoring.health.indicators.DatabaseClockIndicator;
 import app.nzyme.core.monitoring.health.indicators.NodeClockIndicator;
+import app.nzyme.core.monitoring.health.indicators.TapClockIndicator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +43,8 @@ public class HealthMonitor {
         List<Indicator> indicators = new ImmutableList.Builder<Indicator>()
                 .add(new NodeClockIndicator(nzyme.getNodeManager()))
                 .add(new CryptoSyncIndicator(nzyme.getCrypto()))
-                .add(new DatabaseClockIndicator(nzyme.getDatabase()))
+                .add(new DatabaseClockIndicator(nzyme.getDatabase(), nzyme.getConfiguration().ntpServer()))
+                .add(new TapClockIndicator(nzyme.getTapManager()))
                 .build();
 
         for (Indicator indicator : indicators) {

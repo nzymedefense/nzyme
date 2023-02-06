@@ -17,9 +17,11 @@ public class DatabaseClockIndicator extends Indicator {
     private static final Logger LOG = LogManager.getLogger(DatabaseClockIndicator.class);
 
     private final Database database;
+    private final String ntpHost;
 
-    public DatabaseClockIndicator(Database database) {
+    public DatabaseClockIndicator(Database database, String ntpHost) {
         this.database = database;
+        this.ntpHost = ntpHost;
     }
 
     @Override
@@ -29,7 +31,8 @@ public class DatabaseClockIndicator extends Indicator {
 
         try {
             c.open();
-            TimeInfo info = c.getTime(InetAddress.getByName("pool.ntp.org"));
+
+            TimeInfo info = c.getTime(InetAddress.getByName(ntpHost));
             info.computeDetails();
 
             /*

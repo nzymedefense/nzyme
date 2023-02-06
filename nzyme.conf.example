@@ -26,6 +26,9 @@ general: {
   # Path to nzyme cryptographic key/certificate directory.
   crypto_directory: /usr/share/nzyme/crypto
 
+  # Nzyme is using NTP to compare clocks to world reference time and alert you if there is time drift. Default: pool.ntp.org
+  ntp_server: pool.ntp.org
+
   # We use Python to inject frames for traps.
   python {
     # Path to python executable. (nzyme supports both Python 3 and 2)

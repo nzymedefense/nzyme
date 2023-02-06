@@ -35,6 +35,7 @@ public class BluffTest {
                 new File("").toPath(),
                 "plugin",
                 "crypto_test",
+                "pool.ntp.org",
                 new InetSocketAddress("0.0.0.0", 9001),
                 ImmutableList.of(),
                 ImmutableList.of(),

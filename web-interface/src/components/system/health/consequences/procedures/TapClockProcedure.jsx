@@ -4,12 +4,12 @@ import SolutionCounter from "./layout/SolutionCounter";
 import Conditional from "./layout/Conditional";
 import Indicator from "./layout/Indicator";
 
-function NodeClockProcedure(props) {
+function TapClockProcedure(props) {
   return (
       <ol className="consequence-solution-procedure">
         <li>
-          <SolutionCounter counter="1" /> Identify nzyme nodes with unsafe clock drift on the{' '}
-          <a href={ApiRoutes.SYSTEM.CLUSTER.INDEX}>nodes overview</a> page
+          <SolutionCounter counter="1" /> Identify nzyme taps with unsafe clock drift on the{' '}
+          <a href={ApiRoutes.SYSTEM.TAPS.INDEX}>taps overview</a> page
         </li>
 
         <li>
@@ -22,7 +22,7 @@ function NodeClockProcedure(props) {
         </li>
         <li className="consequence-solution-sublist">
           <ol>
-            <li><SolutionCounter counter="3.1" /> <Conditional text="For each" /> node with clock drift, perform:</li>
+            <li><SolutionCounter counter="3.1" /> <Conditional text="For each" /> tap with clock drift, perform:</li>
             <li className="consequence-solution-sublist">
               <ol>
                 <li>
@@ -46,4 +46,4 @@ function NodeClockProcedure(props) {
   )
 }
 
-export default NodeClockProcedure;
+export default TapClockProcedure;

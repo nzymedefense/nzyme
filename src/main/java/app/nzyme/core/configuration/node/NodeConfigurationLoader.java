@@ -99,6 +99,7 @@ public class NodeConfigurationLoader {
                 parseTlsKeyPath(),
                 parsePluginDirectory(),
                 parseCryptoDirectory(),
+                parseNtpServer(),
                 parseRemoteInputAddress(),
                 parseUplinks(),
                 baseDot11ConfigurationLoader.parseDot11Monitors(),
@@ -269,6 +270,10 @@ public class NodeConfigurationLoader {
         return general.getString(ConfigurationKeys.CRYPTO_DIRECTORY);
     }
 
+    private String parseNtpServer() {
+        return general.getString(ConfigurationKeys.NTP_SERVER);
+    }
+
     private URI parseRestListenUri() {
         return URI.create(interfaces.getString(ConfigurationKeys.REST_LISTEN_URI));
     }
@@ -413,6 +418,7 @@ public class NodeConfigurationLoader {
         ConfigurationValidator.expect(general, ConfigurationKeys.FETCH_OUIS, ConfigurationKeys.GENERAL, Boolean.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
+        ConfigurationValidator.expect(general, ConfigurationKeys.NTP_SERVER, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
