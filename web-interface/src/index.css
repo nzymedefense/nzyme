@@ -187,6 +187,10 @@ div.content {
     top: -1px;
 }
 
+#nav-side i.sidebar-icon {
+    width: 13px;
+}
+
 #footer {
     color: #aaa;
 }
