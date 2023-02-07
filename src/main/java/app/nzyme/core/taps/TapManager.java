@@ -34,7 +34,7 @@ public class TapManager {
                         .setNameFormat("taps-cleaner-%d")
                         .setDaemon(true)
                         .build()
-        ).scheduleAtFixedRate(this::retentionClean, 0, 5, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::retentionCleanMetrics, 0, 5, TimeUnit.MINUTES);
     }
 
     public void registerTapStatus(StatusReport report) {
@@ -240,7 +240,7 @@ public class TapManager {
         );
     }
 
-    private void retentionClean() {
+    private void retentionCleanMetrics() {
         nzyme.getDatabase().useHandle(handle -> {
             handle.createUpdate("DELETE FROM tap_metrics_gauges WHERE created_at < :created_at")
                     .bind("created_at", DateTime.now().minusHours(24))
@@ -248,10 +248,13 @@ public class TapManager {
         });
     }
 
-    public Optional<List<Tap>> findAllTaps() {
-        List<Tap> taps = nzyme.getDatabase().withHandle(handle -> handle.createQuery("SELECT * FROM taps;")
-                .mapTo(Tap.class)
-                .list());
+    public Optional<List<Tap>> getTaps() {
+        List<Tap> taps = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE updated_at > :timeout ORDER BY name DESC")
+                        .bind("timeout", DateTime.now().minusHours(24))
+                        .mapTo(Tap.class)
+                        .list()
+        );
 
         return taps == null || taps.isEmpty() ? Optional.empty() : Optional.of(taps);
     }

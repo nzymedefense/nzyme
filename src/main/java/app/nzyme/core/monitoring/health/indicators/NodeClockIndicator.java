@@ -20,7 +20,7 @@ public class NodeClockIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        for (Node node : nodeManager.getActiveNodes()) {
+        for (Node node : nodeManager.getNodes()) {
             // We only want to check very recently active nodes.
             if (node.lastSeen().isBefore(DateTime.now().minusMinutes(2))) {
                 LOG.debug("Skipping inactive node [{}/{}].", node.name(), node.uuid());

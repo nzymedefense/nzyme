@@ -23,9 +23,9 @@ public class TapClockIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findAllTaps();
+        Optional<List<Tap>> taps = tapManager.getTaps();
         if (taps.isEmpty()) {
-            // No active taps.
+            // No recently active taps.
             return IndicatorStatus.green(this);
         }
 

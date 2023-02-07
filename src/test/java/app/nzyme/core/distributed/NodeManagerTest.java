@@ -99,16 +99,16 @@ public class NodeManagerTest {
     public void testRegistersSelf() throws NodeManager.NodeInitializationException {
         NzymeNode nzyme = new MockNzyme();
         NodeManager nm = new NodeManager(nzyme);
-        assertTrue(nm.getActiveNodes().isEmpty());
+        assertTrue(nm.getNodes().isEmpty());
 
         nm.initialize();
 
-        assertTrue(nm.getActiveNodes().isEmpty());
+        assertTrue(nm.getNodes().isEmpty());
 
         nm.registerSelf();
 
-        assertEquals(nm.getActiveNodes().size(), 1);
-        Node node = nm.getActiveNodes().get(0);
+        assertEquals(nm.getNodes().size(), 1);
+        Node node = nm.getNodes().get(0);
 
         assertEquals(node.uuid(), nm.getLocalNodeId());
         assertEquals(node.name(), "mocky-mock");
@@ -135,16 +135,16 @@ public class NodeManagerTest {
     public void testUpdatesSelf() throws NodeManager.NodeInitializationException, InterruptedException {
         NzymeNode nzyme = new MockNzyme();
         NodeManager nm = new NodeManager(nzyme);
-        assertTrue(nm.getActiveNodes().isEmpty());
+        assertTrue(nm.getNodes().isEmpty());
 
         nm.initialize();
 
-        assertTrue(nm.getActiveNodes().isEmpty());
+        assertTrue(nm.getNodes().isEmpty());
 
         nm.registerSelf();
 
-        assertEquals(nm.getActiveNodes().size(), 1);
-        Node node = nm.getActiveNodes().get(0);
+        assertEquals(nm.getNodes().size(), 1);
+        Node node = nm.getNodes().get(0);
 
         UUID firstUUID = node.uuid();
         String firstName = node.name();
@@ -175,8 +175,8 @@ public class NodeManagerTest {
 
         nm.registerSelf();
 
-        assertEquals(nm.getActiveNodes().size(), 1);
-        node = nm.getActiveNodes().get(0);
+        assertEquals(nm.getNodes().size(), 1);
+        node = nm.getNodes().get(0);
         assertEquals(node.uuid(), firstUUID);
         assertEquals(node.name(), firstName);
         assertEquals(node.version(), firstVersion);

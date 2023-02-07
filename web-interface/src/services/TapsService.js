@@ -4,7 +4,7 @@ import { notify } from 'react-notify-toast'
 class TapService {
   findAllTaps (setTaps) {
     RESTClient.get('/taps', {}, function (response) {
-      setTaps(response.data)
+      setTaps(response.data.taps)
     })
   }
 

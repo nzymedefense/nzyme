@@ -29,8 +29,6 @@ function TapsPage () {
                 <div className="col-md-12">
                     <div className="card">
                         <div className="card-body">
-                            <h3>All Taps</h3>
-
                             <TapsTable taps={taps} />
                         </div>
                     </div>

@@ -43,7 +43,7 @@ public class TapsResource {
     @GET
     public Response findAll() {
         List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
-        Optional<List<Tap>> taps = nzyme.getTapManager().findAllTaps();
+        Optional<List<Tap>> taps = nzyme.getTapManager().getTaps();
         if (taps.isPresent()) {
             for (Tap tap : taps.get()) {
                 tapsResponse.add(buildTapResponse(tap));

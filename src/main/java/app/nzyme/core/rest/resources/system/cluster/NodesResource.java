@@ -41,7 +41,7 @@ public class NodesResource {
     @GET
     public Response findAll() {
         List<NodeResponse> nodes = Lists.newArrayList();
-        for (Node node : nzyme.getNodeManager().getActiveNodes()) {
+        for (Node node : nzyme.getNodeManager().getNodes()) {
             nodes.add(buildNodeResponse(node));
         }
 
