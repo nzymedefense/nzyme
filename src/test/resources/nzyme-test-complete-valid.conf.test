@@ -23,6 +23,8 @@ general: {
 
   crypto_directory: "crypto_test"
   plugin_directory: "plugin_test"
+
+  ntp_server: pool.ntp.org
 }
 
 interfaces: {
