@@ -12,8 +12,8 @@ public abstract class TapDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    @JsonProperty("local_time")
-    public abstract DateTime localTime();
+    @JsonProperty("clock")
+    public abstract DateTime clock();
 
     @JsonProperty("processed_bytes")
     public abstract TotalWithAverageResponse processedBytes();
@@ -33,6 +33,9 @@ public abstract class TapDetailsResponse {
     @JsonProperty("active")
     public abstract Boolean active();
 
+    @JsonProperty("clock_drift_ms")
+    public abstract long clockDriftMs();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
@@ -48,16 +51,17 @@ public abstract class TapDetailsResponse {
     @JsonProperty("captures")
     public abstract List<CaptureDetailsResponse> captures();
 
-    public static TapDetailsResponse create(String name, DateTime localTime, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
+    public static TapDetailsResponse create(String name, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, long clockDriftMs, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
         return builder()
                 .name(name)
-                .localTime(localTime)
+                .clock(clock)
                 .processedBytes(processedBytes)
                 .memoryTotal(memoryTotal)
                 .memoryFree(memoryFree)
                 .memoryUsed(memoryUsed)
                 .cpuLoad(cpuLoad)
                 .active(active)
+                .clockDriftMs(clockDriftMs)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .description(description)
@@ -74,7 +78,7 @@ public abstract class TapDetailsResponse {
     public abstract static class Builder {
         public abstract Builder name(String name);
 
-        public abstract Builder localTime(DateTime localTime);
+        public abstract Builder clock(DateTime clock);
 
         public abstract Builder processedBytes(TotalWithAverageResponse processedBytes);
 
@@ -87,6 +91,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder cpuLoad(Double cpuLoad);
 
         public abstract Builder active(Boolean active);
+
+        public abstract Builder clockDriftMs(long clockDriftMs);
 
         public abstract Builder createdAt(DateTime createdAt);
 

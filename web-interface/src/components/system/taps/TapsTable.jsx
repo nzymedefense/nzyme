@@ -24,6 +24,7 @@ function TapsTable (props) {
                         <th>Total data processed</th>
                         <th>CPU Load</th>
                         <th>Memory Used</th>
+                        <th>Clock</th>
                         <th>Last Seen</th>
                     </tr>
                     </thead>

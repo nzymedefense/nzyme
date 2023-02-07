@@ -45,45 +45,40 @@ public class TapManager {
                         .one()
         );
 
-        DateTime now = DateTime.now();
-
         if (tapCount == 0) {
             LOG.info("Registering first report from new tap [{}].", report.tapName());
 
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO taps(name, local_time, processed_bytes_total, processed_bytes_average, " +
+                    handle.createUpdate("INSERT INTO taps(name, clock, processed_bytes_total, processed_bytes_average, " +
                             "memory_total, memory_free, memory_used, cpu_load, created_at, updated_at) " +
-                            "VALUES(:name, :local_time, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
-                            ":memory_free, :memory_used, :cpu_load, :created_at, :updated_at)")
+                            "VALUES(:name, :clock, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
+                            ":memory_free, :memory_used, :cpu_load, NOW(), NOW())")
                             .bind("name", report.tapName())
-                            .bind("local_time", report.timestamp())
+                            .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
                             .bind("processed_bytes_average", report.processedBytes().average())
                             .bind("memory_total", report.systemMetrics().memoryTotal())
                             .bind("memory_free", report.systemMetrics().memoryFree())
                             .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                             .bind("cpu_load", report.systemMetrics().cpuLoad())
-                            .bind("created_at", now)
-                            .bind("updated_at", now)
                             .execute()
             );
         } else {
             LOG.debug("Registering report from existing tap [{}].", report.tapName());
 
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE taps SET local_time = :local_time, " +
+                    handle.createUpdate("UPDATE taps SET clock = :clock, " +
                             "processed_bytes_total = :processed_bytes_total, " +
                             "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                             "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                            "updated_at = :updated_at WHERE name = :name")
-                            .bind("local_time", report.timestamp())
+                            "updated_at = NOW() WHERE name = :name")
+                            .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
                             .bind("processed_bytes_average", report.processedBytes().average())
                             .bind("memory_total", report.systemMetrics().memoryTotal())
                             .bind("memory_free", report.systemMetrics().memoryFree())
                             .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                             .bind("cpu_load", report.systemMetrics().cpuLoad())
-                            .bind("updated_at", now)
                             .bind("name", report.tapName())
                             .execute()
             );
@@ -105,7 +100,7 @@ public class TapManager {
                     handle.createUpdate("INSERT INTO tap_captures(tap_name, interface, capture_type, is_running, " +
                             "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_name, " +
                             ":interface, :capture_type, :is_running, :received, :dropped_buffer, :dropped_interface, " +
-                            ":updated_at, :created_at)")
+                            "NOW(), NOW())")
                             .bind("tap_name", report.tapName())
                             .bind("interface", capture.interfaceName())
                             .bind("capture_type", capture.captureType())
@@ -113,22 +108,19 @@ public class TapManager {
                             .bind("received", capture.received())
                             .bind("dropped_buffer", capture.droppedBuffer())
                             .bind("dropped_interface", capture.droppedInterface())
-                            .bind("updated_at", now)
-                            .bind("created_at", now)
                             .execute()
                 );
             } else {
                 nzyme.getDatabase().withHandle(handle ->
                         handle.createUpdate("UPDATE tap_captures SET capture_type = :capture_type, " +
                                 "is_running = :is_running, received = :received, dropped_buffer = :dropped_buffer, " +
-                                "dropped_interface = :dropped_interface, updated_at = :updated_at " +
+                                "dropped_interface = :dropped_interface, updated_at = NOW() " +
                                 "WHERE tap_name = :tap_name AND interface = :interface")
                                 .bind("capture_type", capture.captureType())
                                 .bind("is_running", capture.isRunning())
                                 .bind("received", capture.received())
                                 .bind("dropped_buffer", capture.droppedBuffer())
                                 .bind("dropped_interface", capture.droppedInterface())
-                                .bind("updated_at", now)
                                 .bind("tap_name", report.tapName())
                                 .bind("interface", capture.interfaceName())
                                 .execute()
@@ -147,19 +139,16 @@ public class TapManager {
         if (busCount == 0) {
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("INSERT INTO tap_buses(tap_name, name, created_at, updated_at) " +
-                            "VALUES(:tap_name, :name, :created_at, :updated_at)")
+                            "VALUES(:tap_name, :name, NOW(), NOW())")
                             .bind("tap_name", report.tapName())
                             .bind("name", report.bus().name())
-                            .bind("created_at", now)
-                            .bind("updated_at", now)
                             .execute()
             );
         } else {
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE tap_buses SET updated_at = :updated_at WHERE tap_name = :tap_name AND name = :name")
+                    handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() WHERE tap_name = :tap_name AND name = :name")
                             .bind("tap_name", report.tapName())
                             .bind("name", report.bus().name())
-                            .bind("updated_at", now)
                             .execute()
             );
         }
@@ -189,7 +178,7 @@ public class TapManager {
                                 "throughput_messages_total, throughput_messages_average, created_at, updated_at) " +
                                 "VALUES(:name, :bus_id, :capacity, :watermark, :errors_total, :errors_average, " +
                                 ":throughput_bytes_total, :throughput_bytes_average, :throughput_messages_total, " +
-                                ":throughput_messages_average, :created_at, :updated_at)")
+                                ":throughput_messages_average, NOW(), NOW())")
                                 .bind("name", channel.name())
                                 .bind("bus_id", busId)
                                 .bind("capacity", channel.capacity())
@@ -200,8 +189,6 @@ public class TapManager {
                                 .bind("throughput_bytes_average", channel.throughputBytes().average())
                                 .bind("throughput_messages_total", channel.throughputMessages().total())
                                 .bind("throughput_messages_average", channel.throughputMessages().average())
-                                .bind("created_at", now)
-                                .bind("updated_at", now)
                                 .execute()
                 );
             } else {
@@ -212,7 +199,7 @@ public class TapManager {
                                 "throughput_bytes_average = :throughput_bytes_average, " +
                                 "throughput_messages_total = :throughput_messages_total, " +
                                 "throughput_messages_average = :throughput_messages_average, " +
-                                "updated_at = :updated_at WHERE bus_id = :bus_id AND name = :name")
+                                "updated_at = NOW() WHERE bus_id = :bus_id AND name = :name")
                                 .bind("name", channel.name())
                                 .bind("bus_id", busId)
                                 .bind("capacity", channel.capacity())
@@ -223,7 +210,6 @@ public class TapManager {
                                 .bind("throughput_bytes_average", channel.throughputBytes().average())
                                 .bind("throughput_messages_total", channel.throughputMessages().total())
                                 .bind("throughput_messages_average", channel.throughputMessages().average())
-                                .bind("updated_at", now)
                                 .execute()
                 );
             }
@@ -246,11 +232,10 @@ public class TapManager {
 
     private void writeGauge(String tapName, String metricName, Double metricValue, DateTime timestamp) {
         nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
-                        "VALUES(:tap_name, :metric_name, :metric_value, :created_at)")
+                        "VALUES(:tap_name, :metric_name, :metric_value, NOW())")
                 .bind("tap_name", tapName)
                 .bind("metric_name", metricName)
                 .bind("metric_value", metricValue)
-                .bind("created_at", timestamp)
                 .execute()
         );
     }

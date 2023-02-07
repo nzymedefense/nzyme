@@ -34,7 +34,7 @@ function Consequences(props) {
         <CryptoSyncConsequence show={consequences.includes("crypto_sync")} />
         <NodeClockConsequence show={consequences.includes("node_clock")} />
         <DatabaseClockConsequence show={consequences.includes("db_clock")} />
-        <TapClockConsequence show={consequences.includes("tap_clock") || true} />
+        <TapClockConsequence show={consequences.includes("tap_clock")} />
       </div>
   )
 

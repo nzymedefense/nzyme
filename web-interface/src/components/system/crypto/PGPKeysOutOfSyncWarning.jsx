@@ -1,4 +1,5 @@
 import React from "react";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function PGPKeysOutOfSyncWarning(props) {
 
@@ -8,7 +9,8 @@ function PGPKeysOutOfSyncWarning(props) {
           <i className="fa-solid fa-warning"></i>{' '}
           <strong>Not every node has the same PGP key.</strong> This will cause potentially irreversible problems.
           Please make sure all nzyme nodes use the same local PGP keys.
-          If you are unsure what to do, please follow the <a href="https://go.nzyme.org/crypto-pgp" target="_blank" rel="noreferrer">nzyme documentation</a>.
+          Please follow the instructions on the <a href={ApiRoutes.SYSTEM.HEALTH.INDEX}>Health Console</a> page for
+          resolution.
         </div>
     )
   } else {

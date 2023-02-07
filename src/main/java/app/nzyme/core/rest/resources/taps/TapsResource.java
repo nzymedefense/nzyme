@@ -203,13 +203,14 @@ public class TapsResource {
 
         return TapDetailsResponse.create(
                 tap.name(),
-                tap.localTime(),
+                tap.clock(),
                 TotalWithAverageResponse.create(tap.processedBytes().total(), tap.processedBytes().average()),
                 tap.memoryTotal(),
                 tap.memoryFree(),
                 tap.memoryUsed(),
                 tap.cpuLoad(),
                 tap.updatedAt().isAfter(DateTime.now().minusMinutes(2)),
+                tap.clockDriftMs(),
                 tap.createdAt(),
                 tap.updatedAt(),
                 "",
