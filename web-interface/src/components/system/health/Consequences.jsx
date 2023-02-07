@@ -9,10 +9,6 @@ function Consequences(props) {
 
   const indicators = props.indicators
 
-  if (!indicators) {
-    return <LoadingSpinner />
-  }
-
   const [consequences, setConsequences] = useState([]);
 
   useEffect(() => {
@@ -28,6 +24,10 @@ function Consequences(props) {
     setConsequences(tempCons);
 
   }, [indicators])
+
+  if (!indicators) {
+    return <LoadingSpinner />
+  }
 
   return (
       <div className="health-consequences">

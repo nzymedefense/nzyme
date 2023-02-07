@@ -8,8 +8,8 @@ function CryptoSyncProcedure(props) {
       <ol className="consequence-solution-procedure">
         <li>
           <SolutionCounter counter="1" /> Identify irregular PGP keys on the {' '}
-          <a href={ApiRoutes.SYSTEM.CRYPTO.INDEX}>crypto overview</a> page. Decide which PGP key is the correct one. It
-          is most likely the oldest one.
+          <a href={ApiRoutes.SYSTEM.CRYPTO.INDEX}>crypto overview</a> page. Decide which PGP key is the
+          correct one. It is most likely the oldest one.
         </li>
         <li>
           <SolutionCounter counter="2" /> <Conditional text="For each" /> node with an irregular PGP key:
@@ -33,7 +33,7 @@ function CryptoSyncProcedure(props) {
         </li>
         <li>
           <SolutionCounter counter="5" /> Read more about this topic in the{' '}
-          <a href="https://go.nzyme.org/crypto-pgp" target="_blank">nzyme Crypto &amp; PGP documentation</a> to avoid
+          <a href="https://go.nzyme.org/crypto-pgp" target="_blank" rel="noopener">nzyme Crypto &amp; PGP documentation</a> to avoid
           issues in the future.
         </li>
 

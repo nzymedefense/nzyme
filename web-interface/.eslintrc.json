@@ -31,7 +31,8 @@
                 "semi": "off",
                 "object-curly-spacing": "off",
                 "space-before-function-paren": "off",
-                "eol-last": "off"
+                "eol-last": "off",
+                "react/jsx-no-target-blank": "off"
             }
         }
    ],

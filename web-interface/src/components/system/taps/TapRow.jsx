@@ -46,7 +46,8 @@ function TapsRow (props) {
         {numeral(tap.memory_used).format('0 b')} / {numeral(tap.memory_total).format('0 b')} ({numeral(tap.memory_used / tap.memory_total * 100).format('0.0')}%)
       </td>
       <td>{tap.clock_drift_ms < -5000 || tap.clock_drift_ms > 5000
-          ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/> : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
+        ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/>
+        : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
       <td title={moment(tap.updated_at).format()}>
         {moment(tap.updated_at).fromNow()}
       </td>

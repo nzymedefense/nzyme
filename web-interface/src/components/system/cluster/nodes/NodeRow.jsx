@@ -24,7 +24,8 @@ function NodeRow(props) {
           </td>
           <td>{numeral(node.process_virtual_size).format("0.0b")}</td>
           <td>{node.clock_drift_ms < -5000 || node.clock_drift_ms > 5000
-              ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/> : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
+            ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/>
+            : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
           <td>{node.version}</td>
         </tr>
     )

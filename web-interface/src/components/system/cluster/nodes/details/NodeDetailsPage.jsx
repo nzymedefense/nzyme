@@ -10,7 +10,6 @@ import ProcessArguments from "./ProcessArguments";
 import CpuLoadIndicator from "./CpuLoadIndicator";
 import MemoryUseIndicator from "./MemoryUseIndicator";
 import TapReportStatisticsChart from "./TapReportStatisticsChart";
-import TapClockWarning from "../../../taps/details/TapClockWarning";
 import NodeClockWarning from "./NodeClockWarning";
 
 const clusterService = new ClusterService()
