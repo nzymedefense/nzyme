@@ -20,6 +20,16 @@ class ClusterService {
     })
   }
 
+  findNodesConfiguration(setNodesConfiguration) {
+    RESTClient.get('/system/cluster/nodes/configuration', {}, function (response) {
+      setNodesConfiguration(response.data)
+    })
+  }
+
+  updateNodesConfiguration(newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/cluster/nodes/configuration', { change: newConfig }, successCallback, errorCallback)
+  }
+
 }
 
 export default ClusterService

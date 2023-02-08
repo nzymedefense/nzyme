@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import ClusterService from "../../../../services/ClusterService";
 import NodesTable from "./NodesTable";
+import EphemeralNodesConfiguration from "./EphemeralNodesConfiguration";
 
 const clusterService = new ClusterService()
 
@@ -13,7 +14,7 @@ function NodesPage() {
   const [nodes, setNodes] = useState(null)
 
   useEffect(() => {
-    fetchData(setNodes)
+    fetchData(setNodes,)
     const id = setInterval(() => fetchData(setNodes), 5000)
     return () => clearInterval(id)
   }, [setNodes])
@@ -23,6 +24,16 @@ function NodesPage() {
         <div className="row">
           <div className="col-md-12">
             <h1>Cluster &amp; Nodes</h1>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <EphemeralNodesConfiguration />
+              </div>
+            </div>
           </div>
         </div>
 

@@ -2,13 +2,16 @@ package app.nzyme.core.rest.resources.system.cluster;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.Node;
+import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.distributed.MetricExternalName;
-import app.nzyme.core.rest.responses.nodes.NodeMetricsGaugeHistogramResponse;
-import app.nzyme.core.rest.responses.nodes.NodeMetricsGaugeHistogramValueResponse;
-import app.nzyme.core.rest.responses.nodes.NodeResponse;
-import app.nzyme.core.rest.responses.nodes.NodesListResponse;
+import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
+import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
+import app.nzyme.core.rest.responses.nodes.*;
 import app.nzyme.core.taps.metrics.BucketSize;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -17,10 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -104,6 +104,52 @@ public class NodesResource {
         }
 
         return Response.ok(NodeMetricsGaugeHistogramResponse.create(result)).build();
+    }
+
+    @GET
+    @Path("/configuration")
+    public Response configuration() {
+        String ephemeralNodesRegexValue = nzyme.getDatabaseCoreRegistry().getValue(NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key())
+                .orElse(null);
+
+        ConfigurationEntryResponse ephemeralNodesRegex = ConfigurationEntryResponse.create(
+                NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key(),
+                "Ephemeral Nodes Regular Expression",
+                ephemeralNodesRegexValue,
+                ConfigurationEntryValueType.STRING,
+                null,
+                NodeRegistryKeys.EPHEMERAL_NODES_REGEX.requiresRestart(),
+                NodeRegistryKeys.EPHEMERAL_NODES_REGEX.constraints().get(),
+                "ephemeral-nodes"
+        );
+
+        return Response.ok(NodesConfigurationResponse.create(ephemeralNodesRegex)).build();
+    }
+
+    @PUT
+    @Path("/configuration")
+    public Response update(NodesConfigurationUpdateRequest ur) {
+        if (ur.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : ur.change().entrySet()) {
+            switch (c.getKey()) {
+                case "ephemeral_nodes_regex":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(NodeRegistryKeys.EPHEMERAL_NODES_REGEX, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                default:
+                    LOG.info("Unknown configuration parameter [{}].", c.getKey());
+                    return Response.status(422).build();
+            }
+
+            nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString());
+        }
+
+        return Response.ok().build();
     }
 
     private NodeResponse buildNodeResponse(Node node) {
