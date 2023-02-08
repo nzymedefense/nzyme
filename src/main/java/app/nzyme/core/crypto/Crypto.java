@@ -1,6 +1,6 @@
 package app.nzyme.core.crypto;
 
-import app.nzyme.core.rest.responses.crypto.PGPKeyResponse;
+import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
@@ -24,6 +24,7 @@ import java.security.*;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +68,8 @@ public class Crypto {
 
     private final File cryptoDirectoryConfig;
     private final Database database;
-    private final String nodeId;
+    private final String nodeName;
+    private final UUID nodeId;
 
     private final Timer encryptionTimer;
     private final Timer decryptionTimer;
@@ -79,7 +81,8 @@ public class Crypto {
 
         this.cryptoDirectoryConfig = new File(nzyme.getConfiguration().cryptoDirectory());
         this.database = nzyme.getDatabase();
-        this.nodeId = nzyme.getNodeInformation().name(); // TODO
+        this.nodeName = nzyme.getNodeInformation().name();
+        this.nodeId = nzyme.getNodeInformation().id();
 
         this.encryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_ENCRYPTION_TIMING);
         this.decryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_DECRYPTION_TIMING);
@@ -148,8 +151,8 @@ public class Crypto {
         // Does this node have keys in the database?
         List<String> signatures = database.withHandle(handle ->
                 handle.createQuery("SELECT key_signature FROM crypto_keys " +
-                        "WHERE node = :node AND key_type = :key_type")
-                        .bind("node", nodeId)
+                        "WHERE node_id = :node_id AND key_type = :key_type")
+                        .bind("node_id", nodeId)
                         .bind("key_type", KeyType.PGP)
                         .mapTo(String.class)
                         .list()
@@ -174,9 +177,10 @@ public class Crypto {
             }
         } else if(signatures.size() == 0) {
             database.useHandle(handle ->
-                    handle.createUpdate("INSERT INTO crypto_keys(node, key_type, key_signature, created_at) " +
-                                    "VALUES(:node, :key_type, :key_signature, :created_at)")
-                            .bind("node", nodeId)
+                    handle.createUpdate("INSERT INTO crypto_keys(node_id, node_name, key_type, key_signature, created_at) " +
+                                    "VALUES(:node_id, :node_name, :key_type, :key_signature, :created_at)")
+                            .bind("node_id", nodeId)
+                            .bind("node_name", nodeName)
                             .bind("key_type", KeyType.PGP)
                             .bind("key_signature", keySignature)
                             .bind("created_at", DateTime.now())
@@ -189,10 +193,10 @@ public class Crypto {
 
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
-                        .setNameFormat("pgp-retentionclean-%d")
+                        .setNameFormat("crypto-retentionclean-%d")
                         .setDaemon(true)
                         .build()
-        ).scheduleAtFixedRate(this::retentionCleanPGPKeys, 0, 5, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::retentionCleanKeys, 0, 1, TimeUnit.MINUTES);
     }
 
     public byte[] encrypt(byte[] value) throws CryptoOperationException {
@@ -302,7 +306,7 @@ public class Crypto {
 
     public List<PGPKeyFingerprint> getPGPKeysByNode() {
         return database.withHandle(handle ->
-                handle.createQuery("SELECT node, key_signature, created_at " +
+                handle.createQuery("SELECT node_name, node_id, key_signature, created_at " +
                         "FROM crypto_keys WHERE key_type = :key_type")
                         .bind("key_type", KeyType.PGP)
                         .mapTo(PGPKeyFingerprint.class)
@@ -312,9 +316,10 @@ public class Crypto {
 
     public String getLocalPGPKeyFingerprint() {
         return database.withHandle(handle ->
-                handle.createQuery("SELECT key_signature FROM crypto_keys WHERE key_type = :key_type AND node = :node")
+                handle.createQuery("SELECT key_signature FROM crypto_keys " +
+                                "WHERE key_type = :key_type AND node_id = :node_id")
                         .bind("key_type", KeyType.PGP)
-                        .bind("node", nodeId)
+                        .bind("node_id", nodeId)
                         .mapTo(String.class)
                         .one()
         );
@@ -367,13 +372,26 @@ public class Crypto {
         );
     }
 
-    private void retentionCleanPGPKeys() {
-        /*List<UUID>
-        nzyme.getNodeManager().getActiveNodes();
+    private void retentionCleanKeys() {
+        List<UUID> activeNodeIds = Lists.newArrayList();
+
+        for (Node node : nzyme.getNodeManager().getNodes()) {
+            if (node.lastSeen().isAfter(DateTime.now().minusMinutes(2))) {
+                activeNodeIds.add(node.uuid());
+            }
+        }
 
         for (PGPKeyFingerprint fingerprint : getPGPKeysByNode()) {
-
-        }*/
+            if (!activeNodeIds.contains(fingerprint.nodeId())) {
+                LOG.info("Retention cleaning keys of inactive node [{}/{}].",
+                        fingerprint.nodeName(), fingerprint.nodeId());
+                nzyme.getDatabase().useHandle(handle ->
+                        handle.createUpdate("DELETE FROM crypto_keys WHERE node_id = :node_id")
+                                .bind("node_id", fingerprint.nodeId())
+                                .execute()
+                );
+            }
+        }
 
     }
 

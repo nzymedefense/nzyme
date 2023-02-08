@@ -1416,5 +1416,17 @@
     <changeSet id="rename_tap_clock_column" author="lennartkoopmann">
         <renameColumn tableName="taps" oldColumnName="local_time" newColumnName="clock" />
     </changeSet>
+    
+    <changeSet id="add_node_id_to_crypto_keys_and_rename_node_name" author="lennartkoopmann">
+        <renameColumn tableName="crypto_keys" oldColumnName="node" newColumnName="node_name" />
+
+        <addColumn tableName="crypto_keys">
+            <column name="node_id" type="uuid" defaultValueComputed="gen_random_uuid()" afterColumn="node_name">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+
+    </changeSet>
 
 </databaseChangeLog>

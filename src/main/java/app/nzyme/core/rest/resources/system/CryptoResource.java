@@ -39,7 +39,7 @@ public class CryptoResource {
     public Response summary() {
         Map<String, PGPKeyResponse> fingerprints = Maps.newHashMap();
         for (PGPKeyFingerprint fp : nzyme.getCrypto().getPGPKeysByNode()) {
-            fingerprints.put(fp.node(), PGPKeyResponse.create(fp.node(), fp.fingerprint(), fp.createdAt()));
+            fingerprints.put(fp.nodeName(), PGPKeyResponse.create(fp.nodeName(), fp.fingerprint(), fp.createdAt()));
         }
 
         Map<UUID, TimerSnapshot> encryption = nzyme.getClusterManager().findMetricTimer(

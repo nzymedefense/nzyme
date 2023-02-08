@@ -3,15 +3,17 @@ import LoadingSpinner from '../../misc/LoadingSpinner'
 import PGPKeysOutOfSyncWarning from "./PGPKeysOutOfSyncWarning";
 
 function PGPKeyTable (props) {
-  const keys = props.keys
+  const crypto = props.crypto
 
-  if (!keys) {
+  if (!crypto) {
     return <LoadingSpinner />
   }
 
+  const keys = Object.values(crypto.pgp_keys);
+
   return (
       <React.Fragment>
-        <PGPKeysOutOfSyncWarning show={!keys.pgp_keys_in_sync} />
+        <PGPKeysOutOfSyncWarning show={!crypto.pgp_keys_in_sync} />
 
         <table className="table table-sm table-hover table-striped">
           <thead>

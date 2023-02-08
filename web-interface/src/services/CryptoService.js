@@ -1,9 +1,9 @@
 import RESTClient from '../util/RESTClient'
 
 class CryptoService {
-  getPGPSummary (setKeys, setMetrics) {
+  getPGPSummary (setCrypto, setMetrics) {
     RESTClient.get('/system/crypto/summary', {}, function (response) {
-      setKeys(Object.values(response.data.pgp_keys))
+      setCrypto(response.data)
       setMetrics(response.data.metrics)
     })
   }

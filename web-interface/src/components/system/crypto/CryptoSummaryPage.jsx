@@ -6,11 +6,11 @@ import CryptoService from '../../../services/CryptoService'
 const cryptoService = new CryptoService()
 
 function CryptoSummaryPage () {
-  const [pgpKeys, setPGPKeys] = useState(null)
+  const [crypto, setCrypto] = useState(null)
   const [pgpMetrics, setPGPMetrics] = useState(null)
 
   useEffect(() => {
-    cryptoService.getPGPSummary(setPGPKeys, setPGPMetrics)
+    cryptoService.getPGPSummary(setCrypto, setPGPMetrics)
   }, [])
 
   return (
@@ -33,7 +33,7 @@ function CryptoSummaryPage () {
                                 in the <a href="https://go.nzyme.org/crypto-pgp" target="_blank" rel="noreferrer">nzyme documentation</a>.
                             </p>
 
-                            <PGPKeyTable keys={pgpKeys} />
+                            <PGPKeyTable crypto={crypto} />
                         </div>
                     </div>
                 </div>

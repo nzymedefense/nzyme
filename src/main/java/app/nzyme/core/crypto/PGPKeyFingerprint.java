@@ -3,16 +3,20 @@ package app.nzyme.core.crypto;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class PGPKeyFingerprint {
 
-    public abstract String node();
+    public abstract UUID nodeId();
+    public abstract String nodeName();
     public abstract String fingerprint();
     public abstract DateTime createdAt();
 
-    public static PGPKeyFingerprint create(String node, String fingerprint, DateTime createdAt) {
+    public static PGPKeyFingerprint create(UUID nodeId, String nodeName, String fingerprint, DateTime createdAt) {
         return builder()
-                .node(node)
+                .nodeId(nodeId)
+                .nodeName(nodeName)
                 .fingerprint(fingerprint)
                 .createdAt(createdAt)
                 .build();
@@ -24,7 +28,9 @@ public abstract class PGPKeyFingerprint {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder node(String node);
+        public abstract Builder nodeId(UUID nodeId);
+
+        public abstract Builder nodeName(String nodeName);
 
         public abstract Builder fingerprint(String fingerprint);
 
@@ -32,5 +38,4 @@ public abstract class PGPKeyFingerprint {
 
         public abstract PGPKeyFingerprint build();
     }
-
 }
