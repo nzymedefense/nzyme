@@ -12,7 +12,6 @@ public abstract class Node {
     public abstract UUID uuid();
     public abstract String name();
     public abstract URI httpExternalUri();
-
     public abstract long memoryBytesTotal();
     public abstract long memoryBytesAvailable();
     public abstract long memoryBytesUsed();
@@ -25,13 +24,13 @@ public abstract class Node {
     public abstract long processVirtualSize();
     public abstract String processArguments();
     public abstract String osInformation();
-
     public abstract String version();
     public abstract DateTime lastSeen();
     public abstract DateTime clock();
     public abstract Long clockDriftMs();
+    public abstract boolean isEphemeral();
 
-    public static Node create(UUID uuid, String name, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs) {
+    public static Node create(UUID uuid, String name, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs, boolean isEphemeral) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -52,6 +51,7 @@ public abstract class Node {
                 .lastSeen(lastSeen)
                 .clock(clock)
                 .clockDriftMs(clockDriftMs)
+                .isEphemeral(isEphemeral)
                 .build();
     }
 
@@ -98,6 +98,8 @@ public abstract class Node {
         public abstract Builder clock(DateTime clock);
 
         public abstract Builder clockDriftMs(Long clockDriftMs);
+
+        public abstract Builder isEphemeral(boolean isEphemeral);
 
         public abstract Node build();
     }

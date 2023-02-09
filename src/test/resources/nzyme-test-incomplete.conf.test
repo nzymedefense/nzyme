@@ -1,6 +1,6 @@
 general: {
   role: NODE
-  name: nzyme-testng
+  name: mocky-mock
 
   python {
     path: /usr/bin/python2.7

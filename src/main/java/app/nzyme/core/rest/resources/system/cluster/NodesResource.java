@@ -173,7 +173,8 @@ public class NodesResource {
                 node.version(),
                 node.lastSeen(),
                 node.clock(),
-                node.clockDriftMs()
+                node.clockDriftMs(),
+                node.isEphemeral()
         );
     }
 

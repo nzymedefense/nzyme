@@ -141,6 +141,16 @@ public class RegistryImpl implements Registry {
         }
     }
 
+    @Override
+    public void deleteValue(String key) {
+        LOG.debug("Deleting registry value for key [{}]", key);
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM registry WHERE key = :key")
+                        .bind("key", buildNamespacedKey(key))
+                        .execute()
+        );
+    }
+
     private void setValuePreflightChecks(String key, String value) {
         if (key == null || key.trim().isEmpty()) {
             throw new IllegalArgumentException("Empty or null registry key.");

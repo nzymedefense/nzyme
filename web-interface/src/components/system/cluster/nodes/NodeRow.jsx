@@ -12,7 +12,13 @@ function NodeRow(props) {
   if (node.active) {
     return (
         <tr>
-          <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
+          <td>
+            <a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>
+              {node.name}
+            </a>
+            {' '}
+            {node.is_ephemeral ? <i className="fa-regular fa-clock" title="Ephemeral Node" /> : null}
+          </td>
           <td>{numeral(node.cpu_system_load).format("0.0")}%</td>
           <td>
             {numeral(node.memory_bytes_used).format("0.0b")} of {numeral(node.memory_bytes_total).format("0.0b")}{' '}

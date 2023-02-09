@@ -3,8 +3,10 @@ import ConfigurationValue from "../../../configuration/ConfigurationValue";
 import ConfigurationModal from "../../../configuration/modal/ConfigurationModal";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ClusterService from "../../../../services/ClusterService";
+import RegistryService from "../../../../services/RegistryService";
 
 const clusterService = new ClusterService()
+const registryService = new RegistryService();
 
 function EphemeralNodesConfiguration(props) {
 
@@ -13,10 +15,23 @@ function EphemeralNodesConfiguration(props) {
 
   useEffect(() => {
     clusterService.findNodesConfiguration(setConfiguration)
+
+    if(props.setNodes) {
+      // Force reload of nodes.
+      props.setNodes(null);
+    }
   }, [localRevision])
 
   if (!configuration) {
     return <LoadingSpinner />
+  }
+
+  const resetRegex = function () {
+    if (confirm("Reset selected configuration?")) {
+      registryService.deleteKey(configuration.ephemeral_nodes_regex.key, function () {
+        setLocalRevision(prevRev => prevRev + 1)
+      })
+    }
   }
 
   return (
@@ -63,6 +78,8 @@ function EphemeralNodesConfiguration(props) {
                                       setGlobalConfig={setConfiguration}
                                       setLocalRevision={setLocalRevision}
                                       dbUpdateCallback={clusterService.updateNodesConfiguration} />
+                  {' '}
+                  <a href="#" onClick={resetRegex}>Reset</a>
                 </td>
               </tr>
               </tbody>

@@ -26,6 +26,11 @@ public class NodeManagerTest {
                         .execute()
         );
 
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("TRUNCATE registry;")
+                        .execute()
+        );
+
         Path dataDir = Path.of("test_data_dir");
 
         Files.walk(dataDir)
@@ -192,6 +197,23 @@ public class NodeManagerTest {
         assertTrue(node.processVirtualSize() > 0);
         assertFalse(Strings.isNullOrEmpty(node.processArguments()));
         assertFalse(Strings.isNullOrEmpty(node.osInformation()));
+    }
+
+    @Test
+    public void testIdentifiesEphemeralNodes() throws NodeManager.NodeInitializationException {
+        NzymeNode nzyme = new MockNzyme();
+        NodeManager nm = new NodeManager(nzyme);
+        nm.initialize();
+
+        nm.registerSelf();
+
+        assertFalse(nm.getNode(nzyme.getNodeManager().getLocalNodeId()).get().isEphemeral());
+
+        nzyme.getDatabaseCoreRegistry().setValue(NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key(), "^foo-.+");
+        assertFalse(nm.getNode(nzyme.getNodeManager().getLocalNodeId()).get().isEphemeral());
+
+        nzyme.getDatabaseCoreRegistry().setValue(NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key(), "^mocky-.+");
+        assertTrue(nm.getNode(nzyme.getNodeManager().getLocalNodeId()).get().isEphemeral());
     }
 
 }

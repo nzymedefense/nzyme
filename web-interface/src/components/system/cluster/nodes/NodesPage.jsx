@@ -14,7 +14,7 @@ function NodesPage() {
   const [nodes, setNodes] = useState(null)
 
   useEffect(() => {
-    fetchData(setNodes,)
+    fetchData(setNodes)
     const id = setInterval(() => fetchData(setNodes), 5000)
     return () => clearInterval(id)
   }, [setNodes])
@@ -31,7 +31,7 @@ function NodesPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <EphemeralNodesConfiguration />
+                <EphemeralNodesConfiguration setNodes={setNodes} />
               </div>
             </div>
           </div>

@@ -51,7 +51,10 @@ function NodeDetailsPage() {
           </div>
 
           <div className="col-md-12">
-            <h1>Node &quot;{node.name}&quot;</h1>
+            <h1>
+              Node &quot;{node.name}&quot;{' '}
+              {node.is_ephemeral ? <i className="fa-regular fa-clock" title="Ephemeral Node" /> : null}
+            </h1>
           </div>
         </div>
 

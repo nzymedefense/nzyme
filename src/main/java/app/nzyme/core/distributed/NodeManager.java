@@ -184,7 +184,8 @@ public class NodeManager {
                         dbEntry.version(),
                         dbEntry.lastSeen(),
                         dbEntry.clock(),
-                        (long) new Period(dbEntry.lastSeen(), dbEntry.clock(), PeriodType.millis()).getMillis()
+                        (long) new Period(dbEntry.lastSeen(), dbEntry.clock(), PeriodType.millis()).getMillis(),
+                        isNodeEphemeral(dbEntry)
                 ));
             } catch (Exception e) {
                 LOG.error("Could not create node from database entry. Skipping.", e);
@@ -225,7 +226,8 @@ public class NodeManager {
                         ne.version(),
                         ne.lastSeen(),
                         ne.clock(),
-                        (long) new Period(ne.lastSeen(), ne.clock(), PeriodType.millis()).getMillis()
+                        (long) new Period(ne.lastSeen(), ne.clock(), PeriodType.millis()).getMillis(),
+                        isNodeEphemeral(ne)
                 ));
             } catch (Exception e) {
                 throw new RuntimeException("Could not create node from database entry.", e);
@@ -339,6 +341,13 @@ public class NodeManager {
         }
 
         return Optional.of(result);
+    }
+
+    private boolean isNodeEphemeral(NodeEntry node) {
+        return nzyme.getDatabaseCoreRegistry()
+                .getValue(NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key())
+                .filter(r -> node.name().matches(r))
+                .isPresent();
     }
 
     public UUID getLocalNodeId() {

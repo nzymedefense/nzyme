@@ -422,6 +422,7 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(MonitoringResource.class);
         resourceConfig.register(NodesResource.class);
         resourceConfig.register(HealthResource.class);
+        resourceConfig.register(RegistryResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

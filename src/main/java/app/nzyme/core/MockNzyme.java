@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
@@ -382,7 +383,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public Registry getDatabaseCoreRegistry() {
-        return null;
+        return new RegistryImpl(this, "core");
     }
 
     @Override
