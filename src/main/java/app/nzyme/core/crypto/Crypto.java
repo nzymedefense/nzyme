@@ -8,6 +8,7 @@ import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import liquibase.pro.packaged.D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
@@ -141,8 +142,11 @@ public class Crypto {
 
         // Load Keys. Build fingerprint.
         String keySignature;
+        DateTime keyDate;
         try {
-            keySignature = String.format("%016X", readPublicKey(publicKeyLocation).getKeyID());
+            PGPPublicKey pk = readPublicKey(publicKeyLocation);
+            keySignature = String.format("%016X", pk.getKeyID());
+            keyDate = new DateTime(pk.getCreationTime());
         } catch (IOException e) {
             throw new CryptoInitializationException("Could not read key file.", e);
         } catch (PGPException e) {
@@ -173,7 +177,7 @@ public class Crypto {
                                 .bind("node_id", nodeId)
                                 .bind("key_type", KeyType.PGP)
                                 .bind("key_signature", keySignature)
-                                .bind("created_at", DateTime.now())
+                                .bind("created_at", keyDate)
                                 .execute()
                 );
             }
@@ -185,13 +189,12 @@ public class Crypto {
                             .bind("node_name", nodeName)
                             .bind("key_type", KeyType.PGP)
                             .bind("key_signature", keySignature)
-                            .bind("created_at", DateTime.now())
+                            .bind("created_at", keyDate)
                             .execute()
             );
         } else {
             throw new CryptoInitializationException("Unexpected number of PGP keys for this node in database. Cannot continue.");
         }
-
 
         if (withRetentionCleaning) {
             Executors.newSingleThreadScheduledExecutor(
