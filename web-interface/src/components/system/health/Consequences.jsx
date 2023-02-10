@@ -30,6 +30,14 @@ function Consequences(props) {
     return <LoadingSpinner />
   }
 
+  if (consequences.length === 0) {
+    return(
+        <div className="alert alert-info">
+          This section will show consequences and resolution steps in case of illuminated indicators above.
+        </div>
+    )
+  }
+
   return (
       <div className="health-consequences">
         <CryptoSyncConsequence show={consequences.includes("crypto_sync")} />
