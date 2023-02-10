@@ -24,8 +24,9 @@ public class CryptoTest {
         Files.walk(FOLDER)
                 .map(Path::toFile)
                 .forEach(file -> {
+                    System.out.println(file.getName());
                     // Don't delete the entire crypto_test root directory.
-                    if (!file.toPath().equals(FOLDER)) {
+                    if (!file.toPath().equals(FOLDER) && !file.getName().equals(".gitkeep")) {
                         if (!file.delete()) {
                             throw new RuntimeException("Could not delete key file [" + file.getAbsolutePath() + "] to prepare tests.");
                         }
@@ -43,8 +44,8 @@ public class CryptoTest {
     private String readKeyIdFromDB(NzymeNode nzyme) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT key_signature FROM crypto_keys " +
-                        "WHERE node = :node AND key_type = 'PGP'")
-                        .bind("node", nzyme.getNodeInformation().name())
+                        "WHERE node_id = :node_id AND key_type = 'PGP'")
+                        .bind("node_id", nzyme.getNodeInformation().id())
                         .mapTo(String.class)
                         .one()
         );

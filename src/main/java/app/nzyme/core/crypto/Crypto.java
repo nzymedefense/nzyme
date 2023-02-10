@@ -167,8 +167,8 @@ public class Crypto {
             if (!signatures.contains(keySignature)) {
                 database.useHandle(handle ->
                         handle.createUpdate("UPDATE crypto_keys SET key_signature = :key_signature, " +
-                                        "created_at = :created_at WHERE key_type = :key_type AND node = :node")
-                                .bind("node", nodeId)
+                                        "created_at = :created_at WHERE key_type = :key_type AND node_id = :node_id")
+                                .bind("node_id", nodeId)
                                 .bind("key_type", KeyType.PGP)
                                 .bind("key_signature", keySignature)
                                 .bind("created_at", DateTime.now())
