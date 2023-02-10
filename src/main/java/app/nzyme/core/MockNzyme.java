@@ -189,7 +189,7 @@ public class MockNzyme implements NzymeNode {
     @Override
     public void initialize() {
         try {
-            this.crypto.initialize();
+            this.crypto.initialize(false);
         } catch (Crypto.CryptoInitializationException e) {
             throw new RuntimeException(e);
         }

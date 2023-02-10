@@ -98,7 +98,7 @@ public class RegistryImplTest {
         NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
 
-        Registry r = new RegistryImpl(new MockNzyme(), "test");
+        Registry r = new RegistryImpl(nzyme, "test");
 
         assertTrue(r.getEncryptedValue("foo").isEmpty());
         assertNull(r.getEncryptedValueOrNull("foo"));

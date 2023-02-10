@@ -91,6 +91,10 @@ public class Crypto {
     }
 
     public void initialize() throws CryptoInitializationException {
+        this.initialize(true);
+    }
+
+    public void initialize(boolean withRetentionCleaning) throws CryptoInitializationException {
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
         File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
 
@@ -191,12 +195,14 @@ public class Crypto {
         }
 
 
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setNameFormat("crypto-retentionclean-%d")
-                        .setDaemon(true)
-                        .build()
-        ).scheduleAtFixedRate(this::retentionCleanKeys, 0, 1, TimeUnit.MINUTES);
+        if (withRetentionCleaning) {
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("crypto-retentionclean-%d")
+                            .setDaemon(true)
+                            .build()
+            ).scheduleAtFixedRate(this::retentionCleanKeys, 0, 1, TimeUnit.MINUTES);
+        }
     }
 
     public byte[] encrypt(byte[] value) throws CryptoOperationException {
