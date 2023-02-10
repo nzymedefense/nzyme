@@ -4,6 +4,7 @@ import NodeClockConsequence from "./consequences/NodeClockConsequence";
 import CryptoSyncConsequence from "./consequences/CryptoSyncConsequence";
 import DatabaseClockConsequence from "./consequences/DatabaseClockConsequence";
 import TapClockConsequence from "./consequences/TapClockConsequence";
+import NodeOfflineConsequence from "./consequences/NodeOfflineConsequence";
 
 function Consequences(props) {
 
@@ -35,6 +36,7 @@ function Consequences(props) {
         <NodeClockConsequence show={consequences.includes("node_clock")} />
         <DatabaseClockConsequence show={consequences.includes("db_clock")} />
         <TapClockConsequence show={consequences.includes("tap_clock")} />
+        <NodeOfflineConsequence show={consequences.includes("node_offline")} />
       </div>
   )
 
