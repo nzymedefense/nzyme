@@ -31,7 +31,7 @@ function Consequences(props) {
   }
 
   if (consequences.length === 0) {
-    return(
+    return (
         <div className="alert alert-info">
           This section will show consequences and resolution steps in case of illuminated indicators above.
         </div>

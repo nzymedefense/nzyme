@@ -15,7 +15,7 @@ function NodeOfflineProcedure(props) {
           &mdash; <Conditional text="or" /> &mdash;
         </li>
         <li>
-          <SolutionCounter counter="2" /> If a node is no longer supposed to run, delete it from it's details page.
+          <SolutionCounter counter="2" /> If a node is no longer supposed to run, delete it from it&apos;s details page.
         </li>
         <li>
           <SolutionCounter counter="3" /> An offline node will no longer trigger this indicator and also disappear
