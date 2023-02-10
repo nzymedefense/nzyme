@@ -13,14 +13,16 @@ function EphemeralNodesConfiguration(props) {
   const [configuration, setConfiguration] = useState(null)
   const [localRevision, setLocalRevision] = useState(0)
 
+  const setNodes = props.setNodes
+
   useEffect(() => {
     clusterService.findNodesConfiguration(setConfiguration)
 
-    if(props.setNodes) {
+    if (setNodes) {
       // Force reload of nodes.
-      props.setNodes(null);
+      setNodes(null);
     }
-  }, [localRevision])
+  }, [localRevision, setNodes])
 
   if (!configuration) {
     return <LoadingSpinner />
