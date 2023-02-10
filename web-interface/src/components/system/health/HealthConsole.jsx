@@ -18,6 +18,7 @@ function HealthConsole(props) {
             <Indicator indicator={indicators.node_clock} name="Node Clock" />
             <Indicator indicator={indicators.tap_clock} name="Tap Clock" />
             <Indicator indicator={indicators.node_offline} name="Node Offline" />
+            <Indicator indicator={indicators.tap_offline} name="Tap Offline" />
           </div>
 
           <div style={{clear: "both"}} />

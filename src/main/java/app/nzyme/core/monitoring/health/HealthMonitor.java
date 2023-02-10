@@ -43,6 +43,7 @@ public class HealthMonitor {
                 .add(new DatabaseClockIndicator(nzyme.getDatabase(), nzyme.getConfiguration().ntpServer()))
                 .add(new TapClockIndicator(nzyme.getTapManager()))
                 .add(new NodeOfflineIndicator(nzyme.getNodeManager()))
+                .add(new TapOfflineIndicator(nzyme.getTapManager()))
                 .build();
 
         for (Indicator indicator : indicators) {
