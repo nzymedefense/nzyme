@@ -6,6 +6,7 @@ import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,10 +22,7 @@ import org.joda.time.DateTime;
 import java.io.*;
 import java.nio.file.Paths;
 import java.security.*;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -332,7 +330,7 @@ public class Crypto {
     }
 
     public boolean allPGPKeysEqualAcrossCluster() {
-        List<String> uniqueFingerprints = Lists.newArrayList();
+        Set<String> uniqueFingerprints = Sets.newHashSet();
         for (PGPKeyFingerprint fp : getPGPKeysByNode()) {
             uniqueFingerprints.add(fp.fingerprint());
         }
