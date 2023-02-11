@@ -29,7 +29,7 @@ function TapsTable(props) {
           <input className="form-check-input" type="checkbox" role="switch"
                  id="showOfflineNodes"onChange={updateOfflineTapsSelection} />
           <label className="form-check-label" htmlFor="showOfflineNodes">
-            Show recently active but offline taps
+            Show offline and deleted taps
           </label>
         </div>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import TapsService from '../../../../services/TapsService'
-import { useParams } from 'react-router-dom'
+import {Navigate, useParams} from 'react-router-dom'
 import LoadingSpinner from '../../../misc/LoadingSpinner'
 import moment from 'moment'
 import Routes from '../../../../util/ApiRoutes'
@@ -12,6 +12,8 @@ import CaptureConfiguration from '../capture/CaptureConfiguration'
 import TapMetrics from './metrics/TapMetrics'
 import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
+import {notify} from "react-notify-toast";
+import TapDeletedWarning from "./TapDeletedWarning";
 
 const tapsService = new TapsService()
 
@@ -25,12 +27,26 @@ function TapDetailsPage () {
 
   const [tap, setTap] = useState(null)
   const [tapMetrics, setTapMetrics] = useState(null)
+  const [justDeleted, setJustDeleted] = useState(false)
 
   useEffect(() => {
     fetchData(tapName, setTap, setTapMetrics)
     const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000)
     return () => clearInterval(id)
   }, [tapName, setTap, setTapMetrics])
+
+  const deleteTap = function () {
+    if (confirm("Really delete tap?")) {
+      tapsService.deleteTap(tapName, function () {
+        setJustDeleted(true)
+        notify.show('Tap deleted.', 'success')
+      })
+    }
+  }
+
+  if (justDeleted) {
+    return <Navigate to={Routes.SYSTEM.TAPS.INDEX} />
+  }
 
   if (!tap) {
     return <LoadingSpinner />
@@ -60,6 +76,7 @@ function TapDetailsPage () {
         </div>
       </div>
 
+      <TapDeletedWarning tap={tap} />
       <TapInactiveWarning tap={tap} />
       <TapClockWarning tap={tap} />
 
@@ -162,6 +179,21 @@ function TapDetailsPage () {
               <h3>Metrics</h3>
 
               <TapMetrics tap={tap} metrics={tapMetrics} />
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-6">
+          <div className="card">
+            <div className="card-body">
+              <h3>Tap Actions</h3>
+
+              <p>
+                <strong>You should delete this tap if you no longer plan to use it.</strong> Note that it will re-appear
+                if you don't shut it down. All metrics and related information will remain until it is retention cleaned.
+              </p>
+
+              <button className="btn btn-danger" onClick={deleteTap} disabled={tap.deleted}>Delete Tap</button>
             </div>
           </div>
         </div>

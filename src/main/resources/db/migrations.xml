@@ -1425,8 +1425,20 @@
                 <constraints nullable="false" />
             </column>
         </addColumn>
+    </changeSet>
 
+    <changeSet id="add_deleted_field_to_nodes_and_taps" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
 
+        <addColumn tableName="taps">
+            <column name="deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

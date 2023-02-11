@@ -19,19 +19,22 @@ public abstract class TapDetailsResponse {
     public abstract TotalWithAverageResponse processedBytes();
 
     @JsonProperty("memory_total")
-    public abstract Long memoryTotal();
+    public abstract long memoryTotal();
 
     @JsonProperty("memory_free")
-    public abstract Long memoryFree();
+    public abstract long memoryFree();
 
     @JsonProperty("memory_used")
-    public abstract Long memoryUsed();
+    public abstract long memoryUsed();
 
     @JsonProperty("cpu_load")
     public abstract Double cpuLoad();
 
     @JsonProperty("active")
-    public abstract Boolean active();
+    public abstract boolean active();
+
+    @JsonProperty("deleted")
+    public abstract boolean deleted();
 
     @JsonProperty("clock_drift_ms")
     public abstract long clockDriftMs();
@@ -51,7 +54,7 @@ public abstract class TapDetailsResponse {
     @JsonProperty("captures")
     public abstract List<CaptureDetailsResponse> captures();
 
-    public static TapDetailsResponse create(String name, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Boolean active, long clockDriftMs, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
+    public static TapDetailsResponse create(String name, DateTime clock, TotalWithAverageResponse processedBytes, long memoryTotal, long memoryFree, long memoryUsed, Double cpuLoad, boolean active, boolean deleted, long clockDriftMs, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
         return builder()
                 .name(name)
                 .clock(clock)
@@ -61,6 +64,7 @@ public abstract class TapDetailsResponse {
                 .memoryUsed(memoryUsed)
                 .cpuLoad(cpuLoad)
                 .active(active)
+                .deleted(deleted)
                 .clockDriftMs(clockDriftMs)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -82,15 +86,17 @@ public abstract class TapDetailsResponse {
 
         public abstract Builder processedBytes(TotalWithAverageResponse processedBytes);
 
-        public abstract Builder memoryTotal(Long memoryTotal);
+        public abstract Builder memoryTotal(long memoryTotal);
 
-        public abstract Builder memoryFree(Long memoryFree);
+        public abstract Builder memoryFree(long memoryFree);
 
-        public abstract Builder memoryUsed(Long memoryUsed);
+        public abstract Builder memoryUsed(long memoryUsed);
 
         public abstract Builder cpuLoad(Double cpuLoad);
 
-        public abstract Builder active(Boolean active);
+        public abstract Builder active(boolean active);
+
+        public abstract Builder deleted(boolean deleted);
 
         public abstract Builder clockDriftMs(long clockDriftMs);
 

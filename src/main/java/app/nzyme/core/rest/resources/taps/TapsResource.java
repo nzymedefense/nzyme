@@ -65,6 +65,19 @@ public class TapsResource {
         }
     }
 
+    @DELETE
+    @Path("/show/{name}")
+    public Response delete(@PathParam("name") String name) {
+        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            nzyme.getTapManager().deleteTap(tap.get().name());
+            return Response.ok().build();
+        }
+    }
+
     @GET
     @Path("/show/{name}/metrics")
     public Response tapMetrics(@PathParam("name") String name) {
@@ -210,6 +223,7 @@ public class TapsResource {
                 tap.memoryUsed(),
                 tap.cpuLoad(),
                 tap.updatedAt().isAfter(DateTime.now().minusMinutes(2)),
+                tap.deleted(),
                 tap.clockDriftMs(),
                 tap.createdAt(),
                 tap.updatedAt(),

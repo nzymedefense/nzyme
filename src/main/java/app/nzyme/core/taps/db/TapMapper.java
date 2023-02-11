@@ -28,6 +28,7 @@ public class TapMapper implements RowMapper<Tap>  {
                 rs.getDouble("cpu_load"),
                 new DateTime(rs.getTimestamp("created_at")),
                 updatedAt,
+                rs.getBoolean("deleted"),
                 (long) new Period(updatedAt, clock, PeriodType.millis()).getMillis()
         );
     }

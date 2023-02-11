@@ -50,9 +50,9 @@ public class TapManager {
 
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("INSERT INTO taps(name, clock, processed_bytes_total, processed_bytes_average, " +
-                            "memory_total, memory_free, memory_used, cpu_load, created_at, updated_at) " +
+                            "memory_total, memory_free, memory_used, cpu_load, deleted, created_at, updated_at) " +
                             "VALUES(:name, :clock, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
-                            ":memory_free, :memory_used, :cpu_load, NOW(), NOW())")
+                            ":memory_free, :memory_used, :cpu_load, false, NOW(), NOW())")
                             .bind("name", report.tapName())
                             .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
@@ -71,7 +71,7 @@ public class TapManager {
                             "processed_bytes_total = :processed_bytes_total, " +
                             "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                             "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                            "updated_at = NOW() WHERE name = :name")
+                            "deleted = false, updated_at = NOW() WHERE name = :name")
                             .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
                             .bind("processed_bytes_average", report.processedBytes().average())
@@ -268,6 +268,14 @@ public class TapManager {
         );
 
         return tap == null ? Optional.empty() : Optional.of(tap);
+    }
+
+    public void deleteTap(String tapName) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET deleted = true WHERE name = :name")
+                        .bind("name", tapName)
+                        .execute()
+        );
     }
 
     public TapMetrics findMetricsOfTap(String tapName) {

@@ -14,6 +14,10 @@ class TapService {
     })
   }
 
+  deleteTap (tapName, successCallback) {
+    RESTClient.delete('/taps/show/' + tapName, {}, successCallback)
+  }
+
   findMetricsOfTap (tapName, setTapMetrics) {
     RESTClient.get('/taps/show/' + tapName + '/metrics', {}, function (response) {
       setTapMetrics(response.data)

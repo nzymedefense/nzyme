@@ -9,7 +9,7 @@ function TapsRow (props) {
   const tap = props.tap
   const showOfflineTaps = props.showOfflineTaps;
 
-  if (tap.active) {
+  if (tap.active && !tap.deleted) {
     return (
       <tr>
         <td>
@@ -37,15 +37,27 @@ function TapsRow (props) {
     )
   } else {
     if (showOfflineTaps) {
-      return (
-          <tr>
-            <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
-            <td colSpan={6} style={{textAlign: "center"}} title={moment(tap.updated_at).format()}>
-              <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
-              Last seen {moment(tap.updated_at).fromNow()}
-            </td>
-          </tr>
-      )
+      if (tap.deleted) {
+        return (
+            <tr>
+              <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
+              <td colSpan={6} style={{textAlign: "center"}} title={moment(tap.updated_at).format()}>
+                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node has been deleted."/></span>{' '}
+                Node has been manually deleted and will expire automatically if not brought back online
+              </td>
+            </tr>
+        )
+      } else {
+        return (
+            <tr>
+              <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
+              <td colSpan={6} style={{textAlign: "center"}} title={moment(tap.updated_at).format()}>
+                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
+                Last seen {moment(tap.updated_at).fromNow()} and will expire automatically if not brought back online
+              </td>
+            </tr>
+        )
+      }
     } else {
       return null
     }
