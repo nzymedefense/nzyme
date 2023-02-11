@@ -20,9 +20,9 @@ function AlertDetailsPage () {
   const { alertId } = useParams()
 
   useEffect(() => {
-    fetchData(alertId, setAlert);
-    const id = setInterval(() => fetchData(alertId, setAlert), 5000);
-    return () => clearInterval(id);
+    fetchData(alertId, setAlert)
+    const id = setInterval(() => fetchData(alertId, setAlert), 5000)
+    return () => clearInterval(id)
   }, [alertId])
 
   if (!alert) {
@@ -82,7 +82,7 @@ function AlertDetailsPage () {
 
                             <dl>
                                 {Object.keys(alert.fields).map(function (key) {
-                                  return <AlertField fieldKey={key} value={alert.fields[key]} fields={alert.fields} />
+                                  return <AlertField key={key} fieldKey={key} value={alert.fields[key]} fields={alert.fields} />
                                 })}
                             </dl>
                         </p>
@@ -111,7 +111,7 @@ function AlertDetailsPage () {
                             <h4>Possible False Positives</h4>
                             <ul>
                                 {Object.keys(alert.false_positives).map(function (key) {
-                                  return (<li>{alert.false_positives[key]}</li>)
+                                  return (<li key={key}>{alert.false_positives[key]}</li>)
                                 })}
                             </ul>
 

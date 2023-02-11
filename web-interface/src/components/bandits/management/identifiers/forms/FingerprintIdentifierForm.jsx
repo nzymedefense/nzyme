@@ -18,16 +18,16 @@ class FingerprintIdentifierForm extends React.Component {
 
     if (fingerprint.length !== 64) {
       this.setState({ errorMessage: 'Invalid fingerprint. A valid fingerprint is 64 characters long.' })
-      this.props.setFormReady(false);
+      this.props.setFormReady(false)
       return
     }
 
     const explanation = fingerprint ? 'a frame with fingerprint "' + fingerprint + '" is recorded' : undefined
 
-    this.props.setConfiguration({ fingerprint: fingerprint });
+    this.props.setConfiguration({ fingerprint: fingerprint })
 
-    this.props.setExplanation(explanation);
-    this.props.setFormReady(true);
+    this.props.setExplanation(explanation)
+    this.props.setFormReady(true)
   }
 
   render () {

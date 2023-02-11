@@ -26,15 +26,14 @@ function _editBandit (e) {
   )
 }
 
-const banditsService = new BanditsService();
+const banditsService = new BanditsService()
 
-function EditBanditPage() {
-
-  const { banditId } = useParams();
-  const [bandit, setBandit] = useState(null);
+function EditBanditPage () {
+  const { banditId } = useParams()
+  const [bandit, setBandit] = useState(null)
 
   useEffect(() => {
-    banditsService.findOne(banditId, setBandit);
+    banditsService.findOne(banditId, setBandit)
   }, [banditId])
 
   if (!bandit) {
@@ -77,7 +76,6 @@ function EditBanditPage() {
               </div>
           </div>
   )
-
 }
 
 export default EditBanditPage

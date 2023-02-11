@@ -4,19 +4,19 @@ import { notify } from 'react-notify-toast'
 class BanditsService {
   findAll (setBandits) {
     RESTClient.get('/bandits', {}, function (response) {
-      setBandits(response.data.bandits);
+      setBandits(response.data.bandits)
     })
   }
 
   findOne (id, setBandits) {
     RESTClient.get('/bandits/show/' + id, {}, function (response) {
-      setBandits(response.data);
+      setBandits(response.data)
     })
   }
 
   findContactOfBandit (banditUUID, contactUUID, detailedSSIDs, detailedBSSIDs, setContact) {
     RESTClient.get('/bandits/show/' + banditUUID + '/contacts/' + contactUUID, { detailed_ssids: detailedSSIDs, detailed_bssids: detailedBSSIDs }, function (response) {
-      setContact(response.data);
+      setContact(response.data)
     })
   }
 
@@ -38,28 +38,25 @@ class BanditsService {
 
   deleteBandit (banditUUID, setDeleted) {
     RESTClient.delete('/bandits/show/' + banditUUID, function () {
-      setDeleted(true);
+      setDeleted(true)
     }, function () {
       notify.show('Could not delete bandit. Please check nzyme log file.', 'error')
     })
   }
 
   findAllIdentifierTypes (setBanditIdentifierTypes) {
-  
     RESTClient.get('/bandits/identifiers/types', {}, function (response) {
-      setBanditIdentifierTypes(response.data.types);
+      setBanditIdentifierTypes(response.data.types)
     })
   }
 
   createIdentifier (banditUUID, createRequest, successCallback, errorCallback) {
-    const self = this
-
-    RESTClient.post('/bandits/show/' + banditUUID + '/identifiers', createRequest, successCallback, errorCallback);
+    RESTClient.post('/bandits/show/' + banditUUID + '/identifiers', createRequest, successCallback, errorCallback)
   }
 
   deleteIdentifier (banditUUID, identifierUUID, successCallback) {
     RESTClient.delete('/bandits/show/' + banditUUID + '/identifiers/' + identifierUUID, successCallback, function () {
-      notify.show('Could not delete identifier. Please check nzyme log file.', 'error');
+      notify.show('Could not delete identifier. Please check nzyme log file.', 'error')
     })
   }
 }

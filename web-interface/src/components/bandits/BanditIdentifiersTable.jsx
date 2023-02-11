@@ -3,7 +3,6 @@ import Routes from '../../util/ApiRoutes'
 import BanditIdentifiersTableRow from './BanditIdentifersTableRow'
 
 class BanditIdentifiersTable extends React.Component {
-
   render () {
     const self = this
 
@@ -45,7 +44,6 @@ class BanditIdentifiersTable extends React.Component {
             </div>
     )
   }
-
 }
 
 export default BanditIdentifiersTable

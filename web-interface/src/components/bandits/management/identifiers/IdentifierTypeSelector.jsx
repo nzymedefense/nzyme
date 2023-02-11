@@ -1,8 +1,7 @@
 import React from 'react'
 import { startCase } from 'lodash/string'
 
-function IdentifierTypeSelector(props) {
-
+function IdentifierTypeSelector (props) {
   return (
           <select ref={props.selector} onChange={props.onChange}>
               <option key="default-empty" />
@@ -11,7 +10,6 @@ function IdentifierTypeSelector(props) {
               })}
           </select>
   )
-
 }
 
 export default IdentifierTypeSelector

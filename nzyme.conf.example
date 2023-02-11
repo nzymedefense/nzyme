@@ -2,10 +2,10 @@
 
 # General nzyme configuration.
 general: {
-  role: LEADER
+  role: NODE
 
   # The ID or name of this nzyme instance. Must be unique and contain only alphanumeric characters, underscores and dashes.
-  id: nzyme-node-01
+  name: nzyme-node-01
 
   # Admin password SHA256 hash. (64 characters) - generate with, for example, sha256sum on Linux: $ echo -n secretpassword | sha256sum
   # You will use this password to log in to the web interface.
@@ -17,8 +17,17 @@ general: {
   # Download current list of manufacturers and enable MAC address to manufacturer lookup?
   fetch_ouis: true
 
-  # Path to directory that the tracker will use to store some temporary information. (must be writable)
+  # Path to directory that nzyme will use to store some temporary information. (must be writable)
   data_directory: /usr/share/nzyme
+
+  # Path to nzyme plugin directory.
+  plugin_directory: /usr/share/nzyme/plugins
+
+  # Path to nzyme cryptographic key/certificate directory.
+  crypto_directory: /usr/share/nzyme/crypto
+
+  # Nzyme is using NTP to compare clocks to world reference time and alert you if there is time drift. Default: pool.ntp.org
+  ntp_server: pool.ntp.org
 
   # We use Python to inject frames for traps.
   python {

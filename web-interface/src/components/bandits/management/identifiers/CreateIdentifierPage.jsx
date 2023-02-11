@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
-import { Navigate } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { notify } from 'react-notify-toast'
 
 import LoadingSpinner from '../../../misc/LoadingSpinner'
@@ -9,66 +8,64 @@ import IdentifierFormProxy from './forms/IdentifierFormProxy'
 import IdentifierExplanation from './IdentifierExplanation'
 import Routes from '../../../../util/ApiRoutes'
 
-import BanditsService from '../../../../services/BanditsService';
+import BanditsService from '../../../../services/BanditsService'
 
-const banditsService = new BanditsService();
+const banditsService = new BanditsService()
 
-function CreateIdentifierPage(props) {
+function CreateIdentifierPage (props) {
+  const { banditId } = useParams()
 
-    const { banditId } = useParams();
+  const typeSelector = React.createRef()
 
-    const typeSelector = React.createRef();
+  const [bandit, setBandit] = useState(null)
+  const [banditIdentifierTypes, setBanditIdentifierTypes] = useState(null)
+  const [selectedType, setSelectedType] = useState(null)
+  const [configuration, setConfiguration] = useState(null)
+  const [explanation, setExplanation] = useState(null)
+  const [formReady, setFormReady] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
-    const [bandit, setBandit] = useState(null);
-    const [banditIdentifierTypes, setBanditIdentifierTypes] = useState(null);
-    const [selectedType, setSelectedType] = useState(null);
-    const [configuration, setConfiguration] = useState(null);
-    const [explanation, setExplanation] = useState(null);
-    const [formReady, setFormReady] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    
-    useEffect(() => {
-        banditsService.findOne(banditId, setBandit);
-        banditsService.findAllIdentifierTypes(setBanditIdentifierTypes);
-    }, [banditId]);
+  useEffect(() => {
+    banditsService.findOne(banditId, setBandit)
+    banditsService.findAllIdentifierTypes(setBanditIdentifierTypes)
+  }, [banditId])
 
-    const selectType = useCallback(() => {
-        setSelectedType(typeSelector.current.value);
-    }, [typeSelector]);
+  const selectType = useCallback(() => {
+    setSelectedType(typeSelector.current.value)
+  }, [typeSelector])
 
-    const submitForm = useCallback((e) => {
-        e.preventDefault();
-        setSubmitting(true);
+  const submitForm = useCallback((e) => {
+    e.preventDefault()
+    setSubmitting(true)
 
-        banditsService.createIdentifier(
-            bandit.uuid,
-            {
-                type: selectedType,
-                configuration: configuration
-            },
-            function() {
-                notify.show('Identifier created.', 'success');
-                setSubmitting(false);
-                setSubmitted(true);
-            }, function() {
-                notify.show('Could not create identifier. Please check nzyme log file.', 'error');
-                setSubmitting(false);
-                setSubmitted(false);
-            }
-        );
+    banditsService.createIdentifier(
+      bandit.uuid,
+      {
+        type: selectedType,
+        configuration: configuration
+      },
+      function () {
+        notify.show('Identifier created.', 'success')
+        setSubmitting(false)
+        setSubmitted(true)
+      }, function () {
+        notify.show('Could not create identifier. Please check nzyme log file.', 'error')
+        setSubmitting(false)
+        setSubmitted(false)
+      }
+    )
+  }, [bandit, selectedType, configuration])
 
-    }, [bandit, selectedType, configuration])
+  if (submitted) {
+    return (<Navigate to={Routes.BANDITS.SHOW(bandit.uuid)} />)
+  }
 
-    if (submitted) {
-        return (<Navigate to={Routes.BANDITS.SHOW(bandit.uuid)} />)
-    }
+  if (!banditIdentifierTypes || !bandit) {
+    return <LoadingSpinner />
+  }
 
-    if (!banditIdentifierTypes || !bandit) {
-        return <LoadingSpinner />
-    }
-
-    return (
+  return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -154,8 +151,7 @@ function CreateIdentifierPage(props) {
                     </div>
                 </div>
             </div>
-    )
-  
+  )
 }
 
 export default CreateIdentifierPage

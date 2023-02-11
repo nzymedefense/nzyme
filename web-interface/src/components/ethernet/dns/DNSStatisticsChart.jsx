@@ -1,36 +1,34 @@
-import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import SimpleBarChart from "../../charts/SimpleBarChart";
+import React from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
+import SimpleBarChart from '../../charts/SimpleBarChart'
 
-function DNSStatisticsChart(props) {
+function DNSStatisticsChart (props) {
+  if (!props.statistics) {
+    return <LoadingSpinner />
+  }
 
-    if (!props.statistics) {
-        return <LoadingSpinner />
-    }
-
-    return <SimpleBarChart
+  return <SimpleBarChart
         height={150}
         lineWidth={1}
         customMarginLeft={45}
         data={formatData(props.statistics.buckets, props.attribute, props.conversion)}
-        ticksuffix={props.valueType ? " " + props.valueType : undefined}
-        tickformat={".2~f"}
+        ticksuffix={props.valueType ? ' ' + props.valueType : undefined}
+        tickformat={'.2~f'}
     />
-
 }
 
-function formatData(data, attribute, conversion) {
-    const result = {};
+function formatData (data, attribute, conversion) {
+  const result = {}
 
-    Object.keys(data).sort().forEach(function (key) {
-        if (conversion) {
-            result[key] = conversion(data[key][attribute]);
-        } else {
-            result[key] = data[key][attribute];
-        }
-    })
+  Object.keys(data).sort().forEach(function (key) {
+    if (conversion) {
+      result[key] = conversion(data[key][attribute])
+    } else {
+      result[key] = data[key][attribute]
+    }
+  })
 
-    return result;
+  return result
 }
 
-export default DNSStatisticsChart;
+export default DNSStatisticsChart

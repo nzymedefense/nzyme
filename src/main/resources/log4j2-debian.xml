@@ -2,7 +2,7 @@
 <Configuration status="WARN">
     <Appenders>
         <RollingFile name="Logfile" fileName="/var/log/nzyme/nzyme.log" filePattern="logs/$${date:yyyy-MM}/nzyme-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+            <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ} [%t] %-5level %logger{36} - %msg%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="100 MB"/>

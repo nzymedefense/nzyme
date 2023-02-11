@@ -1,8 +1,9 @@
 import React from 'react'
+import AssetImage from './AssetImage'
 
 class NotConnectedPage extends React.Component {
-    render () {
-        return (
+  render () {
+    return (
             <section className="vh-100 start">
                 <div className="container py-5 h-100">
                     <div className="row d-flex justify-content-center align-items-center h-100">
@@ -10,8 +11,10 @@ class NotConnectedPage extends React.Component {
                             <div className="card main-card">
                                 <div className="row g-0">
                                     <div className="col-md-6 col-lg-5 d-none d-md-block left-half justify-content-center">
-                                        <img src="/static/logo_small.png" className="d-block mx-auto"
-                                            id="logo" alt="nzyme logo" />
+                                        <AssetImage filename="logo_small.png"
+                                                    className="d-block mx-auto"
+                                                    alt="nzyme logo"
+                                                    id="logo" />
                                     </div>
 
                                     <div className="col-md-6 col-lg-7 d-flex align-items-center">
@@ -34,7 +37,7 @@ class NotConnectedPage extends React.Component {
                                             </div>
 
                                             <p className="mt-4">
-                                                <a href="https://go.nzyme.org/help" className="btn btn-sm btn-dark" target="_blank">
+                                                <a href="https://go.nzyme.org/help" className="btn btn-sm btn-dark" target="_blank" rel="noreferrer">
                                                     Help
                                                 </a>
                                             </p>
@@ -46,8 +49,8 @@ class NotConnectedPage extends React.Component {
                     </div>
                 </div>
             </section>
-        )
-    }
+    )
+  }
 }
 
 export default NotConnectedPage

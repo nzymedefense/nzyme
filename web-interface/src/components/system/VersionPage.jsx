@@ -1,9 +1,8 @@
-import React from "react";
-import Versioncheck from "./Versioncheck";
+import React from 'react'
+import Versioncheck from './Versioncheck'
 
-function VersionPage() {
-
-    return (
+function VersionPage () {
+  return (
         <div>
             <div className="row">
                 <div className="col-md-12">
@@ -22,8 +21,7 @@ function VersionPage() {
             </div>
 
         </div>
-    );
-
+  )
 }
 
-export default VersionPage;
+export default VersionPage

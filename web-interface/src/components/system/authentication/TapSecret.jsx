@@ -1,37 +1,36 @@
-import React, {useCallback, useState, useEffect} from 'react';
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import React, { useCallback, useState, useEffect } from 'react'
+import LoadingSpinner from '../../misc/LoadingSpinner'
 
-const STARS = "****************************************************************";
+const STARS = '****************************************************************'
 
-function TapSecret(props) {
+function TapSecret (props) {
+  const [secret, setSecret] = useState(STARS)
+  const [buttonText, setButtonText] = useState('Show Secret')
+  const [toggled, setToggled] = useState(false)
 
-    const [secret, setSecret] = useState(STARS);
-    const [buttonText, setButtonText] = useState("Show Secret");
-    const [toggled, setToggled] = useState(false);
-
-    const toggle = useCallback(() => {
-        if (toggled) {
-            setSecret(STARS);
-            setToggled(false);
-            setButtonText("Show Secret");
-        } else {
-            setSecret(props.secret);
-            setToggled(true);
-            setButtonText("Hide Secret");
-        }
-    }, [setSecret, toggled, setToggled, props.secret]);
-
-    useEffect(() => {
-        if (toggled) {
-            setSecret(props.secret);
-        }
-    }, [props.secret]);
-
-    if (!props.secret) {
-        return <LoadingSpinner />
+  const toggle = useCallback(() => {
+    if (toggled) {
+      setSecret(STARS)
+      setToggled(false)
+      setButtonText('Show Secret')
+    } else {
+      setSecret(props.secret)
+      setToggled(true)
+      setButtonText('Hide Secret')
     }
+  }, [setSecret, toggled, setToggled, props.secret])
 
-    return (
+  useEffect(() => {
+    if (toggled) {
+      setSecret(props.secret)
+    }
+  }, [toggled, props.secret])
+
+  if (!props.secret) {
+    return <LoadingSpinner />
+  }
+
+  return (
         <div className="row">
             <div className="col-md-12">
                 <p className="help-text">
@@ -55,8 +54,7 @@ function TapSecret(props) {
                 </div>
             </div>
         </div>
-    )
-
+  )
 }
 
-export default TapSecret;
+export default TapSecret

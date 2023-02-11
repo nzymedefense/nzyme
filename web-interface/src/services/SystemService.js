@@ -1,21 +1,6 @@
 import RESTClient from '../util/RESTClient'
 
 class SystemService {
-  getStatus () {
-    const self = this
-
-    RESTClient.get('/system/status', {}, function (response) {
-      self.setState({ systemStatus: response.data.status })
-    })
-  }
-
-  getMetrics () {
-    const self = this
-
-    RESTClient.get('/system/metrics', {}, function (response) {
-      self.setState({ systemMetrics: response.data.metrics })
-    })
-  }
 
   getVersionInfo () {
     const self = this
@@ -24,6 +9,13 @@ class SystemService {
       self.setState({ versionInfo: response.data })
     })
   }
+
+  getHealthIndicators(setHealthIndicators) {
+    RESTClient.get('/system/health/indicators', {}, function (response) {
+      setHealthIndicators(response.data.indicators)
+    })
+  }
+
 }
 
 export default SystemService

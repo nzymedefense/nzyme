@@ -7,6 +7,18 @@ h1, h2, h3, h4, h5, h6 {
     color: #fff;
 }
 
+a {
+    color: #ffffff;
+}
+
+a:hover {
+    color: #71769F;
+}
+
+code {
+    color: #ffffff;
+}
+
 input.form-control {
     background-color: #fff !important;
 }
@@ -74,6 +86,28 @@ div.card {
     color: #fff;
 }
 
+.alert-danger a {
+    color: #000;
+}
+
 .breadcrumb a {
     color: #8D99AE;
+}
+
+i.inline-help {
+    color: #8D99AE;
+}
+
+div.modal-dialog div.modal-content {
+    background-color: #2B2D42;
+}
+
+div.modal-dialog div.modal-content button.modal-close {
+    background-color: #2B2D42;
+    color: #fff;
+}
+
+table tr.table-span-heading td {
+    --bs-table-accent-bg: #2B2D42 !important;
+    border-bottom: 1px solid #fff;
 }

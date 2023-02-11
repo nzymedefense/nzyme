@@ -1,44 +1,43 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import LoadingSpinner from '../../misc/LoadingSpinner'
 import TrackersTableRow from './TrackersTableRow'
 import GroundStationDisabled from './GroundStationDisabled'
 import TrackersService from '../../../services/TrackersService'
 
-const trackersService = new TrackersService();
-  
-function fetchData(setTrackers, setGroundstationEnabled) {
-  trackersService.findAll(setTrackers, setGroundstationEnabled);
+const trackersService = new TrackersService()
+
+function fetchData (setTrackers, setGroundstationEnabled) {
+  trackersService.findAll(setTrackers, setGroundstationEnabled)
 }
 
-function TrackersTable(props) {
+function TrackersTable (props) {
+  const [trackers, setTrackers] = useState()
+  const [groundstationEnabled, setGroundstationEnabled] = useState()
 
-    const [trackers, setTrackers] = useState();
-    const [groundstationEnabled, setGroundstationEnabled] = useState();
+  useEffect(() => {
+    fetchData(setTrackers, setGroundstationEnabled)
+    const id = setInterval(() => fetchData(setTrackers, setGroundstationEnabled), 5000)
+    return () => clearInterval(id)
+  }, [trackers])
 
-    useEffect(() => {
-      fetchData(setTrackers, setGroundstationEnabled);
-      const id = setInterval(() => fetchData(setTrackers, setGroundstationEnabled), 5000);
-      return () => clearInterval(id);
-    }, [trackers]);
-    
-    if (!trackers) {
-      return <LoadingSpinner />
-    }
+  if (!trackers) {
+    return <LoadingSpinner />
+  }
 
-    if (!groundstationEnabled) {
-      return <GroundStationDisabled />
-    }
+  if (!groundstationEnabled) {
+    return <GroundStationDisabled />
+  }
 
-    if (trackers.length === 0) {
-      return (
+  if (trackers.length === 0) {
+    return (
                 <div className="alert alert-info">
                     No tracker devices have connected yet.
                 </div>
-      )
-    }
+    )
+  }
 
-    return (
+  return (
             <div className="row">
                 <div className="col-md-12">
                     <table className="table table-sm table-hover table-striped">
@@ -58,7 +57,6 @@ function TrackersTable(props) {
                                 key={'tracker-' + key}
                                 tracker={trackers[key]}
                                 forBandit={props.forBandit}
-                                trackersService={trackersService}
                                 setTrackers={setTrackers}
                             />
                         })}
@@ -66,8 +64,7 @@ function TrackersTable(props) {
                     </table>
                 </div>
             </div>
-    )
-
+  )
 }
 
 export default TrackersTable

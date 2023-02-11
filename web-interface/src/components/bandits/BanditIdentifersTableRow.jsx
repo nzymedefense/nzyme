@@ -11,7 +11,7 @@ class BanditIdentifiersTableRow extends React.Component {
                 <td>{identifier.matches}</td>
                 <td>
                     <span className="float-right">
-                        <DeleteIdentifierButton 
+                        <DeleteIdentifierButton
                          bandit={this.props.bandit}
                          trackers={this.props.trackers}
                          identifier={identifier}

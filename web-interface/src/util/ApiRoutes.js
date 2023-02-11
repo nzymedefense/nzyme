@@ -1,7 +1,6 @@
 const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
-    LEADER: '/system/leader',
     VERSION: '/system/version',
     AUTHENTICATION: '/system/authentication',
     TAPS: {
@@ -9,6 +8,24 @@ const ApiRoutes = {
       DETAILS: tapName => `/system/taps/show/${tapName}`,
       METRICDETAILS: (tapName, metricType, metricName) => `/system/taps/show/${tapName}/metrics/${metricType}/${metricName}`
     },
+    CRYPTO: {
+      INDEX: '/system/crypto'
+    },
+    MONITORING: {
+      INDEX: '/system/monitoring',
+      PROMETHEUS: {
+        INDEX: '/system/monitoring/prometheus'
+      }
+    },
+    CLUSTER: {
+      INDEX: '/system/cluster',
+      NODES: {
+        DETAILS: uuid => `/system/cluster/nodes/show/${uuid}`
+      }
+    },
+    HEALTH: {
+      INDEX: "/system/health"
+    }
   },
   REPORTING: {
     INDEX: '/reporting',
@@ -40,11 +57,18 @@ const ApiRoutes = {
       INDEX: '/system/assets/index'
     }
   },
+  RETRO: {
+    SEARCH: {
+      INDEX: '/retro/search'
+    },
+    SERVICE_SUMMARY: '/retro/servicesummary',
+    CONFIGURATION: '/retro/configuration'
+  },
   NOT_FOUND: '/notfound',
   ALERTS: {
     INDEX: '/alerts',
     SHOW: id => `/alerts/show/${id}`
-  },
+  }
 }
 
 export default ApiRoutes

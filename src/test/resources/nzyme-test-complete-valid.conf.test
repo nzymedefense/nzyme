@@ -1,6 +1,6 @@
 general: {
-  role: LEADER
-  id: nzyme-testng
+  role: NODE
+  name: mocky-mock
 
   admin_password_hash: 932f3c1b56257ce8539ac269d7aab42550dacf8818d075f0bdf1990562aae3ef
 
@@ -20,6 +20,11 @@ general: {
 
   fetch_ouis: true
   versionchecks: true
+
+  crypto_directory: "crypto_test"
+  plugin_directory: "plugin_test"
+
+  ntp_server: pool.ntp.org
 }
 
 interfaces: {

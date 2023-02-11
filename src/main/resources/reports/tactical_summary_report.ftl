@@ -21,19 +21,6 @@
     <div class="row mt-3"?>
         <div class="col-md-4">
             <div class="card text-center">
-                <#if system_restarts == 0>
-                    <div class="card-body bg-success">
-                <#else>
-                <div class="card-body bg-warning">
-                </#if>
-                <p>System Restarts</p>
-                <span>${system_restarts}</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-center">
                 <#if alerts_count == 0>
                     <div class="card-body bg-success">
                 <#else>
@@ -45,22 +32,6 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-center">
-                <#if probe_malfunctions == 0>
-                    <div class="card-body bg-success">
-                <#else>
-                    <div class="card-body bg-danger">
-                </#if>
-                <p>Probe Malfunctions</p>
-                <#if probe_malfunctions == 0>
-                    <span>No malfunctions</span>
-                <#else>
-                    <span>Malfunctions detected!</span>
-                </#if>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="row mt-3">

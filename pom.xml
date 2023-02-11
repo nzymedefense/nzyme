@@ -9,7 +9,7 @@
       <tag>1.2.0</tag>
     </scm>
 
-    <groupId>horse.wtf.nzyme</groupId>
+    <groupId>app.nzyme.core</groupId>
     <artifactId>nzyme</artifactId>
     <version>2.0.0-SNAPSHOT</version>
 
@@ -54,6 +54,9 @@
         <cronutils.version>9.1.6</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
         <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
+        <bouncycastle.version>1.72.2</bouncycastle.version>
+        <oshi.version>6.4.0</oshi.version>
+        <commonsnet.version>3.9.0</commonsnet.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -81,6 +84,12 @@
             <groupId>org.pcap4j</groupId>
             <artifactId>pcap4j-core</artifactId>
             <version>${pcap4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.pcap4j</groupId>
@@ -126,6 +135,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-joda</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
@@ -318,6 +332,21 @@
             <artifactId>nzyme-plugin</artifactId>
             <version>${nzymeplugin.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpg-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>${oshi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>${commonsnet.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -399,7 +428,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>horse.wtf.nzyme.Main</mainClass>
+                            <mainClass>app.nzyme.core.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -410,6 +439,16 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
                 <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                     <minimizeJar>false</minimizeJar>
                 </configuration>
                 <executions>
@@ -480,7 +519,9 @@
 
                                 <data>
                                     <src>nzyme.conf.example</src>
+                                    <dst>nzyme.conf</dst>
                                     <type>file</type>
+                                    <conffile>true</conffile>
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/etc/nzyme</prefix>
@@ -495,6 +536,20 @@
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/etc/nzyme</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
+                                    <src>src/deb/systemd/defaults_debian</src>
+                                    <dst>nzyme</dst>
+                                    <type>file</type>
+                                    <conffile>true</conffile>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/etc/default</prefix>
+                                        <filemode>644</filemode>
                                         <user>root</user>
                                         <group>root</group>
                                     </mapper>

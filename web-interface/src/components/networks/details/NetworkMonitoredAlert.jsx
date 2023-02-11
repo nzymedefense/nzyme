@@ -6,7 +6,7 @@ class NetworkMonitoredAlert extends React.Component {
       return (
                 <div className="alert alert-primary">
                     <i className="fas fa-heartbeat" />&nbsp;
-                    Nzyme has been configured to monitor this network and will raise alerts for any deviation from it's
+                    Nzyme has been configured to monitor this network and will raise alerts for any deviation from it&apos;s
                     configured expected state.
                 </div>
       )

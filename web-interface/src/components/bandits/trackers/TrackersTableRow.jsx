@@ -7,26 +7,31 @@ import TrackerStatus from './TrackerStatus'
 import TrackingMode from './TrackingMode'
 import Routes from '../../../util/ApiRoutes'
 import TrackBanditButton from './TrackBanditButton'
+import TrackersService from '../../../services/TrackersService'
 
-function TrackersTableRow(props) {
+const trackersService = new TrackersService()
 
-    const tracker = props.tracker
+function TrackersTableRow (props) {
+  const tracker = props.tracker
 
-    const onTrackingStartButtonClicked = useCallback(() => {
-        props.trackersService.issueStartTrackingRequest(tracker.name, props.forBandit.uuid, function () {
-            notify.show('Issued start tracking request for this bandit to tracker device.', 'success');
-            props.setTrackers(undefined);
-        });
-    }, [ tracker, props.trackersService, props.forBandit, props.setTrackers ]);
+  const forBandit = props.forBandit
+  const setTrackers = props.setTrackers
 
-    const onTrackingStopButtonClicked = useCallback(() => {
-        props.trackersService.issueCancelTrackingRequest(tracker.name, props.forBandit.uuid, function () {
-            notify.show('Issued cancel tracking request for this bandit to tracker device.', 'success');
-            props.setTrackers(undefined);
-        });
-    }, [ tracker, props.trackersService, props.forBandit, props.setTrackers ]);
+  const onTrackingStartButtonClicked = useCallback(() => {
+    trackersService.issueStartTrackingRequest(tracker.name, forBandit.uuid, function () {
+      notify.show('Issued start tracking request for this bandit to tracker device.', 'success')
+      setTrackers(undefined)
+    })
+  }, [tracker, forBandit, setTrackers])
 
-    return (
+  const onTrackingStopButtonClicked = useCallback(() => {
+    trackersService.issueCancelTrackingRequest(tracker.name, forBandit.uuid, function () {
+      notify.show('Issued cancel tracking request for this bandit to tracker device.', 'success')
+      setTrackers(undefined)
+    })
+  }, [tracker, forBandit, setTrackers])
+
+  return (
             <tr>
                 <td><a href={Routes.BANDITS.SHOW_TRACKER(tracker.name)}>{tracker.name}</a></td>
                 <td><TrackerStatus status={tracker.state} /></td>
@@ -50,8 +55,7 @@ function TrackersTableRow(props) {
                     />
                 </td>
             </tr>
-    )
-
+  )
 }
 
-export default TrackersTableRow;
+export default TrackersTableRow

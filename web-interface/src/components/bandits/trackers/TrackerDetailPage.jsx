@@ -10,29 +10,28 @@ import { round } from 'lodash'
 import ContactsTable from '../ContactsTable'
 import TrackersService from '../../../services/TrackersService'
 
-const trackersService = new TrackersService();
+const trackersService = new TrackersService()
 
-function fetchData(trackerName, setTracker) {
-    trackersService.findOne(trackerName, setTracker);
+function fetchData (trackerName, setTracker) {
+  trackersService.findOne(trackerName, setTracker)
 }
 
-function TrackerDetailPage(props) {
+function TrackerDetailPage (props) {
+  const { trackerName } = useParams()
 
-    const { trackerName } = useParams();
+  const [tracker, setTracker] = useState()
 
-    const [tracker, setTracker] = useState();
+  useEffect(() => {
+    fetchData(trackerName, setTracker)
+    const id = setInterval(() => fetchData(trackerName, setTracker), 15000)
+    return () => clearInterval(id)
+  }, [trackerName])
 
-    useEffect(() => {
-        fetchData(trackerName, setTracker);
-        const id = setInterval(() => fetchData(trackerName, setTracker), 15000);
-        return () => clearInterval(id);
-      }, []);
+  if (!tracker) {
+    return <LoadingSpinner />
+  }
 
-    if (!tracker) {
-      return <LoadingSpinner />
-    }
-
-    return (
+  return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
@@ -135,8 +134,7 @@ function TrackerDetailPage(props) {
                 </div>
 
             </div>
-    )
-  
+  )
 }
 
 export default TrackerDetailPage

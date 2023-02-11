@@ -19,8 +19,23 @@
         "react"
     ],
     "rules": {
-    }
-    ,
+    },
+    "overrides": [
+        {
+            "files": ["*"],
+            "rules": {
+                "padded-blocks": "off",
+                "react/prop-types": "off",
+                "react/no-deprecated": "off",
+                "quotes": "off",
+                "semi": "off",
+                "object-curly-spacing": "off",
+                "space-before-function-paren": "off",
+                "eol-last": "off",
+                "react/jsx-no-target-blank": "off"
+            }
+        }
+   ],
     "settings": {
         "react": {
             "version": "detect"

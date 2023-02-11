@@ -1,5 +1,3 @@
-import React from 'react'
-
 function AlertSSID (props) {
   if (props.ssid) {
     return props.ssid
