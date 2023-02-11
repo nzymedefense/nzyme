@@ -17,7 +17,7 @@ public class NodeOfflineIndicator extends Indicator {
     @Override
     protected IndicatorStatus doRun() {
         for (Node node : nodeManager.getNodes()) {
-            if (!node.isEphemeral() && node.lastSeen().isBefore(DateTime.now().minusMinutes(2))) {
+            if (!node.deleted() && !node.isEphemeral() && node.lastSeen().isBefore(DateTime.now().minusMinutes(2))) {
                 return IndicatorStatus.orange(this);
             }
         }

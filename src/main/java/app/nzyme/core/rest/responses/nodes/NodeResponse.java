@@ -61,6 +61,9 @@ public abstract class NodeResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
+    @JsonProperty("deleted")
+    public abstract boolean deleted();
+
     @JsonProperty("clock")
     public abstract DateTime clock();
 
@@ -70,7 +73,7 @@ public abstract class NodeResponse {
     @JsonProperty("is_ephemeral")
     public abstract boolean isEphemeral();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, long clockDriftMs, boolean isEphemeral) {
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -90,6 +93,7 @@ public abstract class NodeResponse {
                 .osInformation(osInformation)
                 .version(version)
                 .lastSeen(lastSeen)
+                .deleted(deleted)
                 .clock(clock)
                 .clockDriftMs(clockDriftMs)
                 .isEphemeral(isEphemeral)
@@ -138,6 +142,8 @@ public abstract class NodeResponse {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
+        public abstract Builder deleted(boolean deleted);
+
         public abstract Builder clock(DateTime clock);
 
         public abstract Builder clockDriftMs(long clockDriftMs);
@@ -146,5 +152,4 @@ public abstract class NodeResponse {
 
         public abstract NodeResponse build();
     }
-
 }

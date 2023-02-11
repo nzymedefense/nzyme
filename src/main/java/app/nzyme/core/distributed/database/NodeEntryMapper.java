@@ -30,7 +30,8 @@ public class NodeEntryMapper implements RowMapper<NodeEntry> {
                 rs.getString("os_information"),
                 rs.getString("version"),
                 new DateTime(rs.getTimestamp("last_seen")),
-                new DateTime(rs.getTimestamp("clock"))
+                new DateTime(rs.getTimestamp("clock")),
+                rs.getBoolean("deleted")
         );
     }
 

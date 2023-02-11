@@ -68,6 +68,28 @@ public class NodesResource {
         return Response.ok(buildNodeResponse(res.get())).build();
     }
 
+    @DELETE
+    @Path("/show/{uuid}")
+    public Response deleteNode(@PathParam("uuid") String uuid) {
+        UUID nodeId;
+
+        try {
+            nodeId = UUID.fromString(uuid);
+        } catch(IllegalArgumentException e) {
+            LOG.warn("Invalid UUID supplied.", e);
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Optional<Node> res = nzyme.getNodeManager().getNode(nodeId);
+        if (res.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getNodeManager().deleteNode(nodeId);
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/show/{uuid}/metrics/gauges/{metricname}/histogram")
     public Response findMetricsGaugeHistogram(@PathParam("uuid") String uuid, @PathParam("metricname") String n) {
@@ -172,6 +194,7 @@ public class NodesResource {
                 node.osInformation(),
                 node.version(),
                 node.lastSeen(),
+                node.deleted(),
                 node.clock(),
                 node.clockDriftMs(),
                 node.isEphemeral()

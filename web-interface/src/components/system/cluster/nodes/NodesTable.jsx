@@ -26,7 +26,7 @@ function NodesTable(props) {
             <input className="form-check-input" type="checkbox" role="switch"
                    id="showOfflineNodes"onChange={updateOfflineNodesSelection} />
             <label className="form-check-label" htmlFor="showOfflineNodes">
-              Show recently active but offline nodes
+              Show offline and deleted nodes
             </label>
           </div>
 

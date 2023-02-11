@@ -9,7 +9,7 @@ function NodeRow(props) {
   const node = props.node
   const showOfflineNodes = props.showOfflineNodes;
 
-  if (node.active) {
+  if (node.active && !node.deleted) {
     return (
         <tr>
           <td>
@@ -37,15 +37,27 @@ function NodeRow(props) {
     )
   } else {
     if (showOfflineNodes) {
-      return (
-          <tr>
-            <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
-            <td colSpan={6} style={{textAlign: "center"}} title={moment(node.last_seen).format()}>
-              <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
-              Last seen {moment(node.last_seen).fromNow()}
-            </td>
-          </tr>
-      )
+      if (node.deleted) {
+        return (
+            <tr>
+              <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
+              <td colSpan={6} style={{textAlign: "center"}} title={moment(node.last_seen).format()}>
+                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
+                Node has been manually deleted and will expire automatically if not brought back online.
+              </td>
+            </tr>
+        )
+      } else {
+        return (
+            <tr>
+              <td><a href={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(node.uuid)}>{node.name}</a></td>
+              <td colSpan={6} style={{textAlign: "center"}} title={moment(node.last_seen).format()}>
+                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
+                Last seen {moment(node.last_seen).fromNow()} and will expire automatically if not brought back online.
+              </td>
+            </tr>
+        )
+      }
     } else {
       return null;
     }

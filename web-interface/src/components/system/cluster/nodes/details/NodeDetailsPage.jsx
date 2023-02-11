@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import ClusterService from "../../../../../services/ClusterService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import NodeInactiveWarning from "./NodeInactiveWarning";
@@ -11,6 +11,8 @@ import CpuLoadIndicator from "./CpuLoadIndicator";
 import MemoryUseIndicator from "./MemoryUseIndicator";
 import TapReportStatisticsChart from "./TapReportStatisticsChart";
 import NodeClockWarning from "./NodeClockWarning";
+import {notify} from "react-notify-toast";
+import NodeDeletedWarning from "./NodeDeletedWarning";
 
 const clusterService = new ClusterService()
 
@@ -23,12 +25,26 @@ function NodeDetailsPage() {
   const { uuid } = useParams()
 
   const [node, setNode] = useState(null)
+  const [justDeleted, setJustDeleted] = useState(false)
 
   useEffect(() => {
     fetchData(uuid, setNode)
     const id = setInterval(() => fetchData(uuid, setNode), 5000)
     return () => clearInterval(id)
   }, [uuid, setNode])
+
+  const deleteNode = function () {
+    if (confirm("Really delete node?")) {
+      clusterService.deleteNode(uuid, function () {
+        setJustDeleted(true)
+        notify.show('Node deleted.', 'success')
+      })
+    }
+  }
+
+  if (justDeleted) {
+    return <Navigate to={Routes.SYSTEM.CLUSTER.INDEX} />
+  }
 
   if (!node) {
     return <LoadingSpinner />
@@ -58,6 +74,7 @@ function NodeDetailsPage() {
           </div>
         </div>
 
+        <NodeDeletedWarning node={node} />
         <NodeInactiveWarning node={node} />
         <NodeClockWarning node={node} />
 
@@ -171,6 +188,23 @@ function NodeDetailsPage() {
                 <h3>Process Arguments</h3>
 
                 <ProcessArguments arguments={node.process_arguments} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Node Actions</h3>
+
+                <p>
+                  <strong>You should delete this node if you no longer plan to use it.</strong> Note that it will re-appear
+                  if you don't shut it down. All metrics and related information will remain until it is retention cleaned.
+                </p>
+
+                <button className="btn btn-danger" onClick={deleteNode} disabled={node.deleted}>Delete Node</button>
               </div>
             </div>
           </div>
