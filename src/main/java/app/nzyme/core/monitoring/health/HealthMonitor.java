@@ -30,7 +30,7 @@ public class HealthMonitor {
                         .setNameFormat("node-metrics-updater-%d")
                         .setDaemon(true)
                         .build()
-        ).scheduleAtFixedRate(this::runChecks, 1, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::runChecks, 0, 1, TimeUnit.MINUTES);
     }
 
     private void runChecks() {
@@ -44,6 +44,7 @@ public class HealthMonitor {
                 .add(new TapClockIndicator(nzyme.getTapManager()))
                 .add(new NodeOfflineIndicator(nzyme.getNodeManager()))
                 .add(new TapOfflineIndicator(nzyme.getTapManager()))
+                .add(new TapThroughputIndicator(nzyme.getTapManager()))
                 .build();
 
         for (Indicator indicator : indicators) {

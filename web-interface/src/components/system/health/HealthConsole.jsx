@@ -21,6 +21,10 @@ function HealthConsole(props) {
             <Indicator indicator={indicators.tap_offline} name="Tap Offline" />
           </div>
 
+          <div className="hc-row">
+            <Indicator indicator={indicators.tap_tpx} name="Tap TPX" />
+          </div>
+
           <div style={{clear: "both"}} />
         </div>
   )

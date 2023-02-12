@@ -11,7 +11,6 @@ function NodeClockProcedure(props) {
           <SolutionCounter counter="1" /> Identify nzyme nodes with unsafe clock drift on the{' '}
           <a href={ApiRoutes.SYSTEM.CLUSTER.INDEX}>nodes overview</a> page
         </li>
-
         <li>
           <SolutionCounter counter="2" /> <Conditional text="if" /> <Indicator text="DB Clock" />{' '}
           illuminated on console, fix that indicator first
