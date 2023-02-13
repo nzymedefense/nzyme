@@ -32,48 +32,46 @@ class LoginPage extends React.Component {
   render () {
     return (
         <section className="vh-100 start">
-            <div className="container py-5 h-100">
+            <div className="container py-5 h-100 mb-5">
                 <div className="row d-flex justify-content-center align-items-center h-100">
                     <div className="col col-xl-10">
                         <div className="card main-card">
-                            <div className="row g-0">
-
-                                <div className="col-md-6 col-lg-5 d-none d-md-block left-half justify-content-center">
-                                    <AssetImage filename="logo_small.png"
-                                                className="d-block mx-auto"
-                                                alt="nzyme logo"
-                                                id="logo" />
-                                </div>
-
-                                <div className="col-md-6 col-lg-7 d-flex align-items-center">
+                            <div className="row g-0 vh-100">
+                                <div className="col-md-5 d-flex align-items-center">
                                     <div className="card-body p-4 p-lg-5 text-black">
-                                        <form onSubmit={this._submitLoginForm}>
-                                            <h5 className="fw-normal mb-3 pb-3">Sign into your account</h5>
 
-                                            <div className="form-outline mb-4">
-                                                <input type="text" id="username" className="form-control form-control-lg"
-                                                        ref={this.usernameInput} required />
-                                                <label className="form-label" htmlFor="username">
-                                                    Username
-                                                </label>
+                                      <h1 className="mb-3 pb-3">Welcome Back.</h1>
+                                      <p>Please enter your details.</p>
+
+                                      <hr />
+
+                                        <form onSubmit={this._submitLoginForm}>
+                                            <div className="form-outline mb-2">
+                                              <label className="form-label" htmlFor="username">
+                                                Username
+                                              </label>
+                                              <input type="text" id="username" className="form-control"
+                                                      ref={this.usernameInput} required />
                                             </div>
 
                                             <div className="form-outline mb-4">
-                                                <input type="password" id="password" className="form-control form-control-lg"
-                                                       ref={this.passwordInput} required />
-                                                <label className="form-label" htmlFor="password">
-                                                    Password
-                                                </label>
+                                              <label className="form-label" htmlFor="password">
+                                                Password
+                                              </label>
+                                              <input type="password" id="password" className="form-control"
+                                                     ref={this.passwordInput} required />
                                             </div>
 
                                             <div className="pt-1 mb-3">
-                                                <button className="btn btn-dark btn-lg btn-block" type="submit">
+                                                <button className="btn btn-dark btn-block" type="submit">
                                                     {this.state.loggingIn ? 'Signing in ...' : 'Sign in'}
                                                 </button>
                                             </div>
                                         </form>
-
                                     </div>
+                                </div>
+                                <div className="col-md-7 d-none d-md-block justify-content-center right-half">
+
                                 </div>
                             </div>
                         </div>
