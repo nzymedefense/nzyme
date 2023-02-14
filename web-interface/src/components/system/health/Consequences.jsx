@@ -7,6 +7,9 @@ import TapClockConsequence from "./consequences/TapClockConsequence";
 import NodeOfflineConsequence from "./consequences/NodeOfflineConsequence";
 import TapOfflineConsequence from "./consequences/TapOfflineConsequence";
 import TapThroughputConsequence from "./consequences/TapThroughputConsequence";
+import TapDropConsequence from "./consequences/TapDropConsequence";
+import TapBufferConsequence from "./consequences/TapBufferConsequence";
+import TapErrorConsequence from "./consequences/TapErrorConsequence";
 
 function Consequences(props) {
 
@@ -49,6 +52,10 @@ function Consequences(props) {
         <NodeOfflineConsequence show={consequences.includes("node_offline")} />
         <TapOfflineConsequence show={consequences.includes("tap_offline")} />
         <TapThroughputConsequence show={consequences.includes("tap_tpx")} />
+
+        <TapDropConsequence show={consequences.includes("tap_drop")} />
+        <TapBufferConsequence show={consequences.includes("tap_buffer")} />
+        <TapErrorConsequence show={consequences.includes("tap_error")} />
       </div>
   )
 

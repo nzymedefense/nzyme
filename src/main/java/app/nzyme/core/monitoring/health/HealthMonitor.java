@@ -45,6 +45,9 @@ public class HealthMonitor {
                 .add(new NodeOfflineIndicator(nzyme.getNodeManager()))
                 .add(new TapOfflineIndicator(nzyme.getTapManager()))
                 .add(new TapThroughputIndicator(nzyme.getTapManager()))
+                .add(new TapDropIndicator(nzyme.getTapManager()))
+                .add(new TapBufferIndicator(nzyme.getTapManager()))
+                .add(new TapErrorIndicator(nzyme.getTapManager()))
                 .build();
 
         for (Indicator indicator : indicators) {

@@ -23,6 +23,9 @@ function HealthConsole(props) {
 
           <div className="hc-row">
             <Indicator indicator={indicators.tap_tpx} name="Tap TPX" />
+            <Indicator indicator={indicators.tap_drop} name="Tap Drop" />
+            <Indicator indicator={indicators.tap_buffer} name="Tap Buffer" />
+            <Indicator indicator={indicators.tap_error} name="Tap Error" />
           </div>
 
           <div style={{clear: "both"}} />
