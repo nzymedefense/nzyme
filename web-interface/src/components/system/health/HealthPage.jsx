@@ -31,6 +31,13 @@ function HealthPage(props) {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
+                <p className="help-text">
+                  An nzyme deployment is constantly monitoring itself for common issues. If an indicator below is
+                  illuminated in any other color than green, resolution steps will appear below.
+                </p>
+
+                <hr />
+
                 <HealthConsole indicators={indicators} />
               </div>
             </div>

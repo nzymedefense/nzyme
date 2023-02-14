@@ -201,7 +201,7 @@ function NodeDetailsPage() {
 
                 <p>
                   <strong>You should delete this node if you no longer plan to use it.</strong> Note that it will re-appear
-                  if you don't shut it down. All metrics and related information will remain until it is retention cleaned.
+                  if you don&apos;t shut it down. All metrics and related information will remain until it is retention cleaned.
                 </p>
 
                 <button className="btn btn-danger" onClick={deleteNode} disabled={node.deleted}>Delete Node</button>

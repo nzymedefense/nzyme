@@ -190,7 +190,7 @@ function TapDetailsPage () {
 
               <p>
                 <strong>You should delete this tap if you no longer plan to use it.</strong> Note that it will re-appear
-                if you don't shut it down. All metrics and related information will remain until it is retention cleaned.
+                if you don&apos;t shut it down. All metrics and related information will remain until it is retention cleaned.
               </p>
 
               <button className="btn btn-danger" onClick={deleteTap} disabled={tap.deleted}>Delete Tap</button>

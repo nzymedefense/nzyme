@@ -111,3 +111,7 @@ table tr.table-span-heading td {
     --bs-table-accent-bg: #2B2D42 !important;
     border-bottom: 1px solid #fff;
 }
+
+p.help-text {
+    color: #c7c7c7;
+}

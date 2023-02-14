@@ -1,6 +1,5 @@
 import React from 'react'
 import AuthenticationService from '../../services/AuthenticationService'
-import AssetImage from '../misc/AssetImage'
 import AssetStylesheet from "../misc/AssetStylesheet";
 
 class LoginPage extends React.Component {
@@ -43,35 +42,34 @@ class LoginPage extends React.Component {
                               <div className="row g-0 vh-100">
                                   <div className="col-md-5 d-flex align-items-center">
                                       <div className="card-body p-4 p-lg-5 text-black">
-                                        
                                         <h1 className="mb-3 pb-3">Welcome Back.</h1>
                                         <p>Please enter your account details.</p>
 
                                         <hr />
 
-                                          <form onSubmit={this._submitLoginForm}>
-                                              <div className="form-outline mb-2">
-                                                <label className="form-label" htmlFor="username">
-                                                  Username
-                                                </label>
-                                                <input type="text" id="username" className="form-control"
-                                                        ref={this.usernameInput} required />
-                                              </div>
+                                        <form onSubmit={this._submitLoginForm}>
+                                            <div className="form-outline mb-2">
+                                              <label className="form-label" htmlFor="username">
+                                                Username
+                                              </label>
+                                              <input type="text" id="username" className="form-control"
+                                                      ref={this.usernameInput} required />
+                                            </div>
 
-                                              <div className="form-outline mb-4">
-                                                <label className="form-label" htmlFor="password">
-                                                  Password
-                                                </label>
-                                                <input type="password" id="password" className="form-control"
-                                                       ref={this.passwordInput} required />
-                                              </div>
+                                            <div className="form-outline mb-4">
+                                              <label className="form-label" htmlFor="password">
+                                                Password
+                                              </label>
+                                              <input type="password" id="password" className="form-control"
+                                                     ref={this.passwordInput} required />
+                                            </div>
 
-                                              <div className="pt-1 mb-3">
-                                                  <button className="btn btn-dark btn-block" type="submit">
-                                                      {this.state.loggingIn ? 'Signing in ...' : 'Sign in'}
-                                                  </button>
-                                              </div>
-                                          </form>
+                                            <div className="pt-1 mb-3">
+                                                <button className="btn btn-dark btn-block" type="submit">
+                                                    {this.state.loggingIn ? 'Signing in ...' : 'Sign in'}
+                                                </button>
+                                            </div>
+                                        </form>
                                       </div>
                                   </div>
                                   <div className="col-md-7 d-none d-md-block justify-content-center right-half">
