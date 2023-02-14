@@ -113,10 +113,10 @@ class App extends React.Component {
         this.pluginsService.loadInitializedPluginsIntoStore()
         if (plugins == null) {
           return (
-                        <div>
-                            <DarkMode enabled={this.state.darkModeEnabled} />
-                            <LoadingSpinner />
-                        </div>
+            <div>
+                <DarkMode enabled={this.state.darkModeEnabled} />
+                <LoadingSpinner />
+            </div>
           )
         }
 

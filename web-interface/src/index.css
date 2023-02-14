@@ -18,11 +18,20 @@ code {
 
 section.start div.right-half {
     background-color: #2B2D42;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+section.start div.right-half video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 section.start div.main-card {
     color: #fff !important;
     height: 600px;
+    border-radius: 0.5rem;
+    border-color: #040303;
 }
 
 section.start h1, h2, h3, h4, h5, h6 {
@@ -50,11 +59,6 @@ section.start div.main-card li {
     margin-top: 6px;
 }
 
-section.start div.left-half img#logo {
-    width: 350px;
-    margin-top: 30px;
-}
-
 section.start label {
     margin-top: 5px;
     margin-bottom: 6px;
@@ -63,7 +67,7 @@ section.start label {
 
 section.start input {
     font-size: 12px;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: sans-serif;
 }
 
 section.start input:-webkit-autofill,
@@ -72,8 +76,6 @@ section.start input:-webkit-autofill:focus {
     -webkit-text-fill-color: black;
     -webkit-box-shadow: 0 0 0px 1000px #fff inset;
     transition: background-color 5000s ease-in-out 0s;
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 12px;
 }
 
 section.start button {
@@ -211,7 +213,6 @@ div.content {
     color: #8D99AE;
     text-decoration: none;
 }
-
 
 #nav-side .user-profile a:hover {
     color: #fff;
