@@ -1,3 +1,70 @@
 body {
     background-color: #040303;
 }
+
+
+section.start div.right-half {
+    background-color: #2B2D42;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+section.start div.right-half video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+section.start div.main-card {
+    color: #fff !important;
+    height: 600px;
+    border-radius: 0.5rem;
+    border-color: #040303;
+}
+
+section.start h1, h2, h3, h4, h5, h6 {
+    text-transform: none !important;
+}
+
+section.start h1 {
+    font-size: 24px;
+    margin-bottom: 8px !important;
+    padding: 0 !important;
+}
+
+section.start hr {
+    height: 1px;
+    background-color: #b5b5b5;
+    margin-top: 14px;
+    margin-bottom: 42px;
+}
+
+section.start p {
+    color: #7a7a7a;
+}
+
+section.start div.main-card li {
+    margin-top: 6px;
+}
+
+section.start label {
+    margin-top: 5px;
+    margin-bottom: 6px;
+    margin-left: 3px;
+}
+
+section.start input {
+    font-size: 12px;
+    font-family: sans-serif;
+}
+
+section.start input:-webkit-autofill,
+section.start input:-webkit-autofill:hover,
+section.start input:-webkit-autofill:focus {
+    -webkit-text-fill-color: black;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+section.start button {
+    width: 100%;
+}

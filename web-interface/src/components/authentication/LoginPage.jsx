@@ -43,7 +43,7 @@ class LoginPage extends React.Component {
                               <div className="row g-0 vh-100">
                                   <div className="col-md-5 d-flex align-items-center">
                                       <div className="card-body p-4 p-lg-5 text-black">
-
+                                        
                                         <h1 className="mb-3 pb-3">Welcome Back.</h1>
                                         <p>Please enter your account details.</p>
 

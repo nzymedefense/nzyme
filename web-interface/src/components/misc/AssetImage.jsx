@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AssetImage (props) {
+function AssetImage(props) {
   return (
         <img src={window.appConfig.assetsUri + 'static/' + props.filename}
              className={props.className}
