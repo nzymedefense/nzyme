@@ -1441,4 +1441,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_deactivation_to_health_indicators" author="lennartkoopmann">
+        <addColumn tableName="health_indicators">
+            <column name="active" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

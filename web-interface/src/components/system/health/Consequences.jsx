@@ -22,7 +22,7 @@ function Consequences(props) {
     for (const k in indicators) {
       const indicator = indicators[k];
 
-      if (indicator.level === 'RED' || indicator.level === 'ORANGE') {
+      if (!indicator.expired && indicator.active && (indicator.level === 'RED' || indicator.level === 'ORANGE')) {
         tempCons.push(indicator.id)
       }
     }

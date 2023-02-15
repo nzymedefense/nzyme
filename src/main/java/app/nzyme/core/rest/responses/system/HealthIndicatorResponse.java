@@ -17,14 +17,17 @@ public abstract class HealthIndicatorResponse {
     public abstract DateTime lastChecked();
     @JsonProperty("expired")
     public abstract boolean expired();
+    @JsonProperty("active")
+    public abstract boolean active();
 
-    public static HealthIndicatorResponse create(String id, String name, String level, DateTime lastChecked, boolean expired) {
+    public static HealthIndicatorResponse create(String id, String name, String level, DateTime lastChecked, boolean expired, boolean active) {
         return builder()
                 .id(id)
                 .name(name)
                 .level(level)
                 .lastChecked(lastChecked)
                 .expired(expired)
+                .active(active)
                 .build();
     }
 
@@ -44,7 +47,8 @@ public abstract class HealthIndicatorResponse {
 
         public abstract Builder expired(boolean expired);
 
+        public abstract Builder active(boolean active);
+
         public abstract HealthIndicatorResponse build();
     }
-
 }

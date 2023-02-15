@@ -15,7 +15,8 @@ public class IndicatorStatusMapper implements RowMapper<IndicatorStatus> {
                 rs.getString("indicator_name"),
                 rs.getString("indicator_id"),
                 new DateTime(rs.getTimestamp("last_checked")),
-                rs.getString("level")
+                rs.getString("level"),
+                rs.getBoolean("active")
         );
     }
 

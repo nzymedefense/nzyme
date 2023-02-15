@@ -62,7 +62,7 @@ public class HealthMonitor {
                                         "level = :level, last_checked = :last_checked")
                                 .bind("indicator_id", indicator.getId())
                                 .bind("indicator_name", indicator.getName())
-                                .bind("level", status.resultLevel().toString().toUpperCase())
+                                .bind("level", status.resultLevel().toUpperCase())
                                 .bind("last_checked", DateTime.now())
                                 .execute()
                 );
@@ -76,7 +76,8 @@ public class HealthMonitor {
 
     public Optional<List<IndicatorStatus>> getIndicatorStatus() {
         List<IndicatorStatus> result = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT indicator_id, indicator_name, level, last_checked FROM health_indicators")
+                handle.createQuery("SELECT indicator_id, indicator_name, level, last_checked, active " +
+                                "FROM health_indicators")
                         .mapTo(IndicatorStatus.class)
                         .list()
         );

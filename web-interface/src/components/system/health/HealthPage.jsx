@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import HealthConsole from "./HealthConsole";
 import Consequences from "./Consequences";
 import SystemService from "../../../services/SystemService";
+import HealthConsoleConfiguration from "./HealthConsoleConfiguration";
 
 const systemService = new SystemService();
 
@@ -32,8 +33,8 @@ function HealthPage(props) {
             <div className="card">
               <div className="card-body">
                 <p className="help-text">
-                  An nzyme deployment is constantly monitoring itself for common issues. If an indicator below is
-                  illuminated in any other color than green, resolution steps will appear below.
+                  An nzyme deployment is constantly monitoring itself for common issues. Resolution steps will appear
+                  below if an indicator is illuminated in any other color than green.
                 </p>
 
                 <hr />
@@ -51,6 +52,18 @@ function HealthPage(props) {
                 <h3>Consequences</h3>
 
                 <Consequences indicators={indicators} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Configuration</h3>
+
+                <HealthConsoleConfiguration indicators={indicators} />
               </div>
             </div>
           </div>
