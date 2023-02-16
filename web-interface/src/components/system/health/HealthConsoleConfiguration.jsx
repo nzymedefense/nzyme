@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import SystemService from "../../../services/SystemService";
 import {notify} from "react-notify-toast";
 
