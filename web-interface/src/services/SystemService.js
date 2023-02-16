@@ -16,6 +16,10 @@ class SystemService {
     })
   }
 
+  updateHealthIndicatorsConfiguration(configuration, successCallback) {
+    RESTClient.put('/system/health/indicators/configuration', configuration, successCallback)
+  }
+
 }
 
 export default SystemService

@@ -10,6 +10,7 @@ import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -46,6 +47,19 @@ public class HealthResource {
         }
 
         return Response.ok(HealthResponse.create(indicators)).build();
+    }
+
+    @PUT
+    @Path("/indicators/configuration")
+    public Response updateIndicatorConfig(Map<String, Map<String, String>> config) {
+        for (Map.Entry<String, Map<String, String>> c : config.entrySet()) {
+            if (c.getValue().containsKey("active")) {
+                boolean active = Boolean.parseBoolean(c.getValue().get("active"));
+                nzyme.getHealthMonitor().updateIndicatorActivationState(c.getKey(), active);
+            }
+        }
+
+        return Response.ok().build();
     }
 
 }

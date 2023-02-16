@@ -1,8 +1,40 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
+import SystemService from "../../../services/SystemService";
+import {notify} from "react-notify-toast";
+
+const systemService = new SystemService();
 
 function HealthConsoleConfiguration(props) {
 
-  if (!props.indicators) {
+  const indicators = props.indicators;
+
+  const [configuration, setConfiguration] = useState({});
+
+  const onIndicatorSelect = function(e) {
+    const id = e.target.getAttribute("data-indicator-id");
+    const active = e.target.checked;
+
+    setConfiguration({
+      ...configuration,
+      [id]: {active: active}
+    })
+  }
+
+  const isIndicatorSelected = function(id) {
+    if (configuration[id]) {
+      return configuration[id].active
+    } else {
+      return indicators[id].active
+    }
+  }
+
+  const saveConfiguration = function() {
+    systemService.updateHealthIndicatorsConfiguration(configuration, function() {
+      notify.show('Configuration updated.', 'success')
+    });
+  }
+
+  if (!indicators) {
     return <div className="alert alert-info">No indicators.</div>
   }
 
@@ -11,8 +43,8 @@ function HealthConsoleConfiguration(props) {
         <div className="row">
           <div className="col-md-12">
             <p>
-              You can enable or disable individual indicators. Disabled indicators will not run, not trigger alerts, and
-              be marked as disabled.
+              You can enable or disable individual indicators. Disabled indicators will be marked as disabled, not run,
+              and not trigger alerts.
             </p>
           </div>
         </div>
@@ -27,15 +59,23 @@ function HealthConsoleConfiguration(props) {
               </tr>
               </thead>
               <tbody>
-              <tr>
-                <td></td>
-                <td>
-                </td>
-                <td>
-                </td>
-              </tr>
+              {Object.keys(indicators).sort((a, b) => a.localeCompare(b)).map(function (key, i) {
+                return (
+                    <tr key={"indicatorconf-" + key}>
+                      <td>{indicators[key].name}</td>
+                      <td>
+                        <input type="checkbox"
+                               data-indicator-id={indicators[key].id}
+                               checked={isIndicatorSelected(indicators[key].id)}
+                               onChange={onIndicatorSelect} />
+                      </td>
+                    </tr>
+                )
+              })}
               </tbody>
             </table>
+
+            <button className="btn btn-success" onClick={saveConfiguration}>Save Configuration</button>
           </div>
         </div>
       </React.Fragment>

@@ -341,6 +341,12 @@ div.health-console div.hc-row div.hc-invalid {
     border: 1px solid #000000;
 }
 
+div.health-console div.hc-row div.hc-disabled {
+    background-color: #e8e8e8;
+    border: 1px solid #e8e8e8;
+    color: #9f9f9f;
+}
+
 div.health-consequence {
     font-family: 'Share Tech Mono', monospace;
     border: 1px dashed #ccc;

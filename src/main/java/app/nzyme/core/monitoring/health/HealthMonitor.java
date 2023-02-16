@@ -52,6 +52,10 @@ public class HealthMonitor {
 
         for (Indicator indicator : indicators) {
             try {
+                if (!indicatorIsActive(indicator.getId())) {
+                    continue;
+                }
+
                 IndicatorStatus status = indicator.run();
 
                 // Write to database.
@@ -87,6 +91,31 @@ public class HealthMonitor {
         }
 
         return Optional.of(result);
+    }
+
+    public void updateIndicatorActivationState(String indicatorId, boolean active) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE health_indicators SET active = :active WHERE indicator_id = :indicator_id")
+                        .bind("active", active)
+                        .bind("indicator_id", indicatorId)
+                        .execute()
+        );
+    }
+
+    public boolean indicatorIsActive(String indicatorId) {
+        Boolean active = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT active FROM health_indicators WHERE indicator_id = :indicator_id")
+                        .bind("indicator_id", indicatorId)
+                        .mapTo(Boolean.class)
+                        .first()
+        );
+
+        if (active != null) {
+            return active;
+        }
+
+        // An indicator is active if no db entry exists yet. (Could be the first run.)
+        return true;
     }
 
 }

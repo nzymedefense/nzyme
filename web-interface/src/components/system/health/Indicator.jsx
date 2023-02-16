@@ -4,6 +4,10 @@ function Indicator(props) {
 
   const indicator = props.indicator;
 
+  if (indicator && !indicator.active) {
+    return <div className="hc-indicator hc-disabled">{props.name}</div>
+  }
+
   if (!indicator || indicator.expired || indicator.level === "UNAVAILABLE") {
     return <div className="hc-indicator hc-invalid">{props.name}</div>
   }
