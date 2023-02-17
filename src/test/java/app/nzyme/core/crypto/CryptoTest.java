@@ -1,16 +1,26 @@
 package app.nzyme.core.crypto;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.responses.dashboard.tls.KeyStoreUtils;
+import app.nzyme.core.rest.responses.dashboard.tls.SSLEngineConfiguratorBuilder;
 import com.google.common.base.Strings;
 import app.nzyme.core.MockNzyme;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 
 import static org.testng.Assert.*;
@@ -204,11 +214,26 @@ public class CryptoTest {
     }
 
     @Test
-    public void testGenerateSelfSignedTLSCertificate() throws Crypto.CryptoOperationException {
+    public void testGenerateSelfSignedTLSCertificate() throws Crypto.CryptoOperationException, IOException {
         Crypto crypto = new Crypto(new MockNzyme());
         X509Certificate cert = crypto.generateTLSCertificate("CN=localhost.localdomain", 12);
 
-        //cert.getEncoded()
+        /*final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+        final KeyStore keyStore = null; // TODO
+        sslContextConfigurator.setKeyStorePass("123");
+        sslContextConfigurator.setKeyStoreBytes(keystoreBytes);
+
+        final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
+
+        HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(
+                URI.create("https://localhost:22999/"),
+                new ResourceConfig(),
+                true,
+                new SSLEngineConfigurator(sslContext, false, false, false)
+        );
+
+        httpServer.start();
+        httpServer.shutdownNow();*/
     }
 
 }
