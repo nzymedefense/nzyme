@@ -8,21 +8,32 @@ import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import liquibase.pro.packaged.D;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.jcajce.*;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.Streams;
 import org.joda.time.DateTime;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.security.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +86,8 @@ public class Crypto {
 
     private final NzymeNode nzyme;
 
+    private final BouncyCastleProvider bcProvider;
+
     public Crypto(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
@@ -86,7 +99,8 @@ public class Crypto {
         this.encryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_ENCRYPTION_TIMING);
         this.decryptionTimer = nzyme.getMetrics().timer(MetricNames.PGP_DECRYPTION_TIMING);
 
-        Security.addProvider(new BouncyCastleProvider());
+        this.bcProvider = new BouncyCastleProvider();
+        Security.addProvider(this.bcProvider);
     }
 
     public void initialize() throws CryptoInitializationException {
@@ -203,6 +217,56 @@ public class Crypto {
                             .setDaemon(true)
                             .build()
             ).scheduleAtFixedRate(this::retentionCleanKeys, 0, 1, TimeUnit.MINUTES);
+        }
+    }
+
+    public X509Certificate generateTLSCertificate(String subjectDN, int validityMonths) throws CryptoOperationException {
+        SecureRandom random = new SecureRandom();
+
+        DateTime now = new DateTime();
+        Date startDate = now.toDate();
+        Date endDate = now.plusMonths(validityMonths).toDate();
+
+        // Key Pair.
+        KeyPair keyPair;
+        try {
+            KeyPairGenerator keypairGen = KeyPairGenerator.getInstance("RSA", "BC");
+            keypairGen.initialize(2048, random);
+            keyPair = keypairGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new CryptoOperationException("Could not initialize key pair generator.", e);
+        }
+
+        X500Name dnName = new X500Name(subjectDN);
+        BigInteger certSerialNumber = new BigInteger(Long.toString(now.getMillis()));
+
+        String signatureAlgorithm = "SHA256WithRSA";
+        ContentSigner contentSigner;
+        try {
+            contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).build(keyPair.getPrivate());
+        } catch (OperatorCreationException e) {
+            throw new CryptoOperationException("Could not initialize content signer.", e);
+        }
+        JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                dnName,
+                certSerialNumber,
+                startDate,
+                endDate,
+                dnName,
+                keyPair.getPublic()
+        );
+
+        try {
+            certBuilder.addExtension(new ASN1ObjectIdentifier("2.5.29.19"), true, new BasicConstraints(true));
+        } catch (CertIOException e) {
+            throw new CryptoOperationException("Could not add extension.", e);
+        }
+
+        try {
+            return new JcaX509CertificateConverter().setProvider(this.bcProvider)
+                    .getCertificate(certBuilder.build(contentSigner));
+        } catch (CertificateException e) {
+            throw new RuntimeException(e);
         }
     }
 

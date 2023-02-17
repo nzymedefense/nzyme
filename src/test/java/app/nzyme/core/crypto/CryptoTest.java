@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.cert.X509Certificate;
 
 import static org.testng.Assert.*;
 
@@ -200,6 +201,14 @@ public class CryptoTest {
         crypto.initialize();
 
         crypto.decrypt(encrypted);
+    }
+
+    @Test
+    public void testGenerateSelfSignedTLSCertificate() throws Crypto.CryptoOperationException {
+        Crypto crypto = new Crypto(new MockNzyme());
+        X509Certificate cert = crypto.generateTLSCertificate("CN=localhost.localdomain", 12);
+
+        //cert.getEncoded()
     }
 
 }
