@@ -49,6 +49,25 @@ function CryptoSummaryPage () {
                 </div>
             </div>
 
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>TLS Certificates</h3>
+
+                  <p>
+                    The nzyme REST APIs require TLS encryption. By default, nzyme will generate a self-signed certificate
+                    for you, but you can upload your own as well.
+                  </p>
+
+                  <p>
+                    <strong>TODO</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
   )
 }
