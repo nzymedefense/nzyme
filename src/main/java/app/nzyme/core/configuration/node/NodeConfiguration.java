@@ -32,14 +32,6 @@ public abstract class NodeConfiguration {
     public abstract URI restListenUri();
     public abstract URI httpExternalUri();
 
-    public abstract boolean useTls();
-
-    @Nullable
-    public abstract Path tlsCertificatePath();
-
-    @Nullable
-    public abstract Path tlsKeyPath();
-
     public abstract String pluginDirectory();
 
     public abstract String cryptoDirectory();
@@ -77,7 +69,7 @@ public abstract class NodeConfiguration {
         return ssids.build();
     }
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, boolean useTls, Path tlsCertificatePath, Path tlsKeyPath, String pluginDirectory, String cryptoDirectory, String ntpServer, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, String ntpServer, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -89,9 +81,6 @@ public abstract class NodeConfiguration {
                 .pythonScriptPrefix(pythonScriptPrefix)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
-                .useTls(useTls)
-                .tlsCertificatePath(tlsCertificatePath)
-                .tlsKeyPath(tlsKeyPath)
                 .pluginDirectory(pluginDirectory)
                 .cryptoDirectory(cryptoDirectory)
                 .ntpServer(ntpServer)
@@ -160,12 +149,6 @@ public abstract class NodeConfiguration {
         public abstract Builder restListenUri(URI restListenUri);
 
         public abstract Builder httpExternalUri(URI httpExternalUri);
-
-        public abstract Builder useTls(boolean useTls);
-
-        public abstract Builder tlsCertificatePath(Path tlsCertificatePath);
-
-        public abstract Builder tlsKeyPath(Path tlsKeyPath);
 
         public abstract Builder pluginDirectory(String pluginDirectory);
 

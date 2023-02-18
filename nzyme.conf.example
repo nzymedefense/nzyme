@@ -81,18 +81,15 @@ general: {
   versionchecks: true
 }
 
-# Web interface and REST API configuration.
+# Web interface and REST API configuration. A self-signed TLS certificate will be generated and you can upload your own.
 interfaces: {
-  # Make sure to set this to an IP address you can reach from your workstation.
-  rest_listen_uri: "http://127.0.0.1:22900/"
+  # Make sure to set this to an IP address you can reach from your workstation. Must be https://.
+  rest_listen_uri: "https://127.0.0.1:22900/"
 
   # This is usually the same as the `rest_listen_uri`. Take a look at the configuration documentation to learn about
   # other use-cases. It will be interesting if you run behind a load balancer or NAT. (basically, it is the address
-  # that your web browser will use to try to connect to nzyme and it has to be reachable for it.)
-  http_external_uri: "http://127.0.0.1:22900/"
-
-  # Use TLS? (HTTPS) See https://go.nzyme.org/docs-https
-  use_tls: false
+  # that your web browser will use to try to connect to nzyme and it has to be reachable for it.) Must be https://.
+  http_external_uri: "https://127.0.0.1:22900/"
 }
 
 # List of uplinks. Sends frame meta information and alerts to log management systems like Graylog for threat hunting and

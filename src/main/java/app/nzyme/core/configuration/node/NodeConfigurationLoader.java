@@ -94,9 +94,6 @@ public class NodeConfigurationLoader {
                 parsePythonScriptPrefix(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
-                parseUseTls(),
-                parseTlsCertificatePath(),
-                parseTlsKeyPath(),
                 parsePluginDirectory(),
                 parseCryptoDirectory(),
                 parseNtpServer(),
@@ -238,28 +235,6 @@ public class NodeConfigurationLoader {
 
     private boolean parseFetchOUIsEnabled() {
         return general.getBoolean(ConfigurationKeys.FETCH_OUIS);
-    }
-
-    private boolean parseUseTls() {
-        return interfaces.getBoolean(ConfigurationKeys.USE_TLS);
-    }
-
-    @Nullable
-    private Path parseTlsCertificatePath() {
-        if (interfaces.hasPath(ConfigurationKeys.TLS_CERTIFICATE_PATH)) {
-            return new File(interfaces.getString(ConfigurationKeys.TLS_CERTIFICATE_PATH)).toPath();
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private Path parseTlsKeyPath() {
-        if (interfaces.hasPath(ConfigurationKeys.TLS_KEY_PATH)) {
-            return new File(interfaces.getString(ConfigurationKeys.TLS_KEY_PATH)).toPath();
-        } else {
-            return null;
-        }
     }
 
     private String parsePluginDirectory() {
@@ -618,29 +593,6 @@ public class NodeConfigurationLoader {
         } catch(Exception e) {
             LOG.error(e);
             throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] cannot be parsed into a URI. Make sure it is correct.");
-        }
-
-        // TLS, if TLS is enabled.
-        if (parseUseTls()) {
-            try {
-                Path cert = parseTlsCertificatePath();
-                if (!cert.toFile().canRead()) {
-                    throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_CERTIFICATE_PATH + "] points to a file that is not readable.");
-                }
-            } catch(Exception e) {
-                LOG.error(e);
-                throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_CERTIFICATE_PATH + "] cannot be parsed into a path. Make sure it is correct.");
-            }
-
-            try {
-                Path key = parseTlsKeyPath();
-                if (!key.toFile().canRead()) {
-                    throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] points to a file that is not readable.");
-                }
-            } catch(Exception e) {
-                LOG.error(e);
-                throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.TLS_KEY_PATH + "] cannot be parsed into a path. Make sure it is correct.");
-            }
         }
     }
 
