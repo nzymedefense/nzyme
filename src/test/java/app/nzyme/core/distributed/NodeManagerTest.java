@@ -37,7 +37,7 @@ public class NodeManagerTest {
                 .map(Path::toFile)
                 .forEach(file -> {
                     // Don't delete the entire crypto_test root directory.
-                    if (!file.toPath().equals(dataDir)) {
+                    if (!file.toPath().equals(dataDir) && !file.getName().equals(".gitkeep")) {
                         if (!file.delete()) {
                             throw new RuntimeException("Could not delete test data file [" + file.getAbsolutePath() + "] to prepare tests.");
                         }
