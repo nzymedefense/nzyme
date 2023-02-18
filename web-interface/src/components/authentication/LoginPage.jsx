@@ -73,7 +73,7 @@ class LoginPage extends React.Component {
                                       </div>
                                   </div>
                                   <div className="col-md-7 d-none d-md-block justify-content-center right-half">
-                                    <video id="background-video" autoPlay loop muted poster={window.appConfig.assetsUri + "static/loginsplash_preview.png"}>
+                                    <video id="background-video" autoPlay loop muted poster={window.appConfig.assetsUri + "static/loginsplash_preview.jpg"}>
                                       <source src={window.appConfig.assetsUri + "static/loginsplash.mp4"} type="video/mp4" />
                                     </video>
                                   </div>
