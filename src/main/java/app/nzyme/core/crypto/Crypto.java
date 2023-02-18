@@ -1,5 +1,6 @@
 package app.nzyme.core.crypto;
 
+import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
@@ -7,6 +8,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,8 +34,11 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -108,6 +113,17 @@ public class Crypto {
     }
 
     public void initialize(boolean withRetentionCleaning) throws CryptoInitializationException {
+        // Generate TLS certificate and key if none exist.
+        if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
+            try {
+                LOG.info("No TLS certificate found. Generating self-signed certificate.");
+                TLSKeyAndCertificate tls = generateTLSCertificate("CN=nzyme", 12);
+                setTLSKeyAndCertificateOfNode(nodeId, tls);
+            } catch (CryptoOperationException e) {
+                throw new CryptoInitializationException("Could not generate TLS certificate.", e);
+            }
+        }
+
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
         File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
 
@@ -220,14 +236,13 @@ public class Crypto {
         }
     }
 
-    public X509Certificate generateTLSCertificate(String subjectDN, int validityMonths) throws CryptoOperationException {
+    public TLSKeyAndCertificate generateTLSCertificate(String subjectDN, int validityMonths) throws CryptoOperationException {
         SecureRandom random = new SecureRandom();
 
         DateTime now = new DateTime();
         Date startDate = now.toDate();
         Date endDate = now.plusMonths(validityMonths).toDate();
 
-        // Key Pair.
         KeyPair keyPair;
         try {
             KeyPairGenerator keypairGen = KeyPairGenerator.getInstance("RSA", "BC");
@@ -263,8 +278,15 @@ public class Crypto {
         }
 
         try {
-            return new JcaX509CertificateConverter().setProvider(this.bcProvider)
+            X509Certificate certificate = new JcaX509CertificateConverter().setProvider(this.bcProvider)
                     .getCertificate(certBuilder.build(contentSigner));
+
+            return TLSKeyAndCertificate.create(
+                    certificate,
+                    keyPair.getPrivate(),
+                    new DateTime(certificate.getNotBefore()),
+                    new DateTime(certificate.getNotAfter())
+            );
         } catch (CertificateException e) {
             throw new RuntimeException(e);
         }
@@ -405,6 +427,34 @@ public class Crypto {
         return uniqueFingerprints.size() == 1;
     }
 
+    public KeyStore getTLSKeyStore() {
+        try {
+            Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
+
+            if (tlsData.isEmpty()) {
+                throw new RuntimeException("No TLS certificate data of this node found.");
+            }
+
+            List<Certificate> certChain = Lists.newArrayList();
+            certChain.add(tlsData.get().certificate());
+
+            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(null, null);
+            keyStore.setKeyEntry("key", tlsData.get().key(), "".toCharArray(), certChain.toArray(new Certificate[certChain.size()]));
+
+            return keyStore;
+        } catch(Exception e) {
+            throw new RuntimeException("Could not build TLS key store.", e);
+        }
+    }
+
+    public byte[] getTLSKeyStoreBytes() throws GeneralSecurityException, IOException {
+        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        getTLSKeyStore().store(stream, "".toCharArray());
+
+        return stream.toByteArray();
+    }
+
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
         try(InputStream keyIn = new BufferedInputStream(new FileInputStream(file))) {
             return readPublicKey(keyIn);
@@ -440,6 +490,62 @@ public class Crypto {
                 new JcePBESecretKeyDecryptorBuilder()
                         .setProvider("BC")
                         .build("nzyme".toCharArray())
+        );
+    }
+
+    private Optional<TLSKeyAndCertificate> findTLSKeyAndCertificateOfNode(UUID nodeId) {
+        Optional<TLSKeyAndCertificateEntry> entry = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                                "FROM crypto_tls_certificates WHERE node_id = :node_id")
+                        .bind("node_id", nodeId)
+                        .mapTo(TLSKeyAndCertificateEntry.class)
+                        .findFirst()
+        );
+
+        if (entry.isEmpty()) {
+            return Optional.empty();
+        } else {
+            try {
+                byte[] certBytes = BaseEncoding.base64().decode(entry.get().certificate());
+                byte[] keyBytes = BaseEncoding.base64().decode(entry.get().key());
+
+                CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+                X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+                PrivateKey key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+
+                return Optional.of(TLSKeyAndCertificate.create(
+                        cert,
+                        key,
+                        new DateTime(cert.getNotBefore()),
+                        new DateTime(cert.getNotAfter()))
+                );
+            } catch(Exception e) {
+                throw new RuntimeException("Could not read TLS data.", e);
+            }
+        }
+    }
+
+    private void setTLSKeyAndCertificateOfNode(UUID nodeId, TLSKeyAndCertificate tls) {
+        String certificate;
+        String key;
+        try {
+            certificate = BaseEncoding.base64().encode(tls.certificate().getEncoded());
+            key = BaseEncoding.base64().encode(tls.key().getEncoded());
+        } catch(Exception e) {
+            throw new RuntimeException("Could not encode TLS data.", e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO crypto_tls_certificates(node_id, certificate, key, valid_from, " +
+                                "expires_at) VALUES(:node_id, :certificate, :key, :valid_from, :expires_at)")
+                        .bind("node_id", nodeId)
+                        .bind("certificate", certificate)
+                        .bind("key", key)
+                        .bind("valid_from", tls.validFrom())
+                        .bind("expires_at", tls.expiresAt())
+                        .execute()
         );
     }
 

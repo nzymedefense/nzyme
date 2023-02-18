@@ -99,7 +99,6 @@ import app.nzyme.core.rest.ObjectMapperProvider;
 import app.nzyme.core.rest.resources.*;
 import app.nzyme.core.rest.resources.assets.WebInterfaceAssetsResource;
 import app.nzyme.core.rest.resources.authentication.AuthenticationResource;
-import app.nzyme.core.rest.responses.dashboard.tls.SSLEngineConfiguratorBuilder;
 import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
@@ -110,6 +109,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -118,6 +119,7 @@ import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.jetbrains.annotations.Nullable;
 import org.quartz.SchedulerException;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -441,19 +443,19 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
         try {
-            if (configuration.useTls()) {
-                httpServer = GrizzlyHttpServerFactory.createHttpServer(
-                        configuration.restListenUri(),
-                        resourceConfig,
-                        true,
-                        SSLEngineConfiguratorBuilder.build(
-                                configuration.tlsCertificatePath(),
-                                configuration.tlsKeyPath()
-                        )
-                );
-            } else {
-                httpServer = GrizzlyHttpServerFactory.createHttpServer(configuration.restListenUri(), resourceConfig);
-            }
+            char[] password = "".toCharArray();
+            final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+            sslContextConfigurator.setKeyStorePass(password);
+            sslContextConfigurator.setKeyStoreBytes(crypto.getTLSKeyStoreBytes());
+            final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
+            SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
+
+            httpServer = GrizzlyHttpServerFactory.createHttpServer(
+                    configuration.restListenUri(),
+                    resourceConfig,
+                    true,
+                    sslEngineConfigurator
+            );
         } catch(Exception e) {
             throw new RuntimeException("Could not start web server.", e);
         }
