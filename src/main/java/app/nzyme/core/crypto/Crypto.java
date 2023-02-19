@@ -450,6 +450,26 @@ public class Crypto {
         return result;
     }
 
+    public Optional<TLSKeyAndCertificate> getTLSCertificateOfNode(UUID nodeId) {
+        Optional<TLSKeyAndCertificateEntry> entry = database.withHandle(handle ->
+                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                                "FROM crypto_tls_certificates WHERE node_id = :node_id")
+                        .bind("node_id", nodeId)
+                        .mapTo(TLSKeyAndCertificateEntry.class)
+                        .findOne()
+        );
+
+        if (entry.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(tlsKeyAndCertificateEntryToObject(entry.get()));
+        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException("Could not build TLS certificate from database.", e);
+        }
+    }
+
     public KeyStore getTLSKeyStore() {
         try {
             Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);

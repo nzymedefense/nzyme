@@ -16,8 +16,17 @@ public abstract class NodeResponse {
     @JsonProperty("active")
     public abstract Boolean active();
 
+    @JsonProperty("http_listen_uri")
+    public abstract String httpListenUri();
+
     @JsonProperty("http_external_uri")
     public abstract String httpExternalUri();
+
+    @JsonProperty("tls_cert_fingerprint")
+    public abstract String tlsCertFingerprint();
+
+    @JsonProperty("tls_cert_expiration_date")
+    public abstract DateTime tlsCertExpirationDate();
 
     @JsonProperty("memory_bytes_total")
     public abstract long memoryBytesTotal();
@@ -73,12 +82,15 @@ public abstract class NodeResponse {
     @JsonProperty("is_ephemeral")
     public abstract boolean isEphemeral();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral) {
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral) {
         return builder()
                 .uuid(uuid)
                 .name(name)
                 .active(active)
+                .httpListenUri(httpListenUri)
                 .httpExternalUri(httpExternalUri)
+                .tlsCertFingerprint(tlsCertFingerprint)
+                .tlsCertExpirationDate(tlsCertExpirationDate)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
                 .memoryBytesUsed(memoryBytesUsed)
@@ -112,7 +124,13 @@ public abstract class NodeResponse {
 
         public abstract Builder active(Boolean active);
 
+        public abstract Builder httpListenUri(String httpListenUri);
+
         public abstract Builder httpExternalUri(String httpExternalUri);
+
+        public abstract Builder tlsCertFingerprint(String tlsCertFingerprint);
+
+        public abstract Builder tlsCertExpirationDate(DateTime tlsCertExpirationDate);
 
         public abstract Builder memoryBytesTotal(long memoryBytesTotal);
 
@@ -152,4 +170,5 @@ public abstract class NodeResponse {
 
         public abstract NodeResponse build();
     }
+
 }

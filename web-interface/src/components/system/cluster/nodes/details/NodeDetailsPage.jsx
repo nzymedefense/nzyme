@@ -197,6 +197,31 @@ function NodeDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
+                <h3>HTTP Configuration</h3>
+
+                <p>
+                  The listen address is what the built-in HTTP server for REST API and web interface is listening on. The
+                  external address is what other nodes will use to connect to this node.
+                </p>
+
+                <dl>
+                  <dt>External Address</dt>
+                  <dd>{node.http_external_uri}</dd>
+                  <dt>Listen Address</dt>
+                  <dd>{node.http_listen_uri}</dd>
+                  <dt>TLS Certificate</dt>
+                  <dd>
+                    Expires {node.tls_cert_expiration_date}{' '}
+                    ({node.tls_cert_fingerprint.substring(0,16).match(/.{1,2}/g).join(' ').toUpperCase()})
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
                 <h3>Node Actions</h3>
 
                 <p>

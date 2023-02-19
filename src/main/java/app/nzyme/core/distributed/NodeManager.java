@@ -116,16 +116,18 @@ public class NodeManager {
         NodeInformation.Info ni = new NodeInformation().collect();
 
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO nodes(uuid, name, http_external_uri, version, last_seen, " +
-                                "memory_bytes_total, memory_bytes_available, memory_bytes_used, heap_bytes_total, " +
-                                "heap_bytes_available, heap_bytes_used, cpu_system_load, cpu_thread_count, " +
-                                "process_start_time, process_virtual_size, process_arguments, os_information, clock, deleted) " +
-                                "VALUES(:uuid, :name, :http_external_uri, :version, NOW(), :memory_bytes_total, " +
-                                ":memory_bytes_available, :memory_bytes_used, :heap_bytes_total, :heap_bytes_available, " +
-                                " :heap_bytes_used, :cpu_system_load, :cpu_thread_count, :process_start_time, " +
+                handle.createUpdate("INSERT INTO nodes(uuid, name, http_listen_uri, http_external_uri, version, " +
+                                " last_seen, memory_bytes_total, memory_bytes_available, memory_bytes_used, " +
+                                "heap_bytes_total, heap_bytes_available, heap_bytes_used, cpu_system_load, " +
+                                "cpu_thread_count, process_start_time, process_virtual_size, process_arguments, " +
+                                "os_information, clock, deleted) VALUES(:uuid, :name, :http_listen_uri, " +
+                                ":http_external_uri, :version, NOW(), :memory_bytes_total, :memory_bytes_available, " +
+                                ":memory_bytes_used, :heap_bytes_total, :heap_bytes_available, " +
+                                ":heap_bytes_used, :cpu_system_load, :cpu_thread_count, :process_start_time, " +
                                 ":process_virtual_size, :process_arguments, :os_information, :clock, false) " +
                                 "ON CONFLICT(uuid) DO UPDATE SET name = :name, http_external_uri = :http_external_uri, " +
-                                "version = :version, last_seen = NOW(), memory_bytes_total = :memory_bytes_total, " +
+                                "http_listen_uri = :http_listen_uri, version = :version, last_seen = NOW()," +
+                                "memory_bytes_total = :memory_bytes_total, " +
                                 "memory_bytes_available = :memory_bytes_available, memory_bytes_used = :memory_bytes_used, " +
                                 "heap_bytes_total = :heap_bytes_total, heap_bytes_available = :heap_bytes_available, " +
                                 "heap_bytes_used = :heap_bytes_used, cpu_system_load = :cpu_system_load, " +
@@ -134,6 +136,7 @@ public class NodeManager {
                                 "os_information = :os_information, clock = :clock, deleted = false")
                         .bind("uuid", localNodeId)
                         .bind("name", nzyme.getNodeInformation().name())
+                        .bind("http_listen_uri", nzyme.getConfiguration().restListenUri().toString())
                         .bind("http_external_uri", nzyme.getConfiguration().httpExternalUri().toString())
                         .bind("version", nzyme.getVersion().getVersion().toString())
                         .bind("memory_bytes_total", ni.memoryTotal())
@@ -164,10 +167,12 @@ public class NodeManager {
         List<Node> nodes = Lists.newArrayList();
         for (NodeEntry dbEntry : dbEntries) {
             try {
+                URI listenUri = URI.create(dbEntry.httpListenUri());
                 URI httpExternalUri = URI.create(dbEntry.httpExternalUri());
                 nodes.add(Node.create(
                         dbEntry.uuid(),
                         dbEntry.name(),
+                        listenUri,
                         httpExternalUri,
                         dbEntry.memoryBytesTotal(),
                         dbEntry.memoryBytesAvailable(),
@@ -207,10 +212,12 @@ public class NodeManager {
         if (result.isPresent()) {
             NodeEntry ne = result.get();
             try {
+                URI httpListenUri = URI.create(ne.httpListenUri());
                 URI httpExternalUri = URI.create(ne.httpExternalUri());
                 return Optional.of(Node.create(
                         ne.uuid(),
                         ne.name(),
+                        httpListenUri,
                         httpExternalUri,
                         ne.memoryBytesTotal(),
                         ne.memoryBytesAvailable(),

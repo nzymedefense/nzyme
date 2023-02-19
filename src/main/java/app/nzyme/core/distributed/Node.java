@@ -11,6 +11,7 @@ public abstract class Node {
 
     public abstract UUID uuid();
     public abstract String name();
+    public abstract URI httpListenUri();
     public abstract URI httpExternalUri();
     public abstract long memoryBytesTotal();
     public abstract long memoryBytesAvailable();
@@ -31,10 +32,11 @@ public abstract class Node {
     public abstract boolean isEphemeral();
     public abstract boolean deleted();
 
-    public static Node create(UUID uuid, String name, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs, boolean isEphemeral, boolean deleted) {
+    public static Node create(UUID uuid, String name, URI httpListenUri, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs, boolean isEphemeral, boolean deleted) {
         return builder()
                 .uuid(uuid)
                 .name(name)
+                .httpListenUri(httpListenUri)
                 .httpExternalUri(httpExternalUri)
                 .memoryBytesTotal(memoryBytesTotal)
                 .memoryBytesAvailable(memoryBytesAvailable)
@@ -66,6 +68,8 @@ public abstract class Node {
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder name(String name);
+
+        public abstract Builder httpListenUri(URI httpListenUri);
 
         public abstract Builder httpExternalUri(URI httpExternalUri);
 

@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.system.cluster;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
@@ -42,7 +43,13 @@ public class NodesResource {
     public Response findAll() {
         List<NodeResponse> nodes = Lists.newArrayList();
         for (Node node : nzyme.getNodeManager().getNodes()) {
-            nodes.add(buildNodeResponse(node));
+            Optional<TLSKeyAndCertificate> tls = nzyme.getCrypto().getTLSCertificateOfNode(node.uuid());
+            if (tls.isEmpty()) {
+                LOG.info("Could not find TLS certificate of node [{}].", node.uuid());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
+            nodes.add(buildNodeResponse(node, tls.get()));
         }
 
         return Response.ok(NodesListResponse.create(nodes)).build();
@@ -65,7 +72,13 @@ public class NodesResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(buildNodeResponse(res.get())).build();
+        Optional<TLSKeyAndCertificate> tls = nzyme.getCrypto().getTLSCertificateOfNode(nodeId);
+        if (tls.isEmpty()) {
+            LOG.info("Could not find TLS certificate of node [{}].", nodeId);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return Response.ok(buildNodeResponse(res.get(), tls.get())).build();
     }
 
     @DELETE
@@ -174,12 +187,15 @@ public class NodesResource {
         return Response.ok().build();
     }
 
-    private NodeResponse buildNodeResponse(Node node) {
+    private NodeResponse buildNodeResponse(Node node, TLSKeyAndCertificate tls) {
         return NodeResponse.create(
                 node.uuid().toString(),
                 node.name(),
                 node.lastSeen().isAfter(DateTime.now().minusMinutes(2)),
+                node.httpListenUri().toString(),
                 node.httpExternalUri().toString(),
+                tls.signature(),
+                tls.expiresAt(),
                 node.memoryBytesTotal(),
                 node.memoryBytesAvailable(),
                 node.memoryBytesUsed(),

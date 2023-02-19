@@ -1477,4 +1477,12 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_listen_uri_to_nodes" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="http_listen_uri" type="varchar(255)" defaultValue="https://0.0.0.0:22900">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
