@@ -1,16 +1,14 @@
 package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.crypto.PGPKeyFingerprint;
+import app.nzyme.core.crypto.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
-import app.nzyme.core.rest.responses.crypto.CryptoNodeMetricsResponse;
+import app.nzyme.core.rest.responses.crypto.*;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.rest.responses.crypto.CryptoMetricsResponse;
-import app.nzyme.core.rest.responses.crypto.CryptoResponse;
-import app.nzyme.core.rest.responses.crypto.PGPKeyResponse;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
@@ -129,9 +127,26 @@ public class CryptoResource {
 
         CryptoNodeMetricsResponse metrics = CryptoNodeMetricsResponse.create(nodeMetrics, clusterMetrics);
 
-        return Response.ok(
-                CryptoResponse.create(metrics, fingerprints, nzyme.getCrypto().allPGPKeysEqualAcrossCluster())
-        ).build();
+        Map<String, TLSCertificateResponse> tlsCertificates = Maps.newTreeMap();
+        for (TLSKeyAndCertificate cert : nzyme.getCrypto().getTLSCertificateByNode()) {
+            String nodeName = nzyme.getNodeManager().findNameOfNode(cert.nodeId());
+            tlsCertificates.put(
+                    nodeName,
+                    TLSCertificateResponse.create(
+                        cert.nodeId().toString(),
+                        nodeName,
+                        cert.signature(),
+                        cert.expiresAt()
+                    )
+            );
+        }
+
+        return Response.ok(CryptoResponse.create(
+                metrics,
+                fingerprints,
+                tlsCertificates,
+                nzyme.getCrypto().allPGPKeysEqualAcrossCluster()
+        )).build();
     }
 
 }

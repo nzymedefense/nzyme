@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PGPKeyTable from './PGPKeyTable'
 import PGPMetrics from './PGPMetrics'
 import CryptoService from '../../../services/CryptoService'
+import TLSCertificateTable from "./TLSCertificateTable";
 
 const cryptoService = new CryptoService()
 
@@ -56,13 +57,11 @@ function CryptoSummaryPage () {
                   <h3>TLS Certificates</h3>
 
                   <p>
-                    The nzyme REST APIs require TLS encryption. By default, nzyme will generate a self-signed certificate
-                    for you, but you can upload your own as well.
+                    The nzyme REST API and web interface require TLS encryption. By default, nzyme will generate a
+                    self-signed certificate for you, but you can upload your own as well.
                   </p>
 
-                  <p>
-                    <strong>TODO</strong>
-                  </p>
+                  <TLSCertificateTable crypto={crypto} />
                 </div>
               </div>
             </div>

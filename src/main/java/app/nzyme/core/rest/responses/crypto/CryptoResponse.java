@@ -15,13 +15,17 @@ public abstract class CryptoResponse {
     @JsonProperty("pgp_keys")
     public abstract Map<String, PGPKeyResponse> pgpKeys();
 
+    @JsonProperty("tls_certificates")
+    public abstract Map<String, TLSCertificateResponse> tlsCertificates();
+
     @JsonProperty("pgp_keys_in_sync")
     public abstract boolean pgpKeysInSync();
 
-    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, boolean pgpKeysInSync) {
+    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, Map<String, TLSCertificateResponse> tlsCertificates, boolean pgpKeysInSync) {
         return builder()
                 .metrics(metrics)
                 .pgpKeys(pgpKeys)
+                .tlsCertificates(tlsCertificates)
                 .pgpKeysInSync(pgpKeysInSync)
                 .build();
     }
@@ -36,9 +40,10 @@ public abstract class CryptoResponse {
 
         public abstract Builder pgpKeys(Map<String, PGPKeyResponse> pgpKeys);
 
+        public abstract Builder tlsCertificates(Map<String, TLSCertificateResponse> tlsCertificates);
+
         public abstract Builder pgpKeysInSync(boolean pgpKeysInSync);
 
         public abstract CryptoResponse build();
     }
-
 }

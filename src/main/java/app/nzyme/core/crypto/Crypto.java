@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -30,14 +31,14 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.Streams;
 import org.joda.time.DateTime;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.security.*;
+import java.security.cert.*;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -282,12 +283,14 @@ public class Crypto {
                     .getCertificate(certBuilder.build(contentSigner));
 
             return TLSKeyAndCertificate.create(
+                    nzyme.getNodeManager().getLocalNodeId(),
                     certificate,
                     keyPair.getPrivate(),
+                    calculateTLSCertificateFingerprint(certificate),
                     new DateTime(certificate.getNotBefore()),
                     new DateTime(certificate.getNotAfter())
             );
-        } catch (CertificateException e) {
+        } catch (CertificateException | NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
@@ -400,7 +403,7 @@ public class Crypto {
     public List<PGPKeyFingerprint> getPGPKeysByNode() {
         return database.withHandle(handle ->
                 handle.createQuery("SELECT node_name, node_id, key_signature, created_at " +
-                        "FROM crypto_keys WHERE key_type = :key_type")
+                        "FROM crypto_keys WHERE key_type = :key_type ORDER BY node_name")
                         .bind("key_type", KeyType.PGP)
                         .mapTo(PGPKeyFingerprint.class)
                         .list()
@@ -425,6 +428,26 @@ public class Crypto {
         }
 
         return uniqueFingerprints.size() == 1;
+    }
+
+    public List<TLSKeyAndCertificate> getTLSCertificateByNode() {
+        List<TLSKeyAndCertificateEntry> entries = database.withHandle(handle ->
+                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                                "FROM crypto_tls_certificates ORDER BY node_id DESC")
+                        .mapTo(TLSKeyAndCertificateEntry.class)
+                        .list()
+        );
+
+        List<TLSKeyAndCertificate> result = Lists.newArrayList();
+        for (TLSKeyAndCertificateEntry entry : entries) {
+            try {
+                result.add(tlsKeyAndCertificateEntryToObject(entry));
+            } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+                LOG.error("Could not build TLS certificate from database. Skipping.", e);
+            }
+        }
+
+        return result;
     }
 
     public KeyStore getTLSKeyStore() {
@@ -506,25 +529,38 @@ public class Crypto {
             return Optional.empty();
         } else {
             try {
-                byte[] certBytes = BaseEncoding.base64().decode(entry.get().certificate());
-                byte[] keyBytes = BaseEncoding.base64().decode(entry.get().key());
-
-                CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-                X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
-                PrivateKey key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-
-                return Optional.of(TLSKeyAndCertificate.create(
-                        cert,
-                        key,
-                        new DateTime(cert.getNotBefore()),
-                        new DateTime(cert.getNotAfter()))
-                );
+                return Optional.of(tlsKeyAndCertificateEntryToObject(entry.get()));
             } catch(Exception e) {
                 throw new RuntimeException("Could not read TLS data.", e);
             }
         }
+    }
+
+    private TLSKeyAndCertificate tlsKeyAndCertificateEntryToObject(TLSKeyAndCertificateEntry entry)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] certBytes = BaseEncoding.base64().decode(entry.certificate());
+        byte[] keyBytes = BaseEncoding.base64().decode(entry.key());
+
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+        X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+        PrivateKey key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+
+        return TLSKeyAndCertificate.create(
+                entry.nodeId(),
+                cert,
+                key,
+                calculateTLSCertificateFingerprint(cert),
+                new DateTime(cert.getNotBefore()),
+                new DateTime(cert.getNotAfter())
+        );
+    }
+
+    private String calculateTLSCertificateFingerprint(X509Certificate certificate) throws NoSuchAlgorithmException, CertificateEncodingException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(certificate.getEncoded());
+        return DatatypeConverter.printHexBinary(md.digest()).toLowerCase();
     }
 
     private void setTLSKeyAndCertificateOfNode(UUID nodeId, TLSKeyAndCertificate tls) {
