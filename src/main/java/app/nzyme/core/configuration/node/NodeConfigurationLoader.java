@@ -579,18 +579,24 @@ public class NodeConfigurationLoader {
             throw new InvalidConfigurationException("Parameter [general.python." + ConfigurationKeys.PYTHON_SCRIPT_DIR + "] does not point to a writable directory: " + parsePythonScriptDirectory());
         }
 
-        // REST listen URI can be parsed into a URI.
+        // REST listen URI can be parsed into a URI and is TLS.
         try {
-            parseRestListenUri();
-        } catch(Exception e) {
+            URI uri = parseRestListenUri();
+            if (!uri.getScheme().equals("https")) {
+                throw new IncompleteConfigurationException("Parameter [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] must be using HTTPS/TLS.");
+            }
+        } catch(IllegalArgumentException e) {
             LOG.error(e);
             throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.REST_LISTEN_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
 
-        // HTTP external URI can be parsed into a URI.
+        // HTTP external URI can be parsed into a URI and is TLS.
         try {
-            parseHttpExternalUri();
-        } catch(Exception e) {
+            URI uri = parseHttpExternalUri();
+            if (!uri.getScheme().equals("https")) {
+                throw new IncompleteConfigurationException("Parameter [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] must be using HTTPS/TLS.");
+            }
+        } catch(IllegalArgumentException e) {
             LOG.error(e);
             throw new InvalidConfigurationException("Parameter [interfaces." + ConfigurationKeys.HTTP_EXTERNAL_URI + "] cannot be parsed into a URI. Make sure it is correct.");
         }
