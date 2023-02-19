@@ -212,7 +212,7 @@ function NodeDetailsPage() {
                   <dt>TLS Certificate</dt>
                   <dd>
                     Expires {node.tls_cert_expiration_date}{' '}
-                    ({node.tls_cert_fingerprint.substring(0,16).match(/.{1,2}/g).join(' ').toUpperCase()})
+                    ({node.tls_cert_fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()})
                   </dd>
                 </dl>
               </div>

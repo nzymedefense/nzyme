@@ -25,7 +25,7 @@ function TLSCertificateTable(props) {
           return (
               <tr key={'tlscert-' + i}>
                 <td>{certificates[i].node_name}</td>
-                <td>{certificates[i].fingerprint.substring(0,16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
+                <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
                 <td>{certificates[i].expiration_date}</td>
               </tr>
           )
