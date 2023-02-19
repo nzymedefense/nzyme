@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.crypto.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.MetricExternalName;
+import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
 import app.nzyme.core.rest.responses.crypto.*;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -12,6 +13,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -19,10 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Path("/api/system/crypto")
 @RESTSecured
@@ -129,16 +128,19 @@ public class CryptoResource {
 
         Map<String, TLSCertificateResponse> tlsCertificates = Maps.newTreeMap();
         for (TLSKeyAndCertificate cert : nzyme.getCrypto().getTLSCertificateByNode()) {
-            String nodeName = nzyme.getNodeManager().findNameOfNode(cert.nodeId());
-            tlsCertificates.put(
-                    nodeName,
-                    TLSCertificateResponse.create(
-                        cert.nodeId().toString(),
+            Optional<Node> node = nzyme.getNodeManager().getNode(cert.nodeId());
+            if (node.isPresent() && node.get().lastSeen().isAfter(DateTime.now().minusMinutes(2))) {
+                String nodeName = nzyme.getNodeManager().findNameOfNode(cert.nodeId());
+                tlsCertificates.put(
                         nodeName,
-                        cert.signature(),
-                        cert.expiresAt()
-                    )
-            );
+                        TLSCertificateResponse.create(
+                                cert.nodeId().toString(),
+                                nodeName,
+                                cert.signature(),
+                                cert.expiresAt()
+                        )
+                );
+            }
         }
 
         return Response.ok(CryptoResponse.create(
