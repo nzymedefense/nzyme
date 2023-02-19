@@ -24,7 +24,6 @@ public class CryptoTest {
         Files.walk(FOLDER)
                 .map(Path::toFile)
                 .forEach(file -> {
-                    System.out.println(file.getName());
                     // Don't delete the entire crypto_test root directory.
                     if (!file.toPath().equals(FOLDER) && !file.getName().equals(".gitkeep")) {
                         if (!file.delete()) {
