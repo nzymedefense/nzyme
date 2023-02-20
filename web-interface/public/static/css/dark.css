@@ -115,3 +115,18 @@ table tr.table-span-heading td {
 p.help-text {
     color: #c7c7c7;
 }
+
+button.btn-text {
+    color: #fff;
+    text-decoration: underline;
+}
+
+button.btn-text:hover {
+    background-color: transparent;
+    color: #71769F;
+}
+
+button.btn-text:focus {
+    background-color: transparent;
+    color: #71769F;
+}

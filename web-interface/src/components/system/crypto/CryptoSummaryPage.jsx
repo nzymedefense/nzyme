@@ -54,14 +54,29 @@ function CryptoSummaryPage () {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>TLS Certificates</h3>
+                  <h3>Individual TLS Certificates</h3>
 
                   <p>
-                    The nzyme REST API and web interface require TLS encryption. By default, nzyme will generate a
-                    self-signed certificate for you, but you can upload your own as well.
+                    Individual TLS certificates per node. By default, nzyme will generate a self-signed certificate for
+                    you, but you can also upload your own. For auto-provisioning, please look at the wildcard
+                    certificate configuration on this page.
                   </p>
 
                   <TLSCertificateTable crypto={crypto} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Wildcard TLS Certificates</h3>
+
+                  <p>
+                    Every node name that matches a regular expression below will be automatically provisioned with
+                    the corresponding wildcard TLS certificate. Wildcard certificates take precedence over individual
+                    certificates.
+                  </p>
                 </div>
               </div>
             </div>

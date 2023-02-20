@@ -1,5 +1,6 @@
 import React from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import moment from "moment";
 
 function TLSCertificateTable(props) {
 
@@ -18,6 +19,7 @@ function TLSCertificateTable(props) {
           <th>Node</th>
           <th>Certificate Fingerprint</th>
           <th>Expires at</th>
+          <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
@@ -26,7 +28,10 @@ function TLSCertificateTable(props) {
               <tr key={'tlscert-' + i}>
                 <td>{certificates[i].node_name}</td>
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
-                <td>{certificates[i].expiration_date}</td>
+                <td>{moment(certificates[i].expiration_date).format()}</td>
+                <td>
+                  <a href="">Manage</a>
+                </td>
               </tr>
           )
         })}

@@ -1,6 +1,7 @@
 import React from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
 import PGPKeysOutOfSyncWarning from "./PGPKeysOutOfSyncWarning";
+import moment from "moment";
 
 function PGPKeyTable (props) {
   const crypto = props.crypto
@@ -29,7 +30,7 @@ function PGPKeyTable (props) {
                 <tr key={'ppgkey-' + i}>
                   <td>{keys[i].node}</td>
                   <td>{keys[i].fingerprint.match(/.{1,2}/g).join(' ')}</td>
-                  <td>{keys[i].created_at}</td>
+                  <td>{moment(keys[i].created_at).format()}</td>
                 </tr>
               )
             })}

@@ -450,3 +450,18 @@ div.health-consequence div.health-consequence-solutions ol.consequence-solution-
     padding-left: 3px;
     padding-right: 3px;
 }
+
+button.btn-text {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    color: #0E42B0;
+    font-size: 13px;
+    text-decoration: underline;
+}
+
+button.btn-text:hover {
+    background-color: transparent;
+    color: #144FD7;
+}
