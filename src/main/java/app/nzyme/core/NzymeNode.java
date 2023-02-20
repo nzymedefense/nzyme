@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.security.Key;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdentificationProvider, MetricsRegistryProvider {
 
@@ -116,5 +117,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     Key getSigningKey();
     Version getVersion();
+
+    void reloadHttpServer(int gracePeriod, TimeUnit tu);
 
 }

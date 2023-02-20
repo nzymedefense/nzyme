@@ -70,6 +70,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class MockNzyme implements NzymeNode {
 
@@ -394,6 +395,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public Version getVersion() {
         return version;
+    }
+
+    @Override
+    public void reloadHttpServer(int gracePeriod, TimeUnit tu) {
+
     }
 
     @Override

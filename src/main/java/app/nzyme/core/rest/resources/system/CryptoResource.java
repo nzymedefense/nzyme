@@ -23,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Path("/api/system/crypto")
 @RESTSecured
@@ -161,17 +162,17 @@ public class CryptoResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        TLSKeyAndCertificate tls;
+        final Crypto crypto = nzyme.getCrypto();
         try {
-            tls = nzyme.getCrypto().generateTLSCertificate(Crypto.DEFAULT_TLS_SUBJECT_DN, 12);
+            crypto.updateTLSCertificateOfNode(
+                    nodeId,
+                    crypto.generateTLSCertificate(Crypto.DEFAULT_TLS_SUBJECT_DN, 12)
+            );
+            nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish.
         } catch (Crypto.CryptoOperationException e) {
             LOG.error("Could not generate TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
-
-        nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
-
-        // RESTART SERVER? RELOAD?
 
         return Response.ok().build();
     }

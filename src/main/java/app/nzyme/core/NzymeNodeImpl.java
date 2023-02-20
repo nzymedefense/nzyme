@@ -391,90 +391,7 @@ public class NzymeNodeImpl implements NzymeNode {
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         java.util.logging.Logger.getLogger("org.glassfish.jersey.internal.inject.Providers").setLevel(Level.SEVERE);
-        ResourceConfig resourceConfig = new ResourceConfig();
-        resourceConfig.register(new RESTAuthenticationFilter(this));
-        resourceConfig.register(new TapAuthenticationFilter(this));
-        resourceConfig.register(new PrometheusBasicAuthFilter(this));
-        resourceConfig.register(new CORSFilter());
-        resourceConfig.register(new NzymeLeaderInjectionBinder(this));
-        resourceConfig.register(new ObjectMapperProvider());
-        resourceConfig.register(new JacksonJaxbJsonProvider());
-        resourceConfig.register(new NzymeExceptionMapper());
-        resourceConfig.register(new TapTableSizeInterceptor(this));
-
-        // Register REST API resources.
-        resourceConfig.register(AuthenticationResource.class);
-        resourceConfig.register(PingResource.class);
-        resourceConfig.register(AlertsResource.class);
-        resourceConfig.register(BanditsResource.class);
-        resourceConfig.register(ProbesResource.class);
-        resourceConfig.register(TrackersResource.class);
-        resourceConfig.register(NetworksResource.class);
-        resourceConfig.register(SystemResource.class);
-        resourceConfig.register(DashboardResource.class);
-        resourceConfig.register(AssetInventoryResource.class);
-        resourceConfig.register(ReportsResource.class);
-        resourceConfig.register(StatusResource.class);
-        resourceConfig.register(TablesResource.class);
-        resourceConfig.register(TapsResource.class);
-        resourceConfig.register(DNSResource.class);
-        resourceConfig.register(PluginResource.class);
-        resourceConfig.register(PrometheusResource.class);
-        resourceConfig.register(CryptoResource.class);
-        resourceConfig.register(MonitoringResource.class);
-        resourceConfig.register(NodesResource.class);
-        resourceConfig.register(HealthResource.class);
-        resourceConfig.register(RegistryResource.class);
-
-        // Plugin-supplied REST resources.
-        for (Object resource : pluginRestResources) {
-            try {
-                resourceConfig.register(resource);
-                LOG.info("Loaded plugin REST resource [{}].", resource.getClass().getCanonicalName());
-            } catch(Exception e) {
-                LOG.error("Could not register plugin REST resource [{}].", resource.getClass().getCanonicalName(), e);
-            }
-        }
-
-        // Enable GZIP.
-        resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
-
-        // Register web interface asset resources.
-        resourceConfig.register(WebInterfaceAssetsResource.class);
-
-        try {
-            char[] password = "".toCharArray();
-            final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
-            sslContextConfigurator.setKeyStorePass(password);
-            sslContextConfigurator.setKeyStoreBytes(crypto.getTLSKeyStoreBytes());
-            final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
-            SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
-
-            httpServer = GrizzlyHttpServerFactory.createHttpServer(
-                    configuration.restListenUri(),
-                    resourceConfig,
-                    true,
-                    sslEngineConfigurator
-            );
-        } catch(Exception e) {
-            throw new RuntimeException("Could not start web server.", e);
-        }
-
-        CompressionConfig compressionConfig = httpServer.getListener("grizzly").getCompressionConfig();
-        compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
-        compressionConfig.setCompressionMinSize(1);
-        compressionConfig.setCompressibleMimeTypes();
-
-        // Start server.
-        try {
-            httpServer.start();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not start REST API.", e);
-        }
-
-        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
-                configuration.restListenUri(),
-                configuration.httpExternalUri());
+        startHttpServer();
 
         // Ground Station.
         if (configuration.groundstationDevice() != null) {
@@ -856,6 +773,105 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Version getVersion() {
         return version;
+    }
+
+    private void startHttpServer() {
+        ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(new RESTAuthenticationFilter(this));
+        resourceConfig.register(new TapAuthenticationFilter(this));
+        resourceConfig.register(new PrometheusBasicAuthFilter(this));
+        resourceConfig.register(new CORSFilter());
+        resourceConfig.register(new NzymeLeaderInjectionBinder(this));
+        resourceConfig.register(new ObjectMapperProvider());
+        resourceConfig.register(new JacksonJaxbJsonProvider());
+        resourceConfig.register(new NzymeExceptionMapper());
+        resourceConfig.register(new TapTableSizeInterceptor(this));
+
+        // Register REST API resources.
+        resourceConfig.register(AuthenticationResource.class);
+        resourceConfig.register(PingResource.class);
+        resourceConfig.register(AlertsResource.class);
+        resourceConfig.register(BanditsResource.class);
+        resourceConfig.register(ProbesResource.class);
+        resourceConfig.register(TrackersResource.class);
+        resourceConfig.register(NetworksResource.class);
+        resourceConfig.register(SystemResource.class);
+        resourceConfig.register(DashboardResource.class);
+        resourceConfig.register(AssetInventoryResource.class);
+        resourceConfig.register(ReportsResource.class);
+        resourceConfig.register(StatusResource.class);
+        resourceConfig.register(TablesResource.class);
+        resourceConfig.register(TapsResource.class);
+        resourceConfig.register(DNSResource.class);
+        resourceConfig.register(PluginResource.class);
+        resourceConfig.register(PrometheusResource.class);
+        resourceConfig.register(CryptoResource.class);
+        resourceConfig.register(MonitoringResource.class);
+        resourceConfig.register(NodesResource.class);
+        resourceConfig.register(HealthResource.class);
+        resourceConfig.register(RegistryResource.class);
+
+        // Plugin-supplied REST resources.
+        for (Object resource : pluginRestResources) {
+            try {
+                resourceConfig.register(resource);
+                LOG.info("Loaded plugin REST resource [{}].", resource.getClass().getCanonicalName());
+            } catch(Exception e) {
+                LOG.error("Could not register plugin REST resource [{}].", resource.getClass().getCanonicalName(), e);
+            }
+        }
+
+        // Enable GZIP.
+        resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
+
+        // Register web interface asset resources.
+        resourceConfig.register(WebInterfaceAssetsResource.class);
+
+        try {
+            char[] password = "".toCharArray();
+            final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
+            sslContextConfigurator.setKeyStorePass(password);
+            sslContextConfigurator.setKeyStoreBytes(crypto.getTLSKeyStoreBytes());
+            final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
+            SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
+
+            httpServer = GrizzlyHttpServerFactory.createHttpServer(
+                    configuration.restListenUri(),
+                    resourceConfig,
+                    true,
+                    sslEngineConfigurator
+            );
+        } catch(Exception e) {
+            throw new RuntimeException("Could not start web server.", e);
+        }
+
+        CompressionConfig compressionConfig = httpServer.getListener("grizzly").getCompressionConfig();
+        compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
+        compressionConfig.setCompressionMinSize(1);
+        compressionConfig.setCompressibleMimeTypes();
+
+        // Start server.
+        try {
+            httpServer.start();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not start REST API.", e);
+        }
+
+        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
+                configuration.restListenUri(),
+                configuration.httpExternalUri());
+    }
+
+    @Override
+    public void reloadHttpServer(int gracePeriod, TimeUnit tu) {
+        Executors.newSingleThreadExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                LOG.info("Restarting HTTP server.");
+                httpServer.shutdown(gracePeriod, tu);
+                startHttpServer();
+            }
+        });
     }
 
     @Override
