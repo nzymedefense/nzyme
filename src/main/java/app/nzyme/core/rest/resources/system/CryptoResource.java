@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.crypto.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.MetricExternalName;
@@ -13,12 +14,12 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
@@ -27,6 +28,8 @@ import java.util.*;
 @RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class CryptoResource {
+
+    private static final Logger LOG = LogManager.getLogger(CryptoResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -149,6 +152,28 @@ public class CryptoResource {
                 tlsCertificates,
                 nzyme.getCrypto().allPGPKeysEqualAcrossCluster()
         )).build();
+    }
+
+    @PUT
+    @Path("/tls/node/{node_id}/regenerate")
+    public Response regenerateTLSCertificate(@PathParam("node_id") UUID nodeId) {
+        if (nzyme.getNodeManager().getNode(nodeId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSKeyAndCertificate tls;
+        try {
+            tls = nzyme.getCrypto().generateTLSCertificate(Crypto.DEFAULT_TLS_SUBJECT_DN, 12);
+        } catch (Crypto.CryptoOperationException e) {
+            LOG.error("Could not generate TLS certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
+
+        // RESTART SERVER? RELOAD?
+
+        return Response.ok().build();
     }
 
 }

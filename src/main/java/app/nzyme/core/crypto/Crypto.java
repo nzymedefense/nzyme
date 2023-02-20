@@ -79,6 +79,8 @@ public class Crypto {
         PGP
     }
 
+    public static final String DEFAULT_TLS_SUBJECT_DN = "CN=nzyme";
+
     public static final String PGP_PRIVATE_KEY_NAME = "pgp_private.pgp";
     public static final String PGP_PUBLIC_KEY_NAME = "pgp_public.pgp";
 
@@ -118,7 +120,7 @@ public class Crypto {
         if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
             try {
                 LOG.info("No TLS certificate found. Generating self-signed certificate.");
-                TLSKeyAndCertificate tls = generateTLSCertificate("CN=nzyme", 12);
+                TLSKeyAndCertificate tls = generateTLSCertificate(DEFAULT_TLS_SUBJECT_DN, 12);
                 setTLSKeyAndCertificateOfNode(nodeId, tls);
             } catch (CryptoOperationException e) {
                 throw new CryptoInitializationException("Could not generate TLS certificate.", e);
@@ -496,6 +498,28 @@ public class Crypto {
         getTLSKeyStore().store(stream, "".toCharArray());
 
         return stream.toByteArray();
+    }
+
+    public void updateTLSCertificateOfNode(UUID nodeId, TLSKeyAndCertificate tls) {
+        String certificate;
+        String key;
+        try {
+            certificate = BaseEncoding.base64().encode(tls.certificate().getEncoded());
+            key = BaseEncoding.base64().encode(tls.key().getEncoded());
+        } catch(Exception e) {
+            throw new RuntimeException("Could not encode TLS data.", e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+            handle.createUpdate("UPDATE crypto_tls_certificates SET certificate = :certificate, key = :key, " +
+                    "valid_from = :valid_from, expires_at = :expires_at WHERE node_id = :node_id")
+                    .bind("certificate", certificate)
+                    .bind("key", key)
+                    .bind("valid_from", tls.validFrom())
+                    .bind("expires_at", tls.expiresAt())
+                    .bind("node_id", nodeId)
+                    .execute()
+        );
     }
 
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
