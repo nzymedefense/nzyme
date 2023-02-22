@@ -55,6 +55,7 @@ import PrometheusMetricsPage from './components/system/monitoring/prometheus/Pro
 import NodesPage from "./components/system/cluster/nodes/NodesPage";
 import NodeDetailsPage from "./components/system/cluster/nodes/details/NodeDetailsPage";
 import HealthPage from "./components/system/health/HealthPage";
+import TLSCertificateDetailsPage from "./components/system/crypto/TLSCertificateDetailsPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -147,6 +148,7 @@ class App extends React.Component {
 
                                             { /* System/Crypto. */ }
                                             <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
+                                            <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
 
                                             { /* System/Monitoring. */ }
                                             <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />

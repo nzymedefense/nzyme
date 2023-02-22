@@ -1,6 +1,7 @@
 import React from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import moment from "moment";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function TLSCertificateTable(props) {
 
@@ -30,7 +31,7 @@ function TLSCertificateTable(props) {
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
                 <td>{moment(certificates[i].expiration_date).format()}</td>
                 <td>
-                  <a href="">Manage</a>
+                  <a href={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(certificates[i].node_id)}>Manage</a>
                 </td>
               </tr>
           )
