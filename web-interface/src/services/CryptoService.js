@@ -15,6 +15,10 @@ class CryptoService {
     })
   }
 
+  regenerateSelfSignedTLSCertificate(nodeId, successCallback) {
+    RESTClient.put('/system/crypto/tls/node/' + nodeId + '/regenerate', {}, successCallback);
+  }
+
 }
 
 export default CryptoService
