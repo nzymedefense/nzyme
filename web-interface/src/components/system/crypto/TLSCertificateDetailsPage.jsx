@@ -87,7 +87,7 @@ function TLSCertificateDetailsPage(props) {
                     valid for 12 months.
                   </p>
 
-                  <button className="btn btn-sm btn-primary" onClick={regenerateSelfSignedCertificate}>
+                  <button className="btn btn-sm btn-secondary" onClick={regenerateSelfSignedCertificate}>
                     Replace with new self-signed certificate
                   </button>
                 </div>
@@ -114,9 +114,9 @@ function TLSCertificateDetailsPage(props) {
                   </p>
 
                   <ol>
-                    <li>Local Disk</li>
-                    <li>Wildcard Certificate</li>
-                    <li>Individual node certificate in database</li>
+                    <li>Local disk</li>
+                    <li>Wildcard certificate that matches the node (loaded from database)</li>
+                    <li>Individual certificate assigned to node (loaded from database)</li>
                   </ol>
                 </div>
               </div>
@@ -128,7 +128,39 @@ function TLSCertificateDetailsPage(props) {
               <div className="card">
                 <div className="card-body">
                   <h3>Upload Certificate</h3>
-                  
+
+                  <p>Use this form to upload an individual TLS certificate for this nzyme node.</p>
+
+                  <p>
+                    The certificate must be in PEM format and will typically include a whole certificate chain.
+                    Certificate authorities will usually offer this file for download. If the file includes multiple
+                    blocks of Base64 plaintext, surrounded by <code>-----BEGIN CERTIFICATE-----</code>, you have
+                    the correct file.
+                  </p>
+
+                  <p>
+                    The private key file will often have a <code>.key</code> name ending and should contain a block of
+                    Base64 plaintext, surrounded by <code>-----BEGIN RSA PRIVATE KEY-----</code> or
+                    <code>-----BEGIN EC PRIVATE KEY-----</code>.
+                  </p>
+
+                  <form>
+                    <div className="mb-3">
+                      <label htmlFor="fu-certificate" className="form-label">
+                        Certificate PEM File
+                      </label>
+                      <input className="form-control form-control-sm" name="certificate" id="fu-certificate" type="file" />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="fu-key" className="form-label">Private Key File</label>
+                      <input className="form-control form-control-sm" name="private_key" id="fu-key" type="file" />
+                    </div>
+
+                    <button className="btn btn-sm btn-secondary">
+                      Upload Individual Certificate
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>

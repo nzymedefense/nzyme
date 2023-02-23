@@ -2,7 +2,8 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
-import app.nzyme.core.crypto.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSUtils;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
@@ -16,12 +17,17 @@ import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -192,13 +198,68 @@ public class CryptoResource {
                     nodeId,
                     crypto.generateTLSCertificate(Crypto.DEFAULT_TLS_SUBJECT_DN, 12)
             );
-            nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish.
+            nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
         } catch (Crypto.CryptoOperationException e) {
             LOG.error("Could not generate TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
         return Response.ok().build();
+    }
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/tls/node/{node_id}")
+    public Response uploadTLSCertificate(@PathParam("node_id") UUID nodeId,
+                                         @FormDataParam("certificate") InputStream certificate,
+                                         @FormDataParam("private_key") InputStream privateKey) {
+        if (nzyme.getNodeManager().getNode(nodeId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String certificateInput, keyInput;
+        try {
+            certificateInput = new String(certificate.readAllBytes());
+            keyInput = new String(privateKey.readAllBytes());
+        } catch (Exception e) {
+            LOG.error("Could not read provided TLS certificate form data.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        List<X509Certificate> certificates;
+        PrivateKey key;
+        try {
+            certificates = TLSUtils.readCertificateChainFromPEM(certificateInput);
+            key = TLSUtils.readKeyFromPEM(keyInput);
+        }catch(Exception e) {
+            LOG.error("Could not build key/certificate from provided data.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        // We have a valid certificate and key from here on. Serialize to Base64 and store.
+        X509Certificate firstCert = certificates.get(0);
+        String fingerprint;
+
+        try {
+            fingerprint = TLSUtils.calculateTLSCertificateFingerprint(firstCert);
+        } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
+            LOG.error("Could not build certificate fingerprint.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
+                nodeId,
+                certificates,
+                key,
+                fingerprint,
+                new DateTime(firstCert.getNotBefore()),
+                new DateTime(firstCert.getNotAfter())
+        );
+
+        nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
+        nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
+
+        return Response.ok(Response.Status.CREATED).build();
     }
 
 }

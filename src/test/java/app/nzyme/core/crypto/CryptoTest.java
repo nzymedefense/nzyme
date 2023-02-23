@@ -1,6 +1,7 @@
 package app.nzyme.core.crypto;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import com.google.common.base.Strings;
 import app.nzyme.core.MockNzyme;
 import org.testng.annotations.BeforeMethod;

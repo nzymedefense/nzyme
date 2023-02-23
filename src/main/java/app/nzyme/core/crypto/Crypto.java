@@ -1,6 +1,8 @@
 package app.nzyme.core.crypto;
 
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
+import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSUtils;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
@@ -283,11 +285,15 @@ public class Crypto {
             X509Certificate certificate = new JcaX509CertificateConverter().setProvider(this.bcProvider)
                     .getCertificate(certBuilder.build(contentSigner));
 
+            // Create a list of only one cert. We don't have a chain for self-signed certs.
+            ArrayList<X509Certificate> certificates = Lists.newArrayList();
+            certificates.add(certificate);
+
             return TLSKeyAndCertificate.create(
                     nzyme.getNodeManager().getLocalNodeId(),
-                    certificate,
+                    certificates,
                     keyPair.getPrivate(),
-                    calculateTLSCertificateFingerprint(certificate),
+                    TLSUtils.calculateTLSCertificateFingerprint(certificate),
                     new DateTime(certificate.getNotBefore()),
                     new DateTime(certificate.getNotAfter())
             );
@@ -480,7 +486,7 @@ public class Crypto {
             }
 
             List<Certificate> certChain = Lists.newArrayList();
-            certChain.add(tlsData.get().certificate());
+            certChain.addAll(tlsData.get().certificates());
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null, null);
@@ -503,7 +509,7 @@ public class Crypto {
         String certificate;
         String key;
         try {
-            certificate = BaseEncoding.base64().encode(tls.certificate().getEncoded());
+            certificate = TLSUtils.serializeCertificateChain(tls.certificates());
             key = BaseEncoding.base64().encode(tls.key().getEncoded());
         } catch(Exception e) {
             throw new RuntimeException("Could not encode TLS data.", e);
@@ -581,36 +587,28 @@ public class Crypto {
 
     private TLSKeyAndCertificate tlsKeyAndCertificateEntryToObject(TLSKeyAndCertificateEntry entry)
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] certBytes = BaseEncoding.base64().decode(entry.certificate());
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        X509Certificate firstCertificate = certificates.get(0);
+
         byte[] keyBytes = BaseEncoding.base64().decode(entry.key());
-
-        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-        X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(certBytes));
         PrivateKey key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
 
         return TLSKeyAndCertificate.create(
                 entry.nodeId(),
-                cert,
+                certificates,
                 key,
-                calculateTLSCertificateFingerprint(cert),
-                new DateTime(cert.getNotBefore()),
-                new DateTime(cert.getNotAfter())
+                TLSUtils.calculateTLSCertificateFingerprint(firstCertificate),
+                new DateTime(firstCertificate.getNotBefore()),
+                new DateTime(firstCertificate.getNotAfter())
         );
-    }
-
-    private String calculateTLSCertificateFingerprint(X509Certificate certificate) throws NoSuchAlgorithmException, CertificateEncodingException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(certificate.getEncoded());
-        return DatatypeConverter.printHexBinary(md.digest()).toLowerCase();
     }
 
     private void setTLSKeyAndCertificateOfNode(UUID nodeId, TLSKeyAndCertificate tls) {
         String certificate;
         String key;
         try {
-            certificate = BaseEncoding.base64().encode(tls.certificate().getEncoded());
+            certificate = TLSUtils.serializeCertificateChain(tls.certificates());
             key = BaseEncoding.base64().encode(tls.key().getEncoded());
         } catch(Exception e) {
             throw new RuntimeException("Could not encode TLS data.", e);

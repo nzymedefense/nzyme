@@ -1,12 +1,11 @@
 package app.nzyme.core.rest.resources.system.cluster;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.crypto.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.distributed.MetricExternalName;
-import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
 import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.nodes.*;
 import app.nzyme.core.taps.metrics.BucketSize;

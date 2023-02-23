@@ -112,6 +112,7 @@ import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.DeflateEncoder;
 import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -786,6 +787,7 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(new JacksonJaxbJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
         resourceConfig.register(new TapTableSizeInterceptor(this));
+        resourceConfig.register(MultiPartFeature.class);
 
         // Register REST API resources.
         resourceConfig.register(AuthenticationResource.class);
