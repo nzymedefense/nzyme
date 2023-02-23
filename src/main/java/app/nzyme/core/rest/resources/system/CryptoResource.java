@@ -155,6 +155,30 @@ public class CryptoResource {
         )).build();
     }
 
+    @GET
+    @Path("/tls/node/{node_id}")
+    public Response tlsCertificate(@PathParam("node_id") UUID nodeId) {
+        Optional<Node> node = nzyme.getNodeManager().getNode(nodeId);
+        if (node.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TLSKeyAndCertificate> tls = nzyme.getCrypto().getTLSCertificateOfNode(nodeId);
+
+        if (tls.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSKeyAndCertificate cert = tls.get();
+
+        return Response.ok(TLSCertificateResponse.create(
+                cert.nodeId().toString(),
+                node.get().name(),
+                cert.signature(),
+                cert.expiresAt()
+        )).build();
+    }
+
     @PUT
     @Path("/tls/node/{node_id}/regenerate")
     public Response regenerateTLSCertificate(@PathParam("node_id") UUID nodeId) {
