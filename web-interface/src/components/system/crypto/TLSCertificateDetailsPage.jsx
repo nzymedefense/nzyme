@@ -128,8 +128,7 @@ function TLSCertificateDetailsPage(props) {
               <div className="card">
                 <div className="card-body">
                   <h3>Upload Certificate</h3>
-
-
+                  
                 </div>
               </div>
             </div>
