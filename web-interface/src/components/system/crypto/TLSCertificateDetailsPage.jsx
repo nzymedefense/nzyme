@@ -70,7 +70,7 @@ function TLSCertificateDetailsPage(props) {
                   <dl>
                     <dt>Expiration Date</dt>
                     <dd>
-                      {moment(certificate.expiration_date).format()} ({moment(certificate.expiration_date).fromNow()})
+                      {moment(certificate.expires_at).format()} ({moment(certificate.expires_at).fromNow()})
                     </dd>
                     <dt>Fingerprint</dt>
                     <dd>
@@ -158,7 +158,7 @@ function TLSCertificateDetailsPage(props) {
                     </div>
 
                     <button className="btn btn-sm btn-secondary">
-                      Upload Individual Certificate
+                      Test Individual Certificate
                     </button>
                   </form>
                 </div>

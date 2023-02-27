@@ -26,10 +26,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Path("/api/system/crypto")
 @RESTSecured
@@ -141,12 +144,28 @@ public class CryptoResource {
             Optional<Node> node = nzyme.getNodeManager().getNode(cert.nodeId());
             if (node.isPresent() && node.get().lastSeen().isAfter(DateTime.now().minusMinutes(2))) {
                 String nodeName = nzyme.getNodeManager().findNameOfNode(cert.nodeId());
+                X509Certificate firstCert = cert.certificates().get(0);
+
+                Collection<List<?>> issuerAlternativeNames;
+                Collection<List<?>> subjectAlternativeNames;
+                try {
+                    issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+                    subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+                } catch (CertificateParsingException e) {
+                    LOG.error("Could not parse certificate.", e);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
+
                 tlsCertificates.put(
                         nodeName,
                         TLSCertificateResponse.create(
                                 cert.nodeId().toString(),
                                 nodeName,
                                 cert.signature(),
+                                firstCert.getSigAlgName(),
+                                buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
+                                buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
+                                cert.validFrom(),
                                 cert.expiresAt()
                         )
                 );
@@ -176,11 +195,26 @@ public class CryptoResource {
         }
 
         TLSKeyAndCertificate cert = tls.get();
+        X509Certificate firstCert = cert.certificates().get(0);
+
+        Collection<List<?>> issuerAlternativeNames;
+        Collection<List<?>> subjectAlternativeNames;
+        try {
+            issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+            subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+        } catch (CertificateParsingException e) {
+            LOG.error("Could not parse certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
 
         return Response.ok(TLSCertificateResponse.create(
                 cert.nodeId().toString(),
                 node.get().name(),
                 cert.signature(),
+                firstCert.getSigAlgName(),
+                buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
+                buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
+                cert.validFrom(),
                 cert.expiresAt()
         )).build();
     }
@@ -209,11 +243,12 @@ public class CryptoResource {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("/tls/node/{node_id}")
-    public Response uploadTLSCertificate(@PathParam("node_id") UUID nodeId,
-                                         @FormDataParam("certificate") InputStream certificate,
-                                         @FormDataParam("private_key") InputStream privateKey) {
-        if (nzyme.getNodeManager().getNode(nodeId).isEmpty()) {
+    @Path("/tls/node/{node_id}/test")
+    public Response testNodeTLSCertificate(@PathParam("node_id") UUID nodeId,
+                                           @FormDataParam("certificate") InputStream certificate,
+                                           @FormDataParam("private_key") InputStream privateKey) {
+        Optional<Node> node = nzyme.getNodeManager().getNode(nodeId);
+        if (node.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -222,8 +257,109 @@ public class CryptoResource {
             certificateInput = new String(certificate.readAllBytes());
             keyInput = new String(privateKey.readAllBytes());
         } catch (Exception e) {
-            LOG.error("Could not read provided TLS certificate form data.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        boolean certSuccess;
+        List<X509Certificate> certificates = Lists.newArrayList();
+        try {
+            certificates.addAll(TLSUtils.readCertificateChainFromPEM(certificateInput));
+            certSuccess = true;
+        } catch(Exception e) {
+            certSuccess = false;
+            LOG.error("Testing TLS private key failed.", e);
+        }
+
+        boolean privateKeySuccess;
+        PrivateKey key = null;
+        try {
+            key = TLSUtils.readKeyFromPEM(keyInput);
+            privateKeySuccess = true;
+        } catch(Exception e) {
+            privateKeySuccess = false;
+            LOG.error("Testing TLS private key failed.", e);
+        }
+
+        if (certSuccess && privateKeySuccess) {
+            // Return cert details.
+            X509Certificate firstCert = certificates.get(0);
+            String fingerprint;
+            Collection<List<?>> issuerAlternativeNames;
+            Collection<List<?>> subjectAlternativeNames;
+            try {
+                fingerprint = TLSUtils.calculateTLSCertificateFingerprint(firstCert);
+                issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+                subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+            } catch (NoSuchAlgorithmException | CertificateEncodingException | CertificateParsingException e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
+            TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
+                    nodeId,
+                    certificates,
+                    key,
+                    fingerprint,
+                    new DateTime(firstCert.getNotBefore()),
+                    new DateTime(firstCert.getNotAfter())
+            );
+
+            return Response.ok(TLSCertificateTestResponse.create(
+                    true,
+                    true,
+                    TLSCertificateResponse.create(
+                            nodeId.toString(),
+                            node.get().name(),
+                            tls.signature(),
+                            firstCert.getSigAlgName(),
+                            buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
+                            buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
+                            tls.validFrom(),
+                            tls.expiresAt()
+                    )
+            )).build();
+        } else {
+            // Return error information.
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(TLSCertificateTestResponse.create(
+                            certSuccess, privateKeySuccess, null
+                    )).build();
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/tls/node/{node_id}")
+    public Response uploadNodeTLSCertificate(@PathParam("node_id") UUID nodeId,
+                                             @FormDataParam("certificate") InputStream certificate,
+                                             @FormDataParam("private_key") InputStream privateKey) {
+        if (nzyme.getNodeManager().getNode(nodeId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSKeyAndCertificate tls;
+
+        try {
+            tls = readTLSKeyAndCertificateFromInputStreams(nodeId, certificate, privateKey);
+        } catch (TLSCertificateCreationException e) {
+            LOG.error("Could not create TLS certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
+        nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
+
+        return Response.ok(Response.Status.CREATED).build();
+    }
+
+    private TLSKeyAndCertificate readTLSKeyAndCertificateFromInputStreams(UUID nodeId,
+                                                                          InputStream certificate,
+                                                                          InputStream privateKey) throws TLSCertificateCreationException {
+        String certificateInput, keyInput;
+        try {
+            certificateInput = new String(certificate.readAllBytes());
+            keyInput = new String(privateKey.readAllBytes());
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read provided TLS certificate form data.", e);
         }
 
         List<X509Certificate> certificates;
@@ -231,23 +367,21 @@ public class CryptoResource {
         try {
             certificates = TLSUtils.readCertificateChainFromPEM(certificateInput);
             key = TLSUtils.readKeyFromPEM(keyInput);
-        }catch(Exception e) {
-            LOG.error("Could not build key/certificate from provided data.", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        } catch(Exception e) {
+            throw new TLSCertificateCreationException("Could not build key/certificate from provided data.", e);
         }
 
-        // We have a valid certificate and key from here on. Serialize to Base64 and store.
+        // We have a valid certificate and key from here on. Serialize to Base64.
         X509Certificate firstCert = certificates.get(0);
         String fingerprint;
 
         try {
             fingerprint = TLSUtils.calculateTLSCertificateFingerprint(firstCert);
         } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
-            LOG.error("Could not build certificate fingerprint.", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            throw new TLSCertificateCreationException("Could not build certificate fingerprint.", e);
         }
 
-        TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
+        return TLSKeyAndCertificate.create(
                 nodeId,
                 certificates,
                 key,
@@ -255,11 +389,49 @@ public class CryptoResource {
                 new DateTime(firstCert.getNotBefore()),
                 new DateTime(firstCert.getNotAfter())
         );
+    }
 
-        nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
-        nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
+    private TLSCertificatePrincipalResponse buildPrincipalResponse(Principal principal, Collection<List<?>> alternativeNames) {
+        List<String> an = Lists.newArrayList();
+        if (alternativeNames != null) {
+            for (List<?> alternativeName : alternativeNames) {
+                an.add((String) alternativeName.get(1));
+            }
+        }
 
-        return Response.ok(Response.Status.CREATED).build();
+        String cn;
+        Matcher cnMatcher = Pattern.compile("CN=(.+?)(,|$)").matcher(principal.toString());
+        if (cnMatcher.find()) {
+            cn = cnMatcher.group(1);
+        } else {
+            cn = null;
+        }
+
+        String o;
+        Matcher oMatcher = Pattern.compile("O=(.+?)(,|$)").matcher(principal.toString());
+        if (oMatcher.find()) {
+            o = oMatcher.group(1);
+        } else {
+            o = null;
+        }
+
+        String c;
+        Matcher cMatcher = Pattern.compile("C=(.+?)(,|$)").matcher(principal.toString());
+        if (cMatcher.find()) {
+            c = cMatcher.group(1);
+        } else {
+            c = null;
+        }
+
+        return TLSCertificatePrincipalResponse.create(an, cn, o, c);
+    }
+
+    private static final class TLSCertificateCreationException extends Exception {
+
+        public TLSCertificateCreationException(String msg, Throwable t) {
+            super(msg, t);
+        }
+
     }
 
 }

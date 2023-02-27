@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class TLSCertificateResponse {
 
@@ -16,15 +18,33 @@ public abstract class TLSCertificateResponse {
     @JsonProperty("fingerprint")
     public abstract String fingerprint();
 
-    @JsonProperty("expiration_date")
-    public abstract DateTime expirationDate();
+    @JsonProperty("signature_algorithm")
+    public abstract String signatureAlgorithm();
 
-    public static TLSCertificateResponse create(String nodeId, String nodeName, String fingerprint, DateTime expirationDate) {
+    @JsonProperty("issuer")
+    @Nullable
+    public abstract TLSCertificatePrincipalResponse issuer();
+
+    @JsonProperty("subject")
+    @Nullable
+    public abstract TLSCertificatePrincipalResponse subject();
+
+    @JsonProperty("valid_from")
+    public abstract DateTime validFrom();
+
+    @JsonProperty("expires_at")
+    public abstract DateTime expiresAt();
+
+    public static TLSCertificateResponse create(String nodeId, String nodeName, String fingerprint, String signatureAlgorithm, TLSCertificatePrincipalResponse issuer, TLSCertificatePrincipalResponse subject, DateTime validFrom, DateTime expiresAt) {
         return builder()
                 .nodeId(nodeId)
                 .nodeName(nodeName)
                 .fingerprint(fingerprint)
-                .expirationDate(expirationDate)
+                .signatureAlgorithm(signatureAlgorithm)
+                .issuer(issuer)
+                .subject(subject)
+                .validFrom(validFrom)
+                .expiresAt(expiresAt)
                 .build();
     }
 
@@ -40,7 +60,15 @@ public abstract class TLSCertificateResponse {
 
         public abstract Builder fingerprint(String fingerprint);
 
-        public abstract Builder expirationDate(DateTime expirationDate);
+        public abstract Builder signatureAlgorithm(String signatureAlgorithm);
+
+        public abstract Builder issuer(TLSCertificatePrincipalResponse issuer);
+
+        public abstract Builder subject(TLSCertificatePrincipalResponse subject);
+
+        public abstract Builder validFrom(DateTime validFrom);
+
+        public abstract Builder expiresAt(DateTime expiresAt);
 
         public abstract TLSCertificateResponse build();
     }

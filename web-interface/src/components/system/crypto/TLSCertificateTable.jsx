@@ -29,7 +29,7 @@ function TLSCertificateTable(props) {
               <tr key={'tlscert-' + i}>
                 <td>{certificates[i].node_name}</td>
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
-                <td>{moment(certificates[i].expiration_date).format()}</td>
+                <td>{moment(certificates[i].expires_at).format()}</td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(certificates[i].node_id)}>Manage</a>
                 </td>
