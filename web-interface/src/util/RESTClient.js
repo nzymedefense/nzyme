@@ -73,6 +73,29 @@ const RESTClient = {
       })
   },
 
+  postMultipart (uri, formData, standardErrorHandling, successCallback, errorCallback = undefined) {
+    const headers = this.getAuthHeaders();
+    headers["Content-Type"] = "multipart/form-data";
+
+    axios.post(this.buildUri(uri), formData, { headers: headers })
+        .then(function (response) {
+          successCallback(response)
+        })
+        .catch(function (error) {
+          if (errorCallback) {
+            errorCallback(error)
+          }
+
+          if (standardErrorHandling) {
+            if (error.response) {
+              notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+            } else {
+              notify.show('REST call failed. No response. Is nzyme running?', 'error')
+            }
+          }
+        })
+  },
+
   put (uri, data, successCallback, errorCallback = undefined) {
     axios.put(this.buildUri(uri), data, { headers: this.getAuthHeaders() })
       .then(function (response) {

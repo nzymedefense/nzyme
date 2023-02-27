@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
 import ClusterService from "../../../services/ClusterService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
@@ -6,6 +6,9 @@ import Routes from "../../../util/ApiRoutes";
 import CryptoService from "../../../services/CryptoService";
 import moment from "moment";
 import {notify} from "react-notify-toast";
+import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrophicFailure";
+import TLSCertificateTestFailure from "./TLSCertificateTestFailure";
+import TLSCertificateTestInProgress from "./TLSCertificateTestInProgress";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
@@ -16,6 +19,14 @@ function TLSCertificateDetailsPage(props) {
 
   const [node, setNode] = useState(null)
   const [certificate, setCertificate] = useState(null)
+
+  const [individualCertTestInProgress, setIndividualCertTestInProgress] = useState(false)
+  const [individualCertTestSuccessResult, setIndividualCertTestSuccessResult] = useState(null)
+  const [individualCertTestFailureResult, setIndividualCertTestFailureResult] = useState(null)
+  const [individualCertTestCatastrophicFailure, setIndividualCertTestCatastrophicFailure] = useState(null)
+
+  const fileIndividualCert = useRef(null);
+  const fileIndividualKey = useRef(null);
 
   useEffect(() => {
     clusterService.findNode(nodeUUID, setNode)
@@ -32,6 +43,35 @@ function TLSCertificateDetailsPage(props) {
     cryptoService.regenerateSelfSignedTLSCertificate(nodeUUID, function() {
       notify.show('TLS certificate re-generated.', 'success')
     });
+  }
+
+  const individualCertificateFormComplete = function() {
+    return fileIndividualCert.current && fileIndividualCert.current.files && fileIndividualCert.current.files[0]
+      && fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0];
+  }
+
+  const testIndividualCertificate = function() {
+    setIndividualCertTestInProgress(true);
+    const formData = new FormData();
+    formData.append("certificate", fileIndividualCert.current.files[0]);
+    formData.append("private_key", fileIndividualKey.current.files[0]);
+
+    setIndividualCertTestSuccessResult(null);
+    setIndividualCertTestFailureResult(null);
+    setIndividualCertTestCatastrophicFailure(null);
+
+    cryptoService.testTLSCertificate(nodeUUID, formData, function (response){
+      // Test succeeded
+      setIndividualCertTestInProgress(false);
+      setIndividualCertTestSuccessResult(response.data);
+    }, function (response) {
+      setIndividualCertTestInProgress(false);
+      if (response.status === 401) {
+        setIndividualCertTestFailureResult(response.data);
+      } else {
+        setIndividualCertTestCatastrophicFailure(true);
+      }
+    })
   }
 
   if (!node || !certificate) {
@@ -134,7 +174,7 @@ function TLSCertificateDetailsPage(props) {
                   <p>
                     The certificate must be in PEM format and will typically include a whole certificate chain.
                     Certificate authorities will usually offer this file for download. If the file includes multiple
-                    blocks of Base64 plaintext, surrounded by <code>-----BEGIN CERTIFICATE-----</code>, you have
+                    blocks of Base64 plaintext, surrounded by <code>-----BEGIN CERTIFICATE-----</code>, you likely have
                     the correct file.
                   </p>
 
@@ -143,24 +183,30 @@ function TLSCertificateDetailsPage(props) {
                     Base64 plaintext, surrounded by <code>-----BEGIN RSA PRIVATE KEY-----</code> or
                     <code>-----BEGIN EC PRIVATE KEY-----</code>.
                   </p>
+                  
+                  <div className="mb-3">
+                    <label htmlFor="fu-certificate" className="form-label">
+                      Certificate PEM File
+                    </label>
+                    <input className="form-control form-control-sm" name="certificate" id="fu-certificate"
+                           ref={fileIndividualCert} type="file" />
+                  </div>
 
-                  <form>
-                    <div className="mb-3">
-                      <label htmlFor="fu-certificate" className="form-label">
-                        Certificate PEM File
-                      </label>
-                      <input className="form-control form-control-sm" name="certificate" id="fu-certificate" type="file" />
-                    </div>
+                  <div className="mb-3">
+                    <label htmlFor="fu-key" className="form-label">Private Key File</label>
+                    <input className="form-control form-control-sm" name="private_key" id="fu-key"
+                           ref={fileIndividualKey} type="file" />
+                  </div>
 
-                    <div className="mb-3">
-                      <label htmlFor="fu-key" className="form-label">Private Key File</label>
-                      <input className="form-control form-control-sm" name="private_key" id="fu-key" type="file" />
-                    </div>
+                  <button className="btn btn-sm btn-primary" disabled={!individualCertificateFormComplete()}
+                          onClick={testIndividualCertificate}>
+                    Test Individual Certificate
+                  </button>
 
-                    <button className="btn btn-sm btn-secondary">
-                      Test Individual Certificate
-                    </button>
-                  </form>
+                  <TLSCertificateTestInProgress show={individualCertTestInProgress} />
+                  <TLSCertificateTestCatastrophicFailure show={individualCertTestCatastrophicFailure} />
+                  <TLSCertificateTestFailure result={individualCertTestFailureResult} />
+
                 </div>
               </div>
             </div>

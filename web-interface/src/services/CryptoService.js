@@ -19,6 +19,15 @@ class CryptoService {
     RESTClient.put('/system/crypto/tls/node/' + nodeId + '/regenerate', {}, successCallback);
   }
 
+  testTLSCertificate(nodeId, formData, successCallback, errorCallback) {
+    RESTClient.postMultipart("/system/crypto/tls/node/" + nodeId + "/test", formData, false,
+        function(response) {
+      successCallback(response)
+        }, function(error) {
+      errorCallback(error.response);
+    });
+  }
+
 }
 
 export default CryptoService

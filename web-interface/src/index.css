@@ -465,3 +465,21 @@ button.btn-text:hover {
     background-color: transparent;
     color: #144FD7;
 }
+
+dl.tls-cert-failures {
+    margin-bottom: 0;
+}
+
+dl.tls-cert-failures dt {
+    float: left;
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+    text-transform: none;
+}
+
+dl.tls-cert-failures dd {
+    padding: 0;
+    margin: 0 0 0 70px;
+
+}
