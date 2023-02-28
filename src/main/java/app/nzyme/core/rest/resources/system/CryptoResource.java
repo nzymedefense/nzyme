@@ -344,8 +344,8 @@ public class CryptoResource {
         TLSKeyAndCertificate tls;
 
         try {
-            tls = readTLSKeyAndCertificateFromInputStreams(nodeId, TLSSourceType.INDIVIDUAL, certificate, privateKey);
-        } catch (TLSCertificateCreationException e) {
+            tls = TLSUtils.readTLSKeyAndCertificateFromInputStreams(nodeId, TLSSourceType.INDIVIDUAL, certificate, privateKey);
+        } catch (TLSUtils.TLSCertificateCreationException e) {
             LOG.error("Could not create TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -354,48 +354,6 @@ public class CryptoResource {
         nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
 
         return Response.ok(Response.Status.CREATED).build();
-    }
-
-    private TLSKeyAndCertificate readTLSKeyAndCertificateFromInputStreams(UUID nodeId,
-                                                                          TLSSourceType sourceType,
-                                                                          InputStream certificate,
-                                                                          InputStream privateKey) throws TLSCertificateCreationException {
-        String certificateInput, keyInput;
-        try {
-            certificateInput = new String(certificate.readAllBytes());
-            keyInput = new String(privateKey.readAllBytes());
-        } catch (Exception e) {
-            throw new RuntimeException("Could not read provided TLS certificate form data.", e);
-        }
-
-        List<X509Certificate> certificates;
-        PrivateKey key;
-        try {
-            certificates = TLSUtils.readCertificateChainFromPEM(certificateInput);
-            key = TLSUtils.readKeyFromPEM(keyInput);
-        } catch(Exception e) {
-            throw new TLSCertificateCreationException("Could not build key/certificate from provided data.", e);
-        }
-
-        // We have a valid certificate and key from here on. Serialize to Base64.
-        X509Certificate firstCert = certificates.get(0);
-        String fingerprint;
-
-        try {
-            fingerprint = TLSUtils.calculateTLSCertificateFingerprint(firstCert);
-        } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
-            throw new TLSCertificateCreationException("Could not build certificate fingerprint.", e);
-        }
-
-        return TLSKeyAndCertificate.create(
-                nodeId,
-                sourceType,
-                certificates,
-                key,
-                fingerprint,
-                new DateTime(firstCert.getNotBefore()),
-                new DateTime(firstCert.getNotAfter())
-        );
     }
 
     private TLSCertificatePrincipalResponse buildPrincipalResponse(Principal principal, Collection<List<?>> alternativeNames) {
@@ -431,14 +389,6 @@ public class CryptoResource {
         }
 
         return TLSCertificatePrincipalResponse.create(an, cn, o, c);
-    }
-
-    private static final class TLSCertificateCreationException extends Exception {
-
-        public TLSCertificateCreationException(String msg, Throwable t) {
-            super(msg, t);
-        }
-
     }
 
 }

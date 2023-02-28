@@ -830,9 +830,8 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
         try {
-            char[] password = "".toCharArray();
             final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
-            sslContextConfigurator.setKeyStorePass(password);
+            sslContextConfigurator.setKeyStorePass("".toCharArray());
             sslContextConfigurator.setKeyStoreBytes(crypto.getTLSKeyStoreBytes());
             final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
             SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);

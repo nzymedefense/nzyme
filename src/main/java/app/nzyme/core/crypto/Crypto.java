@@ -81,8 +81,11 @@ public class Crypto {
 
     public static final String DEFAULT_TLS_SUBJECT_DN = "CN=nzyme";
 
-    public static final String PGP_PRIVATE_KEY_NAME = "pgp_private.pgp";
-    public static final String PGP_PUBLIC_KEY_NAME = "pgp_public.pgp";
+    public static final String PGP_PRIVATE_KEY_FILE_NAME = "pgp_private.pgp";
+    public static final String PGP_PUBLIC_KEY_FILE_NAME = "pgp_public.pgp";
+
+    public static final String TLS_CERTIFICATE_FILE_NAME = "tls.cert";
+    public static final String TLS_KEY_FILE_NAME = "tls.key";
 
     private final File cryptoDirectoryConfig;
     private final Database database;
@@ -127,8 +130,8 @@ public class Crypto {
             }
         }
 
-        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
-        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
+        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
+        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
         if (!privateKeyLocation.exists() || !publicKeyLocation.exists()) {
             LOG.warn("PGP private or public key missing. Re-generating pair. This will make existing encrypted registry " +
@@ -305,7 +308,7 @@ public class Crypto {
     public byte[] encrypt(byte[] value) throws CryptoOperationException {
         try(ByteArrayOutputStream out = new ByteArrayOutputStream(); ByteArrayOutputStream literalData = new ByteArrayOutputStream();){
             Timer.Context timer = encryptionTimer.time();
-            File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_NAME).toFile();
+            File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
             PGPPublicKey publicKey = readPublicKey(publicKeyLocation);
 
             // Write header and literal data.
@@ -336,7 +339,7 @@ public class Crypto {
     }
 
     public byte[] decrypt(byte[] value) throws CryptoOperationException {
-        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_NAME).toFile();
+        File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
 
         try(InputStream dataIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(value)); InputStream keyIn = new FileInputStream(privateKeyLocation)) {
             Timer.Context timer = decryptionTimer.time();
@@ -479,22 +482,59 @@ public class Crypto {
 
     public KeyStore getTLSKeyStore() {
         try {
-            Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
+            Optional<TLSKeyAndCertificate> diskCert = loadTLSCertificateFromDisk();
 
-            if (tlsData.isEmpty()) {
-                throw new RuntimeException("No TLS certificate data of this node found.");
+            TLSKeyAndCertificate tls;
+            if (diskCert.isPresent()) {
+                Optional<TLSKeyAndCertificate> existingCert = findTLSKeyAndCertificateOfNode(nodeId);
+
+                LOG.info("Installing TLS certificate from disk");
+                tls = diskCert.get();
+
+                if (existingCert.isPresent()) {
+                    updateTLSCertificateOfNode(nodeId, tls);
+                } else {
+                    setTLSKeyAndCertificateOfNode(nodeId, tls);
+                }
+            } else {
+                LOG.info("Reading individual TLS certificate from database.");
+
+                Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
+                if (tlsData.isEmpty()) {
+                    throw new RuntimeException("No TLS certificate data of this node found in database.");
+                } else {
+                    tls = tlsData.get();
+                }
             }
 
             List<Certificate> certChain = Lists.newArrayList();
-            certChain.addAll(tlsData.get().certificates());
+            certChain.addAll(tls.certificates());
 
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             keyStore.load(null, null);
-            keyStore.setKeyEntry("key", tlsData.get().key(), "".toCharArray(), certChain.toArray(new Certificate[certChain.size()]));
+            keyStore.setKeyEntry("key", tls.key(), "".toCharArray(), certChain.toArray(new Certificate[certChain.size()]));
 
             return keyStore;
         } catch(Exception e) {
             throw new RuntimeException("Could not build TLS key store.", e);
+        }
+    }
+
+    private Optional<TLSKeyAndCertificate> loadTLSCertificateFromDisk() {
+        File certFile = Paths.get(cryptoDirectoryConfig.toString(), TLS_CERTIFICATE_FILE_NAME).toFile();
+        File keyFile = Paths.get(cryptoDirectoryConfig.toString(), TLS_KEY_FILE_NAME).toFile();
+
+        if (certFile.exists() && keyFile.exists()) {
+            try (FileInputStream certFileS = new FileInputStream(certFile);
+                 FileInputStream keyFileS = new FileInputStream(keyFile)) {
+                return Optional.of(
+                        TLSUtils.readTLSKeyAndCertificateFromInputStreams(nodeId, TLSSourceType.FILE_LOADED, certFileS, keyFileS)
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Could not read TLS certificate from disk.", e);
+            }
+        } else {
+            return Optional.empty();
         }
     }
 

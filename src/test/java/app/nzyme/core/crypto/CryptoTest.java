@@ -55,8 +55,8 @@ public class CryptoTest {
     public void testInitialize() throws Crypto.CryptoInitializationException, IOException {
         NzymeNode mockNzyme = new MockNzyme();
 
-        File privateFile = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME).toFile();
-        File publicFile = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME).toFile();
+        File privateFile = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME).toFile();
+        File publicFile = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
         new Crypto(mockNzyme).initialize();
 
@@ -72,8 +72,8 @@ public class CryptoTest {
     public void testInitializeDoesNotRegenerateKeysOnEachInit() throws Crypto.CryptoInitializationException, IOException {
         NzymeNode mockNzyme = new MockNzyme();
 
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
-        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME);
 
         new Crypto(mockNzyme).initialize();
         byte[] secret1 = Files.readAllBytes(privatePath);
@@ -96,8 +96,8 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfSecretMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeNode mockNzyme = new MockNzyme();
 
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
-        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME);
 
         new Crypto(mockNzyme).initialize();
         byte[] secret1 = Files.readAllBytes(privatePath);
@@ -122,8 +122,8 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfPublicMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeNode mockNzyme = new MockNzyme();
 
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
-        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME);
 
         new Crypto(mockNzyme).initialize();
         byte[] secret1 = Files.readAllBytes(privatePath);
@@ -148,8 +148,8 @@ public class CryptoTest {
     public void testInitializeRegeneratesKeysIfPublicAndSecretMissing() throws Crypto.CryptoInitializationException, IOException {
         NzymeNode mockNzyme = new MockNzyme();
 
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
-        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
+        Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME);
 
         new Crypto(mockNzyme).initialize();
         byte[] secret1 = Files.readAllBytes(privatePath);
@@ -187,7 +187,7 @@ public class CryptoTest {
 
     @Test(expectedExceptions = { Crypto.CryptoOperationException.class }, expectedExceptionsMessageRegExp = "Cannot decrypt value.")
     public void testEncryptionDecryptionFailsWithWrongKey() throws Crypto.CryptoInitializationException, Crypto.CryptoOperationException {
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
 
         NzymeNode mockNzyme = new MockNzyme();
         Crypto crypto = new Crypto(mockNzyme);

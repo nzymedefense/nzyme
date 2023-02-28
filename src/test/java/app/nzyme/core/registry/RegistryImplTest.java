@@ -59,7 +59,7 @@ public class RegistryImplTest {
     @Test(expectedExceptions = {RegistryCryptoException.class},
             expectedExceptionsMessageRegExp = "Could not decrypt registry value for key \\[foo\\]")
     public void testValueEncryptedFailsAfterKeyChange() throws RegistryCryptoException, Crypto.CryptoInitializationException {
-        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_NAME);
+        Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
 
         NzymeNode nzyme = new MockNzyme();
         nzyme.initialize();
