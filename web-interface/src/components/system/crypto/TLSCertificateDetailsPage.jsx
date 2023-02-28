@@ -9,6 +9,7 @@ import {notify} from "react-notify-toast";
 import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrophicFailure";
 import TLSCertificateTestFailure from "./TLSCertificateTestFailure";
 import TLSCertificateTestInProgress from "./TLSCertificateTestInProgress";
+import TLSCertificateTestSuccess from "./TLSCertificateTestSuccess";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
@@ -45,9 +46,10 @@ function TLSCertificateDetailsPage(props) {
     });
   }
 
-  const individualCertificateFormComplete = function() {
+  const individualCertificateButtonActive = function() {
     return fileIndividualCert.current && fileIndividualCert.current.files && fileIndividualCert.current.files[0]
-      && fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0];
+      && fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0]
+      && !individualCertTestSuccessResult;
   }
 
   const testIndividualCertificate = function() {
@@ -167,7 +169,7 @@ function TLSCertificateDetailsPage(props) {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>Upload Certificate</h3>
+                  <h3>Install Individual Certificate</h3>
 
                   <p>Use this form to upload an individual TLS certificate for this nzyme node.</p>
 
@@ -180,8 +182,10 @@ function TLSCertificateDetailsPage(props) {
 
                   <p>
                     The private key file will often have a <code>.key</code> name ending and should contain a block of
-                    Base64 plaintext, surrounded by <code>-----BEGIN RSA PRIVATE KEY-----</code> or
-                    <code>-----BEGIN EC PRIVATE KEY-----</code>.
+                    Base64 plaintext, surrounded by <code>-----BEGIN PRIVATE KEY-----</code> or
+                    <code>-----BEGIN RSA PRIVATE KEY-----</code>. Important: The private key file must be
+                    in <code>PKCS8</code> format. There is a chance that your certificate authority provided you with
+                    a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it.
                   </p>
                   
                   <div className="mb-3">
@@ -189,16 +193,16 @@ function TLSCertificateDetailsPage(props) {
                       Certificate PEM File
                     </label>
                     <input className="form-control form-control-sm" name="certificate" id="fu-certificate"
-                           ref={fileIndividualCert} type="file" />
+                           ref={fileIndividualCert} type="file" disabled={individualCertTestSuccessResult !== null} />
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="fu-key" className="form-label">Private Key File</label>
                     <input className="form-control form-control-sm" name="private_key" id="fu-key"
-                           ref={fileIndividualKey} type="file" />
+                           ref={fileIndividualKey} type="file" disabled={individualCertTestSuccessResult !== null} />
                   </div>
 
-                  <button className="btn btn-sm btn-primary" disabled={!individualCertificateFormComplete()}
+                  <button className="btn btn-sm btn-primary" disabled={!individualCertificateButtonActive()}
                           onClick={testIndividualCertificate}>
                     Test Individual Certificate
                   </button>
@@ -206,6 +210,7 @@ function TLSCertificateDetailsPage(props) {
                   <TLSCertificateTestInProgress show={individualCertTestInProgress} />
                   <TLSCertificateTestCatastrophicFailure show={individualCertTestCatastrophicFailure} />
                   <TLSCertificateTestFailure result={individualCertTestFailureResult} />
+                  <TLSCertificateTestSuccess result={individualCertTestSuccessResult} />
 
                 </div>
               </div>

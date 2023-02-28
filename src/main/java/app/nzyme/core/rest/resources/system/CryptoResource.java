@@ -293,7 +293,7 @@ public class CryptoResource {
             } catch (NoSuchAlgorithmException | CertificateEncodingException | CertificateParsingException e) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
-
+            
             TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
                     nodeId,
                     certificates,

@@ -5,6 +5,13 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.crypto.encodings.PKCS1Encoding;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
@@ -76,8 +83,15 @@ public class TLSUtils {
         );
 
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-            return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(bytes));
+            try {
+                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+            } catch (InvalidKeySpecException ignore) {
+                try {
+                    return KeyFactory.getInstance("ECDSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+                } catch (InvalidKeySpecException e) {
+                    throw new PEMParserException("Could not construct private key. Must be RSA or ECDSA.", e);
+                }
+            }
         } catch(Exception e) {
             throw new PEMParserException("Could not construct private key.", e);
         }

@@ -481,5 +481,18 @@ dl.tls-cert-failures dt {
 dl.tls-cert-failures dd {
     padding: 0;
     margin: 0 0 0 70px;
+}
 
+dl dl {
+    margin-top: 9px;
+    margin-left: 9px;
+    margin-bottom: 0;
+}
+
+div.tls-cert-success dt {
+    text-transform: none;
+}
+
+button.tls-cert-install {
+    width: 100%;
 }
