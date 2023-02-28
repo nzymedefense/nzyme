@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSSourceType;
 import app.nzyme.core.crypto.tls.TLSUtils;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
@@ -160,6 +161,7 @@ public class CryptoResource {
                         nodeName,
                         TLSCertificateResponse.create(
                                 cert.nodeId().toString(),
+                                cert.sourceType().toString(),
                                 nodeName,
                                 cert.signature(),
                                 firstCert.getSigAlgName(),
@@ -209,6 +211,7 @@ public class CryptoResource {
 
         return Response.ok(TLSCertificateResponse.create(
                 cert.nodeId().toString(),
+                cert.sourceType().toString(),
                 node.get().name(),
                 cert.signature(),
                 firstCert.getSigAlgName(),
@@ -293,9 +296,10 @@ public class CryptoResource {
             } catch (NoSuchAlgorithmException | CertificateEncodingException | CertificateParsingException e) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
-            
+
             TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
                     nodeId,
+                    TLSSourceType.TEST,
                     certificates,
                     key,
                     fingerprint,
@@ -308,6 +312,7 @@ public class CryptoResource {
                     true,
                     TLSCertificateResponse.create(
                             nodeId.toString(),
+                            tls.sourceType().toString(),
                             node.get().name(),
                             tls.signature(),
                             firstCert.getSigAlgName(),
@@ -339,7 +344,7 @@ public class CryptoResource {
         TLSKeyAndCertificate tls;
 
         try {
-            tls = readTLSKeyAndCertificateFromInputStreams(nodeId, certificate, privateKey);
+            tls = readTLSKeyAndCertificateFromInputStreams(nodeId, TLSSourceType.INDIVIDUAL, certificate, privateKey);
         } catch (TLSCertificateCreationException e) {
             LOG.error("Could not create TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -352,6 +357,7 @@ public class CryptoResource {
     }
 
     private TLSKeyAndCertificate readTLSKeyAndCertificateFromInputStreams(UUID nodeId,
+                                                                          TLSSourceType sourceType,
                                                                           InputStream certificate,
                                                                           InputStream privateKey) throws TLSCertificateCreationException {
         String certificateInput, keyInput;
@@ -383,6 +389,7 @@ public class CryptoResource {
 
         return TLSKeyAndCertificate.create(
                 nodeId,
+                sourceType,
                 certificates,
                 key,
                 fingerprint,

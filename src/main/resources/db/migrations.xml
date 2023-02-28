@@ -1485,4 +1485,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_source_type_to_tls_certs" author="lennartkoopmann">
+        <addColumn tableName="crypto_tls_certificates">
+            <column name="source_type" type="varchar(50)" defaultValue="TEST">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

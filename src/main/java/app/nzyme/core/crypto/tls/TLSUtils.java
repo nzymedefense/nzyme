@@ -73,7 +73,7 @@ public class TLSUtils {
         final Matcher m = KEY_BASE64_BLOCK.matcher(pem);
 
         if (!m.find()) {
-            throw new PEMParserException("No key found in file.");
+            throw new PEMParserException("No key found in data.");
         }
 
         byte[] bytes = BaseEncoding.base64().decode(
@@ -81,6 +81,24 @@ public class TLSUtils {
                         .breakingWhitespace()
                         .removeFrom(m.group(1))
         );
+
+        try {
+            try {
+                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+            } catch (InvalidKeySpecException ignore) {
+                try {
+                    return KeyFactory.getInstance("ECDSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+                } catch (InvalidKeySpecException e) {
+                    throw new PEMParserException("Could not construct private key. Must be RSA or ECDSA.", e);
+                }
+            }
+        } catch(Exception e) {
+            throw new PEMParserException("Could not construct private key.", e);
+        }
+    }
+
+    public static PrivateKey deserializeKey(String base64) throws PEMParserException {
+        byte[] bytes = BaseEncoding.base64().decode(base64);
 
         try {
             try {

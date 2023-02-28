@@ -12,6 +12,9 @@ public abstract class TLSCertificateResponse {
     @JsonProperty("node_id")
     public abstract String nodeId();
 
+    @JsonProperty("sourcetype")
+    public abstract String sourceType();
+
     @JsonProperty("node_name")
     public abstract String nodeName();
 
@@ -35,9 +38,10 @@ public abstract class TLSCertificateResponse {
     @JsonProperty("expires_at")
     public abstract DateTime expiresAt();
 
-    public static TLSCertificateResponse create(String nodeId, String nodeName, String fingerprint, String signatureAlgorithm, TLSCertificatePrincipalResponse issuer, TLSCertificatePrincipalResponse subject, DateTime validFrom, DateTime expiresAt) {
+    public static TLSCertificateResponse create(String nodeId, String sourceType, String nodeName, String fingerprint, String signatureAlgorithm, TLSCertificatePrincipalResponse issuer, TLSCertificatePrincipalResponse subject, DateTime validFrom, DateTime expiresAt) {
         return builder()
                 .nodeId(nodeId)
+                .sourceType(sourceType)
                 .nodeName(nodeName)
                 .fingerprint(fingerprint)
                 .signatureAlgorithm(signatureAlgorithm)
@@ -55,6 +59,8 @@ public abstract class TLSCertificateResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder nodeId(String nodeId);
+
+        public abstract Builder sourceType(String sourceType);
 
         public abstract Builder nodeName(String nodeName);
 

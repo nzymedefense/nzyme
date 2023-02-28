@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import ClusterService from "../../../services/ClusterService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Routes from "../../../util/ApiRoutes";
@@ -10,6 +10,7 @@ import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrop
 import TLSCertificateTestFailure from "./TLSCertificateTestFailure";
 import TLSCertificateTestInProgress from "./TLSCertificateTestInProgress";
 import TLSCertificateTestSuccess from "./TLSCertificateTestSuccess";
+import TLSCertificateDetails from "./TLSCertificateDetails";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
@@ -25,6 +26,8 @@ function TLSCertificateDetailsPage(props) {
   const [individualCertTestSuccessResult, setIndividualCertTestSuccessResult] = useState(null)
   const [individualCertTestFailureResult, setIndividualCertTestFailureResult] = useState(null)
   const [individualCertTestCatastrophicFailure, setIndividualCertTestCatastrophicFailure] = useState(null)
+  const [individualCertInstallationInProgress, setIndividualCertInstallationInProgress] = useState(false)
+  const [individualCertInstallationSuccess, setIndividualCertInstallationSuccess] = useState(false)
 
   const fileIndividualCert = useRef(null);
   const fileIndividualKey = useRef(null);
@@ -52,11 +55,17 @@ function TLSCertificateDetailsPage(props) {
       && !individualCertTestSuccessResult;
   }
 
-  const testIndividualCertificate = function() {
-    setIndividualCertTestInProgress(true);
+  const getIndividualCertificateFormData = function() {
     const formData = new FormData();
     formData.append("certificate", fileIndividualCert.current.files[0]);
     formData.append("private_key", fileIndividualKey.current.files[0]);
+
+    return formData;
+  }
+
+  const testIndividualCertificate = function() {
+    setIndividualCertTestInProgress(true);
+    const formData = getIndividualCertificateFormData();
 
     setIndividualCertTestSuccessResult(null);
     setIndividualCertTestFailureResult(null);
@@ -76,8 +85,29 @@ function TLSCertificateDetailsPage(props) {
     })
   }
 
+  const installIndividualCertificate = function() {
+    if (!confirm("Really install individual TLS certificate for this node? This will replace the existing " +
+        "certificate. Note that the nzyme HTTP server on this node will restart and you will likely experience a brief " +
+        "loss of connection.")) {
+      return;
+    }
+
+    setIndividualCertInstallationInProgress(true);
+    const formData = getIndividualCertificateFormData();
+
+    cryptoService.installIndividualTLSCertificate(nodeUUID, formData, function() {
+      notify.show('TLS certificate installed.', 'success');
+      setIndividualCertInstallationSuccess(true);
+      setIndividualCertInstallationInProgress(false);
+    })
+  }
+
   if (!node || !certificate) {
     return <LoadingSpinner />
+  }
+
+  if (individualCertInstallationSuccess) {
+    return <Navigate to={Routes.SYSTEM.CRYPTO.INDEX} />
   }
 
   return (
@@ -109,18 +139,7 @@ function TLSCertificateDetailsPage(props) {
                 <div className="card-body">
                   <h3>Certificate Information</h3>
 
-                  <dl>
-                    <dt>Expiration Date</dt>
-                    <dd>
-                      {moment(certificate.expires_at).format()} ({moment(certificate.expires_at).fromNow()})
-                    </dd>
-                    <dt>Fingerprint</dt>
-                    <dd>
-                      {certificate.fingerprint.toUpperCase()}
-                    </dd>
-                    <dt>Source/Type</dt>
-                    <dd>Generated/Self-Signed</dd>
-                  </dl>
+                  <TLSCertificateDetails cert={certificate} />
 
                   <hr />
 
@@ -185,7 +204,8 @@ function TLSCertificateDetailsPage(props) {
                     Base64 plaintext, surrounded by <code>-----BEGIN PRIVATE KEY-----</code> or
                     <code>-----BEGIN RSA PRIVATE KEY-----</code>. Important: The private key file must be
                     in <code>PKCS8</code> format. There is a chance that your certificate authority provided you with
-                    a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it.
+                    a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it. If it does not look
+                    like described above, even if similar, it's probably not <code>PKCS8</code>.
                   </p>
                   
                   <div className="mb-3">
@@ -210,7 +230,7 @@ function TLSCertificateDetailsPage(props) {
                   <TLSCertificateTestInProgress show={individualCertTestInProgress} />
                   <TLSCertificateTestCatastrophicFailure show={individualCertTestCatastrophicFailure} />
                   <TLSCertificateTestFailure result={individualCertTestFailureResult} />
-                  <TLSCertificateTestSuccess result={individualCertTestSuccessResult} />
+                  <TLSCertificateTestSuccess result={individualCertTestSuccessResult} onClick={installIndividualCertificate} />
 
                 </div>
               </div>

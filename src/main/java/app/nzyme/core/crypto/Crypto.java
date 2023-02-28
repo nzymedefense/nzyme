@@ -2,6 +2,7 @@ package app.nzyme.core.crypto;
 
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
+import app.nzyme.core.crypto.tls.TLSSourceType;
 import app.nzyme.core.crypto.tls.TLSUtils;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
@@ -32,7 +33,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.Streams;
 import org.joda.time.DateTime;
 
-import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Paths;
@@ -40,7 +40,6 @@ import java.security.*;
 import java.security.cert.*;
 import java.security.cert.Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -291,6 +290,7 @@ public class Crypto {
 
             return TLSKeyAndCertificate.create(
                     nzyme.getNodeManager().getLocalNodeId(),
+                    TLSSourceType.GENERATED_SELF_SIGNED,
                     certificates,
                     keyPair.getPrivate(),
                     TLSUtils.calculateTLSCertificateFingerprint(certificate),
@@ -439,7 +439,7 @@ public class Crypto {
 
     public List<TLSKeyAndCertificate> getTLSCertificateByNode() {
         List<TLSKeyAndCertificateEntry> entries = database.withHandle(handle ->
-                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                handle.createQuery("SELECT node_id, certificate, source_type, key, valid_from, expires_at " +
                                 "FROM crypto_tls_certificates ORDER BY node_id DESC")
                         .mapTo(TLSKeyAndCertificateEntry.class)
                         .list()
@@ -449,7 +449,7 @@ public class Crypto {
         for (TLSKeyAndCertificateEntry entry : entries) {
             try {
                 result.add(tlsKeyAndCertificateEntryToObject(entry));
-            } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException | TLSUtils.PEMParserException e) {
                 LOG.error("Could not build TLS certificate from database. Skipping.", e);
             }
         }
@@ -459,7 +459,7 @@ public class Crypto {
 
     public Optional<TLSKeyAndCertificate> getTLSCertificateOfNode(UUID nodeId) {
         Optional<TLSKeyAndCertificateEntry> entry = database.withHandle(handle ->
-                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                handle.createQuery("SELECT node_id, certificate, source_type, key, valid_from, expires_at " +
                                 "FROM crypto_tls_certificates WHERE node_id = :node_id")
                         .bind("node_id", nodeId)
                         .mapTo(TLSKeyAndCertificateEntry.class)
@@ -472,7 +472,7 @@ public class Crypto {
 
         try {
             return Optional.of(tlsKeyAndCertificateEntryToObject(entry.get()));
-        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException | TLSUtils.PEMParserException e) {
             throw new RuntimeException("Could not build TLS certificate from database.", e);
         }
     }
@@ -517,9 +517,11 @@ public class Crypto {
 
         nzyme.getDatabase().useHandle(handle ->
             handle.createUpdate("UPDATE crypto_tls_certificates SET certificate = :certificate, key = :key, " +
-                    "valid_from = :valid_from, expires_at = :expires_at WHERE node_id = :node_id")
+                            "source_type = :source_type, valid_from = :valid_from, expires_at = :expires_at " +
+                            "WHERE node_id = :node_id")
                     .bind("certificate", certificate)
                     .bind("key", key)
+                    .bind("source_type", tls.sourceType().name())
                     .bind("valid_from", tls.validFrom())
                     .bind("expires_at", tls.expiresAt())
                     .bind("node_id", nodeId)
@@ -567,7 +569,7 @@ public class Crypto {
 
     private Optional<TLSKeyAndCertificate> findTLSKeyAndCertificateOfNode(UUID nodeId) {
         Optional<TLSKeyAndCertificateEntry> entry = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT node_id, certificate, key, valid_from, expires_at " +
+                handle.createQuery("SELECT node_id, certificate, key, source_type, valid_from, expires_at " +
                                 "FROM crypto_tls_certificates WHERE node_id = :node_id")
                         .bind("node_id", nodeId)
                         .mapTo(TLSKeyAndCertificateEntry.class)
@@ -586,16 +588,15 @@ public class Crypto {
     }
 
     private TLSKeyAndCertificate tlsKeyAndCertificateEntryToObject(TLSKeyAndCertificateEntry entry)
-            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
         List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
         X509Certificate firstCertificate = certificates.get(0);
 
-        byte[] keyBytes = BaseEncoding.base64().decode(entry.key());
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PrivateKey key = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
+        PrivateKey key = TLSUtils.deserializeKey(entry.key());
 
         return TLSKeyAndCertificate.create(
                 entry.nodeId(),
+                entry.sourceType(),
                 certificates,
                 key,
                 TLSUtils.calculateTLSCertificateFingerprint(firstCertificate),
@@ -615,8 +616,9 @@ public class Crypto {
         }
 
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO crypto_tls_certificates(node_id, certificate, key, valid_from, " +
-                                "expires_at) VALUES(:node_id, :certificate, :key, :valid_from, :expires_at)")
+                handle.createUpdate("INSERT INTO crypto_tls_certificates(node_id, certificate, key, source_type, " +
+                                "valid_from, expires_at) VALUES(:node_id, :certificate, :key, :source_type, " +
+                                ":valid_from, :expires_at)")
                         .bind("node_id", nodeId)
                         .bind("certificate", certificate)
                         .bind("key", key)

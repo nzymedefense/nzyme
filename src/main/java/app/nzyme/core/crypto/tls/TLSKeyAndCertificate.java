@@ -12,15 +12,17 @@ import java.util.UUID;
 public abstract class TLSKeyAndCertificate {
 
     public abstract UUID nodeId();
+    public abstract TLSSourceType sourceType();
     public abstract List<X509Certificate> certificates();
     public abstract PrivateKey key();
     public abstract String signature();
     public abstract DateTime validFrom();
     public abstract DateTime expiresAt();
 
-    public static TLSKeyAndCertificate create(UUID nodeId, List<X509Certificate> certificates, PrivateKey key, String signature, DateTime validFrom, DateTime expiresAt) {
+    public static TLSKeyAndCertificate create(UUID nodeId, TLSSourceType sourceType, List<X509Certificate> certificates, PrivateKey key, String signature, DateTime validFrom, DateTime expiresAt) {
         return builder()
                 .nodeId(nodeId)
+                .sourceType(sourceType)
                 .certificates(certificates)
                 .key(key)
                 .signature(signature)
@@ -36,6 +38,8 @@ public abstract class TLSKeyAndCertificate {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder nodeId(UUID nodeId);
+
+        public abstract Builder sourceType(TLSSourceType sourceType);
 
         public abstract Builder certificates(List<X509Certificate> certificates);
 
