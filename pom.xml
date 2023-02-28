@@ -377,6 +377,7 @@
                 <filtering>true</filtering>
                 <excludes>
                     <exclude>**/*.p12</exclude>
+                    <exclude>**/*.woff2</exclude>
                 </excludes>
             </resource>
             <resource>
