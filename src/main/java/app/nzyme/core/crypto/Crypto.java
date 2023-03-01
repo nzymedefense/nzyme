@@ -662,6 +662,7 @@ public class Crypto {
                         .bind("node_id", nodeId)
                         .bind("certificate", certificate)
                         .bind("key", key)
+                        .bind("source_type", tls.sourceType().name())
                         .bind("valid_from", tls.validFrom())
                         .bind("expires_at", tls.expiresAt())
                         .execute()
