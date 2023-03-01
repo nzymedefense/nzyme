@@ -4,12 +4,6 @@ general: {
 
   admin_password_hash: 932f3c1b56257ce8539ac269d7aab42550dacf8818d075f0bdf1990562aae3ef
 
-  python {
-    path: "C:\\Users\\lenna\\AppData\\Local\\Programs\\Python\\Python310\\python.exe"
-    script_directory: "C:\\temp"
-    script_prefix: nzyme_
-  }
-
   alerting {
     clean_after_minutes: 15
     training_period_seconds: 300

@@ -20,7 +20,6 @@ package app.nzyme.core.configuration;
 public class ConfigurationKeys {
 
     public static final String GENERAL = "general";
-    public static final String PYTHON = "python";
     public static final String ALERTING = "alerting";
     public static final String INTERFACES = "interfaces";
     public static final String DOT11_MONITORS = "802_11_monitors";
@@ -52,9 +51,6 @@ public class ConfigurationKeys {
     public static final String DATABASE_PATH = "database_path";
     public static final String VERSIONCHECKS = "versionchecks";
     public static final String FETCH_OUIS = "fetch_ouis";
-    public static final String PYTHON_PATH = "path";
-    public static final String PYTHON_SCRIPT_DIR = "script_directory";
-    public static final String PYTHON_SCRIPT_PREFIX = "script_prefix";
     public static final String TRAINING_PERIOD_SECONDS = "training_period_seconds";
     public static final String REST_LISTEN_URI = "rest_listen_uri";
     public static final String HTTP_EXTERNAL_URI = "http_external_uri";

@@ -54,7 +54,6 @@ public class NodeConfigurationLoader {
     private final Config root;
     private final Config general;
     private final Config interfaces;
-    private final Config python;
     private final Config alerting;
 
     private final BaseDot11ConfigurationLoader baseDot11ConfigurationLoader;
@@ -70,7 +69,6 @@ public class NodeConfigurationLoader {
 
         try {
             this.general = root.getConfig(ConfigurationKeys.GENERAL);
-            this.python = general.getConfig(ConfigurationKeys.PYTHON);
             this.alerting = general.getConfig(ConfigurationKeys.ALERTING);
             this.interfaces = root.getConfig(ConfigurationKeys.INTERFACES);
         } catch(ConfigException e) {
@@ -89,9 +87,6 @@ public class NodeConfigurationLoader {
                 parseRole(),
                 parseAdminPasswordHash(),
                 parseDatabasePath(),
-                parsePythonExecutable(),
-                parsePythonScriptDirectory(),
-                parsePythonScriptPrefix(),
                 parseRestListenUri(),
                 parseHttpExternalUri(),
                 parsePluginDirectory(),
@@ -215,18 +210,6 @@ public class NodeConfigurationLoader {
 
     private String parseDatabasePath() {
         return general.getString(ConfigurationKeys.DATABASE_PATH);
-    }
-
-    private String parsePythonExecutable() {
-        return python.getString(ConfigurationKeys.PYTHON_PATH);
-    }
-
-    private String parsePythonScriptDirectory() {
-        return python.getString(ConfigurationKeys.PYTHON_SCRIPT_DIR);
-    }
-
-    private String parsePythonScriptPrefix() {
-        return python.getString(ConfigurationKeys.PYTHON_SCRIPT_PREFIX);
     }
 
     private boolean parseVersionchecksEnabled() {
@@ -394,9 +377,6 @@ public class NodeConfigurationLoader {
         ConfigurationValidator.expect(general, ConfigurationKeys.PLUGIN_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.CRYPTO_DIRECTORY, ConfigurationKeys.GENERAL, String.class);
         ConfigurationValidator.expect(general, ConfigurationKeys.NTP_SERVER, ConfigurationKeys.GENERAL, String.class);
-        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_PATH, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_DIR, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
-        ConfigurationValidator.expect(python, ConfigurationKeys.PYTHON_SCRIPT_PREFIX, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.PYTHON, String.class);
         ConfigurationValidator.expect(alerting, ConfigurationKeys.TRAINING_PERIOD_SECONDS, ConfigurationKeys.GENERAL + "." + ConfigurationKeys.ALERTING, Integer.class);
         ConfigurationValidator.expect(interfaces, ConfigurationKeys.REST_LISTEN_URI, ConfigurationKeys.INTERFACES, String.class);
         ConfigurationValidator.expect(interfaces, ConfigurationKeys.HTTP_EXTERNAL_URI, ConfigurationKeys.INTERFACES, String.class);
@@ -569,15 +549,6 @@ public class NodeConfigurationLoader {
         }
 
         // Logical validity.
-        // Python: executable is an executable file.
-        if(!Files.isExecutable(new File(parsePythonExecutable()).toPath())) {
-            throw new InvalidConfigurationException("Parameter [general.python." + ConfigurationKeys.PYTHON_PATH + "] does not point to an executable file: " + parsePythonExecutable());
-        }
-
-        // Python: script directory is a directory and writable.
-        if (!Files.isDirectory(new File(parsePythonScriptDirectory()).toPath()) || !Files.isWritable(new File(parsePythonScriptDirectory()).toPath())) {
-            throw new InvalidConfigurationException("Parameter [general.python." + ConfigurationKeys.PYTHON_SCRIPT_DIR + "] does not point to a writable directory: " + parsePythonScriptDirectory());
-        }
 
         // REST listen URI can be parsed into a URI and is TLS.
         try {

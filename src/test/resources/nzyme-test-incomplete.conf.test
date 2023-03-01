@@ -2,12 +2,6 @@ general: {
   role: NODE
   name: mocky-mock
 
-  python {
-    path: /usr/bin/python2.7
-    script_directory: /tmp
-    script_prefix: nzyme_
-  }
-
   alerting {
     clean_after_minutes: 15
     training_period_seconds: 300

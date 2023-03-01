@@ -25,10 +25,6 @@ public abstract class NodeConfiguration {
 
     public abstract String databasePath();
 
-    public abstract String pythonExecutable();
-    public abstract String pythonScriptDirectory();
-    public abstract String pythonScriptPrefix();
-
     public abstract URI restListenUri();
     public abstract URI httpExternalUri();
 
@@ -69,16 +65,13 @@ public abstract class NodeConfiguration {
         return ssids.build();
     }
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, String pythonExecutable, String pythonScriptDirectory, String pythonScriptPrefix, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, String ntpServer, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, Role role, String adminPasswordHash, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, String ntpServer, InetSocketAddress remoteInputAddress, ImmutableList<UplinkDefinition> uplinks, ImmutableList<Dot11MonitorDefinition> dot11Monitors, ImmutableList<Dot11NetworkDefinition> dot11Networks, ImmutableList<Dot11TrapDeviceDefinition> dot11TrapDevices, ImmutableList<Alert.TYPE_WIDE> dot11Alerts, int alertingTrainingPeriodSeconds, ImmutableList<AlertCallback> alertCallbacks, ImmutableList<ForwarderDefinition> forwarders, UplinkDeviceConfiguration groundstationDevice, ReportingConfiguration reporting, DeauthenticationMonitorConfiguration deauth) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
                 .role(role)
                 .adminPasswordHash(adminPasswordHash)
                 .databasePath(databasePath)
-                .pythonExecutable(pythonExecutable)
-                .pythonScriptDirectory(pythonScriptDirectory)
-                .pythonScriptPrefix(pythonScriptPrefix)
                 .restListenUri(restListenUri)
                 .httpExternalUri(httpExternalUri)
                 .pluginDirectory(pluginDirectory)
@@ -139,12 +132,6 @@ public abstract class NodeConfiguration {
         public abstract Builder adminPasswordHash(String adminPasswordHash);
 
         public abstract Builder databasePath(String databasePath);
-
-        public abstract Builder pythonExecutable(String pythonExecutable);
-
-        public abstract Builder pythonScriptDirectory(String pythonScriptDirectory);
-
-        public abstract Builder pythonScriptPrefix(String pythonScriptPrefix);
 
         public abstract Builder restListenUri(URI restListenUri);
 
