@@ -78,22 +78,22 @@ const RESTClient = {
     headers["Content-Type"] = "multipart/form-data";
 
     axios.post(this.buildUri(uri), formData, { headers: headers })
-        .then(function (response) {
-          successCallback(response)
-        })
-        .catch(function (error) {
-          if (errorCallback) {
-            errorCallback(error)
-          }
+      .then(function (response) {
+        successCallback(response)
+      })
+      .catch(function (error) {
+        if (errorCallback) {
+          errorCallback(error)
+        }
 
-          if (standardErrorHandling) {
-            if (error.response) {
-              notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
-            } else {
-              notify.show('REST call failed. No response. Is nzyme running?', 'error')
-            }
+        if (standardErrorHandling) {
+          if (error.response) {
+            notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
+          } else {
+            notify.show('REST call failed. No response. Is nzyme running?', 'error')
           }
-        })
+        }
+      })
   },
 
   put (uri, data, successCallback, errorCallback = undefined) {

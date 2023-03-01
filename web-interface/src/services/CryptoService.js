@@ -25,11 +25,11 @@ class CryptoService {
 
   testTLSCertificate(nodeId, formData, successCallback, errorCallback) {
     RESTClient.postMultipart("/system/crypto/tls/node/" + nodeId + "/test", formData, false,
-        function(response) {
-      successCallback(response)
-        }, function(error) {
-      errorCallback(error.response);
-    });
+      function(response) {
+        successCallback(response)
+      }, function(error) {
+        errorCallback(error.response);
+      });
   }
 
 }

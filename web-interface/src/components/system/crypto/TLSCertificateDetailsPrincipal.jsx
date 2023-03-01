@@ -8,8 +8,9 @@ function TLSCertificateDetailsPrincipal(props) {
       <dl>
         <dt>Alternative Names</dt>
         <dd>
-          {principal.alternative_names && principal.alternative_names.length > 0 ?
-              principal.alternative_names.join(", ") : "n/a"}
+          {principal.alternative_names && principal.alternative_names.length > 0
+            ? principal.alternative_names.join(", ")
+            : "n/a"}
         </dd>
         <dt>Common Name (CN)</dt>
         <dd>{principal.cn ? principal.cn : "n/a"}</dd>

@@ -4,7 +4,6 @@ import ClusterService from "../../../services/ClusterService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Routes from "../../../util/ApiRoutes";
 import CryptoService from "../../../services/CryptoService";
-import moment from "moment";
 import {notify} from "react-notify-toast";
 import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrophicFailure";
 import TLSCertificateTestFailure from "./TLSCertificateTestFailure";
@@ -26,7 +25,6 @@ function TLSCertificateDetailsPage(props) {
   const [individualCertTestSuccessResult, setIndividualCertTestSuccessResult] = useState(null)
   const [individualCertTestFailureResult, setIndividualCertTestFailureResult] = useState(null)
   const [individualCertTestCatastrophicFailure, setIndividualCertTestCatastrophicFailure] = useState(null)
-  const [individualCertInstallationInProgress, setIndividualCertInstallationInProgress] = useState(false)
   const [individualCertInstallationSuccess, setIndividualCertInstallationSuccess] = useState(false)
 
   const fileIndividualCert = useRef(null);
@@ -50,9 +48,9 @@ function TLSCertificateDetailsPage(props) {
   }
 
   const individualCertificateButtonActive = function() {
-    return fileIndividualCert.current && fileIndividualCert.current.files && fileIndividualCert.current.files[0]
-      && fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0]
-      && !individualCertTestSuccessResult;
+    return fileIndividualCert.current && fileIndividualCert.current.files && fileIndividualCert.current.files[0] &&
+      fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0] &&
+      !individualCertTestSuccessResult;
   }
 
   const getIndividualCertificateFormData = function() {
@@ -71,7 +69,7 @@ function TLSCertificateDetailsPage(props) {
     setIndividualCertTestFailureResult(null);
     setIndividualCertTestCatastrophicFailure(null);
 
-    cryptoService.testTLSCertificate(nodeUUID, formData, function (response){
+    cryptoService.testTLSCertificate(nodeUUID, formData, function(response) {
       // Test succeeded
       setIndividualCertTestInProgress(false);
       setIndividualCertTestSuccessResult(response.data);
@@ -92,13 +90,11 @@ function TLSCertificateDetailsPage(props) {
       return;
     }
 
-    setIndividualCertInstallationInProgress(true);
     const formData = getIndividualCertificateFormData();
 
     cryptoService.installIndividualTLSCertificate(nodeUUID, formData, function() {
       notify.show('TLS certificate installed.', 'success');
       setIndividualCertInstallationSuccess(true);
-      setIndividualCertInstallationInProgress(false);
     })
   }
 
@@ -205,9 +201,9 @@ function TLSCertificateDetailsPage(props) {
                     <code>-----BEGIN RSA PRIVATE KEY-----</code>. Important: The private key file must be
                     in <code>PKCS8</code> format. There is a chance that your certificate authority provided you with
                     a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it. If it does not look
-                    like described above, even if similar, it's probably not <code>PKCS8</code>.
+                    like described above, even if similar, it&apos;s probably not <code>PKCS8</code>.
                   </p>
-                  
+
                   <div className="mb-3">
                     <label htmlFor="fu-certificate" className="form-label">
                       Certificate PEM File

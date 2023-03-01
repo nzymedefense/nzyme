@@ -1,5 +1,3 @@
-import React from "react";
-
 function TLSCertificateSourceType(props) {
 
   switch (props.type) {
