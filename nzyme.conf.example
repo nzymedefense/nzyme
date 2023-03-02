@@ -29,18 +29,6 @@ general: {
   # Nzyme is using NTP to compare clocks to world reference time and alert you if there is time drift. Default: pool.ntp.org
   ntp_server: pool.ntp.org
 
-  # We use Python to inject frames for traps.
-  python {
-    # Path to python executable. (nzyme supports both Python 3 and 2)
-    path: /usr/bin/python3.8
-
-    # Script directory. This must be an existing and writable directory. We'll store some generated Python scripts here.
-    script_directory: /tmp
-
-    # Script prefix. A prefix for the generate scripts. There is usually no reason to change this setting.
-    script_prefix: nzyme_
-  }
-
   alerting {
     # Notifications and callbacks for triggered alerts.
     callbacks: [
