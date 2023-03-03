@@ -55,7 +55,6 @@ public class NzymeNodeConfigurationLoaderTest extends ResourcesAccessingTest {
 
         assertEquals(c.role(), Role.NODE);
         assertFalse(c.databasePath().isEmpty()); // This one is different based on ENV vars
-        assertEquals(c.pythonScriptPrefix(), "nzyme_");
         assertEquals(c.alertingTrainingPeriodSeconds(), 300);
         assertTrue(c.fetchOuis());
         assertTrue(c.versionchecksEnabled());
