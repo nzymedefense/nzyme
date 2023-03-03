@@ -20,7 +20,7 @@ function TLSCertificateHelp() {
         like described above, even if similar, it&apos;s probably not <code>PKCS8</code>.
       </p>
       </React.Fragment>
-)
+  )
 
 }
 
