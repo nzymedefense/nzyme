@@ -2,6 +2,7 @@ package app.nzyme.core.database;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
+import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
 import app.nzyme.core.distributed.database.NodeEntryMapper;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucketMapper;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshotMapper;
@@ -101,7 +102,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new GaugeHistogramBucketMapper())
                 .registerRowMapper(new TimerSnapshotMapper())
                 .registerRowMapper(new IndicatorStatusMapper())
-                .registerRowMapper(new TLSKeyAndCertificateEntryMapper());
+                .registerRowMapper(new TLSKeyAndCertificateEntryMapper())
+                .registerRowMapper(new TLSWildcardKeyAndCertificateEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

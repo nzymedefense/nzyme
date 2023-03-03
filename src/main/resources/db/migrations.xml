@@ -1493,4 +1493,36 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_tls_wildcard_cert_table" author="lennartkoopmann">
+        <createTable tableName="crypto_tls_certificates_wildcard">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="node_matcher" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="certificate" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="key" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="valid_from" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="expires_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="source_type" type="varchar(50)" defaultValue="TEST">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

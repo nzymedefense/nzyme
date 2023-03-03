@@ -2,9 +2,11 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
+import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.crypto.tls.TLSSourceType;
 import app.nzyme.core.crypto.tls.TLSUtils;
+import app.nzyme.core.crypto.tls.TLSWildcardKeyAndCertificate;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
@@ -21,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -174,10 +177,38 @@ public class CryptoResource {
             }
         }
 
+        List<TLSWildcartCertificateResponse> tlsWildcartCertificates = Lists.newArrayList();
+        for (TLSWildcardKeyAndCertificate entry : nzyme.getCrypto().getTLSWildcardCertificates()) {
+            X509Certificate firstCert = entry.certificates().get(0);
+
+            Collection<List<?>> issuerAlternativeNames;
+            Collection<List<?>> subjectAlternativeNames;
+            try {
+                issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+                subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+            } catch (CertificateParsingException e) {
+                LOG.error("Could not parse certificate.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
+            tlsWildcartCertificates.add(TLSWildcartCertificateResponse.create(
+                    entry.id(),
+                    entry.nodeMatcher(),
+                    entry.sourceType().toString(),
+                    entry.signature(),
+                    firstCert.getSigAlgName(),
+                    buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                    buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
+                    entry.validFrom(),
+                    entry.expiresAt()
+            ));
+        }
+
         return Response.ok(CryptoResponse.create(
                 metrics,
                 fingerprints,
                 tlsCertificates,
+                tlsWildcartCertificates,
                 nzyme.getCrypto().allPGPKeysEqualAcrossCluster()
         )).build();
     }
@@ -215,8 +246,45 @@ public class CryptoResource {
                 node.get().name(),
                 cert.signature(),
                 firstCert.getSigAlgName(),
-                buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
-                buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
+                buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
+                cert.validFrom(),
+                cert.expiresAt()
+        )).build();
+    }
+
+    @GET
+    @Path("/tls/wildcard/{cert_id}")
+    public Response tlsWildcardCertificate(@PathParam("cert_id") long certificateId) {
+        // TODO list of which nodes it would match
+
+        Optional<TLSWildcardKeyAndCertificate> certResult = nzyme.getCrypto().getTLSWildcardCertificate(certificateId);
+
+        if (certResult.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSWildcardKeyAndCertificate cert = certResult.get();
+        X509Certificate firstCert = cert.certificates().get(0);
+
+        Collection<List<?>> issuerAlternativeNames;
+        Collection<List<?>> subjectAlternativeNames;
+        try {
+            issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+            subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+        } catch (CertificateParsingException e) {
+            LOG.error("Could not parse certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return Response.ok(TLSWildcartCertificateResponse.create(
+                cert.id(),
+                cert.nodeMatcher(),
+                cert.sourceType().toString(),
+                cert.signature(),
+                firstCert.getSigAlgName(),
+                buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
                 cert.validFrom(),
                 cert.expiresAt()
         )).build();
@@ -235,7 +303,6 @@ public class CryptoResource {
                     nodeId,
                     crypto.generateTLSCertificate(Crypto.DEFAULT_TLS_SUBJECT_DN, 12)
             );
-            nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
         } catch (Crypto.CryptoOperationException e) {
             LOG.error("Could not generate TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -246,15 +313,9 @@ public class CryptoResource {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Path("/tls/node/{node_id}/test")
-    public Response testNodeTLSCertificate(@PathParam("node_id") UUID nodeId,
-                                           @FormDataParam("certificate") InputStream certificate,
+    @Path("/tls/test")
+    public Response testNodeTLSCertificate(@FormDataParam("certificate") InputStream certificate,
                                            @FormDataParam("private_key") InputStream privateKey) {
-        Optional<Node> node = nzyme.getNodeManager().getNode(nodeId);
-        if (node.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
         String certificateInput, keyInput;
         try {
             certificateInput = new String(certificate.readAllBytes());
@@ -298,7 +359,7 @@ public class CryptoResource {
             }
 
             TLSKeyAndCertificate tls = TLSKeyAndCertificate.create(
-                    nodeId,
+                    UUID.randomUUID(), // OK for testing.
                     TLSSourceType.TEST,
                     certificates,
                     key,
@@ -307,17 +368,18 @@ public class CryptoResource {
                     new DateTime(firstCert.getNotAfter())
             );
 
+            // Individual certificate response.
             return Response.ok(TLSCertificateTestResponse.create(
                     true,
                     true,
                     TLSCertificateResponse.create(
-                            nodeId.toString(),
+                            "[test]",
                             tls.sourceType().toString(),
-                            node.get().name(),
+                            "[test]",
                             tls.signature(),
                             firstCert.getSigAlgName(),
-                            buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
-                            buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
+                            buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                            buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
                             tls.validFrom(),
                             tls.expiresAt()
                     )
@@ -351,7 +413,26 @@ public class CryptoResource {
         }
 
         nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
-        nzyme.reloadHttpServer(5, TimeUnit.SECONDS); // Graceful, async shutdown to let this call finish. TODO perform on correct node
+
+        return Response.ok(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/tls/wildcard")
+    public Response uploadWildcardTLSCertificate(@FormDataParam("node_matcher") String nodeMatcher,
+                                                 @FormDataParam("certificate") InputStream certificate,
+                                                 @FormDataParam("private_key") InputStream privateKey) {
+        TLSWildcardKeyAndCertificate tls;
+
+        try {
+            tls = TLSUtils.readTLSWildcardKeyAndCertificateFromInputStreams(nodeMatcher, TLSSourceType.WILDCARD, certificate, privateKey);
+        } catch (TLSUtils.TLSCertificateCreationException e) {
+            LOG.error("Could not create TLS certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getCrypto().writeTLSWildcardCertificate(tls);
 
         return Response.ok(Response.Status.CREATED).build();
     }

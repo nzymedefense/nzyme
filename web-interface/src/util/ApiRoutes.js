@@ -11,7 +11,10 @@ const ApiRoutes = {
     CRYPTO: {
       INDEX: '/system/crypto',
       TLS: {
-        CERTIFICATE: nodeUUID => `/system/crypto/tls/certificate/${nodeUUID}`
+        CERTIFICATE: nodeUUID => `/system/crypto/tls/certificate/${nodeUUID}`,
+        WILDCARD: {
+          UPLOAD: '/system/crypto/tls/certificate/wildcard/upload'
+        }
       }
     },
     MONITORING: {

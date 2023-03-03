@@ -1,15 +1,13 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
 import ClusterService from "../../../services/ClusterService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Routes from "../../../util/ApiRoutes";
 import CryptoService from "../../../services/CryptoService";
 import {notify} from "react-notify-toast";
-import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrophicFailure";
-import TLSCertificateTestFailure from "./TLSCertificateTestFailure";
-import TLSCertificateTestInProgress from "./TLSCertificateTestInProgress";
-import TLSCertificateTestSuccess from "./TLSCertificateTestSuccess";
 import TLSCertificateDetails from "./TLSCertificateDetails";
+import TLSCertificateHelp from "./TLSCertificateHelp";
+import TLSCertificateUploadForm from "./TLSCertificateUploadForm";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
@@ -21,14 +19,7 @@ function TLSCertificateDetailsPage(props) {
   const [node, setNode] = useState(null)
   const [certificate, setCertificate] = useState(null)
 
-  const [individualCertTestInProgress, setIndividualCertTestInProgress] = useState(false)
-  const [individualCertTestSuccessResult, setIndividualCertTestSuccessResult] = useState(null)
-  const [individualCertTestFailureResult, setIndividualCertTestFailureResult] = useState(null)
-  const [individualCertTestCatastrophicFailure, setIndividualCertTestCatastrophicFailure] = useState(null)
-  const [individualCertInstallationSuccess, setIndividualCertInstallationSuccess] = useState(false)
-
-  const fileIndividualCert = useRef(null);
-  const fileIndividualKey = useRef(null);
+  const [certInstallationSuccess, setCertInstallationSuccess] = useState(false)
 
   useEffect(() => {
     clusterService.findNode(nodeUUID, setNode)
@@ -47,54 +38,16 @@ function TLSCertificateDetailsPage(props) {
     });
   }
 
-  const individualCertificateButtonActive = function() {
-    return fileIndividualCert.current && fileIndividualCert.current.files && fileIndividualCert.current.files[0] &&
-      fileIndividualKey.current && fileIndividualKey.current.files && fileIndividualKey.current.files[0] &&
-      !individualCertTestSuccessResult;
-  }
-
-  const getIndividualCertificateFormData = function() {
-    const formData = new FormData();
-    formData.append("certificate", fileIndividualCert.current.files[0]);
-    formData.append("private_key", fileIndividualKey.current.files[0]);
-
-    return formData;
-  }
-
-  const testIndividualCertificate = function() {
-    setIndividualCertTestInProgress(true);
-    const formData = getIndividualCertificateFormData();
-
-    setIndividualCertTestSuccessResult(null);
-    setIndividualCertTestFailureResult(null);
-    setIndividualCertTestCatastrophicFailure(null);
-
-    cryptoService.testTLSCertificate(nodeUUID, formData, function(response) {
-      // Test succeeded
-      setIndividualCertTestInProgress(false);
-      setIndividualCertTestSuccessResult(response.data);
-    }, function (response) {
-      setIndividualCertTestInProgress(false);
-      if (response.status === 401) {
-        setIndividualCertTestFailureResult(response.data);
-      } else {
-        setIndividualCertTestCatastrophicFailure(true);
-      }
-    })
-  }
-
-  const installIndividualCertificate = function() {
+  const installCertificate = function(formData) {
     if (!confirm("Really install individual TLS certificate for this node? This will replace the existing " +
         "certificate. Note that the nzyme HTTP server on this node will restart and you will likely experience a brief " +
         "loss of connection.")) {
       return;
     }
 
-    const formData = getIndividualCertificateFormData();
-
     cryptoService.installIndividualTLSCertificate(nodeUUID, formData, function() {
       notify.show('TLS certificate installed.', 'success');
-      setIndividualCertInstallationSuccess(true);
+      setCertInstallationSuccess(true);
     })
   }
 
@@ -102,7 +55,7 @@ function TLSCertificateDetailsPage(props) {
     return <LoadingSpinner />
   }
 
-  if (individualCertInstallationSuccess) {
+  if (certInstallationSuccess) {
     return <Navigate to={Routes.SYSTEM.CRYPTO.INDEX} />
   }
 
@@ -188,45 +141,9 @@ function TLSCertificateDetailsPage(props) {
 
                   <p>Use this form to upload an individual TLS certificate for this nzyme node.</p>
 
-                  <p>
-                    The certificate must be in PEM format and will typically include a whole certificate chain.
-                    Certificate authorities will usually offer this file for download. If the file includes multiple
-                    blocks of Base64 plaintext, surrounded by <code>-----BEGIN CERTIFICATE-----</code>, you likely have
-                    the correct file.
-                  </p>
+                  <TLSCertificateHelp />
 
-                  <p>
-                    The private key file will often have a <code>.key</code> name ending and should contain a block of
-                    Base64 plaintext, surrounded by <code>-----BEGIN PRIVATE KEY-----</code> or
-                    <code>-----BEGIN RSA PRIVATE KEY-----</code>. Important: The private key file must be
-                    in <code>PKCS8</code> format. There is a chance that your certificate authority provided you with
-                    a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it. If it does not look
-                    like described above, even if similar, it&apos;s probably not <code>PKCS8</code>.
-                  </p>
-
-                  <div className="mb-3">
-                    <label htmlFor="fu-certificate" className="form-label">
-                      Certificate PEM File
-                    </label>
-                    <input className="form-control form-control-sm" name="certificate" id="fu-certificate"
-                           ref={fileIndividualCert} type="file" disabled={individualCertTestSuccessResult !== null} />
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="fu-key" className="form-label">Private Key File</label>
-                    <input className="form-control form-control-sm" name="private_key" id="fu-key"
-                           ref={fileIndividualKey} type="file" disabled={individualCertTestSuccessResult !== null} />
-                  </div>
-
-                  <button className="btn btn-sm btn-primary" disabled={!individualCertificateButtonActive()}
-                          onClick={testIndividualCertificate}>
-                    Test Individual Certificate
-                  </button>
-
-                  <TLSCertificateTestInProgress show={individualCertTestInProgress} />
-                  <TLSCertificateTestCatastrophicFailure show={individualCertTestCatastrophicFailure} />
-                  <TLSCertificateTestFailure result={individualCertTestFailureResult} />
-                  <TLSCertificateTestSuccess result={individualCertTestSuccessResult} onClick={installIndividualCertificate} />
+                  <TLSCertificateUploadForm onInstall={installCertificate} />
 
                 </div>
               </div>

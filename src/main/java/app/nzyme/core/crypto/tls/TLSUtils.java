@@ -189,6 +189,51 @@ public class TLSUtils {
         );
     }
 
+    public static TLSWildcardKeyAndCertificate readTLSWildcardKeyAndCertificateFromInputStreams(String nodeMatcher,
+                                                                                                TLSSourceType sourceType,
+                                                                                                InputStream certificate,
+                                                                                                InputStream privateKey)
+            throws TLSCertificateCreationException {
+        String certificateInput, keyInput;
+        try {
+            certificateInput = new String(certificate.readAllBytes());
+            keyInput = new String(privateKey.readAllBytes());
+        } catch (Exception e) {
+            throw new RuntimeException("Could not read provided TLS certificate form data.", e);
+        }
+
+        List<X509Certificate> certificates;
+        PrivateKey key;
+        try {
+            certificates = TLSUtils.readCertificateChainFromPEM(certificateInput);
+            key = TLSUtils.readKeyFromPEM(keyInput);
+        } catch(Exception e) {
+            throw new TLSCertificateCreationException("Could not build key/certificate from provided data.", e);
+        }
+
+        // We have a valid certificate and key from here on. Serialize to Base64.
+        X509Certificate firstCert = certificates.get(0);
+        String fingerprint;
+
+        try {
+            fingerprint = TLSUtils.calculateTLSCertificateFingerprint(firstCert);
+        } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
+            throw new TLSCertificateCreationException("Could not build certificate fingerprint.", e);
+        }
+
+        return TLSWildcardKeyAndCertificate.create(
+                null,
+                nodeMatcher,
+                sourceType,
+                certificates,
+                key,
+                fingerprint,
+                new DateTime(firstCert.getNotBefore()),
+                new DateTime(firstCert.getNotAfter())
+        );
+    }
+
+
     public static final class PEMParserException extends Exception {
 
         public PEMParserException(String msg) {

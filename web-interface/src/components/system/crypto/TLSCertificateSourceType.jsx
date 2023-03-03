@@ -4,9 +4,9 @@ function TLSCertificateSourceType(props) {
     case "GENERATED_SELF_SIGNED":
       return "Generated / Self-Signed"
     case "INDIVIDUAL":
-      return "Individual, loaded from database"
+      return "Individual, uploaded"
     case "FILE_LOADED":
-      return "Individual, loaded from file"
+      return "Individual, initially loaded from file"
     case "WILDCARD":
       return "Wildcard"
     case "TEST":

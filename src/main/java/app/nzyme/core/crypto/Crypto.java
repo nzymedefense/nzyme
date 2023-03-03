@@ -4,6 +4,8 @@ import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.crypto.tls.TLSSourceType;
 import app.nzyme.core.crypto.tls.TLSUtils;
+import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
+import app.nzyme.core.crypto.tls.TLSWildcardKeyAndCertificate;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
@@ -480,6 +482,76 @@ public class Crypto {
         }
     }
 
+    private List<TLSWildcardKeyAndCertificateEntry> getTLSWildcardCertificateEntries() {
+        return database.withHandle(handle ->
+                handle.createQuery("SELECT id, node_matcher, certificate, key, valid_from, expires_at, source_type " +
+                                "FROM crypto_tls_certificates_wildcard ORDER BY node_matcher DESC")
+                        .mapTo(TLSWildcardKeyAndCertificateEntry.class)
+                        .list()
+        );
+    }
+
+    public List<TLSWildcardKeyAndCertificate> getTLSWildcardCertificates() {
+        List<TLSWildcardKeyAndCertificateEntry> entries = getTLSWildcardCertificateEntries();
+        List<TLSWildcardKeyAndCertificate> result = Lists.newArrayList();
+
+        for (TLSWildcardKeyAndCertificateEntry entry : entries) {
+            try {
+                result.add(tlsWildcardKeyAndCertificateEntryToObject(entry));
+            } catch (TLSUtils.PEMParserException | CertificateException | NoSuchAlgorithmException |
+                     InvalidKeySpecException e) {
+                throw new RuntimeException("Could not build TLS wildcard certificate from database.");
+            }
+        }
+
+        return result;
+    }
+
+    public Optional<TLSWildcardKeyAndCertificate> getTLSWildcardCertificate(long id) {
+        Optional<TLSWildcardKeyAndCertificateEntry> entry = database.withHandle(handle ->
+                handle.createQuery("SELECT id, node_matcher, certificate, key, valid_from, expires_at, source_type " +
+                        "FROM crypto_tls_certificates_wildcard WHERE id = :id")
+                        .bind("id", id)
+                        .mapTo(TLSWildcardKeyAndCertificateEntry.class)
+                        .findOne()
+        );
+
+        if (entry.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(tlsWildcardKeyAndCertificateEntryToObject(entry.get()));
+        } catch (CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
+                 TLSUtils.PEMParserException e) {
+            throw new RuntimeException("Could not build TLS wildcard certificate from database.");
+        }
+    }
+
+    public Map<UUID, TLSKeyAndCertificate> getTLSWildcardCertificatesForMatchingNodes() {
+        List<TLSWildcardKeyAndCertificateEntry> entries = getTLSWildcardCertificateEntries();
+
+        Map<UUID, TLSKeyAndCertificate> result = new TreeMap<>();
+        List<Node> nodes = nzyme.getNodeManager().getNodes();
+
+        for (TLSWildcardKeyAndCertificateEntry entry : entries) {
+            // Find all matching nodes for this wildcard entry.
+            for (Node node : nodes) {
+                if (node.name().matches(entry.nodeMatcher())) {
+                    try {
+                        result.put(node.uuid(), tlsWildcardKeyAndCertificateEntryToNodeCertificate(entry, node));
+                    } catch (TLSUtils.PEMParserException | NoSuchAlgorithmException | CertificateException |
+                             InvalidKeySpecException e) {
+                        throw new RuntimeException("Could not build TLS wildcard node certificate from database.");
+                    }
+                }
+            }
+
+        }
+
+        return result;
+    }
+
     public KeyStore getTLSKeyStore() {
         try {
             Optional<TLSKeyAndCertificate> diskCert = loadTLSCertificateFromDisk();
@@ -569,6 +641,30 @@ public class Crypto {
         );
     }
 
+    public void writeTLSWildcardCertificate(TLSWildcardKeyAndCertificate tls) {
+        String certificate;
+        String key;
+        try {
+            certificate = TLSUtils.serializeCertificateChain(tls.certificates());
+            key = BaseEncoding.base64().encode(tls.key().getEncoded());
+        } catch(Exception e) {
+            throw new RuntimeException("Could not encode TLS data.", e);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO crypto_tls_certificates_wildcard(node_matcher, certificate, key, " +
+                                "valid_from, expires_at, source_type) VALUES(:node_matcher, :certificate, :key, :valid_from, " +
+                                ":expires_at, :source_type)")
+                        .bind("node_matcher", tls.nodeMatcher())
+                        .bind("certificate", certificate)
+                        .bind("key", key)
+                        .bind("source_type", tls.sourceType().name())
+                        .bind("valid_from", tls.validFrom())
+                        .bind("expires_at", tls.expiresAt())
+                        .execute()
+        );
+    }
+
     private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
         try(InputStream keyIn = new BufferedInputStream(new FileInputStream(file))) {
             return readPublicKey(keyIn);
@@ -636,6 +732,43 @@ public class Crypto {
 
         return TLSKeyAndCertificate.create(
                 entry.nodeId(),
+                entry.sourceType(),
+                certificates,
+                key,
+                TLSUtils.calculateTLSCertificateFingerprint(firstCertificate),
+                new DateTime(firstCertificate.getNotBefore()),
+                new DateTime(firstCertificate.getNotAfter())
+        );
+    }
+
+    private TLSWildcardKeyAndCertificate tlsWildcardKeyAndCertificateEntryToObject(TLSWildcardKeyAndCertificateEntry entry)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        X509Certificate firstCertificate = certificates.get(0);
+
+        PrivateKey key = TLSUtils.deserializeKey(entry.key());
+
+        return TLSWildcardKeyAndCertificate.create(
+                entry.id(),
+                entry.nodeMatcher(),
+                entry.sourceType(),
+                certificates,
+                key,
+                TLSUtils.calculateTLSCertificateFingerprint(firstCertificate),
+                new DateTime(firstCertificate.getNotBefore()),
+                new DateTime(firstCertificate.getNotAfter())
+        );
+    }
+
+    private TLSKeyAndCertificate tlsWildcardKeyAndCertificateEntryToNodeCertificate(TLSWildcardKeyAndCertificateEntry entry, Node node)
+            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        X509Certificate firstCertificate = certificates.get(0);
+
+        PrivateKey key = TLSUtils.deserializeKey(entry.key());
+
+        return TLSKeyAndCertificate.create(
+                node.uuid(),
                 entry.sourceType(),
                 certificates,
                 key,

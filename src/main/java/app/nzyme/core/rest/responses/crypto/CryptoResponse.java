@@ -3,6 +3,7 @@ package app.nzyme.core.rest.responses.crypto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -18,14 +19,18 @@ public abstract class CryptoResponse {
     @JsonProperty("tls_certificates")
     public abstract Map<String, TLSCertificateResponse> tlsCertificates();
 
+    @JsonProperty("tls_wildcard_certificates")
+    public abstract List<TLSWildcartCertificateResponse> tlsWildcardCertificates();
+
     @JsonProperty("pgp_keys_in_sync")
     public abstract boolean pgpKeysInSync();
 
-    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, Map<String, TLSCertificateResponse> tlsCertificates, boolean pgpKeysInSync) {
+    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, Map<String, TLSCertificateResponse> tlsCertificates, List<TLSWildcartCertificateResponse> tlsWildcardCertificates, boolean pgpKeysInSync) {
         return builder()
                 .metrics(metrics)
                 .pgpKeys(pgpKeys)
                 .tlsCertificates(tlsCertificates)
+                .tlsWildcardCertificates(tlsWildcardCertificates)
                 .pgpKeysInSync(pgpKeysInSync)
                 .build();
     }
@@ -42,8 +47,11 @@ public abstract class CryptoResponse {
 
         public abstract Builder tlsCertificates(Map<String, TLSCertificateResponse> tlsCertificates);
 
+        public abstract Builder tlsWildcardCertificates(List<TLSWildcartCertificateResponse> tlsWildcardCertificates);
+
         public abstract Builder pgpKeysInSync(boolean pgpKeysInSync);
 
         public abstract CryptoResponse build();
     }
+
 }

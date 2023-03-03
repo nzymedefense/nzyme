@@ -56,6 +56,7 @@ import NodesPage from "./components/system/cluster/nodes/NodesPage";
 import NodeDetailsPage from "./components/system/cluster/nodes/details/NodeDetailsPage";
 import HealthPage from "./components/system/health/HealthPage";
 import TLSCertificateDetailsPage from "./components/system/crypto/TLSCertificateDetailsPage";
+import TLSWildcardCertificateUploadPage from "./components/system/crypto/TLSWildcardCertificateUploadPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -149,6 +150,7 @@ class App extends React.Component {
                                             { /* System/Crypto. */ }
                                             <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
                                             <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
+                                            <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.UPLOAD} element={<TLSWildcardCertificateUploadPage />} />
 
                                             { /* System/Monitoring. */ }
                                             <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
