@@ -32,7 +32,7 @@ class LoginPage extends React.Component {
   render () {
     return (
         <React.Fragment>
-          <AssetStylesheet filename="login.css" />
+          <AssetStylesheet filename="onebox.css" />
 
           <section className="vh-100 start">
               <div className="container py-5 h-100 mb-5">
