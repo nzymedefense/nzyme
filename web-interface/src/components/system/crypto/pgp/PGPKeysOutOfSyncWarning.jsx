@@ -1,5 +1,5 @@
 import React from "react";
-import ApiRoutes from "../../../util/ApiRoutes";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function PGPKeysOutOfSyncWarning(props) {
 

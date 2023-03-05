@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import PGPKeyTable from './PGPKeyTable'
-import PGPMetrics from './PGPMetrics'
+import PGPKeyTable from './pgp/PGPKeyTable'
+import PGPMetrics from './pgp/PGPMetrics'
 import CryptoService from '../../../services/CryptoService'
-import TLSCertificateTable from "./TLSCertificateTable";
-import TLSWildcardCertificateTable from "./TLSWildcardCertificateTable";
+import TLSCertificateTable from "./tls/TLSCertificateTable";
+import TLSWildcardCertificateTable from "./tls/wildcard/TLSWildcardCertificateTable";
 import ApiRoutes from "../../../util/ApiRoutes";
 
 const cryptoService = new CryptoService()

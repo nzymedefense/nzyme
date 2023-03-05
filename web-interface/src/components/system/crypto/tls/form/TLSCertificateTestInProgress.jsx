@@ -1,5 +1,5 @@
 import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
 
 function TLSCertificateTestInProgress(props) {
 

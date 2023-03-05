@@ -11,6 +11,7 @@ import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
@@ -651,6 +652,10 @@ public class Crypto {
             throw new RuntimeException("Could not encode TLS data.", e);
         }
 
+        if (tls.nodeMatcher().trim().isEmpty()) {
+            throw new RuntimeException("Node matcher is empty.");
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO crypto_tls_certificates_wildcard(node_matcher, certificate, key, " +
                                 "valid_from, expires_at, source_type) VALUES(:node_matcher, :certificate, :key, :valid_from, " +
@@ -661,6 +666,28 @@ public class Crypto {
                         .bind("source_type", tls.sourceType().name())
                         .bind("valid_from", tls.validFrom())
                         .bind("expires_at", tls.expiresAt())
+                        .execute()
+        );
+    }
+
+    public void updateTLSWildcardCertificateNodeMatcher(long certificateId, String nodeMatcher) {
+        if (nodeMatcher.trim().isEmpty()) {
+            throw new RuntimeException("Node matcher is empty.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE crypto_tls_certificates_wildcard SET node_matcher = :node_matcher " +
+                                "WHERE id = :certificate_id")
+                        .bind("node_matcher", nodeMatcher)
+                        .bind("certificate_id", certificateId)
+                        .execute()
+        );
+    }
+
+    public void deleteTLSWildcardCertificate(long certificateId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM crypto_tls_certificates_wildcard WHERE id = :certificate_id")
+                        .bind("certificate_id", certificateId)
                         .execute()
         );
     }

@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import ClusterService from "../../../services/ClusterService";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import Routes from "../../../util/ApiRoutes";
-import CryptoService from "../../../services/CryptoService";
+import ClusterService from "../../../../services/ClusterService";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import Routes from "../../../../util/ApiRoutes";
+import CryptoService from "../../../../services/CryptoService";
 import {notify} from "react-notify-toast";
 import TLSCertificateDetails from "./TLSCertificateDetails";
 import TLSCertificateHelp from "./TLSCertificateHelp";
-import TLSCertificateUploadForm from "./TLSCertificateUploadForm";
+import TLSCertificateUploadForm from "./form/TLSCertificateUploadForm";
 
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();

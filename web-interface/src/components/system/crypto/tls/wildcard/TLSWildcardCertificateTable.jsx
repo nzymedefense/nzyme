@@ -1,6 +1,7 @@
 import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import moment from "moment";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 function TLSWildcardCertificateTable(props) {
 
@@ -32,15 +33,17 @@ function TLSWildcardCertificateTable(props) {
         </tr>
         </thead>
         <tbody>
-        {Object.keys(certificates.sort((a, b) => a.node_name.localeCompare(b.node_name))).map(function (key, i) {
+        {Object.keys(certificates.sort((a, b) => a.node_matcher.localeCompare(b.node_matcher))).map(function (key, i) {
           return (
               <tr key={'tlscert-' + i}>
                 <td><code>{certificates[i].node_matcher}</code></td>
-                <td>91</td>
+                <td>{certificates[i].matching_nodes.length}</td>
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
                 <td>{moment(certificates[i].expires_at).format()}</td>
                 <td>
-                  Manage
+                  <a href={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(certificates[i].id)}>
+                    Manage
+                  </a>
                 </td>
               </tr>
           )

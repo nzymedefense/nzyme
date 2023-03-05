@@ -1,5 +1,5 @@
 import React from "react";
-import TLSCertificateDetails from "./TLSCertificateDetails";
+import TLSCertificateDetails from "../TLSCertificateDetails";
 import InstallTLSCertificateButton from "./InstallTLSCertificateButton";
 
 function TLSCertificateTestSuccess(props) {

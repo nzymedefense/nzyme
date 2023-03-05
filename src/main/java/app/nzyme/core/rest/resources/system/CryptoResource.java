@@ -3,13 +3,11 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
-import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
-import app.nzyme.core.crypto.tls.TLSSourceType;
-import app.nzyme.core.crypto.tls.TLSUtils;
-import app.nzyme.core.crypto.tls.TLSWildcardKeyAndCertificate;
+import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
+import app.nzyme.core.rest.requests.UpdateTLSWildcardNodeMatcherRequest;
 import app.nzyme.core.rest.responses.crypto.*;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -194,6 +192,7 @@ public class CryptoResource {
             tlsWildcartCertificates.add(TLSWildcartCertificateResponse.create(
                     entry.id(),
                     entry.nodeMatcher(),
+                    buildMatchingNodes(entry.nodeMatcher()),
                     entry.sourceType().toString(),
                     entry.signature(),
                     firstCert.getSigAlgName(),
@@ -256,8 +255,6 @@ public class CryptoResource {
     @GET
     @Path("/tls/wildcard/{cert_id}")
     public Response tlsWildcardCertificate(@PathParam("cert_id") long certificateId) {
-        // TODO list of which nodes it would match
-
         Optional<TLSWildcardKeyAndCertificate> certResult = nzyme.getCrypto().getTLSWildcardCertificate(certificateId);
 
         if (certResult.isEmpty()) {
@@ -280,6 +277,7 @@ public class CryptoResource {
         return Response.ok(TLSWildcartCertificateResponse.create(
                 cert.id(),
                 cert.nodeMatcher(),
+                buildMatchingNodes(cert.nodeMatcher()),
                 cert.sourceType().toString(),
                 cert.signature(),
                 firstCert.getSigAlgName(),
@@ -437,6 +435,38 @@ public class CryptoResource {
         return Response.ok(Response.Status.CREATED).build();
     }
 
+    @GET
+    @Path("/tls/wildcard/nodematchertest")
+    public Response testTLSWildcardNodeMatcher(@QueryParam("regex") String regex) {
+        return Response.ok(buildMatchingNodes(regex)).build();
+    }
+
+    @PUT
+    @Path("/tls/wildcard/{cert_id}/node_matcher")
+    public Response updateTLSWildcardCertificateNodeMatcher(@PathParam("cert_id") long certificateId,
+                                                            UpdateTLSWildcardNodeMatcherRequest request) {
+        Optional<TLSWildcardKeyAndCertificate> certResult = nzyme.getCrypto().getTLSWildcardCertificate(certificateId);
+
+        if (certResult.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (request.nodeMatcher().trim().isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        nzyme.getCrypto().updateTLSWildcardCertificateNodeMatcher(certificateId, request.nodeMatcher());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/tls/wildcard/{cert_id}")
+    public Response deleteTLSWildcardCertificate(@PathParam("cert_id") long certificateId) {
+        nzyme.getCrypto().deleteTLSWildcardCertificate(certificateId);
+        return Response.ok().build();
+    }
+
     private TLSCertificatePrincipalResponse buildPrincipalResponse(Principal principal, Collection<List<?>> alternativeNames) {
         List<String> an = Lists.newArrayList();
         if (alternativeNames != null) {
@@ -470,6 +500,17 @@ public class CryptoResource {
         }
 
         return TLSCertificatePrincipalResponse.create(an, cn, o, c);
+    }
+
+    private List<MatchingNodeResponse> buildMatchingNodes(String regex) {
+        TLSWildcardNodeMatcher matcher = new TLSWildcardNodeMatcher(nzyme);
+        List<MatchingNodeResponse> matchingNodes = Lists.newArrayList();
+
+        for (Node node : matcher.match(regex)) {
+            matchingNodes.add(MatchingNodeResponse.create(node.uuid(), node.name()));
+        }
+
+        return matchingNodes;
     }
 
 }

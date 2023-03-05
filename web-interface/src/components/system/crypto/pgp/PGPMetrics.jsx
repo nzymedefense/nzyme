@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import LoadingSpinner from '../../misc/LoadingSpinner'
+import LoadingSpinner from '../../../misc/LoadingSpinner'
 import PGPMetricsTable from "./PGPMetricsTable";
 
 function PGPMetrics (props) {

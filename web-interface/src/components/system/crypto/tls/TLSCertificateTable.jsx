@@ -1,7 +1,7 @@
 import React from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
 import moment from "moment";
-import ApiRoutes from "../../../util/ApiRoutes";
+import ApiRoutes from "../../../../util/ApiRoutes";
 import TLSCertificateSourceType from "./TLSCertificateSourceType";
 
 function TLSCertificateTable(props) {

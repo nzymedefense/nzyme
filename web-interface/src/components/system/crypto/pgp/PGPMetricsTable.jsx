@@ -1,5 +1,5 @@
 import React from "react";
-import TimerRow from "../../misc/metrics/TimerRow";
+import TimerRow from "../../../misc/metrics/TimerRow";
 
 function PGPMetricsTable(props) {
 

@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @AutoValue
 public abstract class TLSWildcartCertificateResponse {
@@ -14,6 +15,9 @@ public abstract class TLSWildcartCertificateResponse {
 
     @JsonProperty("node_matcher")
     public abstract String nodeMatcher();
+
+    @JsonProperty("matching_nodes")
+    public abstract List<MatchingNodeResponse> matchingNodes();
 
     @JsonProperty("sourcetype")
     public abstract String sourceType();
@@ -38,10 +42,11 @@ public abstract class TLSWildcartCertificateResponse {
     @JsonProperty("expires_at")
     public abstract DateTime expiresAt();
 
-    public static TLSWildcartCertificateResponse create(long id, String nodeMatcher, String sourceType, String fingerprint, String signatureAlgorithm, TLSCertificatePrincipalResponse issuer, TLSCertificatePrincipalResponse subject, DateTime validFrom, DateTime expiresAt) {
+    public static TLSWildcartCertificateResponse create(long id, String nodeMatcher, List<MatchingNodeResponse> matchingNodes, String sourceType, String fingerprint, String signatureAlgorithm, TLSCertificatePrincipalResponse issuer, TLSCertificatePrincipalResponse subject, DateTime validFrom, DateTime expiresAt) {
         return builder()
                 .id(id)
                 .nodeMatcher(nodeMatcher)
+                .matchingNodes(matchingNodes)
                 .sourceType(sourceType)
                 .fingerprint(fingerprint)
                 .signatureAlgorithm(signatureAlgorithm)
@@ -61,6 +66,8 @@ public abstract class TLSWildcartCertificateResponse {
         public abstract Builder id(long id);
 
         public abstract Builder nodeMatcher(String nodeMatcher);
+
+        public abstract Builder matchingNodes(List<MatchingNodeResponse> matchingNodes);
 
         public abstract Builder sourceType(String sourceType);
 

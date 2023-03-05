@@ -13,7 +13,8 @@ const ApiRoutes = {
       TLS: {
         CERTIFICATE: nodeUUID => `/system/crypto/tls/certificate/${nodeUUID}`,
         WILDCARD: {
-          UPLOAD: '/system/crypto/tls/certificate/wildcard/upload'
+          UPLOAD: '/system/crypto/tls/certificate/wildcard/upload',
+          EDIT: (certificateId) => `/system/crypto/tls/certificate/wildcard/${certificateId}`
         }
       }
     },
