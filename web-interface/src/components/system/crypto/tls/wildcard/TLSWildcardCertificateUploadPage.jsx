@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useState} from "react";
 import Routes from "../../../../../util/ApiRoutes";
 import TLSCertificateHelp from "../TLSCertificateHelp";
 import TLSCertificateUploadForm from "../form/TLSCertificateUploadForm";
@@ -99,7 +99,7 @@ function TLSWildcardCertificateUploadPage() {
                   </label>
                   <div className="input-group mb-3">
                     <input className="form-control form-control-sm" name="node_matcher"
-                           onChange={updateRegex} type="text"  />
+                           onChange={updateRegex} type="text" />
                     <button className="btn btn-sm btn-secondary"
                             onClick={testNodeMatcher}
                             disabled={!testNodeMatcherButtonActive()}>

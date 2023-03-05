@@ -25,7 +25,6 @@ function TLSCertificateUploadForm(props) {
     setKeyFiles(e.target.files);
   }
 
-
   const certButtonActive = function() {
     return certFiles && certFiles[0] && keyFiles && keyFiles[0];
   }

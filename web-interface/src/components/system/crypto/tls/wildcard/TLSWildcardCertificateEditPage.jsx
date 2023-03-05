@@ -19,7 +19,7 @@ function TLSWildcardCertificateEditPage(props) {
 
   const [certificate, setCertificate] = useState(null);
   const [matchingNodes, setMatchingNodes] = useState(null);
-  const [nodeMatcher, setNodeMatcher] = useState(null);
+  const [nodeMatcher, setNodeMatcher] = useState("");
   const [matchingNodesPreview, setMatchingNodesPreview] = useState(false);
   const [matchingNodesTestRunning, setMatchingNodesTestRunning] = useState(false);
   const [nodeMatcherUpdateRunning, setNodeMatcherUpdateRunning] = useState(false);
@@ -128,8 +128,8 @@ function TLSWildcardCertificateEditPage(props) {
                       </label>
                       <div className="input-group mb-3">
                         <input className="form-control form-control-sm" name="node_matcher"
-                               value={nodeMatcher ? nodeMatcher : ""}
-                               onChange={onNodeMatcherUpdate} type="text"  />
+                               value={nodeMatcher}
+                               onChange={onNodeMatcherUpdate} type="text" />
                         <button className="btn btn-sm btn-secondary"
                                 disabled={!testNodeMatcherButtonActive()}
                                 onClick={testNodeMatcher}>
@@ -144,8 +144,8 @@ function TLSWildcardCertificateEditPage(props) {
 
                     <h4>
                       Matching Nodes {matchingNodesPreview
-                        ? <span className="text-warning">Test Result - Don&apos;t forget to save Regex</span>
-                        : null}
+                      ? <span className="text-warning">Test Result - Don&apos;t forget to save Regex</span>
+                      : null}
                     </h4>
 
                     <LoadingSpinner show={matchingNodesTestRunning || nodeMatcherUpdateRunning} />
