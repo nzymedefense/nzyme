@@ -36,7 +36,6 @@ const RESTClient = {
         successCallback(response)
       })
       .catch(function (error) {
-        console.log(error)
         if (error.response) {
           if (error.response.status === 401) {
             Store.delete('api_token')
