@@ -159,6 +159,18 @@ function TLSWildcardCertificateEditPage(props) {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
+                    <h3>Replace Certificate</h3>
+
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
                     <h3>Delete Certificate</h3>
 
                     <p>
