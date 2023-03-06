@@ -6,6 +6,8 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import TLSCertificateDetails from "../TLSCertificateDetails";
 import MatchingNodes from "./MatchingNodes";
 import {notify} from "react-notify-toast";
+import TLSCertificateHelp from "../TLSCertificateHelp";
+import TLSCertificateUploadForm from "../form/TLSCertificateUploadForm";
 
 const cryptoService = new CryptoService();
 
@@ -23,6 +25,7 @@ function TLSWildcardCertificateEditPage(props) {
   const [matchingNodesPreview, setMatchingNodesPreview] = useState(false);
   const [matchingNodesTestRunning, setMatchingNodesTestRunning] = useState(false);
   const [nodeMatcherUpdateRunning, setNodeMatcherUpdateRunning] = useState(false);
+  const [replaceFinished, setReplaceFinished] = useState(false);
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
@@ -63,6 +66,20 @@ function TLSWildcardCertificateEditPage(props) {
       loadData(certificateId, setCertificate);
       setNodeMatcherUpdateRunning(false);
     });
+  }
+
+  const replaceCertificate = function(formData) {
+    if (!confirm("Really replace wildcard TLS certificate? This will replace the existing " +
+        "certificate on all nodes that match the regular expression. Note that the nzyme HTTP server on those node will " +
+        "restart and you will likely experience a brief loss of connection.")) {
+      return;
+    }
+
+    cryptoService.replaceWildcardTLSCertificate(certificate.id, formData, function() {
+      notify.show('TLS certificate replaced.', 'success');
+      setReplaceFinished(true);
+      loadData(certificateId, setCertificate);
+    })
   }
 
   const deleteCertificate = function() {
@@ -161,7 +178,15 @@ function TLSWildcardCertificateEditPage(props) {
                   <div className="card-body">
                     <h3>Replace Certificate</h3>
 
+                    <p>
+                      Use this form to replace the underlying TLS certificate.
+                    </p>
 
+                    <TLSCertificateHelp />
+
+                    <TLSCertificateUploadForm
+                        onInstall={replaceCertificate}
+                        externalFinishSignal={replaceFinished} />
                   </div>
                 </div>
               </div>

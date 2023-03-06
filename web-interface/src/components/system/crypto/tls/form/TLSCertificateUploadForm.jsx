@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import CryptoService from "../../../../../services/CryptoService";
 import TLSCertificateTestInProgress from "./TLSCertificateTestInProgress";
 import TLSCertificateTestCatastrophicFailure from "./TLSCertificateTestCatastrophicFailure";
@@ -9,6 +9,9 @@ const cryptoService = new CryptoService();
 
 function TLSCertificateUploadForm(props) {
 
+  const externalFinishSignal = props.externalFinishSignal;
+  const externalTestButtonReady = props.externalTestButtonReady;
+
   const [certFiles, setCertFiles] = useState(null);
   const [keyFiles, setKeyFiles] = useState(null);
 
@@ -16,6 +19,12 @@ function TLSCertificateUploadForm(props) {
   const [certTestFailureResult, setCertTestFailureResult] = useState(null)
   const [certTestCatastrophicFailure, setCertTestCatastrophicFailure] = useState(null)
   const [certTestSuccessResult, setCertTestSuccessResult] = useState(null)
+
+  useEffect(() => {
+    setCertFiles(null);
+    setKeyFiles(null);
+    setCertTestSuccessResult(null);
+  }, [externalFinishSignal])
 
   const onCertChange = function(e) {
     setCertFiles(e.target.files);
@@ -26,7 +35,8 @@ function TLSCertificateUploadForm(props) {
   }
 
   const certButtonActive = function() {
-    return certFiles && certFiles[0] && keyFiles && keyFiles[0];
+    return certFiles && certFiles[0] && keyFiles && keyFiles[0]
+        && (externalTestButtonReady !== undefined && externalTestButtonReady());
   }
 
   const getFormData = function() {

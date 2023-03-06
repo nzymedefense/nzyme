@@ -670,6 +670,35 @@ public class Crypto {
         );
     }
 
+    public void replaceTLSWildcardCertificate(long certificateId, TLSWildcardKeyAndCertificate newCert) {
+        String certificate;
+        String key;
+        try {
+            certificate = TLSUtils.serializeCertificateChain(newCert.certificates());
+            key = BaseEncoding.base64().encode(newCert.key().getEncoded());
+        } catch(Exception e) {
+            throw new RuntimeException("Could not encode TLS data.", e);
+        }
+
+        if (newCert.nodeMatcher().trim().isEmpty()) {
+            throw new RuntimeException("Node matcher is empty.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE crypto_tls_certificates_wildcard SET node_matcher = :node_matcher, " +
+                        "certificate = :certificate, key = :key, valid_from = :valid_from, expires_at = :expires_at, " +
+                        "source_type = :source_type WHERE id = :certificate_id")
+                        .bind("node_matcher", newCert.nodeMatcher())
+                        .bind("certificate", certificate)
+                        .bind("key", key)
+                        .bind("source_type", newCert.sourceType().name())
+                        .bind("valid_from", newCert.validFrom())
+                        .bind("expires_at", newCert.expiresAt())
+                        .bind("certificate_id", certificateId)
+                        .execute()
+        );
+    }
+
     public void updateTLSWildcardCertificateNodeMatcher(long certificateId, String nodeMatcher) {
         if (nodeMatcher.trim().isEmpty()) {
             throw new RuntimeException("Node matcher is empty.");

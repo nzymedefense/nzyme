@@ -36,6 +36,10 @@ function TLSWildcardCertificateUploadPage() {
     });
   }
 
+  const nodeMatcherReady = function() {
+    return regexValue && regexValue.length > 0;
+  }
+
   const installCertificate = function(formData) {
     if (!confirm("Really install wildcard TLS certificate? This will replace the existing " +
         "certificate on all nodes that match the regular expression. Note that the nzyme HTTP server on those node will " +
@@ -111,7 +115,7 @@ function TLSWildcardCertificateUploadPage() {
                   <MatchingNodesTestResult matchingNodes={matchingNodes} />
                 </div>
 
-                <TLSCertificateUploadForm onInstall={installCertificate} />
+                <TLSCertificateUploadForm onInstall={installCertificate} externalTestButtonReady={nodeMatcherReady} />
               </div>
             </div>
           </div>

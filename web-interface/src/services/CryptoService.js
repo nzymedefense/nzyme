@@ -33,6 +33,10 @@ class CryptoService {
     RESTClient.postMultipart('/system/crypto/tls/wildcard', formData, true, successCallback);
   }
 
+  replaceWildcardTLSCertificate(certificateId, formData, successCallback) {
+    RESTClient.postMultipart('/system/crypto/tls/wildcard/' + certificateId + '/replace', formData, true, successCallback);
+  }
+
   testTLSWildcardCertificateNodeMatcher(regex, successCallback) {
     RESTClient.get('/system/crypto/tls/wildcard/nodematchertest/', {regex: regex}, successCallback)
   }

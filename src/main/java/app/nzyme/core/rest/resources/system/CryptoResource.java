@@ -2,7 +2,6 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
-import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
 import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
@@ -21,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +30,6 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -421,6 +418,10 @@ public class CryptoResource {
     public Response uploadWildcardTLSCertificate(@FormDataParam("node_matcher") String nodeMatcher,
                                                  @FormDataParam("certificate") InputStream certificate,
                                                  @FormDataParam("private_key") InputStream privateKey) {
+        if (nodeMatcher == null || nodeMatcher.trim().isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         TLSWildcardKeyAndCertificate tls;
 
         try {
@@ -431,6 +432,32 @@ public class CryptoResource {
         }
 
         nzyme.getCrypto().writeTLSWildcardCertificate(tls);
+
+        return Response.ok(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Path("/tls/wildcard/{cert_id}/replace")
+    public Response replaceWildcardTLSCertificate(@PathParam("cert_id") long certificateId,
+                                                  @FormDataParam("certificate") InputStream certificate,
+                                                  @FormDataParam("private_key") InputStream privateKey) {
+        Optional<TLSWildcardKeyAndCertificate> certResult = nzyme.getCrypto().getTLSWildcardCertificate(certificateId);
+
+        if (certResult.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TLSWildcardKeyAndCertificate oldCert = certResult.get();
+        TLSWildcardKeyAndCertificate newCert;
+        try {
+            newCert = TLSUtils.readTLSWildcardKeyAndCertificateFromInputStreams(oldCert.nodeMatcher(), TLSSourceType.WILDCARD, certificate, privateKey);
+        } catch (TLSUtils.TLSCertificateCreationException e) {
+            LOG.error("Could not create TLS certificate.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getCrypto().replaceTLSWildcardCertificate(certificateId, newCert);
 
         return Response.ok(Response.Status.CREATED).build();
     }
