@@ -12,12 +12,11 @@ function TLSCertificateHelp() {
       </p>
 
       <p>
-        The private key file will often have a <code>.key</code> name ending and should contain a block of
-        Base64 plaintext, surrounded by <code>-----BEGIN PRIVATE KEY-----</code> or
-        <code>-----BEGIN RSA PRIVATE KEY-----</code>. Important: The private key file must be
-        in <code>PKCS8</code> format. There is a chance that your certificate authority provided you with
-        a <code>PKCS1</code> file, but you can use <code>openssl</code> to convert it. If it does not look
-        like described above, even if similar, it&apos;s probably not <code>PKCS8</code>.
+        The private key file must be in PEM format, will often have a <code>.key</code> name ending and should contain
+        a block of Base64 plaintext, surrounded by <code>-----BEGIN PRIVATE KEY-----</code> or something similar
+        to <code>-----BEGIN RSA PRIVATE KEY-----</code>. Nzyme will try to convert your specific key formats as good
+        as possible. (If it doesn&apos;t work, make sure the key is in <code>PKCS#1</code> or <code>PKCS#8</code> format,
+        but it most likely is.)
       </p>
       </React.Fragment>
   )

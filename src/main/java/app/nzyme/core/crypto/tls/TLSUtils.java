@@ -1,30 +1,28 @@
 package app.nzyme.core.crypto.tls;
 
-import app.nzyme.core.rest.resources.system.CryptoResource;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.crypto.encodings.PKCS1Encoding;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.joda.time.DateTime;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyFactory;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.security.*;
 import java.security.cert.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.cert.Certificate;
+import java.security.spec.*;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -80,43 +78,82 @@ public class TLSUtils {
             throw new PEMParserException("No key found in data.");
         }
 
-        byte[] bytes = BaseEncoding.base64().decode(
-                CharMatcher
-                        .breakingWhitespace()
-                        .removeFrom(m.group(1))
+        return parseKey(
+                BaseEncoding.base64().decode(
+                        CharMatcher
+                                .breakingWhitespace()
+                                .removeFrom(m.group(1)))
         );
-
-        try {
-            try {
-                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
-            } catch (InvalidKeySpecException ignore) {
-                try {
-                    return KeyFactory.getInstance("ECDSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
-                } catch (InvalidKeySpecException e) {
-                    throw new PEMParserException("Could not construct private key. Must be RSA or ECDSA.", e);
-                }
-            }
-        } catch(Exception e) {
-            throw new PEMParserException("Could not construct private key.", e);
-        }
     }
 
     public static PrivateKey deserializeKey(String base64) throws PEMParserException {
-        byte[] bytes = BaseEncoding.base64().decode(base64);
+        return parseKey(BaseEncoding.base64().decode(base64));
+    }
 
+    /**
+     * OKAY this is a little weird. Because of how the certificates/keys are internally represented and how the crypto
+     * APIs let us access the key (surprise: it's not PEM), we are not storing the entire original PEM to make our lives
+     * easier. That's why we have to perform all sorts of weird maneuvers and reconstructive surgery ot handle both
+     * PKCS#1 and PKCS#8 formats. We are also using exception for control flow because the APIs are a mess.
+     * This needs a ton of unit test at all times.
+     *
+     * @param bytes Serialized private key, stripped of PEM header, footer and newlines
+     * @return Parsed PrivateKey to use in Java crypto APIs
+     * @throws PEMParserException if key could not be parsed
+     */
+    public static PrivateKey parseKey(byte[] bytes) throws PEMParserException {
         try {
+            // Try PKCS#8 format first. It appears to be the more common one.
+            return parsePKCS8Key(bytes);
+        } catch (Exception ignored) {
             try {
-                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
-            } catch (InvalidKeySpecException ignore) {
+                // Didn't work - Try PKCS1 key.
+                return parsePKCS1Key(bytes);
+            } catch (Exception e) {
+                throw new PEMParserException("Parsing key failed. Both PKCS#1 and PKCS#8 parsing did not succeed.", e);
+            }
+        }
+    }
+
+    private static PrivateKey parsePKCS8Key(byte[] bytes) throws PEMParserException, NoSuchAlgorithmException {
+        // Try PKCS8 first.
+        KeySpec keySpec = new PKCS8EncodedKeySpec(bytes);
+        try {
+            return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+        } catch (InvalidKeySpecException ignore) {
+            try {
+                return KeyFactory.getInstance("DSA").generatePrivate(keySpec);
+            } catch (InvalidKeySpecException ignore2) {
                 try {
-                    return KeyFactory.getInstance("ECDSA").generatePrivate(new PKCS8EncodedKeySpec(bytes));
+                    return KeyFactory.getInstance("EC").generatePrivate(keySpec);
                 } catch (InvalidKeySpecException e) {
-                    throw new PEMParserException("Could not construct private key. Must be RSA or ECDSA.", e);
+                    throw new PEMParserException("Could not construct private key.", e);
                 }
             }
-        } catch(Exception e) {
-            throw new PEMParserException("Could not construct private key.", e);
         }
+    }
+
+    private static PrivateKey parsePKCS1Key(byte[] bytes) throws IOException {
+        // PEM parser required for PKCS1, but it needs a whole reconstructed PEM file.
+        String key = reconstructECPEMFromBytes(bytes);
+        Object parsed = new PEMParser(new StringReader(key)).readObject();
+        KeyPair pair = new JcaPEMKeyConverter().getKeyPair((PEMKeyPair) parsed);
+        return pair.getPrivate();
+    }
+
+    private static String reconstructECPEMFromBytes(byte[] bytes) {
+        // PEM file is blocks of 64 characters.
+        Iterable<String> split = Splitter.fixedLength(64)
+                .split(BaseEncoding.base64().encode(bytes));
+        StringBuilder result = new StringBuilder();
+
+        result.append("-----BEGIN EC PRIVATE KEY-----\n");
+        for (String s : split) {
+            result.append(s).append("\n");
+        }
+        result.append("-----END EC PRIVATE KEY-----");
+
+        return result.toString();
     }
 
     public static String serializeCertificateChain(List<X509Certificate> certificates) throws CertificateEncodingException {
@@ -128,8 +165,7 @@ public class TLSUtils {
         return Joiner.on(",").join(strings);
     }
 
-    public static List<X509Certificate> deSerializeCertificateChain(String serialized)
-            throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+    public static List<X509Certificate> deSerializeCertificateChain(String serialized) throws CertificateException {
         List<X509Certificate> certificates = Lists.newArrayList();
 
         for (String s : Splitter.on(",").split(serialized)) {
