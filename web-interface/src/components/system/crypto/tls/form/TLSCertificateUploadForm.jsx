@@ -36,7 +36,7 @@ function TLSCertificateUploadForm(props) {
 
   const certButtonActive = function() {
     return certFiles && certFiles[0] && keyFiles && keyFiles[0] &&
-        (externalTestButtonReady !== undefined && externalTestButtonReady());
+        (externalTestButtonReady === undefined || externalTestButtonReady());
   }
 
   const getFormData = function() {
