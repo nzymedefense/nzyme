@@ -122,17 +122,6 @@ public class Crypto {
     }
 
     public void initialize(boolean withRetentionCleaning) throws CryptoInitializationException {
-        // Generate TLS certificate and key if none exist.
-        if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
-            try {
-                LOG.info("No TLS certificate found. Generating self-signed certificate.");
-                TLSKeyAndCertificate tls = generateTLSCertificate(DEFAULT_TLS_SUBJECT_DN, 12);
-                setTLSKeyAndCertificateOfNode(nodeId, tls);
-            } catch (CryptoOperationException e) {
-                throw new CryptoInitializationException("Could not generate TLS certificate.", e);
-            }
-        }
-
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
         File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
@@ -233,6 +222,17 @@ public class Crypto {
             );
         } else {
             throw new CryptoInitializationException("Unexpected number of PGP keys for this node in database. Cannot continue.");
+        }
+
+        // Generate TLS certificate and key if none exist.
+        if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
+            try {
+                LOG.info("No TLS certificate found. Generating self-signed certificate.");
+                TLSKeyAndCertificate tls = generateTLSCertificate(DEFAULT_TLS_SUBJECT_DN, 12);
+                setTLSKeyAndCertificateOfNode(nodeId, tls);
+            } catch (CryptoOperationException e) {
+                throw new CryptoInitializationException("Could not generate TLS certificate.", e);
+            }
         }
 
         if (withRetentionCleaning) {
@@ -570,7 +570,7 @@ public class Crypto {
                     setTLSKeyAndCertificateOfNode(nodeId, tls);
                 }
             } else {
-                LOG.info("Reading individual TLS certificate from database.");
+                LOG.info("Reading TLS certificate from database.");
 
                 Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
                 if (tlsData.isEmpty()) {
@@ -628,12 +628,21 @@ public class Crypto {
             throw new RuntimeException("Could not encode TLS data.", e);
         }
 
+        // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
+        String encryptedCertificate, encryptedKey;
+        try {
+            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
             handle.createUpdate("UPDATE crypto_tls_certificates SET certificate = :certificate, key = :key, " +
                             "source_type = :source_type, valid_from = :valid_from, expires_at = :expires_at " +
                             "WHERE node_id = :node_id")
-                    .bind("certificate", certificate)
-                    .bind("key", key)
+                    .bind("certificate", encryptedCertificate)
+                    .bind("key", encryptedKey)
                     .bind("source_type", tls.sourceType().name())
                     .bind("valid_from", tls.validFrom())
                     .bind("expires_at", tls.expiresAt())
@@ -656,13 +665,22 @@ public class Crypto {
             throw new RuntimeException("Node matcher is empty.");
         }
 
+        // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
+        String encryptedCertificate, encryptedKey;
+        try {
+            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO crypto_tls_certificates_wildcard(node_matcher, certificate, key, " +
                                 "valid_from, expires_at, source_type) VALUES(:node_matcher, :certificate, :key, :valid_from, " +
                                 ":expires_at, :source_type)")
                         .bind("node_matcher", tls.nodeMatcher())
-                        .bind("certificate", certificate)
-                        .bind("key", key)
+                        .bind("certificate", encryptedCertificate)
+                        .bind("key", encryptedKey)
                         .bind("source_type", tls.sourceType().name())
                         .bind("valid_from", tls.validFrom())
                         .bind("expires_at", tls.expiresAt())
@@ -684,13 +702,22 @@ public class Crypto {
             throw new RuntimeException("Node matcher is empty.");
         }
 
+        // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
+        String encryptedCertificate, encryptedKey;
+        try {
+            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE crypto_tls_certificates_wildcard SET node_matcher = :node_matcher, " +
                         "certificate = :certificate, key = :key, valid_from = :valid_from, expires_at = :expires_at, " +
                         "source_type = :source_type WHERE id = :certificate_id")
                         .bind("node_matcher", newCert.nodeMatcher())
-                        .bind("certificate", certificate)
-                        .bind("key", key)
+                        .bind("certificate", encryptedCertificate)
+                        .bind("key", encryptedKey)
                         .bind("source_type", newCert.sourceType().name())
                         .bind("valid_from", newCert.validFrom())
                         .bind("expires_at", newCert.expiresAt())
@@ -781,10 +808,18 @@ public class Crypto {
 
     private TLSKeyAndCertificate tlsKeyAndCertificateEntryToObject(TLSKeyAndCertificateEntry entry)
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
-        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        String decryptedCertificate, decryptedKey;
+        try {
+            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
+            decryptedKey = new String(decrypt(entry.key().getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
+        }
+
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(decryptedCertificate);
         X509Certificate firstCertificate = certificates.get(0);
 
-        PrivateKey key = TLSUtils.deserializeKey(entry.key());
+        PrivateKey key = TLSUtils.deserializeKey(decryptedKey);
 
         return TLSKeyAndCertificate.create(
                 entry.nodeId(),
@@ -799,10 +834,18 @@ public class Crypto {
 
     private TLSWildcardKeyAndCertificate tlsWildcardKeyAndCertificateEntryToObject(TLSWildcardKeyAndCertificateEntry entry)
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
-        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        String decryptedCertificate, decryptedKey;
+        try {
+            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
+            decryptedKey = new String(decrypt(entry.key().getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
+        }
+
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(decryptedCertificate);
         X509Certificate firstCertificate = certificates.get(0);
 
-        PrivateKey key = TLSUtils.deserializeKey(entry.key());
+        PrivateKey key = TLSUtils.deserializeKey(decryptedKey);
 
         return TLSWildcardKeyAndCertificate.create(
                 entry.id(),
@@ -818,10 +861,18 @@ public class Crypto {
 
     private TLSKeyAndCertificate tlsWildcardKeyAndCertificateEntryToNodeCertificate(TLSWildcardKeyAndCertificateEntry entry, Node node)
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
-        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(entry.certificate());
+        String decryptedCertificate, decryptedKey;
+        try {
+            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
+            decryptedKey = new String(decrypt(entry.key().getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
+        }
+
+        List<X509Certificate> certificates = TLSUtils.deSerializeCertificateChain(decryptedCertificate);
         X509Certificate firstCertificate = certificates.get(0);
 
-        PrivateKey key = TLSUtils.deserializeKey(entry.key());
+        PrivateKey key = TLSUtils.deserializeKey(decryptedKey);
 
         return TLSKeyAndCertificate.create(
                 node.uuid(),
@@ -844,13 +895,22 @@ public class Crypto {
             throw new RuntimeException("Could not encode TLS data.", e);
         }
 
+        // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
+        String encryptedCertificate, encryptedKey;
+        try {
+            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+        } catch(CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO crypto_tls_certificates(node_id, certificate, key, source_type, " +
                                 "valid_from, expires_at) VALUES(:node_id, :certificate, :key, :source_type, " +
                                 ":valid_from, :expires_at)")
                         .bind("node_id", nodeId)
-                        .bind("certificate", certificate)
-                        .bind("key", key)
+                        .bind("certificate", encryptedCertificate)
+                        .bind("key", encryptedKey)
                         .bind("source_type", tls.sourceType().name())
                         .bind("valid_from", tls.validFrom())
                         .bind("expires_at", tls.expiresAt())
