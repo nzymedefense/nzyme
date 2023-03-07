@@ -2,6 +2,7 @@ import React from "react";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import moment from "moment";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import ExpirationDate from "../ExpirationDate";
 
 function TLSWildcardCertificateTable(props) {
 
@@ -39,7 +40,9 @@ function TLSWildcardCertificateTable(props) {
                 <td><code>{certificates[i].node_matcher}</code></td>
                 <td>{certificates[i].matching_nodes.length}</td>
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
-                <td>{moment(certificates[i].expires_at).format()}</td>
+                <td>
+                  <ExpirationDate date={certificates[i].expires_at} />
+                </td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(certificates[i].id)}>
                     Manage

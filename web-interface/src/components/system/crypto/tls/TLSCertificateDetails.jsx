@@ -2,6 +2,8 @@ import React from "react";
 import moment from "moment/moment";
 import TLSCertificateDetailsPrincipal from "./TLSCertificateDetailsPrincipal";
 import TLSCertificateSourceType from "./TLSCertificateSourceType";
+import ExpirationDate from "./ExpirationDate";
+import ValidityDate from "./ValidityDate";
 
 function TLSCertificateDetails(props) {
 
@@ -15,9 +17,9 @@ function TLSCertificateDetails(props) {
         <dt>Source/Type</dt>
         <dd><TLSCertificateSourceType type={cert.sourcetype} /></dd>
         <dt>Valid From</dt>
-        <dd>{validFrom.format()} ({validFrom.fromNow()})</dd>
+        <dd><ValidityDate date={validFrom} /> ({validFrom.fromNow()})</dd>
         <dt>Expires At</dt>
-        <dd>{expiresAt.format()} ({expiresAt.fromNow()})</dd>
+        <dd><ExpirationDate date={expiresAt} /> ({expiresAt.fromNow()})</dd>
         <dt>Fingerprint</dt>
         <dd>{cert.fingerprint.toUpperCase()}</dd>
         <dt>Signature Algorithm</dt>

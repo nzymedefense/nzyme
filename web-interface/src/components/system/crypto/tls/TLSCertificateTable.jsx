@@ -3,6 +3,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import moment from "moment";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import TLSCertificateSourceType from "./TLSCertificateSourceType";
+import ExpirationDate from "./ExpirationDate";
 
 function TLSCertificateTable(props) {
 
@@ -32,7 +33,7 @@ function TLSCertificateTable(props) {
                 <td>{certificates[i].node_name}</td>
                 <td><TLSCertificateSourceType type={certificates[i].sourcetype} /></td>
                 <td>{certificates[i].fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()}</td>
-                <td>{moment(certificates[i].expires_at).format()}</td>
+                <td><ExpirationDate date={certificates[i].expires_at} /></td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(certificates[i].node_id)}>Manage</a>
                 </td>
