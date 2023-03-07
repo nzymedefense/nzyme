@@ -832,7 +832,7 @@ public class NzymeNodeImpl implements NzymeNode {
         try {
             final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
             sslContextConfigurator.setKeyStorePass("".toCharArray());
-            sslContextConfigurator.setKeyStoreBytes(crypto.getTLSKeyStoreBytes());
+            sslContextConfigurator.setKeyStoreBytes(crypto.bootstrapTLSKeyStore());
             final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
             SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
 

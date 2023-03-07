@@ -11,7 +11,6 @@ import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
@@ -553,7 +552,7 @@ public class Crypto {
         return result;
     }
 
-    public KeyStore getTLSKeyStore() {
+    public byte[] bootstrapTLSKeyStore() {
         try {
             Optional<TLSKeyAndCertificate> diskCert = loadTLSCertificateFromDisk();
 
@@ -570,13 +569,22 @@ public class Crypto {
                     setTLSKeyAndCertificateOfNode(nodeId, tls);
                 }
             } else {
-                LOG.info("Reading TLS certificate from database.");
-
-                Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
-                if (tlsData.isEmpty()) {
-                    throw new RuntimeException("No TLS certificate data of this node found in database.");
+                // Check if there is this node matches a wildcard cert.
+                Map<UUID, TLSKeyAndCertificate> matchingNodes = getTLSWildcardCertificatesForMatchingNodes();
+                TLSKeyAndCertificate wildcardTls = matchingNodes.get(nzyme.getNodeInformation().id());
+                if (wildcardTls != null) {
+                    // Wildcard
+                    LOG.info("Reading wildcard TLS certificate from database.");
+                    tls = wildcardTls;
                 } else {
-                    tls = tlsData.get();
+                    LOG.info("Reading individual TLS certificate from database.");
+
+                    Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
+                    if (tlsData.isEmpty()) {
+                        throw new RuntimeException("No TLS certificate data of this node found in database.");
+                    } else {
+                        tls = tlsData.get();
+                    }
                 }
             }
 
@@ -587,7 +595,10 @@ public class Crypto {
             keyStore.load(null, null);
             keyStore.setKeyEntry("key", tls.key(), "".toCharArray(), certChain.toArray(new Certificate[certChain.size()]));
 
-            return keyStore;
+            try(ByteArrayOutputStream ksStream = new ByteArrayOutputStream()) {
+                keyStore.store(ksStream, "".toCharArray());
+                return ksStream.toByteArray();
+            }
         } catch(Exception e) {
             throw new RuntimeException("Could not build TLS key store.", e);
         }
@@ -609,13 +620,6 @@ public class Crypto {
         } else {
             return Optional.empty();
         }
-    }
-
-    public byte[] getTLSKeyStoreBytes() throws GeneralSecurityException, IOException {
-        final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        getTLSKeyStore().store(stream, "".toCharArray());
-
-        return stream.toByteArray();
     }
 
     public void updateTLSCertificateOfNode(UUID nodeId, TLSKeyAndCertificate tls) {

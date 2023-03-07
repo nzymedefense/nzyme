@@ -143,32 +143,63 @@ public class CryptoResource {
             Optional<Node> node = nzyme.getNodeManager().getNode(cert.nodeId());
             if (node.isPresent() && node.get().lastSeen().isAfter(DateTime.now().minusMinutes(2))) {
                 String nodeName = nzyme.getNodeManager().findNameOfNode(cert.nodeId());
-                X509Certificate firstCert = cert.certificates().get(0);
 
-                Collection<List<?>> issuerAlternativeNames;
-                Collection<List<?>> subjectAlternativeNames;
-                try {
-                    issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
-                    subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
-                } catch (CertificateParsingException e) {
-                    LOG.error("Could not parse certificate.", e);
-                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                // Does the node use a wildcard certificate instead?
+                Map<UUID, TLSKeyAndCertificate> matchingNodes = nzyme.getCrypto().getTLSWildcardCertificatesForMatchingNodes();
+                TLSKeyAndCertificate wildcardTls = matchingNodes.get(node.get().uuid());
+                if (wildcardTls != null) {
+                    X509Certificate firstCert = cert.certificates().get(0);
+                    Collection<List<?>> issuerAlternativeNames;
+                    Collection<List<?>> subjectAlternativeNames;
+                    try {
+                        issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+                        subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+                    } catch (CertificateParsingException e) {
+                        LOG.error("Could not parse certificate.", e);
+                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                    }
+
+                    tlsCertificates.put(
+                            nodeName,
+                            TLSCertificateResponse.create(
+                                    wildcardTls.nodeId().toString(),
+                                    wildcardTls.sourceType().toString(),
+                                    nodeName,
+                                    wildcardTls.signature(),
+                                    firstCert.getSigAlgName(),
+                                    buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                                    buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
+                                    wildcardTls.validFrom(),
+                                    wildcardTls.expiresAt()
+                            )
+                    );
+                } else {
+                    X509Certificate firstCert = cert.certificates().get(0);
+                    Collection<List<?>> issuerAlternativeNames;
+                    Collection<List<?>> subjectAlternativeNames;
+                    try {
+                        issuerAlternativeNames = firstCert.getIssuerAlternativeNames();
+                        subjectAlternativeNames = firstCert.getSubjectAlternativeNames();
+                    } catch (CertificateParsingException e) {
+                        LOG.error("Could not parse certificate.", e);
+                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                    }
+
+                    tlsCertificates.put(
+                            nodeName,
+                            TLSCertificateResponse.create(
+                                    cert.nodeId().toString(),
+                                    cert.sourceType().toString(),
+                                    nodeName,
+                                    cert.signature(),
+                                    firstCert.getSigAlgName(),
+                                    buildPrincipalResponse(firstCert.getIssuerX500Principal(), issuerAlternativeNames),
+                                    buildPrincipalResponse(firstCert.getSubjectX500Principal(), subjectAlternativeNames),
+                                    cert.validFrom(),
+                                    cert.expiresAt()
+                            )
+                    );
                 }
-
-                tlsCertificates.put(
-                        nodeName,
-                        TLSCertificateResponse.create(
-                                cert.nodeId().toString(),
-                                cert.sourceType().toString(),
-                                nodeName,
-                                cert.signature(),
-                                firstCert.getSigAlgName(),
-                                buildPrincipalResponse(firstCert.getIssuerDN(), issuerAlternativeNames),
-                                buildPrincipalResponse(firstCert.getSubjectDN(), subjectAlternativeNames),
-                                cert.validFrom(),
-                                cert.expiresAt()
-                        )
-                );
             }
         }
 
