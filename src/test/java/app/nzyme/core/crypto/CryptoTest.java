@@ -21,7 +21,7 @@ public class CryptoTest {
 
     @SuppressWarnings({"resource", "ResultOfMethodCallIgnored"})
     @BeforeMethod
-    public void cleanDirectory() throws IOException, InterruptedException {
+    public void clean() throws IOException, InterruptedException {
         Files.walk(FOLDER)
                 .map(Path::toFile)
                 .forEach(file -> {
@@ -39,6 +39,21 @@ public class CryptoTest {
                 .sum();
 
         assertEquals(size, 0, "Crypto key test folder is not empty.");
+
+        cleanDB();
+    }
+
+    private void cleanDB() {
+        NzymeNode nzyme = new MockNzyme();
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("TRUNCATE crypto_tls_certificates;")
+                        .execute()
+        );
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("TRUNCATE crypto_tls_certificates_wildcard;")
+                        .execute()
+        );
     }
 
     private String readKeyIdFromDB(NzymeNode nzyme) {
@@ -75,12 +90,12 @@ public class CryptoTest {
         Path privatePath = Paths.get(FOLDER.toString(), Crypto.PGP_PRIVATE_KEY_FILE_NAME);
         Path publicPath = Paths.get(FOLDER.toString(), Crypto.PGP_PUBLIC_KEY_FILE_NAME);
 
-        new Crypto(mockNzyme).initialize();
+        new Crypto(mockNzyme).initialize(false);
         byte[] secret1 = Files.readAllBytes(privatePath);
         byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
-        new Crypto(mockNzyme).initialize();
+        new Crypto(mockNzyme).initialize(false);
         byte[] secret2 = Files.readAllBytes(privatePath);
         byte[] public2 = Files.readAllBytes(publicPath);
         String sig2 = readKeyIdFromDB(mockNzyme);
@@ -104,6 +119,7 @@ public class CryptoTest {
         byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
+        cleanDB();
         privatePath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
@@ -130,6 +146,7 @@ public class CryptoTest {
         byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
+        cleanDB();
         publicPath.toFile().delete();
 
         new Crypto(mockNzyme).initialize();
@@ -156,6 +173,7 @@ public class CryptoTest {
         byte[] public1 = Files.readAllBytes(publicPath);
         String sig1 = readKeyIdFromDB(mockNzyme);
 
+        cleanDB();
         privatePath.toFile().delete();
         publicPath.toFile().delete();
 
@@ -196,8 +214,8 @@ public class CryptoTest {
         byte[] value = "IT IS A SECRET.".getBytes();
         byte[] encrypted = crypto.encrypt(value);
 
-        privatePath.toFile().delete();
         crypto.initialize();
+        privatePath.toFile().delete();
 
         crypto.decrypt(encrypted);
     }

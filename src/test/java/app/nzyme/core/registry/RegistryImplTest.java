@@ -71,8 +71,8 @@ public class RegistryImplTest {
 
         r.setEncryptedValue("foo", "bar");
 
-        privatePath.toFile().delete();
         nzyme.getCrypto().initialize();
+        privatePath.toFile().delete();
 
         r.getEncryptedValue("foo");
     }
