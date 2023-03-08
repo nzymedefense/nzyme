@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -830,9 +831,10 @@ public class NzymeNodeImpl implements NzymeNode {
         resourceConfig.register(WebInterfaceAssetsResource.class);
 
         try {
+            KeyStoreBootstrapResult keyStore = crypto.bootstrapTLSKeyStore();
             final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
             sslContextConfigurator.setKeyStorePass("".toCharArray());
-            sslContextConfigurator.setKeyStoreBytes(crypto.bootstrapTLSKeyStore());
+            sslContextConfigurator.setKeyStoreBytes(keyStore.keystoreBytes());
             final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
             SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
 
@@ -842,6 +844,8 @@ public class NzymeNodeImpl implements NzymeNode {
                     true,
                     sslEngineConfigurator
             );
+
+            LOG.info("Final TLS type: [{}]", keyStore.loadSource());
         } catch(Exception e) {
             throw new RuntimeException("Could not start web server.", e);
         }

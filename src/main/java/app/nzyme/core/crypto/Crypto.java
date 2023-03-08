@@ -1,11 +1,8 @@
 package app.nzyme.core.crypto;
 
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
-import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
-import app.nzyme.core.crypto.tls.TLSSourceType;
-import app.nzyme.core.crypto.tls.TLSUtils;
+import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
-import app.nzyme.core.crypto.tls.TLSWildcardKeyAndCertificate;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
@@ -552,7 +549,7 @@ public class Crypto {
         return result;
     }
 
-    public byte[] bootstrapTLSKeyStore() {
+    public KeyStoreBootstrapResult bootstrapTLSKeyStore() {
         try {
             Optional<TLSKeyAndCertificate> diskCert = loadTLSCertificateFromDisk();
 
@@ -583,7 +580,8 @@ public class Crypto {
                     if (tlsData.isEmpty()) {
                         throw new RuntimeException("No TLS certificate data of this node found in database.");
                     } else {
-                        tls = tlsData.get();
+                        TLSKeyAndCertificate result = tlsData.get();
+                        tls = result;
                     }
                 }
             }
@@ -597,7 +595,8 @@ public class Crypto {
 
             try(ByteArrayOutputStream ksStream = new ByteArrayOutputStream()) {
                 keyStore.store(ksStream, "".toCharArray());
-                return ksStream.toByteArray();
+
+                return KeyStoreBootstrapResult.create(ksStream.toByteArray(), tls.sourceType());
             }
         } catch(Exception e) {
             throw new RuntimeException("Could not build TLS key store.", e);

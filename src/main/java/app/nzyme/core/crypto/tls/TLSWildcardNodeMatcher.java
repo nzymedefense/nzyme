@@ -1,6 +1,5 @@
 package app.nzyme.core.crypto.tls;
 
-import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.Node;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -12,16 +11,10 @@ public class TLSWildcardNodeMatcher {
 
     private static final Logger LOG = LogManager.getLogger(TLSWildcardNodeMatcher.class);
 
-    private final NzymeNode nzyme;
-
-    public TLSWildcardNodeMatcher(NzymeNode nzyme) {
-        this.nzyme = nzyme;
-    }
-
-    public List<Node> match(String regex) {
+    public List<Node> match(String regex, List<Node> nodes) {
         List<Node> matches = Lists.newArrayList();
 
-        for (Node node : nzyme.getNodeManager().getNodes()) {
+        for (Node node : nodes) {
             try {
                 if (node.name().matches(regex)) {
                     matches.add(node);

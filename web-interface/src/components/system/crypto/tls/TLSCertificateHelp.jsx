@@ -8,7 +8,7 @@ function TLSCertificateHelp() {
           The certificate must be in PEM format and will typically include a whole certificate chain.
           Certificate authorities will usually offer this file for download. If the file includes multiple
           blocks of Base64 plaintext, surrounded by <code>-----BEGIN CERTIFICATE-----</code>, you likely have
-          the correct file.
+          the correct file. Usual file name endings are <code>.pem</code> or <code>.crt</code>.
         </p>
 
         <p>

@@ -561,10 +561,10 @@ public class CryptoResource {
     }
 
     private List<MatchingNodeResponse> buildMatchingNodes(String regex) {
-        TLSWildcardNodeMatcher matcher = new TLSWildcardNodeMatcher(nzyme);
+        TLSWildcardNodeMatcher matcher = new TLSWildcardNodeMatcher();
         List<MatchingNodeResponse> matchingNodes = Lists.newArrayList();
 
-        for (Node node : matcher.match(regex)) {
+        for (Node node : matcher.match(regex, nzyme.getNodeManager().getNodes())) {
             matchingNodes.add(MatchingNodeResponse.create(node.uuid(), node.name()));
         }
 
