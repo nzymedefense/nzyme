@@ -10,6 +10,7 @@ import TapThroughputConsequence from "./consequences/TapThroughputConsequence";
 import TapDropConsequence from "./consequences/TapDropConsequence";
 import TapBufferConsequence from "./consequences/TapBufferConsequence";
 import TapErrorConsequence from "./consequences/TapErrorConsequence";
+import TLSExpirationConsequence from "./consequences/TLSExpirationConsequence";
 
 function Consequences(props) {
 
@@ -52,7 +53,7 @@ function Consequences(props) {
         <NodeOfflineConsequence show={consequences.includes("node_offline")} />
         <TapOfflineConsequence show={consequences.includes("tap_offline")} />
         <TapThroughputConsequence show={consequences.includes("tap_tpx")} />
-
+        <TLSExpirationConsequence show={consequences.includes("tls_exp")} />
         <TapDropConsequence show={consequences.includes("tap_drop")} />
         <TapBufferConsequence show={consequences.includes("tap_buffer")} />
         <TapErrorConsequence show={consequences.includes("tap_error")} />
