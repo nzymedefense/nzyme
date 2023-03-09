@@ -18,10 +18,11 @@ function HealthConsole(props) {
             <Indicator indicator={indicators.node_clock} name="Node Clock" />
             <Indicator indicator={indicators.tap_clock} name="Tap Clock" />
             <Indicator indicator={indicators.node_offline} name="Node Offline" />
-            <Indicator indicator={indicators.tap_offline} name="Tap Offline" />
+            <Indicator indicator={indicators.tls_exp} name="TLS Expiration" />
           </div>
 
           <div className="hc-row">
+            <Indicator indicator={indicators.tap_offline} name="Tap Offline" />
             <Indicator indicator={indicators.tap_tpx} name="Tap TPX" />
             <Indicator indicator={indicators.tap_drop} name="Tap Drop" />
             <Indicator indicator={indicators.tap_buffer} name="Tap Buffer" />
