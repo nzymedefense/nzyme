@@ -40,6 +40,11 @@ function HealthPage(props) {
                 <hr />
 
                 <HealthConsole indicators={indicators} />
+
+                <p className="mt-3 mb-0">
+                  <strong>Important:</strong> Checks are performed periodically and it can take up to 60 seconds for an indicator to extinguish
+                  after problem resolution.
+                </p>
               </div>
             </div>
           </div>
