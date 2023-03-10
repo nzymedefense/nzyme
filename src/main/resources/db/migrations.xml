@@ -1525,4 +1525,36 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_message_bus_messages_table" author="lennartkoopmann">
+        <createTable tableName="message_bus_messages">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="sender_node_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="receiver_node_id" type="uuid" />
+
+            <column name="type" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="parameters" type="text" />
+
+            <column name="status" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="cycle_limiter" type="bigint" />
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="acknowledged_at" type="timestamp with time zone" />
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
