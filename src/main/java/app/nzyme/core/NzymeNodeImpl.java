@@ -20,6 +20,8 @@ package app.nzyme.core;
 import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.distributed.messaging.MessageBus;
+import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
@@ -160,6 +162,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final List<Uplink> uplinks;
     private final List<Forwarder> forwarders;
     private final TapManager tapManager;
+    private final MessageBus messageBus;
 
     private final Ethernet ethernet;
 
@@ -217,6 +220,7 @@ public class NzymeNodeImpl implements NzymeNode {
         }
 
         this.clusterManager = new ClusterManager(this);
+        this.messageBus = new PostgresMessageBusImpl(this);
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -457,6 +461,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public ClusterManager getClusterManager() {
         return clusterManager;
+    }
+
+    @Override
+    public MessageBus getMessageBus() {
+        return messageBus;
     }
 
     @Override
