@@ -1565,4 +1565,16 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_lookup_index_to_messagebus" author="lennartkoopmann">
+        <createIndex indexName="idx_msgbus_std_lookup" tableName="message_bus_messages" unique="false">
+            <column name="receiver_node_id" />
+            <column name="status" />
+            <column name="cycle_limiter" />
+        </createIndex>
+
+        <createIndex indexName="idx_msgbus_nack_lookup" tableName="message_bus_messages" unique="false">
+            <column name="status" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

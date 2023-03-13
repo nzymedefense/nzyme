@@ -50,9 +50,21 @@ public class PostgresMessageBusImpl implements MessageBus {
     }
 
     private void poll() {
-        /*
-         * query: nack, for this node, since last poll ts (persist poll in nodes), NULL cycle or current cycle
-         */
+        List<PostgresMessageEntry> messages = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM message_bus_messages WHERE receiver_node_id = :local_node_id " +
+                                "AND status = 'NEW' AND (cycle_limiter IS NULL OR cycle_limiter = :local_node_cycle) " +
+                                "ORDER BY created_at ASC")
+                        .bind("local_node_id", nzyme.getNodeManager().getLocalNodeId())
+                        .bind("local_node_cycle", nzyme.getNodeManager().getLocalCycle())
+                        .mapTo(PostgresMessageEntry.class)
+                        .list()
+        );
+
+        LOG.debug("Polled <{}> messages from message bus.", messages);
+
+        for (PostgresMessageEntry message : messages) {
+            LOG.info(message);
+        }
     }
 
     @Override
