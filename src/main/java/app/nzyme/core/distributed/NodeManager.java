@@ -44,6 +44,7 @@ public class NodeManager {
     private final NzymeNode nzyme;
 
     private UUID localNodeId;
+    private long localCycle;
 
     private final AtomicLong tapReportSize;
 
@@ -103,6 +104,14 @@ public class NodeManager {
                 handle.createUpdate("UPDATE nodes SET cycle = cycle+1 WHERE uuid = :node_id")
                         .bind("node_id", localNodeId)
                         .execute()
+        );
+
+        // Get current cycle.
+        localCycle = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT cycle FROM nodes WHERE uuid = :node_id")
+                        .bind("node_id", localNodeId)
+                        .mapTo(Long.class)
+                        .one()
         );
 
         Executors.newSingleThreadScheduledExecutor(
@@ -388,6 +397,10 @@ public class NodeManager {
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public long getLocalCycle() {
+        return localCycle;
     }
 
     public static final class NodeInitializationException extends Throwable {
