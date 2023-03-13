@@ -98,6 +98,13 @@ public class NodeManager {
             LOG.info("Created node ID: [{}]", localNodeId);
         }
 
+        // Increment cycle counter.
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE nodes SET cycle = cycle+1 WHERE uuid = :node_id")
+                        .bind("node_id", localNodeId)
+                        .execute()
+        );
+
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
                         .setNameFormat("node-metrics-updater-%d")

@@ -1557,4 +1557,12 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_node_cylces" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="cycle" type="bigint" defaultValue="1">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
