@@ -111,8 +111,8 @@ public class NodeManager {
                 handle.createQuery("SELECT cycle FROM nodes WHERE uuid = :node_id")
                         .bind("node_id", localNodeId)
                         .mapTo(Long.class)
-                        .one()
-        );
+                        .findOne()
+        ).orElse(1L);
 
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
