@@ -22,8 +22,8 @@ general: {
 }
 
 interfaces: {
-  rest_listen_uri: "https://127.0.0.1:22900/"
-  http_external_uri: "https://127.0.0.1:22900/"
+  rest_listen_uri: "https://127.0.0.1:23900/"
+  http_external_uri: "https://127.0.0.1:23900/"
   use_tls: false
   tls_certificate_path: none
   tls_key_path: none

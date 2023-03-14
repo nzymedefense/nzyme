@@ -54,6 +54,8 @@ public class RegistryImplTest {
         r.setEncryptedValue("foo", "bar");
         assertEquals(r.getEncryptedValue("foo").get(), "bar");
         assertEquals(r.getEncryptedValueOrNull("foo"), "bar");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {RegistryCryptoException.class},
@@ -75,6 +77,8 @@ public class RegistryImplTest {
         privatePath.toFile().delete();
 
         r.getEncryptedValue("foo");
+
+        nzyme.shutdown();
     }
 
     @Test
@@ -110,6 +114,8 @@ public class RegistryImplTest {
         r.setEncryptedValue("foo", "bar2");
         assertEquals(r.getEncryptedValue("foo").get(), "bar2");
         assertEquals(r.getEncryptedValueOrNull("foo"), "bar2");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -127,6 +133,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue(null, "foo");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -144,6 +152,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue("", "foo");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -161,6 +171,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue(" ", "foo");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -178,6 +190,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue("foo", null);
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -195,6 +209,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue("foo", "");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -212,6 +228,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue("foo", " ");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -229,6 +247,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue(randomString(129), "bar");
+
+        nzyme.shutdown();
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class},
@@ -246,6 +266,8 @@ public class RegistryImplTest {
 
         Registry r = new RegistryImpl(new MockNzyme(), "test");
         r.setEncryptedValue("foo", randomString(256));
+
+        nzyme.shutdown();
     }
 
     private String randomString(int length) {

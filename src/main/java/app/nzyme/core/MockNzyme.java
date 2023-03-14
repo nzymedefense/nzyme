@@ -110,7 +110,6 @@ public class MockNzyme implements NzymeNode {
     private final Sentry sentry;
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
-    private final NzymeHttpServer httpServer;
     private final MessageBus messageBus;
 
     private final Crypto crypto;
@@ -144,8 +143,6 @@ public class MockNzyme implements NzymeNode {
 
         this.messageBus = new PostgresMessageBusImpl(this);
         this.messageBus.initialize();
-
-        this.httpServer = new NzymeHttpServer(this, Collections.emptyList());
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -199,8 +196,6 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public void initialize() {
-        this.httpServer.initialize();
-
         try {
             this.crypto.initialize(false);
         } catch (Crypto.CryptoInitializationException e) {
@@ -416,7 +411,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public NzymeHttpServer getHttpServer() {
-        return httpServer;
+        return null;
     }
 
 
