@@ -22,6 +22,7 @@ import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.MessageBus;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryImpl;
+import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
@@ -108,6 +109,7 @@ public class MockNzyme implements NzymeNode {
     private final Sentry sentry;
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
+    private final NzymeHttpServer httpServer;
 
     private final Crypto crypto;
 
@@ -137,6 +139,8 @@ public class MockNzyme implements NzymeNode {
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }
+
+        this.httpServer = new NzymeHttpServer(this, Collections.emptyList());
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -190,6 +194,8 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public void initialize() {
+        this.httpServer.initialize();
+
         try {
             this.crypto.initialize(false);
         } catch (Crypto.CryptoInitializationException e) {
@@ -404,9 +410,10 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public void reloadHttpServer(int gracePeriod, TimeUnit tu) {
-
+    public NzymeHttpServer getHttpServer() {
+        return httpServer;
     }
+
 
     @Override
     public void registerRetroService(RetroService retroService) {

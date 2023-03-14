@@ -17,14 +17,13 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.*;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
-import app.nzyme.core.rest.resources.system.cluster.NodesResource;
+import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
@@ -35,7 +34,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -83,25 +81,7 @@ import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.remote.forwarders.Forwarder;
 import app.nzyme.core.remote.forwarders.ForwarderFactory;
 import app.nzyme.core.remote.inputs.RemoteFrameInput;
-import app.nzyme.core.rest.authentication.PrometheusBasicAuthFilter;
-import app.nzyme.core.rest.authentication.RESTAuthenticationFilter;
-import app.nzyme.core.rest.authentication.TapAuthenticationFilter;
-import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
-import app.nzyme.core.rest.resources.ethernet.DNSResource;
-import app.nzyme.core.rest.resources.monitoring.MonitoringResource;
-import app.nzyme.core.rest.resources.monitoring.PrometheusResource;
-import app.nzyme.core.rest.resources.system.*;
-import app.nzyme.core.rest.resources.taps.StatusResource;
-import app.nzyme.core.rest.resources.taps.TablesResource;
-import app.nzyme.core.rest.resources.taps.TapsResource;
 import app.nzyme.core.scheduler.SchedulingService;
-import app.nzyme.core.rest.CORSFilter;
-import app.nzyme.core.rest.NzymeLeaderInjectionBinder;
-import app.nzyme.core.rest.NzymeExceptionMapper;
-import app.nzyme.core.rest.ObjectMapperProvider;
-import app.nzyme.core.rest.resources.*;
-import app.nzyme.core.rest.resources.assets.WebInterfaceAssetsResource;
-import app.nzyme.core.rest.resources.authentication.AuthenticationResource;
 import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
@@ -110,20 +90,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.grizzly.http.CompressionConfig;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.message.DeflateEncoder;
-import org.glassfish.jersey.message.GZipEncoder;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.jetbrains.annotations.Nullable;
 import org.quartz.SchedulerException;
 
-import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -153,6 +122,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final NodeManager nodeManager;
     private final ClusterManager clusterManager;
+    private final NzymeHttpServer httpServer;
 
     private final ExecutorService probeExecutor;
     private final MetricRegistry metrics;
@@ -200,8 +170,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final List<Object> pluginRestResources;
 
-    private HttpServer httpServer;
-
     private SchedulingService schedulingService;
 
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
@@ -226,6 +194,8 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
+
+        this.httpServer = new NzymeHttpServer(this, this.pluginRestResources);
 
         this.ethernet = new Ethernet(this);
 
@@ -396,11 +366,10 @@ public class NzymeNodeImpl implements NzymeNode {
             this.plugins.add(plugin.getId());
         }
 
-
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         java.util.logging.Logger.getLogger("org.glassfish.jersey.internal.inject.Providers").setLevel(Level.SEVERE);
-        startHttpServer();
+        this.httpServer.initialize();
 
         // Ground Station.
         if (configuration.groundstationDevice() != null) {
@@ -789,123 +758,9 @@ public class NzymeNodeImpl implements NzymeNode {
         return version;
     }
 
-    private void startHttpServer() {
-        ResourceConfig resourceConfig = new ResourceConfig();
-        resourceConfig.register(new RESTAuthenticationFilter(this));
-        resourceConfig.register(new TapAuthenticationFilter(this));
-        resourceConfig.register(new PrometheusBasicAuthFilter(this));
-        resourceConfig.register(new CORSFilter());
-        resourceConfig.register(new NzymeLeaderInjectionBinder(this));
-        resourceConfig.register(new ObjectMapperProvider());
-        resourceConfig.register(new JacksonJaxbJsonProvider());
-        resourceConfig.register(new NzymeExceptionMapper());
-        resourceConfig.register(new TapTableSizeInterceptor(this));
-        resourceConfig.register(MultiPartFeature.class);
-
-        // Register REST API resources.
-        resourceConfig.register(AuthenticationResource.class);
-        resourceConfig.register(PingResource.class);
-        resourceConfig.register(AlertsResource.class);
-        resourceConfig.register(BanditsResource.class);
-        resourceConfig.register(ProbesResource.class);
-        resourceConfig.register(TrackersResource.class);
-        resourceConfig.register(NetworksResource.class);
-        resourceConfig.register(SystemResource.class);
-        resourceConfig.register(DashboardResource.class);
-        resourceConfig.register(AssetInventoryResource.class);
-        resourceConfig.register(ReportsResource.class);
-        resourceConfig.register(StatusResource.class);
-        resourceConfig.register(TablesResource.class);
-        resourceConfig.register(TapsResource.class);
-        resourceConfig.register(DNSResource.class);
-        resourceConfig.register(PluginResource.class);
-        resourceConfig.register(PrometheusResource.class);
-        resourceConfig.register(CryptoResource.class);
-        resourceConfig.register(MonitoringResource.class);
-        resourceConfig.register(NodesResource.class);
-        resourceConfig.register(HealthResource.class);
-        resourceConfig.register(RegistryResource.class);
-
-        // Plugin-supplied REST resources.
-        for (Object resource : pluginRestResources) {
-            try {
-                resourceConfig.register(resource);
-                LOG.info("Loaded plugin REST resource [{}].", resource.getClass().getCanonicalName());
-            } catch(Exception e) {
-                LOG.error("Could not register plugin REST resource [{}].", resource.getClass().getCanonicalName(), e);
-            }
-        }
-
-        // Enable GZIP.
-        resourceConfig.registerClasses(EncodingFilter.class, GZipEncoder.class, DeflateEncoder.class);
-
-        // Register web interface asset resources.
-        resourceConfig.register(WebInterfaceAssetsResource.class);
-
-        try {
-            KeyStoreBootstrapResult keyStore = crypto.bootstrapTLSKeyStore();
-            final SSLContextConfigurator sslContextConfigurator = new SSLContextConfigurator();
-            sslContextConfigurator.setKeyStorePass("".toCharArray());
-            sslContextConfigurator.setKeyStoreBytes(keyStore.keystoreBytes());
-            final SSLContext sslContext = sslContextConfigurator.createSSLContext(true);
-            SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
-
-            httpServer = GrizzlyHttpServerFactory.createHttpServer(
-                    configuration.restListenUri(),
-                    resourceConfig,
-                    true,
-                    sslEngineConfigurator
-            );
-
-            LOG.info("Final TLS type: [{}]", keyStore.loadSource());
-        } catch(Exception e) {
-            throw new RuntimeException("Could not start web server.", e);
-        }
-
-        CompressionConfig compressionConfig = httpServer.getListener("grizzly").getCompressionConfig();
-        compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
-        compressionConfig.setCompressionMinSize(1);
-        compressionConfig.setCompressibleMimeTypes();
-
-        // Start server.
-        try {
-            httpServer.start();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not start REST API.", e);
-        }
-
-        // Register message handler for requested server restarts.
-        this.messageBus.onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
-            @Override
-            public MessageProcessingResult handle(Message message) {
-                // TODO move this to a separate class file. Will have logic to determine if restart is required or not.
-                // has to work with all types. wildcard, etc. - do the whole load order bootstrap.
-                // move http server classes into own files? this is too much here.
-                LOG.info("HANDLING EVENT.");
-                return MessageProcessingResult.SUCCESS;
-            }
-
-            @Override
-            public String getName() {
-                return "Check for required HTTP server restart after TLS configuration change.";
-            }
-        });
-
-        LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
-                configuration.restListenUri(),
-                configuration.httpExternalUri());
-    }
-
     @Override
-    public void reloadHttpServer(int gracePeriod, TimeUnit tu) {
-        Executors.newSingleThreadExecutor().submit(new Runnable() {
-            @Override
-            public void run() {
-                LOG.info("Restarting HTTP server.");
-                httpServer.shutdown(gracePeriod, tu);
-                startHttpServer();
-            }
-        });
+    public NzymeHttpServer getHttpServer() {
+        return httpServer;
     }
 
     @Override
