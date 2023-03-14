@@ -3,6 +3,7 @@ package app.nzyme.core.rest.server;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.NzymeNodeImpl;
 import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
+import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
 import app.nzyme.core.distributed.messaging.Message;
 import app.nzyme.core.distributed.messaging.MessageHandler;
 import app.nzyme.core.distributed.messaging.MessageProcessingResult;
@@ -48,16 +49,50 @@ import java.util.concurrent.TimeUnit;
 
 public class NzymeHttpServer {
 
-    private static final Logger LOG = LogManager.getLogger(NzymeNodeImpl.class);
+    private static final Logger LOG = LogManager.getLogger(NzymeHttpServer.class);
 
     private final NzymeNode nzyme;
     private final List<Object> pluginRestResources;
 
     private HttpServer server;
+    private TLSKeyAndCertificate certificateInUse;
 
     public NzymeHttpServer(NzymeNode nzyme, List<Object> pluginRestResources) {
         this.nzyme = nzyme;
         this.pluginRestResources = pluginRestResources;
+
+        // Register message handler for requested server restarts.
+        nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
+            @Override
+            public MessageProcessingResult handle(Message message) {
+                LOG.info("Received request to check for a potential restart of HTTP server. Current certificate: [{}]",
+                        getCertificateInUse().signature());
+                try {
+                    /*
+                     * Run the whole cert bootstrap and compare against cert currently in use to determine if there is
+                     * a new cert. If there is a new cert, restart the server, which will load that cert.
+                     */
+                    KeyStoreBootstrapResult keyStore = nzyme.getCrypto().bootstrapTLSKeyStore();
+                    LOG.info("TLS bootstrap certificate decision: [{}]", keyStore.loadedCertificate().signature());
+                    if (!keyStore.loadedCertificate().signature().equals(getCertificateInUse().signature())) {
+                        LOG.info("Restarting HTTP server to load new TLS certificate.");
+                        reloadHttpServer(0, TimeUnit.SECONDS);
+                    } else {
+                        LOG.info("No restart of HTTP server required: Certificate did not change.");
+                    }
+
+                    return MessageProcessingResult.SUCCESS;
+                } catch(Exception e) {
+                    LOG.error("Could not handle requested HTTP server restart.", e);
+                    return MessageProcessingResult.FAILURE;
+                }
+            }
+
+            @Override
+            public String getName() {
+                return "Check for required HTTP server restart after TLS configuration change.";
+            }
+        });
     }
 
     public void initialize() {
@@ -128,7 +163,10 @@ public class NzymeHttpServer {
                     sslEngineConfigurator
             );
 
-            LOG.info("Final TLS type: [{}]", keyStore.loadSource());
+            this.certificateInUse = keyStore.loadedCertificate();
+
+            LOG.info("Loaded TLS certificate: [{}/{}]",
+                    certificateInUse.sourceType(), certificateInUse.signature());
         } catch(Exception e) {
             throw new RuntimeException("Could not start web server.", e);
         }
@@ -145,26 +183,13 @@ public class NzymeHttpServer {
             throw new RuntimeException("Could not start REST API.", e);
         }
 
-        // Register message handler for requested server restarts.
-        nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
-            @Override
-            public MessageProcessingResult handle(Message message) {
-                // TODO move this to a separate class file. Will have logic to determine if restart is required or not.
-                // has to work with all types. wildcard, etc. - do the whole load order bootstrap.
-                // move http server classes into own files? this is too much here.
-                LOG.info("HANDLING EVENT.");
-                return MessageProcessingResult.SUCCESS;
-            }
-
-            @Override
-            public String getName() {
-                return "Check for required HTTP server restart after TLS configuration change.";
-            }
-        });
-
         LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
                 nzyme.getConfiguration().restListenUri(),
                 nzyme.getConfiguration().httpExternalUri());
+    }
+
+    public TLSKeyAndCertificate getCertificateInUse() {
+        return certificateInUse;
     }
 
     public void reloadHttpServer(int gracePeriod, TimeUnit tu) {

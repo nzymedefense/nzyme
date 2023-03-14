@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Navigate, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import ClusterService from "../../../../services/ClusterService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Routes from "../../../../util/ApiRoutes";
@@ -12,19 +12,17 @@ import TLSCertificateUploadForm from "./form/TLSCertificateUploadForm";
 const clusterService = new ClusterService()
 const cryptoService = new CryptoService();
 
-function TLSCertificateDetailsPage(props) {
+function TLSCertificateDetailsPage() {
 
   const { nodeUUID } = useParams()
 
   const [node, setNode] = useState(null)
   const [certificate, setCertificate] = useState(null)
 
-  const [certInstallationSuccess, setCertInstallationSuccess] = useState(false)
-
   useEffect(() => {
     clusterService.findNode(nodeUUID, setNode)
     cryptoService.findTLSCertificateOfNode(nodeUUID, setCertificate)
-  }, [nodeUUID, setNode])
+  }, [nodeUUID, setNode, certificate])
 
   const regenerateSelfSignedCertificate = function() {
     if (!confirm("Really re-generate self-signed TLS certificate for this node? This will replace the existing " +
@@ -34,7 +32,8 @@ function TLSCertificateDetailsPage(props) {
     }
 
     cryptoService.regenerateSelfSignedTLSCertificate(nodeUUID, function() {
-      notify.show('TLS certificate re-generated.', 'success')
+      notify.show('TLS certificate re-generated.', 'success');
+      setCertificate(null);
     });
   }
 
@@ -47,16 +46,12 @@ function TLSCertificateDetailsPage(props) {
 
     cryptoService.installIndividualTLSCertificate(nodeUUID, formData, function() {
       notify.show('TLS certificate installed.', 'success');
-      setCertInstallationSuccess(true);
+      setCertificate(null);
     })
   }
 
   if (!node || !certificate) {
     return <LoadingSpinner />
-  }
-
-  if (certInstallationSuccess) {
-    return <Navigate to={Routes.SYSTEM.CRYPTO.INDEX} />
   }
 
   return (

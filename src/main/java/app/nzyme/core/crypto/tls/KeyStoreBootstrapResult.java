@@ -6,12 +6,12 @@ import com.google.auto.value.AutoValue;
 public abstract class KeyStoreBootstrapResult {
 
     public abstract byte[] keystoreBytes();
-    public abstract TLSSourceType loadSource();
+    public abstract TLSKeyAndCertificate loadedCertificate();
 
-    public static KeyStoreBootstrapResult create(byte[] keystoreBytes, TLSSourceType loadSource) {
+    public static KeyStoreBootstrapResult create(byte[] keystoreBytes, TLSKeyAndCertificate loadedCertificate) {
         return builder()
                 .keystoreBytes(keystoreBytes)
-                .loadSource(loadSource)
+                .loadedCertificate(loadedCertificate)
                 .build();
     }
 
@@ -23,7 +23,7 @@ public abstract class KeyStoreBootstrapResult {
     public abstract static class Builder {
         public abstract Builder keystoreBytes(byte[] keystoreBytes);
 
-        public abstract Builder loadSource(TLSSourceType loadSource);
+        public abstract Builder loadedCertificate(TLSKeyAndCertificate loadedCertificate);
 
         public abstract KeyStoreBootstrapResult build();
     }

@@ -6,6 +6,7 @@ import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
+import app.nzyme.core.distributed.messaging.ClusterMessage;
 import app.nzyme.core.distributed.messaging.Message;
 import app.nzyme.core.distributed.messaging.MessageType;
 import app.nzyme.core.rest.requests.UpdateTLSWildcardNodeMatcherRequest;
@@ -336,12 +337,7 @@ public class CryptoResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        nzyme.getMessageBus().send(Message.create(
-                nodeId,
-                MessageType.CHECK_RESTART_HTTP_SERVER,
-                Collections.emptyMap(),
-                true
-        ));
+        requestHttpServerRestart(nodeId);
 
         return Response.ok().build();
     }
@@ -449,6 +445,8 @@ public class CryptoResource {
 
         nzyme.getCrypto().updateTLSCertificateOfNode(nodeId, tls);
 
+        requestHttpServerRestart(nodeId);
+
         return Response.ok(Response.Status.CREATED).build();
     }
 
@@ -472,6 +470,8 @@ public class CryptoResource {
         }
 
         nzyme.getCrypto().writeTLSWildcardCertificate(tls);
+
+        requestHttpServerRestartAcrossCluster();
 
         return Response.ok(Response.Status.CREATED).build();
     }
@@ -499,6 +499,8 @@ public class CryptoResource {
 
         nzyme.getCrypto().replaceTLSWildcardCertificate(certificateId, newCert);
 
+        requestHttpServerRestartAcrossCluster();
+
         return Response.ok(Response.Status.CREATED).build();
     }
 
@@ -524,6 +526,8 @@ public class CryptoResource {
 
         nzyme.getCrypto().updateTLSWildcardCertificateNodeMatcher(certificateId, request.nodeMatcher());
 
+        requestHttpServerRestartAcrossCluster();
+
         return Response.ok().build();
     }
 
@@ -531,6 +535,9 @@ public class CryptoResource {
     @Path("/tls/wildcard/{cert_id}")
     public Response deleteTLSWildcardCertificate(@PathParam("cert_id") long certificateId) {
         nzyme.getCrypto().deleteTLSWildcardCertificate(certificateId);
+
+        requestHttpServerRestartAcrossCluster();
+
         return Response.ok().build();
     }
 
@@ -578,6 +585,25 @@ public class CryptoResource {
         }
 
         return matchingNodes;
+    }
+
+    // TODO do this where it iterates over all running nodes, with cycle limiter. utility method in MessageBus?
+
+    private void requestHttpServerRestart(UUID nodeId) {
+        nzyme.getMessageBus().send(Message.create(
+                nodeId,
+                MessageType.CHECK_RESTART_HTTP_SERVER,
+                Collections.emptyMap(),
+                true
+        ));
+    }
+
+    private void requestHttpServerRestartAcrossCluster() {
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.CHECK_RESTART_HTTP_SERVER,
+                Collections.emptyMap(),
+                true
+        ));
     }
 
 }

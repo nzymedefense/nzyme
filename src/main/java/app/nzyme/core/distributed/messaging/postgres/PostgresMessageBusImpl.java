@@ -1,6 +1,7 @@
 package app.nzyme.core.distributed.messaging.postgres;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.messaging.*;
 import com.beust.jcommander.internal.Lists;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,7 +35,7 @@ public class PostgresMessageBusImpl implements MessageBus {
         this.nzyme = nzyme;
         this.initialized = false;
 
-        this.messageHandlers = Maps.newHashMap();
+        this.messageHandlers = Maps.newConcurrentMap();
 
         this.om = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
@@ -137,6 +138,26 @@ public class PostgresMessageBusImpl implements MessageBus {
                         .bind("created_at", DateTime.now())
                         .execute()
         );
+    }
+
+    @Override
+    public void sendToAllOnlineNodes(ClusterMessage message) {
+        List<Node> targets = Lists.newArrayList();
+        for (Node node : nzyme.getNodeManager().getNodes()) {
+            // Only send to currently active nodes.
+            if (node.lastSeen().isAfter(DateTime.now().minusSeconds(30))) {
+                targets.add(node);
+            }
+        }
+
+        for (Node target : targets) {
+            send(Message.create(
+                    target.uuid(),
+                    message.type(),
+                    message.parameters(),
+                    message.limitToCurrentCycle()
+            ));
+        }
     }
 
     @Override

@@ -556,8 +556,6 @@ public class Crypto {
             TLSKeyAndCertificate tls;
             if (diskCert.isPresent()) {
                 Optional<TLSKeyAndCertificate> existingCert = findTLSKeyAndCertificateOfNode(nodeId);
-
-                LOG.info("Installing TLS certificate from disk");
                 tls = diskCert.get();
 
                 if (existingCert.isPresent()) {
@@ -571,18 +569,14 @@ public class Crypto {
                 TLSKeyAndCertificate wildcardTls = matchingNodes.get(nzyme.getNodeInformation().id());
                 if (wildcardTls != null) {
                     // Wildcard
-                    LOG.info("Reading wildcard TLS certificate from database.");
                     tls = wildcardTls;
                 } else {
-                    LOG.info("Reading individual TLS certificate from database.");
-
                     Optional<TLSKeyAndCertificate> tlsData = findTLSKeyAndCertificateOfNode(nodeId);
                     if (tlsData.isEmpty()) {
                         throw new RuntimeException("No TLS certificate data of this node found in database.");
-                    } else {
-                        TLSKeyAndCertificate result = tlsData.get();
-                        tls = result;
                     }
+
+                    tls = tlsData.get();
                 }
             }
 
@@ -596,7 +590,7 @@ public class Crypto {
             try(ByteArrayOutputStream ksStream = new ByteArrayOutputStream()) {
                 keyStore.store(ksStream, "".toCharArray());
 
-                return KeyStoreBootstrapResult.create(ksStream.toByteArray(), tls.sourceType());
+                return KeyStoreBootstrapResult.create(ksStream.toByteArray(), tls);
             }
         } catch(Exception e) {
             throw new RuntimeException("Could not build TLS key store.", e);
