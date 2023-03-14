@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.MessageBus;
+import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -110,6 +111,7 @@ public class MockNzyme implements NzymeNode {
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
     private final NzymeHttpServer httpServer;
+    private final MessageBus messageBus;
 
     private final Crypto crypto;
 
@@ -139,6 +141,9 @@ public class MockNzyme implements NzymeNode {
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }
+
+        this.messageBus = new PostgresMessageBusImpl(this);
+        this.messageBus.initialize();
 
         this.httpServer = new NzymeHttpServer(this, Collections.emptyList());
 
@@ -219,7 +224,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public MessageBus getMessageBus() {
-        return null;
+        return messageBus;
     }
 
     @Override
