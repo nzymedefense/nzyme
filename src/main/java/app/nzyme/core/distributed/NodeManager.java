@@ -107,12 +107,7 @@ public class NodeManager {
         );
 
         // Get current cycle.
-        localCycle = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT cycle FROM nodes WHERE uuid = :node_id")
-                        .bind("node_id", localNodeId)
-                        .mapTo(Long.class)
-                        .findOne()
-        ).orElse(1L);
+        localCycle = getCycleOfNode(localNodeId);
 
         Executors.newSingleThreadScheduledExecutor(
                 new ThreadFactoryBuilder()
@@ -397,6 +392,15 @@ public class NodeManager {
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public long getCycleOfNode(UUID nodeId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT cycle FROM nodes WHERE uuid = :node_id")
+                        .bind("node_id", nodeId)
+                        .mapTo(Long.class)
+                        .findOne()
+        ).orElse(1L); // 1 if this is a brand-new node that hasn't registered yet. (happens in init once)
     }
 
     public long getLocalCycle() {

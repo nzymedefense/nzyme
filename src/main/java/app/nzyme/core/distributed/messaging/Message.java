@@ -1,9 +1,7 @@
 package app.nzyme.core.distributed.messaging;
 
 import com.google.auto.value.AutoValue;
-import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,26 +10,15 @@ public abstract class Message {
 
     public abstract UUID receiver();
     public abstract MessageType type();
-
-    @Nullable
     public abstract Map<String, Object> parameters();
+    public abstract boolean limitToCurrentCycle();
 
-    @Nullable
-    public abstract Long cycleLimiter();
-
-    public abstract DateTime createdAt();
-
-    @Nullable
-    public abstract DateTime acknowledgedAt();
-
-    public static Message create(UUID receiver, MessageType type, Map<String, Object> parameters, long cycleLimiter, DateTime createdAt, DateTime acknowledgedAt) {
+    public static Message create(UUID receiver, MessageType type, Map<String, Object> parameters, boolean limitToCurrentCycle) {
         return builder()
                 .receiver(receiver)
                 .type(type)
                 .parameters(parameters)
-                .cycleLimiter(cycleLimiter)
-                .createdAt(createdAt)
-                .acknowledgedAt(acknowledgedAt)
+                .limitToCurrentCycle(limitToCurrentCycle)
                 .build();
     }
 
@@ -47,12 +34,9 @@ public abstract class Message {
 
         public abstract Builder parameters(Map<String, Object> parameters);
 
-        public abstract Builder cycleLimiter(long cycleLimiter);
-
-        public abstract Builder createdAt(DateTime createdAt);
-
-        public abstract Builder acknowledgedAt(DateTime acknowledgedAt);
+        public abstract Builder limitToCurrentCycle(boolean limitToCurrentCycle);
 
         public abstract Message build();
     }
+
 }

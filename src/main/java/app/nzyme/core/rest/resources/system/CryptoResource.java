@@ -6,6 +6,8 @@ import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
+import app.nzyme.core.distributed.messaging.Message;
+import app.nzyme.core.distributed.messaging.MessageType;
 import app.nzyme.core.rest.requests.UpdateTLSWildcardNodeMatcherRequest;
 import app.nzyme.core.rest.responses.crypto.*;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -333,6 +335,13 @@ public class CryptoResource {
             LOG.error("Could not generate TLS certificate.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
+
+        nzyme.getMessageBus().send(Message.create(
+                nodeId,
+                MessageType.CHECK_RESTART_HTTP_SERVER,
+                Collections.emptyMap(),
+                true
+        ));
 
         return Response.ok().build();
     }

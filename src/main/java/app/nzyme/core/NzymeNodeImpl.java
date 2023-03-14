@@ -20,7 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
-import app.nzyme.core.distributed.messaging.MessageBus;
+import app.nzyme.core.distributed.messaging.*;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
@@ -298,6 +298,9 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
+
+        LOG.info("Initializing message bus [{}].", this.messageBus.getClass().getCanonicalName());
+        this.messageBus.initialize();
 
         try {
             this.crypto.initialize();
@@ -870,6 +873,23 @@ public class NzymeNodeImpl implements NzymeNode {
         } catch (IOException e) {
             throw new RuntimeException("Could not start REST API.", e);
         }
+
+        // Register message handler for requested server restarts.
+        this.messageBus.onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
+            @Override
+            public MessageProcessingResult handle(Message message) {
+                // TODO move this to a separate class file. Will have logic to determine if restart is required or not.
+                // has to work with all types. wildcard, etc. - do the whole load order bootstrap.
+                // move http server classes into own files? this is too much here.
+                LOG.info("HANDLING EVENT.");
+                return MessageProcessingResult.SUCCESS;
+            }
+
+            @Override
+            public String getName() {
+                return "Check for required HTTP server restart after TLS configuration change.";
+            }
+        });
 
         LOG.info("Started web interface and REST API at [{}]. Access it at: [{}]",
                 configuration.restListenUri(),
