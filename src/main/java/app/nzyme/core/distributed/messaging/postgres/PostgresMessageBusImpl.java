@@ -88,12 +88,17 @@ public class PostgresMessageBusImpl implements MessageBus {
                                 new TypeReference<HashMap<String,Object>>() {}
                         );
 
-                        handler.handle(Message.create(
+                        MessageProcessingResult opResult = handler.handle(Message.create(
                                 message.receiver(),
                                 type,
                                 parameters,
                                 message.cycleLimiter() != null
                         ));
+
+                        setMessageStatus(message.id(),
+                                opResult == MessageProcessingResult.SUCCESS
+                                        ? MessageStatus.PROCESSED_SUCCESS : MessageStatus.PROCESSED_FAILURE
+                        );
                     }
                 }
             }
