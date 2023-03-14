@@ -5,6 +5,7 @@ import app.nzyme.core.ResourcesAccessingTest;
 import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.Node;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -46,16 +47,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
 
         assertEquals(tls.certificates().size(), 2);
         assertEquals(tls.signature(), "d15b8401c1e7dfc7acd7c1386560692883b7e9307dd353286057c200a5bc3473");
-        assertEquals(tls.expiresAt().toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(tls.validFrom().toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(tls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(tls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(tls.nodeId(), nodeId);
         assertEquals(tls.key().getFormat(), "PKCS#8");
         assertEquals(tls.key().getAlgorithm(), "ECDSA");
 
         X509Certificate firstCert = tls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withRSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=Example Intermediate CA");
@@ -83,16 +84,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
 
         assertEquals(tls.certificates().size(), 2);
         assertEquals(tls.signature(), "3aa94bfc2e0175fead5d29bacdfcbe6b968bdb13a99e37cbbfa8d7e62a37ab27");
-        assertEquals(tls.expiresAt().toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(tls.validFrom().toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(tls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(tls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(tls.nodeId(), nodeId);
         assertEquals(tls.key().getFormat(), "PKCS#8");
         assertEquals(tls.key().getAlgorithm(), "ECDSA");
 
         X509Certificate firstCert = tls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withECDSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=nzymetests Intermediate CA,O=nzymetests");
@@ -119,16 +120,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
 
         assertEquals(tls.certificates().size(), 2);
         assertEquals(tls.signature(), "d15b8401c1e7dfc7acd7c1386560692883b7e9307dd353286057c200a5bc3473");
-        assertEquals(tls.expiresAt().toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(tls.validFrom().toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(tls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(tls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(tls.nodeMatcher(), "^foo");
         assertEquals(tls.key().getFormat(), "PKCS#8");
         assertEquals(tls.key().getAlgorithm(), "ECDSA");
 
         X509Certificate firstCert = tls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withRSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=Example Intermediate CA");
@@ -155,16 +156,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
 
         assertEquals(tls.certificates().size(), 2);
         assertEquals(tls.signature(), "3aa94bfc2e0175fead5d29bacdfcbe6b968bdb13a99e37cbbfa8d7e62a37ab27");
-        assertEquals(tls.expiresAt().toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(tls.validFrom().toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(tls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(tls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(tls.nodeMatcher(), "^foo");
         assertEquals(tls.key().getFormat(), "PKCS#8");
         assertEquals(tls.key().getAlgorithm(), "ECDSA");
 
         X509Certificate firstCert = tls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withECDSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=nzymetests Intermediate CA,O=nzymetests");
@@ -201,16 +202,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         TLSKeyAndCertificate dbTls = dbTlsR.get();
         assertEquals(dbTls.certificates().size(), 2);
         assertEquals(dbTls.signature(), "d15b8401c1e7dfc7acd7c1386560692883b7e9307dd353286057c200a5bc3473");
-        assertEquals(dbTls.expiresAt().toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(dbTls.validFrom().toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(dbTls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(dbTls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(dbTls.nodeId(), nzyme.getNodeInformation().id());
         assertEquals(dbTls.key().getFormat(), "PKCS#8");
         assertEquals(dbTls.key().getAlgorithm(), "EC");
 
         X509Certificate firstCert = dbTls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withRSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=Example Intermediate CA");
@@ -247,16 +248,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         TLSKeyAndCertificate dbTls = dbTlsR.get();
         assertEquals(dbTls.certificates().size(), 2);
         assertEquals(dbTls.signature(), "3aa94bfc2e0175fead5d29bacdfcbe6b968bdb13a99e37cbbfa8d7e62a37ab27");
-        assertEquals(dbTls.expiresAt().toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(dbTls.validFrom().toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(dbTls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(dbTls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(dbTls.nodeId(), nzyme.getNodeInformation().id());
         assertEquals(dbTls.key().getFormat(), "PKCS#8");
         assertEquals(dbTls.key().getAlgorithm(), "EC");
 
         X509Certificate firstCert = dbTls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withECDSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=nzymetests Intermediate CA,O=nzymetests");
@@ -289,16 +290,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         TLSWildcardKeyAndCertificate dbTls = nzyme.getCrypto().getTLSWildcardCertificates().get(0);
         assertEquals(dbTls.certificates().size(), 2);
         assertEquals(dbTls.signature(), "d15b8401c1e7dfc7acd7c1386560692883b7e9307dd353286057c200a5bc3473");
-        assertEquals(dbTls.expiresAt().toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(dbTls.validFrom().toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(dbTls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(dbTls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(dbTls.nodeMatcher(), "^foo");
         assertEquals(dbTls.key().getFormat(), "PKCS#8");
         assertEquals(dbTls.key().getAlgorithm(), "EC");
 
         X509Certificate firstCert = dbTls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withRSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:58:49.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:57:49.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:58:49.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:57:49.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=Example Intermediate CA");
@@ -331,16 +332,16 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         TLSWildcardKeyAndCertificate dbTls = nzyme.getCrypto().getTLSWildcardCertificates().get(0);
         assertEquals(dbTls.certificates().size(), 2);
         assertEquals(dbTls.signature(), "3aa94bfc2e0175fead5d29bacdfcbe6b968bdb13a99e37cbbfa8d7e62a37ab27");
-        assertEquals(dbTls.expiresAt().toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(dbTls.validFrom().toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(dbTls.expiresAt().withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(dbTls.validFrom().withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(dbTls.nodeMatcher(), "^foo");
         assertEquals(dbTls.key().getFormat(), "PKCS#8");
         assertEquals(dbTls.key().getAlgorithm(), "EC");
 
         X509Certificate firstCert = dbTls.certificates().get(0);
         assertEquals(firstCert.getSigAlgName(), "SHA256withECDSA");
-        assertEquals(new DateTime(firstCert.getNotAfter()).toString(), "2023-03-09T14:51:12.000-06:00");
-        assertEquals(new DateTime(firstCert.getNotBefore()).toString(), "2023-03-08T14:50:12.000-06:00");
+        assertEquals(new DateTime(firstCert.getNotAfter()).withZone(DateTimeZone.UTC).toString(), "2023-03-09T20:51:12.000Z");
+        assertEquals(new DateTime(firstCert.getNotBefore()).withZone(DateTimeZone.UTC).toString(), "2023-03-08T20:50:12.000Z");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getSubjectX500Principal().getName(), "CN=test.nzyme.example.com");
         assertEquals(firstCert.getIssuerX500Principal().getName(), "CN=nzymetests Intermediate CA,O=nzymetests");

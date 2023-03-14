@@ -118,7 +118,7 @@ public class NodeManagerTest {
         assertEquals(node.uuid(), nm.getLocalNodeId());
         assertEquals(node.name(), "mocky-mock");
         assertEquals(node.version(), nzyme.getVersion().getVersion().toString());
-        assertEquals(node.httpExternalUri(), URI.create("https://127.0.0.1:22900/"));
+        assertEquals(node.httpExternalUri(), URI.create("https://127.0.0.1:23900/"));
         assertTrue(node.lastSeen().isBefore(DateTime.now()));
         assertTrue(node.lastSeen().isAfter(DateTime.now().minusMinutes(1)));
 
@@ -159,7 +159,7 @@ public class NodeManagerTest {
         assertEquals(firstUUID, nm.getLocalNodeId());
         assertEquals(firstName, "mocky-mock");
         assertEquals(firstVersion, nzyme.getVersion().getVersion().toString());
-        assertEquals(firstHttpExternalUri, URI.create("https://127.0.0.1:22900/"));
+        assertEquals(firstHttpExternalUri, URI.create("https://127.0.0.1:23900/"));
         assertTrue(firstTs.isBefore(DateTime.now()));
         assertTrue(firstTs.isAfter(DateTime.now().minusMinutes(1)));
 
