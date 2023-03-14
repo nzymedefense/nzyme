@@ -361,7 +361,7 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         MockNzyme nzyme = new MockNzyme();
         nzyme.getCrypto().initialize(false);
         KeyStoreBootstrapResult result = nzyme.getCrypto().bootstrapTLSKeyStore();
-        assertEquals(result.loadSource(), TLSSourceType.GENERATED_SELF_SIGNED);
+        assertEquals(result.loadedCertificate().sourceType(), TLSSourceType.GENERATED_SELF_SIGNED);
 
         // Load from disk when individual exists.
         Path keyLocation = Paths.get(CryptoTestUtils.CRYPTO_TEST_FOLDER.toString(), Crypto.TLS_KEY_FILE_NAME);
@@ -370,7 +370,7 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         Files.write(certLocation, Files.readAllBytes(cert.toPath()));
         nzyme.getCrypto().initialize(false);
         KeyStoreBootstrapResult result2 = nzyme.getCrypto().bootstrapTLSKeyStore();
-        assertEquals(result2.loadSource(), TLSSourceType.FILE_LOADED);
+        assertEquals(result2.loadedCertificate().sourceType(), TLSSourceType.FILE_LOADED);
 
         // Write Wildcard
         Files.delete(keyLocation);
@@ -385,14 +385,14 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
         nzyme.getCrypto().writeTLSWildcardCertificate(wildcard);
         nzyme.getCrypto().initialize(false);
         KeyStoreBootstrapResult result3 = nzyme.getCrypto().bootstrapTLSKeyStore();
-        assertEquals(result3.loadSource(), TLSSourceType.WILDCARD);
+        assertEquals(result3.loadedCertificate().sourceType(), TLSSourceType.WILDCARD);
 
         // Load from disk when wildcard exists.
         Files.write(keyLocation, Files.readAllBytes(key.toPath()));
         Files.write(certLocation, Files.readAllBytes(cert.toPath()));
         nzyme.getCrypto().initialize(false);
         KeyStoreBootstrapResult result4 = nzyme.getCrypto().bootstrapTLSKeyStore();
-        assertEquals(result4.loadSource(), TLSSourceType.FILE_LOADED);
+        assertEquals(result4.loadedCertificate().sourceType(), TLSSourceType.FILE_LOADED);
     }
 
     @Test
