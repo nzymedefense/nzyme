@@ -4,7 +4,6 @@ import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -30,9 +29,12 @@ public class BaseConfigurationServiceTest {
         s.initialize();
         BaseConfiguration c = s.getConfiguration();
 
+        System.out.println("TEST DETECT c.updatedAt():" + c.updatedAt());
+        System.out.println("TEST DETECT now:" + DateTime.now());
+
         assertTrue(c.tapSecret().length() == 64);
-        assertTrue(c.updatedAt().withZone(DateTimeZone.UTC).isAfter(DateTime.now().withZone(DateTimeZone.UTC).minusSeconds(300))
-                && c.updatedAt().withZone(DateTimeZone.UTC).isBefore(DateTime.now().withZone(DateTimeZone.UTC).plusSeconds(300)));
+        assertTrue(c.updatedAt().isAfter(DateTime.now().minusSeconds(300))
+                && c.updatedAt().isBefore(DateTime.now().plusSeconds(300)));
 
         resetConfig();
 
