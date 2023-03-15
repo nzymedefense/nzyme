@@ -77,7 +77,7 @@ public class BaseConfigurationService {
         return RandomStringUtils.random(64, true, true);
     }
 
-    private void invalidateAndUpdateCache() {
+    public void invalidateAndUpdateCache() {
         BaseConfiguration config = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT tap_secret, updated_at FROM base_configuration LIMIT 1")
                         .mapTo(BaseConfiguration.class)

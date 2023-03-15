@@ -4,6 +4,7 @@ import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.joda.time.DateTime;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -11,10 +12,10 @@ import static org.testng.Assert.*;
 
 public class BaseConfigurationServiceTest {
 
-    @BeforeTest
+    @BeforeMethod
     public void resetConfig() {
         NzymeNode nzyme = new MockNzyme(10);
-        nzyme.getDatabase().useHandle(handle -> handle.execute("TRUNCATE base_configuration"));
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("TRUNCATE base_configuration").execute());
     }
 
     @Test
@@ -27,10 +28,8 @@ public class BaseConfigurationServiceTest {
     public void testGetInitialRow() {
         BaseConfigurationService s = new BaseConfigurationService(new MockNzyme());
         s.initialize();
+        s.invalidateAndUpdateCache();
         BaseConfiguration c = s.getConfiguration();
-
-        System.out.println("TEST DETECT c.updatedAt():" + c.updatedAt());
-        System.out.println("TEST DETECT now:" + DateTime.now());
 
         assertTrue(c.tapSecret().length() == 64);
         assertTrue(c.updatedAt().isAfter(DateTime.now().minusSeconds(300))
@@ -49,6 +48,7 @@ public class BaseConfigurationServiceTest {
     public void testSetTapSecret() {
         BaseConfigurationService s = new BaseConfigurationService(new MockNzyme());
         s.initialize();
+        s.invalidateAndUpdateCache();
 
         String newSecret = RandomStringUtils.random(64, true, true);
 
