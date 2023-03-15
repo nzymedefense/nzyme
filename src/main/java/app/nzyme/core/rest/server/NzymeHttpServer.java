@@ -1,13 +1,8 @@
 package app.nzyme.core.rest.server;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.NzymeNodeImpl;
 import app.nzyme.core.crypto.tls.KeyStoreBootstrapResult;
 import app.nzyme.core.crypto.tls.TLSKeyAndCertificate;
-import app.nzyme.core.distributed.messaging.Message;
-import app.nzyme.core.distributed.messaging.MessageHandler;
-import app.nzyme.core.distributed.messaging.MessageProcessingResult;
-import app.nzyme.core.distributed.messaging.MessageType;
 import app.nzyme.core.rest.CORSFilter;
 import app.nzyme.core.rest.NzymeExceptionMapper;
 import app.nzyme.core.rest.NzymeLeaderInjectionBinder;
@@ -27,6 +22,10 @@ import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
+import app.nzyme.plugin.distributed.messaging.Message;
+import app.nzyme.plugin.distributed.messaging.MessageHandler;
+import app.nzyme.plugin.distributed.messaging.MessageProcessingResult;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

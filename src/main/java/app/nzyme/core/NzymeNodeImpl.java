@@ -19,7 +19,6 @@ package app.nzyme.core;
 
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
-import app.nzyme.core.distributed.messaging.*;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
@@ -28,6 +27,7 @@ import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
 import app.nzyme.plugin.Registry;
+import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;

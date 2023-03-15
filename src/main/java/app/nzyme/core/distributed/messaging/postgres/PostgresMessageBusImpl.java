@@ -2,7 +2,7 @@ package app.nzyme.core.distributed.messaging.postgres;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.Node;
-import app.nzyme.core.distributed.messaging.*;
+import app.nzyme.plugin.distributed.messaging.*;
 import com.beust.jcommander.internal.Lists;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
