@@ -6,6 +6,8 @@ import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.testng.Assert.*;
 
 public class SentryTest {
@@ -18,7 +20,7 @@ public class SentryTest {
 
     @Test
     public void testTickSSID() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(1);
+        NzymeNode nzyme = new MockNzyme(1, 5, TimeUnit.SECONDS);
         Sentry sentry = nzyme.getSentry();
 
         assertFalse(sentry.knowsSSID("foo1"));

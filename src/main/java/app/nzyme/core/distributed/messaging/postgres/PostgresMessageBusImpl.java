@@ -42,13 +42,12 @@ public class PostgresMessageBusImpl implements MessageBus {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    @Override
-    public void initialize() {
+    public void initialize(int pollInterval, TimeUnit pollIntervalUnit) {
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("psql-bus-poller-%d")
                 .build()
-        ).scheduleWithFixedDelay(this::poll, 0, 5, TimeUnit.SECONDS);
+        ).scheduleWithFixedDelay(this::poll, 0, pollInterval, pollIntervalUnit);
 
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
@@ -59,7 +58,12 @@ public class PostgresMessageBusImpl implements MessageBus {
         this.initialized = true;
     }
 
-    private void poll() {
+    @Override
+    public void initialize() {
+        initialize(5, TimeUnit.SECONDS);
+    }
+
+    public void poll() {
         try {
             List<PostgresMessageEntry> messages = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT * FROM message_bus_messages WHERE receiver_node_id = :local_node_id " +

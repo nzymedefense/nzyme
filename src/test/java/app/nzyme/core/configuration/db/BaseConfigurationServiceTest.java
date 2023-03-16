@@ -8,13 +8,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.testng.Assert.*;
 
 public class BaseConfigurationServiceTest {
 
     @BeforeMethod
     public void resetConfig() {
-        NzymeNode nzyme = new MockNzyme(10);
+        NzymeNode nzyme = new MockNzyme(10, 5, TimeUnit.SECONDS);
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("TRUNCATE base_configuration").execute());
     }
 

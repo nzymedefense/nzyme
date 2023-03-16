@@ -73,6 +73,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class MockNzyme implements NzymeNode {
 
@@ -114,10 +115,10 @@ public class MockNzyme implements NzymeNode {
     private final Crypto crypto;
 
     public MockNzyme() {
-        this(0);
+        this(0, 5, TimeUnit.SECONDS);
     }
 
-    public MockNzyme(int sentryInterval) {
+    public MockNzyme(int sentryInterval, int pollInterval, TimeUnit pollIntervalUnit) {
         this.version = new Version();
 
         try {
@@ -141,7 +142,7 @@ public class MockNzyme implements NzymeNode {
         }
 
         this.messageBus = new PostgresMessageBusImpl(this);
-        this.messageBus.initialize();
+        ((PostgresMessageBusImpl) this.messageBus).initialize(pollInterval, pollIntervalUnit);
 
         this.nodeManager = new NodeManager(this);
         try {

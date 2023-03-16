@@ -11,6 +11,8 @@ import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.concurrent.TimeUnit;
+
 public class TacticalSummaryReportTest {
 
     protected static final Dot11MetaInformation META_NO_WEP = new Dot11MetaInformation(false, 100, 2400, 1, 0L, false);
@@ -23,7 +25,7 @@ public class TacticalSummaryReportTest {
 
     @Test
     public void testBasicReport() throws Exception, MalformedFrameException {
-        MockNzyme nzyme = new MockNzyme(5);
+        MockNzyme nzyme = new MockNzyme(5, 5, TimeUnit.SECONDS);
 
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusDays(162));
         nzyme.getSentry().tickSSID("Centurion_Lounge", DateTime.now().minusSeconds(4));
