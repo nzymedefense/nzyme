@@ -119,11 +119,17 @@ public class NodeManager {
         LOG.info("Node ID: [{}]", localNodeId);
     }
 
+
     public void registerSelf() {
         if (localNodeId == null) {
             throw new RuntimeException("Not initialized. Cannot register myself.");
         }
 
+        registerSelf(localNodeId);
+    }
+
+    // The custom UUID is for testing.
+    public void registerSelf(UUID uuid) {
         NodeInformation.Info ni = new NodeInformation().collect();
 
         nzyme.getDatabase().useHandle(handle ->
@@ -145,7 +151,7 @@ public class NodeManager {
                                 "cpu_thread_count = :cpu_thread_count, process_start_time = :process_start_time, " +
                                 "process_virtual_size = :process_virtual_size, process_arguments = :process_arguments, " +
                                 "os_information = :os_information, clock = :clock, deleted = false")
-                        .bind("uuid", localNodeId)
+                        .bind("uuid", uuid)
                         .bind("name", nzyme.getNodeInformation().name())
                         .bind("http_listen_uri", nzyme.getConfiguration().restListenUri().toString())
                         .bind("http_external_uri", nzyme.getConfiguration().httpExternalUri().toString())

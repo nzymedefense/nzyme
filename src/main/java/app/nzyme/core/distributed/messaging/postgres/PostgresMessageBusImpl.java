@@ -53,7 +53,8 @@ public class PostgresMessageBusImpl implements MessageBus {
                 .setDaemon(true)
                 .setNameFormat("psql-retention-cleaner-%d")
                 .build()
-        ).scheduleAtFixedRate(this::retentionClean, 1, 1, TimeUnit.HOURS);
+        ).scheduleAtFixedRate(() -> retentionClean(DateTime.now().minusDays(7)),
+                1, 1, TimeUnit.HOURS);
 
         this.initialized = true;
     }
@@ -190,11 +191,11 @@ public class PostgresMessageBusImpl implements MessageBus {
         );
     }
 
-    public void retentionClean() {
+    public void retentionClean(DateTime cutoff) {
         LOG.info("Running retention cleaning for message bus.");
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM message_bus_messages WHERE created_at < :timeout")
-                        .bind("timeout", DateTime.now().minusDays(7))
+                        .bind("timeout", cutoff)
                         .execute()
         );
     }
