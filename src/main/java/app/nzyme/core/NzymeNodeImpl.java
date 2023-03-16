@@ -114,6 +114,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
+    private final BaseConfiguration baseConfiguration;
 
     private final Path dataDirectory;
 
@@ -173,6 +174,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private SchedulingService schedulingService;
 
     public NzymeNodeImpl(BaseConfiguration baseConfiguration, NodeConfiguration configuration, DatabaseImpl database) {
+        this.baseConfiguration = baseConfiguration;
         this.version = new Version();
         this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
         this.database = database;
@@ -670,6 +672,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public NodeConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public BaseConfiguration getBaseConfiguration() {
+        return baseConfiguration;
     }
 
     @Override

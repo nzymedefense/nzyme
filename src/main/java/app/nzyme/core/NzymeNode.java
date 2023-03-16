@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -74,7 +75,9 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     void registerUplink(Uplink uplink);
 
     NodeConfiguration getConfiguration();
+    BaseConfiguration getBaseConfiguration();
 
+    // RENAME or move to Registry.
     BaseConfigurationService getConfigurationService();
 
     Path getDataDirectory();

@@ -99,6 +99,19 @@ public class NodeManager {
             LOG.info("Created node ID: [{}]", localNodeId);
         }
 
+        // Check if a node with same name but different ID already exists. Not allowed.
+        for (Node node : getNodes()) {
+            if (node.uuid().equals(localNodeId)) {
+                // Don't look at our own node if it's already registered.
+                continue;
+            }
+
+            if (node.name().trim().equals(nzyme.getBaseConfiguration().name().trim())) {
+                throw new NodeInitializationException("Node with same name already exists. Please choose another name.");
+            }
+        }
+
+
         // Increment cycle counter.
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE nodes SET cycle = cycle+1 WHERE uuid = :node_id")

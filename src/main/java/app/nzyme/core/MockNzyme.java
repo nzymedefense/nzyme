@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
@@ -112,7 +113,7 @@ public class MockNzyme implements NzymeNode {
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
     private final MessageBus messageBus;
-
+    private final BaseConfiguration baseConfiguration;
     private final Crypto crypto;
 
     public MockNzyme() {
@@ -121,6 +122,13 @@ public class MockNzyme implements NzymeNode {
 
     public MockNzyme(int sentryInterval, int pollInterval, TimeUnit pollIntervalUnit) {
         this.version = new Version();
+
+        this.baseConfiguration = BaseConfiguration.create(
+                "mocky-mock-" + new Random().nextInt(Integer.MAX_VALUE),
+                Role.NODE,
+                "foo",
+                false
+        );
 
         try {
             String configFile = "nzyme-test-complete-valid.conf.test";
@@ -152,9 +160,7 @@ public class MockNzyme implements NzymeNode {
             throw new RuntimeException(e);
         }
 
-        this.nodeIdentification = NodeIdentification.create(
-                nodeManager.getLocalNodeId(),
-                "mocky-mock-" + new Random().nextInt(Integer.MAX_VALUE));
+        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -285,6 +291,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public NodeConfiguration getConfiguration() {
         return configuration;
+    }
+
+    @Override
+    public BaseConfiguration getBaseConfiguration() {
+        return baseConfiguration;
     }
 
     @Override

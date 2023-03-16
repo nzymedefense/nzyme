@@ -92,7 +92,6 @@ public class Main {
                     System.exit(FAILURE);
                 }
 
-
                 // Database.
                 DatabaseImpl database = new DatabaseImpl(nodeConfiguration);
                 try {
