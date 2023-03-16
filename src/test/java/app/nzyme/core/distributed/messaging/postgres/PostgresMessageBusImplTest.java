@@ -29,7 +29,7 @@ public class PostgresMessageBusImplTest {
 
     @Test
     public void testSendAndPollWithSuccessfulResult() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(0, 500, TimeUnit.MILLISECONDS);
+        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
 
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
@@ -53,23 +53,15 @@ public class PostgresMessageBusImplTest {
                 Collections.emptyMap(),
                 false)
         );
-        Thread.sleep(50);
-
-        assertEquals(counter.get(), 0);
 
         long notNewCount = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'NEW'")
                         .mapTo(Long.class)
                         .one()
         );
-
         assertEquals(notNewCount, 0);
 
-        Thread.sleep(1000);
-
-        assertEquals(counter.get(), 1);
-
-        Thread.sleep(1000);
+        ((PostgresMessageBusImpl) nzyme.getMessageBus()).poll();
 
         assertEquals(counter.get(), 1);
 
@@ -81,10 +73,9 @@ public class PostgresMessageBusImplTest {
 
         assertEquals(failureCount, 0);
     }
-
     @Test
     public void testSendAndPollWithFailureResult() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(0, 500, TimeUnit.MILLISECONDS);
+        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
 
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
@@ -108,23 +99,15 @@ public class PostgresMessageBusImplTest {
                 Collections.emptyMap(),
                 false)
         );
-        Thread.sleep(50);
-
-        assertEquals(counter.get(), 0);
 
         long notNewCount = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'NEW'")
                         .mapTo(Long.class)
                         .one()
         );
-
         assertEquals(notNewCount, 0);
 
-        Thread.sleep(1000);
-
-        assertEquals(counter.get(), 1);
-
-        Thread.sleep(1000);
+        ((PostgresMessageBusImpl) nzyme.getMessageBus()).poll();
 
         assertEquals(counter.get(), 1);
 
@@ -136,7 +119,5 @@ public class PostgresMessageBusImplTest {
 
         assertEquals(failureCount, 0);
     }
-
-    // Build tests: sendToAllOnlineNodes, status changed, retention cleaning
 
 }

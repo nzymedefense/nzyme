@@ -47,13 +47,13 @@ public class PostgresMessageBusImpl implements MessageBus {
                 .setDaemon(true)
                 .setNameFormat("psql-bus-poller-%d")
                 .build()
-        ).scheduleWithFixedDelay(this::poll, 0, pollInterval, pollIntervalUnit);
+        ).scheduleWithFixedDelay(this::poll, pollInterval, pollInterval, pollIntervalUnit);
 
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("psql-retention-cleaner-%d")
                 .build()
-        ).scheduleAtFixedRate(this::retentionClean, 0, 1, TimeUnit.HOURS);
+        ).scheduleAtFixedRate(this::retentionClean, 1, 1, TimeUnit.HOURS);
 
         this.initialized = true;
     }
