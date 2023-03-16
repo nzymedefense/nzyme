@@ -109,12 +109,18 @@ public class DatabaseImpl implements Database {
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
+        Liquibase liquibase = null;
         try {
             liquibase.database.Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
-            Liquibase liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
+            liquibase = new liquibase.Liquibase("db/migrations.xml", new ClassLoaderResourceAccessor(), database);
             liquibase.update(new Contexts(), new LabelExpression());
         } finally {
-            connection.close();
+            if (liquibase != null) {
+                liquibase.close();
+            }
+            if (!connection.isClosed()) {
+                connection.close();
+            }
         }
     }
 
