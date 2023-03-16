@@ -55,11 +55,11 @@ public class PostgresMessageBusImplTest {
         );
         assertEquals(counter.get(), 0);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         assertEquals(counter.get(), 1);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         assertEquals(counter.get(), 1);
     }
