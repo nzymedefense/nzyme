@@ -28,7 +28,7 @@ public class PostgresMessageBusImplTest {
     }
 
     @Test
-    public void testSendAndPoll() throws InterruptedException {
+    public void testSendAndPollWithSuccessfulResult() throws InterruptedException {
         NzymeNode nzyme = new MockNzyme(0, 500, TimeUnit.MILLISECONDS);
 
         final AtomicInteger counter = new AtomicInteger(0);
@@ -53,15 +53,88 @@ public class PostgresMessageBusImplTest {
                 Collections.emptyMap(),
                 false)
         );
+        Thread.sleep(50);
+
         assertEquals(counter.get(), 0);
 
-        Thread.sleep(2000);
+        long notNewCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'NEW'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertEquals(notNewCount, 0);
+
+        Thread.sleep(1000);
 
         assertEquals(counter.get(), 1);
 
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         assertEquals(counter.get(), 1);
+
+        long failureCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertEquals(failureCount, 0);
+    }
+
+    @Test
+    public void testSendAndPollWithFailureResult() throws InterruptedException {
+        NzymeNode nzyme = new MockNzyme(0, 500, TimeUnit.MILLISECONDS);
+
+        final AtomicInteger counter = new AtomicInteger(0);
+        nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
+            @Override
+            public MessageProcessingResult handle(Message message) {
+                counter.incrementAndGet();
+                return MessageProcessingResult.FAILURE;
+            }
+
+            @Override
+            public String getName() {
+                return "test";
+            }
+        });
+
+        assertEquals(counter.get(), 0);
+
+        nzyme.getMessageBus().send(Message.create(
+                nzyme.getNodeManager().getLocalNodeId(),
+                MessageType.CHECK_RESTART_HTTP_SERVER,
+                Collections.emptyMap(),
+                false)
+        );
+        Thread.sleep(50);
+
+        assertEquals(counter.get(), 0);
+
+        long notNewCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'NEW'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertEquals(notNewCount, 0);
+
+        Thread.sleep(1000);
+
+        assertEquals(counter.get(), 1);
+
+        Thread.sleep(1000);
+
+        assertEquals(counter.get(), 1);
+
+        long failureCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertEquals(failureCount, 0);
     }
 
     // Build tests: sendToAllOnlineNodes, status changed, retention cleaning
