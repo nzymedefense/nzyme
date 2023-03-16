@@ -73,6 +73,7 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class MockNzyme implements NzymeNode {
@@ -151,7 +152,9 @@ public class MockNzyme implements NzymeNode {
             throw new RuntimeException(e);
         }
 
-        this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), "mocky-mock");
+        this.nodeIdentification = NodeIdentification.create(
+                nodeManager.getLocalNodeId(),
+                "mocky-mock-" + new Random().nextInt(Integer.MAX_VALUE));
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 

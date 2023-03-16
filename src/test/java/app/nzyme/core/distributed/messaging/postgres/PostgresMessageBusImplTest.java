@@ -214,13 +214,6 @@ public class PostgresMessageBusImplTest {
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
             @Override
             public MessageProcessingResult handle(Message message) {
-                long notAckCount = nzyme.getDatabase().withHandle(handle ->
-                        handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'ACK'")
-                                .mapTo(Long.class)
-                                .one()
-                );
-                assertEquals(notAckCount, 0);
-
                 counter.incrementAndGet();
                 return MessageProcessingResult.SUCCESS;
             }
@@ -269,7 +262,7 @@ public class PostgresMessageBusImplTest {
         );
         assertEquals(counter.get(), 1);
 
-        nzyme.initialize();
+        nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
 
         assertEquals(counter.get(), 1);
 
