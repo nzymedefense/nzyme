@@ -1631,4 +1631,20 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_process_self_info_to_tasks_queue" author="lennartkoopmann">
+        <addColumn tableName="tasks_queue">
+            <column name="allow_process_self" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remove_unnecessary_columns_in_tasks" author="lennartkoopmann">
+        <dropColumn tableName="tasks_queue" columnName="max_attempts" />
+        <renameColumn tableName="tasks_queue" oldColumnName="attempts" newColumnName="retries" />
+
+        <dropNotNullConstraint tableName="tasks_queue" columnName="first_processed_at" />
+        <dropNotNullConstraint tableName="tasks_queue" columnName="last_processed_at" />
+    </changeSet>
+
 </databaseChangeLog>
