@@ -1577,4 +1577,58 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_tasks_queue_table" author="lennartkoopmann">
+        <createTable tableName="tasks_queue">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="sender_node_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="type" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="max_attempts" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="allow_retry" type="boolean" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="parameters" type="text" />
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="status" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="attempts" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="processing_time_ms" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="first_processed_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_processed_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_tskque_status_lookup" tableName="tasks_queue" unique="false">
+            <column name="status" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
