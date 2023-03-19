@@ -1,11 +1,14 @@
 package app.nzyme.core.distributed.tasksqueue;
 
-import java.util.List;
 
 public interface TasksQueue {
 
+    void initialize();
+
+    void onMessageReceived(TaskType type, TaskHandler taskHandler);
+
     void publish(Task task);
-    List<Task> poll();
+    void poll();
     void retry(long taskId);
 
 }

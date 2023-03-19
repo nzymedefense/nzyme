@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.distributed.tasksqueue.TasksQueue;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.plugin.*;
@@ -61,6 +62,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     NodeManager getNodeManager();
     ClusterManager getClusterManager();
     MessageBus getMessageBus();
+    TasksQueue getTasksQueue();
 
     HealthMonitor getHealthMonitor();
 

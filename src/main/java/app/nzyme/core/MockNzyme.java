@@ -21,6 +21,8 @@ import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
+import app.nzyme.core.distributed.tasksqueue.TasksQueue;
+import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -113,6 +115,7 @@ public class MockNzyme implements NzymeNode {
     private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
     private final MessageBus messageBus;
+    private final TasksQueue tasksQueue;
     private final BaseConfiguration baseConfiguration;
     private final Crypto crypto;
 
@@ -120,7 +123,7 @@ public class MockNzyme implements NzymeNode {
         this(0, 5, TimeUnit.SECONDS);
     }
 
-    public MockNzyme(int sentryInterval, int pollInterval, TimeUnit pollIntervalUnit) {
+    public MockNzyme(int sentryInterval, int taskAndMessagePollInterval, TimeUnit taskAndMessagePollIntervalUnit) {
         this.version = new Version();
 
         this.baseConfiguration = BaseConfiguration.create(
@@ -151,7 +154,10 @@ public class MockNzyme implements NzymeNode {
         }
 
         this.messageBus = new PostgresMessageBusImpl(this);
-        ((PostgresMessageBusImpl) this.messageBus).initialize(pollInterval, pollIntervalUnit);
+        ((PostgresMessageBusImpl) this.messageBus).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
+
+        this.tasksQueue = new PostgresTasksQueueImpl(this);
+        ((PostgresTasksQueueImpl) this.tasksQueue).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -229,6 +235,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public MessageBus getMessageBus() {
         return messageBus;
+    }
+
+    @Override
+    public TasksQueue getTasksQueue() {
+        return tasksQueue;
     }
 
     @Override

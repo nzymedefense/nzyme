@@ -20,6 +20,8 @@ package app.nzyme.core;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
+import app.nzyme.core.distributed.tasksqueue.TasksQueue;
+import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -134,6 +136,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final List<Forwarder> forwarders;
     private final TapManager tapManager;
     private final MessageBus messageBus;
+    private final TasksQueue tasksQueue;
 
     private final Ethernet ethernet;
 
@@ -191,6 +194,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.clusterManager = new ClusterManager(this);
         this.messageBus = new PostgresMessageBusImpl(this);
+        this.tasksQueue = new PostgresTasksQueueImpl(this);
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
@@ -273,6 +277,9 @@ public class NzymeNodeImpl implements NzymeNode {
 
         LOG.info("Initializing message bus [{}].", this.messageBus.getClass().getCanonicalName());
         this.messageBus.initialize();
+
+        LOG.info("Initializing tasks queue [{}].", this.tasksQueue.getClass().getCanonicalName());
+        this.tasksQueue.initialize();
 
         try {
             this.crypto.initialize();
@@ -440,6 +447,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public MessageBus getMessageBus() {
         return messageBus;
+    }
+
+    @Override
+    public TasksQueue getTasksQueue() {
+        return tasksQueue;
     }
 
     @Override
