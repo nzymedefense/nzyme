@@ -1,7 +1,5 @@
 package app.nzyme.core.distributed.tasksqueue.postgres;
 
-import app.nzyme.core.distributed.tasksqueue.TaskStatus;
-import app.nzyme.core.distributed.tasksqueue.TaskType;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.joda.time.DateTime;
@@ -22,6 +20,7 @@ public class PostgresTasksQueueEntryMapper implements RowMapper<PostgresTasksQue
                 rs.getString("parameters"),
                 new DateTime(rs.getTimestamp("created_at")),
                 rs.getString("status"),
+                rs.getString("previous_status"),
                 rs.getInt("retries"),
                 rs.getInt("processing_time_ms"),
                 new DateTime(rs.getTimestamp("first_processed_at")),

@@ -15,13 +15,14 @@ public abstract class PostgresTasksQueueEntry {
     public abstract String parameters();
     public abstract DateTime createdAt();
     public abstract String status();
+    public abstract String previousStatus();
     public abstract int retries();
     public abstract int processingTimeMs();
     public abstract DateTime firstProcessedAt();
     public abstract DateTime lastProcessedAt();
     public abstract boolean allowProcessSelf();
 
-    public static PostgresTasksQueueEntry create(long id, UUID senderNodeId, String type, boolean allowRetry, String parameters, DateTime createdAt, String status, int retries, int processingTimeMs, DateTime firstProcessedAt, DateTime lastProcessedAt, boolean allowProcessSelf) {
+    public static PostgresTasksQueueEntry create(long id, UUID senderNodeId, String type, boolean allowRetry, String parameters, DateTime createdAt, String status, String previousStatus, int retries, int processingTimeMs, DateTime firstProcessedAt, DateTime lastProcessedAt, boolean allowProcessSelf) {
         return builder()
                 .id(id)
                 .senderNodeId(senderNodeId)
@@ -30,6 +31,7 @@ public abstract class PostgresTasksQueueEntry {
                 .parameters(parameters)
                 .createdAt(createdAt)
                 .status(status)
+                .previousStatus(previousStatus)
                 .retries(retries)
                 .processingTimeMs(processingTimeMs)
                 .firstProcessedAt(firstProcessedAt)
@@ -57,6 +59,8 @@ public abstract class PostgresTasksQueueEntry {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder status(String status);
+
+        public abstract Builder previousStatus(String previousStatus);
 
         public abstract Builder retries(int retries);
 

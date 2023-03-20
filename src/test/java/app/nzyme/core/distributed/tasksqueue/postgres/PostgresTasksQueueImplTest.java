@@ -9,6 +9,9 @@ import app.nzyme.core.distributed.tasksqueue.TaskType;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,18 +22,39 @@ public class PostgresTasksQueueImplTest {
 
     /*
      * tests:
-     *   - sets to NEW_RETRY on retry, increases retries
-     *   - does not retry if allow_retry false
-     *   - allow_process_self (multiple nodes)
      *   - retention cleaning
      */
 
     @BeforeMethod
-    public void clean() {
+    public void clean() throws IOException {
         MockNzyme nzyme = new MockNzyme();
 
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("TRUNCATE nodes").execute());
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("TRUNCATE tasks_queue").execute());
+
+        cleanDataFolder();
+    }
+
+    private void cleanDataFolder() throws IOException {
+        Path dataDir = Path.of("test_data_dir");
+
+        Files.walk(dataDir)
+                .map(Path::toFile)
+                .forEach(file -> {
+                    // Don't delete the entire crypto_test root directory.
+                    if (!file.toPath().equals(dataDir) && !file.getName().equals(".gitkeep")) {
+                        if (!file.delete()) {
+                            throw new RuntimeException("Could not delete test data file [" + file.getAbsolutePath() + "] to prepare tests.");
+                        }
+                    }
+                });
+
+        long size = Files.walk(dataDir)
+                .filter(p -> p.toFile().isFile())
+                .mapToLong(p -> p.toFile().length())
+                .sum();
+
+        assertEquals(size, 0, "Test data folder is not empty.");
     }
 
     @Test
@@ -155,6 +179,362 @@ public class PostgresTasksQueueImplTest {
                         .one()
         );
         assertTrue(processingTime > 0);
+    }
+
+    @Test
+    public void testMultiProducerSingleConsumer() throws IOException {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        cleanDataFolder(); // This makes nzyme generate new node UUID.
+
+        MockNzyme nzyme2 = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq2 = (PostgresTasksQueueImpl) nzyme2.getTasksQueue();
+        assertEquals(countTotalTasks(nzyme2), 0);
+
+        AtomicInteger calls = new AtomicInteger(0);
+        TaskHandler th = new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                calls.incrementAndGet();
+                return TaskProcessingResult.FAILURE;
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
+
+        tq.onMessageReceived(TaskType.TEST, th);
+        tq2.onMessageReceived(TaskType.TEST, th);
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 1);
+
+        assertEquals(calls.get(), 0);
+        tq.poll();
+        tq2.poll();
+        assertEquals(calls.get(), 1);
+    }
+
+    @Test
+    public void testMultiProducerSingleConsumerNotAllowedToSelfProcess() throws IOException {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        cleanDataFolder(); // This makes nzyme generate new node UUID.
+
+        MockNzyme nzyme2 = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq2 = (PostgresTasksQueueImpl) nzyme2.getTasksQueue();
+        assertEquals(countTotalTasks(nzyme2), 0);
+
+        AtomicInteger calls1 = new AtomicInteger(0);
+        TaskHandler th1 = new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                calls1.incrementAndGet();
+                return TaskProcessingResult.FAILURE;
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
+
+        AtomicInteger calls2 = new AtomicInteger(0);
+        TaskHandler th2 = new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                calls2.incrementAndGet();
+                return TaskProcessingResult.FAILURE;
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        };
+
+        tq.onMessageReceived(TaskType.TEST, th1);
+        tq2.onMessageReceived(TaskType.TEST, th2);
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                false,
+                Collections.emptyMap(),
+                true
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 1);
+
+        assertEquals(calls1.get(), 0);
+        assertEquals(calls2.get(), 0);
+        tq.poll();
+        tq2.poll();
+        assertEquals(calls1.get(), 0);
+        assertEquals(calls2.get(), 1);
+    }
+
+    @Test
+    public void testRetryIncreasesRetryCountAndSetsNewRetryStatus() {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        AtomicInteger calls = new AtomicInteger(0);
+
+        tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                long notAcked = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
+                                .mapTo(Long.class)
+                                .one()
+                );
+                assertEquals(notAcked, 0);
+
+                calls.incrementAndGet();
+
+                if (calls.get() == 1) {
+                    return TaskProcessingResult.FAILURE;
+                } else {
+                    return TaskProcessingResult.SUCCESS;
+                }
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        });
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 1);
+
+        assertEquals(calls.get(), 0);
+        tq.poll();
+        assertEquals(calls.get(), 1);
+
+        long notFailure = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(notFailure, 0);
+
+        long retryCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT retries FROM tasks_queue WHERE status = 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(retryCount, 0);
+
+        long failedId = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id FROM tasks_queue WHERE status = 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertTrue(failedId > 0);
+
+        tq.retry(failedId);
+
+        long notRetry = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'NEW_RETRY'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(notRetry, 0);
+
+        tq.poll();
+        assertEquals(calls.get(), 2);
+
+        long newRetryCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT retries FROM tasks_queue WHERE status = 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(newRetryCount, 1);
+
+        long notSuccess = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(notSuccess, 0);
+    }
+
+    @Test
+    public void testDoesNotRetryWhenRetryNotAllowed() {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        AtomicInteger calls = new AtomicInteger(0);
+
+        tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                long notAcked = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
+                                .mapTo(Long.class)
+                                .one()
+                );
+                assertEquals(notAcked, 0);
+
+                calls.incrementAndGet();
+
+                return TaskProcessingResult.FAILURE;
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        });
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                false
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 1);
+
+        assertEquals(calls.get(), 0);
+        tq.poll();
+        assertEquals(calls.get(), 1);
+
+        long notFailure = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(notFailure, 0);
+
+        long retryCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT retries FROM tasks_queue WHERE status = 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(retryCount, 0);
+
+        long failedId = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id FROM tasks_queue WHERE status = 'PROCESSED_FAILURE'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertTrue(failedId > 0);
+
+        tq.retry(failedId);
+
+        long isRetry = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status = 'NEW_RETRY'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(isRetry, 0);
+
+        tq.poll();
+        assertEquals(calls.get(), 1);
+    }
+
+    @Test
+    public void testDoesNotRetryWhenNotPreviouslyFailed() {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        AtomicInteger calls = new AtomicInteger(0);
+
+        tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
+            @Override
+            public TaskProcessingResult handle(Task task) {
+                long notAcked = nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
+                                .mapTo(Long.class)
+                                .one()
+                );
+                assertEquals(notAcked, 0);
+
+                calls.incrementAndGet();
+
+                return TaskProcessingResult.SUCCESS;
+            }
+
+            @Override
+            public String getName() {
+                return null;
+            }
+        });
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 1);
+
+        assertEquals(calls.get(), 0);
+        tq.poll();
+        assertEquals(calls.get(), 1);
+
+        long notFailure = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(notFailure, 0);
+
+        long retryCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT retries FROM tasks_queue WHERE status = 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(retryCount, 0);
+
+        long failedId = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id FROM tasks_queue WHERE status = 'PROCESSED_SUCCESS'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        assertTrue(failedId > 0);
+
+        tq.retry(failedId);
+
+        long isRetry = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status = 'NEW_RETRY'")
+                        .mapTo(Long.class)
+                        .one()
+        );
+        assertEquals(isRetry, 0);
+
+        tq.poll();
+        assertEquals(calls.get(), 1);
     }
 
     private long countTotalTasks(NzymeNode nzyme) {

@@ -17,6 +17,7 @@ import org.joda.time.DateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class PostgresTasksQueueImpl implements TasksQueue {
@@ -67,15 +68,16 @@ public class PostgresTasksQueueImpl implements TasksQueue {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO tasks_queue(sender_node_id, type, allow_retry, parameters, " +
-                                "created_at, status, retries, processing_time_ms, allow_process_self) " +
+                                "created_at, status, previous_status, retries, processing_time_ms, allow_process_self) " +
                                 "VALUES(:sender_node_id, :type, :allow_retry, :parameters, :created_at, :status, " +
-                                ":retries, :processing_time_ms, :allow_process_self)")
+                                ":previous_status, :retries, :processing_time_ms, :allow_process_self)")
                         .bind("sender_node_id", nzyme.getNodeInformation().id())
                         .bind("type", task.type().name())
                         .bind("allow_retry", task.allowRetry())
                         .bind("parameters", parameters)
                         .bind("created_at", DateTime.now())
                         .bind("status", TaskStatus.NEW)
+                        .bind("previous_status", TaskStatus.NEW)
                         .bind("retries", 0)
                         .bind("processing_time_ms", 0)
                         .bind("allow_process_self", task.allowProcessSelf())
@@ -87,7 +89,7 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     public void poll() {
         try {
             List<PostgresTasksQueueEntry> tasks = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("UPDATE tasks_queue SET status = 'ACK' " +
+                    handle.createQuery("UPDATE tasks_queue SET status = 'ACK', previous_status = status " +
                                     "WHERE status IN ('NEW', 'NEW_RETRY') " +
                                     "AND (allow_process_self = true " +
                                     "OR (allow_process_self = false AND sender_node_id != :own_node_id)) RETURNING *")
@@ -112,11 +114,11 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                     continue;
                 }
 
-                TaskStatus status;
+                TaskStatus previousStatus;
                 try {
-                    status = TaskStatus.valueOf(task.status());
+                    previousStatus = TaskStatus.valueOf(task.previousStatus());
                 } catch (IllegalArgumentException e) {
-                    LOG.warn("Unsupported task status [{}]. Skipping.", task.status());
+                    LOG.warn("Unsupported task status [{}]. Skipping.", task.previousStatus());
                     continue;
                 }
 
@@ -125,6 +127,11 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                 // Send to registered handlers.
                 if (taskHandlers.containsKey(type)) {
                     for (TaskHandler handler : taskHandlers.get(type)) {
+                        if (previousStatus.equals(TaskStatus.NEW_RETRY)) {
+                            LOG.info("RETRY! INCREMENTING.");
+                            incrementRetryCount(task.id());
+                        }
+
                         Map<String, Object> parameters = this.om.readValue(
                                 task.parameters(),
                                 new TypeReference<HashMap<String, Object>>() {
@@ -142,7 +149,7 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                                         ? TaskStatus.PROCESSED_SUCCESS : TaskStatus.PROCESSED_FAILURE
                         );
 
-                        if (status.equals(TaskStatus.NEW)) {
+                        if (previousStatus.equals(TaskStatus.NEW)) {
                             setTaskFirstProcessedAt(task.id(), timestamp);
                         }
                         setTaskPostProcessMetadata(task.id(), timestamp, (int) tookMs);
@@ -158,6 +165,14 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE tasks_queue SET status = :status WHERE id = :id")
                         .bind("status", status.name())
+                        .bind("id", taskId)
+                        .execute()
+        );
+    }
+
+    private void incrementRetryCount(long taskId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE tasks_queue SET retries = retries+1 WHERE id = :id")
                         .bind("id", taskId)
                         .execute()
         );
@@ -185,6 +200,21 @@ public class PostgresTasksQueueImpl implements TasksQueue {
 
     @Override
     public void retry(long taskId) {
+        long eligibleCount = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE allow_retry = true " +
+                                "AND status = :status AND id = :id")
+                        .bind("id", taskId)
+                        .bind("status", TaskStatus.PROCESSED_FAILURE)
+                        .mapTo(Long.class)
+                        .first()
+        );
+
+        if (eligibleCount != 1) {
+            LOG.warn("Task ID <{}> does not exist or is not allowed to be retried.", taskId);
+            return;
+        }
+
+        setTaskStatus(taskId, TaskStatus.NEW_RETRY);
     }
 
     @Override

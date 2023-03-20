@@ -1647,4 +1647,12 @@
         <dropNotNullConstraint tableName="tasks_queue" columnName="last_processed_at" />
     </changeSet>
 
+    <changeSet id="add_previous_status_to_tasks_queue" author="lennartkoopmann">
+        <addColumn tableName="tasks_queue">
+            <column name="previous_status" type="varchar(64)" defaultValue="NEW">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
