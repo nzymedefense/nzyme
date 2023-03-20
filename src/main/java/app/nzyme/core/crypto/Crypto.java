@@ -4,6 +4,8 @@ import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
 import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
 import app.nzyme.core.distributed.Node;
+import app.nzyme.core.distributed.tasksqueue.Task;
+import app.nzyme.core.distributed.tasksqueue.TaskType;
 import app.nzyme.plugin.Database;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
@@ -121,46 +123,66 @@ public class Crypto {
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
         File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
+        boolean fetchPGPKeysAllowed = true;
+        boolean newCluster = false; // Check if a cluster ID exists.
+
         if (!privateKeyLocation.exists() || !publicKeyLocation.exists()) {
-            LOG.warn("PGP private or public key missing. Re-generating pair. This will make existing encrypted registry " +
-                    "values unreadable. Please consult the nzyme documentation.");
+            if (fetchPGPKeysAllowed && !newCluster) {
+                LOG.info("PGP private or public key missing and not a new cluster. Requesting keys from other nodes...");
 
-            try (FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
-                 FileOutputStream publicOut = new FileOutputStream(publicKeyLocation)) {
-                KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-                keyPairGenerator.initialize(4096);
-                KeyPair pair = keyPairGenerator.generateKeyPair();
+                // Register handler for received PGP keys. TODO
 
-                PGPDigestCalculator shaCalc = new JcaPGPDigestCalculatorProviderBuilder()
-                        .build()
-                        .get(HashAlgorithmTags.SHA1);
-                PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
-                PGPSecretKey privateKey = new PGPSecretKey(
-                        PGPSignature.DEFAULT_CERTIFICATION,
-                        keyPair,
-                        "nzyme-pgp",
-                        shaCalc,
-                        null,
-                        null,
-                        new JcaPGPContentSignerBuilder(
-                                keyPair.getPublicKey().getAlgorithm(),
-                                HashAlgorithmTags.SHA256),
-                        new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, shaCalc)
-                                .setProvider("BC")
-                                .build("nzyme".toCharArray())
-                );
+                // Request PGP keys.
+                nzyme.getTasksQueue().publish(Task.create(
+                        TaskType.PROVIDE_PGP_KEYS,
+                        false,
+                        Collections.emptyMap(),
+                        true
+                ));
 
-                // Write private key.
-                privateKey.encode(privateOut);
+                // Write PGP keys. TODO
+            } else {
+                // New cluster. Generate keys.
+                LOG.warn("PGP private or public key missing and automatic fetching disabled. Re-generating pair. This will " +
+                        "make existing encrypted registry values unreadable. Please consult the nzyme documentation.");
 
-                // Write public key.
-                PGPPublicKey key = privateKey.getPublicKey();
-                key.encode(publicOut);
-            } catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e) {
-                throw new CryptoInitializationException("Unexpected crypto provider exception when trying " +
-                        "to create key.", e);
-            } catch (IOException e) {
-                throw new CryptoInitializationException("Could not write key file.", e);
+                try (FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
+                     FileOutputStream publicOut = new FileOutputStream(publicKeyLocation)) {
+                    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+                    keyPairGenerator.initialize(4096);
+                    KeyPair pair = keyPairGenerator.generateKeyPair();
+
+                    PGPDigestCalculator shaCalc = new JcaPGPDigestCalculatorProviderBuilder()
+                            .build()
+                            .get(HashAlgorithmTags.SHA1);
+                    PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
+                    PGPSecretKey privateKey = new PGPSecretKey(
+                            PGPSignature.DEFAULT_CERTIFICATION,
+                            keyPair,
+                            "nzyme-pgp",
+                            shaCalc,
+                            null,
+                            null,
+                            new JcaPGPContentSignerBuilder(
+                                    keyPair.getPublicKey().getAlgorithm(),
+                                    HashAlgorithmTags.SHA256),
+                            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, shaCalc)
+                                    .setProvider("BC")
+                                    .build("nzyme".toCharArray())
+                    );
+
+                    // Write private key.
+                    privateKey.encode(privateOut);
+
+                    // Write public key.
+                    PGPPublicKey key = privateKey.getPublicKey();
+                    key.encode(publicOut);
+                } catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e) {
+                    throw new CryptoInitializationException("Unexpected crypto provider exception when trying " +
+                            "to create key.", e);
+                } catch (IOException e) {
+                    throw new CryptoInitializationException("Could not write key file.", e);
+                }
             }
         }
 
