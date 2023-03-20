@@ -2,7 +2,6 @@ package app.nzyme.core.distributed.tasksqueue.postgres;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.distributed.tasksqueue.*;
-import app.nzyme.plugin.distributed.messaging.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -17,7 +17,7 @@ import org.joda.time.DateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class PostgresTasksQueueImpl implements TasksQueue {
@@ -48,6 +48,19 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     public void initialize(int pollInterval, TimeUnit pollIntervalUnit) {
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("psql-tasks-poller-%d")
+                .build()
+        ).scheduleWithFixedDelay(this::poll, pollInterval, pollInterval, pollIntervalUnit);
+
+        Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("psql-tasks-retention-cleaner-%d")
+                .build()
+        ).scheduleAtFixedRate(() -> retentionClean(DateTime.now().minusDays(7)),
+                1, 1, TimeUnit.HOURS);
+
         this.initialized = true;
     }
 
@@ -226,6 +239,15 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         }
 
         taskHandlers.get(type).add(taskHandler);
+    }
+
+    public void retentionClean(DateTime cutoff) {
+        LOG.info("Running retention cleaning for tasks queue.");
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM tasks_queue WHERE created_at < :timeout")
+                        .bind("timeout", cutoff)
+                        .execute()
+        );
     }
 
 }

@@ -6,6 +6,7 @@ import app.nzyme.core.distributed.tasksqueue.Task;
 import app.nzyme.core.distributed.tasksqueue.TaskHandler;
 import app.nzyme.core.distributed.tasksqueue.TaskProcessingResult;
 import app.nzyme.core.distributed.tasksqueue.TaskType;
+import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -19,12 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.testng.Assert.*;
 
 public class PostgresTasksQueueImplTest {
-
-    /*
-     * tests:
-     *   - retention cleaning
-     */
-
+    
     @BeforeMethod
     public void clean() throws IOException {
         MockNzyme nzyme = new MockNzyme();
@@ -58,7 +54,7 @@ public class PostgresTasksQueueImplTest {
     }
 
     @Test
-    public void testPublishSuccess() {
+    public void testPublishSuccess() throws InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
@@ -102,6 +98,7 @@ public class PostgresTasksQueueImplTest {
 
         assertEquals(calls.get(), 0);
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
 
         long notSuccess = nzyme.getDatabase().withHandle(handle ->
@@ -120,7 +117,7 @@ public class PostgresTasksQueueImplTest {
     }
 
     @Test
-    public void testPublishFailure() {
+    public void testPublishFailure() throws InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
@@ -164,6 +161,7 @@ public class PostgresTasksQueueImplTest {
 
         assertEquals(calls.get(), 0);
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
 
         long notFailure = nzyme.getDatabase().withHandle(handle ->
@@ -182,7 +180,7 @@ public class PostgresTasksQueueImplTest {
     }
 
     @Test
-    public void testMultiProducerSingleConsumer() throws IOException {
+    public void testMultiProducerSingleConsumer() throws IOException, InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
         assertEquals(countTotalTasks(nzyme), 0);
@@ -222,11 +220,12 @@ public class PostgresTasksQueueImplTest {
         assertEquals(calls.get(), 0);
         tq.poll();
         tq2.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
     }
 
     @Test
-    public void testMultiProducerSingleConsumerNotAllowedToSelfProcess() throws IOException {
+    public void testMultiProducerSingleConsumerNotAllowedToSelfProcess() throws IOException, InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
         assertEquals(countTotalTasks(nzyme), 0);
@@ -281,12 +280,13 @@ public class PostgresTasksQueueImplTest {
         assertEquals(calls2.get(), 0);
         tq.poll();
         tq2.poll();
+        Thread.sleep(100);
         assertEquals(calls1.get(), 0);
         assertEquals(calls2.get(), 1);
     }
 
     @Test
-    public void testRetryIncreasesRetryCountAndSetsNewRetryStatus() {
+    public void testRetryIncreasesRetryCountAndSetsNewRetryStatus() throws InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
@@ -330,6 +330,7 @@ public class PostgresTasksQueueImplTest {
 
         assertEquals(calls.get(), 0);
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
 
         long notFailure = nzyme.getDatabase().withHandle(handle ->
@@ -364,6 +365,7 @@ public class PostgresTasksQueueImplTest {
         assertEquals(notRetry, 0);
 
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 2);
 
         long newRetryCount = nzyme.getDatabase().withHandle(handle ->
@@ -382,7 +384,7 @@ public class PostgresTasksQueueImplTest {
     }
 
     @Test
-    public void testDoesNotRetryWhenRetryNotAllowed() {
+    public void testDoesNotRetryWhenRetryNotAllowed() throws InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
@@ -422,6 +424,7 @@ public class PostgresTasksQueueImplTest {
 
         assertEquals(calls.get(), 0);
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
 
         long notFailure = nzyme.getDatabase().withHandle(handle ->
@@ -456,11 +459,12 @@ public class PostgresTasksQueueImplTest {
         assertEquals(isRetry, 0);
 
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
     }
 
     @Test
-    public void testDoesNotRetryWhenNotPreviouslyFailed() {
+    public void testDoesNotRetryWhenNotPreviouslyFailed() throws InterruptedException {
         MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
@@ -500,6 +504,7 @@ public class PostgresTasksQueueImplTest {
 
         assertEquals(calls.get(), 0);
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
 
         long notFailure = nzyme.getDatabase().withHandle(handle ->
@@ -534,7 +539,43 @@ public class PostgresTasksQueueImplTest {
         assertEquals(isRetry, 0);
 
         tq.poll();
+        Thread.sleep(100);
         assertEquals(calls.get(), 1);
+    }
+
+    @Test
+    public void testRetentionCleaning() {
+        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
+
+        assertEquals(countTotalTasks(nzyme), 0);
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        tq.publish(Task.create(
+                TaskType.TEST,
+                true,
+                Collections.emptyMap(),
+                true
+        ));
+
+        assertEquals(countTotalTasks(nzyme), 3);
+
+        tq.retentionClean(DateTime.now());
+
+        assertEquals(countTotalTasks(nzyme), 0);
     }
 
     private long countTotalTasks(NzymeNode nzyme) {

@@ -51,7 +51,7 @@ public class PostgresMessageBusImpl implements MessageBus {
 
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
-                .setNameFormat("psql-retention-cleaner-%d")
+                .setNameFormat("psql-bus-retention-cleaner-%d")
                 .build()
         ).scheduleAtFixedRate(() -> retentionClean(DateTime.now().minusDays(7)),
                 1, 1, TimeUnit.HOURS);
