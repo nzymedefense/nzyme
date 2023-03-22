@@ -10,7 +10,9 @@ import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Paths;
 
 public class PGPKeyMessageBusReceiver implements MessageHandler {
@@ -34,18 +36,27 @@ public class PGPKeyMessageBusReceiver implements MessageHandler {
 
             PGPKeyMessagePayload payload = om.readValue(message.parametersString(), PGPKeyMessagePayload.class);
 
-            // TODO decrypt.
+            // Decrypt and decode received keys.
+            byte[] privateKey, publicKey;
+            try(InputStream privateKeyIn = new ByteArrayInputStream(crypto.getNodeLocalPGPKeys().privateKey()); InputStream privateKeyIn2 = new ByteArrayInputStream(crypto.getNodeLocalPGPKeys().privateKey())) {
+                privateKey = crypto.decrypt(BaseEncoding.base64().decode(payload.privateKey()), privateKeyIn);
+                publicKey = crypto.decrypt((BaseEncoding.base64().decode(payload.publicKey())), privateKeyIn2);
+            } catch (Crypto.CryptoOperationException e) {
+                throw new RuntimeException("Could not decrypt and decode received keys.", e);
+            }
+
+            LOG.info("Received keys decrypted and decoded.");
+
             // Write keys to files.
             File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(),
                     Crypto.PGP_PRIVATE_KEY_FILE_NAME).toFile();
             File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(),
                     Crypto.PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
-            byte[] privateKey = BaseEncoding.base64().decode(payload.privateKey());
-            byte[] publicKey = BaseEncoding.base64().decode(payload.publicKey());
-
             Files.write(privateKey, privateKeyLocation);
             Files.write(publicKey, publicKeyLocation);
+
+            LOG.info("Decrypted keys written to disk.");
 
             return MessageProcessingResult.SUCCESS;
         } catch(Exception e) {

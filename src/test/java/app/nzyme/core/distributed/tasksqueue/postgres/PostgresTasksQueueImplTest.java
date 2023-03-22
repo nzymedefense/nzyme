@@ -2,10 +2,7 @@ package app.nzyme.core.distributed.tasksqueue.postgres;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.distributed.tasksqueue.Task;
-import app.nzyme.core.distributed.tasksqueue.TaskHandler;
-import app.nzyme.core.distributed.tasksqueue.TaskProcessingResult;
-import app.nzyme.core.distributed.tasksqueue.TaskType;
+import app.nzyme.core.distributed.tasksqueue.*;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -64,7 +61,7 @@ public class PostgresTasksQueueImplTest {
 
         tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 long notAcked = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -127,7 +124,7 @@ public class PostgresTasksQueueImplTest {
 
         tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 long notAcked = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -194,7 +191,7 @@ public class PostgresTasksQueueImplTest {
         AtomicInteger calls = new AtomicInteger(0);
         TaskHandler th = new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 calls.incrementAndGet();
                 return TaskProcessingResult.FAILURE;
             }
@@ -239,7 +236,7 @@ public class PostgresTasksQueueImplTest {
         AtomicInteger calls1 = new AtomicInteger(0);
         TaskHandler th1 = new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 calls1.incrementAndGet();
                 return TaskProcessingResult.FAILURE;
             }
@@ -253,7 +250,7 @@ public class PostgresTasksQueueImplTest {
         AtomicInteger calls2 = new AtomicInteger(0);
         TaskHandler th2 = new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 calls2.incrementAndGet();
                 return TaskProcessingResult.FAILURE;
             }
@@ -296,7 +293,7 @@ public class PostgresTasksQueueImplTest {
 
         tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 long notAcked = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -394,7 +391,7 @@ public class PostgresTasksQueueImplTest {
 
         tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 long notAcked = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -474,7 +471,7 @@ public class PostgresTasksQueueImplTest {
 
         tq.onMessageReceived(TaskType.TEST, new TaskHandler() {
             @Override
-            public TaskProcessingResult handle(Task task) {
+            public TaskProcessingResult handle(ReceivedTask task) {
                 long notAcked = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE status != 'ACK'")
                                 .mapTo(Long.class)

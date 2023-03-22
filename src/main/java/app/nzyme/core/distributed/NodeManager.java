@@ -428,7 +428,7 @@ public class NodeManager {
         return localCycle;
     }
 
-    public void setLocalPGPKeys(PGPKeys keys) {
+    public void setLocalPGPPublicKey(PGPKeys keys) {
         String key = BaseEncoding.base64().encode(keys.publicKey());
 
         nzyme.getDatabase().useHandle(handle ->
@@ -439,7 +439,16 @@ public class NodeManager {
         );
     }
 
+    public byte[] getPGPPublicKeyOfNode(UUID nodeId) {
+        String b64 = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT public_key FROM nodes WHERE uuid = :node_id")
+                        .bind("node_id", nodeId)
+                        .mapTo(String.class)
+                        .one()
+        );
 
+        return BaseEncoding.base64().decode(b64);
+    }
 
     public static final class NodeInitializationException extends Throwable {
 

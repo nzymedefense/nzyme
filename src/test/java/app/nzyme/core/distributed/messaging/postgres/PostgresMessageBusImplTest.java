@@ -39,7 +39,7 @@ public class PostgresMessageBusImplTest {
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
             @Override
-            public MessageProcessingResult handle(Message message) {
+            public MessageProcessingResult handle(ReceivedMessage message) {
                 long notAckCount = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -93,7 +93,7 @@ public class PostgresMessageBusImplTest {
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
             @Override
-            public MessageProcessingResult handle(Message message) {
+            public MessageProcessingResult handle(ReceivedMessage message) {
                 long notAckCount = nzyme.getDatabase().withHandle(handle ->
                         handle.createQuery("SELECT COUNT(*) FROM message_bus_messages WHERE status != 'ACK'")
                                 .mapTo(Long.class)
@@ -213,7 +213,7 @@ public class PostgresMessageBusImplTest {
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
             @Override
-            public MessageProcessingResult handle(Message message) {
+            public MessageProcessingResult handle(ReceivedMessage message) {
                 counter.incrementAndGet();
                 return MessageProcessingResult.SUCCESS;
             }

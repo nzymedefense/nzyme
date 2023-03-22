@@ -50,7 +50,7 @@ public class RegistryImpl implements Registry {
         } else {
             try {
                 return Optional.of(
-                        new String(nzyme.getCrypto().decrypt(
+                        new String(nzyme.getCrypto().decryptWithClusterKey(
                                 BaseEncoding.base64().decode(encrypted.get())
                         ), Charsets.UTF_8)
                 );
@@ -107,7 +107,7 @@ public class RegistryImpl implements Registry {
         String keyFingerprint;
         try {
             Crypto crypto = nzyme.getCrypto();
-            encrypted = BaseEncoding.base64().encode(crypto.encrypt(value.getBytes(Charsets.UTF_8)));
+            encrypted = BaseEncoding.base64().encode(crypto.encryptWithClusterKey(value.getBytes(Charsets.UTF_8)));
             keyFingerprint = crypto.getLocalPGPKeyFingerprint();
 
             value = ""; // Just to make sure it's not accidentally used from here on.

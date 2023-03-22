@@ -165,8 +165,8 @@ public class CryptoPGPTest {
 
         byte[] value = "IT IS A SECRET.".getBytes();
 
-        byte[] encrypted = crypto.encrypt(value);
-        byte[] decrypted = crypto.decrypt(encrypted);
+        byte[] encrypted = crypto.encryptWithClusterKey(value);
+        byte[] decrypted = crypto.decryptWithClusterKey(encrypted);
 
         assertEquals(decrypted, value);
     }
@@ -180,12 +180,12 @@ public class CryptoPGPTest {
         crypto.initialize();
 
         byte[] value = "IT IS A SECRET.".getBytes();
-        byte[] encrypted = crypto.encrypt(value);
+        byte[] encrypted = crypto.encryptWithClusterKey(value);
 
         crypto.initialize();
         privatePath.toFile().delete();
 
-        crypto.decrypt(encrypted);
+        crypto.decryptWithClusterKey(encrypted);
     }
 
     @Test

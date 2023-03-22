@@ -133,7 +133,7 @@ public class Crypto {
         // Create node-local PGP key.
         try {
             nodeLocalPGPKeys = generatePGPKeys();
-            nzyme.getNodeManager().setLocalPGPKeys(nodeLocalPGPKeys);
+            nzyme.getNodeManager().setLocalPGPPublicKey(nodeLocalPGPKeys);
         } catch (PGPException | NoSuchProviderException | NoSuchAlgorithmException | IOException e) {
             throw new CryptoInitializationException("Could not generate node-local PGP key.", e);
         }
@@ -248,7 +248,13 @@ public class Crypto {
 
         // Register taks handler to send PGP keys to other nodes.
         nzyme.getTasksQueue().onMessageReceived(TaskType.PROVIDE_PGP_KEYS,
-                new PGPKeyProviderTaskHandler(cryptoDirectoryConfig, nzyme.getMessageBus()));
+                new PGPKeyProviderTaskHandler(
+                        cryptoDirectoryConfig,
+                        nzyme.getMessageBus(),
+                        nzyme.getNodeManager(),
+                        nzyme.getCrypto()
+                )
+        );
 
         // Generate TLS certificate and key if none exist.
         if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
@@ -387,7 +393,6 @@ public class Crypto {
         try(ByteArrayOutputStream out = new ByteArrayOutputStream(); ByteArrayOutputStream literalData = new ByteArrayOutputStream();){
             Timer.Context timer = encryptionTimer.time();
 
-
             // Write header and literal data.
             PGPLiteralDataGenerator literalDataGenerator = new PGPLiteralDataGenerator();
             OutputStream literalOut = literalDataGenerator.open(literalData, PGPLiteralData.BINARY, "nzymepgp", value.length, DateTime.now().toDate());
@@ -415,10 +420,18 @@ public class Crypto {
         }
     }
 
-    public byte[] decrypt(byte[] value) throws CryptoOperationException {
+    public byte[] decryptWithClusterKey(byte[] value) throws CryptoOperationException {
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
 
-        try(InputStream dataIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(value)); InputStream keyIn = new FileInputStream(privateKeyLocation)) {
+        try(InputStream keyIn = new FileInputStream(privateKeyLocation)) {
+            return decrypt(value, keyIn);
+        } catch (CryptoOperationException | IOException e) {
+            throw new CryptoOperationException("Cannot decrypt value.", e);
+        }
+    }
+
+    public byte[] decrypt(byte[] value, InputStream keyInput) throws CryptoOperationException {
+        try(InputStream dataIn = PGPUtil.getDecoderStream(new ByteArrayInputStream(value))) {
             Timer.Context timer = decryptionTimer.time();
 
             JcaPGPObjectFactory pgpF = new JcaPGPObjectFactory(dataIn);
@@ -437,7 +450,7 @@ public class Crypto {
             PGPPrivateKey sKey = null;
             PGPPublicKeyEncryptedData pbe = null;
             PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(
-                    PGPUtil.getDecoderStream(keyIn), new JcaKeyFingerprintCalculator()
+                    PGPUtil.getDecoderStream(keyInput), new JcaKeyFingerprintCalculator()
             );
 
             while (sKey == null && it.hasNext()) {
@@ -823,13 +836,23 @@ public class Crypto {
         );
     }
 
-    private PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
+    public PGPKeys getNodeLocalPGPKeys() {
+        return nodeLocalPGPKeys;
+    }
+
+    public static PGPPublicKey readPublicKey(File file) throws IOException, PGPException {
         try(InputStream keyIn = new BufferedInputStream(new FileInputStream(file))) {
             return readPublicKey(keyIn);
         }
     }
 
-    private PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException {
+    public static PGPPublicKey readPublicKey(byte[] bytes) throws IOException, PGPException {
+        try(InputStream keyIn = new BufferedInputStream(new ByteArrayInputStream(bytes))) {
+            return readPublicKey(keyIn);
+        }
+    }
+
+    public static PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException {
         PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(input), new JcaKeyFingerprintCalculator());
 
         Iterator keyRingIter = pgpPub.getKeyRings();
@@ -885,8 +908,8 @@ public class Crypto {
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
         String decryptedCertificate, decryptedKey;
         try {
-            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
-            decryptedKey = new String(decrypt(entry.key().getBytes()));
+            decryptedCertificate = new String(decryptWithClusterKey(entry.certificate().getBytes()));
+            decryptedKey = new String(decryptWithClusterKey(entry.key().getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
         }
@@ -911,8 +934,8 @@ public class Crypto {
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
         String decryptedCertificate, decryptedKey;
         try {
-            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
-            decryptedKey = new String(decrypt(entry.key().getBytes()));
+            decryptedCertificate = new String(decryptWithClusterKey(entry.certificate().getBytes()));
+            decryptedKey = new String(decryptWithClusterKey(entry.key().getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
         }
@@ -938,8 +961,8 @@ public class Crypto {
             throws CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, TLSUtils.PEMParserException {
         String decryptedCertificate, decryptedKey;
         try {
-            decryptedCertificate = new String(decrypt(entry.certificate().getBytes()));
-            decryptedKey = new String(decrypt(entry.key().getBytes()));
+            decryptedCertificate = new String(decryptWithClusterKey(entry.certificate().getBytes()));
+            decryptedKey = new String(decryptWithClusterKey(entry.key().getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not decrypt TLS certificate/key.", e);
         }
