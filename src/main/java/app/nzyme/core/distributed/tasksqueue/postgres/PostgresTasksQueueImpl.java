@@ -145,15 +145,20 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                             incrementRetryCount(task.id());
                         }
 
-                        Map<String, Object> parameters = this.om.readValue(
+                        Map<String, Object> serializedParameters = this.om.readValue(
                                 task.parameters(),
                                 new TypeReference<HashMap<String, Object>>() {
                                 }
                         );
 
                         Stopwatch stopwatch = Stopwatch.createStarted();
-                        TaskProcessingResult opResult = handler.handle(Task.create(
-                                type, task.allowProcessSelf(), parameters, task.allowRetry()
+                        TaskProcessingResult opResult = handler.handle(ReceivedTask.create(
+                                type,
+                                task.senderNodeId(),
+                                task.allowProcessSelf(),
+                                serializedParameters,
+                                task.parameters(),
+                                task.allowRetry()
                         ));
                         long tookMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
 

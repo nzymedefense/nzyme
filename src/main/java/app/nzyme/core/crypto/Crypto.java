@@ -1,18 +1,23 @@
 package app.nzyme.core.crypto;
 
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntry;
+import app.nzyme.core.crypto.pgp.PGPKeyMessageBusReceiver;
+import app.nzyme.core.crypto.pgp.PGPKeyProviderTaskHandler;
+import app.nzyme.core.crypto.pgp.PGPKeys;
 import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntry;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.tasksqueue.Task;
 import app.nzyme.core.distributed.tasksqueue.TaskType;
 import app.nzyme.plugin.Database;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import com.codahale.metrics.Timer;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.util.MetricNames;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,6 +105,8 @@ public class Crypto {
 
     private final BouncyCastleProvider bcProvider;
 
+    private PGPKeys nodeLocalPGPKeys = null;
+
     public Crypto(NzymeNode nzyme) {
         this.nzyme = nzyme;
 
@@ -123,14 +130,25 @@ public class Crypto {
         File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PRIVATE_KEY_FILE_NAME).toFile();
         File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
 
+        // Create node-local PGP key.
+        try {
+            nodeLocalPGPKeys = generatePGPKeys();
+            nzyme.getNodeManager().setLocalPGPKeys(nodeLocalPGPKeys);
+        } catch (PGPException | NoSuchProviderException | NoSuchAlgorithmException | IOException e) {
+            throw new CryptoInitializationException("Could not generate node-local PGP key.", e);
+        }
+
         boolean fetchPGPKeysAllowed = true;
-        boolean newCluster = false; // Check if a cluster ID exists.
 
         if (!privateKeyLocation.exists() || !publicKeyLocation.exists()) {
-            if (fetchPGPKeysAllowed && !newCluster) {
-                LOG.info("PGP private or public key missing and not a new cluster. Requesting keys from other nodes...");
+            if (fetchPGPKeysAllowed && nzyme.getClusterManager().joinedExistingCluster()) {
+                LOG.info("PGP private or public key missing but not a new cluster. Requesting keys from other nodes...");
 
-                // Register handler for received PGP keys. TODO
+                // Register handler for received PGP keys.
+                nzyme.getMessageBus().onMessageReceived(
+                        MessageType.CLUSTER_PGP_KEYS_PROVIDED,
+                        new PGPKeyMessageBusReceiver(cryptoDirectoryConfig, this)
+                );
 
                 // Request PGP keys.
                 nzyme.getTasksQueue().publish(Task.create(
@@ -140,43 +158,29 @@ public class Crypto {
                         true
                 ));
 
-                // Write PGP keys. TODO
+                LOG.info("Keys requested.");
+
+                // Spin until PGP keys have been written by the message bus handler. TODO
+                while (true) {
+                    if (privateKeyLocation.exists() && publicKeyLocation.exists()) {
+                        LOG.info("PGP keys received. Continuing crypto initialization.");
+                        break;
+                    }
+
+                    LOG.info("Waiting for keys...");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ignored) {}
+                }
             } else {
                 // New cluster. Generate keys.
                 LOG.warn("PGP private or public key missing and automatic fetching disabled. Re-generating pair. This will " +
                         "make existing encrypted registry values unreadable. Please consult the nzyme documentation.");
 
-                try (FileOutputStream privateOut = new FileOutputStream(privateKeyLocation);
-                     FileOutputStream publicOut = new FileOutputStream(publicKeyLocation)) {
-                    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-                    keyPairGenerator.initialize(4096);
-                    KeyPair pair = keyPairGenerator.generateKeyPair();
-
-                    PGPDigestCalculator shaCalc = new JcaPGPDigestCalculatorProviderBuilder()
-                            .build()
-                            .get(HashAlgorithmTags.SHA1);
-                    PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
-                    PGPSecretKey privateKey = new PGPSecretKey(
-                            PGPSignature.DEFAULT_CERTIFICATION,
-                            keyPair,
-                            "nzyme-pgp",
-                            shaCalc,
-                            null,
-                            null,
-                            new JcaPGPContentSignerBuilder(
-                                    keyPair.getPublicKey().getAlgorithm(),
-                                    HashAlgorithmTags.SHA256),
-                            new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, shaCalc)
-                                    .setProvider("BC")
-                                    .build("nzyme".toCharArray())
-                    );
-
-                    // Write private key.
-                    privateKey.encode(privateOut);
-
-                    // Write public key.
-                    PGPPublicKey key = privateKey.getPublicKey();
-                    key.encode(publicOut);
+                try {
+                    PGPKeys keys = generatePGPKeys();
+                    Files.write(keys.privateKey(), privateKeyLocation);
+                    Files.write(keys.publicKey(), publicKeyLocation);
                 } catch (NoSuchAlgorithmException | NoSuchProviderException | PGPException e) {
                     throw new CryptoInitializationException("Unexpected crypto provider exception when trying " +
                             "to create key.", e);
@@ -242,6 +246,10 @@ public class Crypto {
             throw new CryptoInitializationException("Unexpected number of PGP keys for this node in database. Cannot continue.");
         }
 
+        // Register taks handler to send PGP keys to other nodes.
+        nzyme.getTasksQueue().onMessageReceived(TaskType.PROVIDE_PGP_KEYS,
+                new PGPKeyProviderTaskHandler(cryptoDirectoryConfig, nzyme.getMessageBus()));
+
         // Generate TLS certificate and key if none exist.
         if (findTLSKeyAndCertificateOfNode(nodeId).isEmpty()) {
             try {
@@ -260,6 +268,46 @@ public class Crypto {
                             .setDaemon(true)
                             .build()
             ).scheduleAtFixedRate(this::retentionCleanKeys, 0, 1, TimeUnit.MINUTES);
+        }
+    }
+
+    private PGPKeys generatePGPKeys() throws PGPException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
+        try (ByteArrayOutputStream privateOut = new ByteArrayOutputStream();
+             ByteArrayOutputStream publicOut = new ByteArrayOutputStream()) {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+            keyPairGenerator.initialize(4096);
+            KeyPair pair = keyPairGenerator.generateKeyPair();
+
+            PGPDigestCalculator shaCalc = new JcaPGPDigestCalculatorProviderBuilder()
+                    .build()
+                    .get(HashAlgorithmTags.SHA1);
+            PGPKeyPair keyPair = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, pair, new Date());
+            PGPSecretKey privateKey = new PGPSecretKey(
+                    PGPSignature.DEFAULT_CERTIFICATION,
+                    keyPair,
+                    "nzyme-pgp",
+                    shaCalc,
+                    null,
+                    null,
+                    new JcaPGPContentSignerBuilder(
+                            keyPair.getPublicKey().getAlgorithm(),
+                            HashAlgorithmTags.SHA256),
+                    new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256, shaCalc)
+                            .setProvider("BC")
+                            .build("nzyme".toCharArray())
+            );
+
+            // Write private key.
+            privateKey.encode(privateOut);
+
+            // Write public key.
+            PGPPublicKey key = privateKey.getPublicKey();
+            key.encode(publicOut);
+
+            return PGPKeys.create(
+                    privateOut.toByteArray(),
+                    publicOut.toByteArray()
+            );
         }
     }
 
@@ -326,11 +374,19 @@ public class Crypto {
         }
     }
 
-    public byte[] encrypt(byte[] value) throws CryptoOperationException {
+    public byte[] encryptWithClusterKey(byte[] value) throws CryptoOperationException {
+        File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
+        try {
+            return encrypt(value, readPublicKey(publicKeyLocation));
+        } catch (IOException | PGPException e) {
+            throw new CryptoOperationException("Cannot encrypt value.", e);
+        }
+    }
+
+    public byte[] encrypt(byte[] value, PGPPublicKey publicKey) throws CryptoOperationException {
         try(ByteArrayOutputStream out = new ByteArrayOutputStream(); ByteArrayOutputStream literalData = new ByteArrayOutputStream();){
             Timer.Context timer = encryptionTimer.time();
-            File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(), PGP_PUBLIC_KEY_FILE_NAME).toFile();
-            PGPPublicKey publicKey = readPublicKey(publicKeyLocation);
+
 
             // Write header and literal data.
             PGPLiteralDataGenerator literalDataGenerator = new PGPLiteralDataGenerator();
@@ -650,8 +706,8 @@ public class Crypto {
         // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
         String encryptedCertificate, encryptedKey;
         try {
-            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
-            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+            encryptedCertificate = BaseEncoding.base64().encode(encryptWithClusterKey(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encryptWithClusterKey(key.getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
         }
@@ -687,8 +743,8 @@ public class Crypto {
         // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
         String encryptedCertificate, encryptedKey;
         try {
-            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
-            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+            encryptedCertificate = BaseEncoding.base64().encode(encryptWithClusterKey(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encryptWithClusterKey(key.getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
         }
@@ -724,8 +780,8 @@ public class Crypto {
         // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
         String encryptedCertificate, encryptedKey;
         try {
-            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
-            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+            encryptedCertificate = BaseEncoding.base64().encode(encryptWithClusterKey(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encryptWithClusterKey(key.getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
         }
@@ -917,8 +973,8 @@ public class Crypto {
         // We are double-encoding some things here to avoid confusion later on. It's base64, encrypted, base64 again for storage.
         String encryptedCertificate, encryptedKey;
         try {
-            encryptedCertificate = BaseEncoding.base64().encode(encrypt(certificate.getBytes()));
-            encryptedKey = BaseEncoding.base64().encode(encrypt(key.getBytes()));
+            encryptedCertificate = BaseEncoding.base64().encode(encryptWithClusterKey(certificate.getBytes()));
+            encryptedKey = BaseEncoding.base64().encode(encryptWithClusterKey(key.getBytes()));
         } catch(CryptoOperationException e) {
             throw new RuntimeException("Could not encrypt TLS certificate/key for database storage.", e);
         }
@@ -957,7 +1013,6 @@ public class Crypto {
                 );
             }
         }
-
     }
 
     public static final class CryptoInitializationException extends Throwable {

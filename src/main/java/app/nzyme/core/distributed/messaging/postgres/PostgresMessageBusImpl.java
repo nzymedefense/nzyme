@@ -95,15 +95,17 @@ public class PostgresMessageBusImpl implements MessageBus {
                 // Send to registered handlers.
                 if (messageHandlers.containsKey(type)) {
                     for (MessageHandler handler : messageHandlers.get(type)) {
-                        Map<String, Object> parameters = this.om.readValue(
+                        Map<String, Object> serializedParameters = this.om.readValue(
                                 message.parameters(),
                                 new TypeReference<HashMap<String,Object>>() {}
                         );
 
-                        MessageProcessingResult opResult = handler.handle(Message.create(
+                        MessageProcessingResult opResult = handler.handle(ReceivedMessage.create(
                                 message.receiver(),
+                                message.sender(),
                                 type,
-                                parameters,
+                                serializedParameters,
+                                message.parameters(),
                                 message.cycleLimiter() != null
                         ));
 

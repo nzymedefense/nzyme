@@ -275,6 +275,9 @@ public class NzymeNodeImpl implements NzymeNode {
     public void initialize() {
         LOG.info("Initializing nzyme version: {}.", version.getVersionString());
 
+        LOG.info("Initializing cluster manager.");
+        this.clusterManager.initialize();
+
         LOG.info("Initializing message bus [{}].", this.messageBus.getClass().getCanonicalName());
         this.messageBus.initialize();
 

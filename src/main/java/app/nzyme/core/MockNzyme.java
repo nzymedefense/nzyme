@@ -118,6 +118,7 @@ public class MockNzyme implements NzymeNode {
     private final TasksQueue tasksQueue;
     private final BaseConfiguration baseConfiguration;
     private final Crypto crypto;
+    private final ClusterManager clusterManager;
 
     public MockNzyme() {
         this(0, 5, TimeUnit.SECONDS);
@@ -152,6 +153,8 @@ public class MockNzyme implements NzymeNode {
         } catch (LiquibaseException e) {
             throw new RuntimeException(e);
         }
+
+        this.clusterManager = new ClusterManager(this);
 
         this.messageBus = new PostgresMessageBusImpl(this);
         ((PostgresMessageBusImpl) this.messageBus).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
@@ -211,6 +214,8 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public void initialize() {
+        this.clusterManager.initialize();
+
         try {
             this.crypto.initialize(false);
         } catch (Crypto.CryptoInitializationException e) {
@@ -229,7 +234,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public ClusterManager getClusterManager() {
-        return null;
+        return clusterManager;
     }
 
     @Override

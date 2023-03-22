@@ -1655,4 +1655,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_public_key_to_nodes" author="lennartkoopmann">
+        <addColumn tableName="nodes">
+            <column name="public_key" type="text" defaultValue="">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

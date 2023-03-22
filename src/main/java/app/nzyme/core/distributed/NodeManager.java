@@ -1,6 +1,7 @@
 package app.nzyme.core.distributed;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.pgp.PGPKeys;
 import app.nzyme.core.distributed.database.NodeEntry;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.taps.metrics.BucketSize;
@@ -14,6 +15,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.BaseEncoding;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -425,6 +427,19 @@ public class NodeManager {
     public long getLocalCycle() {
         return localCycle;
     }
+
+    public void setLocalPGPKeys(PGPKeys keys) {
+        String key = BaseEncoding.base64().encode(keys.publicKey());
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE nodes SET public_key = :key WHERE uuid = :node_id")
+                        .bind("key", key)
+                        .bind("node_id", localNodeId)
+                        .execute()
+        );
+    }
+
+
 
     public static final class NodeInitializationException extends Throwable {
 

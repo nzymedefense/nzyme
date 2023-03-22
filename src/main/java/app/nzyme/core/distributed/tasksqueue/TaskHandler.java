@@ -2,7 +2,7 @@ package app.nzyme.core.distributed.tasksqueue;
 
 public interface TaskHandler {
 
-    TaskProcessingResult handle(Task task);
+    TaskProcessingResult handle(ReceivedTask task);
 
     String getName();
 

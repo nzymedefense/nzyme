@@ -1,0 +1,84 @@
+package app.nzyme.core.crypto.pgp;
+
+import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.distributed.tasksqueue.ReceivedTask;
+import app.nzyme.core.distributed.tasksqueue.TaskHandler;
+import app.nzyme.core.distributed.tasksqueue.TaskProcessingResult;
+import app.nzyme.plugin.distributed.messaging.Message;
+import app.nzyme.plugin.distributed.messaging.MessageBus;
+import app.nzyme.plugin.distributed.messaging.MessageType;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.BaseEncoding;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+
+public class PGPKeyProviderTaskHandler implements TaskHandler {
+
+    private static final Logger LOG = LogManager.getLogger(PGPKeyMessageBusReceiver.class);
+
+    private final File cryptoDirectoryConfig;
+    private final MessageBus messageBus;
+    private final ObjectMapper om;
+
+    public PGPKeyProviderTaskHandler(File cryptoDirectory, MessageBus messageBus) {
+        this.cryptoDirectoryConfig = cryptoDirectory;
+        this.messageBus = messageBus;
+        this.om = new ObjectMapper();
+    }
+
+    @Override
+    public TaskProcessingResult handle(ReceivedTask task) {
+        try {
+            LOG.info("Responding to PGP key request by [{}].", task.senderNodeId());
+            LOG.info("Loading keys from disk.");
+
+            // Read keys from files.
+            File privateKeyLocation = Paths.get(cryptoDirectoryConfig.toString(),
+                    Crypto.PGP_PRIVATE_KEY_FILE_NAME).toFile();
+            File publicKeyLocation = Paths.get(cryptoDirectoryConfig.toString(),
+                    Crypto.PGP_PUBLIC_KEY_FILE_NAME).toFile();
+
+            byte[] privatekey, publicKey;
+            if (privateKeyLocation.canRead() && publicKeyLocation.canRead()) {
+                privatekey = Files.readAllBytes(privateKeyLocation.toPath());
+                publicKey = Files.readAllBytes(publicKeyLocation.toPath());
+            } else {
+                throw new RuntimeException("Could not read PGP keys from disk.");
+            }
+
+            // TODO encrypt payload with node-local key
+            String privateKey64 = BaseEncoding.base64().encode(privatekey);
+            String publicKey64 = BaseEncoding.base64().encode(publicKey);
+            PGPKeyMessagePayload payload = PGPKeyMessagePayload.create(publicKey64, privateKey64);
+
+            Map<String, Object> parameters = this.om.convertValue(payload, new TypeReference<>() {});
+
+            LOG.info("Keys loaded. Publishing message to requesting node.");
+
+            // Publish keys.
+            messageBus.send(Message.create(
+                    task.senderNodeId(),
+                    MessageType.CLUSTER_PGP_KEYS_PROVIDED,
+                    parameters,
+                    true
+            ));
+
+            LOG.info("Message published. Task complete.");
+            return TaskProcessingResult.SUCCESS;
+        } catch(Exception e) {
+            LOG.error("Could not respond to PGP key request.", e);
+            return TaskProcessingResult.FAILURE;
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "PGP Key Provider";
+    }
+}

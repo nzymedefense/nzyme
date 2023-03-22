@@ -22,10 +22,7 @@ import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
-import app.nzyme.plugin.distributed.messaging.Message;
-import app.nzyme.plugin.distributed.messaging.MessageHandler;
-import app.nzyme.plugin.distributed.messaging.MessageProcessingResult;
-import app.nzyme.plugin.distributed.messaging.MessageType;
+import app.nzyme.plugin.distributed.messaging.*;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,7 +60,7 @@ public class NzymeHttpServer {
         // Register message handler for requested server restarts.
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
             @Override
-            public MessageProcessingResult handle(Message message) {
+            public MessageProcessingResult handle(ReceivedMessage message) {
                 LOG.info("Received request to check for a potential restart of HTTP server. Current certificate: [{}]",
                         getCertificateInUse().signature());
                 try {
