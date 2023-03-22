@@ -1,16 +1,21 @@
 package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.crypto.CryptoRegistryKeys;
 import app.nzyme.core.crypto.PGPKeyFingerprint;
 import app.nzyme.core.crypto.tls.*;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.distributed.Node;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshot;
+import app.nzyme.core.rest.requests.PGPConfigurationUpdateRequest;
 import app.nzyme.core.rest.requests.UpdateTLSWildcardNodeMatcherRequest;
 import app.nzyme.core.rest.responses.crypto.*;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.Message;
 import app.nzyme.plugin.distributed.messaging.MessageType;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -234,12 +239,24 @@ public class CryptoResource {
             ));
         }
 
+        PGPConfigurationResponse pgpConfiguration = PGPConfigurationResponse.create(ConfigurationEntryResponse.create(
+                CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.key(),
+                "PGP Key Sync Enabled",
+                nzyme.getCrypto().isPGPKeySyncEnabled(),
+                ConfigurationEntryValueType.BOOLEAN,
+                CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.defaultValue().get(),
+                CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.requiresRestart(),
+                CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.constraints().get(),
+                "pgp-key-sync"
+        ));
+
         return Response.ok(CryptoResponse.create(
                 metrics,
                 fingerprints,
                 tlsCertificates,
                 tlsWildcartCertificates,
-                nzyme.getCrypto().allPGPKeysEqualAcrossCluster()
+                nzyme.getCrypto().allPGPKeysEqualAcrossCluster(),
+                pgpConfiguration
         )).build();
     }
 
@@ -541,6 +558,32 @@ public class CryptoResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @RESTSecured
+    @Path("/pgp/configuration")
+    public Response update(PGPConfigurationUpdateRequest ur) {
+        if (ur.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : ur.change().entrySet()) {
+            switch (c.getKey()) {
+                case "pgp_key_sync_enabled":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED, c)) {
+                        return Response.status(422).build();
+                    }
+                    nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString());
+                    break;
+                default:
+                    LOG.info("Unknown configuration parameter [{}].", c.getKey());
+                    return Response.status(422).build();
+            }
+        }
+
+        return Response.ok().build();
+    }
+
     private TLSCertificatePrincipalResponse buildPrincipalResponse(Principal principal, Collection<List<?>> alternativeNames) {
         List<String> an = Lists.newArrayList();
         if (alternativeNames != null) {
@@ -586,8 +629,6 @@ public class CryptoResource {
 
         return matchingNodes;
     }
-
-    // TODO do this where it iterates over all running nodes, with cycle limiter. utility method in MessageBus?
 
     private void requestHttpServerRestart(UUID nodeId) {
         nzyme.getMessageBus().send(Message.create(

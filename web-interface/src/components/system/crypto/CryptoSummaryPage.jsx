@@ -5,16 +5,19 @@ import CryptoService from '../../../services/CryptoService'
 import TLSCertificateTable from "./tls/TLSCertificateTable";
 import TLSWildcardCertificateTable from "./tls/wildcard/TLSWildcardCertificateTable";
 import ApiRoutes from "../../../util/ApiRoutes";
+import PGPConfiguration from "./pgp/PGPConfiguration";
 
 const cryptoService = new CryptoService()
 
 function CryptoSummaryPage () {
   const [crypto, setCrypto] = useState(null)
   const [pgpMetrics, setPGPMetrics] = useState(null)
+  const [localRevision, setLocalRevision] = useState(0)
 
   useEffect(() => {
-    cryptoService.getPGPSummary(setCrypto, setPGPMetrics)
-  }, [])
+    setCrypto(null);
+    cryptoService.getPGPSummary(setCrypto, setPGPMetrics);
+  }, [localRevision])
 
   return (
         <div>
@@ -43,6 +46,27 @@ function CryptoSummaryPage () {
                           </div>
                       </div>
                   </div>
+              </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>PGP Configuration</h3>
+
+                      <p>
+                        The same PGP keys have to be deployed on all nzyme nodes in a cluster. Nzyme will automatically
+                        pull the keys from other nodes when joining an existing cluster. The key exchange is encrypted
+                        but you can still disable the automatic exchange here. You can also temporarily enable the
+                        exchange when you are joining new nodes and then disable it again when you are done. If you
+                        disable the key exchange, you must manually copy the keys or the new nzyme node will not
+                        start up.
+                      </p>
+
+                      <PGPConfiguration crypto={crypto} setLocalRevision={setLocalRevision} />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="row mt-3">

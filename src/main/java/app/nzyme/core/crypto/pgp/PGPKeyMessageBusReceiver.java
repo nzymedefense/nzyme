@@ -32,6 +32,12 @@ public class PGPKeyMessageBusReceiver implements MessageHandler {
     @Override
     public MessageProcessingResult handle(ReceivedMessage message) {
         try {
+            if (!crypto.isPGPKeySyncEnabled()) {
+                // Really, it should never even come this far, but why not check.
+                LOG.warn("PGP sync is disabled. Not reading keys.");
+                return MessageProcessingResult.FAILURE;
+            }
+
             LOG.info("Received [{}] from [{}].", message.type(), message.sender());
 
             PGPKeyMessagePayload payload = om.readValue(message.parametersString(), PGPKeyMessagePayload.class);

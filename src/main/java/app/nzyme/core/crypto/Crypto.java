@@ -138,10 +138,13 @@ public class Crypto {
             throw new CryptoInitializationException("Could not generate node-local PGP key.", e);
         }
 
-        boolean fetchPGPKeysAllowed = true;
-
         if (!privateKeyLocation.exists() || !publicKeyLocation.exists()) {
-            if (fetchPGPKeysAllowed && nzyme.getClusterManager().joinedExistingCluster()) {
+            if (nzyme.getClusterManager().joinedExistingCluster()) {
+                if (!isPGPKeySyncEnabled()) {
+                    throw new CryptoInitializationException("Joining existing cluster but no PGP keys found and PGP key " +
+                            "sync was disabled. Please transfer keys manually.");
+                }
+
                 LOG.info("PGP private or public key missing but not a new cluster. Requesting keys from other nodes...");
 
                 // Register handler for received PGP keys.
@@ -868,6 +871,12 @@ public class Crypto {
         }
 
         throw new IllegalArgumentException("Can't find encryption key in key ring.");
+    }
+
+    public boolean isPGPKeySyncEnabled() {
+        return nzyme.getDatabaseCoreRegistry().getValue(CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.key())
+                .map(s -> s.equals("true"))
+                .orElse(Boolean.parseBoolean(CryptoRegistryKeys.PGP_KEY_SYNC_ENABLED.defaultValue().get()));
     }
 
     private PGPPrivateKey findSecretKey(PGPSecretKeyRingCollection pgpSec, long keyID) throws PGPException {

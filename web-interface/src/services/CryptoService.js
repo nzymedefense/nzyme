@@ -58,6 +58,9 @@ class CryptoService {
       });
   }
 
+  updatePGPConfiguration(newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/crypto/pgp/configuration', { change: newConfig }, successCallback, errorCallback)
+  }
 }
 
 export default CryptoService

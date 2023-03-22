@@ -25,13 +25,17 @@ public abstract class CryptoResponse {
     @JsonProperty("pgp_keys_in_sync")
     public abstract boolean pgpKeysInSync();
 
-    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, Map<String, TLSCertificateResponse> tlsCertificates, List<TLSWildcartCertificateResponse> tlsWildcardCertificates, boolean pgpKeysInSync) {
+    @JsonProperty("pgp_configuration")
+    public abstract PGPConfigurationResponse pgpConfiguration();
+
+    public static CryptoResponse create(CryptoNodeMetricsResponse metrics, Map<String, PGPKeyResponse> pgpKeys, Map<String, TLSCertificateResponse> tlsCertificates, List<TLSWildcartCertificateResponse> tlsWildcardCertificates, boolean pgpKeysInSync, PGPConfigurationResponse pgpConfiguration) {
         return builder()
                 .metrics(metrics)
                 .pgpKeys(pgpKeys)
                 .tlsCertificates(tlsCertificates)
                 .tlsWildcardCertificates(tlsWildcardCertificates)
                 .pgpKeysInSync(pgpKeysInSync)
+                .pgpConfiguration(pgpConfiguration)
                 .build();
     }
 
@@ -51,7 +55,8 @@ public abstract class CryptoResponse {
 
         public abstract Builder pgpKeysInSync(boolean pgpKeysInSync);
 
+        public abstract Builder pgpConfiguration(PGPConfigurationResponse pgpConfiguration);
+
         public abstract CryptoResponse build();
     }
-
 }

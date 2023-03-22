@@ -18,7 +18,6 @@ import org.bouncycastle.openpgp.PGPPublicKey;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.PublicKey;
 import java.util.Map;
 
 public class PGPKeyProviderTaskHandler implements TaskHandler {
@@ -42,6 +41,12 @@ public class PGPKeyProviderTaskHandler implements TaskHandler {
     @Override
     public TaskProcessingResult handle(ReceivedTask task) {
         try {
+            if (!crypto.isPGPKeySyncEnabled()) {
+                // Really, it should never even come this far, but why not check.
+                LOG.warn("PGP sync is disabled. Not sending keys.");
+                return TaskProcessingResult.FAILURE;
+            }
+
             LOG.info("Responding to PGP key request by [{}].", task.senderNodeId());
             LOG.info("Loading keys from disk.");
 
