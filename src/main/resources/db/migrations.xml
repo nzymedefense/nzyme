@@ -1663,4 +1663,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_last_acked_to_tasks_queue" author="lennartkoopmann">
+        <addColumn tableName="tasks_queue">
+            <column name="last_acked_at" type="timestamp with time zone" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

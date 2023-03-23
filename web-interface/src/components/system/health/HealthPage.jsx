@@ -34,7 +34,7 @@ function HealthPage(props) {
               <div className="card-body">
                 <p className="help-text">
                   An nzyme deployment is constantly monitoring itself for common issues. Resolution steps will appear
-                  below if an indicator is illuminated in any other color than green.
+                  below if an indicator is illuminated in orange or red.
                 </p>
 
                 <hr />

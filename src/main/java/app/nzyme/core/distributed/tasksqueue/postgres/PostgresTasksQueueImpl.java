@@ -102,11 +102,12 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     public void poll() {
         try {
             List<PostgresTasksQueueEntry> tasks = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("UPDATE tasks_queue SET status = 'ACK', previous_status = status " +
-                                    "WHERE status IN ('NEW', 'NEW_RETRY') " +
+                    handle.createQuery("UPDATE tasks_queue SET status = 'ACK', previous_status = status, " +
+                                    "last_acked_at = :timestamp WHERE status IN ('NEW', 'NEW_RETRY') " +
                                     "AND (allow_process_self = true " +
                                     "OR (allow_process_self = false AND sender_node_id != :own_node_id)) RETURNING *")
                             .bind("own_node_id", nzyme.getNodeInformation().id())
+                            .bind("timestamp", DateTime.now())
                             .mapTo(PostgresTasksQueueEntry.class)
                             .list()
             );
@@ -141,7 +142,6 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                 if (taskHandlers.containsKey(type)) {
                     for (TaskHandler handler : taskHandlers.get(type)) {
                         if (previousStatus.equals(TaskStatus.NEW_RETRY)) {
-                            LOG.info("RETRY! INCREMENTING.");
                             incrementRetryCount(task.id());
                         }
 
@@ -161,6 +161,11 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                                 task.allowRetry()
                         ));
                         long tookMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+
+                        if (opResult.equals(TaskProcessingResult.FAILURE)) {
+                            LOG.error("Could not execute cluster task <#{}> of type [{}]. Marking as failure.",
+                                    task.id(), task.type());
+                        }
 
                         setTaskStatus(task.id(),
                                 opResult == TaskProcessingResult.SUCCESS
@@ -236,6 +241,34 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     @Override
+    public List<ReceivedTask> getAllFailedTasksSince(DateTime since) {
+        List<PostgresTasksQueueEntry> failures = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND created_at > :since")
+                        .bind("status", TaskStatus.PROCESSED_FAILURE)
+                        .bind("since", since)
+                        .mapTo(PostgresTasksQueueEntry.class)
+                        .list()
+        );
+
+
+        return entriesToReceivedTasks(failures);
+    }
+
+    @Override
+    public List<ReceivedTask> getAllStuckTasks(DateTime timeout) {
+        List<PostgresTasksQueueEntry> failures = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND last_acked_at < :timeout")
+                        .bind("status", TaskStatus.ACK)
+                        .bind("timeout", timeout)
+                        .mapTo(PostgresTasksQueueEntry.class)
+                        .list()
+        );
+
+
+        return entriesToReceivedTasks(failures);
+    }
+
+    @Override
     public void onMessageReceived(TaskType type, TaskHandler taskHandler) {
         LOG.debug("Registering task queue handler [{}] for type [{}]", taskHandler.getName(), type);
 
@@ -253,6 +286,32 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                         .bind("timeout", cutoff)
                         .execute()
         );
+    }
+
+    private List<ReceivedTask> entriesToReceivedTasks(List<PostgresTasksQueueEntry> failures) {
+        List<ReceivedTask> result = Lists.newArrayList();
+        for (PostgresTasksQueueEntry failure : failures) {
+            try {
+                Map<String, Object> serializedParameters = this.om.readValue(
+                        failure.parameters(),
+                        new TypeReference<HashMap<String, Object>>() {
+                        }
+                );
+
+                result.add(ReceivedTask.create(
+                        TaskType.valueOf(failure.type()),
+                        failure.senderNodeId(),
+                        failure.allowProcessSelf(),
+                        serializedParameters,
+                        failure.parameters(),
+                        failure.allowRetry()
+                ));
+            } catch (Exception e) {
+                LOG.error("Could not transform task queue entry. Skipping", e);
+            }
+        }
+
+        return result;
     }
 
 }

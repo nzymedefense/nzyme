@@ -11,6 +11,8 @@ import TapDropConsequence from "./consequences/TapDropConsequence";
 import TapBufferConsequence from "./consequences/TapBufferConsequence";
 import TapErrorConsequence from "./consequences/TapErrorConsequence";
 import TLSExpirationConsequence from "./consequences/TLSExpirationConsequence";
+import TaskFailureConsequence from "./consequences/TaskFailureConsequence";
+import TaskStuckConsequence from "./consequences/TaskStuckConsequence";
 
 function Consequences(props) {
 
@@ -57,6 +59,8 @@ function Consequences(props) {
         <TapDropConsequence show={consequences.includes("tap_drop")} />
         <TapBufferConsequence show={consequences.includes("tap_buffer")} />
         <TapErrorConsequence show={consequences.includes("tap_error")} />
+        <TaskFailureConsequence show={consequences.includes("tasks_queue_task_failure")} />
+        <TaskStuckConsequence show={consequences.includes("tasks_queue_task_stuck")} />
       </div>
   )
 

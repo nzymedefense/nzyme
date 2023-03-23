@@ -109,6 +109,11 @@ public class PostgresMessageBusImpl implements MessageBus {
                                 message.cycleLimiter() != null
                         ));
 
+                        if (opResult.equals(MessageProcessingResult.FAILURE)) {
+                            LOG.error("Could not handle cluster message <#{}> of type [{}]. Marking as failure.",
+                                    message.id(), message.type());
+                        }
+
                         setMessageStatus(message.id(),
                                 opResult == MessageProcessingResult.SUCCESS
                                         ? MessageStatus.PROCESSED_SUCCESS : MessageStatus.PROCESSED_FAILURE

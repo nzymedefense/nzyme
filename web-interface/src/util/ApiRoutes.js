@@ -26,6 +26,9 @@ const ApiRoutes = {
     },
     CLUSTER: {
       INDEX: '/system/cluster',
+      MESSAGING: {
+        INDEX: '/system/cluster/messaging'
+      },
       NODES: {
         DETAILS: uuid => `/system/cluster/nodes/show/${uuid}`
       }
