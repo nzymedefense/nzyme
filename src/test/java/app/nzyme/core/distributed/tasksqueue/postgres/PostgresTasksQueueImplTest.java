@@ -2,7 +2,7 @@ package app.nzyme.core.distributed.tasksqueue.postgres;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.distributed.tasksqueue.*;
+import app.nzyme.plugin.distributed.tasksqueue.*;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

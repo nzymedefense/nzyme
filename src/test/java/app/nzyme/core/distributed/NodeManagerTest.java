@@ -2,7 +2,10 @@ package app.nzyme.core.distributed;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.Crypto;
 import com.google.common.base.Strings;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKey;
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -214,6 +217,21 @@ public class NodeManagerTest {
 
         nzyme.getDatabaseCoreRegistry().setValue(NodeRegistryKeys.EPHEMERAL_NODES_REGEX.key(), "^mocky-.+");
         assertTrue(nm.getNode(nzyme.getNodeManager().getLocalNodeId()).get().isEphemeral());
+    }
+
+    @Test
+    public void testGeneratesNodeLocalPublicKey() throws PGPException, IOException, Crypto.CryptoInitializationException {
+        NzymeNode nzyme = new MockNzyme();
+        nzyme.getNodeManager().registerSelf();
+        nzyme.getCrypto().initialize(false);
+
+        byte[] fromDatabase = nzyme.getNodeManager().getPGPPublicKeyOfNode(nzyme.getNodeManager().getLocalNodeId());
+        PGPPublicKey publicFromDatabase = Crypto.readPublicKey(fromDatabase);
+        assertTrue(new DateTime(publicFromDatabase.getCreationTime()).isBefore(DateTime.now()));
+
+        byte[] fromSubsys = nzyme.getCrypto().getNodeLocalPGPKeys().publicKey();
+        PGPPublicKey publicFromSubsys = Crypto.readPublicKey(fromSubsys);
+        assertEquals(publicFromSubsys.getKeyID(), publicFromDatabase.getKeyID());
     }
 
 }

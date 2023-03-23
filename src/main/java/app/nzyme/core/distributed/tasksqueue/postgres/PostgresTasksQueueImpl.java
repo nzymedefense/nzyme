@@ -1,7 +1,7 @@
 package app.nzyme.core.distributed.tasksqueue.postgres;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.distributed.tasksqueue.*;
+import app.nzyme.plugin.distributed.tasksqueue.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;

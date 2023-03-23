@@ -113,7 +113,6 @@ public class NodeManager {
             }
         }
 
-
         // Increment cycle counter.
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE nodes SET cycle = cycle+1 WHERE uuid = :node_id")
@@ -430,7 +429,6 @@ public class NodeManager {
 
     public void setLocalPGPPublicKey(PGPKeys keys) {
         String key = BaseEncoding.base64().encode(keys.publicKey());
-
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE nodes SET public_key = :key WHERE uuid = :node_id")
                         .bind("key", key)
