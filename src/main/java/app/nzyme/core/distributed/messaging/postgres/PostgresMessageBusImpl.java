@@ -189,6 +189,43 @@ public class PostgresMessageBusImpl implements MessageBus {
         messageHandlers.get(type).add(messageHandler);
     }
 
+    @Override
+    public List<ReceivedMessage> getAllMessages(int limit, int offset) {
+        List<PostgresMessageEntry> entries = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM message_bus_messages LIMIT :limit OFFSET :offset " +
+                                "ORDER BY created_at DESC")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(PostgresMessageEntry.class)
+                        .list()
+        );
+
+        List<ReceivedMessage> result = Lists.newArrayList();
+
+        for (PostgresMessageEntry entry : entries) {
+            Map<String, Object> serializedParameters;
+            try {
+                serializedParameters = this.om.readValue(
+                        entry.parameters(),
+                        new TypeReference<HashMap<String,Object>>() {}
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            result.add(ReceivedMessage.create(
+                    entry.receiver(),
+                    entry.sender(),
+                    MessageType.valueOf(entry.type()),
+                    serializedParameters,
+                    entry.parameters(),
+                    entry.cycleLimiter() != null
+            ));
+        }
+
+        return result;
+    }
+
     private void setMessageStatus(long messageId, MessageStatus status) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE message_bus_messages SET status = :status WHERE id = :id")

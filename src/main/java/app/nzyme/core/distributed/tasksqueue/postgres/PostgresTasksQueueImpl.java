@@ -269,6 +269,20 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     @Override
+    public List<ReceivedTask> getAllTasks(int limit, int offset) {
+        List<PostgresTasksQueueEntry> entries = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM tasks_queue LIMIT :limit OFFSET :offset " +
+                                "ORDER BY created_at DESC")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(PostgresTasksQueueEntry.class)
+                        .list()
+        );
+
+        return entriesToReceivedTasks(entries);
+    }
+
+    @Override
     public void onMessageReceived(TaskType type, TaskHandler taskHandler) {
         LOG.debug("Registering task queue handler [{}] for type [{}]", taskHandler.getName(), type);
 
