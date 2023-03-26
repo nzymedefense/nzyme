@@ -18,6 +18,7 @@ import app.nzyme.core.rest.resources.ethernet.DNSResource;
 import app.nzyme.core.rest.resources.monitoring.MonitoringResource;
 import app.nzyme.core.rest.resources.monitoring.PrometheusResource;
 import app.nzyme.core.rest.resources.system.*;
+import app.nzyme.core.rest.resources.system.cluster.MessageBusResource;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
@@ -127,6 +128,7 @@ public class NzymeHttpServer {
         resourceConfig.register(NodesResource.class);
         resourceConfig.register(HealthResource.class);
         resourceConfig.register(RegistryResource.class);
+        resourceConfig.register(MessageBusResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

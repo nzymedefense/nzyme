@@ -34,6 +34,12 @@ class ClusterService {
     RESTClient.put('/system/cluster/nodes/configuration', { change: newConfig }, successCallback, errorCallback)
   }
 
+  findMessageBusMessages(setMessages, limit, offset) {
+    RESTClient.get('/system/cluster/messagebus/messages', {limit: limit, offset: offset}, function (response) {
+      setMessages(response.data)
+    })
+  }
+
 }
 
 export default ClusterService

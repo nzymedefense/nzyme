@@ -82,7 +82,7 @@ public class PostgresMessageBusImpl implements MessageBus {
                 LOG.debug("Polled message from bus: [{}]", message);
 
                 // Acknowledge message.
-                setMessageStatus(message.id(), MessageStatus.ACK);
+                ackMessage(message.id());
 
                 MessageType type;
                 try {
@@ -190,17 +190,17 @@ public class PostgresMessageBusImpl implements MessageBus {
     }
 
     @Override
-    public List<ReceivedMessage> getAllMessages(int limit, int offset) {
+    public List<StoredMessage> getAllMessages(int limit, int offset) {
         List<PostgresMessageEntry> entries = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM message_bus_messages LIMIT :limit OFFSET :offset " +
-                                "ORDER BY created_at DESC")
+                handle.createQuery("SELECT * FROM message_bus_messages ORDER BY created_at DESC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(PostgresMessageEntry.class)
                         .list()
         );
 
-        List<ReceivedMessage> result = Lists.newArrayList();
+        List<StoredMessage> result = Lists.newArrayList();
 
         for (PostgresMessageEntry entry : entries) {
             Map<String, Object> serializedParameters;
@@ -210,20 +210,32 @@ public class PostgresMessageBusImpl implements MessageBus {
                         new TypeReference<HashMap<String,Object>>() {}
                 );
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Could not serialize parameters of message <" + entry.id() + ">.", e);
             }
 
-            result.add(ReceivedMessage.create(
-                    entry.receiver(),
+            result.add(StoredMessage.create(
+                    entry.id(),
                     entry.sender(),
+                    entry.receiver(),
                     MessageType.valueOf(entry.type()),
                     serializedParameters,
-                    entry.parameters(),
-                    entry.cycleLimiter() != null
+                    MessageStatus.valueOf(entry.status()),
+                    entry.cycleLimiter(),
+                    entry.createdAt(),
+                    entry.acknowledgedAt()
             ));
         }
 
         return result;
+    }
+
+    @Override
+    public long getTotalMessageCount() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM message_bus_messages")
+                        .mapTo(Long.class)
+                        .one()
+        );
     }
 
     private void setMessageStatus(long messageId, MessageStatus status) {
@@ -231,6 +243,17 @@ public class PostgresMessageBusImpl implements MessageBus {
                 handle.createUpdate("UPDATE message_bus_messages SET status = :status WHERE id = :id")
                         .bind("status", status.name())
                         .bind("id", messageId)
+                        .execute()
+        );
+    }
+
+    private void ackMessage(long messageId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE message_bus_messages SET status = :status, " +
+                                "acknowledged_at = :acknowledged_at WHERE id = :id")
+                        .bind("status", MessageStatus.ACK.name())
+                        .bind("id", messageId)
+                        .bind("acknowledged_at", DateTime.now())
                         .execute()
         );
     }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -161,6 +162,9 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                                 task.allowRetry()
                         ));
                         long tookMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+                        if (tookMs == 0) {
+                            tookMs = 1;
+                        }
 
                         if (opResult.equals(TaskProcessingResult.FAILURE)) {
                             LOG.error("Could not execute cluster task <#{}> of type [{}]. Marking as failure.",
@@ -241,9 +245,10 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     @Override
-    public List<ReceivedTask> getAllFailedTasksSince(DateTime since) {
+    public List<StoredTask> getAllFailedTasksSince(DateTime since) {
         List<PostgresTasksQueueEntry> failures = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND created_at > :since")
+                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND created_at > :since " +
+                                "ORDER BY created_at DESC")
                         .bind("status", TaskStatus.PROCESSED_FAILURE)
                         .bind("since", since)
                         .mapTo(PostgresTasksQueueEntry.class)
@@ -251,13 +256,14 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         );
 
 
-        return entriesToReceivedTasks(failures);
+        return entriesToStoredTasks(failures);
     }
 
     @Override
-    public List<ReceivedTask> getAllStuckTasks(DateTime timeout) {
+    public List<StoredTask> getAllStuckTasks(DateTime timeout) {
         List<PostgresTasksQueueEntry> failures = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND last_acked_at < :timeout")
+                handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND last_acked_at < :timeout " +
+                                "ORDER BY created_at DESC")
                         .bind("status", TaskStatus.ACK)
                         .bind("timeout", timeout)
                         .mapTo(PostgresTasksQueueEntry.class)
@@ -265,21 +271,21 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         );
 
 
-        return entriesToReceivedTasks(failures);
+        return entriesToStoredTasks(failures);
     }
 
     @Override
-    public List<ReceivedTask> getAllTasks(int limit, int offset) {
+    public List<StoredTask> getAllTasks(int limit, int offset) {
         List<PostgresTasksQueueEntry> entries = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM tasks_queue LIMIT :limit OFFSET :offset " +
-                                "ORDER BY created_at DESC")
+                handle.createQuery("SELECT * FROM tasks_queue ORDER BY created_at DESC " +
+                                "LIMIT :limit OFFSET :offset ")
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(PostgresTasksQueueEntry.class)
                         .list()
         );
 
-        return entriesToReceivedTasks(entries);
+        return entriesToStoredTasks(entries);
     }
 
     @Override
@@ -302,30 +308,45 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         );
     }
 
-    private List<ReceivedTask> entriesToReceivedTasks(List<PostgresTasksQueueEntry> failures) {
-        List<ReceivedTask> result = Lists.newArrayList();
-        for (PostgresTasksQueueEntry failure : failures) {
+    private List<StoredTask> entriesToStoredTasks(List<PostgresTasksQueueEntry> entries) {
+        List<StoredTask> result = Lists.newArrayList();
+        for (PostgresTasksQueueEntry entry : entries) {
+            Map<String, Object> serializedParameters = null;
             try {
-                Map<String, Object> serializedParameters = this.om.readValue(
-                        failure.parameters(),
-                        new TypeReference<HashMap<String, Object>>() {
-                        }
+                serializedParameters = this.om.readValue(
+                        entry.parameters(), new TypeReference<HashMap<String, Object>>() {}
                 );
-
-                result.add(ReceivedTask.create(
-                        TaskType.valueOf(failure.type()),
-                        failure.senderNodeId(),
-                        failure.allowProcessSelf(),
-                        serializedParameters,
-                        failure.parameters(),
-                        failure.allowRetry()
-                ));
-            } catch (Exception e) {
-                LOG.error("Could not transform task queue entry. Skipping", e);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Could not serialize parameters of task <" + entry.id() + ">.", e);
             }
+
+            result.add(StoredTask.create(
+                    entry.id(),
+                    entry.senderNodeId(),
+                    TaskType.valueOf(entry.type()),
+                    entry.allowRetry(),
+                    serializedParameters,
+                    entry.createdAt(),
+                    TaskStatus.valueOf(entry.status()),
+                    entry.retries(),
+                    entry.allowProcessSelf(),
+                    Strings.isNullOrEmpty(entry.previousStatus()) ? null : TaskStatus.valueOf(entry.previousStatus()),
+                    entry.processingTimeMs(),
+                    entry.firstProcessedAt(),
+                    entry.lastProcessedAt()
+            ));
         }
 
         return result;
+    }
+
+    @Override
+    public long getTotalTaskCount() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM tasks_queue")
+                        .mapTo(Long.class)
+                        .one()
+        );
     }
 
 }

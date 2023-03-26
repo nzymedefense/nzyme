@@ -6,12 +6,16 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.UUID;
 
 public class PostgresMessageEntryMapper implements RowMapper<PostgresMessageEntry> {
 
     @Override
     public PostgresMessageEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        long cycleLimiter = rs.getLong("cycle_limiter");
+        Date acknowledgedAt = rs.getTimestamp("acknowledged_at");
+
         return PostgresMessageEntry.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("sender_node_id")),
@@ -19,9 +23,9 @@ public class PostgresMessageEntryMapper implements RowMapper<PostgresMessageEntr
                 rs.getString("type"),
                 rs.getString("parameters"),
                 rs.getString("status"),
-                rs.getLong("cycle_limiter"),
+                cycleLimiter == 0 ? null : cycleLimiter,
                 new DateTime(rs.getTimestamp("created_at")),
-                new DateTime(rs.getTimestamp("acknowledged_at"))
+                acknowledgedAt == null ? null : new DateTime(acknowledgedAt)
         );
     }
 

@@ -58,7 +58,7 @@ import HealthPage from "./components/system/health/HealthPage";
 import TLSCertificateDetailsPage from "./components/system/crypto/tls/TLSCertificateDetailsPage";
 import TLSWildcardCertificateUploadPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateUploadPage";
 import TLSWildcardCertificateEditPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateEditPage";
-import MessagingPage from "./components/system/messaging/MessagingPage";
+import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
 
 class App extends React.Component {
   constructor (props) {

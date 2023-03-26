@@ -3,26 +3,37 @@ package app.nzyme.core.distributed.tasksqueue.postgres;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue
 public abstract class PostgresTasksQueueEntry {
 
-    public abstract long id();
+    public abstract Long id();
     public abstract UUID senderNodeId();
     public abstract String type();
-    public abstract boolean allowRetry();
+    public abstract Boolean allowRetry();
     public abstract String parameters();
     public abstract DateTime createdAt();
     public abstract String status();
-    public abstract String previousStatus();
-    public abstract int retries();
-    public abstract int processingTimeMs();
-    public abstract DateTime firstProcessedAt();
-    public abstract DateTime lastProcessedAt();
-    public abstract boolean allowProcessSelf();
 
-    public static PostgresTasksQueueEntry create(long id, UUID senderNodeId, String type, boolean allowRetry, String parameters, DateTime createdAt, String status, String previousStatus, int retries, int processingTimeMs, DateTime firstProcessedAt, DateTime lastProcessedAt, boolean allowProcessSelf) {
+    @Nullable
+    public abstract String previousStatus();
+
+    public abstract Integer retries();
+
+    @Nullable
+    public abstract Integer processingTimeMs();
+
+    @Nullable
+    public abstract DateTime firstProcessedAt();
+
+    @Nullable
+    public abstract DateTime lastProcessedAt();
+
+    public abstract Boolean allowProcessSelf();
+
+    public static PostgresTasksQueueEntry create(Long id, UUID senderNodeId, String type, Boolean allowRetry, String parameters, DateTime createdAt, String status, String previousStatus, Integer retries, Integer processingTimeMs, DateTime firstProcessedAt, DateTime lastProcessedAt, Boolean allowProcessSelf) {
         return builder()
                 .id(id)
                 .senderNodeId(senderNodeId)
@@ -46,13 +57,13 @@ public abstract class PostgresTasksQueueEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder id(Long id);
 
         public abstract Builder senderNodeId(UUID senderNodeId);
 
         public abstract Builder type(String type);
 
-        public abstract Builder allowRetry(boolean allowRetry);
+        public abstract Builder allowRetry(Boolean allowRetry);
 
         public abstract Builder parameters(String parameters);
 
@@ -62,15 +73,15 @@ public abstract class PostgresTasksQueueEntry {
 
         public abstract Builder previousStatus(String previousStatus);
 
-        public abstract Builder retries(int retries);
+        public abstract Builder retries(Integer retries);
 
-        public abstract Builder processingTimeMs(int processingTimeMs);
+        public abstract Builder processingTimeMs(Integer processingTimeMs);
 
         public abstract Builder firstProcessedAt(DateTime firstProcessedAt);
 
         public abstract Builder lastProcessedAt(DateTime lastProcessedAt);
 
-        public abstract Builder allowProcessSelf(boolean allowProcessSelf);
+        public abstract Builder allowProcessSelf(Boolean allowProcessSelf);
 
         public abstract PostgresTasksQueueEntry build();
     }
