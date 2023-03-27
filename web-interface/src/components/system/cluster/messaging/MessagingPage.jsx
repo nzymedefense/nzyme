@@ -16,6 +16,10 @@ function MessagingPage() {
               </ol>
             </nav>
           </div>
+
+          <div className="col-md-2">
+            <a className="btn btn-primary float-end" href={Routes.SYSTEM.CLUSTER.INDEX}>Back</a>
+          </div>
         </div>
 
         <div className="row">

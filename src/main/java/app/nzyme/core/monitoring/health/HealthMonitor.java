@@ -51,6 +51,8 @@ public class HealthMonitor {
                 .add(new TLSExpirationIndicator(nzyme.getCrypto(), nzyme.getNodeManager()))
                 .add(new TasksQueueTaskFailureIndicator(nzyme.getTasksQueue()))
                 .add(new TasksQueueTaskStuckIndicator(nzyme.getTasksQueue()))
+                .add(new MessageBusMessageFailureIndicator(nzyme.getMessageBus()))
+                .add(new MessageBusMessageStuckIndicator(nzyme.getMessageBus()))
                 .build();
 
         for (Indicator indicator : indicators) {

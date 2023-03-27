@@ -32,6 +32,8 @@ function HealthConsole(props) {
 
           <div className="hc-row">
             <Indicator indicator={indicators.tasks_queue_task_failure} name="Task Failure" />
+            <Indicator indicator={indicators.message_bus_message_failure} name="Message Failure" />
+            <Indicator indicator={indicators.message_bus_message_stuck} name="Message Stuck" />
           </div>
 
           <div style={{clear: "both"}} />

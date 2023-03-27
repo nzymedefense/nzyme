@@ -82,7 +82,10 @@ public abstract class NodeResponse {
     @JsonProperty("is_ephemeral")
     public abstract boolean isEphemeral();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral) {
+    @JsonProperty("cycle")
+    public abstract long cycle();
+
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral, long cycle) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -109,6 +112,7 @@ public abstract class NodeResponse {
                 .clock(clock)
                 .clockDriftMs(clockDriftMs)
                 .isEphemeral(isEphemeral)
+                .cycle(cycle)
                 .build();
     }
 
@@ -168,7 +172,8 @@ public abstract class NodeResponse {
 
         public abstract Builder isEphemeral(boolean isEphemeral);
 
+        public abstract Builder cycle(long cycle);
+
         public abstract NodeResponse build();
     }
-
 }

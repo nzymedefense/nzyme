@@ -15,7 +15,7 @@ function TaskFailureConsequence(props) {
           problem="At least one cluster task has failed. Example cluster tasks are detection runs or delivery of alert
                   notifications."
           acceptableRange={[
-            "No failed tasks in the last 24 hours."
+            "No unacknowledged failed tasks in the last 24 hours."
           ]}
           consequences={[
             "An expected background action of the program was not performed"

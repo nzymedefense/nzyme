@@ -49,6 +49,16 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     public void initialize(int pollInterval, TimeUnit pollIntervalUnit) {
+        // Find existing still ACK'd tasks of this node and mark as failed. They were stuck/running at last shutdown.
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("UPDATE tasks_queue SET status = :failed " +
+                                "WHERE status = :acked AND acked_by = :node_id")
+                        .bind("acked", TaskStatus.ACK)
+                        .bind("failed", TaskStatus.PROCESSED_FAILURE)
+                        .bind("node_id", nzyme.getNodeInformation().id())
+                        .execute()
+        );
+
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("psql-tasks-poller-%d")
@@ -104,8 +114,8 @@ public class PostgresTasksQueueImpl implements TasksQueue {
         try {
             List<PostgresTasksQueueEntry> tasks = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("UPDATE tasks_queue SET status = 'ACK', previous_status = status, " +
-                                    "last_acked_at = :timestamp WHERE status IN ('NEW', 'NEW_RETRY') " +
-                                    "AND (allow_process_self = true " +
+                                    "last_acked_at = :timestamp, acked_by = :own_node_id " +
+                                    "WHERE status IN ('NEW', 'NEW_RETRY') AND (allow_process_self = true " +
                                     "OR (allow_process_self = false AND sender_node_id != :own_node_id)) RETURNING *")
                             .bind("own_node_id", nzyme.getNodeInformation().id())
                             .bind("timestamp", DateTime.now())
@@ -217,31 +227,18 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     private void setTaskPostProcessMetadata(long taskId, DateTime timestamp,  int processingTimeMs) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE tasks_queue SET last_processed_at = :last_processed_at, " +
-                                "processing_time_ms = :processing_time_ms WHERE id = :id")
+                                "processing_time_ms = :processing_time_ms, processed_by = :node_id WHERE id = :id")
                         .bind("last_processed_at", timestamp)
                         .bind("processing_time_ms", processingTimeMs)
+                        .bind("node_id", nzyme.getNodeInformation().id())
                         .bind("id", taskId)
                         .execute()
         );
     }
 
     @Override
-    public void retry(long taskId) {
-        long eligibleCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM tasks_queue WHERE allow_retry = true " +
-                                "AND status = :status AND id = :id")
-                        .bind("id", taskId)
-                        .bind("status", TaskStatus.PROCESSED_FAILURE)
-                        .mapTo(Long.class)
-                        .first()
-        );
-
-        if (eligibleCount != 1) {
-            LOG.warn("Task ID <{}> does not exist or is not allowed to be retried.", taskId);
-            return;
-        }
-
-        setTaskStatus(taskId, TaskStatus.NEW_RETRY);
+    public void acknowledgeTaskFailure(long taskId) {
+        setTaskStatus(taskId, TaskStatus.FAILURE_ACKNOWLEDGED);
     }
 
     @Override
@@ -333,7 +330,8 @@ public class PostgresTasksQueueImpl implements TasksQueue {
                     Strings.isNullOrEmpty(entry.previousStatus()) ? null : TaskStatus.valueOf(entry.previousStatus()),
                     entry.processingTimeMs(),
                     entry.firstProcessedAt(),
-                    entry.lastProcessedAt()
+                    entry.lastProcessedAt(),
+                    entry.processedBy()
             ));
         }
 

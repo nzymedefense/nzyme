@@ -1,4 +1,5 @@
 import React from "react";
+import TasksQueueTasksTable from "./TasksQueueTasksTable";
 
 function TasksQueueTasks() {
 
@@ -8,6 +9,8 @@ function TasksQueueTasks() {
           <div className="card">
             <div className="card-body">
               <h3>Tasks Queue</h3>
+
+              <TasksQueueTasksTable />
             </div>
           </div>
         </div>

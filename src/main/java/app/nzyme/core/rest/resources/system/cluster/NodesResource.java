@@ -212,7 +212,8 @@ public class NodesResource {
                 node.deleted(),
                 node.clock(),
                 node.clockDriftMs(),
-                node.isEphemeral()
+                node.isEphemeral(),
+                node.cycle()
         );
     }
 

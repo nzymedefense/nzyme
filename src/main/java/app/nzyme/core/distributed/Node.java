@@ -31,8 +31,9 @@ public abstract class Node {
     public abstract Long clockDriftMs();
     public abstract boolean isEphemeral();
     public abstract boolean deleted();
+    public abstract long cycle();
 
-    public static Node create(UUID uuid, String name, URI httpListenUri, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs, boolean isEphemeral, boolean deleted) {
+    public static Node create(UUID uuid, String name, URI httpListenUri, URI httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, Long clockDriftMs, boolean isEphemeral, boolean deleted, long cycle) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -56,6 +57,7 @@ public abstract class Node {
                 .clockDriftMs(clockDriftMs)
                 .isEphemeral(isEphemeral)
                 .deleted(deleted)
+                .cycle(cycle)
                 .build();
     }
 
@@ -109,7 +111,8 @@ public abstract class Node {
 
         public abstract Builder deleted(boolean deleted);
 
+        public abstract Builder cycle(long cycle);
+
         public abstract Node build();
     }
-
 }

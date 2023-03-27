@@ -31,7 +31,9 @@ public abstract class NodeEntry {
     public abstract DateTime clock();
     public abstract boolean deleted();
 
-    public static NodeEntry create(UUID uuid, String name, String httpListenUri, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, boolean deleted) {
+    public abstract Long cycle();
+
+    public static NodeEntry create(UUID uuid, String name, String httpListenUri, String httpExternalUri, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, DateTime clock, boolean deleted, Long cycle) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -53,6 +55,7 @@ public abstract class NodeEntry {
                 .lastSeen(lastSeen)
                 .clock(clock)
                 .deleted(deleted)
+                .cycle(cycle)
                 .build();
     }
 
@@ -102,7 +105,8 @@ public abstract class NodeEntry {
 
         public abstract Builder deleted(boolean deleted);
 
+        public abstract Builder cycle(Long cycle);
+
         public abstract NodeEntry build();
     }
-
 }

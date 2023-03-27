@@ -15,6 +15,7 @@ public class PostgresMessageEntryMapper implements RowMapper<PostgresMessageEntr
     public PostgresMessageEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         long cycleLimiter = rs.getLong("cycle_limiter");
         Date acknowledgedAt = rs.getTimestamp("acknowledged_at");
+        int processingTime = rs.getInt("processing_time_ms");
 
         return PostgresMessageEntry.create(
                 rs.getLong("id"),
@@ -25,7 +26,8 @@ public class PostgresMessageEntryMapper implements RowMapper<PostgresMessageEntr
                 rs.getString("status"),
                 cycleLimiter == 0 ? null : cycleLimiter,
                 new DateTime(rs.getTimestamp("created_at")),
-                acknowledgedAt == null ? null : new DateTime(acknowledgedAt)
+                acknowledgedAt == null ? null : new DateTime(acknowledgedAt),
+                processingTime == 0 ? null : processingTime
         );
     }
 

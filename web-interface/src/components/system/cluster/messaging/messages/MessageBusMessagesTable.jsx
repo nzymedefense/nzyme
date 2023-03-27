@@ -4,19 +4,21 @@ import ShortNodeId from "../../../../misc/ShortNodeId";
 import Paginator from "../../../../misc/Paginator";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ClusterService from "../../../../../services/ClusterService";
+import MessageStatus from "./MessageStatus";
 
 const clusterService = new ClusterService();
 
 function MessageBusMessagesTable() {
 
   const [messages, setMessages] = useState(null);
+  const [localRevision, setLocalRevision] = useState(0);
   const [page, setPage] = useState(1);
   const perPage = 20;
 
   useEffect(() => {
     setMessages(null);
     clusterService.findMessageBusMessages(setMessages, perPage, (page-1)*perPage);
-  }, [page])
+  }, [page, localRevision])
 
   if (messages === undefined || messages === null) {
     return <LoadingSpinner />
@@ -48,10 +50,10 @@ function MessageBusMessagesTable() {
           <tbody>
           {messages.messages.map((m, i) => {
             return (
-                <tr key={"message" + i}>
+                <tr key={"message-" + i}>
                   <td>{m.id}</td>
                   <td>{m.type}</td>
-                  <td>{m.status}</td>
+                  <td><MessageStatus message={m} setLocalRevision={setLocalRevision} /></td>
                   <td><ShortNodeId id={m.sender}/></td>
                   <td><ShortNodeId id={m.receiver}/></td>
                   <td>{m.created_at ? moment(m.created_at).format() : "n/a"}</td>

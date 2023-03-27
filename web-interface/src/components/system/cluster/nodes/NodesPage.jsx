@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import ClusterService from "../../../../services/ClusterService";
 import NodesTable from "./NodesTable";
 import EphemeralNodesConfiguration from "./EphemeralNodesConfiguration";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 const clusterService = new ClusterService()
 
@@ -42,6 +43,25 @@ function NodesPage() {
             <div className="card">
               <div className="card-body">
                 <NodesTable nodes={nodes} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Cluster Messaging</h3>
+
+                <p>
+                  An nzyme cluster is communicating between nodes to ensure operations. For debugging information,
+                  you can access details of the inter-node messaging bus and tasks queue.
+                </p>
+
+                <a href={ApiRoutes.SYSTEM.CLUSTER.MESSAGING.INDEX} className="btn btn-sm btn-secondary">
+                  Open Cluster Messaging Page
+                </a>
               </div>
             </div>
           </div>

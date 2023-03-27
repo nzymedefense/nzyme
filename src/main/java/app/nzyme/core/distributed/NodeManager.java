@@ -222,7 +222,8 @@ public class NodeManager {
                         dbEntry.clock(),
                         (long) new Period(dbEntry.lastSeen(), dbEntry.clock(), PeriodType.millis()).getMillis(),
                         isNodeEphemeral(dbEntry),
-                        dbEntry.deleted()
+                        dbEntry.deleted(),
+                        dbEntry.cycle()
                 ));
             } catch (Exception e) {
                 LOG.error("Could not create node from database entry. Skipping.", e);
@@ -267,7 +268,8 @@ public class NodeManager {
                         ne.clock(),
                         (long) new Period(ne.lastSeen(), ne.clock(), PeriodType.millis()).getMillis(),
                         isNodeEphemeral(ne),
-                        ne.deleted()
+                        ne.deleted(),
+                        ne.cycle()
                 ));
             } catch (Exception e) {
                 throw new RuntimeException("Could not create node from database entry.", e);

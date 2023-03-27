@@ -3,7 +3,7 @@ import SolutionCounter from "./layout/SolutionCounter";
 import Conditional from "./layout/Conditional";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 
-function TaskFailureProcedure(props) {
+function TaskFailureProcedure() {
   return (
       <ol className="consequence-solution-procedure">
         <li>
@@ -15,8 +15,10 @@ function TaskFailureProcedure(props) {
         </li>
         <li className="consequence-solution-sublist">
           <ol>
-            <li><SolutionCounter counter="2.1" /> Review failed tasks and it's consequences. Either retry the task or
-            mark the failure as acknowledged.</li>
+            <li><SolutionCounter counter="2.1" /> Review failed task and it's consequences. Consider manually restarting
+              the failed action if that is possible. For example, manually trigger a new report run if a report task
+              failed.</li>
+            <li><SolutionCounter counter="2.2" /> Mark the failed task as acknowledged to silence this indicator.</li>
           </ol>
         </li>
         <li>

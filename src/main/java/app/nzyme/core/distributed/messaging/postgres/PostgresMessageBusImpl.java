@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,16 @@ public class PostgresMessageBusImpl implements MessageBus {
     }
 
     public void initialize(int pollInterval, TimeUnit pollIntervalUnit) {
+        // Find existing still ACK'd messages of this node and mark as failed. They were stuck/running at last shutdown.
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("UPDATE message_bus_messages SET status = :failed " +
+                                "WHERE status = :acked AND acknowledged_by = :node_id")
+                        .bind("acked", MessageStatus.ACK)
+                        .bind("failed", MessageStatus.PROCESSED_FAILURE)
+                        .bind("node_id", nzyme.getNodeInformation().id())
+                        .execute()
+        );
+
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("psql-bus-poller-%d")
@@ -68,8 +79,9 @@ public class PostgresMessageBusImpl implements MessageBus {
         try {
             List<PostgresMessageEntry> messages = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT * FROM message_bus_messages WHERE receiver_node_id = :local_node_id " +
-                                    "AND status = 'NEW' AND (cycle_limiter IS NULL OR cycle_limiter = :local_node_cycle) " +
+                                    "AND status = :status AND (cycle_limiter IS NULL OR cycle_limiter = :local_node_cycle) " +
                                     "ORDER BY created_at ASC")
+                            .bind("status", MessageStatus.NEW)
                             .bind("local_node_id", nzyme.getNodeManager().getLocalNodeId())
                             .bind("local_node_cycle", nzyme.getNodeManager().getLocalCycle())
                             .mapTo(PostgresMessageEntry.class)
@@ -100,6 +112,7 @@ public class PostgresMessageBusImpl implements MessageBus {
                                 new TypeReference<HashMap<String,Object>>() {}
                         );
 
+                        Stopwatch stopwatch = Stopwatch.createStarted();
                         MessageProcessingResult opResult = handler.handle(ReceivedMessage.create(
                                 message.receiver(),
                                 message.sender(),
@@ -108,6 +121,10 @@ public class PostgresMessageBusImpl implements MessageBus {
                                 message.parameters(),
                                 message.cycleLimiter() != null
                         ));
+                        long tookMs = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+                        if (tookMs == 0) {
+                            tookMs = 1;
+                        }
 
                         if (opResult.equals(MessageProcessingResult.FAILURE)) {
                             LOG.error("Could not handle cluster message <#{}> of type [{}]. Marking as failure.",
@@ -118,6 +135,8 @@ public class PostgresMessageBusImpl implements MessageBus {
                                 opResult == MessageProcessingResult.SUCCESS
                                         ? MessageStatus.PROCESSED_SUCCESS : MessageStatus.PROCESSED_FAILURE
                         );
+
+                        setMessagePostProcessMetadata(message.id(), (int) tookMs);
                     }
                 }
             }
@@ -145,8 +164,8 @@ public class PostgresMessageBusImpl implements MessageBus {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO message_bus_messages(sender_node_id, receiver_node_id, type, " +
-                                "parameters, status, cycle_limiter, created_at, acknowledged_at) VALUES(:sender_node_id, " +
-                                ":receiver_node_id, :type, :parameters, :status, :cycle_limiter, :created_at, NULL)")
+                                "parameters, status, cycle_limiter, created_at) VALUES(:sender_node_id, " +
+                                ":receiver_node_id, :type, :parameters, :status, :cycle_limiter, :created_at)")
                         .bind("sender_node_id", nzyme.getNodeInformation().id())
                         .bind("receiver_node_id", message.receiver())
                         .bind("type", message.type())
@@ -190,6 +209,40 @@ public class PostgresMessageBusImpl implements MessageBus {
     }
 
     @Override
+    public void acknowledgeMessageFailure(long messageId) {
+        setMessageStatus(messageId, MessageStatus.FAILURE_ACKNOWLEDGED);
+    }
+
+    @Override
+    public List<StoredMessage> getAllFailedMessagesSince(DateTime since) {
+        List<PostgresMessageEntry> failures = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM message_bus_messages WHERE status = :status AND created_at > :since " +
+                                "ORDER BY created_at DESC")
+                        .bind("status", MessageStatus.PROCESSED_FAILURE)
+                        .bind("since", since)
+                        .mapTo(PostgresMessageEntry.class)
+                        .list()
+        );
+
+
+        return entriesToStoredMessages(failures);
+    }
+
+    @Override
+    public List<StoredMessage> getAllStuckMessages(DateTime timeout) {
+        List<PostgresMessageEntry> failures = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM message_bus_messages WHERE status = :status AND acknowledged_at < :timeout " +
+                                "ORDER BY created_at DESC")
+                        .bind("status", MessageStatus.ACK)
+                        .bind("timeout", timeout)
+                        .mapTo(PostgresMessageEntry.class)
+                        .list()
+        );
+
+        return entriesToStoredMessages(failures);
+    }
+
+    @Override
     public List<StoredMessage> getAllMessages(int limit, int offset) {
         List<PostgresMessageEntry> entries = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM message_bus_messages ORDER BY created_at DESC " +
@@ -200,33 +253,7 @@ public class PostgresMessageBusImpl implements MessageBus {
                         .list()
         );
 
-        List<StoredMessage> result = Lists.newArrayList();
-
-        for (PostgresMessageEntry entry : entries) {
-            Map<String, Object> serializedParameters;
-            try {
-                serializedParameters = this.om.readValue(
-                        entry.parameters(),
-                        new TypeReference<HashMap<String,Object>>() {}
-                );
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Could not serialize parameters of message <" + entry.id() + ">.", e);
-            }
-
-            result.add(StoredMessage.create(
-                    entry.id(),
-                    entry.sender(),
-                    entry.receiver(),
-                    MessageType.valueOf(entry.type()),
-                    serializedParameters,
-                    MessageStatus.valueOf(entry.status()),
-                    entry.cycleLimiter(),
-                    entry.createdAt(),
-                    entry.acknowledgedAt()
-            ));
-        }
-
-        return result;
+        return entriesToStoredMessages(entries);
     }
 
     @Override
@@ -235,6 +262,15 @@ public class PostgresMessageBusImpl implements MessageBus {
                 handle.createQuery("SELECT COUNT(*) FROM message_bus_messages")
                         .mapTo(Long.class)
                         .one()
+        );
+    }
+
+    public void retentionClean(DateTime cutoff) {
+        LOG.info("Running retention cleaning for message bus.");
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM message_bus_messages WHERE created_at < :timeout")
+                        .bind("timeout", cutoff)
+                        .execute()
         );
     }
 
@@ -250,21 +286,54 @@ public class PostgresMessageBusImpl implements MessageBus {
     private void ackMessage(long messageId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE message_bus_messages SET status = :status, " +
-                                "acknowledged_at = :acknowledged_at WHERE id = :id")
+                                "acknowledged_at = :acknowledged_at, acknowledged_by = :node_id WHERE id = :id")
                         .bind("status", MessageStatus.ACK.name())
+                        .bind("node_id", nzyme.getNodeInformation().id())
                         .bind("id", messageId)
                         .bind("acknowledged_at", DateTime.now())
                         .execute()
         );
     }
 
-    public void retentionClean(DateTime cutoff) {
-        LOG.info("Running retention cleaning for message bus.");
+    private void setMessagePostProcessMetadata(long id, int tookMs) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM message_bus_messages WHERE created_at < :timeout")
-                        .bind("timeout", cutoff)
+                handle.createUpdate("UPDATE message_bus_messages SET processing_time_ms = :took_ms " +
+                                "WHERE id = :id")
+                        .bind("took_ms", tookMs)
+                        .bind("id", id)
                         .execute()
         );
+    }
+
+    private List<StoredMessage> entriesToStoredMessages(List<PostgresMessageEntry> failures) {
+        List<StoredMessage> result = Lists.newArrayList();
+
+        for (PostgresMessageEntry failure : failures) {
+            Map<String, Object> serializedParameters;
+            try {
+                serializedParameters = this.om.readValue(
+                        failure.parameters(),
+                        new TypeReference<HashMap<String,Object>>() {}
+                );
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Could not serialize parameters of message <" + failure.id() + ">.", e);
+            }
+
+            result.add(StoredMessage.create(
+                    failure.id(),
+                    failure.sender(),
+                    failure.receiver(),
+                    MessageType.valueOf(failure.type()),
+                    serializedParameters,
+                    MessageStatus.valueOf(failure.status()),
+                    failure.createdAt(),
+                    failure.cycleLimiter(),
+                    failure.acknowledgedAt(),
+                    failure.processingTimeMs()
+            ));
+        }
+
+        return result;
     }
 
 }

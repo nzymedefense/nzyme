@@ -39,7 +39,11 @@ public abstract class MessageBusMessageResponse {
     @Nullable
     public abstract DateTime acknowledgedAt();
 
-    public static MessageBusMessageResponse create(Long id, UUID sender, UUID receiver, MessageType type, MessageStatus status, DateTime createdAt, Long cycleLimiter, DateTime acknowledgedAt) {
+    @JsonProperty("processing_time_ms")
+    @Nullable
+    public abstract Integer processingTimeMs();
+
+    public static MessageBusMessageResponse create(Long id, UUID sender, UUID receiver, MessageType type, MessageStatus status, DateTime createdAt, Long cycleLimiter, DateTime acknowledgedAt, Integer processingTimeMs) {
         return builder()
                 .id(id)
                 .sender(sender)
@@ -49,6 +53,7 @@ public abstract class MessageBusMessageResponse {
                 .createdAt(createdAt)
                 .cycleLimiter(cycleLimiter)
                 .acknowledgedAt(acknowledgedAt)
+                .processingTimeMs(processingTimeMs)
                 .build();
     }
 
@@ -73,6 +78,8 @@ public abstract class MessageBusMessageResponse {
         public abstract Builder cycleLimiter(Long cycleLimiter);
 
         public abstract Builder acknowledgedAt(DateTime acknowledgedAt);
+
+        public abstract Builder processingTimeMs(Integer processingTimeMs);
 
         public abstract MessageBusMessageResponse build();
     }

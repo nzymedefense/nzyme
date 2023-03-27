@@ -27,7 +27,10 @@ public abstract class PostgresMessageEntry {
     @Nullable
     public abstract DateTime acknowledgedAt();
 
-    public static PostgresMessageEntry create(long id, UUID sender, UUID receiver, String type, String parameters, String status, long cycleLimiter, DateTime createdAt, DateTime acknowledgedAt) {
+    @Nullable
+    public abstract Integer processingTimeMs();
+
+    public static PostgresMessageEntry create(long id, UUID sender, UUID receiver, String type, String parameters, String status, Long cycleLimiter, DateTime createdAt, DateTime acknowledgedAt, Integer processingTimeMs) {
         return builder()
                 .id(id)
                 .sender(sender)
@@ -38,12 +41,14 @@ public abstract class PostgresMessageEntry {
                 .cycleLimiter(cycleLimiter)
                 .createdAt(createdAt)
                 .acknowledgedAt(acknowledgedAt)
+                .processingTimeMs(processingTimeMs)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_PostgresMessageEntry.Builder();
     }
+
 
     @AutoValue.Builder
     public abstract static class Builder {
@@ -59,13 +64,14 @@ public abstract class PostgresMessageEntry {
 
         public abstract Builder status(String status);
 
-        public abstract Builder cycleLimiter(long cycleLimiter);
+        public abstract Builder cycleLimiter(Long cycleLimiter);
 
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder acknowledgedAt(DateTime acknowledgedAt);
 
+        public abstract Builder processingTimeMs(Integer processingTimeMs);
+
         public abstract PostgresMessageEntry build();
     }
-
 }

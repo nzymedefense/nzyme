@@ -99,6 +99,7 @@ function NodeDetailsPage() {
                       {moment(node.process_start_time).fromNow()}{' '}
                       <span className="text-muted">
                         ({moment(node.process_start_time).format()})
+                        (Cycle {node.cycle})
                       </span>
                     </span>
                   </dd>

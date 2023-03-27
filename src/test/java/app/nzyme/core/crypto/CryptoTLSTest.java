@@ -485,7 +485,8 @@ public class CryptoTLSTest extends ResourcesAccessingTest {
                 DateTime.now(),
                 0L,
                 false,
-                false
+                false,
+                1
         );
     }
 

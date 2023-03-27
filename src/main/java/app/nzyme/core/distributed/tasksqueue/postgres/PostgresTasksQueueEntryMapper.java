@@ -16,6 +16,7 @@ public class PostgresTasksQueueEntryMapper implements RowMapper<PostgresTasksQue
         int processingTimeMs = rs.getInt("processing_time_ms");
         Date firstProcessedAt = rs.getTimestamp("first_processed_at");
         Date lastProcessedAt = rs.getTimestamp("last_processed_at");
+        String processedBy = rs.getString("processed_by");
 
         return PostgresTasksQueueEntry.create(
                 rs.getLong("id"),
@@ -30,7 +31,8 @@ public class PostgresTasksQueueEntryMapper implements RowMapper<PostgresTasksQue
                 processingTimeMs == 0 ? null : processingTimeMs,
                 firstProcessedAt == null ? null : new DateTime(firstProcessedAt),
                 lastProcessedAt == null ? null : new DateTime(lastProcessedAt),
-                rs.getBoolean("allow_process_self")
+                rs.getBoolean("allow_process_self"),
+                processedBy == null ? null : UUID.fromString(processedBy)
         );
     }
 

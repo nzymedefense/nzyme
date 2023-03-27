@@ -13,6 +13,8 @@ import TapErrorConsequence from "./consequences/TapErrorConsequence";
 import TLSExpirationConsequence from "./consequences/TLSExpirationConsequence";
 import TaskFailureConsequence from "./consequences/TaskFailureConsequence";
 import TaskStuckConsequence from "./consequences/TaskStuckConsequence";
+import MessageStuckConsequence from "./consequences/MessageStuckConsequence";
+import MessageFailureConsequence from "./consequences/MessageFailureConsequence";
 
 function Consequences(props) {
 
@@ -61,6 +63,8 @@ function Consequences(props) {
         <TapErrorConsequence show={consequences.includes("tap_error")} />
         <TaskFailureConsequence show={consequences.includes("tasks_queue_task_failure")} />
         <TaskStuckConsequence show={consequences.includes("tasks_queue_task_stuck")} />
+        <MessageFailureConsequence show={consequences.includes("message_bus_message_failure")} />
+        <MessageStuckConsequence show={consequences.includes("message_bus_message_stuck")} />
       </div>
   )
 

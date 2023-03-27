@@ -40,6 +40,20 @@ class ClusterService {
     })
   }
 
+  findTasksQueueTasks(setTasks, limit, offset) {
+    RESTClient.get('/system/cluster/tasksqueue/tasks', {limit: limit, offset: offset}, function (response) {
+      setTasks(response.data)
+    })
+  }
+
+  acknowledgeFailedTask(taskId, successCallback) {
+    RESTClient.put('/system/cluster/tasksqueue/tasks/show/' + taskId + '/acknowledgefailure', {}, successCallback)
+  }
+
+  acknowledgeFailedMessage(messageId, successCallback) {
+    RESTClient.put('/system/cluster/messagebus/messages/show/' + messageId + '/acknowledgefailure', {}, successCallback)
+  }
+
 }
 
 export default ClusterService

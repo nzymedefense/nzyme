@@ -1669,4 +1669,28 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_processed_by_to_tasks_queue" author="lennartkoopmann">
+        <addColumn tableName="tasks_queue">
+            <column name="processed_by" type="uuid" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_acked_by_to_tasks_queue" author="lennartkoopmann">
+        <addColumn tableName="tasks_queue">
+            <column name="acked_by" type="uuid" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_acked_by_to_message_bus" author="lennartkoopmann">
+        <addColumn tableName="message_bus_messages">
+            <column name="acknowledged_by" type="uuid" />
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_processing_time_to_message_bus" author="lennartkoopmann">
+        <addColumn tableName="message_bus_messages">
+            <column name="processing_time_ms" type="int" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
