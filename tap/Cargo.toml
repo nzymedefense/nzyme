@@ -1,0 +1,57 @@
+[package]
+name = "nzyme-tap"
+description = "The nzyme Network Defense System tap"
+license = "SSPL-1.0"
+version = "0.1.1"
+edition = "2021"
+readme = "README.md"
+
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = "fat"
+panic = "unwind"
+incremental = false
+codegen-units = 1
+rpath = false
+
+[profile.profiler]
+inherits = "release"
+debug = true
+
+[package.metadata.deb]
+maintainer = "Lennart Koopmann <lennart.koopmann@nzyme.org>"
+copyright = "nzyme LLC <lennart.koopmann@nzyme.org>"
+license-file = ["COPYING", "0"]
+extended-description = "The nzyme Network Defense System tap"
+depends = "$auto"
+section = "net"
+priority = "optional"
+assets = [
+    ["target/release/nzyme-tap", "usr/bin/nzyme-tap", "755"],
+    ["README.md", "usr/share/doc/nzyme-tap/README", "644"],
+    ["packaging/debian/systemd/nzyme-tap.service", "usr/lib/systemd/system/nzyme-tap.service", "644"]
+]
+
+[dependencies]
+hex = "0.4.3"
+pcap = "0.10.1"
+byteorder = "1.4.3"
+log = "0.4.0"
+fern = { version = "0.6.1", features = ["colored"] }
+anyhow = "1.0.53"
+crossbeam-channel = "0.5.2"
+reqwest = { version = "0.11.10", features = ["blocking", "json", "gzip"] }
+serde = { version = "1.0.136", features = ["derive"] }
+hocon = "0.7.0"
+systemstat = "0.1.10"
+chrono = { version = "0.4", features = ["serde"] }
+strum = "0.24.0"
+strum_macros = "0.24"
+bitreader = "0.3.6"
+bitvec = "1.0.0"
+entropy = "0.4.1"
+clokwerk = "0.3.5"
+clap = { version = "3.2.15", features = ["derive"] }

@@ -1,0 +1,22 @@
+[Unit]
+Description=Nzyme-Tap
+Documentation=https://github.com/lennartkoopmann/nzyme
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=root
+Group=root
+LimitNOFILE=64000
+
+ExecStart=/usr/bin/nzyme-tap --configuration-file /etc/nzyme/nzyme-tap.conf --log-level info
+
+# Make sure stderr/stdout is captured in the systemd journal.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

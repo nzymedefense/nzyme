@@ -1,5 +1,6 @@
 .idea
 *.iml
+.vscode
 nzyme*.conf
 dependency-reduced-pom.xml
 /plugin/
@@ -29,3 +30,7 @@ openssl.cnf
 *.pem
 
 src/main/resources/git.properties
+
+tap/target/
+tap/nzyme-tap.conf
+tap/perf.data*
