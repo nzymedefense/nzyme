@@ -54,6 +54,15 @@ class ClusterService {
     RESTClient.put('/system/cluster/messagebus/messages/show/' + messageId + '/acknowledgefailure', {}, successCallback)
   }
 
+  acknowledgeAllFailedTasks(successCallback) {
+    RESTClient.put('/system/cluster/tasksqueue/tasks/all/acknowledgefailure', {}, successCallback)
+  }
+
+  acknowledgeAllFailedMessages(successCallback) {
+    RESTClient.put('/system/cluster/messagebus/messages/all/acknowledgefailure', {}, successCallback)
+  }
+
+
 }
 
 export default ClusterService

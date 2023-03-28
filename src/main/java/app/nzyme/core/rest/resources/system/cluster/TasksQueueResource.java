@@ -64,4 +64,12 @@ public class TasksQueueResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @Path("/tasks/all/acknowledgefailure")
+    public Response acknowledgeAllFailures() {
+        nzyme.getTasksQueue().acknowledgeAllTaskFailures();
+
+        return Response.ok().build();
+    }
+
 }

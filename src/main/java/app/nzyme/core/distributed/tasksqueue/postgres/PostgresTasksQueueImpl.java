@@ -242,6 +242,16 @@ public class PostgresTasksQueueImpl implements TasksQueue {
     }
 
     @Override
+    public void acknowledgeAllTaskFailures() {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE tasks_queue SET status = :acked WHERE status = :failed")
+                        .bind("acked", TaskStatus.FAILURE_ACKNOWLEDGED)
+                        .bind("failed", TaskStatus.PROCESSED_FAILURE)
+                        .execute()
+        );
+    }
+
+    @Override
     public List<StoredTask> getAllFailedTasksSince(DateTime since) {
         List<PostgresTasksQueueEntry> failures = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM tasks_queue WHERE status = :status AND created_at > :since " +

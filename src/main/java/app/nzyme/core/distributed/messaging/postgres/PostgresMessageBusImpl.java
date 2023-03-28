@@ -214,6 +214,16 @@ public class PostgresMessageBusImpl implements MessageBus {
     }
 
     @Override
+    public void acknowledgeAllMessageFailures() {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE message_bus_messages SET status = :acked WHERE status = :failed")
+                        .bind("acked", MessageStatus.FAILURE_ACKNOWLEDGED)
+                        .bind("failed", MessageStatus.PROCESSED_FAILURE)
+                        .execute()
+        );
+    }
+
+    @Override
     public List<StoredMessage> getAllFailedMessagesSince(DateTime since) {
         List<PostgresMessageEntry> failures = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM message_bus_messages WHERE status = :status AND created_at > :since " +

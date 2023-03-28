@@ -62,5 +62,12 @@ public class MessageBusResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @Path("/messages/all/acknowledgefailure")
+    public Response acknowledgeAllFailures() {
+        nzyme.getMessageBus().acknowledgeAllMessageFailures();
+
+        return Response.ok().build();
+    }
 
 }

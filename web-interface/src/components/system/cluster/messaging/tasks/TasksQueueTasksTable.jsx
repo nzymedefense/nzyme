@@ -5,6 +5,7 @@ import Paginator from "../../../../misc/Paginator";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ClusterService from "../../../../../services/ClusterService";
 import TaskStatus from "./TaskStatus";
+import {notify} from "react-notify-toast";
 
 const clusterService = new ClusterService();
 
@@ -20,6 +21,17 @@ function TasksQueueTasksTable() {
     clusterService.findTasksQueueTasks(setTasks, perPage, (page-1)*perPage);
   }, [page, localRevision])
 
+  const markAllAck = function() {
+    if (!confirm("Really mark all failures as acknowledged?")) {
+      return;
+    }
+
+    clusterService.acknowledgeAllFailedTasks(() => {
+      notify.show("Failures acknowledged.", "success");
+      setLocalRevision(prevRev => prevRev + 1);
+    })
+  }
+
   if (tasks === undefined || tasks === null) {
     return <LoadingSpinner />
   }
@@ -34,6 +46,10 @@ function TasksQueueTasksTable() {
 
   return (
       <React.Fragment>
+        <button className="btn btn-sm btn-secondary mb-2" onClick={markAllAck}>
+          Mark all failed tasks as acknowledged
+        </button>
+
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
