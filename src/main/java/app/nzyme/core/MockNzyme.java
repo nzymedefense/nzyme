@@ -154,14 +154,6 @@ public class MockNzyme implements NzymeNode {
             throw new RuntimeException(e);
         }
 
-        this.clusterManager = new ClusterManager(this);
-
-        this.messageBus = new PostgresMessageBusImpl(this);
-        ((PostgresMessageBusImpl) this.messageBus).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
-
-        this.tasksQueue = new PostgresTasksQueueImpl(this);
-        ((PostgresTasksQueueImpl) this.tasksQueue).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
-
         this.nodeManager = new NodeManager(this);
         try {
             this.nodeManager.initialize();
@@ -170,6 +162,14 @@ public class MockNzyme implements NzymeNode {
         }
 
         this.nodeIdentification = NodeIdentification.create(nodeManager.getLocalNodeId(), baseConfiguration.name());
+
+        this.clusterManager = new ClusterManager(this);
+
+        this.messageBus = new PostgresMessageBusImpl(this);
+        ((PostgresMessageBusImpl) this.messageBus).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
+
+        this.tasksQueue = new PostgresTasksQueueImpl(this);
+        ((PostgresTasksQueueImpl) this.tasksQueue).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
