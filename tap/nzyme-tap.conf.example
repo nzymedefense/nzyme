@@ -2,6 +2,7 @@
 tap_name = "nzyme-tap-01"
 leader_secret = "your_key_copied_from_nzyme_web_interface"
 leader_uri = "http://nzyme.example.org:22900/"
+accept_insecure_certs = false
 
 # Ethernet listening
 ethernet_listen_interfaces = [ "eth0" ]

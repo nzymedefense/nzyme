@@ -40,7 +40,7 @@ impl Leaderlink {
             .user_agent("nzyme-tap")
             .default_headers(default_headers)
             .gzip(true)
-            .danger_accept_invalid_certs(true) // TODO
+            .danger_accept_invalid_certs(configuration.accept_insecure_certs) // TODO
             .build()?;
 
         anyhow::Ok(Self {

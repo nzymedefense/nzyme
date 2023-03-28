@@ -8,6 +8,7 @@ pub struct Configuration {
     pub tap_name: String,
     pub leader_secret: String,
     pub leader_uri: String,
+    pub accept_insecure_certs: bool,
     pub ethernet_listen_interfaces: Vec<String>,
     pub training_period_minutes: i32,
     pub ethernet_brokers: i32

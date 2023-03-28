@@ -49,7 +49,6 @@ fn main() {
             exit(exit_code::EX_CONFIG);
         }
     };
-
     
     let system_state = Arc::new(
         SystemState::new(configuration.training_period_minutes as usize).initialize()
