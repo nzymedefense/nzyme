@@ -130,6 +130,9 @@ function TapDetailsPage () {
                 <dd>
                   <span title={moment(tap.created_at).format()}>{moment(tap.created_at).fromNow()}</span>
                 </dd>
+
+                <dt>Version</dt>
+                <dd>{tap.version}</dd>
               </dl>
             </div>
           </div>

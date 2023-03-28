@@ -42,6 +42,7 @@ function TapsTable(props) {
               <th>CPU Load</th>
               <th>Memory Used</th>
               <th>Clock</th>
+              <th>Version</th>
               <th>Last Seen</th>
             </tr>
           </thead>

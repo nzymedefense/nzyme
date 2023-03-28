@@ -30,6 +30,7 @@ function TapsRow (props) {
         <td>{tap.clock_drift_ms < -5000 || tap.clock_drift_ms > 5000
           ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/>
           : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
+        <td>{tap.version}</td>
         <td title={moment(tap.updated_at).format()}>
           {moment(tap.updated_at).fromNow()}
         </td>

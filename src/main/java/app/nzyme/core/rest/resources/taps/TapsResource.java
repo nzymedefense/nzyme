@@ -216,6 +216,7 @@ public class TapsResource {
 
         return TapDetailsResponse.create(
                 tap.name(),
+                tap.version(),
                 tap.clock(),
                 TotalWithAverageResponse.create(tap.processedBytes().total(), tap.processedBytes().average()),
                 tap.memoryTotal(),

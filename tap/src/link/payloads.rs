@@ -4,7 +4,8 @@ use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
 
 pub struct StatusReport {
-    pub tap_name: String,
+    pub name: String,
+    pub version: String,
     pub timestamp: DateTime<Utc>,
     pub processed_bytes: TotalWithAverage,
     pub bus: BusReport,
@@ -154,7 +155,8 @@ impl Serialize for StatusReport {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: serde::Serializer {
         let mut state = serializer.serialize_struct("StatusReport", 7)?;
-        state.serialize_field("tap_name", &self.tap_name)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("version", &self.version)?;
         state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
         state.serialize_field("processed_bytes", &self.processed_bytes)?;
         state.serialize_field("bus", &self.bus)?;

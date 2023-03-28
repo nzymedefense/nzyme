@@ -12,6 +12,9 @@ public abstract class TapDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
+    @JsonProperty("version")
+    public abstract String version();
+
     @JsonProperty("clock")
     public abstract DateTime clock();
 
@@ -54,9 +57,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("captures")
     public abstract List<CaptureDetailsResponse> captures();
 
-    public static TapDetailsResponse create(String name, DateTime clock, TotalWithAverageResponse processedBytes, long memoryTotal, long memoryFree, long memoryUsed, Double cpuLoad, boolean active, boolean deleted, long clockDriftMs, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
+    public static TapDetailsResponse create(String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, long memoryTotal, long memoryFree, long memoryUsed, Double cpuLoad, boolean active, boolean deleted, long clockDriftMs, DateTime createdAt, DateTime updatedAt, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
         return builder()
                 .name(name)
+                .version(version)
                 .clock(clock)
                 .processedBytes(processedBytes)
                 .memoryTotal(memoryTotal)
@@ -81,6 +85,8 @@ public abstract class TapDetailsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
+
+        public abstract Builder version(String version);
 
         public abstract Builder clock(DateTime clock);
 
@@ -112,5 +118,4 @@ public abstract class TapDetailsResponse {
 
         public abstract TapDetailsResponse build();
     }
-
 }

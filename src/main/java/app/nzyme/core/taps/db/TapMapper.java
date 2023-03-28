@@ -20,6 +20,7 @@ public class TapMapper implements RowMapper<Tap>  {
 
         return Tap.create(
                 rs.getString("name"),
+                rs.getString("version"),
                 clock,
                 TotalWithAverage.create(rs.getLong("processed_bytes_total"), rs.getLong("processed_bytes_average")),
                 rs.getLong("memory_total"),

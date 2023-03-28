@@ -139,7 +139,8 @@ impl Leaderlink {
         let system_metrics = self.build_system_metrics();
 
         let status = StatusReport {
-            tap_name: self.tap_name.clone(),
+            name: self.tap_name.clone(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
             timestamp: Utc::now(),
             processed_bytes: TotalWithAverage { 
                 total: processed_bytes_total,

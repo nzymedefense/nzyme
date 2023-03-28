@@ -1693,4 +1693,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_version_to_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="version" type="varchar(64)" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

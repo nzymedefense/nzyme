@@ -42,21 +42,10 @@ public class StatusResource {
 
     @POST
     public Response status(StatusReport report) {
-        LOG.debug("Received status from tap [{}]: memory_total: {}, memory_free: {}, memory_used: {}, " +
-                        "cpu: {}%, bytes processed: {}, avg bytes processed: {}, bus: {}, gauges_long: {}",
-                report.tapName(),
-                report.systemMetrics().memoryTotal(),
-                report.systemMetrics().memoryFree(),
-                report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(),
-                report.systemMetrics().cpuLoad(),
-                report.processedBytes().total(),
-                report.processedBytes().average(),
-                report.bus(),
-                report.gaugesLong()
-        );
+        LOG.debug("Received tap status: {}", report);
 
-        if (report.tapName().length() > 50) {
-            LOG.debug("Tap name [{}] exceeds maximum length of 50 characters.", report.tapName());
+        if (report.name().length() > 50) {
+            LOG.debug("Tap name [{}] exceeds maximum length of 50 characters.", report.name());
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         

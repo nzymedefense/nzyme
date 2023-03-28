@@ -31,10 +31,12 @@ struct Arguments {
     log_level: String
 }
 
-fn main() {
+fn main() {    
     let args = Arguments::parse();
 
     logging::initialize(&args.log_level);
+
+    info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
     // Load configuration.
     let configuration: Configuration = match configuration::load(args.configuration_file) {

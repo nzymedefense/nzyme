@@ -40,20 +40,21 @@ public class TapManager {
     public void registerTapStatus(StatusReport report) {
         long tapCount = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) AS count FROM taps WHERE name = :name")
-                        .bind("name", report.tapName())
+                        .bind("name", report.name())
                         .mapTo(Long.class)
                         .one()
         );
 
         if (tapCount == 0) {
-            LOG.info("Registering first report from new tap [{}].", report.tapName());
+            LOG.info("Registering first report from new tap [{}].", report.name());
 
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO taps(name, clock, processed_bytes_total, processed_bytes_average, " +
+                    handle.createUpdate("INSERT INTO taps(name, version, clock, processed_bytes_total, processed_bytes_average, " +
                             "memory_total, memory_free, memory_used, cpu_load, deleted, created_at, updated_at) " +
-                            "VALUES(:name, :clock, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
+                            "VALUES(:name, :version, :clock, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
                             ":memory_free, :memory_used, :cpu_load, false, NOW(), NOW())")
-                            .bind("name", report.tapName())
+                            .bind("name", report.name())
+                            .bind("version", report.version())
                             .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
                             .bind("processed_bytes_average", report.processedBytes().average())
@@ -64,14 +65,15 @@ public class TapManager {
                             .execute()
             );
         } else {
-            LOG.debug("Registering report from existing tap [{}].", report.tapName());
+            LOG.debug("Registering report from existing tap [{}].", report.name());
 
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE taps SET clock = :clock, " +
+                    handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
                             "processed_bytes_total = :processed_bytes_total, " +
                             "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                             "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
                             "deleted = false, updated_at = NOW() WHERE name = :name")
+                            .bind("version", report.version())
                             .bind("clock", report.timestamp())
                             .bind("processed_bytes_total", report.processedBytes().total())
                             .bind("processed_bytes_average", report.processedBytes().average())
@@ -79,7 +81,7 @@ public class TapManager {
                             .bind("memory_free", report.systemMetrics().memoryFree())
                             .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                             .bind("cpu_load", report.systemMetrics().cpuLoad())
-                            .bind("name", report.tapName())
+                            .bind("name", report.name())
                             .execute()
             );
         }
@@ -90,7 +92,7 @@ public class TapManager {
                     handle.createQuery("SELECT COUNT(*) AS count FROM tap_captures " +
                                     "WHERE interface = :interface AND tap_name = :tap_name")
                             .bind("interface", capture.interfaceName())
-                            .bind("tap_name",  report.tapName())
+                            .bind("tap_name",  report.name())
                             .mapTo(Long.class)
                             .one()
             );
@@ -101,7 +103,7 @@ public class TapManager {
                             "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_name, " +
                             ":interface, :capture_type, :is_running, :received, :dropped_buffer, :dropped_interface, " +
                             "NOW(), NOW())")
-                            .bind("tap_name", report.tapName())
+                            .bind("tap_name", report.name())
                             .bind("interface", capture.interfaceName())
                             .bind("capture_type", capture.captureType())
                             .bind("is_running", capture.isRunning())
@@ -121,7 +123,7 @@ public class TapManager {
                                 .bind("received", capture.received())
                                 .bind("dropped_buffer", capture.droppedBuffer())
                                 .bind("dropped_interface", capture.droppedInterface())
-                                .bind("tap_name", report.tapName())
+                                .bind("tap_name", report.name())
                                 .bind("interface", capture.interfaceName())
                                 .execute()
                 );
@@ -131,7 +133,7 @@ public class TapManager {
         // Register bus.
         long busCount = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_name = :tap_name")
-                        .bind("tap_name", report.tapName())
+                        .bind("tap_name", report.name())
                         .mapTo(Long.class)
                         .one()
         );
@@ -140,14 +142,14 @@ public class TapManager {
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("INSERT INTO tap_buses(tap_name, name, created_at, updated_at) " +
                             "VALUES(:tap_name, :name, NOW(), NOW())")
-                            .bind("tap_name", report.tapName())
+                            .bind("tap_name", report.name())
                             .bind("name", report.bus().name())
                             .execute()
             );
         } else {
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() WHERE tap_name = :tap_name AND name = :name")
-                            .bind("tap_name", report.tapName())
+                            .bind("tap_name", report.name())
                             .bind("name", report.bus().name())
                             .execute()
             );
@@ -155,7 +157,7 @@ public class TapManager {
 
         Long busId = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id FROM tap_buses WHERE tap_name = :tap_name")
-                        .bind("tap_name", report.tapName())
+                        .bind("tap_name", report.name())
                         .mapTo(Long.class)
                         .one()
         );
@@ -217,13 +219,13 @@ public class TapManager {
 
         // Metrics
         for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
-            writeGauge(report.tapName(), metric.getKey(), metric.getValue(), report.timestamp());
+            writeGauge(report.name(), metric.getKey(), metric.getValue(), report.timestamp());
         }
 
         // Additional metrics.
-        writeGauge(report.tapName(), "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
-        writeGauge(report.tapName(), "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
-        writeGauge(report.tapName(), "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+        writeGauge(report.name(), "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
+        writeGauge(report.name(), "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
+        writeGauge(report.name(), "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
     }
 
     private void writeGauge(String tapName, String metricName, Long metricValue, DateTime timestamp) {

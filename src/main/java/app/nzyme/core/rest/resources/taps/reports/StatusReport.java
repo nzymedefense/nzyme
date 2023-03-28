@@ -28,7 +28,8 @@ import java.util.Map;
 @AutoValue
 public abstract class StatusReport {
 
-    public abstract String tapName();
+    public abstract String name();
+    public abstract String version();
     public abstract DateTime timestamp();
     public abstract TotalWithAverage processedBytes();
     public abstract BusReport bus();
@@ -37,7 +38,8 @@ public abstract class StatusReport {
     public abstract Map<String, Long> gaugesLong();
 
     @JsonCreator
-    public static StatusReport create(@JsonProperty("tap_name") String tapName,
+    public static StatusReport create(@JsonProperty("name") String name,
+                                      @JsonProperty("version") String version,
                                       @JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("processed_bytes") TotalWithAverage processedBytes,
                                       @JsonProperty("bus") BusReport bus,
@@ -45,7 +47,8 @@ public abstract class StatusReport {
                                       @JsonProperty("captures") List<CapturesReport> captures,
                                       @JsonProperty("gauges_long") Map<String, Long> gaugesLong) {
         return builder()
-                .tapName(tapName)
+                .name(name)
+                .version(version)
                 .timestamp(timestamp)
                 .processedBytes(processedBytes)
                 .systemMetrics(systemMetrics)
@@ -61,7 +64,9 @@ public abstract class StatusReport {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder tapName(String tapName);
+        public abstract Builder name(String name);
+
+        public abstract Builder version(String version);
 
         public abstract Builder timestamp(DateTime timestamp);
 

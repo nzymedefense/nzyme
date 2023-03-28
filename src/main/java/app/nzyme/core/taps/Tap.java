@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 public abstract class Tap {
 
     public abstract String name();
+    public abstract String version();
     public abstract DateTime clock();
     public abstract TotalWithAverage processedBytes();
     public abstract long memoryTotal();
@@ -18,9 +19,10 @@ public abstract class Tap {
     public abstract boolean deleted();
     public abstract long clockDriftMs();
 
-    public static Tap create(String name, DateTime clock, TotalWithAverage processedBytes, long memoryTotal, long memoryFree, long memoryUsed, double cpuLoad, DateTime createdAt, DateTime updatedAt, boolean deleted, long clockDriftMs) {
+    public static Tap create(String name, String version, DateTime clock, TotalWithAverage processedBytes, long memoryTotal, long memoryFree, long memoryUsed, double cpuLoad, DateTime createdAt, DateTime updatedAt, boolean deleted, long clockDriftMs) {
         return builder()
                 .name(name)
+                .version(version)
                 .clock(clock)
                 .processedBytes(processedBytes)
                 .memoryTotal(memoryTotal)
@@ -41,6 +43,8 @@ public abstract class Tap {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
+
+        public abstract Builder version(String version);
 
         public abstract Builder clock(DateTime clock);
 
@@ -64,5 +68,4 @@ public abstract class Tap {
 
         public abstract Tap build();
     }
-
 }
