@@ -54,65 +54,6 @@ public class Networks {
         this.nzyme = nzyme;
         this.bssids = Maps.newConcurrentMap();
         this.beaconRateManager = new BeaconRateManager(nzyme);
-
-        // Metric: Combined length of all signal strength tables.
-        if (!nzyme.getMetrics().getGauges().containsKey(MetricNames.NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS)) {
-            nzyme.getMetrics().register(MetricNames.NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS, (Gauge<Long>) () -> {
-                long result = 0;
-                for (BSSID bssid : bssids.values()) {
-                    for (SSID ssid : bssid.ssids().values()) {
-                        for (Channel channel : ssid.channels().values()) {
-                            result += channel.signalStrengthTable().getSize();
-                        }
-                    }
-                }
-                return result;
-            });
-        }
-
-        // Regularly delete networks that have not been seen for a while.
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat("bssids-cleaner")
-                        .build()
-        ).scheduleAtFixedRate(() -> retentionClean(600), 1, 1, TimeUnit.MINUTES);
-
-        // Regularly delete old entries in signal strength tables.
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat("signalstrengths-cleaner")
-                        .build()
-        ).scheduleAtFixedRate(() -> {
-            for (BSSID bssid : bssids.values()) {
-                for (SSID ssid : bssid.ssids().values()) {
-                    for (Channel channel : ssid.channels().values()) {
-                        channel.signalStrengthTable().retentionClean((int) TimeUnit.MINUTES.toSeconds(SignalStrengthTable.RETENTION_MINUTES));
-                    }
-                }
-            }
-        }, 10, 10, TimeUnit.SECONDS); // TODO ZSCORE make configurable
-
-        // Cycle recent frame counters.
-        Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                        .setDaemon(true)
-                        .setNameFormat("channel-recent-frames-cleaner-%d")
-                        .build()
-        ).scheduleAtFixedRate(() -> {
-            try {
-                for (BSSID bssid : bssids.values()) {
-                    for (SSID ssid : bssid.ssids().values()) {
-                        for (Channel channel : ssid.channels().values()) {
-                            channel.cycleRecentFrames();
-                        }
-                    }
-                }
-            } catch(Exception e) {
-                LOG.error("Could not cycle recent channel frames.", e);
-            }
-        }, 1, 1, TimeUnit.MINUTES);
     }
 
     public void registerBeaconFrame(Dot11BeaconFrame frame) {
