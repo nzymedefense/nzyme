@@ -58,7 +58,7 @@ public class ContactManager implements ContactIdentifierProcess {
         this.contactRecorder = new ContactRecorder(CONTACT_RECORDER_SYNC_FREQ, nzyme);
 
         // Register default bandits.
-        DefaultBandits.seed(this);
+        //DefaultBandits.seed(this);
     }
 
     public ContactRecorder getContactRecorder() {
