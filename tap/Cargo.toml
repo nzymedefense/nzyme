@@ -45,7 +45,6 @@ anyhow = "1.0.53"
 crossbeam-channel = "0.5.2"
 reqwest = { version = "0.11.10", features = ["blocking", "json", "gzip"] }
 serde = { version = "1.0.136", features = ["derive"] }
-hocon = "0.7.0"
 systemstat = "0.1.10"
 chrono = { version = "0.4", features = ["serde"] }
 strum = "0.24.0"
@@ -55,3 +54,4 @@ bitvec = "1.0.0"
 entropy = "0.4.1"
 clokwerk = "0.3.5"
 clap = { version = "3.2.15", features = ["derive"] }
+toml = "0.7.3"

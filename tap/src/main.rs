@@ -51,7 +51,7 @@ fn main() {
     };
     
     let system_state = Arc::new(
-        SystemState::new(configuration.training_period_minutes as usize).initialize()
+        SystemState::new(configuration.misc.training_period_minutes as usize).initialize()
     );
 
     ethernet::capture::print_devices();
@@ -68,11 +68,11 @@ fn main() {
     // Ethernet handler.
     let handlerbus = bus.clone();
     thread::spawn(move || {
-        brokers::ethernet_broker::EthernetBroker::new(handlerbus, configuration.ethernet_brokers as usize).run();
+        brokers::ethernet_broker::EthernetBroker::new(handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
     // Ethernet Capture.
-    for interface in configuration.clone().ethernet_listen_interfaces {
+    for interface in configuration.clone().ethernet.ethernet_listen_interfaces {
         let capturemetrics = metrics.clone();
         let capture_bus = bus.clone();
         thread::spawn(move || {

@@ -26,13 +26,13 @@ pub struct Leaderlink {
 
 impl Leaderlink {
     pub fn new(configuration: Configuration, metrics: Arc<Mutex<Metrics>>, bus: Arc<Bus>, tables: Arc<Tables>) -> anyhow::Result<Self, anyhow::Error> {
-        let uri = match Url::parse(&configuration.leader_uri) {
+        let uri = match Url::parse(&configuration.general.leader_uri) {
             Ok(uri) => uri,
             Err(err) => bail!("Could not parse leader URI. {}", err)
         };
 
         let mut default_headers = HeaderMap::new();
-        let bearer = "Bearer ".to_owned() + &configuration.leader_secret;
+        let bearer = "Bearer ".to_owned() + &configuration.general.leader_secret;
         default_headers.insert(AUTHORIZATION, bearer.parse().unwrap());
 
         let http_client = reqwest::blocking::Client::builder()
@@ -40,13 +40,13 @@ impl Leaderlink {
             .user_agent("nzyme-tap")
             .default_headers(default_headers)
             .gzip(true)
-            .danger_accept_invalid_certs(configuration.accept_insecure_certs) // TODO
+            .danger_accept_invalid_certs(configuration.general.accept_insecure_certs) // TODO
             .build()?;
 
         anyhow::Ok(Self {
             http_client,
             uri,
-            tap_name: configuration.tap_name,
+            tap_name: configuration.general.tap_name,
             system: System::new(),
             metrics,
             bus,
