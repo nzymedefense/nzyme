@@ -121,7 +121,7 @@ public class MockNzyme implements NzymeNode {
     private final ClusterManager clusterManager;
 
     public MockNzyme() {
-        this(0, 5, TimeUnit.SECONDS);
+        this(0, Integer.MAX_VALUE, TimeUnit.DAYS);
     }
 
     public MockNzyme(int sentryInterval, int taskAndMessagePollInterval, TimeUnit taskAndMessagePollIntervalUnit) {
