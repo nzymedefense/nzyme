@@ -8,13 +8,15 @@ assignees: ''
 
 ---
 
-### Feature/Change Description
+### Feature/Change Description and Goal
 
 ### Design Considerations
 
 ### Critical Areas for Security
 
-### TODO
+### Design / Architecture
+
+### Tasks / Tickets
 
 ### Threat Model
 
