@@ -20,7 +20,7 @@ assignees: ''
 
 ### Threat Model
 
-- [ ] Created
+- [ ] STRIDE Analysis & Mitigation techniques table
 - [ ] Published
 
 ### Documentation
