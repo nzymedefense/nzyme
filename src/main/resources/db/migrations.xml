@@ -1699,4 +1699,77 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_organizations" author="lennartkoopmann">
+        <createTable tableName="auth_organizations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(256)">
+                <constraints unique="true" nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_tenants" author="lennartkoopmann">
+        <createTable tableName="auth_tenants">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="organization_id" type="bigint">
+                <constraints unique="true" nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(256)">
+                <constraints unique="true" nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_tenants2orgs"
+                                    baseTableName="auth_tenants"
+                                    baseColumnNames="organization_id"
+                                    referencedTableName="auth_organizations"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE"
+        />
+    </changeSet>
+
+    <changeSet id="fix_tenants2orgs_key_constraint" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="auth_tenants" constraintName="link_tenants2orgs" />
+        <addForeignKeyConstraint    constraintName="link_tenants2orgs"
+                                    baseTableName="auth_tenants"
+                                    baseColumnNames="organization_id"
+                                    referencedTableName="auth_organizations"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="RESTRICT"
+        />
+    </changeSet>
+
 </databaseChangeLog>

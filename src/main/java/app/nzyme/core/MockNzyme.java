@@ -25,6 +25,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
@@ -245,6 +246,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public TasksQueue getTasksQueue() {
         return tasksQueue;
+    }
+
+    @Override
+    public AuthenticationService getAuthenticationService() {
+        return null;
     }
 
     @Override

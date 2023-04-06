@@ -38,7 +38,6 @@ import BanditContactDetailsPage from './components/bandits/BanditContactDetailsP
 import Sidebar from './components/layout/Sidebar'
 import VersionPage from './components/system/VersionPage'
 import DarkMode from './components/layout/DarkMode'
-import AuthenticationPage from './components/system/authentication/AuthenticationPage'
 import TapsPage from './components/system/taps/TapsPage'
 import TapDetailsPage from './components/system/taps/details/TapDetailsPage'
 import TapMetricsDetailsPage from './components/system/taps/details/metrics/TapMetricsDetailsPage'
@@ -59,6 +58,7 @@ import TLSCertificateDetailsPage from "./components/system/crypto/tls/TLSCertifi
 import TLSWildcardCertificateUploadPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateUploadPage";
 import TLSWildcardCertificateEditPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateEditPage";
 import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
+import AuthenticationPage from "./components/system/authentication/management/AuthenticationPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -140,9 +140,11 @@ class App extends React.Component {
                                         <Routes>
                                             <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
-                                            { /* System. */}
+                                            { /* System/Misc. */}
                                             <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION} element={<AuthenticationPage />}/>
+
+                                            { /* System/Authentication*/ }
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

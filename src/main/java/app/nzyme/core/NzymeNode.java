@@ -22,6 +22,7 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.rest.server.NzymeHttpServer;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
@@ -63,6 +64,8 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     ClusterManager getClusterManager();
     MessageBus getMessageBus();
     TasksQueue getTasksQueue();
+
+    AuthenticationService getAuthenticationService();
 
     HealthMonitor getHealthMonitor();
 

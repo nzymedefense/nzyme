@@ -77,7 +77,7 @@ function Sidebar () {
                         title="Taps"
                         icon={<i className="sidebar-icon fa-solid fa-server" />} />
                     <NavigationLink
-                        href={ApiRoutes.SYSTEM.AUTHENTICATION}
+                        href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}
                         title="Authentication"
                         icon={<i className="sidebar-icon fa-solid fa-users" />} />
                     <NavigationLink

@@ -24,6 +24,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.server.NzymeHttpServer;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Plugin;
@@ -122,6 +123,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final DatabaseImpl database;
     private final BaseConfigurationService configurationService;
+    public final AuthenticationService authenticationService;
 
     private final NodeManager nodeManager;
     private final ClusterManager clusterManager;
@@ -182,6 +184,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
         this.database = database;
         this.configuration = configuration;
+
+        this.authenticationService = new AuthenticationService(this);
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -293,7 +297,8 @@ public class NzymeNodeImpl implements NzymeNode {
         LOG.info("Reading configuration from database.");
         this.configurationService.initialize();
 
-        LOG.info("Active alerts: {}", configuration.dot11Alerts());
+        LOG.info("Initializing authentication service.");
+        this.authenticationService.initialize();
 
         // Initial OUI fetch. Not in periodical because this needs to be blocking.
         try {
@@ -455,6 +460,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public TasksQueue getTasksQueue() {
         return tasksQueue;
+    }
+
+    @Override
+    public AuthenticationService getAuthenticationService() {
+        return authenticationService;
     }
 
     @Override

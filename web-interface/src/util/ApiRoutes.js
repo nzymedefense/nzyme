@@ -2,7 +2,11 @@ const ApiRoutes = {
   DASHBOARD: '/',
   SYSTEM: {
     VERSION: '/system/version',
-    AUTHENTICATION: '/system/authentication',
+    AUTHENTICATION: {
+      MANAGEMENT: {
+        INDEX: '/system/authentication',
+      }
+    },
     TAPS: {
       INDEX: '/system/taps',
       DETAILS: tapName => `/system/taps/show/${tapName}`,
