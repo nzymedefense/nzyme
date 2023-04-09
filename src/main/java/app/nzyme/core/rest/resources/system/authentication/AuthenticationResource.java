@@ -15,7 +15,7 @@
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 
-package app.nzyme.core.rest.resources.authentication;
+package app.nzyme.core.rest.resources.system.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -40,7 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-@Path("/api/authentication")
+@Path("/api/system/authentication")
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthenticationResource {
 

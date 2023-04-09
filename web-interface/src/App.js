@@ -17,7 +17,7 @@ import ApiRoutes from './util/ApiRoutes'
 import Footer from './components/layout/Footer'
 import NetworksPage from './components/networks/NetworksPage'
 import NetworkDetailsPage from './components/networks/details/NetworkDetailsPage'
-import LoginPage from './components/authentication/LoginPage'
+import LoginPage from './components/system/authentication/LoginPage'
 import Store from './util/Store'
 import BanditsPage from './components/bandits/BanditsPage'
 import CreateBanditPage from './components/bandits/management/CreateBanditPage'
@@ -59,6 +59,7 @@ import TLSWildcardCertificateUploadPage from "./components/system/crypto/tls/wil
 import TLSWildcardCertificateEditPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateEditPage";
 import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
 import AuthenticationPage from "./components/system/authentication/management/AuthenticationPage";
+import CreateOrganizationPage from "./components/system/authentication/management/CreateOrganizationPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -145,6 +146,7 @@ class App extends React.Component {
 
                                             { /* System/Authentication*/ }
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

@@ -5,6 +5,9 @@ const ApiRoutes = {
     AUTHENTICATION: {
       MANAGEMENT: {
         INDEX: '/system/authentication',
+        ORGANIZATIONS: {
+          CREATE: '/system/authentication/organizations/create'
+        }
       }
     },
     TAPS: {

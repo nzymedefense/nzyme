@@ -1,6 +1,8 @@
 import React from "react";
+import ApiRoutes from "../../../../util/ApiRoutes";
+import OrganizationsTable from "./OrganizationsTable";
 
-function AuthenticationPage(props) {
+function AuthenticationPage() {
 
   return (
       <React.Fragment>
@@ -15,6 +17,12 @@ function AuthenticationPage(props) {
             <div className="card">
               <div className="card-body">
                 <h3>Organizations</h3>
+
+                <OrganizationsTable />
+                
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
+                  Create Organization
+                </a>
               </div>
             </div>
           </div>

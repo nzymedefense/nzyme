@@ -1,6 +1,6 @@
 import React from 'react'
-import AuthenticationService from '../../services/AuthenticationService'
-import AssetStylesheet from "../misc/AssetStylesheet";
+import AuthenticationService from '../../../services/AuthenticationService'
+import AssetStylesheet from "../../misc/AssetStylesheet";
 
 class LoginPage extends React.Component {
   constructor (props) {
