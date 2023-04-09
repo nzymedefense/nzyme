@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -31,7 +32,11 @@ function OrganizationsTable() {
               <tr key={"org-" + i}>
                 <td>{organizations[i].name}</td>
                 <td>{organizations[i].tenants_count}</td>
-                <td><a href={"#"}>Details</a></td>
+                <td>
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizations[i].id)}>
+                    Details
+                  </a>
+                </td>
               </tr>
           )
         })}

@@ -8,6 +8,12 @@ class AuthenticationManagementService {
     })
   }
 
+  findOrganization(id, setOrganization) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + id, {}, function (response) {
+      setOrganization(response.data)
+    })
+  }
+
   createOrganization(name, description, successCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations',
         {name: name, description: description}, successCallback);

@@ -44,8 +44,6 @@ public class AuthenticationService {
     }
 
     public OrganizationEntry createOrganization(String name, String description) {
-        // TODO AUDIT
-
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_organizations(name, description, created_at, updated_at) " +
@@ -68,9 +66,17 @@ public class AuthenticationService {
         );
     }
 
-    public TenantEntry createTenant(long organizationId, String name, String description) {
-        // TODO AUDIT
+    public Optional<OrganizationEntry> findOrganization(long id) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .mapTo(OrganizationEntry.class)
+                        .findOne()
+        );
+    }
 
+    public TenantEntry createTenant(long organizationId, String name, String description) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_tenants(organization_id, name, description, created_at, updated_at) " +

@@ -60,6 +60,7 @@ import TLSWildcardCertificateEditPage from "./components/system/crypto/tls/wildc
 import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
 import AuthenticationPage from "./components/system/authentication/management/AuthenticationPage";
 import CreateOrganizationPage from "./components/system/authentication/management/CreateOrganizationPage";
+import OrganizationDetailsPage from "./components/system/authentication/management/OrganizationDetailsPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -147,6 +148,7 @@ class App extends React.Component {
                                             { /* System/Authentication*/ }
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

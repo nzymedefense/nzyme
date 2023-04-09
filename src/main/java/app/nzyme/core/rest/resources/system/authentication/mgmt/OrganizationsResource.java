@@ -12,10 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -36,19 +33,26 @@ public class OrganizationsResource {
         List<OrganizationDetailsResponse> organizations = Lists.newArrayList();
 
         for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations()) {
-            Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id());
-
-            organizations.add(OrganizationDetailsResponse.create(
-                    org.id(),
-                    org.name(),
-                    org.description(),
-                    org.createdAt(),
-                    org.updatedAt(),
-                    tenants.map(List::size).orElse(0)
-            ));
+            organizations.add(entryToResponse(org));
         }
 
         return Response.ok(OrganizationsListResponse.create(organizations)).build();
+    }
+
+    @GET
+    @Path("/show/{id}")
+    public Response find(@PathParam("id") long id) {
+        if (id <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(entryToResponse(org.get())).build();
     }
 
     @POST
@@ -60,6 +64,19 @@ public class OrganizationsResource {
         nzyme.getAuthenticationService().createOrganization(req.name(), req.description());
 
         return Response.ok().build();
+    }
+
+    private OrganizationDetailsResponse entryToResponse(OrganizationEntry org) {
+        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id());
+
+        return OrganizationDetailsResponse.create(
+                org.id(),
+                org.name(),
+                org.description(),
+                org.createdAt(),
+                org.updatedAt(),
+                tenants.map(List::size).orElse(0)
+        );
     }
 
 }
