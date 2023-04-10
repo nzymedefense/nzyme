@@ -23,7 +23,7 @@ function OrganizationDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-10">
+          <div className="col-md-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -35,8 +35,13 @@ function OrganizationDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-md-2">
-            <a className="btn btn-primary float-end" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>
+          <div className="col-md-3">
+            <span className="float-end">
+              <a className="btn btn-secondary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>{' '}
+              <a className="btn btn-primary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(organization.id)}>
+                Edit Organization
+              </a>
+            </span>
           </div>
 
           <div className="col-md-12">
@@ -48,6 +53,11 @@ function OrganizationDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
+                <h3>Description</h3>
+
+                <p className="mb-0">
+                  {organization.description}
+                </p>
               </div>
             </div>
           </div>

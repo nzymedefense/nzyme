@@ -61,6 +61,7 @@ import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
 import AuthenticationPage from "./components/system/authentication/management/AuthenticationPage";
 import CreateOrganizationPage from "./components/system/authentication/management/CreateOrganizationPage";
 import OrganizationDetailsPage from "./components/system/authentication/management/OrganizationDetailsPage";
+import EditOrganizationPage from "./components/system/authentication/management/EditOrganizationPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -149,6 +150,7 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

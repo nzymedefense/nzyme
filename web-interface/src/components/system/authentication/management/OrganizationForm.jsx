@@ -3,6 +3,7 @@ import React, {useState} from "react";
 function OrganizationForm(props) {
 
   const onClick = props.onClick;
+  const submitText = props.submitText;
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
 
@@ -36,7 +37,7 @@ function OrganizationForm(props) {
         </div>
 
         <button className="btn btn-sm btn-primary" onClick={submit} disabled={!formIsReady()}>
-          Create Organization
+          {submitText}
         </button>
       </form>
   )

@@ -7,7 +7,8 @@ const ApiRoutes = {
         INDEX: '/system/authentication',
         ORGANIZATIONS: {
           DETAILS: (organizationId) => `/system/authentication/organizations/show/${organizationId}`,
-          CREATE: '/system/authentication/organizations/create'
+          CREATE: '/system/authentication/organizations/create',
+          EDIT: (organizationId) => `/system/authentication/organizations/edit/${organizationId}`,
         }
       }
     },

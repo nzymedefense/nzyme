@@ -35,7 +35,7 @@ function CreateOrganizationPage() {
           </div>
 
           <div className="col-md-2">
-            <a className="btn btn-primary float-end" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>
+            <a className="btn btn-secondary float-end" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>
           </div>
 
           <div className="col-md-12">
@@ -47,7 +47,7 @@ function CreateOrganizationPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <OrganizationForm onClick={onFormSubmitted} />
+                <OrganizationForm onClick={onFormSubmitted} submitText="Create Organization" />
               </div>
             </div>
           </div>
