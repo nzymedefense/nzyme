@@ -19,6 +19,14 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
+  editOrganization(id, name, description, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + id,
+        {name: name, description: description}, successCallback);
+  }
+
+  deleteOrganization(id, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + id, successCallback);
+  }
 }
 
 export default AuthenticationManagementService

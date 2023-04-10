@@ -4,6 +4,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
 import Routes from "../../../../util/ApiRoutes";
 import OrganizationForm from "./OrganizationForm";
+import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -15,8 +16,9 @@ function EditOrganizationPage() {
   const [redirect, setRedirect] = useState(false);
 
   const onFormSubmitted = function (name, description) {
-    authenticationMgmtService.editOrganization(name, description, function() {
+    authenticationMgmtService.editOrganization(organization.id, name, description, function() {
       setRedirect(true);
+      notify.show('Organization details updated.', 'success');
     })
   }
 

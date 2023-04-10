@@ -3,6 +3,7 @@ import Routes from "../../../../util/ApiRoutes";
 import OrganizationForm from "./OrganizationForm";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
 import {Navigate} from "react-router-dom";
+import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -12,6 +13,7 @@ function CreateOrganizationPage() {
 
   const onFormSubmitted = function (name, description) {
     authenticationMgmtService.createOrganization(name, description, function() {
+      notify.show('Organization created.', 'success');
       setRedirect(true);
     })
   }

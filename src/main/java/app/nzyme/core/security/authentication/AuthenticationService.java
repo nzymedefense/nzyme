@@ -66,6 +66,14 @@ public class AuthenticationService {
         );
     }
 
+    public long countAllOrganizations() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_organizations")
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public Optional<OrganizationEntry> findOrganization(long id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
@@ -74,6 +82,52 @@ public class AuthenticationService {
                         .mapTo(OrganizationEntry.class)
                         .findOne()
         );
+    }
+
+    public void updateOrganization(long id, String name, String description) {
+        Optional<OrganizationEntry> org = findOrganization(id);
+
+        if (org.isEmpty()) {
+            throw new RuntimeException("Organization with ID <" + id + "> does not exist.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_organizations SET name = :name, description = :description, " +
+                                "updated_at = :now WHERE id = :id")
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("now", DateTime.now())
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void deleteOrganization(long id) {
+        Optional<OrganizationEntry> org = findOrganization(id);
+
+        if (org.isEmpty()) {
+            throw new RuntimeException("Organization with ID <" + id + "> does not exist.");
+        }
+
+        if (!isOrganizationDeletable(org.get())) {
+            throw new RuntimeException("Organization with ID <" + id + "> cannot be deleted. Cannot have tenants and " +
+                    "cannot be last remaining organization.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_organizations WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public boolean isOrganizationDeletable(OrganizationEntry org) {
+        long organizationTenantCount = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id())
+                .map(List::size)
+                .orElse(0);
+        long totalOrganizationsCount = nzyme.getAuthenticationService().countAllOrganizations();
+
+        return organizationTenantCount == 0 && totalOrganizationsCount > 1;
     }
 
     public TenantEntry createTenant(long organizationId, String name, String description) {

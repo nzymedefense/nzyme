@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import Routes from "../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -11,10 +12,26 @@ function OrganizationDetailsPage() {
   const { organizationId } = useParams();
 
   const [organization, setOrganization] = useState(null);
+  const [redirect, setRedirect] = useState(false);
+
+  const deleteOrganization = function() {
+    if (!confirm("Really delete organization?")) {
+      return;
+    }
+
+    authenticationManagementService.deleteOrganization(organizationId, function() {
+      setRedirect(true);
+      notify.show('Organization deleted.', 'success');
+    });
+  }
 
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
   }, [organizationId])
+
+  if (redirect) {
+    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} />
+  }
 
   if (!organization) {
     return <LoadingSpinner />
@@ -58,6 +75,22 @@ function OrganizationDetailsPage() {
                 <p className="mb-0">
                   {organization.description}
                 </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Delete Organization</h3>
+
+                <p>
+                  You can only delete an organization if it has no tenants and if it is not the last remaining one.
+                </p>
+
+                <button className="btn btn-sm btn-danger" disabled={!organization.is_deletable} onClick={deleteOrganization}>
+                  Delete Organization
+                </button>
               </div>
             </div>
           </div>

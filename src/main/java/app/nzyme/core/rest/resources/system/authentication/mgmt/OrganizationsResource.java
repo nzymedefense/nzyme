@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.requests.CreateOrganizationRequest;
+import app.nzyme.core.rest.requests.UpdateOrganizationRequest;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationsListResponse;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
@@ -63,11 +64,52 @@ public class OrganizationsResource {
 
         nzyme.getAuthenticationService().createOrganization(req.name(), req.description());
 
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("/show/{id}")
+    public Response update(@PathParam("id") long id, UpdateOrganizationRequest req) {
+        if (id <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().updateOrganization(id, req.name(), req.description());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/show/{id}")
+    public Response delete(@PathParam("id") long id) {
+        if (id <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!nzyme.getAuthenticationService().isOrganizationDeletable(org.get())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getAuthenticationService().deleteOrganization(id);
+
         return Response.ok().build();
     }
 
     private OrganizationDetailsResponse entryToResponse(OrganizationEntry org) {
         Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id());
+        long organizationTenantCount = tenants.map(List::size).orElse(0);
 
         return OrganizationDetailsResponse.create(
                 org.id(),
@@ -75,7 +117,8 @@ public class OrganizationsResource {
                 org.description(),
                 org.createdAt(),
                 org.updatedAt(),
-                tenants.map(List::size).orElse(0)
+                organizationTenantCount,
+                nzyme.getAuthenticationService().isOrganizationDeletable(org)
         );
     }
 
