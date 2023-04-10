@@ -1,6 +1,6 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import OrganizationsTable from "./OrganizationsTable";
+import OrganizationsTable from "./organizations/OrganizationsTable";
 
 function AuthenticationPage() {
 

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
-import Routes from "../../../../util/ApiRoutes";
+import Routes from "../../../../../util/ApiRoutes";
 import OrganizationForm from "./OrganizationForm";
-import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
+import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import {Navigate} from "react-router-dom";
 import {notify} from "react-notify-toast";
 

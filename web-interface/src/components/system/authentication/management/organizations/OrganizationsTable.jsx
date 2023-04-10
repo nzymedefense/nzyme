@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
-import ApiRoutes from "../../../../util/ApiRoutes";
+import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 

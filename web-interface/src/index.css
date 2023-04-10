@@ -222,8 +222,12 @@ div.tap-secret input {
     padding-top: 10px !important;
 }
 
-.breadcrumb a {
+ol.breadcrumb a {
     text-decoration: none;
+}
+
+ol.breadcrumb li.active {
+    font-weight: 600;
 }
 
 div.card div.card-number {

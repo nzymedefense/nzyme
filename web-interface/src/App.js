@@ -59,9 +59,10 @@ import TLSWildcardCertificateUploadPage from "./components/system/crypto/tls/wil
 import TLSWildcardCertificateEditPage from "./components/system/crypto/tls/wildcard/TLSWildcardCertificateEditPage";
 import MessagingPage from "./components/system/cluster/messaging/MessagingPage";
 import AuthenticationPage from "./components/system/authentication/management/AuthenticationPage";
-import CreateOrganizationPage from "./components/system/authentication/management/CreateOrganizationPage";
-import OrganizationDetailsPage from "./components/system/authentication/management/OrganizationDetailsPage";
-import EditOrganizationPage from "./components/system/authentication/management/EditOrganizationPage";
+import CreateOrganizationPage from "./components/system/authentication/management/organizations/CreateOrganizationPage";
+import OrganizationDetailsPage from "./components/system/authentication/management/organizations/OrganizationDetailsPage";
+import EditOrganizationPage from "./components/system/authentication/management/organizations/EditOrganizationPage";
+import TenantDetailsPage from "./components/system/authentication/management/tenants/TenantDetailsPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -151,6 +152,7 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

@@ -5,6 +5,8 @@ import app.nzyme.core.rest.requests.CreateOrganizationRequest;
 import app.nzyme.core.rest.requests.UpdateOrganizationRequest;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationsListResponse;
+import app.nzyme.core.rest.responses.authentication.mgmt.TenantDetailsResponse;
+import app.nzyme.core.rest.responses.authentication.mgmt.TenantsListResponse;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -34,7 +36,7 @@ public class OrganizationsResource {
         List<OrganizationDetailsResponse> organizations = Lists.newArrayList();
 
         for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations()) {
-            organizations.add(entryToResponse(org));
+            organizations.add(organizationEntryToResponse(org));
         }
 
         return Response.ok(OrganizationsListResponse.create(organizations)).build();
@@ -53,7 +55,7 @@ public class OrganizationsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(entryToResponse(org.get())).build();
+        return Response.ok(organizationEntryToResponse(org.get())).build();
     }
 
     @POST
@@ -107,7 +109,55 @@ public class OrganizationsResource {
         return Response.ok().build();
     }
 
-    private OrganizationDetailsResponse entryToResponse(OrganizationEntry org) {
+    @GET
+    @Path("/show/{organizationId}/tenants")
+    public Response findTenantsOfOrganization(@PathParam("organizationId") long organizationId) {
+        if (organizationId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.get().id());
+
+        List<TenantDetailsResponse> response = Lists.newArrayList();
+        if (tenants.isPresent()) {
+            for (TenantEntry tenant : tenants.get()) {
+                response.add(tenantEntryToResponse(tenant));
+            }
+        }
+
+        return Response.ok(TenantsListResponse.create(response)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/tenants/{tenantId}")
+    public Response findTenantOfOrganization(@PathParam("organizationId") long organizationId,
+                                             @PathParam("tenantId") long tenantId) {
+        if (organizationId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
+
+        if (tenant.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(tenantEntryToResponse(tenant.get())).build();
+    }
+
+    private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id());
         long organizationTenantCount = tenants.map(List::size).orElse(0);
 
@@ -119,6 +169,19 @@ public class OrganizationsResource {
                 org.updatedAt(),
                 organizationTenantCount,
                 nzyme.getAuthenticationService().isOrganizationDeletable(org)
+        );
+    }
+
+    private TenantDetailsResponse tenantEntryToResponse(TenantEntry t) {
+        return TenantDetailsResponse.create(
+                t.id(),
+                t.organizationId(),
+                t.name(),
+                t.description(),
+                t.createdAt(),
+                t.updatedAt(),
+                -1,
+                false
         );
     }
 

@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import Routes from "../../../../util/ApiRoutes";
-import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
+import Routes from "../../../../../util/ApiRoutes";
+import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
+import TenantsTable from "../tenants/TenantsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -68,29 +69,53 @@ function OrganizationDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>Description</h3>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Description</h3>
 
-                <p className="mb-0">
-                  {organization.description}
-                </p>
+                    <p className="mb-0">
+                      {organization.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Tenants</h3>
+
+                    <p className="mb-2">
+                      The following tenants are part of this organization.
+                    </p>
+
+                    <TenantsTable organizationId={organization.id} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>Delete Organization</h3>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Delete Organization</h3>
 
-                <p>
-                  You can only delete an organization if it has no tenants and if it is not the last remaining one.
-                </p>
+                    <p>
+                      You can only delete an organization if it has no tenants and if it is not the last remaining one.
+                    </p>
 
-                <button className="btn btn-sm btn-danger" disabled={!organization.is_deletable} onClick={deleteOrganization}>
-                  Delete Organization
-                </button>
+                    <button className="btn btn-sm btn-danger" disabled={!organization.is_deletable} onClick={deleteOrganization}>
+                      Delete Organization
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

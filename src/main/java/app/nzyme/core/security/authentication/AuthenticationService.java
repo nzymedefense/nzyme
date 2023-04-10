@@ -161,4 +161,14 @@ public class AuthenticationService {
         }
     }
 
+    public Optional<TenantEntry> findTenant(long tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
+                                "FROM auth_tenants WHERE id = :id")
+                        .bind("id", tenantId)
+                        .mapTo(TenantEntry.class)
+                        .findOne()
+        );
+    }
+
 }

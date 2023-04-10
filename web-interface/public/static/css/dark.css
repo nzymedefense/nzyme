@@ -90,7 +90,11 @@ div.card {
     color: #000;
 }
 
-.breadcrumb a {
+ol.breadcrumb {
+    color: #aaa;
+}
+
+ol.breadcrumb a {
     color: #8D99AE;
 }
 

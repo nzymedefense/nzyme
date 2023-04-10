@@ -27,6 +27,20 @@ class AuthenticationManagementService {
   deleteOrganization(id, successCallback) {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + id, successCallback);
   }
+
+  findTenantsOfOrganization(organizationId, setTenants) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants', {}, function (response) {
+      setTenants(response.data.tenants)
+    })
+  }
+
+  findTenantOfOrganization(organizationId, tenantId, setTenant) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId, {}, function (response) {
+      setTenant(response.data)
+    })
+  }
+
+
 }
 
 export default AuthenticationManagementService
