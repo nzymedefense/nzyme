@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import TenantsTable from "../tenants/TenantsTable";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -94,6 +95,10 @@ function OrganizationDetailsPage() {
                     </p>
 
                     <TenantsTable organizationId={organization.id} />
+
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(organization.id)} className="btn btn-sm btn-primary">
+                      Create Tenant
+                    </a>
                   </div>
                 </div>
               </div>

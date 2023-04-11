@@ -28,7 +28,7 @@ class AuthenticationManagementService {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + id, successCallback);
   }
 
-  findTenantsOfOrganization(organizationId, setTenants) {
+  findAllTenantsOfOrganization(organizationId, setTenants) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants', {}, function (response) {
       setTenants(response.data.tenants)
     })
@@ -40,6 +40,20 @@ class AuthenticationManagementService {
     })
   }
 
+  createTenantOfOrganization(organizationId, name, description, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants',
+        {name: name, description: description}, successCallback);
+  }
+
+  editTenantOfOrganization(organizationId, tenantId, name, description, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId,
+        {name: name, description: description}, successCallback);
+  }
+
+  deleteTenantOfOrganization(organizationId, tenantId, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId,
+        successCallback);
+  }
 
 }
 

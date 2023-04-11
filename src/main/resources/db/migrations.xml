@@ -1772,4 +1772,10 @@
         />
     </changeSet>
 
+    <changeSet id="fix_wrong_auth_constraints" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="auth_organizations" constraintName="auth_organizations_name_key" />
+        <dropUniqueConstraint tableName="auth_tenants" constraintName="auth_tenants_name_key" />
+        <dropUniqueConstraint tableName="auth_tenants" constraintName="auth_tenants_organization_id_key" />
+    </changeSet>
+
 </databaseChangeLog>

@@ -8,10 +8,12 @@ const ApiRoutes = {
         ORGANIZATIONS: {
           DETAILS: (organizationId) => `/system/authentication/organizations/show/${organizationId}`,
           CREATE: '/system/authentication/organizations/create',
-          EDIT: (organizationId) => `/system/authentication/organizations/edit/${organizationId}`,
+          EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
         },
         TENANTS: {
-          DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenant/${tenantId}`
+          DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}`,
+          CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
+          EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
         }
       }
     },

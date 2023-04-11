@@ -171,4 +171,44 @@ public class AuthenticationService {
         );
     }
 
+    public void updateTenant(long id, String name, String description) {
+        Optional<TenantEntry> tenant = findTenant(id);
+
+        if (tenant.isEmpty()) {
+            throw new RuntimeException("Tenant with ID <" + id + "> does not exist.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants SET name = :name, description = :description, " +
+                                "updated_at = :now WHERE id = :id")
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("now", DateTime.now())
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public void deleteTenant(long id) {
+        Optional<TenantEntry> tenant = findTenant(id);
+
+        if (tenant.isEmpty()) {
+            throw new RuntimeException("Tenant with ID <" + id + "> does not exist.");
+        }
+
+        if (!isTenantDeletable(tenant.get())) {
+            throw new RuntimeException("Tenant with ID <" + id + "> cannot be deleted. Cannot have users in it.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_tenants WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public boolean isTenantDeletable(TenantEntry t) {
+        // TODO check if tenant has users.
+        return true;
+    }
 }

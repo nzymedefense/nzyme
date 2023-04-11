@@ -2,7 +2,9 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.requests.CreateOrganizationRequest;
+import app.nzyme.core.rest.requests.CreateTenantRequest;
 import app.nzyme.core.rest.requests.UpdateOrganizationRequest;
+import app.nzyme.core.rest.requests.UpdateTenantRequest;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.TenantDetailsResponse;
@@ -138,7 +140,7 @@ public class OrganizationsResource {
     @Path("/show/{organizationId}/tenants/{tenantId}")
     public Response findTenantOfOrganization(@PathParam("organizationId") long organizationId,
                                              @PathParam("tenantId") long tenantId) {
-        if (organizationId <= 0) {
+        if (organizationId <= 0 || tenantId <= 0) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -155,6 +157,77 @@ public class OrganizationsResource {
         }
 
         return Response.ok(tenantEntryToResponse(tenant.get())).build();
+    }
+
+    @POST
+    @Path("/show/{organizationId}/tenants/")
+    public Response createTenant(@PathParam("organizationId") long organizationId, CreateTenantRequest req) {
+        if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (organizationId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (nzyme.getAuthenticationService().findOrganization(organizationId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().createTenant(organizationId, req.name(), req.description());
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("/show/{organizationId}/tenants/{tenantId}")
+    public Response updateTenant(@PathParam("organizationId") long organizationId,
+                                 @PathParam("tenantId") long tenantId,
+                                 UpdateTenantRequest req) {
+        if (organizationId <= 0 || tenantId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
+
+        if (tenant.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().updateTenant(tenantId, req.name(), req.description());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/show/{organizationId}/tenants/{tenantId}")
+    public Response deleteTenant(@PathParam("organizationId") long organizationId,
+                                 @PathParam("tenantId") long tenantId) {
+        if (organizationId <= 0 || tenantId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
+
+        if (tenant.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().deleteTenant(tenantId);
+
+        return Response.ok().build();
     }
 
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
@@ -181,7 +254,7 @@ public class OrganizationsResource {
                 t.createdAt(),
                 t.updatedAt(),
                 -1,
-                false
+                nzyme.getAuthenticationService().isTenantDeletable(t)
         );
     }
 

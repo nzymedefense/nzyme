@@ -63,6 +63,8 @@ import CreateOrganizationPage from "./components/system/authentication/managemen
 import OrganizationDetailsPage from "./components/system/authentication/management/organizations/OrganizationDetailsPage";
 import EditOrganizationPage from "./components/system/authentication/management/organizations/EditOrganizationPage";
 import TenantDetailsPage from "./components/system/authentication/management/tenants/TenantDetailsPage";
+import CreateTenantPage from "./components/system/authentication/management/tenants/CreateTenantPage";
+import EditTenantPage from "./components/system/authentication/management/tenants/EditTenantPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -153,6 +155,8 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

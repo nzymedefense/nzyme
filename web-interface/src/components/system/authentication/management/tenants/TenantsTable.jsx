@@ -12,7 +12,7 @@ function TenantsTable(props) {
   const [tenants, setTenants] = useState(null);
 
   useEffect(() => {
-    authenticationMgmtService.findTenantsOfOrganization(organizationId, setTenants);
+    authenticationMgmtService.findAllTenantsOfOrganization(organizationId, setTenants);
   }, []);
 
   if (tenants === null || tenants === undefined) {
@@ -21,7 +21,7 @@ function TenantsTable(props) {
 
   if (tenants.length === 0) {
     return (
-        <div className="alert alert-info mb-0">
+        <div className="alert alert-info mb-2">
           This organization does not have any tenants.
         </div>
     )
