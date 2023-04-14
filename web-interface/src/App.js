@@ -65,6 +65,7 @@ import EditOrganizationPage from "./components/system/authentication/management/
 import TenantDetailsPage from "./components/system/authentication/management/tenants/TenantDetailsPage";
 import CreateTenantPage from "./components/system/authentication/management/tenants/CreateTenantPage";
 import EditTenantPage from "./components/system/authentication/management/tenants/EditTenantPage";
+import CreateUserPage from "./components/system/authentication/management/users/CreateUserPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -157,6 +158,7 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateUserPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>

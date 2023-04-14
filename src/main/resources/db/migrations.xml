@@ -1778,4 +1778,116 @@
         <dropUniqueConstraint tableName="auth_tenants" constraintName="auth_tenants_organization_id_key" />
     </changeSet>
 
+    <changeSet id="add_roles" author="lennartkoopmann">
+        <createTable tableName="auth_roles">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_roles2tenants"
+                                    baseTableName="auth_roles"
+                                    baseColumnNames="tenant_id"
+                                    referencedTableName="auth_tenants"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="RESTRICT"
+        />
+    </changeSet>
+
+    <changeSet id="add_users" author="lennartkoopmann">
+        <createTable tableName="auth_users">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="role_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="email" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="password" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_users2tenants"
+                                    baseTableName="auth_users"
+                                    baseColumnNames="tenant_id"
+                                    referencedTableName="auth_tenants"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="RESTRICT"
+        />
+
+        <addForeignKeyConstraint    constraintName="link_users2roles"
+                                    baseTableName="auth_users"
+                                    baseColumnNames="role_id"
+                                    referencedTableName="auth_roles"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="RESTRICT"
+        />
+    </changeSet>
+
+    <changeSet id="change_roles_level" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="auth_roles" constraintName="link_roles2tenants" />
+        <dropColumn tableName="auth_roles" columnName="tenant_id" />
+
+        <addColumn tableName="auth_roles">
+            <column name="organization_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="is_superadmin" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint    constraintName="link_roles2orgs"
+                                    baseTableName="auth_roles"
+                                    baseColumnNames="organization_id"
+                                    referencedTableName="auth_organizations"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="RESTRICT"
+        />
+    </changeSet>
 </databaseChangeLog>

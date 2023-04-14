@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
+import UsersTable from "../users/UsersTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -78,7 +79,7 @@ function TenantDetailsPage() {
           </div>
 
           <div className="row mt-3">
-            <div className="col-md-6">
+            <div className="col-md-8">
               <div className="row">
                 <div className="col-md-12">
                   <div className="card">
@@ -92,9 +93,25 @@ function TenantDetailsPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Users</h3>
+
+                      <UsersTable />
+
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
+                        Create User
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="col-md-6">
+            <div className="col-md-4">
               <div className="row">
                 <div className="col-md-12">
                   <div className="card">

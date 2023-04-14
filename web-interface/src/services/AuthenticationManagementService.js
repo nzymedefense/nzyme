@@ -35,7 +35,7 @@ class AuthenticationManagementService {
   }
 
   findTenantOfOrganization(organizationId, tenantId, setTenant) {
-    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId, {}, function (response) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId, {}, function (response) {
       setTenant(response.data)
     })
   }
@@ -46,13 +46,18 @@ class AuthenticationManagementService {
   }
 
   editTenantOfOrganization(organizationId, tenantId, name, description, successCallback) {
-    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId,
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId,
         {name: name, description: description}, successCallback);
   }
 
   deleteTenantOfOrganization(organizationId, tenantId, successCallback) {
-    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/' + tenantId,
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId,
         successCallback);
+  }
+
+  createUserOfTenant(organizationId, tenantId, email, password, name, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
+        {email: email, password: password, name: name}, successCallback);
   }
 
 }

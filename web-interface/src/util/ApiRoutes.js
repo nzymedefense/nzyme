@@ -14,6 +14,9 @@ const ApiRoutes = {
           DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}`,
           CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/tenants/create`,
           EDIT: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/edit`,
+        },
+        USERS: {
+          CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/users/create`,
         }
       }
     },

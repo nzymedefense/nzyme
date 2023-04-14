@@ -1,10 +1,7 @@
 package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.rest.requests.CreateOrganizationRequest;
-import app.nzyme.core.rest.requests.CreateTenantRequest;
-import app.nzyme.core.rest.requests.UpdateOrganizationRequest;
-import app.nzyme.core.rest.requests.UpdateTenantRequest;
+import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.TenantDetailsResponse;
@@ -137,7 +134,7 @@ public class OrganizationsResource {
     }
 
     @GET
-    @Path("/show/{organizationId}/tenants/{tenantId}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response findTenantOfOrganization(@PathParam("organizationId") long organizationId,
                                              @PathParam("tenantId") long tenantId) {
         if (organizationId <= 0 || tenantId <= 0) {
@@ -180,7 +177,7 @@ public class OrganizationsResource {
     }
 
     @PUT
-    @Path("/show/{organizationId}/tenants/{tenantId}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response updateTenant(@PathParam("organizationId") long organizationId,
                                  @PathParam("tenantId") long tenantId,
                                  UpdateTenantRequest req) {
@@ -206,7 +203,7 @@ public class OrganizationsResource {
     }
 
     @DELETE
-    @Path("/show/{organizationId}/tenants/{tenantId}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response deleteTenant(@PathParam("organizationId") long organizationId,
                                  @PathParam("tenantId") long tenantId) {
         if (organizationId <= 0 || tenantId <= 0) {
@@ -228,6 +225,16 @@ public class OrganizationsResource {
         nzyme.getAuthenticationService().deleteTenant(tenantId);
 
         return Response.ok().build();
+    }
+
+    @POST
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
+    public Response createUser(@PathParam("organizationId") long organizationId,
+                               @PathParam("tenantId") long tenantId,
+                               CreateUserRequest req) {
+        LOG.info(req);
+
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
