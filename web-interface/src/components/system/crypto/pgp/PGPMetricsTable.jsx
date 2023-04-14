@@ -10,11 +10,11 @@ function PGPMetricsTable(props) {
           <thead>
           <tr>
             <th>Metric</th>
-            <th>Maximum</th>
-            <th>Minimum</th>
+            <th>Max</th>
+            <th>Min</th>
             <th>Mean</th>
-            <th>99th Percentile</th>
-            <th>Standard Deviation</th>
+            <th>P99</th>
+            <th>StdDev</th>
             <th>Calls</th>
           </tr>
           </thead>
@@ -39,11 +39,11 @@ function PGPMetricsTable(props) {
           <thead>
           <tr>
             <th>Metric</th>
-            <th>Maximum</th>
-            <th>Minimum</th>
+            <th>Max</th>
+            <th>Min</th>
             <th>Mean</th>
-            <th>99th Percentile</th>
-            <th>Standard Deviation</th>
+            <th>P99</th>
+            <th>StdDev</th>
             <th>Calls</th>
           </tr>
           </thead>

@@ -30,6 +30,7 @@ import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMoni
 import app.nzyme.core.periodicals.alerting.tracks.SignalTrackMonitor;
 import app.nzyme.core.remote.inputs.RemoteFrameInput;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
+import app.nzyme.core.security.authentication.PasswordHasher;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -42,7 +43,6 @@ public class MetricNames {
     public static final String TAGGED_PARAMS_PARSE_TIMING = name(Dot11TaggedParameters.class, "parse-timing");
     public static final String TAGGED_PARAMS_FINGERPRINT_TIMING = name(Dot11TaggedParameters.class, "fingerprint-timing");
     public static final String BEACON_RATE_MONITOR_TIMING = name(BeaconRateAnomalyAlertMonitor.class, "monitor-timing");
-    public static final String NETWORKS_SIGNAL_STRENGTH_MEASUREMENTS = name(Networks.class, "signal-strength-measurements");
     public static final String SIGNAL_TABLES_MUTEX_WAIT = name(SignalStrengthTable.class, "mutex-wait");
     public static final String SIGNAL_TRACK_MONITOR_TIMING = name(SignalTrackMonitor.class, "monitor-timing");
     public static final String CONTACT_IDENTIFIER_TIMING = name(ContactIdentifierEngine.class, "timing");
@@ -56,6 +56,8 @@ public class MetricNames {
 
     public static final String PGP_ENCRYPTION_TIMING = name(Crypto.class, "encryption-timing");
     public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");
+
+    public static final String PASSWORD_HASHING_TIMER = name(PasswordHasher.class, "hashing-timer");
 
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
 

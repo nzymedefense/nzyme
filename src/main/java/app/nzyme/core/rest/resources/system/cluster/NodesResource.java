@@ -7,12 +7,16 @@ import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
+import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import app.nzyme.core.rest.responses.nodes.*;
 import app.nzyme.core.taps.metrics.BucketSize;
+import app.nzyme.core.util.MetricNames;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -187,6 +191,21 @@ public class NodesResource {
     }
 
     private NodeResponse buildNodeResponse(Node node, TLSKeyAndCertificate tls) {
+        Map<String, TimerResponse> timers = Maps.newHashMap();
+
+        Timer pwHashing = nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER);
+        if (pwHashing != null) {
+            Snapshot s = pwHashing.getSnapshot();
+            timers.put("password_hashing", TimerResponse.create(
+                    s.getMean(),
+                    s.getMax(),
+                    s.getMin(),
+                    s.getStdDev(),
+                    s.get99thPercentile(),
+                    pwHashing.getCount()
+            ));
+        }
+
         return NodeResponse.create(
                 node.uuid().toString(),
                 node.name(),
@@ -213,7 +232,8 @@ public class NodesResource {
                 node.clock(),
                 node.clockDriftMs(),
                 node.isEphemeral(),
-                node.cycle()
+                node.cycle(),
+                timers
         );
     }
 

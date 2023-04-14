@@ -13,6 +13,7 @@ import TapReportStatisticsChart from "./TapReportStatisticsChart";
 import NodeClockWarning from "./NodeClockWarning";
 import {notify} from "react-notify-toast";
 import NodeDeletedWarning from "./NodeDeletedWarning";
+import NodeTimers from "./NodeTimers";
 
 const clusterService = new ClusterService()
 
@@ -194,48 +195,69 @@ function NodeDetailsPage() {
           </div>
         </div>
 
+
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>HTTP Configuration</h3>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>HTTP Configuration</h3>
 
-                <p>
-                  The listen address is what the built-in HTTP server for REST API and web interface is listening on. The
-                  external address is what other nodes will use to connect to this node.
-                </p>
+                    <p>
+                      The listen address is what the built-in HTTP server for REST API and web interface is listening on. The
+                      external address is what other nodes will use to connect to this node.
+                    </p>
 
-                <dl>
-                  <dt>External Address</dt>
-                  <dd>{node.http_external_uri}</dd>
-                  <dt>Listen Address</dt>
-                  <dd>{node.http_listen_uri}</dd>
-                  <dt>TLS Certificate</dt>
-                  <dd>
-                    Expires {node.tls_cert_expiration_date}{' '}
-                    ({node.tls_cert_fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()})
-                  </dd>
-                </dl>
+                    <dl>
+                      <dt>External Address</dt>
+                      <dd>{node.http_external_uri}</dd>
+                      <dt>Listen Address</dt>
+                      <dd>{node.http_listen_uri}</dd>
+                      <dt>TLS Certificate</dt>
+                      <dd>
+                        Expires {node.tls_cert_expiration_date}{' '}
+                        ({node.tls_cert_fingerprint.substring(0, 16).match(/.{1,2}/g).join(' ').toUpperCase()})
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Metrics</h3>
+
+                    <NodeTimers timers={node.metrics_timers} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>Node Actions</h3>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Node Actions</h3>
 
-                <p>
-                  <strong>You should delete this node if you no longer plan to use it.</strong> Note that it will re-appear
-                  if you don&apos;t shut it down. All metrics and related information will remain until it is retention cleaned.
-                </p>
+                    <p>
+                      <strong>You should delete this node if you no longer plan to use it.</strong> Note that it will re-appear
+                      if you don&apos;t shut it down. All metrics and related information will remain until it is retention cleaned.
+                    </p>
 
-                <button className="btn btn-danger" onClick={deleteNode} disabled={node.deleted}>Delete Node</button>
+                    <button className="btn btn-danger" onClick={deleteNode} disabled={node.deleted}>Delete Node</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
   )
 

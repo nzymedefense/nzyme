@@ -1,8 +1,11 @@
 package app.nzyme.core.rest.responses.nodes;
 
+import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
+
+import java.util.Map;
 
 @AutoValue
 public abstract class NodeResponse {
@@ -85,7 +88,10 @@ public abstract class NodeResponse {
     @JsonProperty("cycle")
     public abstract long cycle();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral, long cycle) {
+    @JsonProperty("metrics_timers")
+    public abstract Map<String, TimerResponse> metricsTimers();
+
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral, long cycle, Map<String, TimerResponse> metricsTimers) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -113,6 +119,7 @@ public abstract class NodeResponse {
                 .clockDriftMs(clockDriftMs)
                 .isEphemeral(isEphemeral)
                 .cycle(cycle)
+                .metricsTimers(metricsTimers)
                 .build();
     }
 
@@ -173,6 +180,8 @@ public abstract class NodeResponse {
         public abstract Builder isEphemeral(boolean isEphemeral);
 
         public abstract Builder cycle(long cycle);
+
+        public abstract Builder metricsTimers(Map<String, TimerResponse> metricsTimers);
 
         public abstract NodeResponse build();
     }
