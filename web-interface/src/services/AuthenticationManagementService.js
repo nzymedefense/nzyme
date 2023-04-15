@@ -60,6 +60,12 @@ class AuthenticationManagementService {
         {email: email, password: password, name: name}, successCallback, errorCallback);
   }
 
+  findAllUsersOfTenant(organizationId, tenantId, setUsers) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
+        {}, function (response) {
+      setUsers(response.data.users)
+    });
+  }
 }
 
 export default AuthenticationManagementService

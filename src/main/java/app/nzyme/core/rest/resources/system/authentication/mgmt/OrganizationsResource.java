@@ -2,14 +2,12 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.requests.*;
-import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationDetailsResponse;
-import app.nzyme.core.rest.responses.authentication.mgmt.OrganizationsListResponse;
-import app.nzyme.core.rest.responses.authentication.mgmt.TenantDetailsResponse;
-import app.nzyme.core.rest.responses.authentication.mgmt.TenantsListResponse;
+import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -201,6 +199,31 @@ public class OrganizationsResource {
         return Response.ok().build();
     }
 
+    @GET
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
+    public Response findAllUsersOfTenant(@PathParam("organizationId") long organizationId,
+                                       @PathParam("tenantId") long tenantId) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        List<UserDetailsResponse> users = Lists.newArrayList();
+        for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(organizationId, tenantId)) {
+            users.add(UserDetailsResponse.create(
+                    user.id(),
+                    user.organizationId(),
+                    user.tenantId(),
+                    user.roleId(),
+                    user.email(),
+                    user.name(),
+                    user.createdAt(),
+                    user.updatedAt()
+            ));
+        }
+
+        return Response.ok(UsersListResponse.create(users)).build();
+    }
+
     @POST
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response createUserOfTenant(@PathParam("organizationId") long organizationId,
@@ -238,16 +261,14 @@ public class OrganizationsResource {
     }
 
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
-        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id());
-        long organizationTenantCount = tenants.map(List::size).orElse(0);
-
         return OrganizationDetailsResponse.create(
                 org.id(),
                 org.name(),
                 org.description(),
                 org.createdAt(),
                 org.updatedAt(),
-                organizationTenantCount,
+                nzyme.getAuthenticationService().countTenantsOfOrganization(org),
+                nzyme.getAuthenticationService().countUsersOfOrganization(org),
                 nzyme.getAuthenticationService().isOrganizationDeletable(org)
         );
     }
@@ -260,7 +281,7 @@ public class OrganizationsResource {
                 t.description(),
                 t.createdAt(),
                 t.updatedAt(),
-                -1,
+                nzyme.getAuthenticationService().countUsersOfTenant(t),
                 nzyme.getAuthenticationService().isTenantDeletable(t)
         );
     }

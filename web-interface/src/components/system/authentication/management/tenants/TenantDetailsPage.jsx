@@ -100,7 +100,7 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Users</h3>
 
-                      <UsersTable />
+                      <UsersTable organizationId={organization.id} tenantId={tenant.id} />
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
                         Create User

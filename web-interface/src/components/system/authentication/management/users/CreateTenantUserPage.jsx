@@ -8,7 +8,7 @@ import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
-function CreateUserPage() {
+function CreateTenantUserPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
@@ -96,4 +96,4 @@ function CreateUserPage() {
 
 }
 
-export default CreateUserPage;
+export default CreateTenantUserPage;

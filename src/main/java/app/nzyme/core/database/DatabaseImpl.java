@@ -11,6 +11,7 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueEntryMap
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
 import app.nzyme.core.security.authentication.db.OrganizationEntryMapper;
 import app.nzyme.core.security.authentication.db.TenantEntryMapper;
+import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
@@ -111,7 +112,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new PostgresMessageEntryMapper())
                 .registerRowMapper(new PostgresTasksQueueEntryMapper())
                 .registerRowMapper(new OrganizationEntryMapper())
-                .registerRowMapper(new TenantEntryMapper());
+                .registerRowMapper(new TenantEntryMapper())
+                .registerRowMapper(new UserEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

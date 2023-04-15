@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.authentication.mgmt;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 @AutoValue
 public abstract class UsersListResponse {
 
+    @JsonProperty
     public abstract List<UserDetailsResponse> users();
 
     public static UsersListResponse create(List<UserDetailsResponse> users) {

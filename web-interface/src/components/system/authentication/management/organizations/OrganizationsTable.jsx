@@ -23,6 +23,7 @@ function OrganizationsTable() {
         <tr>
           <th>Name</th>
           <th>Tenants</th>
+          <th>Users</th>
           <th>&nbsp;</th>
         </tr>
         </thead>
@@ -32,6 +33,7 @@ function OrganizationsTable() {
               <tr key={"org-" + i}>
                 <td>{organizations[i].name}</td>
                 <td>{organizations[i].tenants_count}</td>
+                <td>{organizations[i].users_count}</td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizations[i].id)}>
                     Details

@@ -3,6 +3,7 @@ package app.nzyme.core.security.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
+import app.nzyme.core.security.authentication.db.UserEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -60,7 +61,7 @@ public class AuthenticationService {
     public List<OrganizationEntry> findAllOrganizations() {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
-                                "ORDER BY created_at ASC")
+                                "ORDER BY name ASC")
                         .mapTo(OrganizationEntry.class)
                         .list()
         );
@@ -121,6 +122,26 @@ public class AuthenticationService {
         );
     }
 
+    public long countTenantsOfOrganization(OrganizationEntry o) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_tenants " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", o.id())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countUsersOfOrganization(OrganizationEntry o) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", o.id())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public boolean isOrganizationDeletable(OrganizationEntry org) {
         long organizationTenantCount = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id())
                 .map(List::size)
@@ -148,7 +169,7 @@ public class AuthenticationService {
     public Optional<List<TenantEntry>> findAllTenantsOfOrganization(long organizationId) {
         List<TenantEntry> tenants = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
-                                "FROM auth_tenants WHERE organization_id = :organization_id ORDER BY created_at ASC")
+                                "FROM auth_tenants WHERE organization_id = :organization_id ORDER BY name DESC")
                         .bind("organization_id", organizationId)
                         .mapTo(TenantEntry.class)
                         .list()
@@ -207,6 +228,19 @@ public class AuthenticationService {
         );
     }
 
+    public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, updated_at, created_at FROM auth_users " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(UserEntry.class)
+                        .list()
+        );
+    }
+
     public void createUserOfTenant(long organizationId,
                                    long tenantId,
                                    String name,
@@ -235,6 +269,17 @@ public class AuthenticationService {
         );
     }
 
+    public long countUsersOfTenant(TenantEntry t) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +
+                                "tenant_id = :tenant_id")
+                        .bind("organization_id", t.organizationId())
+                        .bind("tenant_id", t.id())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public boolean tenantUserWithEmailExists(long organizationId, long tenantId, String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new RuntimeException("NULL or empty email address.");
@@ -257,4 +302,5 @@ public class AuthenticationService {
         // TODO check if tenant has users.
         return true;
     }
+
 }

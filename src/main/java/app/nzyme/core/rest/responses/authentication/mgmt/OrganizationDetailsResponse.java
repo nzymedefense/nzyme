@@ -25,10 +25,13 @@ public abstract class OrganizationDetailsResponse {
     @JsonProperty("tenants_count")
     public abstract long tenantsCount();
 
+    @JsonProperty("users_count")
+    public abstract long usersCount();
+
     @JsonProperty("is_deletable")
     public abstract boolean isDeletable();
 
-    public static OrganizationDetailsResponse create(long id, String name, String description, DateTime createdAt, DateTime updatedAt, long tenantsCount, boolean isDeletable) {
+    public static OrganizationDetailsResponse create(long id, String name, String description, DateTime createdAt, DateTime updatedAt, long tenantsCount, long usersCount, boolean isDeletable) {
         return builder()
                 .id(id)
                 .name(name)
@@ -36,6 +39,7 @@ public abstract class OrganizationDetailsResponse {
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .tenantsCount(tenantsCount)
+                .usersCount(usersCount)
                 .isDeletable(isDeletable)
                 .build();
     }
@@ -57,6 +61,8 @@ public abstract class OrganizationDetailsResponse {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder tenantsCount(long tenantsCount);
+
+        public abstract Builder usersCount(long usersCount);
 
         public abstract Builder isDeletable(boolean isDeletable);
 

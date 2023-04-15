@@ -1,61 +1,54 @@
-package app.nzyme.core.rest.responses.authentication.mgmt;
+package app.nzyme.core.security.authentication.db;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 
 @AutoValue
-public abstract class UserDetailsResponse {
+public abstract class UserEntry {
 
-    @JsonProperty("id")
     public abstract long id();
 
-    @JsonProperty("organization_id")
-    public abstract long organization_id();
-
-    @JsonProperty("tenant_id")
+    public abstract long organizationId();
     public abstract long tenantId();
 
-    @JsonProperty("role_id")
     @Nullable
     public abstract Long roleId();
 
-    @JsonProperty("email")
     public abstract String email();
-
-    @JsonProperty("name")
     public abstract String name();
 
-    @JsonProperty("created_at")
+    public abstract boolean isOrganizationAdmin();
+    public abstract boolean isSuperAdmin();
+
+    public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    @JsonProperty("updated_at")
-    public abstract DateTime updatedAt();
-
-    public static UserDetailsResponse create(long id, long organization_id, long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt) {
+    public static UserEntry create(long id, long organizationId, long tenantId, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt) {
         return builder()
                 .id(id)
-                .organization_id(organization_id)
+                .organizationId(organizationId)
                 .tenantId(tenantId)
                 .roleId(roleId)
                 .email(email)
                 .name(name)
-                .createdAt(createdAt)
+                .isOrganizationAdmin(isOrganizationAdmin)
+                .isSuperAdmin(isSuperAdmin)
                 .updatedAt(updatedAt)
+                .createdAt(createdAt)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_UserDetailsResponse.Builder();
+        return new AutoValue_UserEntry.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(long id);
 
-        public abstract Builder organization_id(long organization_id);
+        public abstract Builder organizationId(long organizationId);
 
         public abstract Builder tenantId(long tenantId);
 
@@ -65,10 +58,14 @@ public abstract class UserDetailsResponse {
 
         public abstract Builder name(String name);
 
-        public abstract Builder createdAt(DateTime createdAt);
+        public abstract Builder isOrganizationAdmin(boolean isOrganizationAdmin);
+
+        public abstract Builder isSuperAdmin(boolean isSuperAdmin);
 
         public abstract Builder updatedAt(DateTime updatedAt);
 
-        public abstract UserDetailsResponse build();
+        public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract UserEntry build();
     }
 }
