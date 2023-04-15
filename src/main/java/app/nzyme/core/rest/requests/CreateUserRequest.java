@@ -7,18 +7,15 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class CreateUserRequest {
 
-    public abstract long roleId();
     public abstract String email();
     public abstract String password();
     public abstract String name();
 
     @JsonCreator
-    public static CreateUserRequest create(@JsonProperty("role_id") long roleId,
-                                           @JsonProperty("email") String email,
+    public static CreateUserRequest create(@JsonProperty("email") String email,
                                            @JsonProperty("password") String password,
                                            @JsonProperty("name") String name) {
         return builder()
-                .roleId(roleId)
                 .email(email)
                 .password(password)
                 .name(name)
@@ -31,8 +28,6 @@ public abstract class CreateUserRequest {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder roleId(long roleId);
-
         public abstract Builder email(String email);
 
         public abstract Builder password(String password);

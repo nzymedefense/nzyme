@@ -1890,4 +1890,26 @@
                                     onDelete="RESTRICT"
         />
     </changeSet>
+
+    <changeSet id="extend_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="is_orgadmin" type="boolean">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="organization_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="password_salt" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <dropNotNullConstraint tableName="auth_users" columnName="role_id" />
+    </changeSet>
 </databaseChangeLog>

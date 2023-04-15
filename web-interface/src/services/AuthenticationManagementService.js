@@ -55,9 +55,9 @@ class AuthenticationManagementService {
         successCallback);
   }
 
-  createUserOfTenant(organizationId, tenantId, email, password, name, successCallback) {
+  createUserOfTenant(organizationId, tenantId, email, password, name, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
-        {email: email, password: password, name: name}, successCallback);
+        {email: email, password: password, name: name}, successCallback, errorCallback);
   }
 
 }

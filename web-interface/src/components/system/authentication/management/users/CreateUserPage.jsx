@@ -15,6 +15,7 @@ function CreateUserPage() {
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
@@ -22,10 +23,16 @@ function CreateUserPage() {
     authenticationMgmtService.findTenantOfOrganization(organizationId, tenantId, setTenant);
   }, [organizationId, tenantId])
 
-  const onFormSubmitted = function (email, password, name) {
+  const onFormSubmitted = function (email, password, name, callback) {
     authenticationMgmtService.createUserOfTenant(organizationId, tenantId, email, password, name, function() {
+      // Success.
       notify.show('User created.', 'success');
       setRedirect(true);
+      callback();
+    }, function (error) {
+      // Error.
+      setErrorMessage(error.response.data.message);
+      callback();
     })
   }
 
@@ -79,7 +86,7 @@ function CreateUserPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <UserForm onClick={onFormSubmitted} submitText="Create User" />
+                <UserForm onClick={onFormSubmitted} errorMessage={errorMessage} submitText="Create User" />
               </div>
             </div>
           </div>

@@ -207,6 +207,52 @@ public class AuthenticationService {
         );
     }
 
+    public void createUserOfTenant(long organizationId,
+                                   long tenantId,
+                                   String name,
+                                   String email,
+                                   PasswordHasher.GeneratedHashAndSalt password) {
+        // Check if this tenant already has a user with the same email address.
+        if (tenantUserWithEmailExists(organizationId, tenantId, email)) {
+            throw new RuntimeException("Tenant already has a user with same email address.");
+        }
+
+        DateTime now = new DateTime();
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
+                                "VALUES(:organization_id, :tenant_id, NULL, :email, :password, :password_salt, :name, " +
+                                ":created_at, :updated_at, false, false)")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("email", email)
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("name", name)
+                        .bind("created_at", now)
+                        .bind("updated_at", now)
+                        .execute()
+        );
+    }
+
+    public boolean tenantUserWithEmailExists(long organizationId, long tenantId, String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new RuntimeException("NULL or empty email address.");
+        }
+
+        Long count = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +
+                                "tenant_id = :tenant_id AND email = :email")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("email", email.toLowerCase())
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        return count > 0;
+    }
+
     public boolean isTenantDeletable(TenantEntry t) {
         // TODO check if tenant has users.
         return true;
