@@ -109,6 +109,22 @@ function TenantDetailsPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Taps</h3>
+
+                      <p>taps table</p>
+
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
+                        Create Tap
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="col-md-4">
