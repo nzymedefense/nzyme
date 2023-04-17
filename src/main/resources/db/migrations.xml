@@ -1912,4 +1912,43 @@
 
         <dropNotNullConstraint tableName="auth_users" columnName="role_id" />
     </changeSet>
+
+    <changeSet id="extend_taps" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="secret" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="taps">
+            <column name="organization_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="taps">
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="taps">
+            <column name="last_report" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="fix_taps_notnull_for_new_model" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="taps" columnName="clock" />
+        <dropNotNullConstraint tableName="taps" columnName="processed_bytes_total" />
+        <dropNotNullConstraint tableName="taps" columnName="processed_bytes_average" />
+        <dropNotNullConstraint tableName="taps" columnName="memory_total" />
+        <dropNotNullConstraint tableName="taps" columnName="memory_free" />
+        <dropNotNullConstraint tableName="taps" columnName="memory_used" />
+        <dropNotNullConstraint tableName="taps" columnName="cpu_load" />
+        <dropNotNullConstraint tableName="taps" columnName="last_report" />
+
+        <addNotNullConstraint tableName="taps" columnName="description" />
+    </changeSet>
 </databaseChangeLog>

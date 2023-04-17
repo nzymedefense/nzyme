@@ -38,53 +38,25 @@ public class TapManager {
     }
 
     public void registerTapStatus(StatusReport report) {
-        long tapCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) AS count FROM taps WHERE name = :name")
+        LOG.debug("Registering report from tap tap [{}].", report.name());
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
+                        "processed_bytes_total = :processed_bytes_total, " +
+                        "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
+                        "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
+                        "deleted = false, last_report = NOW() WHERE name = :name")
+                        .bind("version", report.version())
+                        .bind("clock", report.timestamp())
+                        .bind("processed_bytes_total", report.processedBytes().total())
+                        .bind("processed_bytes_average", report.processedBytes().average())
+                        .bind("memory_total", report.systemMetrics().memoryTotal())
+                        .bind("memory_free", report.systemMetrics().memoryFree())
+                        .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
+                        .bind("cpu_load", report.systemMetrics().cpuLoad())
                         .bind("name", report.name())
-                        .mapTo(Long.class)
-                        .one()
+                        .execute()
         );
-
-        if (tapCount == 0) {
-            LOG.info("Registering first report from new tap [{}].", report.name());
-
-            nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO taps(name, version, clock, processed_bytes_total, processed_bytes_average, " +
-                            "memory_total, memory_free, memory_used, cpu_load, deleted, created_at, updated_at) " +
-                            "VALUES(:name, :version, :clock, :processed_bytes_total, :processed_bytes_average, :memory_total, " +
-                            ":memory_free, :memory_used, :cpu_load, false, NOW(), NOW())")
-                            .bind("name", report.name())
-                            .bind("version", report.version())
-                            .bind("clock", report.timestamp())
-                            .bind("processed_bytes_total", report.processedBytes().total())
-                            .bind("processed_bytes_average", report.processedBytes().average())
-                            .bind("memory_total", report.systemMetrics().memoryTotal())
-                            .bind("memory_free", report.systemMetrics().memoryFree())
-                            .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
-                            .bind("cpu_load", report.systemMetrics().cpuLoad())
-                            .execute()
-            );
-        } else {
-            LOG.debug("Registering report from existing tap [{}].", report.name());
-
-            nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
-                            "processed_bytes_total = :processed_bytes_total, " +
-                            "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
-                            "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                            "deleted = false, updated_at = NOW() WHERE name = :name")
-                            .bind("version", report.version())
-                            .bind("clock", report.timestamp())
-                            .bind("processed_bytes_total", report.processedBytes().total())
-                            .bind("processed_bytes_average", report.processedBytes().average())
-                            .bind("memory_total", report.systemMetrics().memoryTotal())
-                            .bind("memory_free", report.systemMetrics().memoryFree())
-                            .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
-                            .bind("cpu_load", report.systemMetrics().cpuLoad())
-                            .bind("name", report.name())
-                            .execute()
-            );
-        }
 
         // Register captures.
         for (CapturesReport capture : report.captures()) {

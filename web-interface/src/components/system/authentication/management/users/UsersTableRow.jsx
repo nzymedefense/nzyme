@@ -1,4 +1,5 @@
 import React from "react";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 function UsersTableRow(props) {
 
@@ -12,7 +13,12 @@ function UsersTableRow(props) {
           {user.role ? user.role : <span className="text-warning">No Role</span>}
         </td>
         <td>
-          <a href="#">Details</a>
+          <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(
+              user.organization_id,
+              user.tenant_id,
+              user.id)}>
+            Details
+          </a>
         </td>
       </tr>
   )

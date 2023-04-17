@@ -65,19 +65,6 @@ public class TapsResource {
         }
     }
 
-    @DELETE
-    @Path("/show/{name}")
-    public Response delete(@PathParam("name") String name) {
-        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
-
-        if (tap.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        } else {
-            nzyme.getTapManager().deleteTap(tap.get().name());
-            return Response.ok().build();
-        }
-    }
-
     @GET
     @Path("/show/{name}/metrics")
     public Response tapMetrics(@PathParam("name") String name) {
@@ -135,27 +122,7 @@ public class TapsResource {
 
         return Response.ok(TapMetricsGaugeHistogramResponse.create(result)).build();
     }
-
-    @GET
-    @Path("/secret")
-    public Response getTapSecret() {
-       return Response.ok(TapSecretResponse.create(
-               nzyme.getConfigurationService().getConfiguration().tapSecret()
-       )).build();
-    }
-
-    @POST
-    @Path("/secret/cycle")
-    public Response cycleTapSecret() {
-        BaseConfigurationService c = nzyme.getConfigurationService();
-        String newSecret = c.generateTapSecret();
-        c.setTapSecret(newSecret);
-
-        LOG.info("Cycled tap secret via REST request.");
-
-        return Response.ok(TapSecretResponse.create(newSecret)).build();
-    }
-
+    
     private TapDetailsResponse buildTapResponse(Tap tap) {
         List<BusDetailsResponse> busesResponse = Lists.newArrayList();
 

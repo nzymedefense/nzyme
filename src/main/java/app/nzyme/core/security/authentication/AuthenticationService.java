@@ -2,6 +2,7 @@ package app.nzyme.core.security.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import org.apache.logging.log4j.LogManager;
@@ -228,6 +229,20 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, updated_at, created_at FROM auth_users " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("user_id", userId)
+                        .mapTo(UserEntry.class)
+                        .findOne()
+        );
+    }
+
     public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
@@ -296,6 +311,49 @@ public class AuthenticationService {
         );
 
         return count > 0;
+    }
+
+    public void createTap(long organizationId, long tenantId, String secret, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO taps(organization_id, tenant_id, secret, name, " +
+                                "description, deleted, created_at, updated_at) VALUES(:organization_id, :tenant_id, " +
+                                ":secret, :name, :description, false, :created_at, :updated_at)")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("secret", secret)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("created_at", DateTime.now())
+                        .bind("updated_at", DateTime.now())
+                        .execute()
+        );
+    }
+
+    public List<TapPermissionEntry> findAllTaps(long organizationId, long tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, name, " +
+                                "description, secret, created_at, updated_at, last_report FROM taps " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(TapPermissionEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<TapPermissionEntry> findTap(long organizationId, long tenantId, long tapId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, name, " +
+                                "description, secret, created_at, updated_at, last_report FROM taps " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND id = :tap_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("tap_id", tapId)
+                        .mapTo(TapPermissionEntry.class)
+                        .findOne()
+        );
     }
 
     public boolean isTenantDeletable(TenantEntry t) {

@@ -39,7 +39,7 @@ function TenantsTable(props) {
         <tbody>
         {tenants.map(function (key, i) {
           return (
-              <tr key={"org-" + i}>
+              <tr key={"tenant-" + i}>
                 <td>{tenants[i].name}</td>
                 <td>{tenants[i].users_count}</td>
                 <td>

@@ -6,10 +6,12 @@ import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -209,19 +211,28 @@ public class OrganizationsResource {
 
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(organizationId, tenantId)) {
-            users.add(UserDetailsResponse.create(
-                    user.id(),
-                    user.organizationId(),
-                    user.tenantId(),
-                    user.roleId(),
-                    user.email(),
-                    user.name(),
-                    user.createdAt(),
-                    user.updatedAt()
-            ));
+            users.add(userEntryToResponse(user));
         }
 
         return Response.ok(UsersListResponse.create(users)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/{userId}")
+    public Response findUserOfTenant(@PathParam("organizationId") long organizationId,
+                                     @PathParam("tenantId") long tenantId,
+                                     @PathParam("userId") long userId) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(userEntryToResponse(user.get())).build();
     }
 
     @POST
@@ -260,6 +271,66 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @GET
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
+    public Response findAllTaps(@PathParam("organizationId") long organizationId,
+                              @PathParam("tenantId") long tenantId) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        List<TapPermissionDetailsResponse> taps = Lists.newArrayList();
+        for (TapPermissionEntry tap : nzyme.getAuthenticationService().findAllTaps(organizationId, tenantId)) {
+            taps.add(tapPermissionEntryToResponse(tap));
+        }
+
+        return Response.ok(TapPermissionsListResponse.create(taps)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapId}")
+    public Response findTap(@PathParam("organizationId") long organizationId,
+                            @PathParam("tenantId") long tenantId,
+                            @PathParam("tapId") long tapId) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(tapPermissionEntryToResponse(tap.get())).build();
+    }
+
+    @POST
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
+    public Response createTap(@PathParam("organizationId") long organizationId,
+                              @PathParam("tenantId") long tenantId,
+                              CreateTapRequest req) {
+        if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        String secret = RandomStringUtils.random(64, true, true);
+
+        nzyme.getAuthenticationService().createTap(
+                organizationId,
+                tenantId,
+                secret,
+                req.name(),
+                req.description()
+        );
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
                 org.id(),
@@ -283,6 +354,33 @@ public class OrganizationsResource {
                 t.updatedAt(),
                 nzyme.getAuthenticationService().countUsersOfTenant(t),
                 nzyme.getAuthenticationService().isTenantDeletable(t)
+        );
+    }
+
+    private UserDetailsResponse userEntryToResponse(UserEntry u) {
+        return UserDetailsResponse.create(
+                u.id(),
+                u.organizationId(),
+                u.tenantId(),
+                u.roleId(),
+                u.email(),
+                u.name(),
+                u.createdAt(),
+                u.updatedAt()
+        );
+    }
+
+    private TapPermissionDetailsResponse tapPermissionEntryToResponse(TapPermissionEntry tpe) {
+        return TapPermissionDetailsResponse.create(
+                tpe.id(),
+                tpe.organizationId(),
+                tpe.tenantId(),
+                tpe.name(),
+                tpe.description(),
+                tpe.secret(),
+                tpe.createdAt(),
+                tpe.updatedAt(),
+                tpe.lastReport()
         );
     }
 

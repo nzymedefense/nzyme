@@ -66,6 +66,33 @@ class AuthenticationManagementService {
       setUsers(response.data.users)
     });
   }
+
+  findUserOfTenant(organizationId, tenantId, userId, setUser) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/' + userId,
+        {}, function (response) {
+          setUser(response.data)
+        });
+  }
+
+  findAllTapPermissions(organizationId, tenantId, setTaps) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
+        {}, function (response) {
+      setTaps(response.data.taps)
+    })
+  }
+
+  findTapPermission(organizationId, tenantId, tapId, setTap) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapId,
+        {}, function (response) {
+          setTap(response.data)
+        })
+  }
+
+  createTapPermission(organizationId, tenantId, name, description, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
+        {name: name, description: description}, successCallback);
+  }
+
 }
 
 export default AuthenticationManagementService

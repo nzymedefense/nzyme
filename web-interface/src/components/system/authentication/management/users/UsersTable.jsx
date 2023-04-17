@@ -22,7 +22,7 @@ function UsersTable(props) {
 
   if (users.length === 0) {
     return (
-        <div className="alert alert-info">
+        <div className="alert alert-info mb-2">
           This tenant does not have any users.
         </div>
     )

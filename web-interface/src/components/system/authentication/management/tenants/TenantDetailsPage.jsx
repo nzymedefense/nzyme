@@ -6,6 +6,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import UsersTable from "../users/UsersTable";
+import TapPermissionsTable from "../taps/TapPermissionsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -116,7 +117,7 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Taps</h3>
 
-                      <p>taps table</p>
+                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id} />
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
                         Create Tap
