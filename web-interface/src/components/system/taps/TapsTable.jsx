@@ -6,10 +6,6 @@ function TapsTable(props) {
 
   const taps = props.taps
 
-  const updateOfflineTapsSelection = function(e) {
-    setShowOfflineTaps(e.target.checked)
-  }
-
   if (taps === undefined || taps === null) {
     return <LoadingSpinner />
   }
