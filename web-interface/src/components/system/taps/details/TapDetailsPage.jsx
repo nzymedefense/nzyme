@@ -12,7 +12,6 @@ import CaptureConfiguration from '../capture/CaptureConfiguration'
 import TapMetrics from './metrics/TapMetrics'
 import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
-import TapDeletedWarning from "./TapDeletedWarning";
 
 const tapsService = new TapsService()
 
@@ -61,7 +60,6 @@ function TapDetailsPage () {
         </div>
       </div>
 
-      <TapDeletedWarning tap={tap} />
       <TapInactiveWarning tap={tap} />
       <TapClockWarning tap={tap} />
 

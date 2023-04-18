@@ -3,7 +3,7 @@ import Bus from './Bus'
 
 function Buses (props) {
   if (!props.tap.active) {
-    return <div className="alert alert-danger">No recent data.</div>
+    return <div className="alert alert-warning">No recent data.</div>
   }
 
   return (

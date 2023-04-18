@@ -4,7 +4,7 @@ import ApiRoutes from '../../../../../util/ApiRoutes'
 
 function TapMetricsGauges (props) {
   if (!props.gauges || Object.keys(props.gauges).length === 0) {
-    return <div className="alert alert-danger">
+    return <div className="alert alert-warning">
       No recent data.
     </div>
   }
