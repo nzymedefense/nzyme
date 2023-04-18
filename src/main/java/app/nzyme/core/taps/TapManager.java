@@ -45,7 +45,7 @@ public class TapManager {
                         "processed_bytes_total = :processed_bytes_total, " +
                         "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                         "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                        "deleted = false, last_report = NOW() WHERE name = :name")
+                        "last_report = NOW() WHERE name = :name")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -242,14 +242,6 @@ public class TapManager {
         );
 
         return tap == null ? Optional.empty() : Optional.of(tap);
-    }
-
-    public void deleteTap(String tapName) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE taps SET deleted = true WHERE name = :name")
-                        .bind("name", tapName)
-                        .execute()
-        );
     }
 
     public TapMetrics findMetricsOfTap(String tapName) {

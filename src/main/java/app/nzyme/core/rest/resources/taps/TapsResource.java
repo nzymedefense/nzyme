@@ -190,12 +190,12 @@ public class TapsResource {
                 tap.memoryFree(),
                 tap.memoryUsed(),
                 tap.cpuLoad(),
-                tap.updatedAt().isAfter(DateTime.now().minusMinutes(2)),
-                tap.deleted(),
+                tap.lastReport() == null ? false : tap.lastReport().isAfter(DateTime.now().minusMinutes(2)),
                 tap.clockDriftMs(),
                 tap.createdAt(),
                 tap.updatedAt(),
-                "",
+                tap.lastReport(),
+                tap.description(),
                 busesResponse,
                 capturesResponse
         );

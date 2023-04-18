@@ -20,6 +20,7 @@ public class TapMapper implements RowMapper<Tap>  {
 
         return Tap.create(
                 rs.getString("name"),
+                rs.getString("description"),
                 rs.getString("version"),
                 clock,
                 TotalWithAverage.create(rs.getLong("processed_bytes_total"), rs.getLong("processed_bytes_average")),
@@ -27,10 +28,10 @@ public class TapMapper implements RowMapper<Tap>  {
                 rs.getLong("memory_free"),
                 rs.getLong("memory_used"),
                 rs.getDouble("cpu_load"),
+                (long) new Period(updatedAt, clock, PeriodType.millis()).getMillis(),
                 new DateTime(rs.getTimestamp("created_at")),
                 updatedAt,
-                rs.getBoolean("deleted"),
-                (long) new Period(updatedAt, clock, PeriodType.millis()).getMillis()
+                rs.getTimestamp("last_report") == null ? null : new DateTime(rs.getTimestamp("last_report"))
         );
     }
 

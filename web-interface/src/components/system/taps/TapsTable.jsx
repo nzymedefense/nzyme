@@ -17,7 +17,7 @@ function TapsTable(props) {
   }
 
   if (taps.length === 0) {
-    return <div className="alert alert-warning">No nzyme taps have reported in. Install a tap and point it to the nzyme leader.</div>
+    return <div className="alert alert-warning">No nzyme taps were created yet.</div>
   }
 
   return (
@@ -29,7 +29,7 @@ function TapsTable(props) {
           <input className="form-check-input" type="checkbox" role="switch"
                  id="showOfflineNodes"onChange={updateOfflineTapsSelection} />
           <label className="form-check-label" htmlFor="showOfflineNodes">
-            Show offline and deleted taps
+            Show offline taps
           </label>
         </div>
 

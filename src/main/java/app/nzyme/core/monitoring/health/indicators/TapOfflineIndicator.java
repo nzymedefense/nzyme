@@ -26,7 +26,7 @@ public class TapOfflineIndicator extends Indicator {
         }
 
         for (Tap tap : taps.get()) {
-            if (!tap.deleted() && tap.updatedAt().isBefore(DateTime.now().minusMinutes(2))) {
+            if (tap.lastReport() != null && tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
                 return IndicatorStatus.orange(this);
             }
         }

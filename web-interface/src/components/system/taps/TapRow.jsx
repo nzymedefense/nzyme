@@ -9,7 +9,7 @@ function TapsRow (props) {
   const tap = props.tap
   const showOfflineTaps = props.showOfflineTaps;
 
-  if (tap.active && !tap.deleted) {
+  if (tap.active) {
     return (
       <tr>
         <td>
@@ -31,34 +31,23 @@ function TapsRow (props) {
           ? <i className="fa-solid fa-warning text-danger" title="Clock drift detected"/>
           : <i className="fa-regular fa-circle-check" title="No clock drift detected" />}</td>
         <td>{tap.version}</td>
-        <td title={moment(tap.updated_at).format()}>
-          {moment(tap.updated_at).fromNow()}
+        <td title={moment(tap.last_report).format()}>
+          {moment(tap.last_report).fromNow()}
         </td>
       </tr>
     )
   } else {
     if (showOfflineTaps) {
-      if (tap.deleted) {
         return (
             <tr>
               <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
-              <td colSpan={6} style={{textAlign: "center"}} title={moment(tap.updated_at).format()}>
-                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node has been deleted."/></span>{' '}
-                Tap has been manually deleted and will expire automatically if not brought back online.
-              </td>
-            </tr>
-        )
-      } else {
-        return (
-            <tr>
-              <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
-              <td colSpan={6} style={{textAlign: "center"}} title={moment(tap.updated_at).format()}>
+              <td colSpan={7} style={{textAlign: "center"}} title={moment(tap.last_report).format()}>
                 <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
-                Last seen {moment(tap.updated_at).fromNow()} and will expire automatically if not brought back online.
+                Offline.{' '}
+                { tap.last_report ? <span>(Last seen {moment(tap.last_report).fromNow()})</span> : <span>(Never reported in)</span> }
               </td>
             </tr>
         )
-      }
     } else {
       return null
     }

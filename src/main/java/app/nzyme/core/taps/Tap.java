@@ -3,25 +3,49 @@ package app.nzyme.core.taps;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class Tap {
 
     public abstract String name();
+
+    public abstract String description();
+
+    @Nullable
     public abstract String version();
+
+    @Nullable
     public abstract DateTime clock();
+
+    @Nullable
     public abstract TotalWithAverage processedBytes();
-    public abstract long memoryTotal();
-    public abstract long memoryFree();
-    public abstract long memoryUsed();
-    public abstract double cpuLoad();
+
+    @Nullable
+    public abstract Long memoryTotal();
+
+    @Nullable
+    public abstract Long memoryFree();
+
+    @Nullable
+    public abstract Long memoryUsed();
+
+    @Nullable
+    public abstract Double cpuLoad();
+
+    @Nullable
+    public abstract Long clockDriftMs();
+
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
-    public abstract boolean deleted();
-    public abstract long clockDriftMs();
 
-    public static Tap create(String name, String version, DateTime clock, TotalWithAverage processedBytes, long memoryTotal, long memoryFree, long memoryUsed, double cpuLoad, DateTime createdAt, DateTime updatedAt, boolean deleted, long clockDriftMs) {
+    @Nullable
+    public abstract DateTime lastReport();
+
+    public static Tap create(String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
                 .name(name)
+                .description(description)
                 .version(version)
                 .clock(clock)
                 .processedBytes(processedBytes)
@@ -29,10 +53,10 @@ public abstract class Tap {
                 .memoryFree(memoryFree)
                 .memoryUsed(memoryUsed)
                 .cpuLoad(cpuLoad)
+                .clockDriftMs(clockDriftMs)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
-                .deleted(deleted)
-                .clockDriftMs(clockDriftMs)
+                .lastReport(lastReport)
                 .build();
     }
 
@@ -44,27 +68,29 @@ public abstract class Tap {
     public abstract static class Builder {
         public abstract Builder name(String name);
 
+        public abstract Builder description(String description);
+
         public abstract Builder version(String version);
 
         public abstract Builder clock(DateTime clock);
 
         public abstract Builder processedBytes(TotalWithAverage processedBytes);
 
-        public abstract Builder memoryTotal(long memoryTotal);
+        public abstract Builder memoryTotal(Long memoryTotal);
 
-        public abstract Builder memoryFree(long memoryFree);
+        public abstract Builder memoryFree(Long memoryFree);
 
-        public abstract Builder memoryUsed(long memoryUsed);
+        public abstract Builder memoryUsed(Long memoryUsed);
 
-        public abstract Builder cpuLoad(double cpuLoad);
+        public abstract Builder cpuLoad(Double cpuLoad);
+
+        public abstract Builder clockDriftMs(Long clockDriftMs);
 
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder updatedAt(DateTime updatedAt);
 
-        public abstract Builder deleted(boolean deleted);
-
-        public abstract Builder clockDriftMs(long clockDriftMs);
+        public abstract Builder lastReport(DateTime lastReport);
 
         public abstract Tap build();
     }

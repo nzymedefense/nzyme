@@ -26,7 +26,7 @@ public class TapThroughputIndicator extends Indicator {
 
         if (taps.isPresent()) {
             for (Tap tap : taps.get()) {
-                if (tap.deleted() || tap.updatedAt().isBefore(DateTime.now().minusMinutes(2))) {
+                if (tap.lastReport() == null || tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
                     continue;
                 }
 
