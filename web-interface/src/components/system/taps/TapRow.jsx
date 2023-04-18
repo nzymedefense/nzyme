@@ -7,7 +7,6 @@ import byteAverageToMbit from '../../../util/Tools'
 function TapsRow (props) {
 
   const tap = props.tap
-  const showOfflineTaps = props.showOfflineTaps;
 
   if (tap.active) {
     return (
@@ -37,20 +36,16 @@ function TapsRow (props) {
       </tr>
     )
   } else {
-    if (showOfflineTaps) {
-        return (
-            <tr>
-              <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
-              <td colSpan={7} style={{textAlign: "center"}} title={moment(tap.last_report).format()}>
-                <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
-                Offline.{' '}
-                { tap.last_report ? <span>(Last seen {moment(tap.last_report).fromNow()})</span> : <span>(Never reported in)</span> }
-              </td>
-            </tr>
-        )
-    } else {
-      return null
-    }
+    return (
+        <tr>
+          <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
+          <td colSpan={7} style={{textAlign: "center"}} title={moment(tap.last_report).format()}>
+            <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
+            Offline.{' '}
+            { tap.last_report ? <span>(Last seen {moment(tap.last_report).fromNow()})</span> : <span>(Never reported in)</span> }
+          </td>
+        </tr>
+    )
   }
 
 }

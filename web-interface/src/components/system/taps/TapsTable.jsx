@@ -6,13 +6,11 @@ function TapsTable(props) {
 
   const taps = props.taps
 
-  const [showOfflineTaps, setShowOfflineTaps] = useState(false)
-
   const updateOfflineTapsSelection = function(e) {
     setShowOfflineTaps(e.target.checked)
   }
 
-  if (!taps) {
+  if (taps === undefined || taps === null) {
     return <LoadingSpinner />
   }
 
@@ -24,14 +22,6 @@ function TapsTable(props) {
     <div className="row">
       <div className="col-md-12">
         <h3 style={{display: "inline-block"}}>All Taps</h3>
-
-        <div className="form-check form-switch float-end">
-          <input className="form-check-input" type="checkbox" role="switch"
-                 id="showOfflineNodes"onChange={updateOfflineTapsSelection} />
-          <label className="form-check-label" htmlFor="showOfflineNodes">
-            Show offline taps
-          </label>
-        </div>
 
         <table className="table table-sm table-hover table-striped">
           <thead>
@@ -48,7 +38,7 @@ function TapsTable(props) {
           </thead>
           <tbody>
             {Object.keys(taps.sort((a, b) => a.name.localeCompare(b.name))).map(function (key, i) {
-              return <TapRow key={'tap-' + i} tap={taps[i]} showOfflineTaps={showOfflineTaps} />
+              return <TapRow key={'tap-' + i} tap={taps[i]} />
             })}
           </tbody>
         </table>
