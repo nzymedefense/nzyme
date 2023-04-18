@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import TapsService from '../../../../services/TapsService'
-import {Navigate, useParams} from 'react-router-dom'
+import {useParams} from 'react-router-dom'
 import LoadingSpinner from '../../../misc/LoadingSpinner'
 import moment from 'moment'
 import Routes from '../../../../util/ApiRoutes'
@@ -12,41 +12,26 @@ import CaptureConfiguration from '../capture/CaptureConfiguration'
 import TapMetrics from './metrics/TapMetrics'
 import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
-import {notify} from "react-notify-toast";
 import TapDeletedWarning from "./TapDeletedWarning";
 
 const tapsService = new TapsService()
 
-function fetchData (tapName, setTap, setTapMetrics) {
-  tapsService.findTap(tapName, setTap)
-  tapsService.findMetricsOfTap(tapName, setTapMetrics)
+function fetchData (uuid, setTap, setTapMetrics) {
+  tapsService.findTap(uuid, setTap)
+  tapsService.findMetricsOfTap(uuid, setTapMetrics)
 }
 
 function TapDetailsPage () {
-  const { tapName } = useParams()
+  const { uuid } = useParams()
 
   const [tap, setTap] = useState(null)
   const [tapMetrics, setTapMetrics] = useState(null)
-  const [justDeleted, setJustDeleted] = useState(false)
 
   useEffect(() => {
-    fetchData(tapName, setTap, setTapMetrics)
-    const id = setInterval(() => fetchData(tapName, setTap, setTapMetrics), 5000)
+    fetchData(uuid, setTap, setTapMetrics)
+    const id = setInterval(() => fetchData(uuid, setTap, setTapMetrics), 5000)
     return () => clearInterval(id)
-  }, [tapName, setTap, setTapMetrics])
-
-  const deleteTap = function () {
-    if (confirm("Really delete tap?")) {
-      tapsService.deleteTap(tapName, function () {
-        setJustDeleted(true)
-        notify.show('Tap deleted.', 'success')
-      })
-    }
-  }
-
-  if (justDeleted) {
-    return <Navigate to={Routes.SYSTEM.TAPS.INDEX} />
-  }
+  }, [uuid])
 
   if (!tap) {
     return <LoadingSpinner />
@@ -89,11 +74,12 @@ function TapDetailsPage () {
               <dl>
                 <dt>Throughput</dt>
                 <dd>
-                  {byteAverageToMbit(tap.processed_bytes.average)} ({numeral(tap.processed_bytes.average / 10).format('0 b')}/sec)
+                  {tap.active ? byteAverageToMbit(tap.processed_bytes.average) : "n/a" }{' '}
+                  {tap.active ? "(" + numeral(tap.processed_bytes.average / 10).format('0 b') + "/sec)" : null}
                 </dd>
 
                 <dt>Total data processed since last restart</dt>
-                <dd>{numeral(tap.processed_bytes.total).format('0.0 b')}</dd>
+                <dd>{tap.active ? numeral(tap.processed_bytes.total).format('0.0 b') : "n/a"}</dd>
               </dl>
             </div>
           </div>
@@ -106,11 +92,12 @@ function TapDetailsPage () {
 
               <dl>
                 <dt>CPU Load</dt>
-                <dd>{numeral(tap.cpu_load).format('0.0')}%</dd>
+                <dd>{tap.active ? numeral(tap.cpu_load).format('0.0') + "%" : "n/a"}</dd>
 
                 <dt>System-Wide Memory Usage</dt>
                 <dd>
-                  {numeral(tap.memory_used).format('0 b')} / {numeral(tap.memory_total).format('0 b')} ({numeral(tap.memory_used / tap.memory_total * 100).format('0.0')}%)
+                  {tap.active ? numeral(tap.memory_used).format('0 b') + "/" + numeral(tap.memory_total).format('0 b') : "n/a"}{' '}
+                  {tap.active ? "(" + numeral(tap.memory_used / tap.memory_total * 100).format('0.0') + "%)" : null}
                 </dd>
               </dl>
             </div>
@@ -123,16 +110,20 @@ function TapDetailsPage () {
               <h3>Details</h3>
 
               <dl>
-                <dt>Last Seen</dt>
-                <dd><span title={moment(tap.updated_at).format()}> {moment(tap.updated_at).fromNow()}</span></dd>
+                <dt>Last Report</dt>
+                <dd>
+                  {tap.last_report ?
+                      <span title={moment(tap.last_report).format()}> {moment(tap.last_report).fromNow()}</span>
+                      : "no report yet" }
+                </dd>
 
-                <dt>First Seen</dt>
+                <dt>Created at</dt>
                 <dd>
                   <span title={moment(tap.created_at).format()}>{moment(tap.created_at).fromNow()}</span>
                 </dd>
 
                 <dt>Version</dt>
-                <dd>{tap.version}</dd>
+                <dd>{tap.version ? tap.version : "unknown"}</dd>
               </dl>
             </div>
           </div>
@@ -145,7 +136,7 @@ function TapDetailsPage () {
             <div className="card-body">
               <h3>Throughput</h3>
 
-              <TapMetricsChartProxy type="gauge" name="system.captures.throughput_bit_sec" tapName={tap.name} />
+              <TapMetricsChartProxy type="gauge" name="system.captures.throughput_bit_sec" tapUuid={tap.uuid} />
             </div>
           </div>
         </div>
@@ -182,21 +173,6 @@ function TapDetailsPage () {
               <h3>Metrics</h3>
 
               <TapMetrics tap={tap} metrics={tapMetrics} />
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <h3>Tap Actions</h3>
-
-              <p>
-                <strong>You should delete this tap if you no longer plan to use it.</strong> Note that it will re-appear
-                if you don&apos;t shut it down. All metrics and related information will remain until it is retention cleaned.
-              </p>
-
-              <button className="btn btn-danger" onClick={deleteTap} disabled={tap.deleted}>Delete Tap</button>
             </div>
           </div>
         </div>

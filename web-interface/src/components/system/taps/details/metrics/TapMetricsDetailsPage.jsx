@@ -8,20 +8,20 @@ import TapMetricsChartProxy from './TapMetricsChartProxy'
 
 const tapsService = new TapsService()
 
-function fetchData (tapName, setTap) {
-  tapsService.findTap(tapName, setTap)
+function fetchData (uuid, setTap) {
+  tapsService.findTap(uuid, setTap)
 }
 
 function TapMetricsDetailsPage () {
-  const { tapName, metricType, metricName } = useParams()
+  const { uuid, metricType, metricName } = useParams()
 
   const [tap, setTap] = useState(null)
 
   useEffect(() => {
-    fetchData(tapName, setTap)
-    const id = setInterval(() => fetchData(tapName, setTap), 5000)
+    fetchData(uuid, setTap)
+    const id = setInterval(() => fetchData(uuid, setTap), 5000)
     return () => clearInterval(id)
-  }, [tapName, setTap])
+  }, [uuid, setTap])
 
   if (!tap) {
     return <LoadingSpinner />

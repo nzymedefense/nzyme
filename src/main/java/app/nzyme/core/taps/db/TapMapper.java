@@ -10,6 +10,7 @@ import org.joda.time.PeriodType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TapMapper implements RowMapper<Tap>  {
 
@@ -19,6 +20,7 @@ public class TapMapper implements RowMapper<Tap>  {
         DateTime clock = new DateTime(rs.getTimestamp("clock"));
 
         return Tap.create(
+                UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("version"),

@@ -164,12 +164,12 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<UserDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapId')} element={<TapPermissionDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
 
                                             { /* System/Taps. */}
                                             <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':tapName')} element={<TapDetailsPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':tapName', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 
                                             { /* System/Crypto. */ }
                                             <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />

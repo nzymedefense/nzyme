@@ -4,9 +4,12 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class Tap {
+
+    public abstract UUID uuid();
 
     public abstract String name();
 
@@ -42,8 +45,9 @@ public abstract class Tap {
     @Nullable
     public abstract DateTime lastReport();
 
-    public static Tap create(String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
+                .uuid(uuid)
                 .name(name)
                 .description(description)
                 .version(version)
@@ -66,6 +70,8 @@ public abstract class Tap {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder uuid(UUID uuid);
+
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);

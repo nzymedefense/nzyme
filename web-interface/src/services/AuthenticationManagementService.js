@@ -81,8 +81,8 @@ class AuthenticationManagementService {
     })
   }
 
-  findTapPermission(organizationId, tenantId, tapId, setTap) {
-    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapId,
+  findTapPermission(organizationId, tenantId, tapUuid, setTap) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
         {}, function (response) {
           setTap(response.data)
         })

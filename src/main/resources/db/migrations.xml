@@ -1951,4 +1951,48 @@
 
         <addNotNullConstraint tableName="taps" columnName="description" />
     </changeSet>
+
+    <changeSet id="move_tap_refs_from_name_to_uuid" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="tap_metrics_gauges" columnName="tap_name" />
+        <addColumn tableName="tap_metrics_gauges">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="tap_captures" columnName="tap_name" />
+        <addColumn tableName="tap_captures">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint    constraintName="link_taps2captures"
+                                    baseTableName="tap_captures"
+                                    baseColumnNames="tap_uuid"
+                                    referencedTableName="taps"
+                                    referencedColumnNames="uuid"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+
+        <addColumn tableName="tap_buses">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+        <dropForeignKeyConstraint baseTableName="tap_buses" constraintName="link_taps2buses" />
+        <addForeignKeyConstraint    constraintName="link_taps2buses"
+                                    baseTableName="tap_buses"
+                                    baseColumnNames="tap_uuid"
+                                    referencedTableName="taps"
+                                    referencedColumnNames="uuid"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+        <dropColumn tableName="tap_buses" columnName="tap_name" />
+    </changeSet>
 </databaseChangeLog>

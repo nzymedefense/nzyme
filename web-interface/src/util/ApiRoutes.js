@@ -21,14 +21,14 @@ const ApiRoutes = {
         },
         TAPS: {
           CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/create`,
-          DETAILS: (organizationId, tenantId, tapId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/show/${tapId}`,
+          DETAILS: (organizationId, tenantId, tapUuid) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/show/${tapUuid}`,
         }
       }
     },
     TAPS: {
       INDEX: '/system/taps',
-      DETAILS: tapName => `/system/taps/show/${tapName}`,
-      METRICDETAILS: (tapName, metricType, metricName) => `/system/taps/show/${tapName}/metrics/${metricType}/${metricName}`
+      DETAILS: uuid => `/system/taps/show/${uuid}`,
+      METRICDETAILS: (uuid, metricType, metricName) => `/system/taps/show/${uuid}/metrics/${metricType}/${metricName}`
     },
     CRYPTO: {
       INDEX: '/system/crypto',

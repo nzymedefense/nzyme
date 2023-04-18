@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class AuthenticationService {
 
@@ -315,9 +316,10 @@ public class AuthenticationService {
 
     public void createTap(long organizationId, long tenantId, String secret, String name, String description) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO taps(organization_id, tenant_id, secret, name, " +
-                                "description, deleted, created_at, updated_at) VALUES(:organization_id, :tenant_id, " +
+                handle.createUpdate("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
+                                "description, deleted, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
                                 ":secret, :name, :description, false, :created_at, :updated_at)")
+                        .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("secret", secret)
@@ -331,7 +333,7 @@ public class AuthenticationService {
 
     public List<TapPermissionEntry> findAllTaps(long organizationId, long tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, name, " +
+                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC")
@@ -342,15 +344,15 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<TapPermissionEntry> findTap(long organizationId, long tenantId, long tapId) {
+    public Optional<TapPermissionEntry> findTap(long organizationId, long tenantId, UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, name, " +
+                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "AND id = :tap_id")
+                                "AND uuid = :uuid")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
-                        .bind("tap_id", tapId)
+                        .bind("uuid", tapId)
                         .mapTo(TapPermissionEntry.class)
                         .findOne()
         );

@@ -26,11 +26,13 @@ import org.apache.logging.log4j.Logger;
 import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.UUID;
 
-@Path("/api/taps/status")
+@Path("/api/taps/show/{tap_uuid}/status")
 @TapSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class StatusResource {
@@ -41,15 +43,18 @@ public class StatusResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response status(StatusReport report) {
-        LOG.debug("Received tap status: {}", report);
+    public Response status(@PathParam("tap_uuid") String tapUUID, StatusReport report) {
+        UUID tapId;
 
-        if (report.name().length() > 50) {
-            LOG.debug("Tap name [{}] exceeds maximum length of 50 characters.", report.name());
-            return Response.status(Response.Status.FORBIDDEN).build();
+        try {
+            tapId = UUID.fromString(tapUUID);
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
         }
+
+        LOG.debug("Received status from tap [{}]: {}", tapId, report);
         
-        nzyme.getTapManager().registerTapStatus(report);
+        nzyme.getTapManager().registerTapStatus(report, tapId);
 
         return Response.status(Response.Status.CREATED).build();
     }

@@ -6,9 +6,13 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 @AutoValue
 public abstract class TapDetailsResponse {
+
+    @JsonProperty
+    public abstract UUID uuid();
 
     @JsonProperty("name")
     public abstract String name();
@@ -67,8 +71,9 @@ public abstract class TapDetailsResponse {
     @JsonProperty("captures")
     public abstract List<CaptureDetailsResponse> captures();
 
-    public static TapDetailsResponse create(String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, long memoryTotal, long memoryFree, long memoryUsed, Double cpuLoad, boolean active, long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
         return builder()
+                .uuid(uuid)
                 .name(name)
                 .version(version)
                 .clock(clock)
@@ -94,6 +99,8 @@ public abstract class TapDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder uuid(UUID uuid);
+
         public abstract Builder name(String name);
 
         public abstract Builder version(String version);
@@ -102,17 +109,17 @@ public abstract class TapDetailsResponse {
 
         public abstract Builder processedBytes(TotalWithAverageResponse processedBytes);
 
-        public abstract Builder memoryTotal(long memoryTotal);
+        public abstract Builder memoryTotal(Long memoryTotal);
 
-        public abstract Builder memoryFree(long memoryFree);
+        public abstract Builder memoryFree(Long memoryFree);
 
-        public abstract Builder memoryUsed(long memoryUsed);
+        public abstract Builder memoryUsed(Long memoryUsed);
 
         public abstract Builder cpuLoad(Double cpuLoad);
 
         public abstract Builder active(boolean active);
 
-        public abstract Builder clockDriftMs(long clockDriftMs);
+        public abstract Builder clockDriftMs(Long clockDriftMs);
 
         public abstract Builder createdAt(DateTime createdAt);
 

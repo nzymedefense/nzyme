@@ -11,7 +11,7 @@ function TapPermissionDetailsPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
-  const { tapId } = useParams();
+  const { tapUuid } = useParams();
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
@@ -20,7 +20,7 @@ function TapPermissionDetailsPage() {
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
-    authenticationManagementService.findTapPermission(organizationId, tenantId, tapId, setTap);
+    authenticationManagementService.findTapPermission(organizationId, tenantId, tapUuid, setTap);
   }, [organizationId, tenantId])
 
   if (!organization || !tenant || !tap) {
@@ -57,7 +57,7 @@ function TapPermissionDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
               <a className="btn btn-secondary"
-                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(organization.id, tenant.id, tap.id)}>
+                 href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
                 Back
               </a>{' '}
             </span>

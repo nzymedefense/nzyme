@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/system/authentication/mgmt/organizations")
 @RESTSecured
@@ -288,10 +289,17 @@ public class OrganizationsResource {
     }
 
     @GET
-    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapId}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapUuid}")
     public Response findTap(@PathParam("organizationId") long organizationId,
                             @PathParam("tenantId") long tenantId,
-                            @PathParam("tapId") long tapId) {
+                            @PathParam("tapUuid") String tapUuid) {
+        UUID tapId;
+        try {
+            tapId = UUID.fromString(tapUuid);
+        } catch(IllegalArgumentException ignored) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -372,7 +380,7 @@ public class OrganizationsResource {
 
     private TapPermissionDetailsResponse tapPermissionEntryToResponse(TapPermissionEntry tpe) {
         return TapPermissionDetailsResponse.create(
-                tpe.id(),
+                tpe.uuid(),
                 tpe.organizationId(),
                 tpe.tenantId(),
                 tpe.name(),

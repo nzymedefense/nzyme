@@ -20,16 +20,17 @@ package app.nzyme.core.taps.metrics;
 import com.google.auto.value.AutoValue;
 
 import java.util.List;
+import java.util.UUID;
 
 @AutoValue
 public abstract class TapMetrics {
 
-    public abstract String tapName();
+    public abstract UUID tapUUID();
     public abstract List<TapMetricsGauge> gauges();
 
-    public static TapMetrics create(String tapName, List<TapMetricsGauge> gauges) {
+    public static TapMetrics create(UUID tapUUID, List<TapMetricsGauge> gauges) {
         return builder()
-                .tapName(tapName)
+                .tapUUID(tapUUID)
                 .gauges(gauges)
                 .build();
     }
@@ -40,11 +41,10 @@ public abstract class TapMetrics {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder tapName(String tapName);
+        public abstract Builder tapUUID(UUID tapUUID);
 
         public abstract Builder gauges(List<TapMetricsGauge> gauges);
 
         public abstract TapMetrics build();
     }
-
 }

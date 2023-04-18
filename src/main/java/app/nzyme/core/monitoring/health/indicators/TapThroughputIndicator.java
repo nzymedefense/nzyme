@@ -30,7 +30,7 @@ public class TapThroughputIndicator extends Indicator {
                     continue;
                 }
 
-                TapMetrics metrics = tapManager.findMetricsOfTap(tap.name());
+                TapMetrics metrics = tapManager.findMetricsOfTap(tap.uuid());
                 for (TapMetricsGauge gauge : metrics.gauges()) {
                     if (gauge.metricName().equals("system.captures.throughput_bit_sec")) {
                         // Oh god why is it Double

@@ -5,12 +5,13 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class TapPermissionDetailsResponse {
 
-    @JsonProperty("id")
-    public abstract long id();
+    @JsonProperty("uuid")
+    public abstract UUID uuid();
 
     @JsonProperty("organization_d")
     public abstract long organizationId();
@@ -37,9 +38,9 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("last_report")
     public abstract DateTime lastReport();
 
-    public static TapPermissionDetailsResponse create(long id, long organizationId, long tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    public static TapPermissionDetailsResponse create(UUID uuid, long organizationId, long tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
-                .id(id)
+                .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .name(name)
@@ -57,7 +58,7 @@ public abstract class TapPermissionDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder uuid(UUID uuid);
 
         public abstract Builder organizationId(long organizationId);
 

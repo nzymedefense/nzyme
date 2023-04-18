@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/taps")
 @RESTSecured
@@ -54,9 +55,16 @@ public class TapsResource {
     }
 
     @GET
-    @Path("/show/{name}")
-    public Response findTap(@PathParam("name") String name) {
-        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+    @Path("/show/{uuid}")
+    public Response findTap(@PathParam("uuid") String tapId) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(tapId);
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
 
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -66,15 +74,22 @@ public class TapsResource {
     }
 
     @GET
-    @Path("/show/{name}/metrics")
-    public Response tapMetrics(@PathParam("name") String name) {
-        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+    @Path("/show/{uuid}/metrics")
+    public Response tapMetrics(@PathParam("uuid") String tapId) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(tapId);
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
 
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(tap.get().name());
+        TapMetrics metrics = nzyme.getTapManager().findMetricsOfTap(uuid);
         List<TapMetricsGauge> gauges = metrics.gauges();
 
         Map<String, TapMetricsGaugeResponse> parsedGauges = Maps.newHashMap();
@@ -97,20 +112,27 @@ public class TapsResource {
     }
 
     @GET
-    @Path("/show/{tapName}/metrics/gauges/{metricName}/histogram")
-    public Response tapMetricsGauge(@PathParam("tapName") String name, @PathParam("metricName") String metricName) {
-        Optional<Tap> tap = nzyme.getTapManager().findTap(name);
+    @Path("/show/{uuid}/metrics/gauges/{metricName}/histogram")
+    public Response tapMetricsGauge(@PathParam("uuid") String tapId, @PathParam("metricName") String metricName) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(tapId);
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(uuid);
 
         if (tap.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<Map<DateTime, TapMetricsGaugeAggregation>> histo = nzyme.getTapManager().findMetricsHistogram(
-                tap.get().name(), metricName, 24, BucketSize.MINUTE
+                uuid, metricName, 24, BucketSize.MINUTE
         );
 
         if (histo.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.ok(Maps.newHashMap()).build();
         }
 
         Map<DateTime, TapMetricsGaugeHistogramValueResponse> result = Maps.newTreeMap();
@@ -126,7 +148,7 @@ public class TapsResource {
     private TapDetailsResponse buildTapResponse(Tap tap) {
         List<BusDetailsResponse> busesResponse = Lists.newArrayList();
 
-        Optional<List<Bus>> buses = nzyme.getTapManager().findBusesOfTap(tap.name());
+        Optional<List<Bus>> buses = nzyme.getTapManager().findBusesOfTap(tap.uuid());
         if (buses.isPresent()) {
             for (Bus bus : buses.get()) {
                 List<ChannelDetailsResponse> channelsResponse = Lists.newArrayList();
@@ -163,7 +185,7 @@ public class TapsResource {
         }
 
         List<CaptureDetailsResponse> capturesResponse = Lists.newArrayList();
-        Optional<List<Capture>> captures = nzyme.getTapManager().findCapturesOfTap(tap.name());
+        Optional<List<Capture>> captures = nzyme.getTapManager().findCapturesOfTap(tap.uuid());
         if (captures.isPresent()) {
             for (Capture capture : captures.get()) {
                 capturesResponse.add(
@@ -182,6 +204,7 @@ public class TapsResource {
         }
 
         return TapDetailsResponse.create(
+                tap.uuid(),
                 tap.name(),
                 tap.version(),
                 tap.clock(),

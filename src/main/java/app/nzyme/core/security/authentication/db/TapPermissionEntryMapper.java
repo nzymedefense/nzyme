@@ -6,15 +6,14 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TapPermissionEntryMapper implements RowMapper<TapPermissionEntry> {
 
     @Override
     public TapPermissionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-
-
         return TapPermissionEntry.create(
-                rs.getLong("id"),
+                UUID.fromString(rs.getString("uuid")),
                 rs.getLong("organization_id"),
                 rs.getLong("tenant_id"),
                 rs.getString("name"),

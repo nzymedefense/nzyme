@@ -23,7 +23,7 @@ public class TapDropIndicator extends Indicator {
 
         if (taps.isPresent()) {
             for (Tap tap : taps.get()) {
-                Optional<List<Capture>> capturesOfTap = tapManager.findCapturesOfTap(tap.name());
+                Optional<List<Capture>> capturesOfTap = tapManager.findCapturesOfTap(tap.uuid());
                 if (capturesOfTap.isPresent()) {
                     for (Capture capture : capturesOfTap.get()) {
                         if (capture.droppedBuffer() > 0 || capture.droppedInterface() > 0) {

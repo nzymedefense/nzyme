@@ -19,14 +19,14 @@ function byteConversion (x) {
 function TapMetricsChartProxy (props) {
   const [data, setData] = useState(null)
 
-  const tapName = props.tapName;
+  const tapUuid = props.tapUuid;
   const name = props.name;
 
   useEffect(() => {
-    fetchData(tapName, name, setData)
-    const id = setInterval(() => fetchData(tapName, name, setData), 30000)
+    fetchData(tapUuid, name, setData)
+    const id = setInterval(() => fetchData(tapUuid, name, setData), 30000)
     return () => clearInterval(id)
-  }, [tapName, name, setData])
+  }, [tapUuid, name])
 
   if (props.type === 'gauge') {
     let conversion

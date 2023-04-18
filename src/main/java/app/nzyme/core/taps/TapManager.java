@@ -17,6 +17,7 @@ import org.joda.time.DateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -37,15 +38,15 @@ public class TapManager {
         ).scheduleAtFixedRate(this::retentionCleanMetrics, 0, 5, TimeUnit.MINUTES);
     }
 
-    public void registerTapStatus(StatusReport report) {
-        LOG.debug("Registering report from tap tap [{}].", report.name());
+    public void registerTapStatus(StatusReport report, UUID tapUUID) {
+        LOG.debug("Registering report from tap tap [{}].", tapUUID);
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
                         "processed_bytes_total = :processed_bytes_total, " +
                         "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                         "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                        "last_report = NOW() WHERE name = :name")
+                        "last_report = NOW() WHERE uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -54,7 +55,7 @@ public class TapManager {
                         .bind("memory_free", report.systemMetrics().memoryFree())
                         .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                         .bind("cpu_load", report.systemMetrics().cpuLoad())
-                        .bind("name", report.name())
+                        .bind("uuid", tapUUID)
                         .execute()
         );
 
@@ -62,20 +63,20 @@ public class TapManager {
         for (CapturesReport capture : report.captures()) {
             long captureCount = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT COUNT(*) AS count FROM tap_captures " +
-                                    "WHERE interface = :interface AND tap_name = :tap_name")
+                                    "WHERE interface = :interface AND tap_uuid = :tap_uuid")
                             .bind("interface", capture.interfaceName())
-                            .bind("tap_name",  report.name())
+                            .bind("tap_uuid",  tapUUID)
                             .mapTo(Long.class)
                             .one()
             );
 
             if (captureCount == 0) {
                 nzyme.getDatabase().withHandle(handle ->
-                    handle.createUpdate("INSERT INTO tap_captures(tap_name, interface, capture_type, is_running, " +
-                            "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_name, " +
+                    handle.createUpdate("INSERT INTO tap_captures(tap_uuid, interface, capture_type, is_running, " +
+                            "received, dropped_buffer, dropped_interface, updated_at, created_at) VALUES(:tap_uuid, " +
                             ":interface, :capture_type, :is_running, :received, :dropped_buffer, :dropped_interface, " +
                             "NOW(), NOW())")
-                            .bind("tap_name", report.name())
+                            .bind("tap_uuid", tapUUID)
                             .bind("interface", capture.interfaceName())
                             .bind("capture_type", capture.captureType())
                             .bind("is_running", capture.isRunning())
@@ -89,13 +90,13 @@ public class TapManager {
                         handle.createUpdate("UPDATE tap_captures SET capture_type = :capture_type, " +
                                 "is_running = :is_running, received = :received, dropped_buffer = :dropped_buffer, " +
                                 "dropped_interface = :dropped_interface, updated_at = NOW() " +
-                                "WHERE tap_name = :tap_name AND interface = :interface")
+                                "WHERE tap_uuid = :tap_uuid AND interface = :interface")
                                 .bind("capture_type", capture.captureType())
                                 .bind("is_running", capture.isRunning())
                                 .bind("received", capture.received())
                                 .bind("dropped_buffer", capture.droppedBuffer())
                                 .bind("dropped_interface", capture.droppedInterface())
-                                .bind("tap_name", report.name())
+                                .bind("tap_uuid", tapUUID)
                                 .bind("interface", capture.interfaceName())
                                 .execute()
                 );
@@ -104,32 +105,32 @@ public class TapManager {
 
         // Register bus.
         long busCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_name = :tap_name")
-                        .bind("tap_name", report.name())
+                handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_name = :tap_uuid")
+                        .bind("tap_uuid", tapUUID)
                         .mapTo(Long.class)
                         .one()
         );
 
         if (busCount == 0) {
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("INSERT INTO tap_buses(tap_name, name, created_at, updated_at) " +
-                            "VALUES(:tap_name, :name, NOW(), NOW())")
-                            .bind("tap_name", report.name())
+                    handle.createUpdate("INSERT INTO tap_buses(tap_uuid, name, created_at, updated_at) " +
+                            "VALUES(:tap_uuid, :name, NOW(), NOW())")
+                            .bind("tap_uuid", tapUUID)
                             .bind("name", report.bus().name())
                             .execute()
             );
         } else {
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() WHERE tap_name = :tap_name AND name = :name")
-                            .bind("tap_name", report.name())
+                    handle.createUpdate("UPDATE tap_buses SET updated_at = NOW() WHERE tap_uuid = :tap_uuid AND name = :name")
+                            .bind("tap_uuid", tapUUID)
                             .bind("name", report.bus().name())
                             .execute()
             );
         }
 
         Long busId = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id FROM tap_buses WHERE tap_name = :tap_name")
-                        .bind("tap_name", report.name())
+                handle.createQuery("SELECT id FROM tap_buses WHERE tap_uuid = :tap_uuid")
+                        .bind("tap_uuid", tapUUID)
                         .mapTo(Long.class)
                         .one()
         );
@@ -191,23 +192,24 @@ public class TapManager {
 
         // Metrics
         for (Map.Entry<String, Long> metric : report.gaugesLong().entrySet()) {
-            writeGauge(report.name(), metric.getKey(), metric.getValue(), report.timestamp());
+            writeGauge(tapUUID, metric.getKey(), metric.getValue(), report.timestamp());
         }
 
         // Additional metrics.
-        writeGauge(report.name(), "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
-        writeGauge(report.name(), "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
-        writeGauge(report.name(), "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
+        writeGauge(tapUUID, "system.captures.throughput_bit_sec", report.processedBytes().average()*8/10, report.timestamp());
+        writeGauge(tapUUID, "os.memory.bytes_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree(), report.timestamp());
+        writeGauge(tapUUID, "os.cpu.load.percent", report.systemMetrics().cpuLoad(), report.timestamp());
     }
 
-    private void writeGauge(String tapName, String metricName, Long metricValue, DateTime timestamp) {
-        writeGauge(tapName, metricName, metricValue.doubleValue(), timestamp);
+    private void writeGauge(UUID tapUUID, String metricName, Long metricValue, DateTime timestamp) {
+        writeGauge(tapUUID, metricName, metricValue.doubleValue(), timestamp);
     }
 
-    private void writeGauge(String tapName, String metricName, Double metricValue, DateTime timestamp) {
-        nzyme.getDatabase().withHandle(handle -> handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_name, metric_name, metric_value, created_at) " +
-                        "VALUES(:tap_name, :metric_name, :metric_value, NOW())")
-                .bind("tap_name", tapName)
+    private void writeGauge(UUID tapUUID, String metricName, Double metricValue, DateTime timestamp) {
+        nzyme.getDatabase().withHandle(handle ->
+                handle.createUpdate("INSERT INTO tap_metrics_gauges(tap_uuid, metric_name, metric_value, created_at) " +
+                                "VALUES(:tap_uuid, :metric_name, :metric_value, NOW())")
+                .bind("tap_uuid", tapUUID)
                 .bind("metric_name", metricName)
                 .bind("metric_value", metricValue)
                 .execute()
@@ -224,7 +226,7 @@ public class TapManager {
 
     public Optional<List<Tap>> getTaps() {
         List<Tap> taps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE updated_at > :timeout ORDER BY name DESC")
+                handle.createQuery("SELECT * FROM taps WHERE updated_at > :timeout ORDER BY name ASC")
                         .bind("timeout", DateTime.now().minusHours(24))
                         .mapTo(Tap.class)
                         .list()
@@ -233,10 +235,10 @@ public class TapManager {
         return taps == null || taps.isEmpty() ? Optional.empty() : Optional.of(taps);
     }
 
-    public Optional<Tap> findTap(String tapName) {
+    public Optional<Tap> findTap(UUID uuid) {
         Tap tap = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE name = :name")
-                        .bind("name", tapName)
+                handle.createQuery("SELECT * FROM taps WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
                         .mapTo(Tap.class)
                         .first()
         );
@@ -244,30 +246,30 @@ public class TapManager {
         return tap == null ? Optional.empty() : Optional.of(tap);
     }
 
-    public TapMetrics findMetricsOfTap(String tapName) {
+    public TapMetrics findMetricsOfTap(UUID tapUUID) {
         List<TapMetricsGauge> gauges = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_name, metric_value, created_at " +
-                        "FROM tap_metrics_gauges WHERE tap_name = :tap_name AND created_at > :created_at " +
+                handle.createQuery("SELECT DISTINCT ON (metric_name) metric_name, tap_uuid, metric_value, created_at " +
+                        "FROM tap_metrics_gauges WHERE tap_uuid = :tap_uuid AND created_at > :created_at " +
                         "ORDER BY metric_name, created_at DESC")
-                        .bind("tap_name", tapName)
+                        .bind("tap_uuid", tapUUID)
                         .bind("created_at", DateTime.now().minusMinutes(1))
                         .mapTo(TapMetricsGauge.class)
                         .list()
         );
 
-        return TapMetrics.create(tapName, gauges);
+        return TapMetrics.create(tapUUID, gauges);
     }
 
-    public Optional<Map<DateTime, TapMetricsGaugeAggregation>> findMetricsHistogram(String tapName, String metricName, int hours, BucketSize bucketSize) {
+    public Optional<Map<DateTime, TapMetricsGaugeAggregation>> findMetricsHistogram(UUID tapUUID, String metricName, int hours, BucketSize bucketSize) {
         Map<DateTime, TapMetricsGaugeAggregation> result = Maps.newHashMap();
 
         List<TapMetricsGaugeAggregation> agg = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT AVG(metric_value) AS average, MAX(metric_value) AS maximum, " +
                                 "MIN(metric_value) AS minimum, date_trunc(:bucket_size, created_at) AS bucket " +
-                                "FROM tap_metrics_gauges WHERE tap_name = :tap_name AND metric_name = :metric_name " +
+                                "FROM tap_metrics_gauges WHERE tap_uuid = :tap_uuid AND metric_name = :metric_name " +
                                 "AND created_at > :created_at GROUP BY bucket ORDER BY bucket DESC")
                         .bind("bucket_size", bucketSize.toString().toLowerCase())
-                        .bind("tap_name", tapName)
+                        .bind("tap_uuid", tapUUID)
                         .bind("metric_name", metricName)
                         .bind("created_at", DateTime.now().minusHours(hours))
                         .mapTo(TapMetricsGaugeAggregation.class)
@@ -285,10 +287,10 @@ public class TapManager {
         return Optional.of(result);
     }
 
-    public Optional<List<Bus>> findBusesOfTap(String tapName) {
+    public Optional<List<Bus>> findBusesOfTap(UUID tapUUID) {
         List<Bus> buses = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM tap_buses WHERE tap_name = :tap_name AND updated_at > :last_seen")
-                        .bind("tap_name", tapName)
+                handle.createQuery("SELECT * FROM tap_buses WHERE tap_uuid = :tap_uuid AND updated_at > :last_seen")
+                        .bind("tap_uuid", tapUUID)
                         .bind("last_seen", DateTime.now().minusMinutes(1))
                         .mapTo(Bus.class)
                         .list()
@@ -309,10 +311,10 @@ public class TapManager {
         return channels == null || channels.isEmpty() ? Optional.empty() : Optional.of(channels);
     }
 
-    public Optional<List<Capture>> findCapturesOfTap(String tapName) {
+    public Optional<List<Capture>> findCapturesOfTap(UUID tapUUID) {
         List<Capture> captures = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM tap_captures WHERE tap_name = :tap_name AND updated_at > :last_seen")
-                        .bind("tap_name", tapName)
+                handle.createQuery("SELECT * FROM tap_captures WHERE tap_uuid = :tap_uuid AND updated_at > :last_seen")
+                        .bind("tap_uuid", tapUUID)
                         .bind("last_seen", DateTime.now().minusMinutes(1))
                         .mapTo(Capture.class)
                         .list()

@@ -24,7 +24,7 @@ public class TapBufferIndicator extends Indicator {
 
         if (taps.isPresent()) {
             for (Tap tap : taps.get()) {
-                Optional<List<Bus>> buses = tapManager.findBusesOfTap(tap.name());
+                Optional<List<Bus>> buses = tapManager.findBusesOfTap(tap.uuid());
 
                 if (buses.isPresent()) {
                     for (Bus bus : buses.get()) {

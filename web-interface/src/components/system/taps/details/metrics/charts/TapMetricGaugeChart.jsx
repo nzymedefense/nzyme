@@ -7,6 +7,10 @@ function TapMetricsGaugeChart (props) {
     return <LoadingSpinner />
   }
 
+  if (!props.data.values) {
+    return <div className="alert alert-danger">No recent data.</div>
+  }
+
   return <SimpleLineChart
         height={200}
         data={formatData(props.data.values, props.conversion)}

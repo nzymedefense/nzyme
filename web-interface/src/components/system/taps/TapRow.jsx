@@ -12,7 +12,7 @@ function TapsRow (props) {
     return (
       <tr>
         <td>
-          <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a>
+          <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.uuid)}>{tap.name}</a>
 
           {tap.active
             ? ''
@@ -38,7 +38,7 @@ function TapsRow (props) {
   } else {
     return (
         <tr>
-          <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a></td>
+          <td><a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.uuid)}>{tap.name}</a></td>
           <td colSpan={7} style={{textAlign: "center"}} title={moment(tap.last_report).format()}>
             <span><i className="fa-solid fa-triangle-exclamation text-danger" title="Node is offline."/></span>{' '}
             Offline.{' '}

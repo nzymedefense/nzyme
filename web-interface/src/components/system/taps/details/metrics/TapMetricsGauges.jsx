@@ -3,6 +3,12 @@ import FormattedGauge from './FormattedGauge'
 import ApiRoutes from '../../../../../util/ApiRoutes'
 
 function TapMetricsGauges (props) {
+  if (!props.gauges || Object.keys(props.gauges).length === 0) {
+    return <div className="alert alert-danger">
+      No recent data.
+    </div>
+  }
+
   return (
         <table className="table table-sm table-hover table-striped">
             <thead>

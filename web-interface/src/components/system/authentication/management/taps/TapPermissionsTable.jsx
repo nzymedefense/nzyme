@@ -46,7 +46,7 @@ function TapPermissionsTable(props) {
                 <td>{taps[i].last_report ? moment(taps[i].last_report).format() : <span className="text-warning">None</span>}</td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(
-                      organizationId, tenantId, taps[i].id)}>
+                      organizationId, tenantId, taps[i].uuid)}>
                     Details
                   </a>
                 </td>
