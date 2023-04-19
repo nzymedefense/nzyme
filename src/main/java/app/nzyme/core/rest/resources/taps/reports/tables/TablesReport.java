@@ -27,7 +27,6 @@ import java.util.Map;
 @AutoValue
 public abstract class TablesReport {
 
-    public abstract String tapName();
     public abstract DateTime timestamp();
     public abstract Map<String, Map<String, Long>> arp();
     public abstract DNSTablesReport dns();
@@ -35,13 +34,11 @@ public abstract class TablesReport {
     public abstract L4TablesReport l4();
 
     @JsonCreator
-    public static TablesReport create(@JsonProperty("tap_name") String tapName,
-                                      @JsonProperty("timestamp") DateTime timestamp,
+    public static TablesReport create(@JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("arp") Map<String, Map<String, Long>> arp,
                                       @JsonProperty("dns") DNSTablesReport dns,
                                       @JsonProperty("l4") L4TablesReport l4) {
         return builder()
-                .tapName(tapName)
                 .timestamp(timestamp)
                 .arp(arp)
                 .dns(dns)
@@ -55,8 +52,6 @@ public abstract class TablesReport {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder tapName(String tapName);
-
         public abstract Builder timestamp(DateTime timestamp);
 
         public abstract Builder arp(Map<String, Map<String, Long>> arp);

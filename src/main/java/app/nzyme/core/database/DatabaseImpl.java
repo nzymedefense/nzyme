@@ -16,7 +16,6 @@ import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
-import app.nzyme.core.configuration.db.BaseConfigurationMapper;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
 import app.nzyme.core.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
 import app.nzyme.core.dot11.networks.beaconrate.BeaconRateMapper;
@@ -94,7 +93,6 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ContactRecordValueAggregationMapper())
                 .registerRowMapper(new ContactRecorderHistogramEntryMapper())
                 .registerRowMapper(new TapMapper())
-                .registerRowMapper(new BaseConfigurationMapper())
                 .registerRowMapper(new BusMapper())
                 .registerRowMapper(new ChannelMapper())
                 .registerRowMapper(new CaptureMapper())

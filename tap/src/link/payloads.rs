@@ -4,7 +4,6 @@ use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
 
 pub struct StatusReport {
-    pub name: String,
     pub version: String,
     pub timestamp: DateTime<Utc>,
     pub processed_bytes: TotalWithAverage,
@@ -54,7 +53,6 @@ pub struct CaptureReport {
 }
 
 pub struct TablesReport {
-    pub tap_name: String,
     pub timestamp: DateTime<Utc>,
     pub arp: HashMap<String, HashMap<String, u128>>,
     pub dns: DnsTableReport,
@@ -155,7 +153,6 @@ impl Serialize for StatusReport {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: serde::Serializer {
         let mut state = serializer.serialize_struct("StatusReport", 7)?;
-        state.serialize_field("name", &self.name)?;
         state.serialize_field("version", &self.version)?;
         state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
         state.serialize_field("processed_bytes", &self.processed_bytes)?;
@@ -172,7 +169,6 @@ impl Serialize for TablesReport {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where S: serde::Serializer {
         let mut state = serializer.serialize_struct("TablesReport", 3)?;
-        state.serialize_field("tap_name", &self.tap_name)?;
         state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
         state.serialize_field("arp", &self.arp)?;
         state.serialize_field("dns", &self.dns)?;

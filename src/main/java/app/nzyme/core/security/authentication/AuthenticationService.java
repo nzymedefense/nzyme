@@ -358,6 +358,16 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<TapPermissionEntry> findTapBySecret(String secret) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, description, secret, " +
+                                "created_at, updated_at, last_report FROM taps WHERE secret = :secret")
+                        .bind("secret", secret)
+                        .mapTo(TapPermissionEntry.class)
+                        .findOne()
+        );
+    }
+
     public boolean isTenantDeletable(TenantEntry t) {
         // TODO check if tenant has users.
         return true;

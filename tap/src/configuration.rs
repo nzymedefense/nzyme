@@ -14,7 +14,6 @@ pub struct Configuration {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct General {
-    pub tap_name: String,
     pub leader_secret: String,
     pub leader_uri: String,
     pub accept_insecure_certs: bool
@@ -47,16 +46,8 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
         Err(e) => bail!("Could not parse configuration. {}", e),
     };
 
-    if doc.general.tap_name.trim().is_empty() {
-        bail!("Configuration variable `tap_name` is empty");
-    }
-
     if doc.general.leader_secret.len() < 64 {
         bail!("Configuration variable `leader_secret` must be at least 64 characters long.");
-    }
-
-    if doc.general.tap_name.len() > 50 {
-        bail!("Configuration variable `tap_name` is longer than the allowed maximum 50 characters.");
     }
 
     if doc.misc.training_period_minutes <= 0 {

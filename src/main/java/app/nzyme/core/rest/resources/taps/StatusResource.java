@@ -28,11 +28,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.UUID;
 
-@Path("/api/taps/show/{tap_uuid}/status")
+@Path("/api/taps/status")
 @TapSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class StatusResource {
@@ -43,17 +45,17 @@ public class StatusResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response status(@PathParam("tap_uuid") String tapUUID, StatusReport report) {
+    public Response status(@Context SecurityContext securityContext, StatusReport report) {
         UUID tapId;
 
         try {
-            tapId = UUID.fromString(tapUUID);
+            tapId = UUID.fromString(securityContext.getUserPrincipal().getName());
         } catch(IllegalArgumentException e) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        LOG.debug("Received status from tap [{}]: {}", tapId, report);
-        
+        LOG.info("Received status from tap [{}]: {}", tapId, report);
+
         nzyme.getTapManager().registerTapStatus(report, tapId);
 
         return Response.status(Response.Status.CREATED).build();

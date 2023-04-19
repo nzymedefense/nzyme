@@ -18,6 +18,8 @@
 package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
+import app.nzyme.core.taps.Tap;
 import com.google.common.net.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +33,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Optional;
 
 
 @TapSecured
@@ -59,13 +62,15 @@ public class TapAuthenticationFilter implements ContainerRequestFilter {
             }
 
             String tapSecret = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
-            if (nzyme.getConfigurationService().getConfiguration().tapSecret().equals(tapSecret)) {
+            Optional<TapPermissionEntry> tapPermission = nzyme.getAuthenticationService().findTapBySecret(tapSecret);
+
+            if (tapPermission.isPresent()) {
                 // Set new security context for later use in resources.
                 final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
                 requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {
-                        return () -> tapSecret;
+                        return () -> tapPermission.get().uuid().toString();
                     }
 
                     @Override

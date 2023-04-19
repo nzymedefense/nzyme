@@ -44,7 +44,7 @@ public class TablesResource {
 
     @POST
     public Response report(TablesReport report) {
-        LOG.debug("Received table report from [{}]: {}", report.tapName(), report);
+        /*LOG.debug("Received table report from [{}]: {}", report.tapName(), report);
 
         // DNS.
         nzyme.getTablesService().dns().handleReport(report.tapName(), report.timestamp(), report.dns());
@@ -65,7 +65,9 @@ public class TablesResource {
             );
         }
 
-        return Response.status(Response.Status.CREATED).build();
+        return Response.status(Response.Status.CREATED).build();*/
+
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
 
 }

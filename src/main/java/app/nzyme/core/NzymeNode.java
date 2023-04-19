@@ -33,7 +33,6 @@ import app.nzyme.core.alerts.service.AlertsService;
 import app.nzyme.core.bandits.engine.ContactManager;
 import app.nzyme.core.bandits.trackers.GroundStation;
 import app.nzyme.core.bandits.trackers.TrackerManager;
-import app.nzyme.core.configuration.db.BaseConfigurationService;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.dot11.anonymization.Anonymizer;
@@ -81,9 +80,6 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     NodeConfiguration getConfiguration();
     BaseConfiguration getBaseConfiguration();
-
-    // RENAME or move to Registry.
-    BaseConfigurationService getConfigurationService();
 
     Path getDataDirectory();
 

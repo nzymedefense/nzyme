@@ -1995,4 +1995,8 @@
                                     onDelete="CASCADE" />
         <dropColumn tableName="tap_buses" columnName="tap_name" />
     </changeSet>
+
+    <changeSet id="make_tap_secret_unique" author="lennartkoopmann">
+        <addUniqueConstraint tableName="taps" columnNames="secret" />
+    </changeSet>
 </databaseChangeLog>

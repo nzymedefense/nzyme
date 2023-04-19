@@ -17,7 +17,6 @@ use super::{payloads::{StatusReport, SystemMetricsReport, TablesReport, TotalWit
 pub struct Leaderlink {
     http_client: Client,
     uri: Url,
-    tap_name: String,
     system: System,
     metrics: Arc<Mutex<Metrics>>,
     bus: Arc<Bus>,
@@ -46,7 +45,6 @@ impl Leaderlink {
         anyhow::Ok(Self {
             http_client,
             uri,
-            tap_name: configuration.general.tap_name,
             system: System::new(),
             metrics,
             bus,
@@ -139,7 +137,6 @@ impl Leaderlink {
         let system_metrics = self.build_system_metrics();
 
         let status = StatusReport {
-            name: self.tap_name.clone(),
             version: env!("CARGO_PKG_VERSION").to_string(),
             timestamp: Utc::now(),
             processed_bytes: TotalWithAverage { 
@@ -203,7 +200,6 @@ impl Leaderlink {
         };
 
         let tables = TablesReport {
-            tap_name: self.tap_name.clone(),
             timestamp: Utc::now(),
             arp,
             dns,

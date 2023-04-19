@@ -66,6 +66,12 @@ function TapPermissionDetailsPage() {
           <div className="col-md-12">
             <h1>Authentication of Tap &quot;{tap.name}&quot;</h1>
           </div>
+
+          <div className="row">
+            <div className="col-md-12">
+              <pre><code>{tap.secret}</code></pre>
+            </div>
+          </div>
         </div>
       </React.Fragment>
   )

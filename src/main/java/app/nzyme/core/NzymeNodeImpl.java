@@ -48,7 +48,6 @@ import app.nzyme.core.bandits.trackers.GroundStation;
 import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.*;
 import app.nzyme.core.configuration.base.BaseConfiguration;
-import app.nzyme.core.configuration.db.BaseConfigurationService;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
@@ -122,7 +121,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Path dataDirectory;
 
     private final DatabaseImpl database;
-    private final BaseConfigurationService configurationService;
     public final AuthenticationService authenticationService;
 
     private final NodeManager nodeManager;
@@ -211,7 +209,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
-        this.configurationService = new BaseConfigurationService(this);
         this.tapManager = new TapManager(this);
 
         this.frameProcessor = new FrameProcessor();
@@ -293,9 +290,6 @@ public class NzymeNodeImpl implements NzymeNode {
         } catch (Crypto.CryptoInitializationException e) {
             throw new RuntimeException("Could not load cryptographic subsystem.", e);
         }
-
-        LOG.info("Reading configuration from database.");
-        this.configurationService.initialize();
 
         LOG.info("Initializing authentication service.");
         this.authenticationService.initialize();
@@ -702,11 +696,6 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public BaseConfiguration getBaseConfiguration() {
         return baseConfiguration;
-    }
-
-    @Override
-    public BaseConfigurationService getConfigurationService() {
-        return configurationService;
     }
 
     @Override

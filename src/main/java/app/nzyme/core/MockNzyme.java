@@ -43,7 +43,6 @@ import app.nzyme.core.bandits.trackers.GroundStation;
 import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
-import app.nzyme.core.configuration.db.BaseConfigurationService;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import app.nzyme.core.crypto.Crypto;
@@ -113,7 +112,6 @@ public class MockNzyme implements NzymeNode {
     private final FrameProcessor frameProcessor;
     private final Anonymizer anonymizer;
     private final Sentry sentry;
-    private final BaseConfigurationService configurationService;
     private final Path dataDirectory;
     private final MessageBus messageBus;
     private final TasksQueue tasksQueue;
@@ -181,9 +179,6 @@ public class MockNzyme implements NzymeNode {
         this.frameProcessor = new FrameProcessor();
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
-
-        this.configurationService = new BaseConfigurationService(this);
-        this.configurationService.initialize();
 
         this.metricRegistry = new MetricRegistry();
         this.crypto = new Crypto(this);
@@ -318,11 +313,6 @@ public class MockNzyme implements NzymeNode {
     @Override
     public BaseConfiguration getBaseConfiguration() {
         return baseConfiguration;
-    }
-
-    @Override
-    public BaseConfigurationService getConfigurationService() {
-        return configurationService;
     }
 
     @Override

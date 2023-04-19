@@ -13,7 +13,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterLetsValidSecretPass() throws IOException {
-        NzymeNode nzyme = new MockNzyme();
+        /*NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -21,7 +21,9 @@ public class TapAuthenticationFilterTest {
         );
 
         f.filter(ctx);
-        assertFalse(ctx.aborted);
+        assertFalse(ctx.aborted);*/
+
+        fail();
     }
 
     @Test()
@@ -61,7 +63,7 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsUnknownAuthScheme() throws IOException {
-        NzymeNode nzyme = new MockNzyme();
+        /*NzymeNode nzyme = new MockNzyme();
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -69,7 +71,9 @@ public class TapAuthenticationFilterTest {
         );
 
         f.filter(ctx);
-        assertTrue(ctx.aborted);
+        assertTrue(ctx.aborted);*/
+
+        fail();
     }
 
 }
