@@ -275,7 +275,7 @@ public class OrganizationsResource {
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response findAllTaps(@PathParam("organizationId") long organizationId,
-                              @PathParam("tenantId") long tenantId) {
+                                @PathParam("tenantId") long tenantId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -375,6 +375,7 @@ public class OrganizationsResource {
                 org.updatedAt(),
                 nzyme.getAuthenticationService().countTenantsOfOrganization(org),
                 nzyme.getAuthenticationService().countUsersOfOrganization(org),
+                nzyme.getAuthenticationService().countTapsOfOrganization(org),
                 nzyme.getAuthenticationService().isOrganizationDeletable(org)
         );
     }
@@ -388,6 +389,7 @@ public class OrganizationsResource {
                 t.createdAt(),
                 t.updatedAt(),
                 nzyme.getAuthenticationService().countUsersOfTenant(t),
+                nzyme.getAuthenticationService().countTapsOfTenant(t),
                 nzyme.getAuthenticationService().isTenantDeletable(t)
         );
     }

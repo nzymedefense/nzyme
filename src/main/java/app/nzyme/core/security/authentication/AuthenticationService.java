@@ -145,6 +145,16 @@ public class AuthenticationService {
         );
     }
 
+    public long countTapsOfOrganization(OrganizationEntry o) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM taps " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", o.id())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public boolean isOrganizationDeletable(OrganizationEntry org) {
         long organizationTenantCount = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id())
                 .map(List::size)
@@ -289,6 +299,17 @@ public class AuthenticationService {
     public long countUsersOfTenant(TenantEntry t) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +
+                                "tenant_id = :tenant_id")
+                        .bind("organization_id", t.organizationId())
+                        .bind("tenant_id", t.id())
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countTapsOfTenant(TenantEntry t) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM taps WHERE organization_id = :organization_id AND " +
                                 "tenant_id = :tenant_id")
                         .bind("organization_id", t.organizationId())
                         .bind("tenant_id", t.id())
