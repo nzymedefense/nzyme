@@ -31,7 +31,7 @@ public class TapClockIndicator extends Indicator {
 
         for (Tap tap : taps.get()) {
             // We only want to check very recently active taps.
-            if (tap.updatedAt().isBefore(DateTime.now().minusMinutes(2))) {
+            if (tap.lastReport() == null || tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
                 LOG.debug("Skipping inactive tap [{}].", tap.name());
                 continue;
             }

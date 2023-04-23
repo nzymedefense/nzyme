@@ -18,6 +18,8 @@ public class TapMapper implements RowMapper<Tap>  {
     public Tap map(ResultSet rs, StatementContext ctx) throws SQLException {
         DateTime updatedAt = new DateTime(rs.getTimestamp("updated_at"));
         DateTime clock = new DateTime(rs.getTimestamp("clock"));
+        DateTime lastReport = rs.getTimestamp("last_report") == null
+                ? null : new DateTime(rs.getTimestamp("last_report"));
 
         return Tap.create(
                 UUID.fromString(rs.getString("uuid")),
@@ -30,10 +32,10 @@ public class TapMapper implements RowMapper<Tap>  {
                 rs.getLong("memory_free"),
                 rs.getLong("memory_used"),
                 rs.getDouble("cpu_load"),
-                (long) new Period(updatedAt, clock, PeriodType.millis()).getMillis(),
+                (long) new Period(lastReport, clock, PeriodType.millis()).getMillis(),
                 new DateTime(rs.getTimestamp("created_at")),
                 updatedAt,
-                rs.getTimestamp("last_report") == null ? null : new DateTime(rs.getTimestamp("last_report"))
+                lastReport
         );
     }
 
