@@ -19,7 +19,7 @@ public class TapOfflineIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.getTaps();
+        Optional<List<Tap>> taps = tapManager.findTaps();
 
         if (taps.isEmpty()) {
             return IndicatorStatus.green(this);

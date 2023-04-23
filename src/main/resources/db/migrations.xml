@@ -1999,4 +1999,38 @@
     <changeSet id="make_tap_secret_unique" author="lennartkoopmann">
         <addUniqueConstraint tableName="taps" columnNames="secret" />
     </changeSet>
+
+    <changeSet id="remove_tap_name_unique_constraint" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="taps" constraintName="taps_name_key" />
+    </changeSet>
+
+    <changeSet id="change_dns_table_tap_name_to_id" author="lennartkoopmann">
+        <dropColumn tableName="dns_nxdomains_log" columnName="tap_name" />
+        <dropColumn tableName="dns_pairs" columnName="tap_name" />
+        <dropColumn tableName="dns_statistics" columnName="tap_name" />
+
+        <addColumn tableName="dns_nxdomains_log">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dns_pairs">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dns_statistics">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="fix_tap_uuid_uniqueness_after_name_change" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="tap_metrics_gauges" constraintName="tap_metrics_gauges_tap_uuid_key" />
+        <dropUniqueConstraint tableName="tap_captures" constraintName="tap_captures_tap_uuid_key" />
+        <dropUniqueConstraint tableName="tap_buses" constraintName="tap_buses_tap_uuid_key" />
+    </changeSet>
 </databaseChangeLog>

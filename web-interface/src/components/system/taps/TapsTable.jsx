@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
 import TapRow from './TapRow'
 

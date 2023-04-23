@@ -118,6 +118,7 @@ public class MockNzyme implements NzymeNode {
     private final BaseConfiguration baseConfiguration;
     private final Crypto crypto;
     private final ClusterManager clusterManager;
+    private final AuthenticationService authenticationService;
 
     public MockNzyme() {
         this(0, Integer.MAX_VALUE, TimeUnit.DAYS);
@@ -172,6 +173,7 @@ public class MockNzyme implements NzymeNode {
 
         this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
+        this.authenticationService = new AuthenticationService(this);
 
         this.uplinks = Lists.newArrayList();
         this.forwarders = Lists.newArrayList();
@@ -217,6 +219,8 @@ public class MockNzyme implements NzymeNode {
         } catch (Crypto.CryptoInitializationException e) {
             throw new RuntimeException(e);
         }
+
+        this.authenticationService.initialize();
     }
 
     @Override
@@ -245,7 +249,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public AuthenticationService getAuthenticationService() {
-        return null;
+        return authenticationService;
     }
 
     @Override

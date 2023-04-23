@@ -70,7 +70,8 @@ public class TapAuthenticationFilter implements ContainerRequestFilter {
                 requestContext.setSecurityContext(new SecurityContext() {
                     @Override
                     public Principal getUserPrincipal() {
-                        return () -> tapPermission.get().uuid().toString();
+                        TapPermissionEntry tpe = tapPermission.get();
+                        return new AuthenticatedTap(tpe.uuid(), tpe.name(), tpe.organizationId(), tpe.tenantId());
                     }
 
                     @Override

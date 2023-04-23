@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import Routes from "../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import {notify} from "react-notify-toast";
+import TapSecret from "./TapSecret";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -16,12 +18,28 @@ function TapPermissionDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [tap, setTap] = useState(null);
+  const [redirect, setRedirect] = useState(false);
+
+  const deleteTap = function() {
+    if (!confirm("Really delete tap?")) {
+      return;
+    }
+
+    authenticationManagementService.deleteTapPermission(organizationId, tenantId, tapUuid, function() {
+      setRedirect(true);
+      notify.show('Tap deleted.', 'success');
+    });
+  }
 
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTapPermission(organizationId, tenantId, tapUuid, setTap);
   }, [organizationId, tenantId])
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
+  }
 
   if (!organization || !tenant || !tap) {
     return <LoadingSpinner />
@@ -60,6 +78,9 @@ function TapPermissionDetailsPage() {
                  href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
                 Back
               </a>{' '}
+              <a className="btn btn-primary" href="#">
+                Edit Tap
+              </a>
             </span>
           </div>
 
@@ -67,9 +88,59 @@ function TapPermissionDetailsPage() {
             <h1>Authentication of Tap &quot;{tap.name}&quot;</h1>
           </div>
 
-          <div className="row">
-            <div className="col-md-12">
-              <pre><code>{tap.secret}</code></pre>
+          <div className="row mt-3">
+            <div className="col-md-8">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Description</h3>
+
+                      <p className="mb-0">
+                        {tap.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Tap Secret</h3>
+
+                      <p>The tap secret is used to authenticate taps when they connect to nzyme. Every tap has a unique
+                      secret that must be configured in the tap configuration file. <strong>You must update the secret
+                      in your tap configuration file after cycling it.</strong></p>
+
+                      <TapSecret tap={tap} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Delete Tap</h3>
+
+                      <p>
+                        <strong>Warning:</strong> Deleted taps cannot be restored. The deleted tap will not be able to
+                        report data until you create a new tap and cycle the tap secret. Existing data will not be
+                        removed.
+                      </p>
+
+                      <button className="btn btn-sm btn-danger" onClick={deleteTap}>
+                        Delete Tap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

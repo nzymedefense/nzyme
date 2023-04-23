@@ -18,8 +18,10 @@
 package app.nzyme.core.rest.resources.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.StatusReport;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,16 +47,10 @@ public class StatusResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response status(@Context SecurityContext securityContext, StatusReport report) {
-        UUID tapId;
+    public Response status(@Context SecurityContext sc, StatusReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
-        try {
-            tapId = UUID.fromString(securityContext.getUserPrincipal().getName());
-        } catch(IllegalArgumentException e) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        LOG.info("Received status from tap [{}]: {}", tapId, report);
+        LOG.debug("Received status from tap [{}]: {}", tapId, report);
 
         nzyme.getTapManager().registerTapStatus(report, tapId);
 

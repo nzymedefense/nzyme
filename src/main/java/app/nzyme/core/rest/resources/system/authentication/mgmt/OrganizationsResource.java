@@ -339,6 +339,33 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapUuid}")
+    public Response deleteTap(@PathParam("organizationId") long organizationId,
+                            @PathParam("tenantId") long tenantId,
+                            @PathParam("tapUuid") String tapUuid) {
+        UUID tapId;
+        try {
+            tapId = UUID.fromString(tapUuid);
+        } catch(IllegalArgumentException ignored) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().deleteTap(organizationId, tenantId, tapId);
+
+        return Response.ok().build();
+    }
+
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
                 org.id(),

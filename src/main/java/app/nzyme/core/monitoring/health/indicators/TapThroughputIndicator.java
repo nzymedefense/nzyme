@@ -22,7 +22,7 @@ public class TapThroughputIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.getTaps();
+        Optional<List<Tap>> taps = tapManager.findTaps();
 
         if (taps.isPresent()) {
             for (Tap tap : taps.get()) {

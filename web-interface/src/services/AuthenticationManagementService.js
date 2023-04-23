@@ -85,7 +85,7 @@ class AuthenticationManagementService {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
         {}, function (response) {
           setTap(response.data)
-        })
+    })
   }
 
   createTapPermission(organizationId, tenantId, name, description, successCallback) {
@@ -93,6 +93,10 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
+  deleteTapPermission(organizationId, tenantId, tapUuid, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
+        successCallback);
+  }
 }
 
 export default AuthenticationManagementService

@@ -39,14 +39,14 @@ public class TapManager {
     }
 
     public void registerTapStatus(StatusReport report, UUID tapUUID) {
-        LOG.debug("Registering report from tap tap [{}].", tapUUID);
+        LOG.debug("Registering report from tap [{}].", tapUUID);
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET version = :version, clock = :clock, " +
-                        "processed_bytes_total = :processed_bytes_total, " +
-                        "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
-                        "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                        "last_report = NOW() WHERE uuid = :uuid")
+                                "processed_bytes_total = :processed_bytes_total, " +
+                                "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
+                                "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
+                                "last_report = NOW() WHERE uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -105,7 +105,7 @@ public class TapManager {
 
         // Register bus.
         long busCount = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_name = :tap_uuid")
+                handle.createQuery("SELECT COUNT(*) AS count FROM tap_buses WHERE tap_uuid = :tap_uuid")
                         .bind("tap_uuid", tapUUID)
                         .mapTo(Long.class)
                         .one()
@@ -224,10 +224,9 @@ public class TapManager {
         });
     }
 
-    public Optional<List<Tap>> getTaps() {
+    public Optional<List<Tap>> findTaps() {
         List<Tap> taps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps WHERE updated_at > :timeout ORDER BY name ASC")
-                        .bind("timeout", DateTime.now().minusHours(24))
+                handle.createQuery("SELECT * FROM taps ORDER BY name ASC")
                         .mapTo(Tap.class)
                         .list()
         );

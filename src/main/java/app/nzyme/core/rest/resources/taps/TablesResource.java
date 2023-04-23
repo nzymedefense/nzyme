@@ -18,10 +18,12 @@
 package app.nzyme.core.rest.resources.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.authentication.AuthenticatedTap;
 import app.nzyme.core.rest.authentication.TapSecured;
 import app.nzyme.core.rest.resources.taps.reports.tables.TablesReport;
 import app.nzyme.core.rest.resources.taps.reports.tables.retro.dns.DNSRetroReportConverter;
 import app.nzyme.core.rest.resources.taps.reports.tables.retro.l4.L4RetroReportConverter;
+import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,8 +31,11 @@ import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.util.UUID;
 
 @Path("/api/taps/tables")
 @TapSecured
@@ -43,14 +48,16 @@ public class TablesResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response report(TablesReport report) {
-        /*LOG.debug("Received table report from [{}]: {}", report.tapName(), report);
+    public Response report(@Context SecurityContext sc, TablesReport report) {
+        UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
+
+        LOG.debug("Received table report from [{}]: {}", tapId, report);
 
         // DNS.
-        nzyme.getTablesService().dns().handleReport(report.tapName(), report.timestamp(), report.dns());
+        nzyme.getTablesService().dns().handleReport(tapId, report.timestamp(), report.dns());
 
-        // Submit to Retro if service is present.
-        if (nzyme.retroService().isPresent()) {
+        // Submit to Retro if service is present. TODO move to tap UUIDs instead of names.
+        /*if (nzyme.retroService().isPresent()) {
             // TODO queue this. Don't wait for completion.
             nzyme.retroService().get().l4().handleL4ConnectionPairReport(
                     L4RetroReportConverter.pairReportToEntries(report.tapName(), report.l4().retroPairs())
@@ -63,11 +70,9 @@ public class TablesResource {
             nzyme.retroService().get().dns().handleResponseLogReport(
                     DNSRetroReportConverter.responseReportToEntries(report.tapName(), report.dns().retroResponses())
             );
-        }
+        }*/
 
-        return Response.status(Response.Status.CREATED).build();*/
-
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        return Response.status(Response.Status.CREATED).build();
     }
 
 }

@@ -25,6 +25,7 @@ import app.nzyme.core.tables.TablesService;
 import org.joda.time.DateTime;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class DNSTable implements DataTable {
 
@@ -34,20 +35,20 @@ public class DNSTable implements DataTable {
         this.tablesService = tablesService;
     }
 
-    private void registerStatistics(String tapName,
-                                   String ip,
-                                   Long requestCount,
-                                   Long requestBytes,
-                                   Long responseCount,
-                                   Long responseBytes,
-                                   Long nxdomainCount,
-                                   DateTime timestamp) {
+    private void registerStatistics(UUID tapUuid,
+                                    String ip,
+                                    Long requestCount,
+                                    Long requestBytes,
+                                    Long responseCount,
+                                    Long responseBytes,
+                                    Long nxdomainCount,
+                                    DateTime timestamp) {
 
         tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_statistics(tap_name, ip, request_count, request_bytes, " +
-                            "response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_name, :ip, :request_count, " +
+                handle.createUpdate("INSERT INTO dns_statistics(tap_uuid, ip, request_count, request_bytes, " +
+                            "response_count, response_bytes, nxdomain_count, created_at) VALUES(:tap_uuid, :ip, :request_count, " +
                             ":request_bytes, :response_count, :response_bytes, :nxdomain_count, :created_at)")
-                        .bind("tap_name", tapName)
+                        .bind("tap_uuid", tapUuid)
                         .bind("ip", ip)
                         .bind("request_count", requestCount)
                         .bind("request_bytes", requestBytes)
@@ -60,16 +61,16 @@ public class DNSTable implements DataTable {
 
     }
 
-    private void registerNxdomainLog(String tapName,
+    private void registerNxdomainLog(UUID tapUuid,
                                     String ip,
                                     String server,
                                     String queryValue,
                                     String dataType,
                                     DateTime timestamp) {
         tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_nxdomains_log(tap_name, ip, server, query_value, data_type, " +
-                                "created_at) VALUES(:tap_name, :ip, :server, :query_value, :data_type, :created_at)")
-                        .bind("tap_name", tapName)
+                handle.createUpdate("INSERT INTO dns_nxdomains_log(tap_uuid, ip, server, query_value, data_type, " +
+                                "created_at) VALUES(:tap_uuid, :ip, :server, :query_value, :data_type, :created_at)")
+                        .bind("tap_uuid", tapUuid)
                         .bind("ip", ip)
                         .bind("server", server)
                         .bind("query_value", queryValue)
@@ -79,11 +80,11 @@ public class DNSTable implements DataTable {
         );
     }
 
-    private void registerPair(String tapName, String ip, String server, long count, DateTime timestamp) {
+    private void registerPair(UUID tapUuid, String ip, String server, long count, DateTime timestamp) {
         tablesService.getNzyme().getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dns_pairs(tap_name, ip, server, count, created_at) " +
-                                "VALUES(:tap_name, :ip, :server, :count, :timestamp)")
-                        .bind("tap_name", tapName)
+                handle.createUpdate("INSERT INTO dns_pairs(tap_uuid, ip, server, count, created_at) " +
+                                "VALUES(:tap_uuid, :ip, :server, :count, :timestamp)")
+                        .bind("tap_uuid", tapUuid)
                         .bind("ip", ip)
                         .bind("server", server)
                         .bind("count", count)
@@ -92,12 +93,12 @@ public class DNSTable implements DataTable {
         );
     }
 
-    public void handleReport(String tapName, DateTime timestamp, DNSTablesReport report) {
+    public void handleReport(UUID tapUuid, DateTime timestamp, DNSTablesReport report) {
         for (Map.Entry<String, DNSIPStatisticsReport> x : report.ips().entrySet()) {
             DNSIPStatisticsReport stats = x.getValue();
 
             registerStatistics(
-                    tapName,
+                    tapUuid,
                     x.getKey(),
                     stats.requestCount(),
                     stats.requestBytes(),
@@ -115,7 +116,7 @@ public class DNSTable implements DataTable {
             }
 
             registerNxdomainLog(
-                    tapName,
+                    tapUuid,
                     nxdomain.ip(),
                     nxdomain.server(),
                     nxdomain.queryValue(),
@@ -126,7 +127,7 @@ public class DNSTable implements DataTable {
 
         for (Map.Entry<String, Map<String, Long>> pair : report.pairs().entrySet()) {
             for (Map.Entry<String, Long> server : pair.getValue().entrySet()) {
-                registerPair(tapName, pair.getKey(), server.getKey(), server.getValue(), timestamp);
+                registerPair(tapUuid, pair.getKey(), server.getKey(), server.getValue(), timestamp);
             }
         }
 

@@ -5,6 +5,7 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.taps.Tap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -314,11 +315,11 @@ public class AuthenticationService {
         return count > 0;
     }
 
-    public void createTap(long organizationId, long tenantId, String secret, String name, String description) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
+    public TapPermissionEntry createTap(long organizationId, long tenantId, String secret, String name, String description) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
                                 "description, deleted, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
-                                ":secret, :name, :description, false, :created_at, :updated_at)")
+                                ":secret, :name, :description, false, :created_at, :updated_at) RETURNING *")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -327,7 +328,8 @@ public class AuthenticationService {
                         .bind("description", description)
                         .bind("created_at", DateTime.now())
                         .bind("updated_at", DateTime.now())
-                        .execute()
+                        .mapTo(TapPermissionEntry.class)
+                        .one()
         );
     }
 
@@ -365,6 +367,18 @@ public class AuthenticationService {
                         .bind("secret", secret)
                         .mapTo(TapPermissionEntry.class)
                         .findOne()
+        );
+    }
+
+
+    public void deleteTap(long organizationId, long tenantId, UUID tapId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM taps WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", tapId)
+                        .execute()
         );
     }
 
