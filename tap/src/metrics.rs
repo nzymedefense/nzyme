@@ -140,7 +140,7 @@ impl Metrics {
                  capture_type: previous.capture_type.clone(),
                  interface_name: previous.interface_name.clone(),
                  is_running: false,
-                 received: previous.received + 1,
+                 received: previous.received,
                  dropped_buffer: previous.dropped_buffer,
                  dropped_interface: previous.dropped_interface
              });
