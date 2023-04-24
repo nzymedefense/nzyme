@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import UserForm from "./UserForm";
+import CreateUserForm from "./CreateUserForm";
 import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
@@ -86,7 +86,7 @@ function CreateTenantUserPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <UserForm onClick={onFormSubmitted} errorMessage={errorMessage} submitText="Create User" />
+                <CreateUserForm onClick={onFormSubmitted} errorMessage={errorMessage} submitText="Create User" />
               </div>
             </div>
           </div>

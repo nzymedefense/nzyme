@@ -67,9 +67,10 @@ import CreateTenantPage from "./components/system/authentication/management/tena
 import EditTenantPage from "./components/system/authentication/management/tenants/EditTenantPage";
 import CreateTenantUserPage from "./components/system/authentication/management/users/CreateTenantUserPage";
 import CreateTapPermissionPage from "./components/system/authentication/management/taps/CreateTapPermissionPage";
-import UserDetailsPage from "./components/system/authentication/management/users/UserDetailsPage";
+import TenantUserDetailsPage from "./components/system/authentication/management/users/TenantUserDetailsPage";
 import TapPermissionDetailsPage from "./components/system/authentication/management/taps/TapPermissionDetailsPage";
 import EditTapPermissionsPage from "./components/system/authentication/management/taps/EditTapPermissionsPage";
+import EditTenantUserPage from "./components/system/authentication/management/users/EditTenantUserPage";
 
 class App extends React.Component {
   constructor (props) {
@@ -163,7 +164,8 @@ class App extends React.Component {
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
-                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<UserDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
+                                            <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
                                             <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(':organizationId', ':tenantId', ':tapUuid')} element={<EditTapPermissionsPage />}/>

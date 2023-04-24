@@ -1,4 +1,5 @@
 import RESTClient from '../util/RESTClient'
+import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationManagementService {
 
@@ -74,6 +75,16 @@ class AuthenticationManagementService {
         });
   }
 
+  editUserOfTenant(organizationId, tenantId, userId, name, email, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
+        {name: name, email: email}, successCallback, errorCallback);
+  }
+
+  deleteUserOfTenant(organizationId, tenantId, userId, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
+        successCallback);
+  }
+
   findAllTapPermissions(organizationId, tenantId, setTaps) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
         {}, function (response) {
@@ -107,6 +118,7 @@ class AuthenticationManagementService {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
         {name: name, description: description}, successCallback);
   }
+
 }
 
 export default AuthenticationManagementService

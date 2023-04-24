@@ -274,6 +274,66 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
+    public Response editUserOfTenant(@PathParam("organizationId") long organizationId,
+                                     @PathParam("tenantId") long tenantId,
+                                     @PathParam("userId") long userId,
+                                     UpdateUserRequest req) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdateUserRequest(req)) {
+            LOG.info("Invalid parameters in update user request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!user.get().email().equals(req.email()) && nzyme.getAuthenticationService().tenantUserWithEmailExists(
+                organizationId, tenantId, req.email().toLowerCase())) {
+            LOG.info("Tenant already has a user with same email address.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("Email address already in use.")
+            ).build();
+        }
+
+        nzyme.getAuthenticationService().editUserOfTenant(
+                organizationId,
+                tenantId,
+                userId,
+                req.name(),
+                req.email().toLowerCase()
+        );
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
+    public Response deleteUserOfTenant(@PathParam("organizationId") long organizationId,
+                                       @PathParam("tenantId") long tenantId,
+                                       @PathParam("userId") long userId) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().deleteUserOfTenant(organizationId, tenantId, userId);
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response findAllTaps(@PathParam("organizationId") long organizationId,
@@ -532,6 +592,22 @@ public class OrganizationsResource {
         }
 
         if (req.password() == null || req.password().length() < 12 || req.password().length() > 128) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateUpdateUserRequest(UpdateUserRequest req) {
+        if (req == null) {
+            return false;
+        }
+
+        if (req.name() == null || req.name().trim().isEmpty()) {
+            return false;
+        }
+
+        if (req.email() == null || !req.email().toLowerCase().matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
             return false;
         }
 

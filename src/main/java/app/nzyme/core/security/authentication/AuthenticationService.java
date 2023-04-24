@@ -99,10 +99,9 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_organizations SET name = :name, description = :description, " +
-                                "updated_at = :now WHERE id = :id")
+                                "updated_at = NOW() WHERE id = :id")
                         .bind("name", name)
                         .bind("description", description)
-                        .bind("now", DateTime.now())
                         .bind("id", id)
                         .execute()
         );
@@ -216,10 +215,9 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants SET name = :name, description = :description, " +
-                                "updated_at = :now WHERE id = :id")
+                                "updated_at = NOW() WHERE id = :id")
                         .bind("name", name)
                         .bind("description", description)
-                        .bind("now", DateTime.now())
                         .bind("id", id)
                         .execute()
         );
@@ -294,6 +292,30 @@ public class AuthenticationService {
                         .bind("name", name)
                         .bind("created_at", now)
                         .bind("updated_at", now)
+                        .execute()
+        );
+    }
+
+    public void editUserOfTenant(long organizationId, long tenantId, long userId, String name, String email) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
+                        .bind("name", name)
+                        .bind("email", email)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void deleteUserOfTenant(long organizationId, long tenantId, long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_users " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("user_id", userId)
                         .execute()
         );
     }
