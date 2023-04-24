@@ -415,8 +415,7 @@ public class AuthenticationService {
     }
 
     public boolean isTenantDeletable(TenantEntry t) {
-        // TODO check if tenant has users.
-        return true;
+        return countTapsOfTenant(t) == 0 && countUsersOfTenant(t) == 0;
     }
 
 }

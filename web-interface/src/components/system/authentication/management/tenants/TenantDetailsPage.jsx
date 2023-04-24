@@ -136,7 +136,7 @@ function TenantDetailsPage() {
                       <h3>Delete Tenant</h3>
 
                       <p>
-                        You can only delete a tenant if it has no users and no taps. <span className="text-danger"><strong>TODO CHECK FOR USERS, TAPS</strong></span>
+                        You can only delete a tenant if it has no users and no taps.
                       </p>
 
                       <button className="btn btn-sm btn-danger" disabled={!tenant.is_deletable} onClick={deleteTenant}>
