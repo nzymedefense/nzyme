@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public class TapPermissionEntryMapper implements RowMapper<TapPermissionEntry> {
 
+
     @Override
     public TapPermissionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return TapPermissionEntry.create(

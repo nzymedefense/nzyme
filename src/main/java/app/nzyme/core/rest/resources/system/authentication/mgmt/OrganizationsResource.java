@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
@@ -14,6 +15,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Base64;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -464,13 +466,20 @@ public class OrganizationsResource {
     }
 
     private TapPermissionDetailsResponse tapPermissionEntryToResponse(TapPermissionEntry tpe) {
+        String decryptedSecret;
+        try {
+            decryptedSecret = new String(nzyme.getCrypto().decryptWithClusterKey(Base64.decode(tpe.secret())));
+        } catch (Crypto.CryptoOperationException e) {
+            throw new RuntimeException("Could not decrypt tap secret.", e);
+        }
+
         return TapPermissionDetailsResponse.create(
                 tpe.uuid(),
                 tpe.organizationId(),
                 tpe.tenantId(),
                 tpe.name(),
                 tpe.description(),
-                tpe.secret(),
+                decryptedSecret,
                 tpe.createdAt(),
                 tpe.updatedAt(),
                 tpe.lastReport()

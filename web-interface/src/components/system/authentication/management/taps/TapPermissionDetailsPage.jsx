@@ -126,7 +126,7 @@ function TapPermissionDetailsPage() {
 
                       <p>The tap secret is used to authenticate taps when they connect to nzyme. Every tap has a unique
                       secret that must be configured in the tap configuration file. <strong>You must update the secret
-                      in your tap configuration file after cycling it.</strong></p>
+                      in your tap configuration file after cycling it.</strong> The secret is encrypted in the database.</p>
 
                       <TapSecret secret={tap.secret} onCycle={cycleSecret} />
                     </div>

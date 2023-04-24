@@ -1,10 +1,13 @@
 package app.nzyme.core.security.authentication;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import com.google.common.io.BaseEncoding;
+import io.netty.handler.codec.base64.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -336,6 +339,13 @@ public class AuthenticationService {
     }
 
     public TapPermissionEntry createTap(long organizationId, long tenantId, String secret, String name, String description) {
+        String encryptedSecret;
+        try {
+            encryptedSecret = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(secret.getBytes()));
+        } catch (Crypto.CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt tap secret.", e);
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO taps(uuid, organization_id, tenant_id, secret, name, " +
                                 "description, deleted, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
@@ -343,7 +353,7 @@ public class AuthenticationService {
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
-                        .bind("secret", secret)
+                        .bind("secret", encryptedSecret)
                         .bind("name", name)
                         .bind("description", description)
                         .bind("created_at", DateTime.now())
@@ -381,15 +391,36 @@ public class AuthenticationService {
     }
 
     public Optional<TapPermissionEntry> findTapBySecret(String secret) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, description, secret, " +
-                                "created_at, updated_at, last_report FROM taps WHERE secret = :secret")
-                        .bind("secret", secret)
-                        .mapTo(TapPermissionEntry.class)
-                        .findOne()
-        );
-    }
+        /*
+         * We have to pull all taps here and then loop over them because the secret is encrypted, and we can't use
+         * a SELECT WHERE with a non-deterministic encryption like PGP.
+         */
 
+        List<TapPermissionEntry> taps = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, description, secret, " +
+                                "created_at, updated_at, last_report FROM taps")
+                        .mapTo(TapPermissionEntry.class)
+                        .list()
+        );
+
+        for (TapPermissionEntry tap : taps) {
+            try {
+                String decryptedSecret = new String(
+                        nzyme.getCrypto().decryptWithClusterKey(
+                                BaseEncoding.base64().decode(tap.secret())
+                        )
+                );
+
+                if (secret.equals(decryptedSecret)) {
+                    return Optional.of(tap);
+                }
+            } catch (Crypto.CryptoOperationException e) {
+                throw new RuntimeException("Could not decrypt tap key.", e);
+            }
+        }
+
+        return Optional.empty();
+    }
 
     public void deleteTap(long organizationId, long tenantId, UUID tapId) {
         nzyme.getDatabase().useHandle(handle ->
@@ -415,10 +446,17 @@ public class AuthenticationService {
         );    }
 
     public void cycleTapSecret(long organizationId, long tenantId, UUID tapId, String newSecret) {
+        String encryptedSecret;
+        try {
+            encryptedSecret = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(newSecret.getBytes()));
+        } catch (Crypto.CryptoOperationException e) {
+            throw new RuntimeException("Could not encrypt tap secret.", e);
+        }
+
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET secret = :secret, updated_at = NOW() " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
-                        .bind("secret", newSecret)
+                        .bind("secret", encryptedSecret)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)

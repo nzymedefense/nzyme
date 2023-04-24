@@ -2033,4 +2033,14 @@
         <dropUniqueConstraint tableName="tap_captures" constraintName="tap_captures_tap_uuid_key" />
         <dropUniqueConstraint tableName="tap_buses" constraintName="tap_buses_tap_uuid_key" />
     </changeSet>
+
+    <changeSet id="increase_tap_secret_size_for_encryption" author="lennartkoopmann">
+        <dropColumn tableName="taps" columnName="secret" />
+
+        <addColumn tableName="taps">
+            <column name="secret" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
