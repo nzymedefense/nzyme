@@ -402,10 +402,22 @@ public class AuthenticationService {
         );
     }
 
+    public void editTap(long organizationId, long tenantId, UUID tapId, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET name = :name, description = :description, updated_at = NOW() " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", tapId)
+                        .execute()
+        );    }
+
     public void cycleTapSecret(long organizationId, long tenantId, UUID tapId, String newSecret) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE taps SET secret = :secret WHERE organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id AND uuid = :uuid")
+                handle.createUpdate("UPDATE taps SET secret = :secret, updated_at = NOW() " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
                         .bind("secret", newSecret)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)

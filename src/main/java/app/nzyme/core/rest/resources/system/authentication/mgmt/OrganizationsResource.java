@@ -205,7 +205,7 @@ public class OrganizationsResource {
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response findAllUsersOfTenant(@PathParam("organizationId") long organizationId,
-                                       @PathParam("tenantId") long tenantId) {
+                                         @PathParam("tenantId") long tenantId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -219,7 +219,7 @@ public class OrganizationsResource {
     }
 
     @GET
-    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/{userId}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response findUserOfTenant(@PathParam("organizationId") long organizationId,
                                      @PathParam("tenantId") long tenantId,
                                      @PathParam("userId") long userId) {
@@ -239,8 +239,8 @@ public class OrganizationsResource {
     @POST
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response createUserOfTenant(@PathParam("organizationId") long organizationId,
-                               @PathParam("tenantId") long tenantId,
-                               CreateUserRequest req) {
+                                       @PathParam("tenantId") long tenantId,
+                                       CreateUserRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -289,7 +289,7 @@ public class OrganizationsResource {
     }
 
     @GET
-    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapUuid}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
     public Response findTap(@PathParam("organizationId") long organizationId,
                             @PathParam("tenantId") long tenantId,
                             @PathParam("tapUuid") String tapUuid) {
@@ -339,8 +339,36 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
+    public Response editTap(@PathParam("organizationId") long organizationId,
+                            @PathParam("tenantId") long tenantId,
+                            @PathParam("tapUuid") String tapUuid,
+                            UpdateTapRequest req) {
+        UUID tapId;
+        try {
+            tapId = UUID.fromString(tapUuid);
+        } catch(IllegalArgumentException ignored) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
+
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().editTap(organizationId, tenantId, tapId, req.name(), req.description());
+
+        return Response.ok().build();
+    }
+
     @DELETE
-    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapUuid}")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
     public Response deleteTap(@PathParam("organizationId") long organizationId,
                             @PathParam("tenantId") long tenantId,
                             @PathParam("tapUuid") String tapUuid) {
@@ -367,7 +395,7 @@ public class OrganizationsResource {
     }
 
     @PUT
-    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/{tapUuid}/secret/cycle")
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}/secret/cycle")
     public Response cycleTapSecret(@PathParam("organizationId") long organizationId,
                                    @PathParam("tenantId") long tenantId,
                                    @PathParam("tapUuid") String tapUuid) {

@@ -18,6 +18,7 @@ function TapPermissionDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [tap, setTap] = useState(null);
+
   const [redirect, setRedirect] = useState(false);
   const [revision, setRevision] = useState(0);
 
@@ -91,7 +92,7 @@ function TapPermissionDetailsPage() {
                  href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
                 Back
               </a>{' '}
-              <a className="btn btn-primary" href="#">
+              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(organization.id, tenant.id, tap.uuid)}>
                 Edit Tap
               </a>
             </span>

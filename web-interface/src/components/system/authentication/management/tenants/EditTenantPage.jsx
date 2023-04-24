@@ -86,7 +86,7 @@ function EditTenantPage() {
                 <TenantForm onClick={onFormSubmitted}
                             name={tenant.name}
                             description={tenant.description}
-                            submitText="Edit Tenant"  />
+                            submitText="Edit Tenant" />
               </div>
             </div>
           </div>

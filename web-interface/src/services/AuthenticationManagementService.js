@@ -68,7 +68,7 @@ class AuthenticationManagementService {
   }
 
   findUserOfTenant(organizationId, tenantId, userId, setUser) {
-    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/' + userId,
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
         {}, function (response) {
           setUser(response.data)
         });
@@ -82,7 +82,7 @@ class AuthenticationManagementService {
   }
 
   findTapPermission(organizationId, tenantId, tapUuid, setTap) {
-    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
         {}, function (response) {
           setTap(response.data)
     })
@@ -94,13 +94,18 @@ class AuthenticationManagementService {
   }
 
   deleteTapPermission(organizationId, tenantId, tapUuid, successCallback) {
-    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
         successCallback);
   }
 
   cycleTapSecret(organizationId, tenantId, tapUuid, successCallback) {
-    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid + '/secret/cycle', {},
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid + '/secret/cycle', {},
         successCallback);
+  }
+
+  editTapAuthentication(organizationId, tenantId, tapUuid, name, description, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
+        {name: name, description: description}, successCallback);
   }
 }
 
