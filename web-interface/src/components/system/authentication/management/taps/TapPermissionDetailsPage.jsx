@@ -19,6 +19,7 @@ function TapPermissionDetailsPage() {
   const [tenant, setTenant] = useState(null);
   const [tap, setTap] = useState(null);
   const [redirect, setRedirect] = useState(false);
+  const [revision, setRevision] = useState(0);
 
   const deleteTap = function() {
     if (!confirm("Really delete tap?")) {
@@ -31,11 +32,23 @@ function TapPermissionDetailsPage() {
     });
   }
 
+  const cycleSecret = function() {
+    if (!confirm("Really cycle tap secret? You will have to change the secret in the tap configuration file to comtinue using the tap.")) {
+      return;
+    }
+
+    authenticationManagementService.cycleTapSecret(organizationId, tenantId, tapUuid, function() {
+      setTap(null);
+      setRevision(revision + 1);
+      notify.show('Tap secret cycled.', 'success');
+    });
+  }
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTapPermission(organizationId, tenantId, tapUuid, setTap);
-  }, [organizationId, tenantId])
+  }, [organizationId, tenantId, revision])
 
   if (redirect) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
@@ -114,7 +127,7 @@ function TapPermissionDetailsPage() {
                       secret that must be configured in the tap configuration file. <strong>You must update the secret
                       in your tap configuration file after cycling it.</strong></p>
 
-                      <TapSecret tap={tap} />
+                      <TapSecret secret={tap.secret} onCycle={cycleSecret} />
                     </div>
                   </div>
                 </div>

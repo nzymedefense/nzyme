@@ -97,6 +97,11 @@ class AuthenticationManagementService {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid,
         successCallback);
   }
+
+  cycleTapSecret(organizationId, tenantId, tapUuid, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/' + tapUuid + '/secret/cycle', {},
+        successCallback);
+  }
 }
 
 export default AuthenticationManagementService

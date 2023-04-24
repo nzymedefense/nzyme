@@ -5,7 +5,6 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
-import app.nzyme.core.taps.Tap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -396,6 +395,18 @@ public class AuthenticationService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM taps WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", tapId)
+                        .execute()
+        );
+    }
+
+    public void cycleTapSecret(long organizationId, long tenantId, UUID tapId, String newSecret) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET secret = :secret WHERE organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id AND uuid = :uuid")
+                        .bind("secret", newSecret)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)
