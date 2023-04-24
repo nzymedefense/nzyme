@@ -80,6 +80,12 @@ class AuthenticationManagementService {
         {name: name, email: email}, successCallback, errorCallback);
   }
 
+  editUserOfTenantPassword(organizationId, tenantId, userId, password, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/password',
+        {password: password}, successCallback);
+  }
+
+
   deleteUserOfTenant(organizationId, tenantId, userId, successCallback) {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
         successCallback);

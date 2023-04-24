@@ -334,6 +334,40 @@ public class OrganizationsResource {
         return Response.ok().build();
     }
 
+    @PUT
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/password")
+    public Response editUserOfTenantPassword(@PathParam("organizationId") long organizationId,
+                                             @PathParam("tenantId") long tenantId,
+                                             @PathParam("userId") long userId,
+                                             UpdatePasswordRequest req) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdatePasswordRequest(req)) {
+            LOG.info("Invalid password in update password request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+        PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
+
+        nzyme.getAuthenticationService().editUserOfTenantPassword(
+                organizationId,
+                tenantId,
+                userId,
+                hash
+        );
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response findAllTaps(@PathParam("organizationId") long organizationId,
@@ -608,6 +642,18 @@ public class OrganizationsResource {
         }
 
         if (req.email() == null || !req.email().toLowerCase().matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean validateUpdatePasswordRequest(UpdatePasswordRequest req) {
+        if (req == null) {
+            return false;
+        }
+
+        if (req.password() == null || req.password().length() < 12 || req.password().length() > 128) {
             return false;
         }
 

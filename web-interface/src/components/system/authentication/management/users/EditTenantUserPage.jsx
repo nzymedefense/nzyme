@@ -6,6 +6,7 @@ import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import EditUserForm from "./EditUserForm";
+import EditPasswordForm from "./EditPasswordForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -22,7 +23,7 @@ function EditTenantUserPage() {
 
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (email, name, callback) {
+  const onEditDetailsFormSubmitted = function (email, name, callback) {
     authenticationManagementService.editUserOfTenant(organization.id, tenant.id, user.id, name, email, function() {
       // Success.
       notify.show('User created.', 'success');
@@ -31,6 +32,15 @@ function EditTenantUserPage() {
     }, function (error) {
       // Error.
       setErrorMessage(error.response.data.message);
+      callback();
+    })
+  }
+
+  const onEditPasswordFormSubmitted = function (password, callback) {
+    authenticationManagementService.editUserOfTenantPassword(organization.id, tenant.id, user.id, password, function() {
+      // Success.
+      notify.show('Password updated.', 'success');
+      setRedirect(true);
       callback();
     })
   }
@@ -110,13 +120,28 @@ function EditTenantUserPage() {
                       name={user.name}
                       submitText="Edit User"
                       errorMessage={errorMessage}
-                      onClick={onFormSubmitted} />
+                      onClick={onEditDetailsFormSubmitted} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-3">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Change Password</h3>
+
+                  <EditPasswordForm
+                      submitText="Change Password"
+                      onClick={onEditPasswordFormSubmitted} />
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
 
     </React.Fragment>
   )

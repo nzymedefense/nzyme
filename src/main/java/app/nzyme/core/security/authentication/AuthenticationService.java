@@ -309,6 +309,21 @@ public class AuthenticationService {
         );
     }
 
+
+    public void editUserOfTenantPassword(long organizationId, long tenantId, long userId, PasswordHasher.GeneratedHashAndSalt password) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
+                        "updated_at = NOW() WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                        "AND id = :user_id")
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
     public void deleteUserOfTenant(long organizationId, long tenantId, long userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
