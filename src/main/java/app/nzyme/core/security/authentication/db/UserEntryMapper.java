@@ -17,6 +17,8 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getLong("id"),
                 rs.getLong("organization_id"),
                 rs.getLong("tenant_id"),
+                rs.getString("password"),
+                rs.getString("password_salt"),
                 roleId == 0 ? null : roleId,
                 rs.getString("email"),
                 rs.getString("name"),

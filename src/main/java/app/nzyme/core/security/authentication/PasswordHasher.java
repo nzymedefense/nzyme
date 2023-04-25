@@ -21,7 +21,9 @@ public class PasswordHasher {
     }
 
     public GeneratedHashAndSalt createHash(String password) {
-        runPasswordPreconditions(password);
+        if (!runPasswordPreconditions(password)) {
+            throw new RuntimeException("Password preconditions not met.");
+        }
 
         // Generate 128 bit salt.
         byte[] salt = new byte[128];
@@ -35,22 +37,26 @@ public class PasswordHasher {
         );
     }
 
-    private void runPasswordPreconditions(String password) {
+    public boolean runPasswordPreconditions(String password) {
         if (password == null || password.isEmpty()) {
-            throw new RuntimeException("NULL or empty password provided.");
+            return false;
         }
 
         if (password.length() > 128) {
-            throw new RuntimeException("Password maximum length is 128 characters.");
+            return false;
         }
 
         if (password.length() < 12) {
-            throw new RuntimeException("Password minimum length is 12 characters.");
+            return false;
         }
+
+        return true;
     }
 
     public boolean compareHash(String password, String hash, String salt) {
-        runPasswordPreconditions(password);
+        if (!runPasswordPreconditions(password)) {
+            throw new RuntimeException("Password preconditions not met.");
+        }
 
         if (salt == null || salt.isEmpty()) {
             throw new RuntimeException("NULL or empty salt provided.");
@@ -64,7 +70,7 @@ public class PasswordHasher {
 
         byte[] compareHash = generateHash(password, saltBytes);
 
-        return Arrays.equals(compareHash, BaseEncoding.base64().decode(hash));
+        return constantTimeArrayEquals(compareHash, BaseEncoding.base64().decode(hash));
     }
 
     private byte[] generateHash(String password, byte[] salt) {
@@ -92,6 +98,22 @@ public class PasswordHasher {
         timer.stop();
 
         return hash;
+    }
+
+    /*
+     * From Spring Security, licensed under Apache 2:
+     *
+     * https://github.com/spring-projects/spring-security/blob/a44e91d0440f4d613ccd64d1c648ab0af89601c2/crypto/src/main/java/org/springframework/security/crypto/argon2/Argon2PasswordEncoder.java#L160
+     */
+    private static boolean constantTimeArrayEquals(byte[] expected, byte[] actual) {
+        if (expected.length != actual.length) {
+            return false;
+        }
+        int result = 0;
+        for (int i = 0; i < expected.length; i++) {
+            result |= expected[i] ^ actual[i];
+        }
+        return result == 0;
     }
 
     @AutoValue

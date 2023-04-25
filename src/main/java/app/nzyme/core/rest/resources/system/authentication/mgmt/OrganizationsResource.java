@@ -252,9 +252,8 @@ public class OrganizationsResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        if (nzyme.getAuthenticationService().tenantUserWithEmailExists(
-                organizationId, tenantId, req.email().toLowerCase())) {
-            LOG.info("Tenant already has a user with same email address.");
+        if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
             return Response.status(Response.Status.UNAUTHORIZED).entity(
                     ErrorResponse.create("Email address already in use.")
             ).build();
@@ -295,9 +294,9 @@ public class OrganizationsResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        if (!user.get().email().equals(req.email()) && nzyme.getAuthenticationService().tenantUserWithEmailExists(
-                organizationId, tenantId, req.email().toLowerCase())) {
-            LOG.info("Tenant already has a user with same email address.");
+        if (!user.get().email().equals(req.email()) && nzyme.getAuthenticationService().userWithEmailExists(
+                req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
             return Response.status(Response.Status.UNAUTHORIZED).entity(
                     ErrorResponse.create("Email address already in use.")
             ).build();

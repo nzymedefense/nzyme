@@ -17,21 +17,16 @@
 
 package app.nzyme.core.security.sessions;
 
-import io.jsonwebtoken.Jwts;
-import org.joda.time.DateTime;
+import com.google.common.io.BaseEncoding;
 
-import java.security.Key;
+import java.security.SecureRandom;
 
-public class Session {
+public class SessionId {
 
-    public static String createToken(String username, Key signingKey) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuer("nzyme")
-                .setIssuedAt(DateTime.now().toDate())
-                .setExpiration(DateTime.now().plusHours(8).toDate())
-                .signWith(signingKey)
-                .compact();
+    public static String createSessionId() {
+        byte[] id = new byte[64];
+        new SecureRandom().nextBytes(id);
+        return BaseEncoding.base64().encode(id);
     }
 
 }

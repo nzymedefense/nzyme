@@ -18,11 +18,10 @@
 package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +34,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Optional;
 
 @RESTSecured
 @Provider
@@ -61,9 +61,25 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
-            String token = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
+            String sessionId = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
 
-            validateToken(token);
+            // Check if session exists.
+            Optional<SessionEntry> session = nzyme.getAuthenticationService().findSession(sessionId);
+            if (session.isEmpty()) {
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
+            Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+            if (user.isEmpty()) {
+                LOG.error("Session referenced user that doesn't exist. Aborting.");
+                abortWithUnauthorized(requestContext);
+                return;
+            }
+
+            // Authenticated. Set last activity information.
+            nzyme.getAuthenticationService().updateLastUserActivity(user.get().id());
 
             // Set new security context for later use in resources.
             final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
@@ -71,7 +87,14 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
                 @Override
                 public Principal getUserPrincipal() {
-                    return () -> token;
+                    return new AuthenticatedUser(
+                            user.get().id(),
+                            session.get().sessionId(),
+                            user.get().email(),
+                            session.get().createdAt(),
+                            user.get().organizationId(),
+                            user.get().tenantId()
+                    );
                 }
 
                 @Override
@@ -90,15 +113,10 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 }
 
             });
-        } catch(SignatureException e) {
-            LOG.debug("Invalid signature of JWT token. This could be an old session running in a browser somewhere.", e);
-            abortWithUnauthorized(requestContext);
-        } catch(ExpiredJwtException e) {
-            LOG.info("Token is expired. Please create a new session by logging in.", e);
-            abortWithUnauthorized(requestContext);
         } catch (Exception e) {
-            LOG.info("Token parsing failed.", e);
+            LOG.warn("Session ID validation failed.", e);
             abortWithUnauthorized(requestContext);
+            return;
         }
     }
 
@@ -110,7 +128,4 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
         requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
     }
 
-    private void validateToken(String token) throws SignatureException, ExpiredJwtException {
-        Jwts.parser().setSigningKey(nzyme.getSigningKey()).parseClaimsJws(token);
-    }
 }

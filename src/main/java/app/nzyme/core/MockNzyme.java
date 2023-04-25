@@ -64,15 +64,12 @@ import app.nzyme.core.scheduler.SchedulingService;
 import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import liquibase.exception.LiquibaseException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -102,7 +99,6 @@ public class MockNzyme implements NzymeNode {
     private final MetricRegistry metricRegistry;
     private final AlertsService alertsService;
     private final ContactManager contactManager;
-    private final Key signingKey;
     private final ObjectMapper objectMapper;
     private final MemoryRegistry memoryRegistry;
     private final Version version;
@@ -170,8 +166,6 @@ public class MockNzyme implements NzymeNode {
 
         this.tasksQueue = new PostgresTasksQueueImpl(this);
         ((PostgresTasksQueueImpl) this.tasksQueue).initialize(taskAndMessagePollInterval, taskAndMessagePollIntervalUnit);
-
-        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         this.authenticationService = new AuthenticationService(this);
 
@@ -427,11 +421,6 @@ public class MockNzyme implements NzymeNode {
     @Override
     public Registry getDatabaseCoreRegistry() {
         return new RegistryImpl(this, "core");
-    }
-
-    @Override
-    public Key getSigningKey() {
-        return signingKey;
     }
 
     @Override

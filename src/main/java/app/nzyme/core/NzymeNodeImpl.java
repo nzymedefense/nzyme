@@ -88,8 +88,6 @@ import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 import app.nzyme.core.util.MetricNames;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -98,7 +96,6 @@ import org.quartz.SchedulerException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -153,8 +150,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final ObjectMapper objectMapper;
 
-    private final Key signingKey;
-
     private final List<Dot11Probe> probes;
     private final AlertsService alerts;
     private final ContactManager contactManager;
@@ -197,8 +192,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.clusterManager = new ClusterManager(this);
         this.messageBus = new PostgresMessageBusImpl(this);
         this.tasksQueue = new PostgresTasksQueueImpl(this);
-
-        this.signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
@@ -767,11 +760,6 @@ public class NzymeNodeImpl implements NzymeNode {
         for (Forwarder forwarder : this.forwarders) {
             forwarder.forward(frame);
         }
-    }
-
-    @Override
-    public Key getSigningKey() {
-        return signingKey;
     }
 
     @Override

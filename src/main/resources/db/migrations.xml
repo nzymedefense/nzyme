@@ -2043,4 +2043,54 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="create_sessions_table" author="lennartkoopmann">
+        <createTable tableName="auth_sessions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="sessionid" type="text">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="remote_ip" type="varchar(45)">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_activity" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_users2sessions"
+                                    baseTableName="auth_sessions"
+                                    baseColumnNames="user_id"
+                                    referencedTableName="auth_users"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="make_user_email_unique" author="lennartkoopmann">
+        <addUniqueConstraint tableName="auth_users" columnNames="email" />
+    </changeSet>
+
+    <changeSet id="move_last_activity_from_session_to_user" author="lennartkoopmann">
+        <dropColumn tableName="auth_sessions" columnName="last_activity" />
+
+        <addColumn tableName="auth_users">
+            <column name="last_activity" type="timestamp with time zone" defaultValueComputed="NOW()">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

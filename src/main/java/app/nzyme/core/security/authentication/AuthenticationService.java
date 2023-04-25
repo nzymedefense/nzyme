@@ -6,6 +6,7 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.sessions.db.SessionEntry;
 import com.google.common.io.BaseEncoding;
 import io.netty.handler.codec.base64.Base64;
 import org.apache.logging.log4j.LogManager;
@@ -244,7 +245,7 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, updated_at, created_at FROM auth_users " +
+                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND id = :user_id")
                         .bind("organization_id", organizationId)
@@ -258,7 +259,7 @@ public class AuthenticationService {
     public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, updated_at, created_at FROM auth_users " +
+                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC")
                         .bind("organization_id", organizationId)
@@ -268,16 +269,33 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<UserEntry> findUserByEmail(String email) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
+                                "WHERE email = :email")
+                        .bind("email", email)
+                        .mapTo(UserEntry.class)
+                        .findOne()
+        );
+    }
+
+    public Optional<UserEntry> findUserById(long id) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .mapTo(UserEntry.class)
+                        .findOne()
+        );
+    }
+
     public void createUserOfTenant(long organizationId,
                                    long tenantId,
                                    String name,
                                    String email,
                                    PasswordHasher.GeneratedHashAndSalt password) {
-        // Check if this tenant already has a user with the same email address.
-        if (tenantUserWithEmailExists(organizationId, tenantId, email)) {
-            throw new RuntimeException("Tenant already has a user with same email address.");
-        }
-
         DateTime now = new DateTime();
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
@@ -308,7 +326,6 @@ public class AuthenticationService {
                         .execute()
         );
     }
-
 
     public void editUserOfTenantPassword(long organizationId, long tenantId, long userId, PasswordHasher.GeneratedHashAndSalt password) {
         nzyme.getDatabase().useHandle(handle ->
@@ -357,22 +374,56 @@ public class AuthenticationService {
         );
     }
 
-    public boolean tenantUserWithEmailExists(long organizationId, long tenantId, String email) {
+    public boolean userWithEmailExists(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new RuntimeException("NULL or empty email address.");
         }
 
         Long count = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +
-                                "tenant_id = :tenant_id AND email = :email")
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
+                handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE email = :email")
                         .bind("email", email.toLowerCase())
                         .mapTo(Long.class)
                         .one()
         );
 
         return count > 0;
+    }
+
+    public void createSession(String sessionId, long userId, String remoteIp) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at) " +
+                                "VALUES(:sessionid, :user_id, :remote_ip, NOW())")
+                        .bind("sessionid", sessionId)
+                        .bind("user_id", userId)
+                        .bind("remote_ip", remoteIp)
+                        .execute()
+        );
+    }
+
+    public Optional<SessionEntry> findSession(String sessionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at " +
+                                "FROM auth_sessions WHERE sessionid = :sessionid")
+                        .bind("sessionid", sessionId)
+                        .mapTo(SessionEntry.class)
+                        .findOne()
+        );
+    }
+
+    public void updateLastUserActivity(long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET last_activity = NOW() WHERE id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void deleteAllSessionsOfUser(long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_sessions WHERE user_id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
+        );
     }
 
     public TapPermissionEntry createTap(long organizationId, long tenantId, String secret, String name, String description) {

@@ -18,15 +18,17 @@
 package app.nzyme.core.rest.resources.system.authentication;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.rest.requests.CreateSessionRequest;
+import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
-import app.nzyme.core.security.sessions.Session;
-import app.nzyme.core.security.sessions.StaticHashAuthenticator;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
+import app.nzyme.core.security.authentication.PasswordHasher;
+import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.sessions.SessionId;
+import app.nzyme.plugin.rest.security.RESTSecured;
+import app.nzyme.core.rest.requests.CreateSessionRequest;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -39,10 +41,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Optional;
 
 @Path("/api/system/authentication")
 @Produces(MediaType.APPLICATION_JSON)
-public class AuthenticationResource {
+public class AuthenticationResource extends UserAuthenticatedResource {
 
     private static final Logger LOG = LogManager.getLogger(AuthenticationResource.class);
 
@@ -55,30 +58,87 @@ public class AuthenticationResource {
     @POST
     @Path("/session")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createSession(@NotNull CreateSessionRequest request) {
-        StaticHashAuthenticator authenticator = new StaticHashAuthenticator(nzyme.getConfiguration());
+    public Response createSession(@Context org.glassfish.grizzly.http.server.Request rc,
+                                  @NotNull CreateSessionRequest request) {
+        String remoteIp = rc.getHeader("X-Forwarded-For") == null
+                ? rc.getRemoteAddr() : rc.getHeader("X-Forwarded-For").split(",")[0];
+
+        InetAddressValidator inetValidator = new InetAddressValidator();
+        if (!inetValidator.isValid(remoteIp)) {
+            LOG.warn("Invalid remote IP or X-Forwarded-For header in session request: [{}]. Aborting.", remoteIp);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
 
         String username = request.username();
         String password = request.password();
 
-        if (authenticator.authenticate(username, password)) {
-            // Create session token.
-            String token = Session.createToken(username, nzyme.getSigningKey());
+        // Pull user this login impersonates.
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserByEmail(request.username());
+
+        // Verify hash.
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+
+        if (!hasher.runPasswordPreconditions(request.password())) {
+            LOG.warn("Failed login attempt for user [{}]. (Password preconditions not met.)", username);
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        String hash;
+        String salt;
+        if (user.isPresent()) {
+            // User found.
+            hash = user.get().passwordHash();
+            salt = user.get().passwordSalt();
+        } else {
+            /*
+             * No such user. Instead of returning immediately, create a new hash/salt that will not match to make
+             * timing attacks harder.
+             */
+            PasswordHasher.GeneratedHashAndSalt generated = hasher.createHash(
+                    RandomStringUtils.random(18, true, true)
+            );
+
+            hash = generated.hash();
+            salt = generated.salt();
+        }
+
+        if (hasher.compareHash(password, hash, salt)) {
+            // Correct password. Create session.
+            String sessionId = SessionId.createSessionId();
+
+            // TODO does user already have a session? Delete all sessions of user.
+
+            nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+            nzyme.getAuthenticationService().createSession(sessionId, user.get().id(), remoteIp);
+
             LOG.info("Creating session for user [{}]", username);
-            return Response.status(Response.Status.CREATED).entity(SessionTokenResponse.create(token)).build();
+            return Response.status(Response.Status.CREATED).entity(SessionTokenResponse.create(sessionId)).build();
         } else {
             LOG.warn("Failed login attempt for user [{}].", username);
             return Response.status(Response.Status.FORBIDDEN).build();
         }
     }
 
-    @Path("/session/information")
+    @DELETE
     @RESTSecured
+    @Path("/session")
+    public Response deleteSession(@Context SecurityContext sc) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.getUserId());
+
+        LOG.info("Deleting session of user [{}].", user.getEmail());
+
+        return Response.ok().build();
+    }
+
     @GET
-    public Response information() {
+    @RESTSecured
+    @Path("/session/information")
+    public Response information(@Context SecurityContext sc) {
+        AuthenticatedUser user = getAuthenticatedUser(sc);
+
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(nzyme.getSigningKey()).parseClaimsJws(securityContext.getUserPrincipal().getName());
-            DateTime expiresAt = new DateTime(claims.getBody().getExpiration());
+            DateTime expiresAt = user.getSessionCreatedAt().plusHours(8);
 
             return Response.ok(SessionInformationResponse.create(
                     SessionInformationResponse.STATUS.VALID,

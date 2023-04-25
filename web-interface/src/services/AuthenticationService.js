@@ -19,6 +19,15 @@ class AuthenticationService {
       }
     })
   }
+
+  deleteSession(callback) {
+    RESTClient.delete('/system/authentication/session', function () {
+      callback();
+    }, function () {
+      // We also call the callback in case of an error because we delete the local session ID and the session will expire.
+      callback();
+    })
+  }
 }
 
 export default AuthenticationService

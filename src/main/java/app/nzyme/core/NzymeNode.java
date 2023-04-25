@@ -50,7 +50,6 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 
 import java.nio.file.Path;
-import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 
@@ -121,7 +120,6 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     Registry getDatabaseCoreRegistry();
 
-    Key getSigningKey();
     Version getVersion();
 
     NzymeHttpServer getHttpServer();

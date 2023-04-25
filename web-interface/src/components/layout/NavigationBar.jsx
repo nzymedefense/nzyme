@@ -1,12 +1,18 @@
 import React from 'react'
 import Store from '../../util/Store'
 import DarkModeButton from './DarkModeButton'
+import AuthenticationService from "../../services/AuthenticationService";
+
+const authService = new AuthenticationService();
 
 class NavigationBar extends React.Component {
 
   static _handleLogout (e) {
     e.preventDefault()
-    Store.delete('api_token')
+
+    authService.deleteSession(function() {
+      Store.delete('api_token')
+    });
   }
 
   render () {
