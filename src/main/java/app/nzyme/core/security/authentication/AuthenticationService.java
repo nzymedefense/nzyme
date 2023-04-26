@@ -7,6 +7,8 @@ import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
+import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
+import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -14,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -407,6 +410,20 @@ public class AuthenticationService {
                         .bind("user_id", userId)
                         .bind("remote_ip", remoteIp)
                         .execute()
+        );
+    }
+
+    public List<SessionEntryWithUserDetails> findAllSessions(int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity " +
+                                "FROM auth_sessions AS s " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "ORDER BY created_at " +
+                                "DESC LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(SessionEntryWithUserDetails.class)
+                        .list()
         );
     }
 

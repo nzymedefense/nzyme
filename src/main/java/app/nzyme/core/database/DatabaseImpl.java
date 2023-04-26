@@ -14,6 +14,7 @@ import app.nzyme.core.security.authentication.db.TapPermissionEntryMapper;
 import app.nzyme.core.security.authentication.db.TenantEntryMapper;
 import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
+import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import app.nzyme.plugin.Database;
 import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
 import app.nzyme.core.bandits.database.*;
@@ -115,7 +116,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TenantEntryMapper())
                 .registerRowMapper(new UserEntryMapper())
                 .registerRowMapper(new TapPermissionEntryMapper())
-                .registerRowMapper(new SessionEntryMapper());
+                .registerRowMapper(new SessionEntryMapper())
+                .registerRowMapper(new SessionEntryWithUserDetailsMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

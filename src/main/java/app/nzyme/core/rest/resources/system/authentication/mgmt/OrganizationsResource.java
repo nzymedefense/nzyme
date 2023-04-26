@@ -3,6 +3,8 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.rest.requests.*;
+import app.nzyme.core.rest.responses.authentication.SessionDetailsResponse;
+import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
@@ -10,6 +12,7 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -365,6 +368,27 @@ public class OrganizationsResource {
         );
 
         return Response.ok().build();
+    }
+
+    @GET
+    @Path("/sessions")
+    public Response findAllSessions(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        List<SessionDetailsResponse> sessions = Lists.newArrayList();
+        for (SessionEntryWithUserDetails session : nzyme.getAuthenticationService().findAllSessions(limit, offset)) {
+            sessions.add(SessionDetailsResponse.create(
+                    session.userId(),
+                    session.remoteIp(),
+                    session.createdAt(),
+                    session.lastActivity()
+            ));
+        }
+
+        return Response.ok(SessionsListResponse.create(sessions.size(), sessions)).build();
     }
 
     @GET
