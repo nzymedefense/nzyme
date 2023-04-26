@@ -13,6 +13,9 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
     public UserEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         long roleId = rs.getLong("role_id");
 
+        DateTime lastActivity = rs.getTimestamp("last_activity") == null
+                ? null : new DateTime(rs.getTimestamp("last_activity"));
+
         return UserEntry.create(
                 rs.getLong("id"),
                 rs.getLong("organization_id"),
@@ -25,7 +28,8 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getBoolean("is_orgadmin"),
                 rs.getBoolean("is_superadmin"),
                 new DateTime(rs.getTimestamp("updated_at")),
-                new DateTime(rs.getTimestamp("created_at"))
+                new DateTime(rs.getTimestamp("created_at")),
+                lastActivity
         );
     }
 

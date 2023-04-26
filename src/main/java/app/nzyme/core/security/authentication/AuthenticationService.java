@@ -8,7 +8,8 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import com.google.common.io.BaseEncoding;
-import io.netty.handler.codec.base64.Base64;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -16,6 +17,8 @@ import org.joda.time.DateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class AuthenticationService {
 
@@ -29,6 +32,12 @@ public class AuthenticationService {
 
     public void initialize() {
         seedDatabase();
+
+        Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                        .setNameFormat("session-cleaner-%d")
+                        .build()
+        ).scheduleAtFixedRate(this::runSessionCleaning, 0, 1, TimeUnit.MINUTES);
     }
 
     private void seedDatabase() {
@@ -245,8 +254,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND id = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -259,8 +268,8 @@ public class AuthenticationService {
     public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -272,8 +281,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserByEmail(String email) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
-                                "WHERE email = :email")
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity  " +
+                                "FROM auth_users WHERE email = :email")
                         .bind("email", email)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -283,8 +292,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserById(long id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at FROM auth_users " +
-                                "WHERE id = :id")
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "FROM auth_users WHERE id = :id")
                         .bind("id", id)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -549,6 +558,28 @@ public class AuthenticationService {
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)
+                        .execute()
+        );
+    }
+
+    private void runSessionCleaning() {
+        // Delete all sessions older than 12 hours.
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_sessions WHERE created_at < :timeout")
+                        .bind("timeout", DateTime.now().minusHours(12))
+                        .execute()
+        );
+
+        // Delete all sessions of users that have been inactive for 15 minutes.
+        List<Long> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id FROM users WHERE last_activity < :timeout")
+                        .bind("timeout", DateTime.now().minusMinutes(15))
+                        .mapTo(Long.class)
+                        .list()
+        );
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN :user_ids")
+                        .bind("user_ids", inactiveUsers)
                         .execute()
         );
     }

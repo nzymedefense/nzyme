@@ -35,6 +35,7 @@ function UsersTable(props) {
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
+          <th>Last Activity</th>
           <th>&nbsp;</th>
         </tr>
         </thead>

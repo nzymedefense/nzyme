@@ -28,7 +28,10 @@ public abstract class UserEntry {
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
-    public static UserEntry create(long id, long organizationId, long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt) {
+    @Nullable
+    public abstract DateTime lastActivity();
+
+    public static UserEntry create(long id, long organizationId, long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -42,6 +45,7 @@ public abstract class UserEntry {
                 .isSuperAdmin(isSuperAdmin)
                 .updatedAt(updatedAt)
                 .createdAt(createdAt)
+                .lastActivity(lastActivity)
                 .build();
     }
 
@@ -74,6 +78,8 @@ public abstract class UserEntry {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract Builder lastActivity(DateTime lastActivity);
 
         public abstract UserEntry build();
     }

@@ -34,7 +34,11 @@ public abstract class UserDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static UserDetailsResponse create(long id, long organization_id, long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt) {
+    @JsonProperty("last_activity")
+    @Nullable
+    public abstract DateTime lastActivity();
+
+    public static UserDetailsResponse create(long id, long organization_id, long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -44,6 +48,7 @@ public abstract class UserDetailsResponse {
                 .name(name)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
+                .lastActivity(lastActivity)
                 .build();
     }
 
@@ -68,6 +73,8 @@ public abstract class UserDetailsResponse {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder updatedAt(DateTime updatedAt);
+
+        public abstract Builder lastActivity(DateTime lastActivity);
 
         public abstract UserDetailsResponse build();
     }

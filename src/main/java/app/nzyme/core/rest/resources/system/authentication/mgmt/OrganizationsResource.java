@@ -554,7 +554,8 @@ public class OrganizationsResource {
                 u.email(),
                 u.name(),
                 u.createdAt(),
-                u.updatedAt()
+                u.updatedAt(),
+                u.lastActivity()
         );
     }
 
