@@ -71,6 +71,7 @@ import TenantUserDetailsPage from "./components/system/authentication/management
 import TapPermissionDetailsPage from "./components/system/authentication/management/taps/TapPermissionDetailsPage";
 import EditTapPermissionsPage from "./components/system/authentication/management/taps/EditTapPermissionsPage";
 import EditTenantUserPage from "./components/system/authentication/management/users/EditTenantUserPage";
+import {_isLinkedToArray} from "plotly.js/src/plots/frame_attributes";
 
 class App extends React.Component {
   constructor (props) {
@@ -245,7 +246,7 @@ class App extends React.Component {
       } else {
         return (
                     <div className="nzyme">
-                        <DarkMode enabled={this.state.darkModeEnabled} />
+                        <DarkMode enabled={false} />
 
                         <Notifications/>
                         <LoginPage />
@@ -255,7 +256,7 @@ class App extends React.Component {
     } else {
       return (
             <div className="nzyme">
-                    <DarkMode enabled={this.state.darkModeEnabled} />
+                    <DarkMode enabled={false} />
 
                     <Notifications/>
                     <NotConnectedPage />
