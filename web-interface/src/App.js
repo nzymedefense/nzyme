@@ -26,7 +26,6 @@ import EditBanditPage from './components/bandits/management/EditBanditPage'
 import CreateIdentifierPage from './components/bandits/management/identifiers/CreateIdentifierPage'
 import TrackerDetailPage from './components/bandits/trackers/TrackerDetailPage'
 import AlertsPage from './components/alerts/AlertsPage'
-import AuthenticationService from './services/AuthenticationService'
 import PingService from './services/PingService'
 import AssetsPage from './components/system/assets/AssetsPage'
 import ReportsPage from './components/reports/ReportsPage'
@@ -70,6 +69,7 @@ import TenantUserDetailsPage from "./components/system/authentication/management
 import TapPermissionDetailsPage from "./components/system/authentication/management/taps/TapPermissionDetailsPage";
 import EditTapPermissionsPage from "./components/system/authentication/management/taps/EditTapPermissionsPage";
 import EditTenantUserPage from "./components/system/authentication/management/users/EditTenantUserPage";
+import SetupWizardPage from "./components/setup/SetupWizardPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -87,11 +87,13 @@ function App() {
   const [apiConnected, setApiConnected] = useState(true);
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
-  const [plugins, setPlugins] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [nzymeInformation, setNzymeInformation] = useState(null);
+  const [plugins, setPlugins] = useState([]); // TODO
 
   const preChecks = function() {
-    pingService.ping(setApiConnected);
-    setAuthenticated(isAuthenticated());;
+    pingService.ping(setApiConnected, setNzymeInformation, setLoaded);
+    setAuthenticated(isAuthenticated());
     setDarkModeEnabled(isDarkMode());
   }
 
@@ -109,7 +111,6 @@ function App() {
 
   if (!apiConnected) {
     // API not connected. Show error page.
-
     return (
         <div className="nzyme">
           <DarkMode enabled={false} />
@@ -120,17 +121,31 @@ function App() {
     )
   }
 
+
+  if (nzymeInformation && nzymeInformation.show_setup_wizard) {
+    // API connected but initial setup not performed yet. Show initial onboarding.
+    return (
+        <div className="nzyme">
+          <DarkMode enabled={false} />
+
+          <Notifications/>
+
+          <SetupWizardPage />
+        </div>
+    )
+  }
+
   if (!authenticated) {
     // API connected but not authenticated. Show login page. TODO useContext for dark mode enabled? Try to render in header.
     return (
         <div className="nzyme">
           <DarkMode enabled={false} />
+
           <Notifications/>
           <LoginPage />
         </div>
     )
   } else {
-    // Connected and authenticated. Show full interface.
     // Connected and authenticated. Show full interface.
     return (
       <Router>

@@ -15,20 +15,26 @@ class PingService {
     return stableRoot + stableUri
   }
 
-  ping (setApiConnected) {
+  ping (setApiConnected, setNzymeInformation, setLoaded) {
     // NOT USING RESTClient wrapper here because it's kind of a special call with special error handler etc and we
     // can keep things simple this way.
 
     axios.get(PingService.buildUri('/ping'))
       .then(function (response) {
-        if (response.data === 'pong') {
+        if (response.data) {
           setApiConnected(true);
+          setNzymeInformation(response.data);
         } else {
+          setNzymeInformation(null);
           setApiConnected(false);
         }
+
+        setLoaded(true);
       })
       .catch(function () {
+        setNzymeInformation(null);
         setApiConnected(false);
+        setLoaded(true);
       })
   }
 }

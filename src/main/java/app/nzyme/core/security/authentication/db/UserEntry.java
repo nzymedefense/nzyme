@@ -10,8 +10,11 @@ public abstract class UserEntry {
 
     public abstract long id();
 
-    public abstract long organizationId();
-    public abstract long tenantId();
+    @Nullable
+    public abstract Long organizationId();
+
+    @Nullable
+    public abstract Long tenantId();
 
     public abstract String passwordHash();
     public abstract String passwordSalt();
@@ -31,7 +34,7 @@ public abstract class UserEntry {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static UserEntry create(long id, long organizationId, long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
+    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -57,9 +60,9 @@ public abstract class UserEntry {
     public abstract static class Builder {
         public abstract Builder id(long id);
 
-        public abstract Builder organizationId(long organizationId);
+        public abstract Builder organizationId(Long organizationId);
 
-        public abstract Builder tenantId(long tenantId);
+        public abstract Builder tenantId(Long tenantId);
 
         public abstract Builder passwordHash(String passwordHash);
 

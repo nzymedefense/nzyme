@@ -3,6 +3,11 @@ import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationManagementService {
 
+  createInitialUser(email, password, name, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mgmt/initialuser',
+        {email: email, password: password, name: name}, successCallback, errorCallback);
+  }
+
   findAllOrganizations(setOrganizations) {
     RESTClient.get('/system/authentication/mgmt/organizations', {}, function (response) {
       setOrganizations(response.data.organizations)
@@ -84,7 +89,6 @@ class AuthenticationManagementService {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/password',
         {password: password}, successCallback);
   }
-
 
   deleteUserOfTenant(organizationId, tenantId, userId, successCallback) {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,

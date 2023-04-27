@@ -8,7 +8,6 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
-import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -16,7 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,6 +58,33 @@ public class AuthenticationService {
         createTenant(organization.id(), "Default Tenant", "The nzyme default tenant");
 
         LOG.info(organization);
+    }
+
+
+    public long countAllUsers() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users")
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public UserEntry createSuperAdministrator(String name, String email,PasswordHasher.GeneratedHashAndSalt password) {
+        DateTime now = new DateTime();
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
+                                "VALUES(NULL, NULL, NULL, :email, :password, :password_salt, :name, " +
+                                ":created_at, :updated_at, true, false) RETURNING *")
+                        .bind("email", email)
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("name", name)
+                        .bind("created_at", now)
+                        .bind("updated_at", now)
+                        .mapTo(UserEntry.class)
+                        .one()
+        );
     }
 
     public OrganizationEntry createOrganization(String name, String description) {

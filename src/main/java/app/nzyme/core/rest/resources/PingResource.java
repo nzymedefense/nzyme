@@ -17,6 +17,10 @@
 
 package app.nzyme.core.rest.resources;
 
+import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.responses.system.PingResponse;
+
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -24,12 +28,21 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/api/ping")
-@Produces(MediaType.TEXT_PLAIN)
+@Produces(MediaType.APPLICATION_JSON)
 public class PingResource {
+
+    /*
+     * DANGER: This resource is entirely unauthenticated. Be careful with what you expose.
+     */
+
+    @Inject
+    private NzymeNode nzyme;
 
     @GET
     public Response ping() {
-        return Response.ok("pong").build();
+        return Response.ok(PingResponse.create(
+                nzyme.getAuthenticationService().countAllUsers() == 0
+        )).build();
     }
 
 }

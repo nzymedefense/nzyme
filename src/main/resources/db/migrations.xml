@@ -2093,4 +2093,9 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="prepare_users_table_for_admins_outside_org_tenant" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="auth_users" columnName="organization_id" />
+        <dropNotNullConstraint tableName="auth_users" columnName="tenant_id" />
+    </changeSet>
 </databaseChangeLog>

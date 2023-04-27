@@ -13,10 +13,12 @@ public abstract class UserDetailsResponse {
     public abstract long id();
 
     @JsonProperty("organization_id")
-    public abstract long organization_id();
+    @Nullable
+    public abstract Long organization_id();
 
     @JsonProperty("tenant_id")
-    public abstract long tenantId();
+    @Nullable
+    public abstract Long tenantId();
 
     @JsonProperty("role_id")
     @Nullable
@@ -38,7 +40,7 @@ public abstract class UserDetailsResponse {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static UserDetailsResponse create(long id, long organization_id, long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity) {
+    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -60,9 +62,9 @@ public abstract class UserDetailsResponse {
     public abstract static class Builder {
         public abstract Builder id(long id);
 
-        public abstract Builder organization_id(long organization_id);
+        public abstract Builder organization_id(Long organization_id);
 
-        public abstract Builder tenantId(long tenantId);
+        public abstract Builder tenantId(Long tenantId);
 
         public abstract Builder roleId(Long roleId);
 

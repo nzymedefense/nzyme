@@ -20,6 +20,10 @@ section.start div.main-card {
     border-color: #040303;
 }
 
+section.setupwizard div.main-card {
+    height: 725px;
+}
+
 section.start h1, h2, h3, h4, h5, h6 {
     text-transform: none !important;
 }
@@ -28,6 +32,14 @@ section.start h1 {
     font-size: 24px;
     margin-bottom: 8px !important;
     padding: 0 !important;
+}
+
+section.setupwizard h1 {
+    font-size: 32px;
+}
+
+section.setupwizard h2 {
+    font-size: 24px;
 }
 
 section.start hr {

@@ -636,7 +636,7 @@ public class OrganizationsResource {
         return true;
     }
 
-    private boolean validateCreateUserRequest(CreateUserRequest req) {
+    public static boolean validateCreateUserRequest(CreateUserRequest req) {
         if (req == null) {
             return false;
         }
