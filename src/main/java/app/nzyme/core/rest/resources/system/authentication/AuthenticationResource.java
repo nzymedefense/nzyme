@@ -131,22 +131,4 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-    @GET
-    @RESTSecured
-    @Path("/session/information")
-    public Response information(@Context SecurityContext sc) {
-        AuthenticatedUser user = getAuthenticatedUser(sc);
-
-        try {
-            DateTime expiresAt = user.getSessionCreatedAt().plusHours(8);
-
-            return Response.ok(SessionInformationResponse.create(
-                    SessionInformationResponse.STATUS.VALID,
-                    Seconds.secondsBetween(DateTime.now(), expiresAt).getSeconds()
-            )).build();
-        } catch(Exception e) {
-            return Response.ok(SessionInformationResponse.create(SessionInformationResponse.STATUS.INVALID, 0)).build();
-        }
-    }
-
 }

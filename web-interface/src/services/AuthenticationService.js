@@ -12,14 +12,6 @@ class AuthenticationService {
     })
   }
 
-  checkSession () {
-    RESTClient.get('/system/authentication/session/information', {}, function (response) {
-      if (response.data.seconds_left_valid <= 60) {
-        Store.delete('api_token')
-      }
-    })
-  }
-
   deleteSession(callback) {
     RESTClient.delete('/system/authentication/session', function () {
       callback();

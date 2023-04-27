@@ -71,7 +71,6 @@ import TenantUserDetailsPage from "./components/system/authentication/management
 import TapPermissionDetailsPage from "./components/system/authentication/management/taps/TapPermissionDetailsPage";
 import EditTapPermissionsPage from "./components/system/authentication/management/taps/EditTapPermissionsPage";
 import EditTenantUserPage from "./components/system/authentication/management/users/EditTenantUserPage";
-import {_isLinkedToArray} from "plotly.js/src/plots/frame_attributes";
 
 class App extends React.Component {
   constructor (props) {
@@ -87,7 +86,6 @@ class App extends React.Component {
     this.pingService.ping = this.pingService.ping.bind(this)
 
     this.authenticationService = new AuthenticationService()
-    this.authenticationService.checkSession = this.authenticationService.checkSession.bind(this)
 
     this.pluginsService = new PluginsService()
     this.pluginsService.findInitializedPlugins = this.pluginsService.findInitializedPlugins.bind(this)
@@ -105,12 +103,6 @@ class App extends React.Component {
       self.pingService.ping()
       self.setState({ authenticated: App._isAuthenticated() })
     }, 1000)
-
-    // Check if session is about to expire and log out if so.
-    this.authenticationService.checkSession()
-    setInterval(function () {
-      self.authenticationService.checkSession()
-    }, 10000)
   }
 
   _setDarkMode (x) {
