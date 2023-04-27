@@ -9,8 +9,8 @@ const RESTClient = {
     const headers = {}
 
     // Add API token authorization if we have one.
-    if (Store.get('api_token') !== undefined) {
-      headers.Authorization = 'Bearer ' + Store.get('api_token')
+    if (Store.get('sessionid') !== undefined) {
+      headers.Authorization = 'Bearer ' + Store.get('sessionid')
     }
 
     return headers
@@ -38,7 +38,7 @@ const RESTClient = {
       .catch(function (error) {
         if (error.response) {
           if (error.response.status === 401) {
-            Store.delete('api_token')
+            Store.delete('sessionid')
           }
 
           if (error.response.status !== 401) {

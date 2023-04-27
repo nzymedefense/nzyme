@@ -11,7 +11,7 @@ class NavigationBar extends React.Component {
     e.preventDefault()
 
     authService.deleteSession(function() {
-      Store.delete('api_token')
+      Store.delete('sessionid')
     });
   }
 
@@ -29,7 +29,7 @@ class NavigationBar extends React.Component {
                 </form>
 
                 <div className="d-flex flex-row">
-                    <DarkModeButton setDarkMode={this.props.setDarkMode} />
+                    <DarkModeButton darkModeEnabled={this.props.darkModeEnabled} setDarkModeEnabled={this.props.setDarkModeEnabled} />
 
                     <a href="https://go.nzyme.org/help" className="btn btn-outline-dark main-help" title="Help" target="_blank" rel="noreferrer">
                         Help

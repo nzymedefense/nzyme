@@ -75,11 +75,11 @@ const pingService = new PingService();
 const pluginsService = new PluginsService();
 
 const isAuthenticated = function() {
-  return Store.get('api_token') !== undefined;
+  return Store.get("sessionid") !== undefined;
 }
 
 const isDarkMode = function() {
-  return Store.get('dark_mode') === undefined ? false : Store.get('dark_mode');
+  return Store.get("dark_mode") === undefined ? false : Store.get("dark_mode");
 }
 
 function App() {
@@ -89,22 +89,10 @@ function App() {
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
   const [plugins, setPlugins] = useState([]);
 
-  const updateApiConnected = function() {
-    pingService.ping(setApiConnected);
-  }
-
-  const updateAuthenticated = function() {
-    setAuthenticated(isAuthenticated());
-  }
-
-  const updateDarkMode = function() {
-    setDarkModeEnabled(isDarkMode());
-  }
-
   const preChecks = function() {
-    updateApiConnected();
-    updateAuthenticated();
-    updateDarkMode();
+    pingService.ping(setApiConnected);
+    setAuthenticated(isAuthenticated());;
+    setDarkModeEnabled(isDarkMode());
   }
 
   useEffect(() => {
@@ -114,6 +102,10 @@ function App() {
       preChecks();
     }, 1000)
   }, []);
+
+  useEffect(() => {
+    Store.set("dark_mode", darkModeEnabled);
+  }, [darkModeEnabled]);
 
   if (!apiConnected) {
     // API not connected. Show error page.
@@ -149,7 +141,7 @@ function App() {
 
           <div id="main" className="flex-fill">
             <Notifications/>
-            <NavigationBar setDarkMode={setDarkMode} />
+            <NavigationBar darkModeEnabled={darkModeEnabled} setDarkModeEnabled={setDarkModeEnabled} />
 
             <div className="container-fluid">
               <div className="content">

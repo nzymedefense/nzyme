@@ -6,7 +6,7 @@ class AuthenticationService {
     const self = this
 
     RESTClient.post('/system/authentication/session', { username: username, password: password }, function (response) {
-      Store.set('api_token', response.data.token)
+      Store.set('sessionid', response.data.token)
     }, function (response) {
       self.setState({ loggingIn: false })
     })
