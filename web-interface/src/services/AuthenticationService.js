@@ -1,14 +1,16 @@
 import RESTClient from '../util/RESTClient'
-import Store from '../util/Store'
 
 class AuthenticationService {
-  createSession (username, password) {
-    const self = this
+  createSession (username, password, successCallback, errorCallback) {
 
     RESTClient.post('/system/authentication/session', { username: username, password: password }, function (response) {
-      Store.set('sessionid', response.data.token)
-    }, function (response) {
-      self.setState({ loggingIn: false })
+      successCallback(response.data.token);
+    }, function (error) {
+      if (error.response.status === 403) {
+        errorCallback("Wrong credentials. Please try again.");
+      } else {
+        errorCallback("Login failed. Please try again.");
+      }
     })
   }
 

@@ -62,6 +62,7 @@ const RESTClient = {
       .catch(function (error) {
         if (errorCallback) {
           errorCallback(error)
+          return;
         }
 
         if (error.response) {
