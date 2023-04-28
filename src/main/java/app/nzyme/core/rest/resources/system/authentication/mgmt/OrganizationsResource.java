@@ -381,14 +381,22 @@ public class OrganizationsResource {
         List<SessionDetailsResponse> sessions = Lists.newArrayList();
         for (SessionEntryWithUserDetails session : nzyme.getAuthenticationService().findAllSessions(limit, offset)) {
             sessions.add(SessionDetailsResponse.create(
+                    session.organizationId(),
+                    session.tenantId(),
                     session.userId(),
+                    session.userEmail(),
+                    session.userName(),
+                    session.isSuperadmin(),
+                    session.isOrgadmin(),
                     session.remoteIp(),
                     session.createdAt(),
                     session.lastActivity()
             ));
         }
 
-        return Response.ok(SessionsListResponse.create(sessions.size(), sessions)).build();
+        long sessionCount = nzyme.getAuthenticationService().countAllSessions();
+
+        return Response.ok(SessionsListResponse.create(sessionCount, sessions)).build();
     }
 
     @GET

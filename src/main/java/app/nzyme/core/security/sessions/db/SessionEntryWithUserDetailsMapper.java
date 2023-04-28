@@ -17,8 +17,14 @@ public class SessionEntryWithUserDetailsMapper implements RowMapper<SessionEntry
         return SessionEntryWithUserDetails.create(
                 rs.getString("sessionid"),
                 rs.getLong("user_id"),
+                rs.getBoolean("is_superadmin"),
+                rs.getBoolean("is_orgadmin"),
+                rs.getString("email"),
+                rs.getString("name"),
                 rs.getString("remote_ip"),
                 new DateTime(rs.getTimestamp("created_at")),
+                rs.getLong("organization_id") == 0 ? null : rs.getLong("organization_id"),
+                rs.getLong("tenant_id") == 0 ? null : rs.getLong("tenant_id"),
                 lastActivity
         );
     }

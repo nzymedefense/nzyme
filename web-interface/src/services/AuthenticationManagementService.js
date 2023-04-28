@@ -95,17 +95,24 @@ class AuthenticationManagementService {
         successCallback);
   }
 
+  findAllSessions(setSessions, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations/sessions',
+        {limit: limit, offset: offset}, function (response) {
+          setSessions(response.data);
+    })
+  }
+
   findAllTapPermissions(organizationId, tenantId, setTaps) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
         {}, function (response) {
-      setTaps(response.data.taps)
+      setTaps(response.data.taps);
     })
   }
 
   findTapPermission(organizationId, tenantId, tapUuid, setTap) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
         {}, function (response) {
-          setTap(response.data)
+          setTap(response.data);
     })
   }
 

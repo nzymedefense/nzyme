@@ -440,11 +440,12 @@ public class AuthenticationService {
 
     public List<SessionEntryWithUserDetails> findAllSessions(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity " +
+                handle.createQuery("SELECT s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
-                                "ORDER BY created_at " +
-                                "DESC LIMIT :limit OFFSET :offset")
+                                "ORDER BY u.email ASC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(SessionEntryWithUserDetails.class)
@@ -459,6 +460,14 @@ public class AuthenticationService {
                         .bind("sessionid", sessionId)
                         .mapTo(SessionEntry.class)
                         .findOne()
+        );
+    }
+
+    public long countAllSessions() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_sessions")
+                        .mapTo(Long.class)
+                        .one()
         );
     }
 

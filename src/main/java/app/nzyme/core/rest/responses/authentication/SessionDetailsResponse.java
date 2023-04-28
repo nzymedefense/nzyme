@@ -9,8 +9,28 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SessionDetailsResponse {
 
+    @JsonProperty("organization_id")
+    @Nullable
+    public abstract Long organizationId();
+
+    @JsonProperty("tenant_id")
+    @Nullable
+    public abstract Long tenantId();
+
     @JsonProperty("user_id")
     public abstract long userId();
+
+    @JsonProperty("user_email")
+    public abstract String userEmail();
+
+    @JsonProperty("user_name")
+    public abstract String userName();
+
+    @JsonProperty("is_superadmin")
+    public abstract boolean isSuperadmin();
+
+    @JsonProperty("is_orgadmin")
+    public abstract boolean isOrgadmin();
 
     @JsonProperty("remote_ip")
     public abstract String remoteIp();
@@ -22,9 +42,15 @@ public abstract class SessionDetailsResponse {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static SessionDetailsResponse create(long userId, String remoteIp, DateTime createdAt, DateTime lastActivity) {
+    public static SessionDetailsResponse create(Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity) {
         return builder()
+                .organizationId(organizationId)
+                .tenantId(tenantId)
                 .userId(userId)
+                .userEmail(userEmail)
+                .userName(userName)
+                .isSuperadmin(isSuperadmin)
+                .isOrgadmin(isOrgadmin)
                 .remoteIp(remoteIp)
                 .createdAt(createdAt)
                 .lastActivity(lastActivity)
@@ -34,10 +60,21 @@ public abstract class SessionDetailsResponse {
     public static Builder builder() {
         return new AutoValue_SessionDetailsResponse.Builder();
     }
-
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder organizationId(Long organizationId);
+
+        public abstract Builder tenantId(Long tenantId);
+
         public abstract Builder userId(long userId);
+
+        public abstract Builder userEmail(String userEmail);
+
+        public abstract Builder userName(String userName);
+
+        public abstract Builder isSuperadmin(boolean isSuperadmin);
+
+        public abstract Builder isOrgadmin(boolean isOrgadmin);
 
         public abstract Builder remoteIp(String remoteIp);
 

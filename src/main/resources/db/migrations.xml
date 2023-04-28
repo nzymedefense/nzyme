@@ -2098,4 +2098,8 @@
         <dropNotNullConstraint tableName="auth_users" columnName="organization_id" />
         <dropNotNullConstraint tableName="auth_users" columnName="tenant_id" />
     </changeSet>
+
+    <changeSet id="remove_uniqueness_of_session_remote_ip" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="auth_sessions" constraintName="auth_sessions_remote_ip_key" />
+    </changeSet>
 </databaseChangeLog>

@@ -1,6 +1,7 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import OrganizationsTable from "./organizations/OrganizationsTable";
+import GlobalSessions from "./sessions/GlobalSessions";
 
 function AuthenticationPage() {
 
@@ -13,16 +14,34 @@ function AuthenticationPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-md-8">
+            <div className="row">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Organizations</h3>
+
+                      <OrganizationsTable />
+
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
+                        Create Organization
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Organizations</h3>
+                <h3>All Active Sessions</h3>
 
-                <OrganizationsTable />
-                
-                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
-                  Create Organization
-                </a>
+                <GlobalSessions />
               </div>
             </div>
           </div>
