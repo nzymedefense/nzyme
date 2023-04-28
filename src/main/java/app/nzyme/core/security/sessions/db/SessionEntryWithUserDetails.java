@@ -1,6 +1,5 @@
 package app.nzyme.core.security.sessions.db;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
@@ -9,6 +8,7 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SessionEntryWithUserDetails {
 
+    public abstract Long id();
     public abstract String sessionId();
     public abstract long userId();
     public abstract boolean isSuperadmin();
@@ -27,8 +27,9 @@ public abstract class SessionEntryWithUserDetails {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static SessionEntryWithUserDetails create(String sessionId, long userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, Long organizationId, Long tenantId, DateTime lastActivity) {
+    public static SessionEntryWithUserDetails create(Long id, String sessionId, long userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, Long organizationId, Long tenantId, DateTime lastActivity) {
         return builder()
+                .id(id)
                 .sessionId(sessionId)
                 .userId(userId)
                 .isSuperadmin(isSuperadmin)
@@ -49,6 +50,8 @@ public abstract class SessionEntryWithUserDetails {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(Long id);
+
         public abstract Builder sessionId(String sessionId);
 
         public abstract Builder userId(long userId);

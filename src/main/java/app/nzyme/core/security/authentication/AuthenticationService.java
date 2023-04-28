@@ -440,12 +440,47 @@ public class AuthenticationService {
 
     public List<SessionEntryWithUserDetails> findAllSessions(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
+                handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "ORDER BY u.email ASC " +
                                 "LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(SessionEntryWithUserDetails.class)
+                        .list()
+        );
+    }
+
+    public List<SessionEntryWithUserDetails> findSessionsOfOrganization(long organizationId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
+                                "FROM auth_sessions AS s " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "WHERE u.organization_id = :organization_id " +
+                                "ORDER BY u.email ASC " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(SessionEntryWithUserDetails.class)
+                        .list()
+        );
+    }
+
+    public List<SessionEntryWithUserDetails> findSessionsOfTenant(long organizationId, long tenantId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
+                                "FROM auth_sessions AS s " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id " +
+                                "ORDER BY u.email ASC " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(SessionEntryWithUserDetails.class)
@@ -463,9 +498,40 @@ public class AuthenticationService {
         );
     }
 
+    public void deleteSession(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_sessions WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
     public long countAllSessions() {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_sessions")
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countSessionsOfOrganization(long organizationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_sessions AS s " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "WHERE u.organization_id = :organization_id")
+                        .bind("organization_id", organizationId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public long countSessionsOfTenant(long organizationId, long tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_sessions AS s " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .mapTo(Long.class)
                         .one()
         );

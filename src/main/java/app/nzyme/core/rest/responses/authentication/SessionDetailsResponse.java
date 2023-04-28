@@ -9,6 +9,9 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SessionDetailsResponse {
 
+    @JsonProperty("id")
+    public abstract Long id();
+
     @JsonProperty("organization_id")
     @Nullable
     public abstract Long organizationId();
@@ -42,8 +45,9 @@ public abstract class SessionDetailsResponse {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static SessionDetailsResponse create(Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity) {
+    public static SessionDetailsResponse create(Long id, Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity) {
         return builder()
+                .id(id)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .userId(userId)
@@ -60,8 +64,11 @@ public abstract class SessionDetailsResponse {
     public static Builder builder() {
         return new AutoValue_SessionDetailsResponse.Builder();
     }
+
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(Long id);
+
         public abstract Builder organizationId(Long organizationId);
 
         public abstract Builder tenantId(Long tenantId);

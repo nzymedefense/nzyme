@@ -7,6 +7,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
 import UsersTable from "../users/UsersTable";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
+import TenantSessions from "../sessions/TenantSessions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -149,6 +150,18 @@ function TenantDetailsPage() {
             </div>
           </div>
 
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>All Active Sessions of Tenant</h3>
+
+                <TenantSessions organizationId={organization.id} tenantId={tenant.id} />
+              </div>
+            </div>
+          </div>
         </div>
       </React.Fragment>
   )

@@ -102,6 +102,24 @@ class AuthenticationManagementService {
     })
   }
 
+  findSessionsOfOrganization(setSessions, organizationId, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/sessions',
+        {limit: limit, offset: offset}, function (response) {
+          setSessions(response.data);
+        })
+  }
+
+  findSessionsOfTenant(setSessions, organizationId, tenantId, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/sessions',
+        {limit: limit, offset: offset}, function (response) {
+          setSessions(response.data);
+        })
+  }
+
+  invalidateSession(sessionId, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/sessions/show/' + sessionId, successCallback)
+  }
+
   findAllTapPermissions(organizationId, tenantId, setTaps) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
         {}, function (response) {

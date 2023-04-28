@@ -381,6 +381,7 @@ public class OrganizationsResource {
         List<SessionDetailsResponse> sessions = Lists.newArrayList();
         for (SessionEntryWithUserDetails session : nzyme.getAuthenticationService().findAllSessions(limit, offset)) {
             sessions.add(SessionDetailsResponse.create(
+                    session.id(),
                     session.organizationId(),
                     session.tenantId(),
                     session.userId(),
@@ -397,6 +398,96 @@ public class OrganizationsResource {
         long sessionCount = nzyme.getAuthenticationService().countAllSessions();
 
         return Response.ok(SessionsListResponse.create(sessionCount, sessions)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/sessions")
+    public Response findSessionsOfOrganization(@PathParam("organizationId") long organizationId,
+                                               @QueryParam("limit") int limit,
+                                               @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (organizationId <= 0) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<SessionDetailsResponse> sessions = Lists.newArrayList();
+        for (SessionEntryWithUserDetails session : nzyme.getAuthenticationService().findSessionsOfOrganization(
+                organizationId, limit, offset)) {
+            sessions.add(SessionDetailsResponse.create(
+                    session.id(),
+                    session.organizationId(),
+                    session.tenantId(),
+                    session.userId(),
+                    session.userEmail(),
+                    session.userName(),
+                    session.isSuperadmin(),
+                    session.isOrgadmin(),
+                    session.remoteIp(),
+                    session.createdAt(),
+                    session.lastActivity()
+            ));
+        }
+
+        long sessionCount = nzyme.getAuthenticationService().countSessionsOfOrganization(organizationId);
+
+        return Response.ok(SessionsListResponse.create(sessionCount, sessions)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/sessions")
+    public Response findSessionsOfTenant(@PathParam("organizationId") long organizationId,
+                                         @PathParam("tenantId") long tenantId,
+                                         @QueryParam("limit") int limit,
+                                         @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        List<SessionDetailsResponse> sessions = Lists.newArrayList();
+        for (SessionEntryWithUserDetails session : nzyme.getAuthenticationService().findSessionsOfTenant(
+                organizationId, tenantId, limit, offset)) {
+            sessions.add(SessionDetailsResponse.create(
+                    session.id(),
+                    session.organizationId(),
+                    session.tenantId(),
+                    session.userId(),
+                    session.userEmail(),
+                    session.userName(),
+                    session.isSuperadmin(),
+                    session.isOrgadmin(),
+                    session.remoteIp(),
+                    session.createdAt(),
+                    session.lastActivity()
+            ));
+        }
+
+        long sessionCount = nzyme.getAuthenticationService().countSessionsOfTenant(organizationId, tenantId);
+
+        return Response.ok(SessionsListResponse.create(sessionCount, sessions)).build();
+    }
+
+
+    @DELETE
+    @Path("/sessions/show/{sessionId}")
+    public Response invalidateSession(@PathParam("sessionId") long sessionId) {
+        nzyme.getAuthenticationService().deleteSession(sessionId);
+
+        return Response.ok().build();
     }
 
     @GET

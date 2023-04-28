@@ -15,6 +15,7 @@ public class SessionEntryWithUserDetailsMapper implements RowMapper<SessionEntry
                 ? null : new DateTime(rs.getTimestamp("last_activity"));
 
         return SessionEntryWithUserDetails.create(
+                rs.getLong("id"),
                 rs.getString("sessionid"),
                 rs.getLong("user_id"),
                 rs.getBoolean("is_superadmin"),

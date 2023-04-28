@@ -6,6 +6,7 @@ import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
 import TenantsTable from "../tenants/TenantsTable";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import OrganizationSessions from "../sessions/OrganizationSessions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -121,6 +122,18 @@ function OrganizationDetailsPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>All Active Sessions of Organization</h3>
+
+                <OrganizationSessions organizationId={organization.id} />
               </div>
             </div>
           </div>

@@ -4,7 +4,9 @@ import SessionsTable from "./SessionsTable";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
-function GlobalSessions() {
+function OrganizationSessions(props) {
+
+  const organizationId = props.organizationId;
 
   const [sessions, setSessions] = useState(null);
   const [revision, setRevision] = useState(0);
@@ -14,8 +16,8 @@ function GlobalSessions() {
 
   useEffect(() => {
     setSessions(null);
-    authenticationMgmtService.findAllSessions(setSessions, perPage, (page-1)*perPage)
-  }, [page, revision]);
+    authenticationMgmtService.findSessionsOfOrganization(setSessions, organizationId, perPage, (page-1)*perPage)
+  }, [page, revision, organizationId]);
 
   return <SessionsTable sessions={sessions}
                         perPage={perPage}
@@ -26,4 +28,4 @@ function GlobalSessions() {
 
 }
 
-export default GlobalSessions;
+export default OrganizationSessions;

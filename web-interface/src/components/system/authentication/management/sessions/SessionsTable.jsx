@@ -2,6 +2,9 @@ import React from "react";
 import Paginator from "../../../../misc/Paginator";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import moment from "moment";
+import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+
+const authenticationMgmtService = new AuthenticationManagementService();
 
 function SessionsTable(props) {
 
@@ -9,6 +12,20 @@ function SessionsTable(props) {
   const perPage = props.perPage;
   const page = props.page;
   const setPage = props.setPage;
+  const revision = props.revision;
+  const setRevision = props.setRevision;
+
+  const invalidateSession = function(e, sessionId) {
+    e.preventDefault();
+
+    if (!confirm("Really log out user?")) {
+      return;
+    }
+
+    authenticationMgmtService.invalidateSession(sessionId, function() {
+      setRevision(revision+1);
+    });
+  }
 
   if (!sessions) {
     return <LoadingSpinner />
@@ -16,8 +33,8 @@ function SessionsTable(props) {
 
   if (sessions.sessions.length === 0) {
     return (
-        <div className="alert alert-info">
-          No current sessions.
+        <div className="alert alert-info mb-0">
+          No active sessions.
         </div>
     )
   }
@@ -33,6 +50,7 @@ function SessionsTable(props) {
             <th>Type</th>
             <th>Logged In</th>
             <th>Last Activity</th>
+            <th>&nbsp;</th>
           </tr>
           </thead>
           <tbody>
@@ -52,6 +70,9 @@ function SessionsTable(props) {
                   </td>
                   <td title={moment(s.last_activity).format()}>
                     {moment(s.last_activity).fromNow()}
+                  </td>
+                  <td>
+                    <a href="#" onClick={(e) => invalidateSession(e, s.id)}>Force Log Out</a>
                   </td>
                 </tr>
             )
