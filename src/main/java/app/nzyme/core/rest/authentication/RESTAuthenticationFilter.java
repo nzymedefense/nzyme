@@ -45,7 +45,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     private final NzymeNode nzyme;
 
-    private static final String AUTHENTICATION_SCHEME = "Bearer";
+    public static final String AUTHENTICATION_SCHEME = "Bearer";
 
     public RESTAuthenticationFilter(NzymeNode nzyme) {
         this.nzyme = nzyme;
@@ -64,7 +64,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
             String sessionId = authorizationHeader.substring(AUTHENTICATION_SCHEME.length()).trim();
 
             // Check if session exists.
-            Optional<SessionEntry> session = nzyme.getAuthenticationService().findSession(sessionId);
+            Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithPassedMFABySessionId(sessionId);
             if (session.isEmpty()) {
                 abortWithUnauthorized(requestContext);
                 return;
@@ -120,7 +120,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
         }
     }
 
-    private boolean isTokenBasedAuthentication(String authorizationHeader) {
+    public static boolean isTokenBasedAuthentication(String authorizationHeader) {
         return authorizationHeader != null && authorizationHeader.toLowerCase().startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
     }
 

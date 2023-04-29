@@ -282,7 +282,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
                                 "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND id = :user_id")
                         .bind("organization_id", organizationId)
@@ -296,7 +297,8 @@ public class AuthenticationService {
     public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
                                 "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC")
                         .bind("organization_id", organizationId)
@@ -309,7 +311,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserByEmail(String email) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity  " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes  " +
                                 "FROM auth_users WHERE email = :email")
                         .bind("email", email)
                         .mapTo(UserEntry.class)
@@ -320,7 +323,8 @@ public class AuthenticationService {
     public Optional<UserEntry> findUserById(long id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
                                 "FROM auth_users WHERE id = :id")
                         .bind("id", id)
                         .mapTo(UserEntry.class)
@@ -427,6 +431,33 @@ public class AuthenticationService {
         return count > 0;
     }
 
+    public void setUserTOTPSecret(long userId, String secret) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET totp_secret = :secret WHERE id = :user_id")
+                        .bind("secret", secret)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void setUserMFARecoveryCodes(long userId, String recoveryCodes) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET mfa_recovery_codes = :recovery_codes WHERE id = :user_id")
+                        .bind("recovery_codes", recoveryCodes)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void setUserMFAComplete(long userId, boolean complete) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET mfa_complete = :mfa_complete WHERE id = :user_id")
+                        .bind("mfa_complete", complete)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
     public void createSession(String sessionId, long userId, String remoteIp) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at) " +
@@ -488,10 +519,20 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<SessionEntry> findSession(String sessionId) {
+    public Optional<SessionEntry> findSessionWithOrWithoutPassedMFABySessionId(String sessionId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at " +
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, mfa_valid " +
                                 "FROM auth_sessions WHERE sessionid = :sessionid")
+                        .bind("sessionid", sessionId)
+                        .mapTo(SessionEntry.class)
+                        .findOne()
+        );
+    }
+
+    public Optional<SessionEntry> findSessionWithPassedMFABySessionId(String sessionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, mfa_valid " +
+                                "FROM auth_sessions WHERE sessionid = :sessionid AND mfa_valid = true")
                         .bind("sessionid", sessionId)
                         .mapTo(SessionEntry.class)
                         .findOne()

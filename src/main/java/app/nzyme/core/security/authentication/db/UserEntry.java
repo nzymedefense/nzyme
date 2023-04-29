@@ -28,13 +28,21 @@ public abstract class UserEntry {
     public abstract boolean isOrganizationAdmin();
     public abstract boolean isSuperAdmin();
 
+    @Nullable
+    public abstract String totpSecret();
+
+    public abstract boolean mfaComplete();
+
+    @Nullable
+    public abstract String mfaRecoveryCodes();
+
     public abstract DateTime updatedAt();
     public abstract DateTime createdAt();
 
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
+    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -46,6 +54,9 @@ public abstract class UserEntry {
                 .name(name)
                 .isOrganizationAdmin(isOrganizationAdmin)
                 .isSuperAdmin(isSuperAdmin)
+                .totpSecret(totpSecret)
+                .mfaComplete(mfaComplete)
+                .mfaRecoveryCodes(mfaRecoveryCodes)
                 .updatedAt(updatedAt)
                 .createdAt(createdAt)
                 .lastActivity(lastActivity)
@@ -77,6 +88,12 @@ public abstract class UserEntry {
         public abstract Builder isOrganizationAdmin(boolean isOrganizationAdmin);
 
         public abstract Builder isSuperAdmin(boolean isSuperAdmin);
+
+        public abstract Builder totpSecret(String totpSecret);
+
+        public abstract Builder mfaComplete(boolean mfaComplete);
+
+        public abstract Builder mfaRecoveryCodes(String mfaRecoveryCodes);
 
         public abstract Builder updatedAt(DateTime updatedAt);
 

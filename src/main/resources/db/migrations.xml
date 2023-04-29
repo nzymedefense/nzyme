@@ -2102,4 +2102,46 @@
     <changeSet id="remove_uniqueness_of_session_remote_ip" author="lennartkoopmann">
         <dropUniqueConstraint tableName="auth_sessions" constraintName="auth_sessions_remote_ip_key" />
     </changeSet>
+
+    <changeSet id="add_mfa_and_elevation_to_sessions" author="lennartkoopmann">
+        <addColumn tableName="auth_sessions">
+            <column name="elevated" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_sessions">
+            <column name="elevated_since" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_sessions">
+            <column name="mfa_valid" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_mfa_totp_secret_to_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="totp_secret" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_more_mfa_fields_to_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="mfa_complete" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="mfa_recovery_codes" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -20,27 +20,40 @@ package app.nzyme.core.rest.resources.system.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.authentication.RESTAuthenticationFilter;
+import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
+import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.requests.CreateSessionRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
+import dev.samstevens.totp.recovery.RecoveryCodeGenerator;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Seconds;
+
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.List;
 import java.util.Optional;
 
 @Path("/api/system/authentication")
@@ -117,6 +130,133 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             LOG.warn("Failed login attempt for user [{}].", username);
             return Response.status(Response.Status.FORBIDDEN).build();
         }
+    }
+
+    @GET
+    @Path("/session")
+    public Response getSessionInformation(ContainerRequestContext requestContext) {
+        /*
+         * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
+         * need those.here. Manually pulling the session ID out of the header.
+         */
+        String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+        if (!RESTAuthenticationFilter.isTokenBasedAuthentication(authorizationHeader)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        String sessionId = authorizationHeader.substring(RESTAuthenticationFilter.AUTHENTICATION_SCHEME.length()).trim();
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(sessionId);
+
+        if (session.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(SessionInformationResponse.create(
+                session.get().mfaValid(),
+                user.get().mfaComplete()
+        )).build();
+    }
+
+    @GET
+    @Path("/mfa/setup/initialize")
+    public Response initializeMfaSetup(ContainerRequestContext requestContext) {
+        /*
+         * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
+         * need those.here. Manually pulling the session ID out of the header.
+         */
+        String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+        if (!RESTAuthenticationFilter.isTokenBasedAuthentication(authorizationHeader)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        String sessionId = authorizationHeader.substring(RESTAuthenticationFilter.AUTHENTICATION_SCHEME.length()).trim();
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(sessionId);
+
+        if (session.isEmpty() || session.get().mfaValid()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty() || user.get().mfaComplete()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String userSecret;
+        List<String> recoveryCodes;
+        if (Strings.isNullOrEmpty(user.get().totpSecret())) {
+            // Store secret and recovery codes with user.
+            SecretGenerator secretGenerator = new DefaultSecretGenerator();
+            RecoveryCodeGenerator recoveryCodeGenerator = new RecoveryCodeGenerator();
+
+            userSecret = secretGenerator.generate();
+            recoveryCodes = Lists.newArrayList(recoveryCodeGenerator.generateCodes(8));
+
+            String recoveryCodesJson;
+            try {
+                recoveryCodesJson = new ObjectMapper().writeValueAsString(recoveryCodes);
+            } catch (JsonProcessingException e) {
+                LOG.error("Could not serialize MFA recovery codes.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
+            nzyme.getAuthenticationService().setUserTOTPSecret(user.get().id(), userSecret);
+            nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), recoveryCodesJson);
+        } else {
+            // User already has a secret (but MFA setup not complete. Aborted wizard?) Use existing secret.
+            userSecret = user.get().totpSecret();
+
+            try {
+                recoveryCodes = new ObjectMapper().readValue(user.get().mfaRecoveryCodes(), new TypeReference<>() {});
+            } catch (JsonProcessingException e) {
+                LOG.error("Could not deserialize MFA recovery codes.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+        return Response.ok(MFAInitResponse.create(userSecret, user.get().email(), recoveryCodes)).build();
+    }
+
+    @POST
+    @Path("/mfa/setup/complete")
+    public Response completeMfaSetup(ContainerRequestContext requestContext) {
+        /*
+         * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
+         * need those.here. Manually pulling the session ID out of the header.
+         */
+        String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+        if (!RESTAuthenticationFilter.isTokenBasedAuthentication(authorizationHeader)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        String sessionId = authorizationHeader.substring(RESTAuthenticationFilter.AUTHENTICATION_SCHEME.length()).trim();
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(sessionId);
+
+        if (session.isEmpty() || session.get().mfaValid()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty() || user.get().mfaComplete()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().setUserMFAComplete(user.get().id(), true);
+
+        return Response.ok().build();
     }
 
     @DELETE

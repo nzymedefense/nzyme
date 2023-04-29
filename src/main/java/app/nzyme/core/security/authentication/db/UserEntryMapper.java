@@ -27,6 +27,9 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getString("name"),
                 rs.getBoolean("is_orgadmin"),
                 rs.getBoolean("is_superadmin"),
+                rs.getString("totp_secret"),
+                rs.getBoolean("mfa_complete"),
+                rs.getString("mfa_recovery_codes"),
                 new DateTime(rs.getTimestamp("updated_at")),
                 new DateTime(rs.getTimestamp("created_at")),
                 lastActivity

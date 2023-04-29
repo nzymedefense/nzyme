@@ -58,6 +58,8 @@
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
         <commonsvalidator.version>1.7</commonsvalidator.version>
+        <totp.version>1.7.1</totp.version>
+
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
 
@@ -354,6 +356,11 @@
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
             <version>${commonsvalidator.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp</artifactId>
+            <version>${totp.version}</version>
         </dependency>
     </dependencies>
 

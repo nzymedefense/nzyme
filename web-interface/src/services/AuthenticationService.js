@@ -22,6 +22,24 @@ class AuthenticationService {
       callback();
     })
   }
+
+  fetchSessionInfo(successCallback) {
+    RESTClient.get('/system/authentication/session', {}, function(response) {
+      successCallback(response.data);
+    });
+  }
+
+  initializeMFASetup(setUserSecret, setUserEmail, setRecoveryCodes) {
+    RESTClient.get('/system/authentication/mfa/setup/initialize', {}, function(response) {
+      setUserSecret(response.data.user_secret);
+      setUserEmail(response.data.user_email);
+      setRecoveryCodes(response.data.recovery_codes);
+    });
+  }
+
+  finishMFASetup() {
+    RESTClient.post('/system/authentication/mfa/setup/complete', {}, function(){});
+  }
 }
 
 export default AuthenticationService

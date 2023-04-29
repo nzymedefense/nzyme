@@ -70,9 +70,13 @@ import TapPermissionDetailsPage from "./components/system/authentication/managem
 import EditTapPermissionsPage from "./components/system/authentication/management/taps/EditTapPermissionsPage";
 import EditTenantUserPage from "./components/system/authentication/management/users/EditTenantUserPage";
 import SetupWizardPage from "./components/setup/SetupWizardPage";
+import AuthenticationService from "./services/AuthenticationService";
+import MFASetupPage from "./components/system/authentication/MFASetupPage";
+import LoadingSpinner from "./components/misc/LoadingSpinner";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
+const authenticationService = new AuthenticationService();
 
 const isAuthenticated = function() {
   return Store.get("sessionid") !== undefined;
@@ -87,14 +91,27 @@ function App() {
   const [apiConnected, setApiConnected] = useState(true);
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
-  const [loaded, setLoaded] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaSetup, setMfaSetup] = useState(false);
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
 
+  const [fullyLoaded, setFullyLoaded] = useState(false);
+
   const preChecks = function() {
-    pingService.ping(setApiConnected, setNzymeInformation, setLoaded);
+    pingService.ping(setApiConnected, setNzymeInformation);
+    fetchSessionInfo();
     setAuthenticated(isAuthenticated());
     setDarkModeEnabled(isDarkMode());
+  }
+
+  const fetchSessionInfo = function() {
+    authenticationService.fetchSessionInfo(function(sessionInfo) {
+      setMfaRequired(sessionInfo.mfa_valid === false);
+      setMfaSetup(sessionInfo.mfa_setup);
+
+      setFullyLoaded(true);
+    });
   }
 
   useEffect(() => {
@@ -109,6 +126,18 @@ function App() {
     Store.set("dark_mode", darkModeEnabled);
   }, [darkModeEnabled]);
 
+  useEffect(() => {
+    setFullyLoaded(false);
+    if (authenticated) {
+      fetchSessionInfo();
+    } else {
+      setAuthenticated(false);
+      setMfaRequired(false);
+
+      setFullyLoaded(true);
+    }
+  }, [authenticated]);
+
   if (!apiConnected) {
     // API not connected. Show error page.
     return (
@@ -121,6 +150,9 @@ function App() {
     )
   }
 
+  if (!fullyLoaded) {
+    return <LoadingSpinner />
+  }
 
   if (nzymeInformation && nzymeInformation.show_setup_wizard) {
     // API connected but initial setup not performed yet. Show initial onboarding.
@@ -136,7 +168,7 @@ function App() {
   }
 
   if (!authenticated) {
-    // API connected but not authenticated. Show login page. TODO useContext for dark mode enabled? Try to render in header.
+    // API connected but not authenticated. Show login page.
     return (
         <div className="nzyme">
           <DarkMode enabled={false} />
@@ -146,114 +178,132 @@ function App() {
         </div>
     )
   } else {
-    // Connected and authenticated. Show full interface.
-    return (
-      <Router>
-        <DarkMode enabled={darkModeEnabled} />
+    if (mfaRequired) {
+      // Connected, authenticated but MFA not passed yet.
+      if (mfaSetup) {
+        // MFA is set up for this user. Show MFA challenge.
+        return "MFA challenge";
+      } else {
+        // MFA is not set up for this user yet. Show setup page.
+        return (
+          <div className="nzyme">
+            <DarkMode enabled={false} />
 
-        <div className="nzyme d-flex">
-          <Sidebar />
-
-          <div id="main" className="flex-fill">
             <Notifications/>
-            <NavigationBar darkModeEnabled={darkModeEnabled} setDarkModeEnabled={setDarkModeEnabled} />
 
-            <div className="container-fluid">
-              <div className="content">
-                <Routes>
-                  <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
+            <MFASetupPage />
+          </div>
+        )
+      }
+    } else {
+      // Connected, authenticated and MFA'd. Show full interface.
+      return (
+          <Router>
+            <DarkMode enabled={darkModeEnabled} />
 
-                  { /* System/Misc. */}
-                  <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
+            <div className="nzyme d-flex">
+              <Sidebar />
 
-                  { /* System/Authentication*/ }
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(':organizationId', ':tenantId', ':tapUuid')} element={<EditTapPermissionsPage />}/>
+              <div id="main" className="flex-fill">
+                <Notifications/>
+                <NavigationBar darkModeEnabled={darkModeEnabled} setDarkModeEnabled={setDarkModeEnabled} />
 
-                  { /* System/Taps. */}
-                  <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
-                  <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
+                <div className="container-fluid">
+                  <div className="content">
+                    <Routes>
+                      <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
-                  { /* System/Crypto. */ }
-                  <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
-                  <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
-                  <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.UPLOAD} element={<TLSWildcardCertificateUploadPage />} />
-                  <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(':certificateId')} element={<TLSWildcardCertificateEditPage />} />
+                      { /* System/Misc. */}
+                      <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
-                  { /* System/Monitoring. */ }
-                  <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
-                  <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
+                      { /* System/Authentication*/ }
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(':organizationId', ':tenantId')} element={<CreateTapPermissionPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(':organizationId', ':tenantId', ':tapUuid')} element={<TapPermissionDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.EDIT(':organizationId', ':tenantId', ':tapUuid')} element={<EditTapPermissionsPage />}/>
 
-                  { /* System/Cluster */ }
-                  <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
-                  <Route path={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(':uuid')} element={<NodeDetailsPage />} />
-                  <Route path={ApiRoutes.SYSTEM.CLUSTER.MESSAGING.INDEX} element={<MessagingPage />} />
+                      { /* System/Taps. */}
+                      <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 
-                  { /* System/Health */ }
-                  <Route path={ApiRoutes.SYSTEM.HEALTH.INDEX} element={<HealthPage />} />
+                      { /* System/Crypto. */ }
+                      <Route path={ApiRoutes.SYSTEM.CRYPTO.INDEX} element={<CryptoSummaryPage />} />
+                      <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.CERTIFICATE(':nodeUUID')} element={<TLSCertificateDetailsPage />} />
+                      <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.UPLOAD} element={<TLSWildcardCertificateUploadPage />} />
+                      <Route path={ApiRoutes.SYSTEM.CRYPTO.TLS.WILDCARD.EDIT(':certificateId')} element={<TLSWildcardCertificateEditPage />} />
 
-                  { /* Ethernet/DNS. */}
-                  <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+                      { /* System/Monitoring. */ }
+                      <Route path={ApiRoutes.SYSTEM.MONITORING.INDEX} element={<MonitoringPage />} />
+                      <Route path={ApiRoutes.SYSTEM.MONITORING.PROMETHEUS.INDEX} element={<PrometheusMetricsPage />} />
 
-                  { /* Networks. */}
-                  <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>
-                  <Route path={ApiRoutes.DOT11.NETWORKS.SHOW(':bssid', ':ssid', ':channel')} element={<NetworkDetailsPage />}/>
-                  <Route path={ApiRoutes.DOT11.NETWORKS.PROXY(':bssid', ':ssid')} element={<NetworkDetailsPageRedirector />} />
+                      { /* System/Cluster */ }
+                      <Route path={ApiRoutes.SYSTEM.CLUSTER.INDEX} element={<NodesPage />} />
+                      <Route path={ApiRoutes.SYSTEM.CLUSTER.NODES.DETAILS(':uuid')} element={<NodeDetailsPage />} />
+                      <Route path={ApiRoutes.SYSTEM.CLUSTER.MESSAGING.INDEX} element={<MessagingPage />} />
 
-                  { /* Alerts. */}
-                  <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
-                  <Route exact path={ApiRoutes.ALERTS.SHOW(':alertId')} element={<AlertDetailsPage />}/>
+                      { /* System/Health */ }
+                      <Route path={ApiRoutes.SYSTEM.HEALTH.INDEX} element={<HealthPage />} />
 
-                  { /* Bandits. */}
-                  <Route path={ApiRoutes.DOT11.BANDITS.INDEX} element={<BanditsPage />}/>
-                  <Route path={ApiRoutes.DOT11.BANDITS.NEW} element={<CreateBanditPage />}/>
-                  <Route path={ApiRoutes.DOT11.BANDITS.SHOW(':banditId')} element={<BanditDetailPage />} />
-                  <Route path={ApiRoutes.DOT11.BANDITS.CONTACT_DETAILS(':banditUUID', ':contactUUID')} element={<BanditContactDetailsPage />} />
-                  <Route path={ApiRoutes.DOT11.BANDITS.EDIT(':banditId')} element={<EditBanditPage />} />
-                  <Route path={ApiRoutes.DOT11.BANDITS.NEW_IDENTIFIER(':banditId')} element={<CreateIdentifierPage />} />
-                  <Route path={ApiRoutes.DOT11.BANDITS.SHOW_TRACKER(':trackerName')} element={<TrackerDetailPage />} />
+                      { /* Ethernet/DNS. */}
+                      <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
 
-                  { /* Wireless Assets. */}
-                  <Route path={ApiRoutes.DOT11.ASSETS.INDEX} element={<AssetsPage />}/>
+                      { /* Networks. */}
+                      <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>
+                      <Route path={ApiRoutes.DOT11.NETWORKS.SHOW(':bssid', ':ssid', ':channel')} element={<NetworkDetailsPage />}/>
+                      <Route path={ApiRoutes.DOT11.NETWORKS.PROXY(':bssid', ':ssid')} element={<NetworkDetailsPageRedirector />} />
 
-                  { /* Reports. */}
-                  <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportsPage />}/>
-                  <Route path={ApiRoutes.REPORTING.SCHEDULE} element={<ScheduleReportPage />} />
-                  <Route path={ApiRoutes.REPORTING.DETAILS(':reportName')} element={<ReportDetailsPage />} />
-                  <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
+                      { /* Alerts. */}
+                      <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
+                      <Route exact path={ApiRoutes.ALERTS.SHOW(':alertId')} element={<AlertDetailsPage />}/>
 
-                  { /* Retro. */ }
-                  <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
-                  <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
-                  <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+                      { /* Bandits. */}
+                      <Route path={ApiRoutes.DOT11.BANDITS.INDEX} element={<BanditsPage />}/>
+                      <Route path={ApiRoutes.DOT11.BANDITS.NEW} element={<CreateBanditPage />}/>
+                      <Route path={ApiRoutes.DOT11.BANDITS.SHOW(':banditId')} element={<BanditDetailPage />} />
+                      <Route path={ApiRoutes.DOT11.BANDITS.CONTACT_DETAILS(':banditUUID', ':contactUUID')} element={<BanditContactDetailsPage />} />
+                      <Route path={ApiRoutes.DOT11.BANDITS.EDIT(':banditId')} element={<EditBanditPage />} />
+                      <Route path={ApiRoutes.DOT11.BANDITS.NEW_IDENTIFIER(':banditId')} element={<CreateIdentifierPage />} />
+                      <Route path={ApiRoutes.DOT11.BANDITS.SHOW_TRACKER(':trackerName')} element={<TrackerDetailPage />} />
 
-                  { /* 404. */}
-                  <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
+                      { /* Wireless Assets. */}
+                      <Route path={ApiRoutes.DOT11.ASSETS.INDEX} element={<AssetsPage />}/>
 
-                  { /* Catch-all. */}
-                  <Route path="*" element={<NotFoundPage />}/>
-                </Routes>
+                      { /* Reports. */}
+                      <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportsPage />}/>
+                      <Route path={ApiRoutes.REPORTING.SCHEDULE} element={<ScheduleReportPage />} />
+                      <Route path={ApiRoutes.REPORTING.DETAILS(':reportName')} element={<ReportDetailsPage />} />
+                      <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
-                <Footer />
+                      { /* Retro. */ }
+                      <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
+                      <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
+                      <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+
+                      { /* 404. */}
+                      <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>
+
+                      { /* Catch-all. */}
+                      <Route path="*" element={<NotFoundPage />}/>
+                    </Routes>
+
+                    <Footer />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Router>
-    )
-
+          </Router>
+      )
+    }
   }
 
 }

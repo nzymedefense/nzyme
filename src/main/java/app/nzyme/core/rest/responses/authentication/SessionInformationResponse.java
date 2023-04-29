@@ -23,20 +23,16 @@ import com.google.auto.value.AutoValue;
 @AutoValue
 public abstract class SessionInformationResponse {
 
-    public enum STATUS {
-        VALID, INVALID
-    }
+    @JsonProperty("mfa_valid")
+    public abstract boolean mfaValid();
 
-    @JsonProperty
-    public abstract STATUS status();
+    @JsonProperty("mfa_setup")
+    public abstract boolean mfaSetup();
 
-    @JsonProperty("seconds_left_valid")
-    public abstract int secondsLeftValid();
-
-    public static SessionInformationResponse create(STATUS status, int secondsLeftValid) {
+    public static SessionInformationResponse create(boolean mfaValid, boolean mfaSetup) {
         return builder()
-                .status(status)
-                .secondsLeftValid(secondsLeftValid)
+                .mfaValid(mfaValid)
+                .mfaSetup(mfaSetup)
                 .build();
     }
 
@@ -46,11 +42,10 @@ public abstract class SessionInformationResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder status(STATUS status);
+        public abstract Builder mfaValid(boolean mfaValid);
 
-        public abstract Builder secondsLeftValid(int secondsLeftValid);
+        public abstract Builder mfaSetup(boolean mfaSetup);
 
         public abstract SessionInformationResponse build();
     }
-
 }
