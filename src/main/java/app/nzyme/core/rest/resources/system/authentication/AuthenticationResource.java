@@ -25,6 +25,7 @@ import app.nzyme.core.rest.requests.MFAVerificationRequest;
 import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
@@ -168,7 +169,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         return Response.ok(SessionInformationResponse.create(
                 session.get().mfaValid(),
-                user.get().mfaComplete()
+                user.get().mfaComplete(),
+                session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES)
         )).build();
     }
 
@@ -290,7 +292,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
 
-        if (user.isEmpty() || user.get().mfaComplete()) {
+        if (user.isEmpty() || !user.get().mfaComplete()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -303,8 +305,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        // Set session to mfa valid etc.
-        LOG.info("MFA VALID!!");
+        // We have a valid TOTP. Mark session as MFA'd.
+        nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
 
         return Response.ok().build();
     }

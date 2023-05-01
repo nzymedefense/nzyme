@@ -1,4 +1,5 @@
 import RESTClient from '../util/RESTClient'
+import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationService {
   createSession (username, password, successCallback, errorCallback) {
@@ -40,8 +41,8 @@ class AuthenticationService {
     RESTClient.post('/system/authentication/mfa/setup/complete', {}, function(){});
   }
 
-  verifyMFA(code, successCallback) {
-    RESTClient.post('/system/authentication/mfa/verify', {code: code}, successCallback);
+  verifyMFA(code, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mfa/verify', {code: code}, successCallback, errorCallback);
   }
 }
 

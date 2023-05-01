@@ -391,7 +391,8 @@ public class OrganizationsResource {
                     session.isOrgadmin(),
                     session.remoteIp(),
                     session.createdAt(),
-                    session.lastActivity()
+                    session.lastActivity(),
+                    session.mfaRequestedAt()
             ));
         }
 
@@ -434,7 +435,8 @@ public class OrganizationsResource {
                     session.isOrgadmin(),
                     session.remoteIp(),
                     session.createdAt(),
-                    session.lastActivity()
+                    session.lastActivity(),
+                    session.mfaRequestedAt()
             ));
         }
 
@@ -472,7 +474,8 @@ public class OrganizationsResource {
                     session.isOrgadmin(),
                     session.remoteIp(),
                     session.createdAt(),
-                    session.lastActivity()
+                    session.lastActivity(),
+                    session.mfaRequestedAt()
             ));
         }
 

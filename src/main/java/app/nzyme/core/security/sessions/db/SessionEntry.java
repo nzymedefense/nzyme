@@ -16,8 +16,10 @@ public abstract class SessionEntry {
     public abstract DateTime elevatedSince();
     public abstract boolean mfaValid();
     public abstract DateTime createdAt();
+    @Nullable
+    public abstract DateTime mfaRequestedAt();
 
-    public static SessionEntry create(String sessionId, long userId, String remoteIp, boolean elevated, DateTime elevatedSince, boolean mfaValid, DateTime createdAt) {
+    public static SessionEntry create(String sessionId, long userId, String remoteIp, boolean elevated, DateTime elevatedSince, boolean mfaValid, DateTime createdAt, DateTime mfaRequestedAt) {
         return builder()
                 .sessionId(sessionId)
                 .userId(userId)
@@ -26,6 +28,7 @@ public abstract class SessionEntry {
                 .elevatedSince(elevatedSince)
                 .mfaValid(mfaValid)
                 .createdAt(createdAt)
+                .mfaRequestedAt(mfaRequestedAt)
                 .build();
     }
 
@@ -48,6 +51,8 @@ public abstract class SessionEntry {
         public abstract Builder mfaValid(boolean mfaValid);
 
         public abstract Builder createdAt(DateTime createdAt);
+
+        public abstract Builder mfaRequestedAt(DateTime mfaRequestedAt);
 
         public abstract SessionEntry build();
     }

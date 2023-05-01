@@ -14,7 +14,8 @@ function MFASetupStep1(props) {
   return (
       <React.Fragment>
         <QRCode
-            style={{height: "auto", width: "225px", marginLeft: "25px"}}
+            className="totp-qr"
+            style={{height: "auto", width: "225px"}}
             value={otpAuthUrl}
         />
 

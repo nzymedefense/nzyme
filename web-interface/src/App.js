@@ -94,6 +94,7 @@ function App() {
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
   const [mfaRequired, setMfaRequired] = useState(true);
   const [mfaSetup, setMfaSetup] = useState(false);
+  const [mfaEntryExpiresAt, setMfaEntryExpiresAt] = useState(null);
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
 
@@ -104,7 +105,6 @@ function App() {
       fetchSessionInfo(function () {
         setAuthenticated(isAuthenticated());
         setDarkModeEnabled(isDarkMode());
-
         setFullyLoaded(true);
       });
     }, function () {
@@ -118,8 +118,9 @@ function App() {
       authenticationService.fetchSessionInfo(function (sessionInfo) {
         setMfaRequired(sessionInfo.mfa_valid === false);
         setMfaSetup(sessionInfo.mfa_setup);
-        callback();
+        setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
 
+        callback();
       }, function() {
         Store.delete("sessionid");
         callback();
@@ -191,7 +192,7 @@ function App() {
 
               <Notifications/>
 
-              <MFAEntryPage />
+              <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt} />
             </div>
         )
       } else {

@@ -13,6 +13,8 @@ public class SessionEntryMapper implements RowMapper<SessionEntry> {
     public SessionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         DateTime elevatedSince = rs.getTimestamp("elevated_since") == null
                 ? null : new DateTime(rs.getTimestamp("elevated_since"));
+        DateTime mfaRequestedAt = rs.getTimestamp("mfa_requested_at") == null
+                ? null : new DateTime(rs.getTimestamp("mfa_requested_at"));
 
         return SessionEntry.create(
                 rs.getString("sessionid"),
@@ -21,7 +23,8 @@ public class SessionEntryMapper implements RowMapper<SessionEntry> {
                 rs.getBoolean("elevated"),
                 elevatedSince,
                 rs.getBoolean("mfa_valid"),
-                new DateTime(rs.getTimestamp("created_at"))
+                new DateTime(rs.getTimestamp("created_at")),
+                mfaRequestedAt
         );
     }
 

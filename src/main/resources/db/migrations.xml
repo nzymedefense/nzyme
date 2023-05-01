@@ -2144,4 +2144,12 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_mfa_requested_at" author="lennartkoopmann">
+        <addColumn tableName="auth_sessions">
+            <column name="mfa_requested_at" type="timestamp with time zone" defaultValue="NULL">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -549,3 +549,8 @@ form.totp-validation input::-ms-input-placeholder,
 form.totp-validation input::-ms-input-placeholder{ /* Internet Explorer 10-11 */
     color: #c0c0c0;
 }
+
+svg.totp-qr {
+    display: block;
+    margin: auto;
+}

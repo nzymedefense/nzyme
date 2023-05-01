@@ -1,10 +1,15 @@
 import React, {useEffect, useRef, useState} from "react";
 import AssetStylesheet from "../../misc/AssetStylesheet";
 import AuthenticationService from "../../../services/AuthenticationService";
+import moment from "moment";
 
 const authenticationService = new AuthenticationService();
 
-function MFASetupPage() {
+function MFASetupPage(props) {
+
+  const mfaEntryExpiresAt = props.mfaEntryExpiresAt;
+
+  const DEFAULT_TEXT = "Enter Code";
 
   const [code1, setCode1] = useState("");
   const [code2, setCode2] = useState("");
@@ -13,8 +18,10 @@ function MFASetupPage() {
   const [code5, setCode5] = useState("");
   const [code6, setCode6] = useState("");
 
-  const [submitText, setSubmitText] = useState("Enter Code")
+  const [submitText, setSubmitText] = useState(DEFAULT_TEXT)
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const refs = {
     code1: useRef(null),
@@ -30,7 +37,7 @@ function MFASetupPage() {
   }, [])
 
   const onKeyUp = function(e, number) {
-    if (e.keyCode === 8) {
+    if (e.keyCode === 8 || e.keyCode === 37) {
       // Jump to previous box if there is one.
       if (number > 1) {
         refs["code" + (number - 1)].current.focus();
@@ -52,10 +59,23 @@ function MFASetupPage() {
   }
 
   const onSubmit = function() {
+    setErrorMessage(null);
     setFormSubmitting(true);
     setSubmitText("Please wait... ");
 
-    // verify, handle success (just wait for app state change) / error (show, reset button)
+    const code = code1 + code2 + code3 + code4 + code5 + code6;
+
+    authenticationService.verifyMFA(code, function() {
+      setSubmitText("Success! Please wait...");
+    }, function() {
+      // Artificially wait 1 second so the user sees something happening. (The REST call is extremely fast)
+      setTimeout(function(){
+        setFormSubmitting(false);
+        setSubmitText(DEFAULT_TEXT);
+        setSuccess(false);
+        setErrorMessage("Invalid code. Please try again.");
+        }, 1000);
+    });
   }
 
   const formReady = function() {
@@ -81,7 +101,7 @@ function MFASetupPage() {
 
                         <hr className="mb-4"/>
 
-                        <form className="row align-items-center totp-validation">
+                        <form className="row align-items-center totp-validation mb-4">
                           <input type="number" className="form-control" ref={refs.code1} placeholder={"0"}
                                  value={code1}
                                  onChange={(e) => onChange(e, setCode1)}
@@ -108,11 +128,20 @@ function MFASetupPage() {
                                  onKeyUp={(e) => onKeyUp(e,6)} />
                         </form>
 
-                        <button className="btn btn-primary mt-4" onClick={onSubmit} disabled={!formReady()}>
-                          {submitText}
+                        { errorMessage ? <div className="alert alert-warning mt-2 mb-4">{errorMessage}</div> : null }
+
+                        <button className={"btn " + (success ? "btn-success" : "btn-primary")}
+                                onClick={onSubmit}
+                                disabled={!formReady()}>
+                          {success ? <i className="fa-solid fa-thumbs-up"></i> : null } {submitText}
                         </button>
 
                         <button className="btn btn-sm btn-link mt-5">Use a recovery code</button>
+
+                        <div className="mt-5">
+                          You have <strong title={mfaEntryExpiresAt}>{moment(mfaEntryExpiresAt).fromNow(true)}</strong> remaining
+                          to pass the multi-factor challenge. After that, you have to log in again.
+                        </div>
 
                       </div>
                     </div>

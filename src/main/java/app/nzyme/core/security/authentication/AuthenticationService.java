@@ -25,6 +25,8 @@ public class AuthenticationService {
 
     private static final Logger LOG = LogManager.getLogger(AuthenticationService.class);
 
+    public static final int MFA_ENTRY_TIME_MINUTES = 5;
+
     public final NzymeNode nzyme;
 
     public AuthenticationService(NzymeNode nzyme) {
@@ -460,8 +462,9 @@ public class AuthenticationService {
 
     public void createSession(String sessionId, long userId, String remoteIp) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at) " +
-                                "VALUES(:sessionid, :user_id, :remote_ip, NOW())")
+                handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at, " +
+                                "mfa_valid, mfa_requested_at) VALUES(:sessionid, :user_id, :remote_ip, NOW(), " +
+                                "false, NOW())")
                         .bind("sessionid", sessionId)
                         .bind("user_id", userId)
                         .bind("remote_ip", remoteIp)
@@ -472,7 +475,8 @@ public class AuthenticationService {
     public List<SessionEntryWithUserDetails> findAllSessions(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
-                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
+                                "s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "ORDER BY u.email ASC " +
@@ -487,7 +491,8 @@ public class AuthenticationService {
     public List<SessionEntryWithUserDetails> findSessionsOfOrganization(long organizationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
-                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
+                                "s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "WHERE u.organization_id = :organization_id " +
@@ -504,7 +509,8 @@ public class AuthenticationService {
     public List<SessionEntryWithUserDetails> findSessionsOfTenant(long organizationId, long tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
-                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin " +
+                                "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
+                                "s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id " +
@@ -521,8 +527,8 @@ public class AuthenticationService {
 
     public Optional<SessionEntry> findSessionWithOrWithoutPassedMFABySessionId(String sessionId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, mfa_valid " +
-                                "FROM auth_sessions WHERE sessionid = :sessionid")
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
+                                "mfa_valid, mfa_requested_at FROM auth_sessions WHERE sessionid = :sessionid")
                         .bind("sessionid", sessionId)
                         .mapTo(SessionEntry.class)
                         .findOne()
@@ -531,11 +537,21 @@ public class AuthenticationService {
 
     public Optional<SessionEntry> findSessionWithPassedMFABySessionId(String sessionId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, mfa_valid " +
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
+                                "mfa_valid, mfa_requested_at " +
                                 "FROM auth_sessions WHERE sessionid = :sessionid AND mfa_valid = true")
                         .bind("sessionid", sessionId)
                         .mapTo(SessionEntry.class)
                         .findOne()
+        );
+    }
+
+    public void markSessionAsMFAValid(String sessionId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_sessions SET mfa_valid = true, mfa_requested_at = NULL " +
+                                "WHERE sessionid = :sessionid")
+                        .bind("sessionid", sessionId)
+                        .execute()
         );
     }
 
@@ -721,25 +737,37 @@ public class AuthenticationService {
     }
 
     private void runSessionCleaning() {
-        // Delete all sessions older than 12 hours.
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM auth_sessions WHERE created_at < :timeout")
-                        .bind("timeout", DateTime.now().minusHours(12))
-                        .execute()
-        );
+        try {
+            // Delete all sessions older than 12 hours.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("DELETE FROM auth_sessions WHERE created_at < :timeout")
+                            .bind("timeout", DateTime.now().minusHours(12))
+                            .execute()
+            );
 
-        // Delete all sessions of users that have been inactive for 15 minutes.
-        List<Long> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id FROM users WHERE last_activity < :timeout")
-                        .bind("timeout", DateTime.now().minusMinutes(15))
-                        .mapTo(Long.class)
-                        .list()
-        );
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN :user_ids")
-                        .bind("user_ids", inactiveUsers)
-                        .execute()
-        );
+            // Delete all sessions with MFA waiting for longer than 5 minutes.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("DELETE FROM auth_sessions " +
+                                    "WHERE mfa_valid = false AND mfa_requested_at < :timeout")
+                            .bind("timeout", DateTime.now().minusMinutes(MFA_ENTRY_TIME_MINUTES))
+                            .execute()
+            );
+
+            // Delete all sessions of users that have been inactive for 15 minutes.
+            List<Long> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT id FROM auth_users WHERE last_activity < :timeout")
+                            .bind("timeout", DateTime.now().minusMinutes(15))
+                            .mapTo(Long.class)
+                            .list()
+            );
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN :user_ids")
+                            .bind("user_ids", inactiveUsers)
+                            .execute()
+            );
+        } catch(Exception e) {
+            LOG.error("Could not run session cleaning.", e);
+        }
     }
 
     public boolean isTenantDeletable(TenantEntry t) {
