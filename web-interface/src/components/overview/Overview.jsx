@@ -22,12 +22,18 @@ class Overview extends React.Component {
     this.dashboardService.findAll = this.dashboardService.findAll.bind(this)
 
     this._loadData = this._loadData.bind(this)
+
+    this.updaterInterval = null;
   }
 
   componentDidMount () {
     this._loadData()
 
-    setInterval(this._loadData, 5000)
+    if (this.updaterInterval) this.updaterInterval = setInterval(this._loadData, 5000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.updaterInterval);
   }
 
   _loadData () {

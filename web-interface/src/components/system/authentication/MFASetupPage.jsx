@@ -53,7 +53,7 @@ function MFASetupPage() {
                       <div className="card-body p-4 p-lg-5 text-black">
                         <h1 className="mb-3 pb-3">Multi-Factor Authentication</h1>
 
-                        <p>Setup required before you can proceeed.</p>
+                        <p>Setup required before you can proceed.</p>
 
                         <hr className="mb-4"/>
 

@@ -15,7 +15,7 @@ class PingService {
     return stableRoot + stableUri
   }
 
-  ping (setApiConnected, setNzymeInformation) {
+  ping (setApiConnected, setNzymeInformation, successCallback, errorCallback) {
     // NOT USING RESTClient wrapper here because it's kind of a special call with special error handler etc and we
     // can keep things simple this way.
 
@@ -24,6 +24,8 @@ class PingService {
         if (response.data) {
           setApiConnected(true);
           setNzymeInformation(response.data);
+
+          successCallback();
         } else {
           setNzymeInformation(null);
           setApiConnected(false);
@@ -32,6 +34,7 @@ class PingService {
       .catch(function () {
         setNzymeInformation(null);
         setApiConnected(false);
+        errorCallback();
       })
   }
 }

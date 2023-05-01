@@ -21,6 +21,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.RESTAuthenticationFilter;
+import app.nzyme.core.rest.requests.MFAVerificationRequest;
 import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
@@ -36,9 +37,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.code.CodeVerifier;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.code.DefaultCodeVerifier;
 import dev.samstevens.totp.recovery.RecoveryCodeGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
+import dev.samstevens.totp.time.SystemTimeProvider;
+import dev.samstevens.totp.time.TimeProvider;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
@@ -134,7 +141,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/session")
-    public Response getSessionInformation(ContainerRequestContext requestContext) {
+    public Response getSessionInformation(@Context ContainerRequestContext requestContext) {
         /*
          * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
          * need those.here. Manually pulling the session ID out of the header.
@@ -167,7 +174,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/mfa/setup/initialize")
-    public Response initializeMfaSetup(ContainerRequestContext requestContext) {
+    public Response initializeMfaSetup(@Context ContainerRequestContext requestContext) {
         /*
          * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
          * need those.here. Manually pulling the session ID out of the header.
@@ -229,7 +236,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/mfa/setup/complete")
-    public Response completeMfaSetup(ContainerRequestContext requestContext) {
+    public Response completeMfaSetup(@Context ContainerRequestContext requestContext) {
         /*
          * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
          * need those.here. Manually pulling the session ID out of the header.
@@ -255,6 +262,49 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().setUserMFAComplete(user.get().id(), true);
+
+        return Response.ok().build();
+    }
+
+
+    @POST
+    @Path("/mfa/verify")
+    public Response verifyMfa(@Context ContainerRequestContext requestContext, MFAVerificationRequest req) {
+        /*
+         * The @RestSecured filter is not going to work because it will not let non-MFA'd sessions pass, but we
+         * need those.here. Manually pulling the session ID out of the header.
+         */
+        String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
+
+        if (!RESTAuthenticationFilter.isTokenBasedAuthentication(authorizationHeader)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        String sessionId = authorizationHeader.substring(RESTAuthenticationFilter.AUTHENTICATION_SCHEME.length()).trim();
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(sessionId);
+
+        if (session.isEmpty() || session.get().mfaValid()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty() || user.get().mfaComplete()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Compare codes.
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+        if (!verifier.isValidCode(user.get().totpSecret(), req.code())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        // Set session to mfa valid etc.
+        LOG.info("MFA VALID!!");
 
         return Response.ok().build();
     }

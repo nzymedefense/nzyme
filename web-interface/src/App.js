@@ -73,6 +73,7 @@ import SetupWizardPage from "./components/setup/SetupWizardPage";
 import AuthenticationService from "./services/AuthenticationService";
 import MFASetupPage from "./components/system/authentication/MFASetupPage";
 import LoadingSpinner from "./components/misc/LoadingSpinner";
+import MFAEntryPage from "./components/system/authentication/MFAEntryPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -91,7 +92,7 @@ function App() {
   const [apiConnected, setApiConnected] = useState(true);
   const [authenticated, setAuthenticated] = useState(isAuthenticated());
   const [darkModeEnabled, setDarkModeEnabled] = useState(isDarkMode());
-  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(true);
   const [mfaSetup, setMfaSetup] = useState(false);
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
@@ -99,19 +100,33 @@ function App() {
   const [fullyLoaded, setFullyLoaded] = useState(false);
 
   const preChecks = function() {
-    pingService.ping(setApiConnected, setNzymeInformation);
-    fetchSessionInfo();
-    setAuthenticated(isAuthenticated());
-    setDarkModeEnabled(isDarkMode());
-  }
+    pingService.ping(setApiConnected, setNzymeInformation, function() {
+      fetchSessionInfo(function () {
+        setAuthenticated(isAuthenticated());
+        setDarkModeEnabled(isDarkMode());
 
-  const fetchSessionInfo = function() {
-    authenticationService.fetchSessionInfo(function(sessionInfo) {
-      setMfaRequired(sessionInfo.mfa_valid === false);
-      setMfaSetup(sessionInfo.mfa_setup);
-
+        setFullyLoaded(true);
+      });
+    }, function () {
       setFullyLoaded(true);
     });
+  }
+
+  const fetchSessionInfo = function(callback) {
+    if (isAuthenticated()) {
+
+      authenticationService.fetchSessionInfo(function (sessionInfo) {
+        setMfaRequired(sessionInfo.mfa_valid === false);
+        setMfaSetup(sessionInfo.mfa_setup);
+        callback();
+
+      }, function() {
+        Store.delete("sessionid");
+        callback();
+      });
+    } else {
+      callback();
+    }
   }
 
   useEffect(() => {
@@ -125,18 +140,6 @@ function App() {
   useEffect(() => {
     Store.set("dark_mode", darkModeEnabled);
   }, [darkModeEnabled]);
-
-  useEffect(() => {
-    setFullyLoaded(false);
-    if (authenticated) {
-      fetchSessionInfo();
-    } else {
-      setAuthenticated(false);
-      setMfaRequired(false);
-
-      setFullyLoaded(true);
-    }
-  }, [authenticated]);
 
   if (!apiConnected) {
     // API not connected. Show error page.
@@ -182,7 +185,15 @@ function App() {
       // Connected, authenticated but MFA not passed yet.
       if (mfaSetup) {
         // MFA is set up for this user. Show MFA challenge.
-        return "MFA challenge";
+        return (
+            <div className="nzyme">
+              <DarkMode enabled={false} />
+
+              <Notifications/>
+
+              <MFAEntryPage />
+            </div>
+        )
       } else {
         // MFA is not set up for this user yet. Show setup page.
         return (

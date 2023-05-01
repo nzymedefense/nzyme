@@ -2,7 +2,6 @@ import RESTClient from '../util/RESTClient'
 
 class AuthenticationService {
   createSession (username, password, successCallback, errorCallback) {
-
     RESTClient.post('/system/authentication/session', { username: username, password: password }, function (response) {
       successCallback(response.data.token);
     }, function (error) {
@@ -23,10 +22,10 @@ class AuthenticationService {
     })
   }
 
-  fetchSessionInfo(successCallback) {
+  fetchSessionInfo(successCallback, errorCallback) {
     RESTClient.get('/system/authentication/session', {}, function(response) {
       successCallback(response.data);
-    });
+    }, errorCallback);
   }
 
   initializeMFASetup(setUserSecret, setUserEmail, setRecoveryCodes) {
@@ -39,6 +38,10 @@ class AuthenticationService {
 
   finishMFASetup() {
     RESTClient.post('/system/authentication/mfa/setup/complete', {}, function(){});
+  }
+
+  verifyMFA(code, successCallback) {
+    RESTClient.post('/system/authentication/mfa/verify', {code: code}, successCallback);
   }
 }
 

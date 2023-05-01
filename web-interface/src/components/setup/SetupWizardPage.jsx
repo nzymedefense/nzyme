@@ -13,7 +13,7 @@ function SetupWizardPage() {
   const onCreateUserClick = function (email, password, name, callback) {
     authenticationMgmtService.createInitialUser(email, password, name, function() {
       // Success.
-      notify.show('First Super Adminisrtator created. Please log in.', 'success');
+      notify.show('First Super Administrator created. Please log in.', 'success');
       callback();
     }, function (error) {
       // Error.

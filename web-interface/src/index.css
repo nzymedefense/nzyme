@@ -522,3 +522,30 @@ ul.mfa-recovery-codes {
     padding: 0;
     margin: 0;
 }
+
+form.totp-validation {
+    margin-left: 2px;
+}
+
+form.totp-validation input {
+    -moz-appearance:textfield;
+    width: 45px;
+    font-size: 24px !important;
+    margin-left: 12px;
+    text-align: center;
+}
+
+form.totp-validation input::-webkit-outer-spin-button,
+form.totp-validation input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+form.totp-validation input::placeholder {
+    color: #c0c0c0;
+    opacity: 1;
+}
+
+form.totp-validation input::-ms-input-placeholder,
+form.totp-validation input::-ms-input-placeholder{ /* Internet Explorer 10-11 */
+    color: #c0c0c0;
+}
