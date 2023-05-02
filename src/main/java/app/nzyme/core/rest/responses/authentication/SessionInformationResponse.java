@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class SessionInformationResponse {
 
@@ -31,6 +33,7 @@ public abstract class SessionInformationResponse {
     public abstract boolean mfaSetup();
 
     @JsonProperty("mfa_entry_expires_at")
+    @Nullable
     public abstract DateTime mfaEntryExpiresAt();
 
     public static SessionInformationResponse create(boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt) {
@@ -55,5 +58,4 @@ public abstract class SessionInformationResponse {
 
         public abstract SessionInformationResponse build();
     }
-
 }

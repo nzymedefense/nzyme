@@ -18,6 +18,7 @@
 package app.nzyme.core.rest.resources.system.authentication;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.RESTAuthenticationFilter;
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.io.BaseEncoding;
 import com.google.common.net.HttpHeaders;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
@@ -51,6 +53,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 
 import javax.inject.Inject;
@@ -167,10 +170,13 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        DateTime mfaExpiresAt = session.get().mfaRequestedAt() == null
+                ? null : session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES);
+
         return Response.ok(SessionInformationResponse.create(
                 session.get().mfaValid(),
                 user.get().mfaComplete(),
-                session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES)
+                mfaExpiresAt
         )).build();
     }
 
@@ -219,14 +225,47 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
 
-            nzyme.getAuthenticationService().setUserTOTPSecret(user.get().id(), userSecret);
-            nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), recoveryCodesJson);
+            // Encrypt.
+            String encryptedUserSecret;
+            String encryptedRecoveryCodesJson;
+            try {
+                encryptedUserSecret = BaseEncoding.base64().encode(
+                        nzyme.getCrypto().encryptWithClusterKey(userSecret.getBytes())
+                );
+                encryptedRecoveryCodesJson = BaseEncoding.base64().encode(
+                        nzyme.getCrypto().encryptWithClusterKey(recoveryCodesJson.getBytes())
+                );
+            } catch (Crypto.CryptoOperationException e) {
+                LOG.error("Could not encrypt MFA data codes.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+
+            // Store encrypted data in database.
+            nzyme.getAuthenticationService().setUserTOTPSecret(user.get().id(), encryptedUserSecret);
+            nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), encryptedRecoveryCodesJson);
         } else {
             // User already has a secret (but MFA setup not complete. Aborted wizard?) Use existing secret.
-            userSecret = user.get().totpSecret();
+            try {
+                userSecret = new String(nzyme.getCrypto().decryptWithClusterKey(
+                        BaseEncoding.base64().decode(user.get().totpSecret())
+                ));
+            } catch (Crypto.CryptoOperationException e) {
+                LOG.error("Could not decrypt MFA data codes.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
 
             try {
-                recoveryCodes = new ObjectMapper().readValue(user.get().mfaRecoveryCodes(), new TypeReference<>() {});
+                String recoveryCodesDecryptedJson;
+                try {
+                    recoveryCodesDecryptedJson = new String(nzyme.getCrypto().decryptWithClusterKey(
+                            BaseEncoding.base64().decode(user.get().mfaRecoveryCodes())
+                    ));
+                } catch (Crypto.CryptoOperationException e) {
+                    LOG.error("Could not decrypt MFA data codes.", e);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
+
+                recoveryCodes = new ObjectMapper().readValue(recoveryCodesDecryptedJson, new TypeReference<>() {});
             } catch (JsonProcessingException e) {
                 LOG.error("Could not deserialize MFA recovery codes.", e);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -301,7 +340,17 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
 
-        if (!verifier.isValidCode(user.get().totpSecret(), req.code())) {
+        String userSecret;
+        try {
+            userSecret = new String(nzyme.getCrypto().decryptWithClusterKey(
+                    BaseEncoding.base64().decode(user.get().totpSecret())
+            ));
+        } catch (Crypto.CryptoOperationException e) {
+            LOG.error("Could not decrypt MFA data codes.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        if (!verifier.isValidCode(userSecret, req.code())) {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
