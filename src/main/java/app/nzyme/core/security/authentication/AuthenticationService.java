@@ -761,8 +761,8 @@ public class AuthenticationService {
                             .list()
             );
             nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN :user_ids")
-                            .bind("user_ids", inactiveUsers)
+                    handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN (<user_ids>)")
+                            .bindList("user_ids", inactiveUsers)
                             .execute()
             );
         } catch(Exception e) {
