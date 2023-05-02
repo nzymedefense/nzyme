@@ -45,11 +45,14 @@ public abstract class SessionDetailsResponse {
     @Nullable
     public abstract DateTime lastActivity();
 
+    @JsonProperty("mfa_valid")
+    public abstract boolean mfaValid();
+
     @JsonProperty("mfa_requested_at")
     @Nullable
     public abstract DateTime mfaRequestedAt();
 
-    public static SessionDetailsResponse create(Long id, Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity, DateTime mfaRequestedAt) {
+    public static SessionDetailsResponse create(Long id, Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -62,6 +65,7 @@ public abstract class SessionDetailsResponse {
                 .remoteIp(remoteIp)
                 .createdAt(createdAt)
                 .lastActivity(lastActivity)
+                .mfaValid(mfaValid)
                 .mfaRequestedAt(mfaRequestedAt)
                 .build();
     }
@@ -93,6 +97,8 @@ public abstract class SessionDetailsResponse {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder lastActivity(DateTime lastActivity);
+
+        public abstract Builder mfaValid(boolean mfaValid);
 
         public abstract Builder mfaRequestedAt(DateTime mfaRequestedAt);
 

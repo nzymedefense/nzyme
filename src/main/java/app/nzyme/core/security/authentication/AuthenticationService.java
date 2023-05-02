@@ -476,7 +476,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "ORDER BY u.email ASC " +
@@ -492,7 +492,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "WHERE u.organization_id = :organization_id " +
@@ -510,7 +510,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
-                                "s.mfa_requested_at " +
+                                "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
                                 "LEFT JOIN auth_users u ON s.user_id = u.id " +
                                 "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id " +

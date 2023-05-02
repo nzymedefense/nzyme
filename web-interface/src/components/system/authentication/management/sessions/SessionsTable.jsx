@@ -49,6 +49,7 @@ function SessionsTable(props) {
             <th>Remote IP</th>
             <th>Type</th>
             <th>Logged In</th>
+            <th>MFA Status</th>
             <th>Last Activity</th>
             <th>&nbsp;</th>
           </tr>
@@ -67,6 +68,9 @@ function SessionsTable(props) {
                   </td>
                   <td title={moment(s.created_at).format()}>
                     {moment(s.created_at).fromNow()}
+                  </td>
+                  <td>
+                    {s.mfa_valid ? "Passed/Active" : "Pending"}
                   </td>
                   <td title={moment(s.last_activity).format()}>
                     {moment(s.last_activity).fromNow()}

@@ -392,6 +392,7 @@ public class OrganizationsResource {
                     session.remoteIp(),
                     session.createdAt(),
                     session.lastActivity(),
+                    session.mfaValid(),
                     session.mfaRequestedAt()
             ));
         }
@@ -436,6 +437,7 @@ public class OrganizationsResource {
                     session.remoteIp(),
                     session.createdAt(),
                     session.lastActivity(),
+                    session.mfaValid(),
                     session.mfaRequestedAt()
             ));
         }
@@ -475,6 +477,7 @@ public class OrganizationsResource {
                     session.remoteIp(),
                     session.createdAt(),
                     session.lastActivity(),
+                    session.mfaValid(),
                     session.mfaRequestedAt()
             ));
         }

@@ -30,6 +30,7 @@ public class SessionEntryWithUserDetailsMapper implements RowMapper<SessionEntry
                 rs.getLong("organization_id") == 0 ? null : rs.getLong("organization_id"),
                 rs.getLong("tenant_id") == 0 ? null : rs.getLong("tenant_id"),
                 lastActivity,
+                rs.getBoolean("mfa_valid"),
                 mfaRequestedAt
         );
     }
