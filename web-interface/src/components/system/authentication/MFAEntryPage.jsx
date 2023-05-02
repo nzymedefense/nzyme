@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import AssetStylesheet from "../../misc/AssetStylesheet";
 import AuthenticationService from "../../../services/AuthenticationService";
 import moment from "moment";
+import Store from "../../../util/Store";
 
 const authenticationService = new AuthenticationService();
 
@@ -78,6 +79,10 @@ function MFASetupPage(props) {
     });
   }
 
+  const cancel = function() {
+    Store.delete("sessionid");
+  }
+
   const formReady = function() {
     return !formSubmitting && code1 && code2 && code3 && code4 && code5 && code6
   }
@@ -140,7 +145,8 @@ function MFASetupPage(props) {
 
                         <div className="mt-5">
                           You have <strong title={mfaEntryExpiresAt}>{moment(mfaEntryExpiresAt).fromNow(true)}</strong> remaining
-                          to pass the multi-factor challenge. After that, you have to log in again.
+                          to pass the multi-factor challenge. After that, you have to log in again.{' '}
+                          <a href="#" onClick={cancel}>Return to sign in page</a>.
                         </div>
 
                       </div>
