@@ -71,6 +71,30 @@ public class AuthenticationService {
         );
     }
 
+    public List<UserEntry> findAllSuperAdministrators() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
+                                "FROM auth_users WHERE is_superadmin = true " +
+                                "ORDER BY name ASC")
+                        .mapTo(UserEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<UserEntry> findSuperAdministrator(Long userId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
+                                "FROM auth_users WHERE is_superadmin = true AND id = :user_id")
+                        .bind("user_id", userId)
+                        .mapTo(UserEntry.class)
+                        .findOne()
+        );
+    }
+
     public UserEntry createSuperAdministrator(String name, String email,PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->

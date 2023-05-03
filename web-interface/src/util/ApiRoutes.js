@@ -9,6 +9,9 @@ const ApiRoutes = {
           DETAILS: (organizationId) => `/system/authentication/organizations/show/${organizationId}`,
           CREATE: '/system/authentication/organizations/create',
           EDIT: (organizationId) => `/system/authentication/organizations/show/${organizationId}/edit`,
+          ADMINS: {
+            DETAILS: (organizationId, userId) => `/system/authentication/organizations/show/${organizationId}/admins/show/${userId}`,
+          }
         },
         TENANTS: {
           DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}`,
@@ -24,7 +27,10 @@ const ApiRoutes = {
           CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/create`,
           DETAILS: (organizationId, tenantId, tapUuid) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/show/${tapUuid}`,
           EDIT: (organizationId, tenantId, tapUuid) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/show/${tapUuid}/edit`,
-        }
+        },
+        SUPERADMINS: {
+          DETAILS: (userId) => `/system/authentication/superadmins/show/${userId}`,
+        },
       }
     },
     TAPS: {

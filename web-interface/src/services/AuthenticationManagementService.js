@@ -154,6 +154,19 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
+  findAllSuperAdmins(setUsers) {
+    RESTClient.get('/system/authentication/mgmt/organizations/superadmins',
+        {}, function (response) {
+      setUsers(response.data.users);
+    })
+  }
+
+  findSuperAdmin(userId, setUser) {
+    RESTClient.get('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
+        {}, function (response) {
+          setUser(response.data);
+        })
+  }
 }
 
 export default AuthenticationManagementService

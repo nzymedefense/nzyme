@@ -5,7 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
-import UsersTable from "../users/UsersTable";
+import TenantUsersTable from "../users/TenantUsersTable";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
 import TenantSessions from "../sessions/TenantSessions";
 
@@ -102,7 +102,7 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Users</h3>
 
-                      <UsersTable organizationId={organization.id} tenantId={tenant.id} />
+                      <TenantUsersTable organizationId={organization.id} tenantId={tenant.id} />
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
                         Create User

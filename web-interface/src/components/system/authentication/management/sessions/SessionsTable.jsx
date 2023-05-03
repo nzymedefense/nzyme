@@ -3,6 +3,7 @@ import Paginator from "../../../../misc/Paginator";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import moment from "moment";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
+import UserDetailsAdminLink from "../../misc/UserDetailsAdminLink";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -58,7 +59,12 @@ function SessionsTable(props) {
           {sessions.sessions.map((s, i) => {
             return (
                 <tr key={"session-" + i}>
-                  <td>{s.user_email}</td>
+                  <td>
+                    <UserDetailsAdminLink id={s.user_id}
+                                          email={s.user_email}
+                                          organizationId={s.organization_id}
+                                          tenantId={s.tenant_id} />
+                  </td>
                   <td>{s.user_name}</td>
                   <td>{s.remote_ip}</td>
                   <td>

@@ -74,6 +74,7 @@ import AuthenticationService from "./services/AuthenticationService";
 import MFASetupPage from "./components/system/authentication/MFASetupPage";
 import LoadingSpinner from "./components/misc/LoadingSpinner";
 import MFAEntryPage from "./components/system/authentication/MFAEntryPage";
+import SuperAdminDetailsPage from "./components/system/authentication/management/users/superadmins/SuperAdminDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -230,6 +231,7 @@ function App() {
 
                       { /* System/Authentication*/ }
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(':userId')} element={<SuperAdminDetailsPage/>}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>

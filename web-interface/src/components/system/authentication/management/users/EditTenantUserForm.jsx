@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import InlineFormValidationMessage from "../../../../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../../../../misc/FormSubmitErrorMessage";
 
-function EditUserForm(props) {
+function EditTenantUserForm(props) {
 
   const EMAILREGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
@@ -70,4 +70,4 @@ function EditUserForm(props) {
 
 }
 
-export default EditUserForm;
+export default EditTenantUserForm;

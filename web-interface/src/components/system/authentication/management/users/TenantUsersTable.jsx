@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
-import UsersTableRow from "./UsersTableRow";
+import TenantUsersTableRow from "./TenantUsersTableRow";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
-function UsersTable(props) {
+function TenantUsersTable(props) {
 
   const organizationId = props.organizationId;
   const tenantId = props.tenantId;
@@ -41,7 +41,7 @@ function UsersTable(props) {
         </thead>
         <tbody>
         {users.map(function (key, i) {
-          return <UsersTableRow key={"tenantusers-" + i} user={users[i]} />
+          return <TenantUsersTableRow key={"tenantusers-" + i} user={users[i]} />
         })}
         </tbody>
       </table>
@@ -49,4 +49,4 @@ function UsersTable(props) {
 
 }
 
-export default UsersTable;
+export default TenantUsersTable;

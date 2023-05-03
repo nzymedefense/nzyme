@@ -2,7 +2,7 @@ import React from "react";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import moment from "moment";
 
-function UsersTableRow(props) {
+function TenantUsersTableRow(props) {
 
   const user = props.user;
 
@@ -29,4 +29,4 @@ function UsersTableRow(props) {
 
 }
 
-export default UsersTableRow;
+export default TenantUsersTableRow;

@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import CreateUserForm from "./CreateUserForm";
+import CreateUserForm from "./shared/CreateUserForm";
 import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();

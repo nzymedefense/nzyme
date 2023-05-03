@@ -2,6 +2,7 @@ import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import OrganizationsTable from "./organizations/OrganizationsTable";
 import GlobalSessions from "./sessions/GlobalSessions";
+import SuperAdminTable from "./users/superadmins/SuperAdminTable";
 
 function AuthenticationPage() {
 
@@ -14,20 +15,34 @@ function AuthenticationPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-8">
+          <div className="col-md-6">
             <div className="row">
-              <div className="row">
-                <div className="col-md-12">
-                  <div className="card">
-                    <div className="card-body">
-                      <h3>Organizations</h3>
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Organizations</h3>
 
-                      <OrganizationsTable />
+                    <OrganizationsTable />
 
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
-                        Create Organization
-                      </a>
-                    </div>
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
+                      Create Organization
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Super Administrators</h3>
+
+                    <SuperAdminTable />
+
+                    <a href="#" className="btn btn-sm btn-primary">
+                      Create Super Administrator
+                    </a>
                   </div>
                 </div>
               </div>

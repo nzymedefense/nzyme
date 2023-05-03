@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import AssetStylesheet from "../misc/AssetStylesheet";
-import CreateUserForm from "../system/authentication/management/users/CreateUserForm";
+import CreateUserForm from "../system/authentication/management/users/shared/CreateUserForm";
 import {notify} from "react-notify-toast";
 import AuthenticationManagementService from "../../services/AuthenticationManagementService";
 

@@ -646,6 +646,56 @@ public class OrganizationsResource {
         return Response.ok().build();
     }
 
+    @GET
+    @Path("/superadmins")
+    public Response findAllSuperAdministrators() {
+        List<UserDetailsResponse> users = Lists.newArrayList();
+        for (UserEntry user : nzyme.getAuthenticationService().findAllSuperAdministrators()) {
+            users.add(userEntryToResponse(user));
+        }
+
+        return Response.ok(UsersListResponse.create(users)).build();
+    }
+
+    @GET
+    @Path("/superadmins/show/{id}")
+    public Response findSuperAdministrator(@PathParam("id") Long userId) {
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(userEntryToResponse(user.get())).build();
+    }
+
+    @POST
+    @Path("/superadmins")
+    public Response createSuperAdministrator(CreateUserRequest req) {
+        if (!validateCreateUserRequest(req)) {
+            LOG.info("Invalid parameters in create user request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("Email address already in use.")
+            ).build();
+        }
+
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+        PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
+
+        nzyme.getAuthenticationService().createSuperAdministrator(
+                req.name(),
+                req.email().toLowerCase(),
+                hash
+        );
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
                 org.id(),

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import InlineFormValidationMessage from "../../../../misc/InlineFormValidationMessage";
+import InlineFormValidationMessage from "../../../../../misc/InlineFormValidationMessage";
 
 function EditPasswordForm(props) {
 

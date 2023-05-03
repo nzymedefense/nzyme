@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
-import InlineFormValidationMessage from "../../../../misc/InlineFormValidationMessage";
-import FormSubmitErrorMessage from "../../../../misc/FormSubmitErrorMessage";
+import InlineFormValidationMessage from "../../../../../misc/InlineFormValidationMessage";
+import FormSubmitErrorMessage from "../../../../../misc/FormSubmitErrorMessage";
 
 function CreateUserForm(props) {
 
