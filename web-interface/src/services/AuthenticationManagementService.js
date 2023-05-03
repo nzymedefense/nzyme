@@ -167,6 +167,12 @@ class AuthenticationManagementService {
           setUser(response.data);
         })
   }
+
+  deleteSuperAdmin(userId, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
+        successCallback);
+  }
+
 }
 
 export default AuthenticationManagementService

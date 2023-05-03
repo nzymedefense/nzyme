@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -13,9 +14,26 @@ function SuperAdminDetailsPage() {
 
   const [user, setUser] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
+  const deleteSuperAdmin = function() {
+    if (!confirm("Really delete super administrator?")) {
+      return;
+    }
+
+    authenticationManagementService.deleteSuperAdmin(userId, function() {
+      setRedirect(true);
+      notify.show('Super administrator deleted.', 'success');
+    });
+  }
+
   useEffect(() => {
     authenticationManagementService.findSuperAdmin(userId, setUser);
   }, [userId])
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} />
+  }
 
   if (!user) {
     return <LoadingSpinner />
@@ -93,11 +111,12 @@ function SuperAdminDetailsPage() {
                     <h3>Delete User</h3>
 
                     <p>
-                      Note that you cannot delete yourself. <strong className="text-danger">TODO IMPLEMENT THIS</strong>
+                      Note that you cannot delete yourself and you also cannot delete the last remaining super
+                      administrator of this nzyme system.
                     </p>
 
-                    <button className="btn btn-sm btn-danger">
-                      Delete User TODO
+                    <button className="btn btn-sm btn-danger" onClick={deleteSuperAdmin}>
+                      Delete User
                     </button>
                   </div>
                 </div>

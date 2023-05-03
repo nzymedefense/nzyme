@@ -696,6 +696,19 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @Path("/superadmins/show/{id}")
+    public Response deleteSuperAdministrator(@PathParam("id") Long userId) {
+        if (nzyme.getAuthenticationService().countSuperAdministrators() == 1) {
+            LOG.warn("Last remaining super administrator cannot be deleted.");
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getAuthenticationService().deleteSuperAdministrator(userId);
+
+        return Response.ok().build();
+    }
+
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
                 org.id(),

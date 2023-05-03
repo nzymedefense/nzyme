@@ -71,6 +71,13 @@ public class AuthenticationService {
         );
     }
 
+    public long countSuperAdministrators() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE is_superadmin = true")
+                        .mapTo(Long.class)
+                        .one()
+        );    }
+
     public List<UserEntry> findAllSuperAdministrators() {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
@@ -110,6 +117,14 @@ public class AuthenticationService {
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
                         .one()
+        );
+    }
+
+    public void deleteSuperAdministrator(Long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_users WHERE is_superadmin = true AND id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
         );
     }
 
