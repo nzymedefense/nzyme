@@ -666,7 +666,11 @@ public class OrganizationsResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(userEntryToResponse(user.get())).build();
+        boolean isDeletable = nzyme.getAuthenticationService().countSuperAdministrators() != 1;
+
+        return Response.ok(SuperAdministratorDetailsResponse.create(
+                userEntryToResponse(user.get()), isDeletable
+        )).build();
     }
 
     @POST

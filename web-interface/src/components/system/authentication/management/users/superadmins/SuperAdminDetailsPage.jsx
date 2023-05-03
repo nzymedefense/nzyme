@@ -13,6 +13,7 @@ function SuperAdminDetailsPage() {
   const { userId } = useParams();
 
   const [user, setUser] = useState(null);
+  const [isDeletable, setIsDeletable] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
@@ -28,7 +29,7 @@ function SuperAdminDetailsPage() {
   }
 
   useEffect(() => {
-    authenticationManagementService.findSuperAdmin(userId, setUser);
+    authenticationManagementService.findSuperAdmin(userId, setUser, setIsDeletable);
   }, [userId])
 
   if (redirect) {
@@ -115,7 +116,7 @@ function SuperAdminDetailsPage() {
                       administrator of this nzyme system.
                     </p>
 
-                    <button className="btn btn-sm btn-danger" onClick={deleteSuperAdmin}>
+                    <button className="btn btn-sm btn-danger" onClick={deleteSuperAdmin} disabled={!isDeletable}>
                       Delete User
                     </button>
                   </div>

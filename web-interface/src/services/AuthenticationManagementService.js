@@ -161,10 +161,11 @@ class AuthenticationManagementService {
     })
   }
 
-  findSuperAdmin(userId, setUser) {
+  findSuperAdmin(userId, setUser, setIsDeletable) {
     RESTClient.get('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
         {}, function (response) {
-          setUser(response.data);
+          setUser(response.data.user);
+          setIsDeletable(response.data.is_deletable);
         })
   }
 
