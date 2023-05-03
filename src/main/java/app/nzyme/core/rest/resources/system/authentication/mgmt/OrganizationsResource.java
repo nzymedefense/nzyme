@@ -377,6 +377,24 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+    @POST
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/mfa/reset")
+    public Response resetMFAOfUserOfTenant(@PathParam("organizationId") long organizationId,
+                                           @PathParam("tenantId") long tenantId,
+                                           @PathParam("userId") long userId) {
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().resetMFAOfUserOfTenant(organizationId, tenantId, user.get().id());
+
+        LOG.info("Reset MFA credentials of user [{}] on admin request.", user.get().email());
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/sessions")
     public Response findAllSessions(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
@@ -668,9 +686,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @Path("/superadmins/show/{id}")
     public Response findSuperAdministrator(@Context SecurityContext sc, @PathParam("id") Long userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
-        Optional<UserEntry> user = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+        Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
-        if (user.isEmpty()) {
+        if (superAdmin.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -678,7 +696,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 && sessionUser.getUserId() != userId;
 
         return Response.ok(SuperAdministratorDetailsResponse.create(
-                userEntryToResponse(user.get()), isDeletable
+                userEntryToResponse(superAdmin.get()), isDeletable
         )).build();
     }
 
@@ -744,9 +762,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @Path("/superadmins/show/{userId}/password")
     public Response editSuperAdministratorPassword(@PathParam("userId") long userId, UpdatePasswordRequest req) {
-        Optional<UserEntry> user = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+        Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
-        if (user.isEmpty()) {
+        if (superAdmin.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -764,7 +782,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
 
         // Invalidate session of user.
-        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(superAdmin.get().id());
 
         return Response.ok().build();
     }
@@ -776,7 +794,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
 
         if (sessionUser.getUserId() == userId) {
-            LOG.warn("Superadministrators cannot delete themselves.");
+            LOG.warn("Super administrators cannot delete themselves.");
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
@@ -785,7 +803,29 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+
+        if (superAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         nzyme.getAuthenticationService().deleteSuperAdministrator(userId);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/superadmins/show/{id}/mfa/reset")
+    public Response deleteSuperAdministrator(@PathParam("id") Long userId) {
+        Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+
+        if (superAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().resetMFAOfSuperAdministrator(superAdmin.get().id());
+
+        LOG.info("Reset MFA credentials of super administrator [{}] on admin request.", superAdmin.get().email());
 
         return Response.ok().build();
     }

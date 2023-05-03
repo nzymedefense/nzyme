@@ -94,6 +94,11 @@ class AuthenticationManagementService {
         successCallback);
   }
 
+  resetMFAOfUserOfTenant(organizationId, tenantId, userId, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/mfa/reset',
+        {}, successCallback);
+  }
+
   findAllSessions(setSessions, limit, offset) {
     RESTClient.get('/system/authentication/mgmt/organizations/sessions',
         {limit: limit, offset: offset}, function (response) {
@@ -189,6 +194,11 @@ class AuthenticationManagementService {
   deleteSuperAdmin(userId, successCallback) {
     RESTClient.delete('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
         successCallback);
+  }
+
+  resetMFAOfSuperAdmin(userId, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/superadmins/show/' + userId + '/mfa/reset',
+        {}, successCallback);
   }
 
 }

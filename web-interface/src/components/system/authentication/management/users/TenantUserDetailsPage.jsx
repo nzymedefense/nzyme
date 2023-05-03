@@ -32,6 +32,16 @@ function TenantUserDetailsPage() {
     });
   }
 
+  const resetMfa = function() {
+    if (!confirm("Really reset MFA credentials for this user?")) {
+      return;
+    }
+
+    authenticationManagementService.resetMFAOfUserOfTenant(organizationId, tenantId, userId, function() {
+      notify.show('MFA successfully reset.', 'success');
+    });
+  }
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
@@ -139,6 +149,24 @@ function TenantUserDetailsPage() {
 
                     <button className="btn btn-sm btn-danger" onClick={deleteUser}>
                       Delete User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Reset MFA</h3>
+
+                    <p>
+                      The user will be logged out and prompted to set up new MFA credentials after logging back in.
+                    </p>
+
+                    <button className="btn btn-sm btn-warning" onClick={resetMfa}>
+                      Reset MFA Credentials
                     </button>
                   </div>
                 </div>

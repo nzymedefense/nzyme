@@ -28,6 +28,16 @@ function SuperAdminDetailsPage() {
     });
   }
 
+  const resetMfa = function() {
+    if (!confirm("Really reset MFA credentials for this user?")) {
+      return;
+    }
+
+    authenticationManagementService.resetMFAOfSuperAdmin(userId, function() {
+      notify.show('MFA successfully reset.', 'success');
+    });
+  }
+
   useEffect(() => {
     authenticationManagementService.findSuperAdmin(userId, setUser, setIsDeletable);
   }, [userId])
@@ -118,6 +128,24 @@ function SuperAdminDetailsPage() {
 
                     <button className="btn btn-sm btn-danger" onClick={deleteSuperAdmin} disabled={!isDeletable}>
                       Delete User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Reset MFA</h3>
+
+                    <p>
+                      The user will be logged out and prompted to set up new MFA credentials after logging back in.
+                    </p>
+
+                    <button className="btn btn-sm btn-warning" onClick={resetMfa}>
+                      Reset MFA Credentials
                     </button>
                   </div>
                 </div>

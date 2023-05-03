@@ -35,21 +35,19 @@ function TapPermissionsTable(props) {
         <tr>
           <th>Name</th>
           <th>Last Report</th>
-          <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
         {taps.map(function (key, i) {
           return (
               <tr key={"tap-" + i}>
-                <td>{taps[i].name}</td>
-                <td>{taps[i].last_report ? moment(taps[i].last_report).format() : <span className="text-warning">None</span>}</td>
                 <td>
                   <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.DETAILS(
                       organizationId, tenantId, taps[i].uuid)}>
-                    Details
+                    {taps[i].name}
                   </a>
                 </td>
+                <td>{taps[i].last_report ? moment(taps[i].last_report).format() : <span className="text-warning">None</span>}</td>
               </tr>
           )
         })}

@@ -36,7 +36,6 @@ function TenantUsersTable(props) {
           <th>Email</th>
           <th>Role</th>
           <th>Last Activity</th>
-          <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>

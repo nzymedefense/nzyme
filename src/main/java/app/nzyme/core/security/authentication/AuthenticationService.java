@@ -133,12 +133,25 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteSuperAdministrator(Long userId) {
+    public void deleteSuperAdministrator(long userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users WHERE is_superadmin = true AND id = :user_id")
                         .bind("user_id", userId)
                         .execute()
         );
+    }
+
+    public void resetMFAOfSuperAdministrator(long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
+                                "totp_secret = NULL, mfa_recovery_codes = NULL " +
+                                "WHERE is_superadmin = true AND id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
+        );
+
+        // Reset all sessions of this user.
+        deleteAllSessionsOfUser(userId);
     }
 
     public OrganizationEntry createOrganization(String name, String description) {
@@ -446,6 +459,21 @@ public class AuthenticationService {
                         .bind("user_id", userId)
                         .execute()
         );
+    }
+
+    public void resetMFAOfUserOfTenant(long organizationId, long tenantId, long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
+                        "totp_secret = NULL, mfa_recovery_codes = NULL " +
+                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+
+        // Reset all sessions of this user.
+        deleteAllSessionsOfUser(userId);
     }
 
     public long countUsersOfTenant(TenantEntry t) {
