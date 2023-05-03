@@ -17,14 +17,14 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class InitialUserResource {
 
-    private static final Logger LOG = LogManager.getLogger(OrganizationsResource.class);
+    private static final Logger LOG = LogManager.getLogger(InitialUserResource.class);
 
     @Inject
     private NzymeNode nzyme;
 
     @POST
     public Response createInitialUser(CreateUserRequest req) {
-        if (nzyme.getAuthenticationService().countAllUsers() > 0) {
+        if (nzyme.getAuthenticationService().countSuperAdministrators() > 0) {
             LOG.warn("Attempt to access initial user creation but users already exist.");
             return Response.status(Response.Status.FORBIDDEN).build();
         }
