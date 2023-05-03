@@ -62,15 +62,6 @@ public class AuthenticationService {
         LOG.info(organization);
     }
 
-
-    public long countAllUsers() {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM auth_users")
-                        .mapTo(Long.class)
-                        .one()
-        );
-    }
-
     public long countSuperAdministrators() {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE is_superadmin = true")
@@ -117,6 +108,28 @@ public class AuthenticationService {
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
                         .one()
+        );
+    }
+
+    public void editSuperAdministrator(long userId, String name, String email) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
+                                "WHERE is_superadmin = true AND id = :user_id")
+                        .bind("name", name)
+                        .bind("email", email)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void editSuperAdministratorPassword(long userId, PasswordHasher.GeneratedHashAndSalt password) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
+                                "updated_at = NOW() WHERE is_superadmin = true AND id = :user_id")
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("user_id", userId)
+                        .execute()
         );
     }
 

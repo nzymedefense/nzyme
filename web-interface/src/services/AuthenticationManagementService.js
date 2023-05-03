@@ -161,12 +161,25 @@ class AuthenticationManagementService {
     })
   }
 
-  findSuperAdmin(userId, setUser, setIsDeletable) {
+  findSuperAdmin(userId, setUser, setIsDeletable = undefined) {
     RESTClient.get('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
         {}, function (response) {
           setUser(response.data.user);
-          setIsDeletable(response.data.is_deletable);
+
+          if (setIsDeletable) {
+            setIsDeletable(response.data.is_deletable);
+          }
         })
+  }
+
+  editSuperAdministrator(userId, name, email, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
+        {name: name, email: email}, successCallback, errorCallback);
+  }
+
+  editSuperAdministratorPassword(userId, password, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/superadmins/show/' + userId + '/password',
+        {password: password}, successCallback);
   }
 
   deleteSuperAdmin(userId, successCallback) {

@@ -2,6 +2,8 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.authentication.SessionDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
@@ -22,8 +24,10 @@ import org.bouncycastle.util.encoders.Base64;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +35,7 @@ import java.util.UUID;
 @Path("/api/system/authentication/mgmt/organizations")
 @RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
-public class OrganizationsResource {
+public class OrganizationsResource extends UserAuthenticatedResource {
 
     private static final Logger LOG = LogManager.getLogger(OrganizationsResource.class);
 
@@ -367,6 +371,9 @@ public class OrganizationsResource {
                 hash
         );
 
+        // Invalidate session of user.
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+
         return Response.ok().build();
     }
 
@@ -659,14 +666,16 @@ public class OrganizationsResource {
 
     @GET
     @Path("/superadmins/show/{id}")
-    public Response findSuperAdministrator(@PathParam("id") Long userId) {
+    public Response findSuperAdministrator(@Context SecurityContext sc, @PathParam("id") Long userId) {
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
         Optional<UserEntry> user = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (user.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        boolean isDeletable = nzyme.getAuthenticationService().countSuperAdministrators() != 1;
+        boolean isDeletable = nzyme.getAuthenticationService().countSuperAdministrators() != 1
+                && sessionUser.getUserId() != userId;
 
         return Response.ok(SuperAdministratorDetailsResponse.create(
                 userEntryToResponse(user.get()), isDeletable
@@ -700,9 +709,77 @@ public class OrganizationsResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @Path("/superadmins/show/{userId}")
+    public Response editSuperAdministrator(@PathParam("userId") long userId,
+                                           UpdateUserRequest req) {
+        Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+
+        if (superAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdateUserRequest(req)) {
+            LOG.info("Invalid parameters in update user request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!superAdmin.get().email().equals(req.email()) && nzyme.getAuthenticationService().userWithEmailExists(
+                req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("Email address already in use.")
+            ).build();
+        }
+
+        nzyme.getAuthenticationService().editSuperAdministrator(
+                userId,
+                req.name(),
+                req.email().toLowerCase()
+        );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/superadmins/show/{userId}/password")
+    public Response editSuperAdministratorPassword(@PathParam("userId") long userId, UpdatePasswordRequest req) {
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findSuperAdministrator(userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdatePasswordRequest(req)) {
+            LOG.info("Invalid password in update password request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+        PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
+
+        nzyme.getAuthenticationService().editSuperAdministratorPassword(
+                userId,
+                hash
+        );
+
+        // Invalidate session of user.
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+
+        return Response.ok().build();
+    }
+
+
     @DELETE
     @Path("/superadmins/show/{id}")
-    public Response deleteSuperAdministrator(@PathParam("id") Long userId) {
+    public Response deleteSuperAdministrator(@Context SecurityContext sc, @PathParam("id") Long userId) {
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+
+        if (sessionUser.getUserId() == userId) {
+            LOG.warn("Superadministrators cannot delete themselves.");
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
         if (nzyme.getAuthenticationService().countSuperAdministrators() == 1) {
             LOG.warn("Last remaining super administrator cannot be deleted.");
             return Response.status(Response.Status.FORBIDDEN).build();

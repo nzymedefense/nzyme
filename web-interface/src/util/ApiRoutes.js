@@ -30,6 +30,7 @@ const ApiRoutes = {
         },
         SUPERADMINS: {
           DETAILS: (userId) => `/system/authentication/superadmins/show/${userId}`,
+          EDIT: (userId) => `/system/authentication/superadmins/show/${userId}/edit`,
         },
       }
     },

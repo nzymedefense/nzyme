@@ -26,7 +26,7 @@ function EditTenantUserPage() {
   const onEditDetailsFormSubmitted = function (email, name, callback) {
     authenticationManagementService.editUserOfTenant(organization.id, tenant.id, user.id, name, email, function() {
       // Success.
-      notify.show('User created.', 'success');
+      notify.show('User updated.', 'success');
       setRedirect(true);
       callback();
     }, function (error) {
@@ -131,6 +131,11 @@ function EditTenantUserPage() {
               <div className="card">
                 <div className="card-body">
                   <h3>Change Password</h3>
+
+                  <p>
+                    Changing the password will log out the user and prompt them to log in again with the
+                    new password.
+                  </p>
 
                   <EditPasswordForm
                       submitText="Change Password"

@@ -351,10 +351,12 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         }
 
         if (!verifier.isValidCode(userSecret, req.code())) {
+            LOG.info("User <{}> failed MFA challenge.", user.get().email());
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         // We have a valid TOTP. Mark session as MFA'd.
+        LOG.info("User <{}> passed MFA challenge.", user.get().email());
         nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
 
         return Response.ok().build();

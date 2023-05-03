@@ -60,8 +60,8 @@ function SuperAdminDetailsPage() {
               <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>
                 Back
               </a>{' '}
-              <a className="btn btn-primary" href="#">
-                Edit User TODO
+              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.EDIT(user.id)}>
+                Edit User
               </a>
             </span>
           </div>
