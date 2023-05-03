@@ -41,7 +41,7 @@ public class PingResource {
     @GET
     public Response ping() {
         return Response.ok(PingResponse.create(
-                nzyme.getAuthenticationService().countAllUsers() == 0
+                nzyme.getAuthenticationService().countSuperAdministrators() == 0
         )).build();
     }
 
