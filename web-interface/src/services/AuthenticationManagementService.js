@@ -1,5 +1,4 @@
 import RESTClient from '../util/RESTClient'
-import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationManagementService {
 
@@ -170,6 +169,11 @@ class AuthenticationManagementService {
             setIsDeletable(response.data.is_deletable);
           }
         })
+  }
+
+  createSuperAdministrator(email, password, name, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/superadmins',
+        {email: email, password: password, name: name}, successCallback, errorCallback);
   }
 
   editSuperAdministrator(userId, name, email, successCallback, errorCallback) {

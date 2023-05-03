@@ -40,7 +40,7 @@ function AuthenticationPage() {
 
                     <SuperAdminTable />
 
-                    <a href="#" className="btn btn-sm btn-primary">
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} className="btn btn-sm btn-primary">
                       Create Super Administrator
                     </a>
                   </div>

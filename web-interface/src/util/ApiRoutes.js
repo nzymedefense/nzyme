@@ -29,6 +29,7 @@ const ApiRoutes = {
           EDIT: (organizationId, tenantId, tapUuid) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/taps/show/${tapUuid}/edit`,
         },
         SUPERADMINS: {
+          CREATE: '/system/authentication/superadmins/create',
           DETAILS: (userId) => `/system/authentication/superadmins/show/${userId}`,
           EDIT: (userId) => `/system/authentication/superadmins/show/${userId}/edit`,
         },

@@ -2152,4 +2152,10 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="fix_user_last_activity_default_value" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="auth_users" columnName="last_activity" />
+        <dropDefaultValue tableName="auth_users" columnName="last_activity" />
+    </changeSet>
+
 </databaseChangeLog>
