@@ -235,14 +235,12 @@ public class TapManager {
     }
 
     public Optional<Tap> findTap(UUID uuid) {
-        Tap tap = nzyme.getDatabase().withHandle(handle ->
+        return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps WHERE uuid = :uuid")
                         .bind("uuid", uuid)
                         .mapTo(Tap.class)
-                        .first()
+                        .findOne()
         );
-
-        return tap == null ? Optional.empty() : Optional.of(tap);
     }
 
     public TapMetrics findMetricsOfTap(UUID tapUUID) {
