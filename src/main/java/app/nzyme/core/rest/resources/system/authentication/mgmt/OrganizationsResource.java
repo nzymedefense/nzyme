@@ -533,20 +533,33 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response findAllTaps(@PathParam("organizationId") long organizationId,
-                                @PathParam("tenantId") long tenantId) {
+                                @PathParam("tenantId") long tenantId,
+                                @QueryParam("limit") int limit,
+                                @QueryParam("offset") int offset) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         List<TapPermissionDetailsResponse> taps = Lists.newArrayList();
-        for (TapPermissionEntry tap : nzyme.getAuthenticationService().findAllTaps(organizationId, tenantId)) {
+        for (TapPermissionEntry tap : nzyme.getAuthenticationService()
+                .findAllTaps(organizationId, tenantId, limit, offset)) {
             taps.add(tapPermissionEntryToResponse(tap));
         }
 
-        return Response.ok(TapPermissionsListResponse.create(taps)).build();
+        long tapCount = nzyme.getAuthenticationService().countTapsOfTenant(
+                nzyme.getAuthenticationService().findTenant(tenantId).get()
+        );
+
+        return Response.ok(TapPermissionsListResponse.create(tapCount, taps)).build();
     }
 
     @GET

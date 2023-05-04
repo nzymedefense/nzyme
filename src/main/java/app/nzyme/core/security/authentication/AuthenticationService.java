@@ -715,14 +715,16 @@ public class AuthenticationService {
         );
     }
 
-    public List<TapPermissionEntry> findAllTaps(long organizationId, long tenantId) {
+    public List<TapPermissionEntry> findAllTaps(long organizationId, long tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "ORDER BY name ASC")
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(TapPermissionEntry.class)
                         .list()
         );

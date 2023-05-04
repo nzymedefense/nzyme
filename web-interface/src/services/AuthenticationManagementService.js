@@ -128,10 +128,10 @@ class AuthenticationManagementService {
     RESTClient.delete('/system/authentication/mgmt/organizations/sessions/show/' + sessionId, successCallback)
   }
 
-  findAllTapPermissions(organizationId, tenantId, setTaps) {
+  findAllTapPermissions(organizationId, tenantId, setTaps, limit, offset) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps',
-        {}, function (response) {
-      setTaps(response.data.taps);
+        {limit: limit, offset: offset}, function (response) {
+      setTaps(response.data);
     })
   }
 
