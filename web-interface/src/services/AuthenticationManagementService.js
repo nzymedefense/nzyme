@@ -163,10 +163,10 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
-  findAllSuperAdmins(setUsers) {
+  findAllSuperAdmins(setUsers, limit, offset) {
     RESTClient.get('/system/authentication/mgmt/organizations/superadmins',
-        {}, function (response) {
-      setUsers(response.data.users);
+        {limit: limit, offset: offset}, function (response) {
+      setUsers(response.data);
     })
   }
 
