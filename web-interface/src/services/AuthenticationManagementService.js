@@ -7,9 +7,9 @@ class AuthenticationManagementService {
         {email: email, password: password, name: name}, successCallback, errorCallback);
   }
 
-  findAllOrganizations(setOrganizations) {
-    RESTClient.get('/system/authentication/mgmt/organizations', {}, function (response) {
-      setOrganizations(response.data.organizations)
+  findAllOrganizations(setOrganizations, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations', {limit: limit, offset: offset}, function (response) {
+      setOrganizations(response.data)
     })
   }
 
@@ -33,9 +33,10 @@ class AuthenticationManagementService {
     RESTClient.delete('/system/authentication/mgmt/organizations/show/' + id, successCallback);
   }
 
-  findAllTenantsOfOrganization(organizationId, setTenants) {
-    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants', {}, function (response) {
-      setTenants(response.data.tenants)
+  findAllTenantsOfOrganization(organizationId, setTenants, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants',
+        {limit: limit, offset: offset}, function (response) {
+      setTenants(response.data)
     })
   }
 

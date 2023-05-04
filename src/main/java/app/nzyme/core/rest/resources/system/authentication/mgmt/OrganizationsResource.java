@@ -43,14 +43,21 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
-    public Response findAll() {
+    public Response findAll(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         List<OrganizationDetailsResponse> organizations = Lists.newArrayList();
 
-        for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations()) {
+        for (OrganizationEntry org : nzyme.getAuthenticationService().findAllOrganizations(limit, offset)) {
             organizations.add(organizationEntryToResponse(org));
         }
 
-        return Response.ok(OrganizationsListResponse.create(organizations)).build();
+        long organizationCount = nzyme.getAuthenticationService().countAllOrganizations();
+
+        return Response.ok(OrganizationsListResponse.create(organizationCount, organizations)).build();
     }
 
     @GET
@@ -122,7 +129,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants")
-    public Response findTenantsOfOrganization(@PathParam("organizationId") long organizationId) {
+    public Response findTenantsOfOrganization(@PathParam("organizationId") long organizationId,
+                                              @QueryParam("limit") int limit,
+                                              @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         if (organizationId <= 0) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -133,7 +147,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.get().id());
+        Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(
+                org.get().id(), limit, offset);
 
         List<TenantDetailsResponse> response = Lists.newArrayList();
         if (tenants.isPresent()) {
@@ -142,7 +157,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             }
         }
 
-        return Response.ok(TenantsListResponse.create(response)).build();
+        long tenantsCount = nzyme.getAuthenticationService().countTenantsOfOrganization(org.get());
+
+        return Response.ok(TenantsListResponse.create(tenantsCount, response)).build();
     }
 
     @GET

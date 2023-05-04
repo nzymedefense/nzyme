@@ -8,11 +8,15 @@ import java.util.List;
 @AutoValue
 public abstract class TenantsListResponse {
 
+    @JsonProperty("count")
+    public abstract long count();
+
     @JsonProperty("tenants")
     public abstract List<TenantDetailsResponse> tenants();
 
-    public static TenantsListResponse create(List<TenantDetailsResponse> tenants) {
+    public static TenantsListResponse create(long count, List<TenantDetailsResponse> tenants) {
         return builder()
+                .count(count)
                 .tenants(tenants)
                 .build();
     }
@@ -23,9 +27,10 @@ public abstract class TenantsListResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder count(long count);
+
         public abstract Builder tenants(List<TenantDetailsResponse> tenants);
 
         public abstract TenantsListResponse build();
     }
-
 }

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
+import Paginator from "../../../../misc/Paginator";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -11,15 +12,18 @@ function TenantsTable(props) {
 
   const [tenants, setTenants] = useState(null);
 
-  useEffect(() => {
-    authenticationMgmtService.findAllTenantsOfOrganization(organizationId, setTenants);
-  }, []);
+  const perPage = 20;
+  const [page, setPage] = useState(1);
 
-  if (tenants === null || tenants === undefined) {
+  useEffect(() => {
+    authenticationMgmtService.findAllTenantsOfOrganization(organizationId, setTenants, perPage, (page-1)*perPage);
+  }, [page]);
+
+  if (!tenants) {
     return <LoadingSpinner />
   }
 
-  if (tenants.length === 0) {
+  if (tenants.tenants.length === 0) {
     return (
         <div className="alert alert-info mb-2">
           This organization does not have any tenants.
@@ -28,30 +32,36 @@ function TenantsTable(props) {
   }
 
   return (
-      <table className="table table-sm table-hover table-striped">
-        <thead>
-        <tr>
-          <th>Name</th>
-          <th>Users</th>
-          <th>Taps</th>
-        </tr>
-        </thead>
-        <tbody>
-        {tenants.map(function (key, i) {
-          return (
-              <tr key={"tenant-" + i}>
-                <td>
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(tenants[i].organization_id, tenants[i].id)}>
-                    {tenants[i].name}
-                  </a>
-                </td>
-                <td>{tenants[i].users_count}</td>
-                <td>{tenants[i].taps_count}</td>
-              </tr>
-          )
-        })}
-        </tbody>
-      </table>
+      <React.Fragment>
+        <table className="table table-sm table-hover table-striped">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Users</th>
+            <th>Taps</th>
+          </tr>
+          </thead>
+          <tbody>
+          {tenants.tenants.map(function (key, i) {
+            return (
+                <tr key={"tenant-" + i}>
+                  <td>
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(
+                        tenants.tenants[i].organization_id,
+                        tenants.tenants[i].id)}>
+                      {tenants.tenants[i].name}
+                    </a>
+                  </td>
+                  <td>{tenants.tenants[i].users_count}</td>
+                  <td>{tenants.tenants[i].taps_count}</td>
+                </tr>
+            )
+          })}
+          </tbody>
+        </table>
+
+        <Paginator itemCount={tenants.count} perPage={perPage} setPage={setPage} page={page} />
+      </React.Fragment>
   )
 
 }

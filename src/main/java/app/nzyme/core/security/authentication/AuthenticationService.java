@@ -168,10 +168,12 @@ public class AuthenticationService {
         );
     }
 
-    public List<OrganizationEntry> findAllOrganizations() {
+    public List<OrganizationEntry> findAllOrganizations(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
-                                "ORDER BY name ASC")
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(OrganizationEntry.class)
                         .list()
         );
@@ -262,10 +264,8 @@ public class AuthenticationService {
     }
 
     public boolean isOrganizationDeletable(OrganizationEntry org) {
-        long organizationTenantCount = nzyme.getAuthenticationService().findAllTenantsOfOrganization(org.id())
-                .map(List::size)
-                .orElse(0);
-        long totalOrganizationsCount = nzyme.getAuthenticationService().countAllOrganizations();
+        long organizationTenantCount = countTenantsOfOrganization(org);
+        long totalOrganizationsCount = countAllOrganizations();
 
         return organizationTenantCount == 0 && totalOrganizationsCount > 1;
     }
@@ -285,11 +285,14 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(long organizationId) {
+    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(long organizationId, int limit, int offset) {
         List<TenantEntry> tenants = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
-                                "FROM auth_tenants WHERE organization_id = :organization_id ORDER BY name DESC")
+                                "FROM auth_tenants WHERE organization_id = :organization_id " +
+                                "ORDER BY name DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(TenantEntry.class)
                         .list()
         );
