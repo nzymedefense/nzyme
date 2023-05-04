@@ -69,13 +69,15 @@ public class AuthenticationService {
                         .one()
         );    }
 
-    public List<UserEntry> findAllSuperAdministrators() {
+    public List<UserEntry> findAllSuperAdministrators(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
                                 "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
                                 "totp_secret, mfa_complete, mfa_recovery_codes " +
                                 "FROM auth_users WHERE is_superadmin = true " +
-                                "ORDER BY name ASC")
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(UserEntry.class)
                         .list()
         );
@@ -364,15 +366,17 @@ public class AuthenticationService {
         );
     }
 
-    public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId) {
+    public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
                                 "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
                                 "totp_secret, mfa_complete, mfa_recovery_codes " +
                                 "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "ORDER BY name ASC")
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
                         .mapTo(UserEntry.class)
                         .list()
         );

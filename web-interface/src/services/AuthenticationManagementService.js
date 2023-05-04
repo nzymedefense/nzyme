@@ -66,10 +66,10 @@ class AuthenticationManagementService {
         {email: email, password: password, name: name}, successCallback, errorCallback);
   }
 
-  findAllUsersOfTenant(organizationId, tenantId, setUsers) {
+  findAllUsersOfTenant(organizationId, tenantId, setUsers, limit, offset) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
-        {}, function (response) {
-      setUsers(response.data.users)
+        {limit: limit, offset: offset}, function (response) {
+      setUsers(response.data)
     });
   }
 

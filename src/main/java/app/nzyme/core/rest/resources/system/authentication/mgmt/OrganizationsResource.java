@@ -231,17 +231,29 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response findAllUsersOfTenant(@PathParam("organizationId") long organizationId,
-                                         @PathParam("tenantId") long tenantId) {
+                                         @PathParam("tenantId") long tenantId,
+                                         @QueryParam("limit") int limit,
+                                         @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
         List<UserDetailsResponse> users = Lists.newArrayList();
-        for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(organizationId, tenantId)) {
+        for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(
+                organizationId, tenantId, limit, offset)) {
             users.add(userEntryToResponse(user));
         }
 
-        return Response.ok(UsersListResponse.create(users)).build();
+        long userCount = nzyme.getAuthenticationService().countUsersOfTenant(
+                nzyme.getAuthenticationService().findTenant(tenantId).get()
+        );
+
+        return Response.ok(UsersListResponse.create(userCount, users)).build();
     }
 
     @GET
@@ -557,12 +569,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                 @PathParam("tenantId") long tenantId,
                                 @QueryParam("limit") int limit,
                                 @QueryParam("offset") int offset) {
-        if (!organizationAndTenantExists(organizationId, tenantId)) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        if (limit > 250) {
-            LOG.warn("Requested limit larger than 250. Not allowed.");
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -715,13 +727,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/superadmins")
-    public Response findAllSuperAdministrators() {
+    public Response findAllSuperAdministrators(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
         List<UserDetailsResponse> users = Lists.newArrayList();
-        for (UserEntry user : nzyme.getAuthenticationService().findAllSuperAdministrators()) {
+        for (UserEntry user : nzyme.getAuthenticationService().findAllSuperAdministrators(limit, offset)) {
             users.add(userEntryToResponse(user));
         }
 
-        return Response.ok(UsersListResponse.create(users)).build();
+        long superadminCount = nzyme.getAuthenticationService().countSuperAdministrators();
+
+        return Response.ok(UsersListResponse.create(superadminCount, users)).build();
     }
 
     @GET
