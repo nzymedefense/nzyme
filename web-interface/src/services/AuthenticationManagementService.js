@@ -72,10 +72,14 @@ class AuthenticationManagementService {
     });
   }
 
-  findUserOfTenant(organizationId, tenantId, userId, setUser) {
+  findUserOfTenant(organizationId, tenantId, userId, setUser, setIsDeletable = undefined) {
     RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
         {}, function (response) {
-          setUser(response.data)
+          setUser(response.data.user)
+
+          if (setIsDeletable) {
+            setIsDeletable(response.data.is_deletable);
+          }
         });
   }
 

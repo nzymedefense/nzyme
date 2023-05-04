@@ -18,6 +18,7 @@ function TenantUserDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [user, setUser] = useState(null);
+  const [isDeletable, setIsDeletable] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
@@ -45,7 +46,7 @@ function TenantUserDetailsPage() {
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
-    authenticationManagementService.findUserOfTenant(organizationId, tenantId, userId, setUser);
+    authenticationManagementService.findUserOfTenant(organizationId, tenantId, userId, setUser, setIsDeletable);
   }, [organizationId, tenantId])
 
   if (redirect) {
@@ -144,10 +145,10 @@ function TenantUserDetailsPage() {
                     <h3>Delete User</h3>
 
                     <p>
-                      Note that you cannot delete yourself. <strong className="text-danger">TODO IMPLEMENT THIS</strong>
+                      Note that you cannot delete yourself.
                     </p>
 
-                    <button className="btn btn-sm btn-danger" onClick={deleteUser}>
+                    <button className="btn btn-sm btn-danger" onClick={deleteUser} disabled={!isDeletable}>
                       Delete User
                     </button>
                   </div>

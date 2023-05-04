@@ -229,7 +229,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
-    public Response findUserOfTenant(@PathParam("organizationId") long organizationId,
+    public Response findUserOfTenant(@Context SecurityContext sc,
+                                     @PathParam("organizationId") long organizationId,
                                      @PathParam("tenantId") long tenantId,
                                      @PathParam("userId") long userId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -242,7 +243,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(userEntryToResponse(user.get())).build();
+        // Users cannot delete themselves.
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+        boolean isDeletable = sessionUser.getUserId() != userId;
+
+        return Response.ok(UserOfTenantDetailsResponse.create(userEntryToResponse(user.get()), isDeletable)).build();
     }
 
     @POST
@@ -322,7 +327,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @DELETE
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
-    public Response deleteUserOfTenant(@PathParam("organizationId") long organizationId,
+    public Response deleteUserOfTenant(@Context SecurityContext sc,
+                                       @PathParam("organizationId") long organizationId,
                                        @PathParam("tenantId") long tenantId,
                                        @PathParam("userId") long userId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -333,6 +339,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         if (user.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+        if (sessionUser.getUserId() == userId) {
+            LOG.warn("User [{}] cannot delete themselves.", user.get().email());
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
         nzyme.getAuthenticationService().deleteUserOfTenant(organizationId, tenantId, userId);
