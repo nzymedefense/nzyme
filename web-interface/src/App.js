@@ -77,6 +77,7 @@ import MFAEntryPage from "./components/system/authentication/MFAEntryPage";
 import SuperAdminDetailsPage from "./components/system/authentication/management/users/superadmins/SuperAdminDetailsPage";
 import EditSuperAdminPage from "./components/system/authentication/management/users/superadmins/EditSuperAdminPage";
 import CreateSuperAdminPage from "./components/system/authentication/management/users/superadmins/CreateSuperAdminPage";
+import InitializingPage from "./components/misc/InitializingPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -117,7 +118,6 @@ function App() {
 
   const fetchSessionInfo = function(callback) {
     if (isAuthenticated()) {
-
       authenticationService.fetchSessionInfo(function (sessionInfo) {
         setMfaRequired(sessionInfo.mfa_valid === false);
         setMfaSetup(sessionInfo.mfa_setup);
@@ -158,7 +158,7 @@ function App() {
   }
 
   if (!fullyLoaded) {
-    return <LoadingSpinner />
+    return <InitializingPage darkModeEnabled={darkModeEnabled} />
   }
 
   if (nzymeInformation && nzymeInformation.show_setup_wizard) {
@@ -191,8 +191,6 @@ function App() {
         // MFA is set up for this user. Show MFA challenge.
         return (
             <div className="nzyme">
-              <DarkMode enabled={false} />
-
               <Notifications/>
 
               <MFAEntryPage mfaEntryExpiresAt={mfaEntryExpiresAt} />
@@ -202,8 +200,6 @@ function App() {
         // MFA is not set up for this user yet. Show setup page.
         return (
           <div className="nzyme">
-            <DarkMode enabled={false} />
-
             <Notifications/>
 
             <MFASetupPage />

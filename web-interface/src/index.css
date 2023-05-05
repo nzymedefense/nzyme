@@ -25,6 +25,24 @@ div.content {
     padding: 24px 24px 12px;
 }
 
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+img.initializing {
+    width: 400px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+img.initializing-layer2 {
+    animation: blinker 1s linear infinite;
+}
+
 .navbar {
     background-color: #fff;
     padding: 8px 12px;
