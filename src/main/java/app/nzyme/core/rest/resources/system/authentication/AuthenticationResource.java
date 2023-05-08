@@ -26,6 +26,7 @@ import app.nzyme.core.rest.requests.MFAVerificationRequest;
 import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
+import app.nzyme.core.rest.responses.authentication.SessionUserInformationDetailsResponse;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.UserEntry;
@@ -174,6 +175,11 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 ? null : session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES);
 
         return Response.ok(SessionInformationResponse.create(
+                SessionUserInformationDetailsResponse.create(
+                        user.get().id(),
+                        user.get().email(),
+                        user.get().name()
+                ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),
                 mfaExpiresAt

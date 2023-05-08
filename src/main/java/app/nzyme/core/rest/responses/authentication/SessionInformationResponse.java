@@ -26,6 +26,9 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class SessionInformationResponse {
 
+    @JsonProperty("user")
+    public abstract SessionUserInformationDetailsResponse user();
+
     @JsonProperty("mfa_valid")
     public abstract boolean mfaValid();
 
@@ -36,8 +39,9 @@ public abstract class SessionInformationResponse {
     @Nullable
     public abstract DateTime mfaEntryExpiresAt();
 
-    public static SessionInformationResponse create(boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt) {
+    public static SessionInformationResponse create(SessionUserInformationDetailsResponse user, boolean mfaValid, boolean mfaSetup, DateTime mfaEntryExpiresAt) {
         return builder()
+                .user(user)
                 .mfaValid(mfaValid)
                 .mfaSetup(mfaSetup)
                 .mfaEntryExpiresAt(mfaEntryExpiresAt)
@@ -50,6 +54,8 @@ public abstract class SessionInformationResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder user(SessionUserInformationDetailsResponse user);
+
         public abstract Builder mfaValid(boolean mfaValid);
 
         public abstract Builder mfaSetup(boolean mfaSetup);

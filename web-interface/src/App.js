@@ -105,13 +105,14 @@ function App() {
   const [mfaSetup, setMfaSetup] = useState(false);
   const [mfaEntryExpiresAt, setMfaEntryExpiresAt] = useState(null);
   const [nzymeInformation, setNzymeInformation] = useState(null);
+  const [userInformation, setUserInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
 
   const [fullyLoaded, setFullyLoaded] = useState(false);
 
-  const preChecks = function() {
+  const backgroundChecks = function() {
     pingService.ping(setApiConnected, setNzymeInformation, function() {
-      fetchSessionInfo(function () {
+      fetchSessionInfo(function() {
         setAuthenticated(isAuthenticated());
         setDarkModeEnabled(isDarkMode());
         setFullyLoaded(true);
@@ -127,6 +128,7 @@ function App() {
         setMfaRequired(sessionInfo.mfa_valid === false);
         setMfaSetup(sessionInfo.mfa_setup);
         setMfaEntryExpiresAt(sessionInfo.mfa_entry_expires_at);
+        setUserInformation(sessionInfo.user);
 
         callback();
       }, function() {
@@ -139,11 +141,15 @@ function App() {
   }
 
   useEffect(() => {
-    preChecks();
+    backgroundChecks();
 
-    setInterval(function () {
-      preChecks();
-    }, 1000)
+    const x = setInterval(function () {
+      backgroundChecks();
+    }, 1000);
+
+    return () => {
+      clearInterval(x);
+    }
   }, []);
 
   useEffect(() => {
@@ -218,7 +224,7 @@ function App() {
             <DarkMode enabled={darkModeEnabled} />
 
             <div className="nzyme d-flex">
-              <Sidebar />
+              <Sidebar user={userInformation} />
 
               <div id="main" className="flex-fill">
                 <Notifications/>
