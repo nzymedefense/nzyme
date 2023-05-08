@@ -3,25 +3,27 @@ import {Navigate, useParams} from "react-router-dom";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
+import EditUserForm from "../shared/EditUserForm";
 import {notify} from "react-notify-toast";
 import EditPasswordForm from "../shared/EditPasswordForm";
-import EditUserForm from "../shared/EditUserForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
-function EditSuperAdminPage() {
+function EditOrganizationAdminPage() {
 
+  const { organizationId } = useParams();
   const { userId } = useParams();
 
+  const [organization, setOrganization] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [user, setUser] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
-  const onEditDetailsFormSubmitted = function (email, name, callback) {
-    authenticationManagementService.editSuperAdministrator(user.id, name, email, function() {
+  const onEditDetailsFormSubmitted = function(email, name, callback) {
+    authenticationManagementService.editOrganizationAdministrator(organization.id, user.id, name, email, function() {
       // Success.
-      notify.show('Super Administrator updated.', 'success');
+      notify.show('Organization Administrator updated.', 'success');
       setRedirect(true);
       callback();
     }, function (error) {
@@ -33,7 +35,7 @@ function EditSuperAdminPage() {
   }
 
   const onEditPasswordFormSubmitted = function(password, callback) {
-    authenticationManagementService.editSuperAdministratorPassword(user.id, password, function() {
+    authenticationManagementService.editOrganizationAdministratorPassword(organization.id, user.id, password, function() {
       // Success.
       notify.show('Password updated.', 'success');
       setRedirect(true);
@@ -42,14 +44,15 @@ function EditSuperAdminPage() {
   }
 
   useEffect(() => {
-    authenticationManagementService.findSuperAdmin(userId, setUser)
-  }, [userId])
+    authenticationManagementService.findOrganization(organizationId, setOrganization);
+    authenticationManagementService.findOrganizationAdmin(organizationId, userId, setUser);
+  }, [userId, organizationId])
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(userId)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(organizationId, userId)} />
   }
 
-  if (!user) {
+  if (!user || !organization) {
     return <LoadingSpinner />
   }
 
@@ -62,13 +65,19 @@ function EditSuperAdminPage() {
                 <li className="breadcrumb-item">
                   <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
                 </li>
-                <li className="breadcrumb-item">Super Administrators</li>
+                <li className="breadcrumb-item">Organizations</li>
                 <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(userId)}>{user.email}</a>
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+                    {organization.name}
+                  </a>
                 </li>
-                <li className="breadcrumb-item active" aria-current="page">
-                  Edit
+                <li className="breadcrumb-item">Organization Administrators</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(organizationId, userId)}>
+                    {user.email}
+                  </a>
                 </li>
+                <li className="breadcrumb-item active" aria-current="page">Edit</li>
               </ol>
             </nav>
           </div>
@@ -76,7 +85,7 @@ function EditSuperAdminPage() {
           <div className="col-md-3">
               <span className="float-end">
                 <a className="btn btn-secondary"
-                   href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(userId)}>
+                   href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(organizationId, userId)}>
                   Back
                 </a>
               </span>
@@ -85,7 +94,7 @@ function EditSuperAdminPage() {
 
         <div className="row">
           <div className="col-md-12">
-            <h1>Super Administrator &quot;{user.email}&quot;</h1>
+            <h1>Organization Administrator &quot;{user.email}&quot;</h1>
           </div>
         </div>
 
@@ -95,12 +104,12 @@ function EditSuperAdminPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Edit Super Administrator Details</h3>
+                    <h3>Edit Organization Administrator Details</h3>
 
                     <EditUserForm
                         email={user.email}
                         name={user.name}
-                        submitText="Edit Super Administrator"
+                        submitText="Edit Organization Administrator"
                         errorMessage={errorMessage}
                         onClick={onEditDetailsFormSubmitted} />
                   </div>
@@ -135,4 +144,4 @@ function EditSuperAdminPage() {
 
 }
 
-export default EditSuperAdminPage;
+export default EditOrganizationAdminPage;

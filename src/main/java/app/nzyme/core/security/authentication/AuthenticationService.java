@@ -67,7 +67,8 @@ public class AuthenticationService {
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE is_superadmin = true")
                         .mapTo(Long.class)
                         .one()
-        );    }
+        );
+    }
 
     public List<UserEntry> findAllSuperAdministrators(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
@@ -83,7 +84,7 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findSuperAdministrator(Long userId) {
+    public Optional<UserEntry> findSuperAdministrator(long userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
                                 "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
@@ -270,6 +271,117 @@ public class AuthenticationService {
         long totalOrganizationsCount = countAllOrganizations();
 
         return organizationTenantCount == 0 && totalOrganizationsCount > 1;
+    }
+
+    public List<UserEntry> findAllOrganizationAdministrators(long organizationId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes " +
+                                "FROM auth_users WHERE is_orgadmin = true AND organization_id = :organization_id " +
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(UserEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<UserEntry> findOrganizationAdministrator(long organizationId, long userId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
+                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
+                                "totp_secret, mfa_complete, mfa_recovery_codes FROM auth_users " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("user_id", userId)
+                        .mapTo(UserEntry.class)
+                        .findOne()
+        );
+    }
+
+    public long countOrganizationAdministrators(long organizationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_users " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id")
+                        .bind("organization_id", organizationId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public UserEntry createOrganizationAdministrator(long organizationId,
+                                                     String name,
+                                                     String email,
+                                                     PasswordHasher.GeneratedHashAndSalt password) {
+        DateTime now = new DateTime();
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                                "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
+                                "VALUES(:organization_id, NULL, NULL, :email, :password, :password_salt, :name, " +
+                                ":created_at, :updated_at, false, true) RETURNING *")
+                        .bind("organization_id", organizationId)
+                        .bind("email", email)
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("name", name)
+                        .bind("created_at", now)
+                        .bind("updated_at", now)
+                        .mapTo(UserEntry.class)
+                        .one()
+        );
+    }
+
+    public void editOrganizationAdministrator(long organizationId, long userId, String name, String email) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("name", name)
+                        .bind("email", email)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void editOrganizationAdministratorPassword(long organizationId,
+                                                      long userId,
+                                                      PasswordHasher.GeneratedHashAndSalt password) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
+                                "updated_at = NOW() " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                        .bind("password", password.hash())
+                        .bind("password_salt", password.salt())
+                        .bind("organization_id", organizationId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void deleteOrganizationAdministrator(long organizationId, long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_users " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void resetMFAOfOrganizationAdministrator(long organizationId, long userId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
+                                "totp_secret = NULL, mfa_recovery_codes = NULL " +
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                        .bind("organization_id", organizationId)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+
+        // Reset all sessions of this user.
+        deleteAllSessionsOfUser(userId);
     }
 
     public TenantEntry createTenant(long organizationId, String name, String description) {
@@ -510,7 +622,7 @@ public class AuthenticationService {
             throw new RuntimeException("NULL or empty email address.");
         }
 
-        Long count = nzyme.getDatabase().withHandle(handle ->
+        long count = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE email = :email")
                         .bind("email", email.toLowerCase())
                         .mapTo(Long.class)

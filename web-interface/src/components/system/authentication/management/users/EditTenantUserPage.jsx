@@ -5,7 +5,7 @@ import AuthenticationManagementService from "../../../../../services/Authenticat
 import Routes from "../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../util/ApiRoutes";
-import EditTenantUserForm from "./EditTenantUserForm";
+import EditUserForm from "./shared/EditUserForm";
 import EditPasswordForm from "./shared/EditPasswordForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
@@ -115,7 +115,7 @@ function EditTenantUserPage() {
                 <div className="card-body">
                   <h3>Edit User Details</h3>
 
-                  <EditTenantUserForm
+                  <EditUserForm
                       email={user.email}
                       name={user.name}
                       submitText="Edit User"

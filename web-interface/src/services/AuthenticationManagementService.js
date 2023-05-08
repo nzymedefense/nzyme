@@ -61,6 +61,49 @@ class AuthenticationManagementService {
         successCallback);
   }
 
+  findAllOrganizationAdmins(organizationId, setUsers, limit, offset) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators',
+        {limit: limit, offset: offset}, function (response) {
+          setUsers(response.data);
+        })
+  }
+
+  createOrganizationAdministrator(organizationId, email, password, name, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators',
+        {email: email, password: password, name: name}, successCallback, errorCallback);
+  }
+
+  findOrganizationAdmin(organizationId, userId, setUser, setIsDeletable) {
+    RESTClient.get('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId,
+        {}, function (response) {
+          setUser(response.data.user);
+
+          if (setIsDeletable) {
+            setIsDeletable(response.data.is_deletable);
+          }
+        })
+  }
+
+  deleteOrganizationAdmin(organizationId, userId, successCallback) {
+    RESTClient.delete('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId,
+        successCallback);
+  }
+
+  editOrganizationAdministrator(organizationId, userId, name, email, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId,
+        {name: name, email: email}, successCallback, errorCallback);
+  }
+
+  editOrganizationAdministratorPassword(organizationId, userId, password, successCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId + '/password',
+        {password: password}, successCallback);
+  }
+
+  resetMFAOfOrganizationAdmin(organizationId, userId, successCallback) {
+    RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/administrators/show/' + userId + '/mfa/reset',
+        {}, successCallback);
+  }
+
   createUserOfTenant(organizationId, tenantId, email, password, name, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users',
         {email: email, password: password, name: name}, successCallback, errorCallback);
@@ -173,12 +216,12 @@ class AuthenticationManagementService {
   findSuperAdmin(userId, setUser, setIsDeletable = undefined) {
     RESTClient.get('/system/authentication/mgmt/organizations/superadmins/show/' + userId,
         {}, function (response) {
-          setUser(response.data.user);
+      setUser(response.data.user);
 
-          if (setIsDeletable) {
-            setIsDeletable(response.data.is_deletable);
-          }
-        })
+      if (setIsDeletable) {
+        setIsDeletable(response.data.is_deletable);
+      }
+    })
   }
 
   createSuperAdministrator(email, password, name, successCallback, errorCallback) {

@@ -72,12 +72,17 @@ import EditTenantUserPage from "./components/system/authentication/management/us
 import SetupWizardPage from "./components/setup/SetupWizardPage";
 import AuthenticationService from "./services/AuthenticationService";
 import MFASetupPage from "./components/system/authentication/MFASetupPage";
-import LoadingSpinner from "./components/misc/LoadingSpinner";
 import MFAEntryPage from "./components/system/authentication/MFAEntryPage";
 import SuperAdminDetailsPage from "./components/system/authentication/management/users/superadmins/SuperAdminDetailsPage";
 import EditSuperAdminPage from "./components/system/authentication/management/users/superadmins/EditSuperAdminPage";
 import CreateSuperAdminPage from "./components/system/authentication/management/users/superadmins/CreateSuperAdminPage";
 import InitializingPage from "./components/misc/InitializingPage";
+import CreateOrganizationAdministratorPage
+  from "./components/system/authentication/management/users/orgadmins/CreateOrganizationAdministratorPage";
+import OrganizationAdminDetailsPage
+  from "./components/system/authentication/management/users/orgadmins/OrganizationAdminDetailsPage";
+import EditOrganizationAdminPage
+  from "./components/system/authentication/management/users/orgadmins/EditOrganizationAdminPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -235,6 +240,9 @@ function App() {
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} element={<CreateOrganizationPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(':organizationId')} element={<OrganizationDetailsPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(':organizationId')} element={<EditOrganizationPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
+                      <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>

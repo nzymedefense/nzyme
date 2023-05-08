@@ -90,10 +90,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @Path("/show/{id}")
     public Response update(@PathParam("id") long id, UpdateOrganizationRequest req) {
-        if (id <= 0) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -108,10 +104,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @Path("/show/{id}")
     public Response delete(@PathParam("id") long id) {
-        if (id <= 0) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -160,6 +152,194 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         long tenantsCount = nzyme.getAuthenticationService().countTenantsOfOrganization(org.get());
 
         return Response.ok(TenantsListResponse.create(tenantsCount, response)).build();
+    }
+
+
+    @GET
+    @Path("/show/{organizationId}/administrators")
+    public Response findAllOrganizationAdministrators(@PathParam("organizationId") long organizationId,
+                                                      @QueryParam("limit") int limit,
+                                                      @QueryParam("offset") int offset) {
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+
+        if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<UserDetailsResponse> users = Lists.newArrayList();
+        for (UserEntry user : nzyme.getAuthenticationService().findAllOrganizationAdministrators(
+                org.get().id(), limit, offset)) {
+            users.add(userEntryToResponse(user));
+        }
+
+        long orgAdminCount = nzyme.getAuthenticationService().countOrganizationAdministrators(org.get().id());
+
+        return Response.ok(UsersListResponse.create(orgAdminCount, users)).build();
+    }
+
+    @GET
+    @Path("/show/{organizationId}/administrators/show/{id}")
+    public Response findOrganizationAdministrator(@Context SecurityContext sc,
+                                                  @PathParam("organizationId") long organizationId,
+                                                  @PathParam("id") long userId) {
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+        Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
+                organizationId, userId);
+
+        if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        boolean isDeletable = sessionUser.getUserId() != userId;
+
+        return Response.ok(OrganizationAdministratorDetailsResponse.create(
+                userEntryToResponse(orgAdmin.get()), isDeletable
+        )).build();
+    }
+
+    @POST
+    @Path("/show/{organizationId}/administrators")
+    public Response createOrganizationAdministrator(@PathParam("organizationId") long organizationId,
+                                                    CreateUserRequest req) {
+        if (!validateCreateUserRequest(req)) {
+            LOG.info("Invalid parameters in create user request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("Email address already in use.")
+            ).build();
+        }
+
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+        PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
+
+        nzyme.getAuthenticationService().createOrganizationAdministrator(
+                organizationId,
+                req.name(),
+                req.email().toLowerCase(),
+                hash
+        );
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("/show/{organizationId}/administrators/show/{id}")
+    public Response editOrganizationAdministrator(@PathParam("organizationId") long organizationId,
+                                                  @PathParam("id") long userId,
+                                                  UpdateUserRequest req) {
+        Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
+                organizationId, userId);
+
+        if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdateUserRequest(req)) {
+            LOG.info("Invalid parameters in update user request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        if (!orgAdmin.get().email().equals(req.email()) && nzyme.getAuthenticationService().userWithEmailExists(
+                req.email().toLowerCase())) {
+            LOG.info("User with email address already exists.");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("Email address already in use.")
+            ).build();
+        }
+
+        nzyme.getAuthenticationService().editOrganizationAdministrator(
+                organizationId,
+                userId,
+                req.name(),
+                req.email().toLowerCase()
+        );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/show/{organizationId}/administrators/show/{id}/password")
+    public Response editOrganizationAdministratorPassword(@PathParam("organizationId") long organizationId,
+                                                          @PathParam("id") long userId,
+                                                          UpdatePasswordRequest req) {
+        Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
+                organizationId, userId);
+
+        if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!validateUpdatePasswordRequest(req)) {
+            LOG.info("Invalid password in update password request.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
+        PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
+
+        nzyme.getAuthenticationService().editOrganizationAdministratorPassword(
+                organizationId,
+                userId,
+                hash
+        );
+
+        // Invalidate session of user.
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(userId);
+
+        return Response.ok().build();
+    }
+
+
+    @DELETE
+    @Path("/show/{organizationId}/administrators/show/{id}")
+    public Response deleteOrganizationAdministrator(@Context SecurityContext sc,
+                                                    @PathParam("organizationId") long organizationId,
+                                                    @PathParam("id") long userId) {
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+
+        if (sessionUser.getUserId() == userId) {
+            LOG.warn("Organization administrators cannot delete themselves.");
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
+                organizationId, userId);
+
+        if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().deleteOrganizationAdministrator(organizationId, userId);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/show/{organizationId}/administrators/show/{id}/mfa/reset")
+    public Response resetOrganizationAdministratorMFA(@PathParam("organizationId") long organizationId,
+                                                      @PathParam("id") long userId) {
+        Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
+                organizationId, userId);
+
+        if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().resetMFAOfOrganizationAdministrator(organizationId, userId);
+
+        LOG.info("Reset MFA credentials of organization administrator [{}] on admin request.",
+                orgAdmin.get().email());
+
+        return Response.ok().build();
     }
 
     @GET
@@ -877,7 +1057,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/superadmins/show/{id}/mfa/reset")
-    public Response deleteSuperAdministrator(@PathParam("id") Long userId) {
+    public Response resetSuperAdministratorMFA(@PathParam("id") Long userId) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {

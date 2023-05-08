@@ -7,6 +7,7 @@ import {notify} from "react-notify-toast";
 import TenantsTable from "../tenants/TenantsTable";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
+import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -97,8 +98,26 @@ function OrganizationDetailsPage() {
 
                     <TenantsTable organizationId={organization.id} />
 
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(organization.id)} className="btn btn-sm btn-primary">
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(organization.id)}
+                       className="btn btn-sm btn-primary">
                       Create Tenant
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Organization Administrators</h3>
+
+                    <OrganizationAdminTable organization={organization} />
+
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(organization.id)}
+                       className="btn btn-sm btn-primary">
+                      Create Organization Administrator
                     </a>
                   </div>
                 </div>

@@ -46,7 +46,8 @@ function CreateTenantPage() {
                 <li className="breadcrumb-item">
                   <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>{organization.name}</a>
                 </li>
-                <li className="breadcrumb-item active" aria-current="page">Create Tenant</li>
+                <li className="breadcrumb-item">Tenants</li>
+                <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
             </nav>
           </div>
