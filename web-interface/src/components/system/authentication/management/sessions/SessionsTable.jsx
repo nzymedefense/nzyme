@@ -78,8 +78,8 @@ function SessionsTable(props) {
                   <td>
                     {s.mfa_valid ? "Passed/Active" : "Pending"}
                   </td>
-                  <td title={moment(s.last_activity).format()}>
-                    {moment(s.last_activity).fromNow()}
+                  <td title={s.last_activity ? moment(s.last_activity).format() : "None"}>
+                    {s.last_activity ? moment(s.last_activity).fromNow() : "None" }
                   </td>
                   <td>
                     <a href="#" onClick={(e) => invalidateSession(e, s.id)}>Force Log Out</a>

@@ -12,9 +12,21 @@ function GlobalSessions() {
   const [page, setPage] = useState(1);
   const perPage = 20;
 
+  const fetchData = function() {
+    authenticationMgmtService.findAllSessions(setSessions, perPage, (page-1)*perPage);
+  }
+
   useEffect(() => {
     setSessions(null);
-    authenticationMgmtService.findAllSessions(setSessions, perPage, (page-1)*perPage)
+    fetchData();
+
+    const x = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    return () => {
+      clearInterval(x);
+    };
   }, [page, revision]);
 
   return <SessionsTable sessions={sessions}

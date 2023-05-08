@@ -15,9 +15,21 @@ function TenantSessions(props) {
   const [page, setPage] = useState(1);
   const perPage = 20;
 
+  const fetchData = function() {
+    authenticationMgmtService.findSessionsOfTenant(setSessions, organizationId, tenantId, perPage, (page-1)*perPage)
+  }
+
   useEffect(() => {
     setSessions(null);
-    authenticationMgmtService.findSessionsOfTenant(setSessions, organizationId, tenantId, perPage, (page-1)*perPage)
+    fetchData();
+
+    const x = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    return () => {
+      clearInterval(x);
+    };
   }, [page, revision, organizationId]);
 
   return <SessionsTable sessions={sessions}
