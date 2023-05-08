@@ -68,7 +68,13 @@ const ApiRoutes = {
       }
     },
     HEALTH: {
-      INDEX: "/system/health"
+      INDEX: '/system/health'
+    },
+    INTEGRATIONS: {
+      INDEX: '/system/integrations',
+      GEOIP: {
+        IPINFO: '/system/integrations/geoip/ipinfo'
+      }
     }
   },
   REPORTING: {

@@ -22,6 +22,7 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
+import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -259,6 +260,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public FrameProcessor getFrameProcessor() {
         return frameProcessor;
+    }
+
+    @Override
+    public GeoIpService getGeoIpService() {
+        return null;
     }
 
     @Override

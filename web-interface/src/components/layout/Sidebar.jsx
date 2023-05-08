@@ -88,6 +88,10 @@ function Sidebar(props) {
           title="Database"
           icon={<i className="sidebar-icon fa-solid fa-database" />} />
         <NavigationLink
+            href={ApiRoutes.SYSTEM.INTEGRATIONS.INDEX}
+            title="Integrations"
+            icon={<i className="sidebar-icon fa-solid fa-puzzle-piece" />} />
+        <NavigationLink
           href={ApiRoutes.SYSTEM.HEALTH.INDEX}
           title="Health Console"
           icon={<i className="sidebar-icon fa-solid fa-laptop-medical" />} />

@@ -83,6 +83,7 @@ import OrganizationAdminDetailsPage
   from "./components/system/authentication/management/users/orgadmins/OrganizationAdminDetailsPage";
 import EditOrganizationAdminPage
   from "./components/system/authentication/management/users/orgadmins/EditOrganizationAdminPage";
+import IntegrationsPage from "./components/system/integrations/IntegrationsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -281,6 +282,9 @@ function App() {
 
                       { /* System/Health */ }
                       <Route path={ApiRoutes.SYSTEM.HEALTH.INDEX} element={<HealthPage />} />
+
+                      { /* System/Integrations */ }
+                      <Route path={ApiRoutes.SYSTEM.INTEGRATIONS.INDEX} element={<IntegrationsPage />} />
 
                       { /* Ethernet/DNS. */}
                       <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

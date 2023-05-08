@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
@@ -70,6 +71,8 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     Ethernet getEthernet();
 
     FrameProcessor getFrameProcessor();
+
+    GeoIpService getGeoIpService();
 
     Networks getNetworks();
     Sentry getSentry();

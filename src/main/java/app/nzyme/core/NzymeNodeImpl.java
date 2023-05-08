@@ -21,6 +21,7 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
+import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -135,6 +136,8 @@ public class NzymeNodeImpl implements NzymeNode {
     private final MessageBus messageBus;
     private final TasksQueue tasksQueue;
 
+    private final GeoIpService geoIpService;
+
     private final Ethernet ethernet;
 
     private final FrameProcessor frameProcessor;
@@ -192,6 +195,8 @@ public class NzymeNodeImpl implements NzymeNode {
         this.clusterManager = new ClusterManager(this);
         this.messageBus = new PostgresMessageBusImpl(this);
         this.tasksQueue = new PostgresTasksQueueImpl(this);
+
+        this.geoIpService = new GeoIpService(getBaseConfiguration());
 
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
@@ -283,6 +288,9 @@ public class NzymeNodeImpl implements NzymeNode {
         } catch (Crypto.CryptoInitializationException e) {
             throw new RuntimeException("Could not load cryptographic subsystem.", e);
         }
+
+        LOG.info("Initializing Geo IP service.");
+        this.geoIpService.initialize();
 
         LOG.info("Initializing authentication service.");
         this.authenticationService.initialize();
@@ -593,6 +601,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public FrameProcessor getFrameProcessor() {
         return this.frameProcessor;
+    }
+
+    @Override
+    public GeoIpService getGeoIpService() {
+        return geoIpService;
     }
 
     @Override

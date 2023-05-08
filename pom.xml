@@ -59,6 +59,7 @@
         <commonsnet.version>3.9.0</commonsnet.version>
         <commonsvalidator.version>1.7</commonsvalidator.version>
         <totp.version>1.7.1</totp.version>
+        <maxmindmmdb.version>3.0.0</maxmindmmdb.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -361,6 +362,11 @@
             <groupId>dev.samstevens.totp</groupId>
             <artifactId>totp</artifactId>
             <version>${totp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.maxmind.db</groupId>
+            <artifactId>maxmind-db</artifactId>
+            <version>${maxmindmmdb.version}</version>
         </dependency>
     </dependencies>
 
