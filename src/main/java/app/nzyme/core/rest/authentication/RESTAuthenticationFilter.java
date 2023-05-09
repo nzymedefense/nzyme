@@ -99,8 +99,8 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
             // Authenticated. Set last activity information.
             nzyme.getAuthenticationService().updateLastUserActivity(
                     user.get().id(),
-                    "50.222.35.18",
-                    nzyme.getGeoIpService().lookup(InetAddress.getByName("50.222.35.18"))
+                    remoteIp,
+                    nzyme.getGeoIpService().lookup(InetAddress.getByName(remoteIp))
                             .orElse(null)
             );
 

@@ -12,6 +12,11 @@ function LastUserActivity(props) {
   const remoteCity = props.remoteCity;
   const remoteAsn = props.remoteAsn;
 
+  // User had no activity yet.
+  if (!timestamp) {
+    return <div className="alert alert-info mb-0">No user activity yet.</div>
+  }
+
   return (
       <dl className="mb-0">
         <dt>Timestamp</dt>
