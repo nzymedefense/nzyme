@@ -131,8 +131,6 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             // Correct password. Create session.
             String sessionId = SessionId.createSessionId();
 
-            // TODO does user already have a session? Delete all sessions of user.
-
             nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
             nzyme.getAuthenticationService().createSession(sessionId, user.get().id(), remoteIp);
 

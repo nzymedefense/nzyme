@@ -1,5 +1,6 @@
 package app.nzyme.core.security.authentication.db;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
@@ -42,7 +43,19 @@ public abstract class UserEntry {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity) {
+    @Nullable
+    public abstract String lastRemoteIp();
+
+    @Nullable
+    public abstract String lastGeoCity();
+
+    @Nullable
+    public abstract String lastGeoCountry();
+
+    @Nullable
+    public abstract String lastGeoAsn();
+
+    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -60,6 +73,10 @@ public abstract class UserEntry {
                 .updatedAt(updatedAt)
                 .createdAt(createdAt)
                 .lastActivity(lastActivity)
+                .lastRemoteIp(lastRemoteIp)
+                .lastGeoCity(lastGeoCity)
+                .lastGeoCountry(lastGeoCountry)
+                .lastGeoAsn(lastGeoAsn)
                 .build();
     }
 
@@ -100,6 +117,14 @@ public abstract class UserEntry {
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder lastActivity(DateTime lastActivity);
+
+        public abstract Builder lastRemoteIp(String lastRemoteIp);
+
+        public abstract Builder lastGeoCity(String lastGeoCity);
+
+        public abstract Builder lastGeoCountry(String lastGeoCountry);
+
+        public abstract Builder lastGeoAsn(String lastGeoAsn);
 
         public abstract UserEntry build();
     }

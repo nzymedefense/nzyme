@@ -40,7 +40,23 @@ public abstract class UserDetailsResponse {
     @Nullable
     public abstract DateTime lastActivity();
 
-    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity) {
+    @JsonProperty("last_remote_ip")
+    @Nullable
+    public abstract String lastRemoteIp();
+
+    @JsonProperty("last_geo_city")
+    @Nullable
+    public abstract String lastGeoCity();
+
+    @JsonProperty("last_geo_country")
+    @Nullable
+    public abstract String lastGeoCountry();
+
+    @JsonProperty("last_geo_asn")
+    @Nullable
+    public abstract String lastGeoAsn();
+
+    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -51,6 +67,10 @@ public abstract class UserDetailsResponse {
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .lastActivity(lastActivity)
+                .lastRemoteIp(lastRemoteIp)
+                .lastGeoCity(lastGeoCity)
+                .lastGeoCountry(lastGeoCountry)
+                .lastGeoAsn(lastGeoAsn)
                 .build();
     }
 
@@ -77,6 +97,14 @@ public abstract class UserDetailsResponse {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder lastActivity(DateTime lastActivity);
+
+        public abstract Builder lastRemoteIp(String lastRemoteIp);
+
+        public abstract Builder lastGeoCity(String lastGeoCity);
+
+        public abstract Builder lastGeoCountry(String lastGeoCountry);
+
+        public abstract Builder lastGeoAsn(String lastGeoAsn);
 
         public abstract UserDetailsResponse build();
     }

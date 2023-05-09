@@ -577,3 +577,8 @@ svg.totp-qr {
     display: block;
     margin: auto;
 }
+
+span.flag-inline {
+    height: 11px;
+    width: 15px;
+}

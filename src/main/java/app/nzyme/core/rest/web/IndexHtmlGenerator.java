@@ -64,7 +64,7 @@ public class IndexHtmlGenerator {
 
     public String get(MultivaluedMap<String, String> headers) {
         final Map<String, Object> model = ImmutableMap.<String, Object>builder()
-                .put("title", "nzyme - WiFi Defense System")
+                .put("title", "nzyme - Network Defense System")
                 .put("jsFiles", jsFiles)
                 .put("cssFiles", cssFiles)
                 .put("appPrefix", RestTools.buildExternalUri(headers, configuration.httpExternalUri()))

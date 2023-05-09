@@ -2158,4 +2158,30 @@
         <dropDefaultValue tableName="auth_users" columnName="last_activity" />
     </changeSet>
 
+    <changeSet id="add_geo_fields_to_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="last_remote_ip" type="varchar(45)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="last_geo_country" type="varchar(5)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="last_geo_city" type="varchar(128)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="last_geo_asn" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

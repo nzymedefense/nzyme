@@ -32,7 +32,11 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getString("mfa_recovery_codes"),
                 new DateTime(rs.getTimestamp("updated_at")),
                 new DateTime(rs.getTimestamp("created_at")),
-                lastActivity
+                lastActivity,
+                rs.getString("last_remote_ip"),
+                rs.getString("last_geo_city"),
+                rs.getString("last_geo_country"),
+                rs.getString("last_geo_asn")
         );
     }
 

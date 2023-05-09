@@ -7,6 +7,7 @@ import app.nzyme.core.integrations.geoip.GeoIpGeoInformation;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.integrations.geoip.ipinfo.mmdb.FreeCountryAsnLookupResult;
 import app.nzyme.plugin.RegistryKey;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.maxmind.db.Reader;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -27,6 +28,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -45,6 +49,11 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     private final Path mmdbPath;
     private final File mmdb;
 
+    private final ScheduledExecutorService updater = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder()
+                    .setNameFormat("geo-ipinfofree-updater-%d")
+                    .build()
+    );
     private Reader mmdbReader;
 
     private boolean paused = false;
@@ -69,21 +78,18 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     @Override
     public void initialize() {
         LOG.info("Initializing IPinfo Geo IP adapter.");
-        try {
-            if (mmdb.exists()) {
-                // MMDB exists. Is it up to date?
-                BasicFileAttributes fa = Files.readAttributes(mmdbPath, BasicFileAttributes.class);
-                if(new DateTime(fa.creationTime().toMillis()).isBefore(DateTime.now().minusHours(12))) {
-                    // MMDB is outdated. Download.
-                    LOG.info("MMDB exists but is out of date. Downloading new copy.");
-                    downloadAndStoreMmdb();
-                } else {
-                    LOG.info("MMDB exists and is up to date.");
-                }
-            } else {
-                LOG.info("MMDB does not exist. Downloading new copy.");
-                downloadAndStoreMmdb();
+
+        this.updater.scheduleAtFixedRate(() -> {
+            try {
+                // This will only actually download if file is outdated.
+                checkMMDB();
+            } catch(Exception e) {
+                LOG.error("Could not refresh geo IP data file.", e);
             }
+        }, 1, 1, TimeUnit.MINUTES);
+
+        try {
+            checkMMDB();
 
             try {
                 this.mmdbReader = new Reader(mmdb);
@@ -105,6 +111,8 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
                 LOG.error("Could not close MMDB reader.", e);
             }
         }
+
+        this.updater.shutdownNow();
     }
 
     @Override
@@ -157,6 +165,23 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     @Override
     public String getName() {
         return "ipinfo_free";
+    }
+
+    private void checkMMDB() throws IOException {
+        if (mmdb.exists()) {
+            // MMDB exists. Is it up to date?
+            BasicFileAttributes fa = Files.readAttributes(mmdbPath, BasicFileAttributes.class);
+            if(new DateTime(fa.creationTime().toMillis()).isBefore(DateTime.now().minusHours(12))) {
+                // MMDB is outdated. Download.
+                LOG.info("MMDB exists but is out of date. Downloading new copy.");
+                downloadAndStoreMmdb();
+            } else {
+                LOG.info("MMDB exists and is up to date.");
+            }
+        } else {
+            LOG.info("MMDB does not exist. Downloading new copy.");
+            downloadAndStoreMmdb();
+        }
     }
 
     private void downloadAndStoreMmdb() throws IOException {

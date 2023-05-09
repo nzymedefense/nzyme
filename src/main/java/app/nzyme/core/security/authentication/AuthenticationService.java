@@ -2,6 +2,7 @@ package app.nzyme.core.security.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,10 +74,7 @@ public class AuthenticationService {
 
     public List<UserEntry> findAllSuperAdministrators(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE is_superadmin = true " +
+                handle.createQuery("SELECT * FROM auth_users WHERE is_superadmin = true " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset)
@@ -86,10 +85,7 @@ public class AuthenticationService {
 
     public Optional<UserEntry> findSuperAdministrator(long userId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE is_superadmin = true AND id = :user_id")
+                handle.createQuery("SELECT * FROM auth_users WHERE is_superadmin = true AND id = :user_id")
                         .bind("user_id", userId)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -275,10 +271,7 @@ public class AuthenticationService {
 
     public List<UserEntry> findAllOrganizationAdministrators(long organizationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE is_orgadmin = true AND organization_id = :organization_id " +
+                handle.createQuery("SELECT * FROM auth_users WHERE is_orgadmin = true AND organization_id = :organization_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("limit", limit)
@@ -290,9 +283,7 @@ public class AuthenticationService {
 
     public Optional<UserEntry> findOrganizationAdministrator(long organizationId, long userId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes FROM auth_users " +
+                handle.createQuery("SELECT * FROM auth_users " +
                                 "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("user_id", userId)
@@ -465,10 +456,7 @@ public class AuthenticationService {
 
     public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                handle.createQuery("SELECT * FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND id = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -480,10 +468,7 @@ public class AuthenticationService {
 
     public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                handle.createQuery("SELECT * FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -496,10 +481,7 @@ public class AuthenticationService {
 
     public Optional<UserEntry> findUserByEmail(String email) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes  " +
-                                "FROM auth_users WHERE email = :email")
+                handle.createQuery("SELECT * FROM auth_users WHERE email = :email")
                         .bind("email", email)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -508,10 +490,7 @@ public class AuthenticationService {
 
     public Optional<UserEntry> findUserById(long id) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, tenant_id, role_id, email, name, is_orgadmin, " +
-                                "is_superadmin, password, password_salt, updated_at, created_at, last_activity, " +
-                                "totp_secret, mfa_complete, mfa_recovery_codes " +
-                                "FROM auth_users WHERE id = :id")
+                handle.createQuery("SELECT * FROM auth_users WHERE id = :id")
                         .bind("id", id)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -793,9 +772,19 @@ public class AuthenticationService {
         );
     }
 
-    public void updateLastUserActivity(long userId) {
+    public void updateLastUserActivity(long userId, String remoteIp, @Nullable GeoIpLookupResult remoteIpGeo) {
+        String countryCode = remoteIpGeo != null && remoteIpGeo.geo() != null ? remoteIpGeo.geo().countryCode() : null;
+        String city = remoteIpGeo != null && remoteIpGeo.geo() != null ? remoteIpGeo.geo().city() : null;
+        String asnName = remoteIpGeo != null && remoteIpGeo.asn() != null ? remoteIpGeo.asn().name() : null;;
+
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET last_activity = NOW() WHERE id = :user_id")
+                handle.createUpdate("UPDATE auth_users SET last_activity = NOW(), last_remote_ip = :remote_ip, " +
+                                "last_geo_country = :country_code, last_geo_city = :city, last_geo_asn = :asn " +
+                                "WHERE id = :user_id")
+                        .bind("remote_ip", remoteIp)
+                        .bind("country_code", countryCode)
+                        .bind("city", city)
+                        .bind("asn", asnName)
                         .bind("user_id", userId)
                         .execute()
         );

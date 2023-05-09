@@ -5,6 +5,7 @@ import AuthenticationManagementService from "../../../../../../services/Authenti
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
 import {notify} from "react-notify-toast";
+import LastUserActivity from "../shared/LastUserActivity";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -108,6 +109,23 @@ function SuperAdminDetailsPage() {
                         {moment(user.updated_at).fromNow()}
                       </dd>
                     </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Last Activity</h3>
+
+                    <LastUserActivity
+                        timestamp={user.last_activity}
+                        remoteAddress={user.last_remote_ip}
+                        remoteCountry={user.last_geo_country}
+                        remoteCity={user.last_geo_city}
+                        remoteAsn={user.last_geo_asn} />
                   </div>
                 </div>
               </div>

@@ -1109,7 +1109,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 u.name(),
                 u.createdAt(),
                 u.updatedAt(),
-                u.lastActivity()
+                u.lastActivity(),
+                u.lastRemoteIp(),
+                u.lastGeoCity(),
+                u.lastGeoCountry(),
+                u.lastGeoAsn()
         );
     }
 

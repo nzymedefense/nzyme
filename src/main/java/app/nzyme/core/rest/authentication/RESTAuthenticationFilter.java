@@ -22,17 +22,22 @@ import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.server.Request;
 
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -45,6 +50,9 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     private final NzymeNode nzyme;
 
+    @Context
+    private javax.inject.Provider<Request> requestProvider;
+
     public static final String AUTHENTICATION_SCHEME = "Bearer";
 
     public RESTAuthenticationFilter(NzymeNode nzyme) {
@@ -53,6 +61,16 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        final Request request = requestProvider.get();
+        String remoteIp = request.getHeader("X-Forwarded-For") == null
+                ? request.getRemoteAddr() : request.getHeader("X-Forwarded-For").split(",")[0];
+
+        InetAddressValidator inetValidator = new InetAddressValidator();
+        if (!inetValidator.isValid(remoteIp)) {
+            LOG.warn("Invalid remote IP or X-Forwarded-For header in session request: [{}]. Aborting.", remoteIp);
+            abortWithUnauthorized(requestContext);
+        }
+
         try {
             String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
@@ -79,7 +97,12 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
             }
 
             // Authenticated. Set last activity information.
-            nzyme.getAuthenticationService().updateLastUserActivity(user.get().id());
+            nzyme.getAuthenticationService().updateLastUserActivity(
+                    user.get().id(),
+                    "50.222.35.18",
+                    nzyme.getGeoIpService().lookup(InetAddress.getByName("50.222.35.18"))
+                            .orElse(null)
+            );
 
             // Set new security context for later use in resources.
             final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
