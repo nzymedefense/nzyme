@@ -17,4 +17,10 @@ public class NoOpGeoIpAdapter implements GeoIpAdapter {
         return Optional.empty();
     }
 
+    @Override
+    public String getName() {
+        return "noop";
+    }
+
+
 }

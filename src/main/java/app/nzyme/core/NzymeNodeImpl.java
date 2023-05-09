@@ -196,7 +196,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.messageBus = new PostgresMessageBusImpl(this);
         this.tasksQueue = new PostgresTasksQueueImpl(this);
 
-        this.geoIpService = new GeoIpService(getBaseConfiguration());
+        this.geoIpService = new GeoIpService(this);
 
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();

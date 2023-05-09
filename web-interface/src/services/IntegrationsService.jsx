@@ -2,12 +2,10 @@ import RESTClient from '../util/RESTClient'
 
 class IntegrationsService {
 
-  getGeoIpConfiguration(setHealthIndicators) {
-    RESTClient.get('/system/health/indicators', {}, function (response) {
-      setHealthIndicators(response.data.indicators)
-    })
+  getGeoIpSummary(successCallback) {
+    RESTClient.get('/system/integrations/geoip', {}, successCallback)
   }
 
 }
 
-export default SystemService
+export default IntegrationsService

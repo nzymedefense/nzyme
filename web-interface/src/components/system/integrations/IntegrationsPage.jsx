@@ -1,15 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
+import GeoIpProviderOverview from "./geoip/GeoIpProviderOverview";
 
 function IntegrationsPage() {
-
-  const [selectedGeoIp, setSelectedGeoIp] = useState(null);
-  const [geoIpConfiguration, setGeoIpConfiguration] = useState(null);
-
-  useEffect(() => {
-
-  })
-
-  // MOVE to own component, check if info pulled, loading etc.
 
   return (
       <div>
@@ -30,13 +22,7 @@ function IntegrationsPage() {
                   city or even  longitude and latitude as well as other related metadata.
                 </p>
 
-                <select className="form-select" defaultValue={'default'}
-                        onChange={(e) => setSelectedGeoIp(e.target.value)}>
-                  <option value="default" disabled>Select a GeoIP Integration</option>
-                  <option value="ipinfo_free">IPinfo.io Free</option>
-                </select>
-
-                {selectedGeoIp}
+                <GeoIpProviderOverview />
               </div>
             </div>
           </div>

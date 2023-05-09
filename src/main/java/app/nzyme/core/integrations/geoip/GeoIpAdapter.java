@@ -8,4 +8,6 @@ public interface GeoIpAdapter {
     void initialize();
     Optional<GeoIpLookupResult> lookup(InetAddress address);
 
+    String getName();
+
 }

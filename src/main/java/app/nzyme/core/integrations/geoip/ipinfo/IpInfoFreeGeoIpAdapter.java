@@ -30,9 +30,9 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
-public class IpInfoGeoIpAdapter implements GeoIpAdapter {
+public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
 
-    private static final Logger LOG = LogManager.getLogger(IpInfoGeoIpAdapter.class);
+    private static final Logger LOG = LogManager.getLogger(IpInfoFreeGeoIpAdapter.class);
 
     public static final RegistryKey REGISTRY_KEY_TOKEN = RegistryKey.create(
             "ipinfo_registry_key",
@@ -49,7 +49,7 @@ public class IpInfoGeoIpAdapter implements GeoIpAdapter {
 
     private boolean paused = false;
 
-    public IpInfoGeoIpAdapter(String token, BaseConfiguration baseConfiguration) {
+    public IpInfoFreeGeoIpAdapter(String token, BaseConfiguration baseConfiguration) {
         mmdbPath = Path.of(baseConfiguration.dataDirectory(), "geo_ipinfo.mmdb");
         mmdb = mmdbPath.toFile();
 
@@ -141,6 +141,11 @@ public class IpInfoGeoIpAdapter implements GeoIpAdapter {
             LOG.info("Could not look up IP address [{}].", address, e);
             return Optional.empty();
         }
+    }
+
+    @Override
+    public String getName() {
+        return "ipinfo_free";
     }
 
     private void downloadAndStoreMmdb() throws IOException {

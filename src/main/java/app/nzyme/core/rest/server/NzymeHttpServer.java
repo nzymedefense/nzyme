@@ -23,6 +23,7 @@ import app.nzyme.core.rest.resources.system.*;
 import app.nzyme.core.rest.resources.system.cluster.MessageBusResource;
 import app.nzyme.core.rest.resources.system.cluster.NodesResource;
 import app.nzyme.core.rest.resources.system.cluster.TasksQueueResource;
+import app.nzyme.core.rest.resources.system.integrations.GeoIpIntegrationsResource;
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
@@ -135,6 +136,7 @@ public class NzymeHttpServer {
         resourceConfig.register(TasksQueueResource.class);
         resourceConfig.register(OrganizationsResource.class);
         resourceConfig.register(InitialUserResource.class);
+        resourceConfig.register(GeoIpIntegrationsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

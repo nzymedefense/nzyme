@@ -8,6 +8,11 @@ code {
     color: #212529;
 }
 
+h5 {
+    font-size: 13px;
+    font-weight: bold;
+}
+
 .bg-danger {
     background-color: #EF233C !important;
 }

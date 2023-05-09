@@ -1,7 +1,7 @@
 package app.nzyme.core.integrations.geoip;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.integrations.geoip.ipinfo.IpInfoGeoIpAdapter;
+import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeGeoIpAdapter;
 import app.nzyme.core.integrations.geoip.noop.NoOpGeoIpAdapter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GeoIpService {
 
-    private static final Logger LOG = LogManager.getLogger(IpInfoGeoIpAdapter.class);
+    private static final Logger LOG = LogManager.getLogger(IpInfoFreeGeoIpAdapter.class);
 
     private final NzymeNode nzyme;
 
@@ -49,10 +49,10 @@ public class GeoIpService {
             switch (adapterName.get()) {
                 case "ipinfo_free":
                     Optional<String> apiToken = nzyme.getDatabaseCoreRegistry()
-                            .getValue(IpInfoGeoIpAdapter.REGISTRY_KEY_TOKEN.key());
+                            .getValue(IpInfoFreeGeoIpAdapter.REGISTRY_KEY_TOKEN.key());
 
                     if (apiToken.isPresent()) {
-                        adapter = new IpInfoGeoIpAdapter(apiToken.get(), nzyme.getBaseConfiguration());
+                        adapter = new IpInfoFreeGeoIpAdapter(apiToken.get(), nzyme.getBaseConfiguration());
                     } else {
                         LOG.error("Missing IPinfo token. Cannot initialize GeoIP adapter.");
                         adapter = new NoOpGeoIpAdapter();
@@ -75,6 +75,10 @@ public class GeoIpService {
 
     public long getCacheSize() {
         return this.cache.size();
+    }
+
+    public String getAdapterName() {
+        return this.adapter.getName();
     }
 
 }
