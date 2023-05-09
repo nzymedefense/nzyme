@@ -75,7 +75,7 @@ function PrometheusMetricsPage () {
                                         <ConfigurationModal config={configuration.prometheus_rest_report_enabled}
                                                             setGlobalConfig={setConfiguration}
                                                             setLocalRevision={setLocalRevision}
-                                                            dbUpdateCallback={monitoringService.updateConfiguration} />
+                                                            dbUpdateCallback={monitoringService.updatePrometheusExporterConfiguration} />
                                     </td>
                                 </tr>
                                 <tr>
@@ -89,7 +89,7 @@ function PrometheusMetricsPage () {
                                         <ConfigurationModal config={configuration.prometheus_rest_report_username}
                                                             setGlobalConfig={setConfiguration}
                                                             setLocalRevision={setLocalRevision}
-                                                            dbUpdateCallback={monitoringService.updateConfiguration} />
+                                                            dbUpdateCallback={monitoringService.updatePrometheusExporterConfiguration} />
                                     </td>
                                 </tr>
                                 <tr>
@@ -103,7 +103,7 @@ function PrometheusMetricsPage () {
                                         <ConfigurationModal config={configuration.prometheus_rest_report_password}
                                                             setGlobalConfig={setConfiguration}
                                                             setLocalRevision={setLocalRevision}
-                                                            dbUpdateCallback={monitoringService.updateConfiguration} />
+                                                            dbUpdateCallback={monitoringService.updatePrometheusExporterConfiguration} />
                                     </td>
                                 </tr>
                                 </tbody>

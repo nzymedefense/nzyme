@@ -35,7 +35,7 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     private static final Logger LOG = LogManager.getLogger(IpInfoFreeGeoIpAdapter.class);
 
     public static final RegistryKey REGISTRY_KEY_TOKEN = RegistryKey.create(
-            "ipinfo_registry_key",
+            "geoipprov_ipinfo_api_key",
             Optional.empty(),
             Optional.empty(),
             true

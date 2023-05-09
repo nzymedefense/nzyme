@@ -13,7 +13,7 @@ class MonitoringService {
     })
   }
 
-  updateConfiguration (newConfig, successCallback, errorCallback) {
+  updatePrometheusExporterConfiguration (newConfig, successCallback, errorCallback) {
     RESTClient.put('/system/monitoring/prometheus/configuration', { change: newConfig }, successCallback, errorCallback)
   }
 }

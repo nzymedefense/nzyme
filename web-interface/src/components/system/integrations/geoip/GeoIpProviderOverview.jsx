@@ -2,35 +2,53 @@ import React, {useEffect, useState} from "react";
 import IntegrationsService from "../../../../services/IntegrationsService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import GeoIpDetailsProxy from "./GeoIpDetailsProxy";
+import geoIpProviderName from "./GeoIpProviderName";
+import GeoIpProviderName from "./GeoIpProviderName";
 
 const integrationsService = new IntegrationsService();
 
 function GeoIpProviderOverview() {
 
-  const [selectedGeoIp, setSelectedGeoIp] = useState(null);
-  const [geoIpSummary, setGeoIpSummary] = useState(null);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [localRevision, setLocalRevision] = useState(0);
+
+  const activateProvider = function(providerName) {
+    integrationsService.activateGeoIpProvider(providerName, function() {
+      setLocalRevision(localRevision+1);
+    })
+  }
 
   useEffect(() => {
+    setSummary(null);
+    setSelectedProvider(null);
     integrationsService.getGeoIpSummary(function(response) {
-      setGeoIpSummary(response.data);
-      setSelectedGeoIp(response.data.active_provider);
+      setSummary(response.data);
+      setSelectedProvider(response.data.active_provider);
     })
-  }, [])
+  }, [localRevision])
 
-  if (!geoIpSummary || !selectedGeoIp) {
+  if (!summary || !selectedProvider) {
     return <LoadingSpinner />
   }
 
   return (
       <React.Fragment>
+        <dl>
+          <dt>Active Provider:</dt>
+          <dd><GeoIpProviderName id={summary.active_provider} /></dd>
+        </dl>
+
         <h5>Choose a provider:</h5>
-        <select className="form-select" defaultValue={geoIpSummary.active_provider}
-                onChange={(e) => setSelectedGeoIp(e.target.value)}>
+        <select className="form-select" defaultValue={summary.active_provider}
+                onChange={(e) => setSelectedProvider(e.target.value)}>
           <option value="noop">None</option>
           <option value="ipinfo_free">IPinfo.io Free</option>
         </select>
 
-        <GeoIpDetailsProxy provider={selectedGeoIp} summary={geoIpSummary} />
+        <GeoIpDetailsProxy activateProvider={activateProvider}
+                           provider={selectedProvider}
+                           activeProvider={summary.active_provider} />
       </React.Fragment>
   )
 

@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class GeoIpSummaryResponse {
 
-    @Nullable
     @JsonProperty("active_provider")
     public abstract String activeProvider();
 

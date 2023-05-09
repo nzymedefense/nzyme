@@ -4,13 +4,14 @@ import IpInfoFreeProvider from "./providers/IpInfoFreeProvider";
 function GeoIpDetailsProxy(props) {
 
   const provider = props.provider;
-  const summary = props.summary;
+  const activeProvider = props.activeProvider;
+  const activateProvider = props.activateProvider;
 
   switch (provider) {
     case "noop":
-      return "NOOP EXPL";
+      return null;
     case "ipinfo_free":
-      return <IpInfoFreeProvider summary={summary} />
+      return <IpInfoFreeProvider activateProvider={activateProvider} activeProvider={activeProvider} />
     default:
       return "No Provider Details";
   }

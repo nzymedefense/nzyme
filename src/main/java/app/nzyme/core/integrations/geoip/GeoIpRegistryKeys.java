@@ -6,8 +6,8 @@ import java.util.Optional;
 
 public class GeoIpRegistryKeys {
 
-    public static final RegistryKey GEOIP_ADAPTER_NAME = RegistryKey.create(
-            "geoip_adapter_name",
+    public static final RegistryKey GEOIP_PROVIDER_NAME = RegistryKey.create(
+            "geoip_provider_name",
             Optional.empty(),
             Optional.empty(),
             true

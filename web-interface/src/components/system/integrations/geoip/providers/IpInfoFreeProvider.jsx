@@ -1,11 +1,32 @@
-import React from "react";
-import ConfigurationValue from "../../../../configuration/ConfigurationValue";
-import ConfigurationModal from "../../../../configuration/modal/ConfigurationModal";
+import React, {useEffect, useState} from "react";
 import EncryptedConfigurationValue from "../../../../configuration/EncryptedConfigurationValue";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
+import IntegrationsService from "../../../../../services/IntegrationsService";
+import ConfigurationModal from "../../../../configuration/modal/ConfigurationModal";
+
+const integrationsService = new IntegrationsService();
 
 function IpInfoFreeProvider(props) {
 
-  const summary = props.summary;
+  const activeProvider = props.activeProvider;
+  const activateProvider = props.activateProvider;
+
+  const PROVIDER_ID = "ipinfo_free";
+
+  const [configuration, setConfiguration] = useState(null);
+  const [localRevision, setLocalRevision] = useState(0);
+
+  const configurationComplete = function() {
+    return configuration && configuration.token.value_is_set;
+  }
+
+  useEffect(() => {
+    integrationsService.getGeoIpIpInfoFreeConfiguration(setConfiguration);
+  }, [localRevision])
+
+  if (!configuration) {
+    return <LoadingSpinner />
+  }
 
   return (
       <React.Fragment>
@@ -43,16 +64,26 @@ function IpInfoFreeProvider(props) {
           <tr>
             <td>API Token</td>
             <td>
-              <EncryptedConfigurationValue isSet={true}
-                                           configKey="foo"
+              <EncryptedConfigurationValue isSet={configuration.token.value_is_set}
+                                           configKey={configuration.token.key}
                                            required={true} />
             </td>
             <td>
-              <a href="#">Edit</a>
+              <ConfigurationModal config={configuration.token}
+                                  setGlobalConfig={setConfiguration}
+                                  setLocalRevision={setLocalRevision}
+                                  dbUpdateCallback={integrationsService.updateGeoIpIpInfoFreeConfiguration} />
             </td>
           </tr>
           </tbody>
         </table>
+
+        { activeProvider === PROVIDER_ID ?
+            null : <button className="btn btn-sm btn-primary"
+                onClick={() => activateProvider(PROVIDER_ID)}
+                disabled={!configurationComplete()}>
+              Activate Provider
+        </button> }
       </React.Fragment>
   )
 

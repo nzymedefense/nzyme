@@ -23,6 +23,7 @@ public class GeoIpService {
     private GeoIpAdapter adapter;
 
     private final LoadingCache<InetAddress, Optional<GeoIpLookupResult>> cache;
+    private boolean useCaching = true;
 
     public GeoIpService(NzymeNode nzyme) {
         this.nzyme = nzyme;
@@ -36,14 +37,17 @@ public class GeoIpService {
                         return adapter.lookup(address);
                     }
                 });
+
+        // Poll for configuration changes.
     }
 
     public void initialize() {
         // Find out if there is a GeoIp adapter configured. Use NoOp adapter if not.
         GeoIpAdapter adapter;
 
-        Optional<String> adapterName = nzyme.getDatabaseCoreRegistry().getValue(GeoIpRegistryKeys.GEOIP_ADAPTER_NAME.key());
+        Optional<String> adapterName = nzyme.getDatabaseCoreRegistry().getValue(GeoIpRegistryKeys.GEOIP_PROVIDER_NAME.key());
         if (adapterName.isEmpty()) {
+            useCaching = false;
             adapter = new NoOpGeoIpAdapter();
         } else {
             switch (adapterName.get()) {
@@ -55,10 +59,12 @@ public class GeoIpService {
                         adapter = new IpInfoFreeGeoIpAdapter(apiToken.get(), nzyme.getBaseConfiguration());
                     } else {
                         LOG.error("Missing IPinfo token. Cannot initialize GeoIP adapter.");
+                        useCaching = false;
                         adapter = new NoOpGeoIpAdapter();
                     }
                     break;
                 default:
+                    useCaching = false;
                     adapter = new NoOpGeoIpAdapter();
             }
         }
@@ -70,7 +76,11 @@ public class GeoIpService {
     }
 
     public Optional<GeoIpLookupResult> lookup(InetAddress address) {
-        return cache.getUnchecked(address);
+        if (useCaching) {
+            return cache.getUnchecked(address);
+        } else {
+            return adapter.lookup(address);
+        }
     }
 
     public long getCacheSize() {
