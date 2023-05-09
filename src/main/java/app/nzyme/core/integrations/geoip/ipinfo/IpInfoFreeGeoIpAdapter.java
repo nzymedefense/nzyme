@@ -176,7 +176,7 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
                 LOG.info("MMDB exists but is out of date. Downloading new copy.");
                 downloadAndStoreMmdb();
             } else {
-                LOG.info("MMDB exists and is up to date.");
+                LOG.debug("MMDB exists and is up to date.");
             }
         } else {
             LOG.info("MMDB does not exist. Downloading new copy.");
