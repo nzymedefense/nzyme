@@ -30,8 +30,6 @@ function IpInfoFreeProvider(props) {
 
   return (
       <React.Fragment>
-        <hr className="mt-3" />
-
         <div className="geoip-provider-configuration mt-3">
           <h3>Provider: IPinfo.io Free</h3>
 

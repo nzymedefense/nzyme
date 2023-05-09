@@ -1,5 +1,6 @@
 import React from "react";
 import IpInfoFreeProvider from "./providers/IpInfoFreeProvider";
+import NoOpProvider from "./providers/NoOpProvider";
 
 function GeoIpDetailsProxy(props) {
 
@@ -9,7 +10,7 @@ function GeoIpDetailsProxy(props) {
 
   switch (provider) {
     case "noop":
-      return null;
+      return <NoOpProvider activateProvider={activateProvider} activeProvider={activeProvider} />
     case "ipinfo_free":
       return <IpInfoFreeProvider activateProvider={activateProvider} activeProvider={activeProvider} />
     default:

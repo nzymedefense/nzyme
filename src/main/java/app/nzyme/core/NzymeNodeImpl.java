@@ -24,12 +24,10 @@ import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
+import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
-import app.nzyme.plugin.Database;
-import app.nzyme.plugin.NodeIdentification;
-import app.nzyme.plugin.Plugin;
-import app.nzyme.plugin.Registry;
+import app.nzyme.plugin.*;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
 import app.nzyme.plugin.retro.RetroService;
@@ -119,7 +117,10 @@ public class NzymeNodeImpl implements NzymeNode {
     private final Path dataDirectory;
 
     private final DatabaseImpl database;
-    public final AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
+
+    private final RegistryImpl registry;
+    private final RegistryChangeMonitor registryChangeMonitor;
 
     private final NodeManager nodeManager;
     private final ClusterManager clusterManager;
@@ -180,6 +181,9 @@ public class NzymeNodeImpl implements NzymeNode {
         this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
         this.database = database;
         this.configuration = configuration;
+
+        this.registry = new RegistryImpl(this, "core");
+        this.registryChangeMonitor = new RegistryChangeMonitorImpl(this);
 
         this.authenticationService = new AuthenticationService(this);
 
@@ -806,7 +810,12 @@ public class NzymeNodeImpl implements NzymeNode {
 
     @Override
     public Registry getDatabaseCoreRegistry() {
-        return new RegistryImpl(this, "core");
+        return registry;
+    }
+
+    @Override
+    public RegistryChangeMonitor getRegistryChangeMonitor() {
+        return registryChangeMonitor;
     }
 
     @Override

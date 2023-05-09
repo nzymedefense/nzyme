@@ -122,6 +122,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     ObjectMapper getObjectMapper();
 
     Registry getDatabaseCoreRegistry();
+    RegistryChangeMonitor getRegistryChangeMonitor();
 
     Version getVersion();
 

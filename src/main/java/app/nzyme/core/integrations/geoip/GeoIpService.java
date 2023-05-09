@@ -3,6 +3,7 @@ package app.nzyme.core.integrations.geoip;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeGeoIpAdapter;
 import app.nzyme.core.integrations.geoip.noop.NoOpGeoIpAdapter;
+import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -38,10 +39,31 @@ public class GeoIpService {
                     }
                 });
 
-        // Poll for configuration changes.
+        // Reload on configuration change.
+        nzyme.getRegistryChangeMonitor()
+                .onChange("core", GeoIpRegistryKeys.GEOIP_PROVIDER_NAME.key(), this::reload);
+        nzyme.getRegistryChangeMonitor()
+                .onChange("core", IpInfoFreeGeoIpAdapter.REGISTRY_KEY_TOKEN.key(), this::reload);
+    }
+
+    private void reload() {
+        GeoIpAdapter currentAdapter = adapter;
+
+        // Reload with new registry settings.
+        initialize();
+
+        // Clear cache.
+        cache.invalidateAll();
+
+        // Shut down previous adapter.
+        if (currentAdapter != null) {
+            currentAdapter.shutdown();
+        }
     }
 
     public void initialize() {
+        // IMPORTANT: This method will also be called on configuration changes.
+
         // Find out if there is a GeoIp adapter configured. Use NoOp adapter if not.
         GeoIpAdapter adapter;
 
@@ -52,8 +74,13 @@ public class GeoIpService {
         } else {
             switch (adapterName.get()) {
                 case "ipinfo_free":
-                    Optional<String> apiToken = nzyme.getDatabaseCoreRegistry()
-                            .getValue(IpInfoFreeGeoIpAdapter.REGISTRY_KEY_TOKEN.key());
+                    Optional<String> apiToken;
+                    try {
+                        apiToken = nzyme.getDatabaseCoreRegistry()
+                                .getEncryptedValue(IpInfoFreeGeoIpAdapter.REGISTRY_KEY_TOKEN.key());
+                    } catch (RegistryCryptoException e) {
+                        throw new RuntimeException("Could not decrypt API token.");
+                    }
 
                     if (apiToken.isPresent()) {
                         adapter = new IpInfoFreeGeoIpAdapter(apiToken.get(), nzyme.getBaseConfiguration());
@@ -85,10 +112,6 @@ public class GeoIpService {
 
     public long getCacheSize() {
         return this.cache.size();
-    }
-
-    public String getAdapterName() {
-        return this.adapter.getName();
     }
 
 }

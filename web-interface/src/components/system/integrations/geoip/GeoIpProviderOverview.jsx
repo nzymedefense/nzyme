@@ -46,6 +46,8 @@ function GeoIpProviderOverview() {
           <option value="ipinfo_free">IPinfo.io Free</option>
         </select>
 
+        <hr className="mt-3" />
+
         <GeoIpDetailsProxy activateProvider={activateProvider}
                            provider={selectedProvider}
                            activeProvider={summary.active_provider} />

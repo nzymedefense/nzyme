@@ -13,6 +13,10 @@ public class NoOpGeoIpAdapter implements GeoIpAdapter {
     }
 
     @Override
+    public void shutdown() {
+    }
+
+    @Override
     public Optional<GeoIpLookupResult> lookup(InetAddress address) {
         return Optional.empty();
     }

@@ -97,6 +97,17 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
     }
 
     @Override
+    public void shutdown() {
+        if (this.mmdbReader != null) {
+            try {
+                this.mmdbReader.close();
+            } catch (IOException e) {
+                LOG.error("Could not close MMDB reader.", e);
+            }
+        }
+    }
+
+    @Override
     public Optional<GeoIpLookupResult> lookup(InetAddress address) {
         while(paused) {
             /*

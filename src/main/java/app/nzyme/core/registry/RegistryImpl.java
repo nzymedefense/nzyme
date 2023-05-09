@@ -19,6 +19,7 @@ public class RegistryImpl implements Registry {
     private final NzymeNode nzyme;
     private final String namespace;
 
+
     public RegistryImpl(NzymeNode nzyme, String namespace) {
         this.nzyme = nzyme;
         this.namespace = namespace;
@@ -26,10 +27,10 @@ public class RegistryImpl implements Registry {
 
     @Override
     public Optional<String> getValue(String key) {
-        LOG.debug("Getting value for [{}] from registry.", buildNamespacedKey(key));
+        LOG.debug("Getting value for [{}] from registry.", buildNamespacedKey(namespace, key));
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT value FROM registry WHERE key = :key")
-                        .bind("key", buildNamespacedKey(key))
+                        .bind("key", buildNamespacedKey(namespace, key))
                         .mapTo(String.class)
                         .findOne()
         );
@@ -37,10 +38,10 @@ public class RegistryImpl implements Registry {
 
     @Override
     public Optional<String> getEncryptedValue(String key) throws RegistryCryptoException {
-        LOG.debug("Getting encrypted value for [{}] from registry.", buildNamespacedKey(key));
+        LOG.debug("Getting encrypted value for [{}] from registry.", buildNamespacedKey(namespace, key));
         Optional<String> encrypted = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT value FROM registry_encrypted WHERE key = :key")
-                        .bind("key", buildNamespacedKey(key))
+                        .bind("key", buildNamespacedKey(namespace, key))
                         .mapTo(String.class)
                         .findOne()
         );
@@ -78,21 +79,21 @@ public class RegistryImpl implements Registry {
 
         if (getValue(key).isPresent()) {
             // Update existing entry.
-            LOG.debug("Updating existing value for key [{}] in registry.", buildNamespacedKey(key));
+            LOG.debug("Updating existing value for key [{}] in registry.", buildNamespacedKey(namespace, key));
 
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("UPDATE registry SET value = :value WHERE key = :key")
-                            .bind("key", buildNamespacedKey(key))
+                            .bind("key", buildNamespacedKey(namespace, key))
                             .bind("value", value)
                             .execute()
             );
         } else {
             // Insert new entry.
-            LOG.debug("Inserting new entry for key [{}] in registry.", buildNamespacedKey(key));
+            LOG.debug("Inserting new entry for key [{}] in registry.", buildNamespacedKey(namespace, key));
 
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("INSERT INTO registry(key, value) VALUES(:key, :value)")
-                            .bind("key", buildNamespacedKey(key))
+                            .bind("key", buildNamespacedKey(namespace, key))
                             .bind("value", value)
                             .execute()
             );
@@ -117,23 +118,23 @@ public class RegistryImpl implements Registry {
 
         if (getEncryptedValue(key).isPresent()) {
             // Update existing entry.
-            LOG.debug("Updating existing encrypted value for key [{}] in registry.", buildNamespacedKey(key));
+            LOG.debug("Updating existing encrypted value for key [{}] in registry.", buildNamespacedKey(namespace, key));
 
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("UPDATE registry_encrypted SET value = :value, key_signature = :key_signature " +
                                     "WHERE key = :key")
-                            .bind("key", buildNamespacedKey(key))
+                            .bind("key", buildNamespacedKey(namespace, key))
                             .bind("value", encrypted)
                             .bind("key_signature", keyFingerprint)
                             .execute()
             );
         } else {
             // Insert new entry.
-            LOG.debug("Inserting new encrypted entry for key [{}] in registry.", buildNamespacedKey(key));
+            LOG.debug("Inserting new encrypted entry for key [{}] in registry.", buildNamespacedKey(namespace, key));
             nzyme.getDatabase().useHandle(handle ->
                     handle.createUpdate("INSERT INTO registry_encrypted(key, value, key_signature) " +
                                     "VALUES(:key, :value, :key_signature)")
-                            .bind("key", buildNamespacedKey(key))
+                            .bind("key", buildNamespacedKey(namespace, key))
                             .bind("value", encrypted)
                             .bind("key_signature", keyFingerprint)
                             .execute()
@@ -146,7 +147,7 @@ public class RegistryImpl implements Registry {
         LOG.debug("Deleting registry value for key [{}]", key);
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM registry WHERE key = :key")
-                        .bind("key", buildNamespacedKey(key))
+                        .bind("key", buildNamespacedKey(namespace, key))
                         .execute()
         );
     }
@@ -157,25 +158,25 @@ public class RegistryImpl implements Registry {
         }
 
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Empty or null registry value for key [" + buildNamespacedKey(key) + "].");
+            throw new IllegalArgumentException("Empty or null registry value for key [" + buildNamespacedKey(namespace, key) + "].");
         }
 
-        if (buildNamespacedKey(key).length() > 128) {
+        if (buildNamespacedKey(namespace, key).length() > 128) {
             LOG.error("Registry key length cannot exceed 128 characters. Provided <{}> characters: {}",
-                    buildNamespacedKey(key).length(), buildNamespacedKey(key));
+                    buildNamespacedKey(namespace, key).length(), buildNamespacedKey(namespace, key));
 
             throw new IllegalArgumentException("Key length exceeded.");
         }
 
-        if (buildNamespacedKey(value).length() > 255) {
+        if (buildNamespacedKey(namespace, value).length() > 255) {
             LOG.error("Registry value length cannot exceed 255 characters. Provided <{}> characters for key [{}].",
-                    value.length(), buildNamespacedKey(key));
+                    value.length(), buildNamespacedKey(namespace, key));
 
             throw new IllegalArgumentException("Value length exceeded.");
         }
     }
 
-    private String buildNamespacedKey(String key) {
+    public static String buildNamespacedKey(String namespace, String key) {
         return namespace + "." + key;
     }
 

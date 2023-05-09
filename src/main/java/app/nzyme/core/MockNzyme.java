@@ -30,6 +30,7 @@ import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.plugin.Database;
 import app.nzyme.plugin.NodeIdentification;
 import app.nzyme.plugin.Registry;
+import app.nzyme.plugin.RegistryChangeMonitor;
 import app.nzyme.plugin.distributed.messaging.MessageBus;
 import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
 import app.nzyme.plugin.retro.RetroService;
@@ -427,6 +428,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public Registry getDatabaseCoreRegistry() {
         return new RegistryImpl(this, "core");
+    }
+
+    @Override
+    public RegistryChangeMonitor getRegistryChangeMonitor() {
+        return null;
     }
 
     @Override
