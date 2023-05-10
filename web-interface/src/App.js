@@ -84,6 +84,7 @@ import OrganizationAdminDetailsPage
 import EditOrganizationAdminPage
   from "./components/system/authentication/management/users/orgadmins/EditOrganizationAdminPage";
 import IntegrationsPage from "./components/system/integrations/IntegrationsPage";
+import UserProfilePage from "./components/userprofile/UserProfilePage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -236,10 +237,13 @@ function App() {
                     <Routes>
                       <Route path={ApiRoutes.DASHBOARD} element={<OverviewPage />}/>
 
+                      { /* User Profile / Own User */}
+                      <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage />}/>
+
                       { /* System/Misc. */}
                       <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
-                      { /* System/Authentication*/ }
+                      { /* System/Authentication */ }
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} element={<CreateSuperAdminPage/>}/>
                       <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(':userId')} element={<SuperAdminDetailsPage/>}/>

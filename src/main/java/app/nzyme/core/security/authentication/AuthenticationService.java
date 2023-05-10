@@ -9,9 +9,13 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import liquibase.pro.packaged.O;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -138,19 +142,6 @@ public class AuthenticationService {
                         .bind("user_id", userId)
                         .execute()
         );
-    }
-
-    public void resetMFAOfSuperAdministrator(long userId) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
-                                "totp_secret = NULL, mfa_recovery_codes = NULL " +
-                                "WHERE is_superadmin = true AND id = :user_id")
-                        .bind("user_id", userId)
-                        .execute()
-        );
-
-        // Reset all sessions of this user.
-        deleteAllSessionsOfUser(userId);
     }
 
     public OrganizationEntry createOrganization(String name, String description) {
@@ -361,20 +352,6 @@ public class AuthenticationService {
         );
     }
 
-    public void resetMFAOfOrganizationAdministrator(long organizationId, long userId) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
-                                "totp_secret = NULL, mfa_recovery_codes = NULL " +
-                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
-                        .bind("organization_id", organizationId)
-                        .bind("user_id", userId)
-                        .execute()
-        );
-
-        // Reset all sessions of this user.
-        deleteAllSessionsOfUser(userId);
-    }
-
     public TenantEntry createTenant(long organizationId, String name, String description) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
@@ -559,13 +536,10 @@ public class AuthenticationService {
         );
     }
 
-    public void resetMFAOfUserOfTenant(long organizationId, long tenantId, long userId) {
+    public void resetMFAOfUser(long userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
-                        "totp_secret = NULL, mfa_recovery_codes = NULL " +
-                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
+                                "totp_secret = NULL, mfa_recovery_codes = NULL WHERE id = :user_id")
                         .bind("user_id", userId)
                         .execute()
         );
@@ -627,6 +601,35 @@ public class AuthenticationService {
                         .bind("user_id", userId)
                         .execute()
         );
+    }
+
+    public Optional<List<String>> getUserMFARecoveryCodes(long userId) {
+        Optional<String> result = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT mfa_recovery_codes FROM auth_users WHERE id = :user_id")
+                        .bind("user_id", userId)
+                        .mapTo(String.class)
+                        .findOne()
+        );
+
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+
+        byte[] encrypted = BaseEncoding.base64().decode(result.get());
+
+        String json;
+        try {
+            json = new String(nzyme.getCrypto().decryptWithClusterKey(encrypted));
+        } catch(Crypto.CryptoOperationException e) {
+            throw new RuntimeException("Could not decrypt MFA recovery codes.", e);
+        }
+
+        try {
+            ObjectMapper om = new ObjectMapper();
+            return Optional.of(om.readValue(json, new TypeReference<>() {}));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not parse MFA recovery code JSON.", e);
+        }
     }
 
     public void setUserMFAComplete(long userId, boolean complete) {

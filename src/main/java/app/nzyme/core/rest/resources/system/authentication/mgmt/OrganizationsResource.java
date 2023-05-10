@@ -334,7 +334,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().resetMFAOfOrganizationAdministrator(organizationId, userId);
+        nzyme.getAuthenticationService().resetMFAOfUser(userId);
 
         LOG.info("Reset MFA credentials of organization administrator [{}] on admin request.",
                 orgAdmin.get().email());
@@ -609,7 +609,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().resetMFAOfUserOfTenant(organizationId, tenantId, user.get().id());
+        nzyme.getAuthenticationService().resetMFAOfUser(user.get().id());
 
         LOG.info("Reset MFA credentials of user [{}] on admin request.", user.get().email());
 
@@ -1064,7 +1064,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().resetMFAOfSuperAdministrator(superAdmin.get().id());
+        nzyme.getAuthenticationService().resetMFAOfUser(superAdmin.get().id());
 
         LOG.info("Reset MFA credentials of super administrator [{}] on admin request.", superAdmin.get().email());
 

@@ -1,5 +1,8 @@
 const ApiRoutes = {
   DASHBOARD: '/',
+  USERPROFILE: {
+    PROFILE: '/profile'
+  },
   SYSTEM: {
     VERSION: '/system/version',
     AUTHENTICATION: {

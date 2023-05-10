@@ -1,5 +1,4 @@
 import RESTClient from '../util/RESTClient'
-import { notify } from 'react-notify-toast'
 
 class TapService {
   findAllTaps (setTaps) {

@@ -171,7 +171,8 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
         if (mmdb.exists()) {
             // MMDB exists. Is it up to date?
             BasicFileAttributes fa = Files.readAttributes(mmdbPath, BasicFileAttributes.class);
-            if(new DateTime(fa.creationTime().toMillis()).isBefore(DateTime.now().minusHours(12))) {
+
+            if(new DateTime(fa.lastModifiedTime().toMillis()).isBefore(DateTime.now().minusHours(12))) {
                 // MMDB is outdated. Download.
                 LOG.info("MMDB exists but is out of date. Downloading new copy.");
                 downloadAndStoreMmdb();

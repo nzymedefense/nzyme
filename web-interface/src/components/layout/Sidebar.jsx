@@ -2,7 +2,7 @@ import React from 'react'
 import ApiRoutes from '../../util/ApiRoutes'
 import NavigationLink from './NavigationLink'
 import SidebarSubmenu from './SidebarSubmenu'
-import UserProfile from './UserProfile'
+import UserProfileBlock from "./UserProfileBlock";
 
 function Sidebar(props) {
 
@@ -15,7 +15,7 @@ function Sidebar(props) {
     </p>
 
     <div className="mt-4 mb-4">
-      <UserProfile user={user} />
+      <UserProfileBlock user={user} />
     </div>
 
     <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">

@@ -28,6 +28,7 @@ import app.nzyme.core.rest.resources.system.integrations.GeoIpIntegrationsResour
 import app.nzyme.core.rest.resources.taps.StatusResource;
 import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
+import app.nzyme.core.rest.resources.user.UserProfileResource;
 import app.nzyme.plugin.distributed.messaging.*;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.apache.logging.log4j.LogManager;
@@ -139,6 +140,7 @@ public class NzymeHttpServer {
         resourceConfig.register(OrganizationsResource.class);
         resourceConfig.register(InitialUserResource.class);
         resourceConfig.register(GeoIpIntegrationsResource.class);
+        resourceConfig.register(UserProfileResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {
