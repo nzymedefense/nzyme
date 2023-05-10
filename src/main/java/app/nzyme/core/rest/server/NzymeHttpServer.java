@@ -7,6 +7,7 @@ import app.nzyme.core.rest.CORSFilter;
 import app.nzyme.core.rest.NzymeExceptionMapper;
 import app.nzyme.core.rest.NzymeLeaderInjectionBinder;
 import app.nzyme.core.rest.ObjectMapperProvider;
+import app.nzyme.core.rest.authentication.PreMFAAuthenticationFilter;
 import app.nzyme.core.rest.authentication.PrometheusBasicAuthFilter;
 import app.nzyme.core.rest.authentication.RESTAuthenticationFilter;
 import app.nzyme.core.rest.authentication.TapAuthenticationFilter;
@@ -98,6 +99,7 @@ public class NzymeHttpServer {
 
     public void initialize() {
         ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(new PreMFAAuthenticationFilter(nzyme));
         resourceConfig.register(new RESTAuthenticationFilter(nzyme));
         resourceConfig.register(new TapAuthenticationFilter(nzyme));
         resourceConfig.register(new PrometheusBasicAuthFilter(nzyme));
