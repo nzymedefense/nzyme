@@ -25,6 +25,7 @@ import app.nzyme.core.dot11.Dot11TaggedParameters;
 import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.dot11.networks.signalstrength.SignalStrengthTable;
 import app.nzyme.core.dot11.probes.Dot11MonitorProbe;
+import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.periodicals.alerting.beaconrate.BeaconRateAnomalyAlertMonitor;
 import app.nzyme.core.periodicals.alerting.tracks.SignalTrackMonitor;
@@ -53,6 +54,8 @@ public class MetricNames {
     public static final String REMOTE_FRAMES_RECEIVED = name(RemoteFrameInput.class, "frames-received");
     public static final String REMOTE_FRAMES_TIMING = name(RemoteFrameInput.class, "frame-timing");
     public static final String DATABASE_SIZE = name(DatabaseImpl.class, "size");
+
+    public static final String GEOIP_CACHE_SIZE = name(GeoIpService.class, "cache-size");
 
     public static final String PGP_ENCRYPTION_TIMING = name(Crypto.class, "encryption-timing");
     public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");

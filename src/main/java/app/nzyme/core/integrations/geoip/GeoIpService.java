@@ -3,7 +3,9 @@ package app.nzyme.core.integrations.geoip;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeGeoIpAdapter;
 import app.nzyme.core.integrations.geoip.noop.NoOpGeoIpAdapter;
+import app.nzyme.core.util.MetricNames;
 import app.nzyme.plugin.RegistryCryptoException;
+import com.codahale.metrics.Gauge;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -38,6 +40,13 @@ public class GeoIpService {
                         return adapter.lookup(address);
                     }
                 });
+
+        nzyme.getMetrics().register(MetricNames.GEOIP_CACHE_SIZE, new Gauge<Long>() {
+            @Override
+            public Long getValue() {
+                return cache.size();
+            }
+        });
 
         // Reload on configuration change.
         nzyme.getRegistryChangeMonitor()
@@ -108,10 +117,6 @@ public class GeoIpService {
         } else {
             return adapter.lookup(address);
         }
-    }
-
-    public long getCacheSize() {
-        return this.cache.size();
     }
 
 }

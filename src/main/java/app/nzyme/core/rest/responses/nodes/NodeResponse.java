@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.nodes;
 
+import app.nzyme.core.rest.responses.metrics.GaugeResponse;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -91,7 +92,10 @@ public abstract class NodeResponse {
     @JsonProperty("metrics_timers")
     public abstract Map<String, TimerResponse> metricsTimers();
 
-    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral, long cycle, Map<String, TimerResponse> metricsTimers) {
+    @JsonProperty("metrics_gauges")
+    public abstract Map<String, GaugeResponse> metricsGauges();
+
+    public static NodeResponse create(String uuid, String name, Boolean active, String httpListenUri, String httpExternalUri, String tlsCertFingerprint, DateTime tlsCertExpirationDate, long memoryBytesTotal, long memoryBytesAvailable, long memoryBytesUsed, long heapBytesTotal, long heapBytesAvailable, long heapBytesUsed, double cpuSystemLoad, int cpuThreadCount, DateTime processStartTime, long processVirtualSize, String processArguments, String osInformation, String version, DateTime lastSeen, boolean deleted, DateTime clock, long clockDriftMs, boolean isEphemeral, long cycle, Map<String, TimerResponse> metricsTimers, Map<String, GaugeResponse> metricsGauges) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -120,13 +124,14 @@ public abstract class NodeResponse {
                 .isEphemeral(isEphemeral)
                 .cycle(cycle)
                 .metricsTimers(metricsTimers)
+                .metricsGauges(metricsGauges)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_NodeResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(String uuid);
@@ -182,6 +187,8 @@ public abstract class NodeResponse {
         public abstract Builder cycle(long cycle);
 
         public abstract Builder metricsTimers(Map<String, TimerResponse> metricsTimers);
+
+        public abstract Builder metricsGauges(Map<String, GaugeResponse> metricsGauges);
 
         public abstract NodeResponse build();
     }

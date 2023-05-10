@@ -14,6 +14,7 @@ import NodeClockWarning from "./NodeClockWarning";
 import {notify} from "react-notify-toast";
 import NodeDeletedWarning from "./NodeDeletedWarning";
 import NodeTimers from "./NodeTimers";
+import NodeGauges from "./NodeGauges";
 
 const clusterService = new ClusterService()
 
@@ -231,7 +232,11 @@ function NodeDetailsPage() {
                   <div className="card-body">
                     <h3>Metrics</h3>
 
+                    <h4>Timers</h4>
                     <NodeTimers timers={node.metrics_timers} />
+
+                    <h4>Gauges</h4>
+                    <NodeGauges gauges={node.metrics_gauges} />
                   </div>
                 </div>
               </div>

@@ -179,6 +179,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.baseConfiguration = baseConfiguration;
         this.version = new Version();
         this.dataDirectory = Path.of(baseConfiguration.dataDirectory());
+        this.metrics = new MetricRegistry();
         this.database = database;
         this.configuration = configuration;
 
@@ -217,7 +218,6 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.ignoredFingerprints = new AtomicReference<>(ImmutableList.<String>builder().build());
 
-        this.metrics = new MetricRegistry();
         this.crypto = new Crypto(this);
         this.memoryRegistry = new MemoryRegistry();
         this.probes = Lists.newArrayList();

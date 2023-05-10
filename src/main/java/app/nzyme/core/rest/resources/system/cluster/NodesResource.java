@@ -7,6 +7,7 @@ import app.nzyme.core.distributed.NodeRegistryKeys;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucket;
 import app.nzyme.core.distributed.MetricExternalName;
 import app.nzyme.core.rest.requests.NodesConfigurationUpdateRequest;
+import app.nzyme.core.rest.responses.metrics.GaugeResponse;
 import app.nzyme.core.rest.responses.metrics.TimerResponse;
 import app.nzyme.core.rest.responses.nodes.*;
 import app.nzyme.core.taps.metrics.BucketSize;
@@ -15,6 +16,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.Lists;
@@ -206,6 +208,12 @@ public class NodesResource {
             ));
         }
 
+        Map<String, GaugeResponse> gauges = Maps.newHashMap();
+        Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
+        if (geoIpCacheSize != null) {
+            gauges.put("geoip_cache_size", GaugeResponse.fromGauge(geoIpCacheSize));
+        }
+
         return NodeResponse.create(
                 node.uuid().toString(),
                 node.name(),
@@ -233,7 +241,8 @@ public class NodesResource {
                 node.clockDriftMs(),
                 node.isEphemeral(),
                 node.cycle(),
-                timers
+                timers,
+                gauges
         );
     }
 
