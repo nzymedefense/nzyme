@@ -8,6 +8,11 @@ class UserProfileService {
     })
   }
 
+  changeOwnPassword(currentPassword, newPassword, successCallback, errorCallback) {
+    RESTClient.put('/user/password',
+        {current_password: currentPassword, new_password: newPassword}, successCallback, errorCallback)
+  }
+
   findOwnMfaRecoveryCodes(setCodes) {
     RESTClient.get('/user/mfa/recoverycodes', {}, function (response) {
       setCodes(response.data);

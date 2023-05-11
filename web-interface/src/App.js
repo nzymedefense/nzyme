@@ -85,6 +85,7 @@ import EditOrganizationAdminPage
   from "./components/system/authentication/management/users/orgadmins/EditOrganizationAdminPage";
 import IntegrationsPage from "./components/system/integrations/IntegrationsPage";
 import UserProfilePage from "./components/userprofile/UserProfilePage";
+import ChangeOwnPasswordPage from "./components/userprofile/ChangeOwnPasswordPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -239,6 +240,7 @@ function App() {
 
                       { /* User Profile / Own User */}
                       <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage />}/>
+                      <Route path={ApiRoutes.USERPROFILE.PASSWORD} element={<ChangeOwnPasswordPage />}/>
 
                       { /* System/Misc. */}
                       <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>

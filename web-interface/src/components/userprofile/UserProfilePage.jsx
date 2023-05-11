@@ -3,6 +3,7 @@ import UserProfile from "./UserProfile";
 import MfaRecoveryCodes from "./MfaRecoveryCodes";
 import UserProfileService from "../../services/UserProfileService";
 import {notify} from "react-notify-toast";
+import ApiRoutes from "../../util/ApiRoutes";
 
 const userProfileService = new UserProfileService();
 
@@ -38,6 +39,10 @@ function UserProfilePage() {
                     <h3>User Data</h3>
 
                     <UserProfile />
+
+                    <a className="btn btn-sm btn-secondary mt-2" href={ApiRoutes.USERPROFILE.PASSWORD}>
+                      Change Password
+                    </a>
                   </div>
                 </div>
               </div>
@@ -82,6 +87,19 @@ function UserProfilePage() {
                             onClick={() => setShowRecoveryCodes(!showRecoveryCodes)}>
                       {showRecoveryCodes ? "Hide Codes" : "Show Codes"}
                     </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    For security reasons, users can manage their own password and MFA but not edit their name or
+                    email address. Please contact your administrator to perform such a change.
                   </div>
                 </div>
               </div>

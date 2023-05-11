@@ -256,8 +256,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
-        nzyme.getAuthenticationService().editOrganizationAdministrator(
-                organizationId,
+        nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
                 req.email().toLowerCase()
@@ -286,8 +285,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
         PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
 
-        nzyme.getAuthenticationService().editOrganizationAdministratorPassword(
-                organizationId,
+        nzyme.getAuthenticationService().editUserPassword(
                 userId,
                 hash
         );
@@ -523,9 +521,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
-        nzyme.getAuthenticationService().editUserOfTenant(
-                organizationId,
-                tenantId,
+        nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
                 req.email().toLowerCase()
@@ -585,9 +581,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
         PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
 
-        nzyme.getAuthenticationService().editUserOfTenantPassword(
-                organizationId,
-                tenantId,
+        nzyme.getAuthenticationService().editUserPassword(
                 userId,
                 hash
         );
@@ -991,7 +985,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             ).build();
         }
 
-        nzyme.getAuthenticationService().editSuperAdministrator(
+        nzyme.getAuthenticationService().editUser(
                 userId,
                 req.name(),
                 req.email().toLowerCase()
@@ -1017,7 +1011,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
         PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(req.password());
 
-        nzyme.getAuthenticationService().editSuperAdministratorPassword(
+        nzyme.getAuthenticationService().editUserPassword(
                 userId,
                 hash
         );

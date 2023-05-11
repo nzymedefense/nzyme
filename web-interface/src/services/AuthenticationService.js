@@ -1,5 +1,4 @@
 import RESTClient from '../util/RESTClient'
-import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationService {
   createSession (username, password, successCallback, errorCallback) {

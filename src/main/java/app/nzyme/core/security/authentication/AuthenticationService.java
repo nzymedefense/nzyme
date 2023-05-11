@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import liquibase.pro.packaged.O;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -64,8 +63,6 @@ public class AuthenticationService {
 
         OrganizationEntry organization = createOrganization("Default Organization", "The nzyme default organization");
         createTenant(organization.id(), "Default Tenant", "The nzyme default tenant");
-
-        LOG.info(organization);
     }
 
     public long countSuperAdministrators() {
@@ -111,28 +108,6 @@ public class AuthenticationService {
                         .bind("updated_at", now)
                         .mapTo(UserEntry.class)
                         .one()
-        );
-    }
-
-    public void editSuperAdministrator(long userId, String name, String email) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
-                                "WHERE is_superadmin = true AND id = :user_id")
-                        .bind("name", name)
-                        .bind("email", email)
-                        .bind("user_id", userId)
-                        .execute()
-        );
-    }
-
-    public void editSuperAdministratorPassword(long userId, PasswordHasher.GeneratedHashAndSalt password) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
-                                "updated_at = NOW() WHERE is_superadmin = true AND id = :user_id")
-                        .bind("password", password.hash())
-                        .bind("password_salt", password.salt())
-                        .bind("user_id", userId)
-                        .execute()
         );
     }
 
@@ -315,33 +290,6 @@ public class AuthenticationService {
         );
     }
 
-    public void editOrganizationAdministrator(long organizationId, long userId, String name, String email) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
-                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
-                        .bind("organization_id", organizationId)
-                        .bind("name", name)
-                        .bind("email", email)
-                        .bind("user_id", userId)
-                        .execute()
-        );
-    }
-
-    public void editOrganizationAdministratorPassword(long organizationId,
-                                                      long userId,
-                                                      PasswordHasher.GeneratedHashAndSalt password) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
-                                "updated_at = NOW() " +
-                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
-                        .bind("password", password.hash())
-                        .bind("password_salt", password.salt())
-                        .bind("organization_id", organizationId)
-                        .bind("user_id", userId)
-                        .execute()
-        );
-    }
-
     public void deleteOrganizationAdministrator(long organizationId, long userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
@@ -498,28 +446,23 @@ public class AuthenticationService {
         );
     }
 
-    public void editUserOfTenant(long organizationId, long tenantId, long userId, String name, String email) {
+    public void editUser(long userId, String name, String email) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
+                                "WHERE id = :user_id")
                         .bind("name", name)
                         .bind("email", email)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
                         .bind("user_id", userId)
                         .execute()
         );
     }
 
-    public void editUserOfTenantPassword(long organizationId, long tenantId, long userId, PasswordHasher.GeneratedHashAndSalt password) {
+    public void editUserPassword(long userId, PasswordHasher.GeneratedHashAndSalt password) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
-                        "updated_at = NOW() WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                        "AND id = :user_id")
+                        "updated_at = NOW() WHERE id = :user_id")
                         .bind("password", password.hash())
                         .bind("password_salt", password.salt())
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
                         .bind("user_id", userId)
                         .execute()
         );
