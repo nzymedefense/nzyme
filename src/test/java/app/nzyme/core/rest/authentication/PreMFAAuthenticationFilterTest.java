@@ -2,41 +2,20 @@ package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.security.authentication.PasswordHasher;
-import app.nzyme.core.security.authentication.db.OrganizationEntry;
-import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 
 import static org.testng.Assert.*;
 
-public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBase {
+public class PreMFAAuthenticationFilterTest extends RESTAuthenticationFilterTestBase {
 
     @Test
     public void testFilterLetsValidSessionPass() throws IOException {
         NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
-
-        createUser("test@example.org", "123123123123");
-        UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), true);
-
-        MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
-                "Bearer " + sessionId
-        );
-
-        f.filter(ctx);
-        assertFalse(ctx.aborted);
-    }
-
-    @Test
-    public void testFilterRejectsSessionWithoutPassedMFAPass() throws IOException {
-        NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
@@ -47,13 +26,30 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
         );
 
         f.filter(ctx);
-        assertTrue(ctx.aborted);
+        assertFalse(ctx.aborted);
+    }
+
+    @Test
+    public void testFilterLetsSessionWithPassedMFAPass() throws IOException {
+        NzymeNode nzyme = new MockNzyme();
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
+
+        createUser("test@example.org", "123123123123");
+        UserEntry user = createUser("lennart@example.org", "456456456456");
+        String sessionId = createSession(user.id(), false);
+
+        MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
+                "Bearer " + sessionId
+        );
+
+        f.filter(ctx);
+        assertFalse(ctx.aborted);
     }
 
     @Test
     public void testFilterRejectsNotExistingSession() throws IOException {
         NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
 
         createUser("test@example.org", "123123123123");
         createUser("lennart@example.org", "456456456456");
@@ -69,7 +65,7 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
     @Test
     public void testFilterRejectsEmptySessionId() throws IOException {
         NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("Bearer ");
 
@@ -80,7 +76,7 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
     @Test
     public void testFilterRejectsEmptyAuthHeader() throws IOException {
         NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest("");
 
@@ -91,11 +87,11 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
     @Test
     public void testFilterRejectsUnknownAuthScheme() throws IOException {
         NzymeNode nzyme = new MockNzyme();
-        RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
+        PreMFAAuthenticationFilter f = new PreMFAAuthenticationFilter(nzyme);
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), true);
+        String sessionId = createSession(user.id(), false);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Wtf " + sessionId
@@ -104,5 +100,6 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
         f.filter(ctx);
         assertTrue(ctx.aborted);
     }
+
 
 }

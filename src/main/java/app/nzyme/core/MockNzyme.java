@@ -24,6 +24,7 @@ import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
+import app.nzyme.core.registry.RegistryChangeMonitorImpl;
 import app.nzyme.core.registry.RegistryImpl;
 import app.nzyme.core.rest.server.NzymeHttpServer;
 import app.nzyme.core.security.authentication.AuthenticationService;
@@ -117,6 +118,9 @@ public class MockNzyme implements NzymeNode {
     private final Crypto crypto;
     private final ClusterManager clusterManager;
     private final AuthenticationService authenticationService;
+    private final GeoIpService geoIp;
+    private final Registry registry;
+    private final RegistryChangeMonitor registryChangeMonitor;
 
     public MockNzyme() {
         this(0, Integer.MAX_VALUE, TimeUnit.DAYS);
@@ -152,6 +156,21 @@ public class MockNzyme implements NzymeNode {
             throw new RuntimeException(e);
         }
 
+        this.registry = new RegistryImpl(this, "core");
+        this.registryChangeMonitor = new RegistryChangeMonitorImpl(this);
+
+        // Metrics.
+        this.metricRegistry = new MetricRegistry();
+        this.metricRegistry.register("gc", new GarbageCollectorMetricSet());
+        this.metricRegistry.register("classes", new ClassLoadingGaugeSet());
+        this.metricRegistry.register("fds", new FileDescriptorRatioGauge());
+        this.metricRegistry.register("jvm", new JvmAttributeGaugeSet());
+        this.metricRegistry.register("mem", new MemoryUsageGaugeSet());
+        this.metricRegistry.register("threadstates", new ThreadStatesGaugeSet());
+
+        this.geoIp = new GeoIpService(this);
+        this.geoIp.initialize();
+
         this.nodeManager = new NodeManager(this);
         try {
             this.nodeManager.initialize();
@@ -178,16 +197,7 @@ public class MockNzyme implements NzymeNode {
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
 
-        this.metricRegistry = new MetricRegistry();
         this.crypto = new Crypto(this);
-
-        // Register JVM metrics.
-        this.metricRegistry.register("gc", new GarbageCollectorMetricSet());
-        this.metricRegistry.register("classes", new ClassLoadingGaugeSet());
-        this.metricRegistry.register("fds", new FileDescriptorRatioGauge());
-        this.metricRegistry.register("jvm", new JvmAttributeGaugeSet());
-        this.metricRegistry.register("mem", new MemoryUsageGaugeSet());
-        this.metricRegistry.register("threadstates", new ThreadStatesGaugeSet());
 
         this.memoryRegistry = new MemoryRegistry();
         this.systemStatus = new SystemStatus();
@@ -265,7 +275,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public GeoIpService getGeoIpService() {
-        return null;
+        return geoIp;
     }
 
     @Override
@@ -432,7 +442,7 @@ public class MockNzyme implements NzymeNode {
 
     @Override
     public RegistryChangeMonitor getRegistryChangeMonitor() {
-        return null;
+        return registryChangeMonitor;
     }
 
     @Override
@@ -456,7 +466,7 @@ public class MockNzyme implements NzymeNode {
     }
 
     public Registry getRegistry(String s) {
-        return null;
+        return registry;
     }
 
     @Override

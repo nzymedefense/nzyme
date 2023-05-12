@@ -61,14 +61,17 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        final Request request = requestProvider.get();
-        String remoteIp = request.getHeader("X-Forwarded-For") == null
-                ? request.getRemoteAddr() : request.getHeader("X-Forwarded-For").split(",")[0];
+        String remoteIp = "";
+        if (requestProvider != null) { // For tests.
+            final Request request = requestProvider.get();
+            remoteIp = request.getHeader("X-Forwarded-For") == null
+                    ? request.getRemoteAddr() : request.getHeader("X-Forwarded-For").split(",")[0];
 
-        InetAddressValidator inetValidator = new InetAddressValidator();
-        if (!inetValidator.isValid(remoteIp)) {
-            LOG.warn("Invalid remote IP or X-Forwarded-For header in session request: [{}]. Aborting.", remoteIp);
-            abortWithUnauthorized(requestContext);
+            InetAddressValidator inetValidator = new InetAddressValidator();
+            if (!inetValidator.isValid(remoteIp)) {
+                LOG.warn("Invalid remote IP or X-Forwarded-For header in session request: [{}]. Aborting.", remoteIp);
+                abortWithUnauthorized(requestContext);
+            }
         }
 
         try {
