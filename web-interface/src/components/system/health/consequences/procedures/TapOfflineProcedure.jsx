@@ -15,12 +15,10 @@ function TapOfflineProcedure(props) {
           &mdash; <Conditional text="or" /> &mdash;
         </li>
         <li>
-          <SolutionCounter counter="2" /> If a tap is no longer supposed to run, delete it using it&apos;s details page.
+          <SolutionCounter counter="2" /> If a tap is no longer supposed to run, delete it in the authentication settings.
         </li>
         <li>
-          <SolutionCounter counter="3" /> An offline tap will no longer trigger this indicator and also disappear
-          from all tap management pages after being offline for 24 hours. This indicator will extinguish within
-          60 seconds of problem resolution.
+          <SolutionCounter counter="3" /> This indicator will extinguish within 60 seconds of problem resolution.
         </li>
       </ol>
   )

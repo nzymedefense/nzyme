@@ -12,7 +12,7 @@ function TapOfflineConsequence(props) {
       <Consequence
           indicator="Tap Offline"
           color="orange"
-          problem="At least one nzyme tap that was active in the last 24 hours is currently offline."
+          problem="At least one nzyme tap that was active before is currently offline."
           acceptableRange={[
             "n/a"
           ]}
