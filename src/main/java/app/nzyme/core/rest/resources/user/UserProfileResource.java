@@ -20,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/user")
@@ -94,7 +95,7 @@ public class UserProfileResource extends UserAuthenticatedResource {
     public Response findOwnMfaRecoveryCodes(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<List<String>> recoveryCodes = nzyme.getAuthenticationService()
+        Optional<Map<String, Boolean>> recoveryCodes = nzyme.getAuthenticationService()
                 .getUserMFARecoveryCodes(authenticatedUser.getUserId());
 
         if (recoveryCodes.isEmpty()) {

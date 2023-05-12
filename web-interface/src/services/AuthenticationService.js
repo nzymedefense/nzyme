@@ -43,6 +43,12 @@ class AuthenticationService {
   verifyMFA(code, successCallback, errorCallback) {
     RESTClient.post('/system/authentication/mfa/verify', {code: code}, successCallback, errorCallback);
   }
+
+
+  useMFARecoveryCode(code, successCallback, errorCallback) {
+    RESTClient.post('/system/authentication/mfa/recovery', {code: code}, successCallback, errorCallback);
+  }
+
 }
 
 export default AuthenticationService

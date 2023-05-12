@@ -17,6 +17,10 @@ h5 {
     background-color: #EF233C !important;
 }
 
+.strikethrough {
+    text-decoration: line-through;
+}
+
 #root, body, html {
     height: 100%;
 }

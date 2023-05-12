@@ -22,6 +22,7 @@ import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.PreMFASecured;
+import app.nzyme.core.rest.requests.MFARecoveryCodeRequest;
 import app.nzyme.core.rest.requests.MFAVerificationRequest;
 import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
@@ -39,6 +40,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
@@ -63,7 +65,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/system/authentication")
@@ -196,14 +200,18 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         }
 
         String userSecret;
-        List<String> recoveryCodes;
+        Map<String, Boolean> recoveryCodes;
         if (Strings.isNullOrEmpty(user.get().totpSecret())) {
             // Store secret and recovery codes with user.
             SecretGenerator secretGenerator = new DefaultSecretGenerator();
             RecoveryCodeGenerator recoveryCodeGenerator = new RecoveryCodeGenerator();
 
             userSecret = secretGenerator.generate();
-            recoveryCodes = Lists.newArrayList(recoveryCodeGenerator.generateCodes(8));
+            recoveryCodes = Maps.newHashMap();
+
+            for (String code : recoveryCodeGenerator.generateCodes(8)) {
+                recoveryCodes.put(code, false);
+            }
 
             String recoveryCodesJson;
             try {
@@ -260,7 +268,9 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             }
         }
 
-        return Response.ok(MFAInitResponse.create(userSecret, user.get().email(), recoveryCodes)).build();
+        return Response.ok(
+                MFAInitResponse.create(userSecret, user.get().email(), new ArrayList<>(recoveryCodes.keySet()))
+        ).build();
     }
 
     @POST
@@ -331,6 +341,79 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         // We have a valid TOTP. Mark session as MFA'd.
         LOG.info("User <{}> passed MFA challenge.", user.get().email());
+        nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @PreMFASecured
+    @Path("/mfa/recovery")
+    public Response mfaRecoveryCodeValidation(@Context SecurityContext sc, MFARecoveryCodeRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService().findSessionWithOrWithoutPassedMFABySessionId(
+                authenticatedUser.getSessionId()
+        );
+
+        if (session.isEmpty() || session.get().mfaValid()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty() || !user.get().mfaComplete()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Map<String, Boolean>> codes = nzyme.getAuthenticationService()
+                .getUserMFARecoveryCodes(user.get().id());
+
+        if (codes.isEmpty()) {
+            LOG.warn("No MFA recovery codes found for user [{}].", user.get().email());
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<String> unusedCodes = Lists.newArrayList();
+        for (Map.Entry<String, Boolean> code : codes.get().entrySet()) {
+            if (!code.getValue()) {
+                unusedCodes.add(code.getKey());
+            }
+        }
+
+        // Check if the code is valid.
+        if (!unusedCodes.contains(req.code())) {
+            LOG.warn("User [{}] attempted to use invalid MFA recovery code.", user.get().email());
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Write remaining codes back to DB.
+        Map<String, Boolean> newCodes = Maps.newHashMap();
+        for (Map.Entry<String, Boolean> code : codes.get().entrySet()) {
+            newCodes.put(code.getKey(), code.getKey().equals(req.code()) || code.getValue());
+        }
+
+        String recoveryCodesJson;
+        try {
+            recoveryCodesJson = new ObjectMapper().writeValueAsString(newCodes);
+        } catch (JsonProcessingException e) {
+            LOG.error("Could not serialize MFA recovery codes.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        String encryptedRecoveryCodesJson;
+        try {
+            encryptedRecoveryCodesJson = BaseEncoding.base64().encode(
+                    nzyme.getCrypto().encryptWithClusterKey(recoveryCodesJson.getBytes())
+            );
+        } catch (Crypto.CryptoOperationException e) {
+            LOG.error("Could not encrypt MFA data codes.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), encryptedRecoveryCodesJson);
+
+        LOG.info("User [{}] passed MFA challenge with recovery code.", user.get().email());
         nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
 
         return Response.ok().build();

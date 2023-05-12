@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -546,7 +547,7 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<List<String>> getUserMFARecoveryCodes(long userId) {
+    public Optional<Map<String, Boolean>> getUserMFARecoveryCodes(long userId) {
         Optional<String> result = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT mfa_recovery_codes FROM auth_users WHERE id = :user_id")
                         .bind("user_id", userId)

@@ -11,22 +11,24 @@ function MfaRecoveryCodes(props) {
   const [codes, setCodes] = useState(null);
 
   useEffect(() => {
-    if (show) {
-      setCodes(null);
-      userProfileService.findOwnMfaRecoveryCodes(setCodes);
-    } else {
-      setCodes([
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****",
-          "****-****-****-****"
-      ]);
-    }
-  }, [show])
+    setCodes(null);
+    userProfileService.findOwnMfaRecoveryCodes(setCodes);
+  }, [])
+
+  if (!show) {
+    return (
+        <ul className="mfa-recovery-codes">
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+          <li>****-****-****-****</li>
+        </ul>
+    )
+  }
 
   if (!codes) {
     return <LoadingSpinner />
@@ -34,8 +36,10 @@ function MfaRecoveryCodes(props) {
 
   return (
       <ul className="mfa-recovery-codes">
-        {codes.map(function(code, i) {
-          return <li key={"mfacode-" + i}>{code}</li>
+        {Object.keys(codes).map(function(code, i) {
+          return <li key={"mfacode-" + i} className={codes[code] ? "strikethrough" : null}>
+            {code}
+          </li>
         })}
       </ul>
   )
