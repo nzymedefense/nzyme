@@ -5,17 +5,21 @@ import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.grizzly.http.server.Request;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -28,6 +32,9 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
 
     private final NzymeNode nzyme;
 
+    @Context
+    private javax.inject.Provider<Request> requestProvider;
+
     public static final String AUTHENTICATION_SCHEME = "Bearer";
 
     public PreMFAAuthenticationFilter(NzymeNode nzyme) {
@@ -36,6 +43,19 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        String remoteIp = "";
+        if (requestProvider != null) { // For tests.
+            final Request request = requestProvider.get();
+            remoteIp = request.getHeader("X-Forwarded-For") == null
+                    ? request.getRemoteAddr() : request.getHeader("X-Forwarded-For").split(",")[0];
+
+            InetAddressValidator inetValidator = new InetAddressValidator();
+            if (!inetValidator.isValid(remoteIp)) {
+                LOG.warn("Invalid remote IP or X-Forwarded-For header in session request: [{}]. Aborting.", remoteIp);
+                abortWithUnauthorized(requestContext);
+            }
+        }
+
         try {
             String authorizationHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
 
@@ -60,6 +80,14 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
                 abortWithUnauthorized(requestContext);
                 return;
             }
+
+            // Authenticated. Set last activity information.
+            nzyme.getAuthenticationService().updateLastUserActivity(
+                    user.get().id(),
+                    remoteIp,
+                    nzyme.getGeoIpService().lookup(InetAddress.getByName(remoteIp))
+                            .orElse(null)
+            );
 
             // Set new security context for later use in resources.
             final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
