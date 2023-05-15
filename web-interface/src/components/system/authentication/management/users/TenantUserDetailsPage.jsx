@@ -7,6 +7,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import moment from "moment";
 import {notify} from "react-notify-toast";
 import LastUserActivity from "./shared/LastUserActivity";
+import TenantUserPermissions from "./TenantUserPermissions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -20,6 +21,8 @@ function TenantUserDetailsPage() {
   const [tenant, setTenant] = useState(null);
   const [user, setUser] = useState(null);
   const [isDeletable, setIsDeletable] = useState(null);
+
+  const [allPermissions, setAllPermissions] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
@@ -48,13 +51,15 @@ function TenantUserDetailsPage() {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findUserOfTenant(organizationId, tenantId, userId, setUser, setIsDeletable);
+
+    authenticationManagementService.findAllExistingPermissions(setAllPermissions);
   }, [organizationId, tenantId])
 
   if (redirect) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
   }
 
-  if (!organization || !tenant || !user) {
+  if (!organization || !tenant || !user || !allPermissions) {
     return <LoadingSpinner />
   }
 
@@ -132,6 +137,32 @@ function TenantUserDetailsPage() {
                         {moment(user.updated_at).fromNow()}
                       </dd>
                     </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Permissions</h3>
+
+                    <p>TODO add help text</p>
+
+                    <h4>Tap Data</h4>
+
+                    <h4>Features &amp; Functionality</h4>
+
+                    <p>
+                      On top of tap data access, a user can be restricted to certain features and functionality in nzyme.
+                      While the user will always be limited to seeing data from taps that belong to their tenant, some
+                      functionality will not be limited to the taps selected above. For example, if a user is allowed to
+                      view alerts, they might see alerts referencing data of taps that are not selected above. Any such
+                      permission is specifically marked below.
+                    </p>
+
+                    <TenantUserPermissions user={user} allPermissions={allPermissions} />
                   </div>
                 </div>
               </div>

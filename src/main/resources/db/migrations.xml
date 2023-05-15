@@ -2183,5 +2183,29 @@
             </column>
         </addColumn>
     </changeSet>
+    
+    <changeSet id="create_permissions_table" author="lennartkoopmann">
+        <createTable tableName="auth_permissions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="permission" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_users2permissions"
+                                    baseTableName="auth_permissions"
+                                    baseColumnNames="user_id"
+                                    referencedTableName="auth_users"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
 
 </databaseChangeLog>

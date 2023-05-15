@@ -423,6 +423,15 @@ public class AuthenticationService {
         );
     }
 
+    public List<String> findPermissionsOfUser(long userId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT permission FROM auth_permissions WHERE user_id = :user_id")
+                        .bind("user_id", userId)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
     public UserEntry createUserOfTenant(long organizationId,
                                    long tenantId,
                                    String name,

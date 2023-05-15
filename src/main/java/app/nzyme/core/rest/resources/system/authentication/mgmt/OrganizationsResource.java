@@ -14,6 +14,8 @@ import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.authentication.roles.Permission;
+import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -22,12 +24,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -174,7 +178,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllOrganizationAdministrators(
                 org.get().id(), limit, offset)) {
-            users.add(userEntryToResponse(user));
+            users.add(userEntryToResponse(user, Collections.emptyList()));
         }
 
         long orgAdminCount = nzyme.getAuthenticationService().countOrganizationAdministrators(org.get().id());
@@ -198,7 +202,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean isDeletable = sessionUser.getUserId() != userId;
 
         return Response.ok(OrganizationAdministratorDetailsResponse.create(
-                userEntryToResponse(orgAdmin.get()), isDeletable
+                userEntryToResponse(orgAdmin.get(), Collections.emptyList()), isDeletable
         )).build();
     }
 
@@ -424,7 +428,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(
                 organizationId, tenantId, limit, offset)) {
-            users.add(userEntryToResponse(user));
+            users.add(userEntryToResponse(user, nzyme.getAuthenticationService().findPermissionsOfUser(user.id())));
         }
 
         long userCount = nzyme.getAuthenticationService().countUsersOfTenant(
@@ -454,7 +458,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
         boolean isDeletable = sessionUser.getUserId() != userId;
 
-        return Response.ok(UserOfTenantDetailsResponse.create(userEntryToResponse(user.get()), isDeletable)).build();
+        return Response.ok(UserOfTenantDetailsResponse.create(
+                userEntryToResponse(user.get(), nzyme.getAuthenticationService().findPermissionsOfUser(user.get().id())),
+                isDeletable)
+        ).build();
     }
 
     @POST
@@ -909,7 +916,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllSuperAdministrators(limit, offset)) {
-            users.add(userEntryToResponse(user));
+            users.add(userEntryToResponse(user, Collections.emptyList()));
         }
 
         long superadminCount = nzyme.getAuthenticationService().countSuperAdministrators();
@@ -931,7 +938,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 && sessionUser.getUserId() != userId;
 
         return Response.ok(SuperAdministratorDetailsResponse.create(
-                userEntryToResponse(superAdmin.get()), isDeletable
+                userEntryToResponse(superAdmin.get(), Collections.emptyList()), isDeletable
         )).build();
     }
 
@@ -1065,6 +1072,23 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+    @GET
+    @Path("/permissions/all")
+    public Response getAllPermissions() {
+        List<PermissionDetailsResponse> permissions = Lists.newArrayList();
+
+        for (Permission permission : Permissions.ALL.values()) {
+            permissions.add(PermissionDetailsResponse.create(
+                    permission.id(),
+                    permission.name(),
+                    permission.description(),
+                    permission.respectsTapScope()
+            ));
+        }
+
+        return Response.ok(PermissionListResponse.create(permissions)).build();
+    }
+
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
                 org.id(),
@@ -1093,7 +1117,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
     }
 
-    private UserDetailsResponse userEntryToResponse(UserEntry u) {
+    private UserDetailsResponse userEntryToResponse(UserEntry u, List<String> permissions) {
         return UserDetailsResponse.create(
                 u.id(),
                 u.organizationId(),
@@ -1107,7 +1131,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 u.lastRemoteIp(),
                 u.lastGeoCity(),
                 u.lastGeoCountry(),
-                u.lastGeoAsn()
+                u.lastGeoAsn(),
+                permissions
         );
     }
 

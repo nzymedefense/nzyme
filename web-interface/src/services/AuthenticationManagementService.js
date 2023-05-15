@@ -249,6 +249,13 @@ class AuthenticationManagementService {
         {}, successCallback);
   }
 
+  findAllExistingPermissions(setAllPermissions) {
+    RESTClient.get('/system/authentication/mgmt/organizations/permissions/all', {},
+        function (response) {
+          setAllPermissions(response.data.permissions);
+    })
+  }
+
 }
 
 export default AuthenticationManagementService

@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @AutoValue
 public abstract class UserDetailsResponse {
@@ -56,7 +57,10 @@ public abstract class UserDetailsResponse {
     @Nullable
     public abstract String lastGeoAsn();
 
-    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn) {
+    @JsonProperty("permissions")
+    public abstract List<String> permissions();
+
+    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -71,6 +75,7 @@ public abstract class UserDetailsResponse {
                 .lastGeoCity(lastGeoCity)
                 .lastGeoCountry(lastGeoCountry)
                 .lastGeoAsn(lastGeoAsn)
+                .permissions(permissions)
                 .build();
     }
 
@@ -105,6 +110,8 @@ public abstract class UserDetailsResponse {
         public abstract Builder lastGeoCountry(String lastGeoCountry);
 
         public abstract Builder lastGeoAsn(String lastGeoAsn);
+
+        public abstract Builder permissions(List<String> permissions);
 
         public abstract UserDetailsResponse build();
     }
