@@ -4,12 +4,13 @@ function TenantUserPermissionRow(props) {
 
   const permission = props.permission;
   const active = props.active;
+  const onChange = props.onChange;
 
   return (
       <React.Fragment>
         <tr>
           <td style={{textAlign: "center"}}>
-            <input type="checkbox" checked={active} />
+            <input type="checkbox" checked={active} onChange={(e) => onChange(e, permission.id)} />
           </td>
           <td>
             <strong>{permission.name}</strong>

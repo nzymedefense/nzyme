@@ -471,6 +471,25 @@ public class AuthenticationService {
         }
     }
 
+    public void setUserPermissions(long userId, List<String> permissions) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_permissions WHERE user_id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
+        );
+
+        for (String permission : permissions) {
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO auth_permissions(user_id, permission) " +
+                                    "VALUES(:user_id, :permission)")
+                            .bind("user_id", userId)
+                            .bind("permission", permission)
+                            .execute()
+            );
+        }
+
+    }
+
     public UserEntry createUserOfTenant(long organizationId,
                                    long tenantId,
                                    String name,

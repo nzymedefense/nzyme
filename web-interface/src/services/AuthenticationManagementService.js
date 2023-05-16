@@ -138,6 +138,11 @@ class AuthenticationManagementService {
         {allow_access_all_tenant_taps: allowAccessAllTenantTaps, taps: taps}, successCallback, errorCallback);
   }
 
+  editUserOfTenantPermissions(organizationId, tenantId, userId, permissions, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/permissions',
+        {permissions: permissions}, successCallback, errorCallback);
+  }
+
   editUserOfTenantPassword(organizationId, tenantId, userId, password, successCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/password',
         {password: password}, successCallback);

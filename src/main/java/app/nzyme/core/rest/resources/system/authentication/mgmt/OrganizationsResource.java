@@ -24,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -550,7 +549,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response editUserOfTenantTapPermissions(@PathParam("organizationId") long organizationId,
                                                    @PathParam("tenantId") long tenantId,
                                                    @PathParam("userId") long userId,
-                                                   UpdateUserTapPermissionRequest req) {
+                                                   UpdateUserTapPermissionsRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -581,6 +580,27 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         // Update access all flag.
         nzyme.getAuthenticationService().setUserTapPermissionsAllowAll(user.get().id(), req.allowAccessAllTenantTaps());
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/permissions")
+    public Response editUserOfTenantPermissions(@PathParam("organizationId") long organizationId,
+                                                @PathParam("tenantId") long tenantId,
+                                                @PathParam("userId") long userId,
+                                                UpdateUserPermissionsRequest req) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().setUserPermissions(user.get().id(), req.permissions());
 
         return Response.ok().build();
     }
