@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 @AutoValue
 public abstract class UserDetailsResponse {
@@ -60,7 +61,13 @@ public abstract class UserDetailsResponse {
     @JsonProperty("permissions")
     public abstract List<String> permissions();
 
-    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions) {
+    @JsonProperty("allow_access_all_tenant_taps")
+    public abstract boolean allowAccessAllTenantTaps();
+
+    @JsonProperty("tap_permissions")
+    public abstract List<UUID> tapPermissions();
+
+    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions, boolean allowAccessAllTenantTaps, List<UUID> tapPermissions) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -76,13 +83,15 @@ public abstract class UserDetailsResponse {
                 .lastGeoCountry(lastGeoCountry)
                 .lastGeoAsn(lastGeoAsn)
                 .permissions(permissions)
+                .allowAccessAllTenantTaps(allowAccessAllTenantTaps)
+                .tapPermissions(tapPermissions)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_UserDetailsResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(long id);
@@ -112,6 +121,10 @@ public abstract class UserDetailsResponse {
         public abstract Builder lastGeoAsn(String lastGeoAsn);
 
         public abstract Builder permissions(List<String> permissions);
+
+        public abstract Builder allowAccessAllTenantTaps(boolean allowAccessAllTenantTaps);
+
+        public abstract Builder tapPermissions(List<UUID> tapPermissions);
 
         public abstract UserDetailsResponse build();
     }

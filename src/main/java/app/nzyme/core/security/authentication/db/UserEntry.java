@@ -55,7 +55,9 @@ public abstract class UserEntry {
     @Nullable
     public abstract String lastGeoAsn();
 
-    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn) {
+    public abstract boolean accessAllTenantTaps();
+
+    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -77,6 +79,7 @@ public abstract class UserEntry {
                 .lastGeoCity(lastGeoCity)
                 .lastGeoCountry(lastGeoCountry)
                 .lastGeoAsn(lastGeoAsn)
+                .accessAllTenantTaps(accessAllTenantTaps)
                 .build();
     }
 
@@ -125,6 +128,8 @@ public abstract class UserEntry {
         public abstract Builder lastGeoCountry(String lastGeoCountry);
 
         public abstract Builder lastGeoAsn(String lastGeoAsn);
+
+        public abstract Builder accessAllTenantTaps(boolean accessAllTenantTaps);
 
         public abstract UserEntry build();
     }

@@ -432,6 +432,45 @@ public class AuthenticationService {
         );
     }
 
+    public List<UUID> findTapPermissionsOfUser(long userId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT t.uuid FROM auth_users_taps AS u " +
+                                "LEFT JOIN taps t on u.tap_id = t.uuid " +
+                                "WHERE u.user_id = :user_id")
+                        .bind("user_id", userId)
+                        .mapTo(UUID.class)
+                        .list()
+        );
+    }
+
+
+    public void setUserTapPermissionsAllowAll(long userId, boolean allowAccessAllTenantTaps) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET access_all_tenant_taps = :state WHERE id = :user_id")
+                        .bind("state", allowAccessAllTenantTaps)
+                        .bind("user_id", userId)
+                        .execute()
+        );
+    }
+
+    public void setUserTapPermissions(long userId, List<UUID> newPermissions) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_users_taps WHERE user_id = :user_id")
+                        .bind("user_id", userId)
+                        .execute()
+        );
+
+        for (UUID tapUuid : newPermissions) {
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO auth_users_taps(user_id, tap_id) " +
+                                    "VALUES(:user_id, :tap_id)")
+                            .bind("user_id", userId)
+                            .bind("tap_id", tapUuid)
+                            .execute()
+            );
+        }
+    }
+
     public UserEntry createUserOfTenant(long organizationId,
                                    long tenantId,
                                    String name,
@@ -779,7 +818,11 @@ public class AuthenticationService {
         );
     }
 
-    public List<TapPermissionEntry> findAllTaps(long organizationId, long tenantId, int limit, int offset) {
+    public List<TapPermissionEntry> findAllTapsOfTenant(long organizationId, long tenantId) {
+        return findAllTapsOfTenant(organizationId, tenantId, Integer.MAX_VALUE, 0);
+    }
+
+    public List<TapPermissionEntry> findAllTapsOfTenant(long organizationId, long tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
@@ -846,6 +889,12 @@ public class AuthenticationService {
                                 "AND tenant_id = :tenant_id AND uuid = :uuid")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("uuid", tapId)
+                        .execute()
+        );
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_users_taps WHERE tap_id = :uuid")
                         .bind("uuid", tapId)
                         .execute()
         );

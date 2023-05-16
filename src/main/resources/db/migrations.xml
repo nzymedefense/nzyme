@@ -2208,4 +2208,46 @@
                                     onDelete="CASCADE" />
     </changeSet>
 
+    <changeSet id="create_users_taps_permissions_table" author="lennartkoopmann">
+        <createTable tableName="auth_users_taps">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint    constraintName="link_users2tapperms"
+                                    baseTableName="auth_users_taps"
+                                    baseColumnNames="user_id"
+                                    referencedTableName="auth_users"
+                                    referencedColumnNames="id"
+                                    onUpdate="NO ACTION"
+                                    onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="add_access_to_all_taps_field_for_users" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="access_all_tenant_taps" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="change_user_taps_uuid_type" author="lennartkoopmann">
+        <dropColumn tableName="auth_users_taps" columnName="tap_id" />
+
+        <addColumn tableName="auth_users_taps">
+            <column name="tap_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -178,7 +178,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllOrganizationAdministrators(
                 org.get().id(), limit, offset)) {
-            users.add(userEntryToResponse(user, Collections.emptyList()));
+            users.add(userEntryToResponse(user, Collections.emptyList(), Collections.emptyList()));
         }
 
         long orgAdminCount = nzyme.getAuthenticationService().countOrganizationAdministrators(org.get().id());
@@ -202,7 +202,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean isDeletable = sessionUser.getUserId() != userId;
 
         return Response.ok(OrganizationAdministratorDetailsResponse.create(
-                userEntryToResponse(orgAdmin.get(), Collections.emptyList()), isDeletable
+                userEntryToResponse(orgAdmin.get(), Collections.emptyList(), Collections.emptyList()), isDeletable
         )).build();
     }
 
@@ -428,7 +428,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllUsersOfTenant(
                 organizationId, tenantId, limit, offset)) {
-            users.add(userEntryToResponse(user, nzyme.getAuthenticationService().findPermissionsOfUser(user.id())));
+            users.add(userEntryToResponse(
+                    user,
+                    nzyme.getAuthenticationService().findPermissionsOfUser(user.id()),
+                    nzyme.getAuthenticationService().findTapPermissionsOfUser(user.id())
+            ));
         }
 
         long userCount = nzyme.getAuthenticationService().countUsersOfTenant(
@@ -459,7 +463,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         boolean isDeletable = sessionUser.getUserId() != userId;
 
         return Response.ok(UserOfTenantDetailsResponse.create(
-                userEntryToResponse(user.get(), nzyme.getAuthenticationService().findPermissionsOfUser(user.get().id())),
+                userEntryToResponse(
+                        user.get(),
+                        nzyme.getAuthenticationService().findPermissionsOfUser(user.get().id()),
+                        nzyme.getAuthenticationService().findTapPermissionsOfUser(user.get().id())
+                ),
                 isDeletable)
         ).build();
     }
@@ -533,6 +541,46 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 req.name(),
                 req.email().toLowerCase()
         );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/taps")
+    public Response editUserOfTenantTapPermissions(@PathParam("organizationId") long organizationId,
+                                                   @PathParam("tenantId") long tenantId,
+                                                   @PathParam("userId") long userId,
+                                                   UpdateUserTapPermissionRequest req) {
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Update tap permissions.
+        List<UUID> requestedPermissions = Lists.newArrayList();
+
+        for (String tap : req.taps()) {
+            requestedPermissions.add(UUID.fromString(tap));
+        }
+
+        List<UUID> newPermissions = Lists.newArrayList();
+
+        // Make sure tap belongs to tenant and exists.
+        for (TapPermissionEntry tap : nzyme.getAuthenticationService().findAllTapsOfTenant(organizationId, tenantId)) {
+            if (requestedPermissions.contains(tap.uuid())) {
+                newPermissions.add(tap.uuid());
+            }
+        }
+
+        nzyme.getAuthenticationService().setUserTapPermissions(user.get().id(), newPermissions);
+
+        // Update access all flag.
+        nzyme.getAuthenticationService().setUserTapPermissionsAllowAll(user.get().id(), req.allowAccessAllTenantTaps());
 
         return Response.ok().build();
     }
@@ -761,7 +809,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         List<TapPermissionDetailsResponse> taps = Lists.newArrayList();
         for (TapPermissionEntry tap : nzyme.getAuthenticationService()
-                .findAllTaps(organizationId, tenantId, limit, offset)) {
+                .findAllTapsOfTenant(organizationId, tenantId, limit, offset)) {
             taps.add(tapPermissionEntryToResponse(tap));
         }
 
@@ -916,7 +964,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllSuperAdministrators(limit, offset)) {
-            users.add(userEntryToResponse(user, Collections.emptyList()));
+            users.add(userEntryToResponse(
+                    user,
+                    Collections.emptyList(),
+                    Collections.emptyList())
+            );
         }
 
         long superadminCount = nzyme.getAuthenticationService().countSuperAdministrators();
@@ -938,7 +990,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 && sessionUser.getUserId() != userId;
 
         return Response.ok(SuperAdministratorDetailsResponse.create(
-                userEntryToResponse(superAdmin.get(), Collections.emptyList()), isDeletable
+                userEntryToResponse(
+                        superAdmin.get(),
+                        Collections.emptyList(),
+                        Collections.emptyList()
+                ), isDeletable
         )).build();
     }
 
@@ -1117,7 +1173,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
     }
 
-    private UserDetailsResponse userEntryToResponse(UserEntry u, List<String> permissions) {
+    private UserDetailsResponse userEntryToResponse(UserEntry u, List<String> permissions, List<UUID> tapPermissions) {
         return UserDetailsResponse.create(
                 u.id(),
                 u.organizationId(),
@@ -1132,7 +1188,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 u.lastGeoCity(),
                 u.lastGeoCountry(),
                 u.lastGeoAsn(),
-                permissions
+                permissions,
+                u.accessAllTenantTaps(),
+                tapPermissions
         );
     }
 

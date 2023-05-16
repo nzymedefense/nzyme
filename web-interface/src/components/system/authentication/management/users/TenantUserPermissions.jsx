@@ -23,6 +23,8 @@ function TenantUserPermissions(props) {
           })}
           </tbody>
         </table>
+
+        <button className="btn btn-sm btn-secondary">Update Feature Permissions</button>
       </React.Fragment>
   )
 

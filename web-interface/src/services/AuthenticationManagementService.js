@@ -1,4 +1,5 @@
 import RESTClient from '../util/RESTClient'
+import error from "eslint-plugin-react/lib/util/error";
 
 class AuthenticationManagementService {
 
@@ -130,6 +131,11 @@ class AuthenticationManagementService {
   editUserOfTenant(organizationId, tenantId, userId, name, email, successCallback, errorCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId,
         {name: name, email: email}, successCallback, errorCallback);
+  }
+
+  editUserOfTenantTapPermissions(organizationId, tenantId, userId, allowAccessAllTenantTaps, taps, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/users/show/' + userId + '/taps',
+        {allow_access_all_tenant_taps: allowAccessAllTenantTaps, taps: taps}, successCallback, errorCallback);
   }
 
   editUserOfTenantPassword(organizationId, tenantId, userId, password, successCallback) {

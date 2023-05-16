@@ -152,8 +152,6 @@ function TenantUserDetailsPage() {
                   <div className="card-body">
                     <h3>Permissions</h3>
 
-                    <p>TODO add help text</p>
-
                     <h4>Tap Data</h4>
 
                     <p>
@@ -161,9 +159,9 @@ function TenantUserDetailsPage() {
                       features &amp; functionality description below, because not all features restrict tap data access.
                     </p>
 
-                    <TenantUserTaps taps={taps} />
+                    <TenantUserTaps taps={taps} user={user} />
 
-                    <h4>Features &amp; Functionality</h4>
+                    <h4 className="mt-4">Features &amp; Functionality</h4>
 
                     <p>
                       On top of tap data access, a user can be restricted to certain features and functionality in nzyme.
