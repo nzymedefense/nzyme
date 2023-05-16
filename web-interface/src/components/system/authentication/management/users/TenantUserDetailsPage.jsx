@@ -8,6 +8,7 @@ import moment from "moment";
 import {notify} from "react-notify-toast";
 import LastUserActivity from "./shared/LastUserActivity";
 import TenantUserPermissions from "./TenantUserPermissions";
+import TenantUserTaps from "./TenantUserTaps";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -20,6 +21,7 @@ function TenantUserDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [user, setUser] = useState(null);
+  const [taps, setTaps] = useState(null);
   const [isDeletable, setIsDeletable] = useState(null);
 
   const [allPermissions, setAllPermissions] = useState(null);
@@ -52,6 +54,8 @@ function TenantUserDetailsPage() {
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findUserOfTenant(organizationId, tenantId, userId, setUser, setIsDeletable);
 
+    authenticationManagementService.findAllTapPermissions(organizationId, tenantId, setTaps, 250, 0);
+
     authenticationManagementService.findAllExistingPermissions(setAllPermissions);
   }, [organizationId, tenantId])
 
@@ -59,7 +63,7 @@ function TenantUserDetailsPage() {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
   }
 
-  if (!organization || !tenant || !user || !allPermissions) {
+  if (!organization || !tenant || !user || !allPermissions || !taps) {
     return <LoadingSpinner />
   }
 
@@ -151,6 +155,13 @@ function TenantUserDetailsPage() {
                     <p>TODO add help text</p>
 
                     <h4>Tap Data</h4>
+
+                    <p>
+                      You can decide to restrict access to data of only specific taps but make sure to understand the
+                      features &amp; functionality description below, because not all features restrict tap data access.
+                    </p>
+
+                    <TenantUserTaps taps={taps} />
 
                     <h4>Features &amp; Functionality</h4>
 
