@@ -22,35 +22,37 @@ public class TapAuthenticationFilterTest {
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM bus_channels").execute());
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM tap_buses").execute());
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM taps").execute());
+        nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM auth_users").execute());
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM auth_tenants").execute());
         nzyme.getDatabase().useHandle(handle -> handle.createUpdate("DELETE FROM auth_organizations").execute());
     }
 
-    private TapPermissionEntry buildTap() {
-        NzymeNode nzyme = new MockNzyme();
-
+    private String buildTap(NzymeNode nzyme) {
         OrganizationEntry org = nzyme.getAuthenticationService()
                 .createOrganization("test org", "test org");
 
         TenantEntry tenant = nzyme.getAuthenticationService()
-                .createTenant(org.id(), "test tenant", "test tenant");
+                .createTenant(org.uuid(), "test tenant", "test tenant");
 
         String secret = RandomStringUtils.random(64, true, true);
 
-        return nzyme.getAuthenticationService()
-                .createTap(org.id(), tenant.id(), secret, "test tap", "test tap");
+       nzyme.getAuthenticationService()
+                .createTap(org.uuid(), tenant.uuid(), secret, "test tap", "test tap");
+
+       return secret;
     }
 
     @Test
     public void testFilterLetsValidSecretPass() throws IOException {
-        buildTap();
-        TapPermissionEntry tap = buildTap();
-
         NzymeNode nzyme = new MockNzyme();
+
+        buildTap(nzyme);
+        String secret = buildTap(nzyme);
+
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
-                "Bearer " + tap.secret()
+                "Bearer " + secret
         );
 
         f.filter(ctx);
@@ -59,10 +61,11 @@ public class TapAuthenticationFilterTest {
 
     @Test()
     public void testFilterRejectsInvalidSecret() throws IOException {
-        buildTap();
-        buildTap();
-
         NzymeNode nzyme = new MockNzyme();
+
+        buildTap(nzyme);
+        buildTap(nzyme);
+
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
@@ -97,14 +100,15 @@ public class TapAuthenticationFilterTest {
 
     @Test
     public void testFilterRejectsUnknownAuthScheme() throws IOException {
-        buildTap();
-        TapPermissionEntry tap = buildTap();
-
         NzymeNode nzyme = new MockNzyme();
+
+        buildTap(nzyme);
+        String secret = buildTap(nzyme);
+
         TapAuthenticationFilter f = new TapAuthenticationFilter(nzyme);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
-                "Wtf " + tap.secret()
+                "Wtf " + secret
         );
 
         f.filter(ctx);

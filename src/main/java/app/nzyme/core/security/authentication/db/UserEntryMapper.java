@@ -6,23 +6,24 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class UserEntryMapper implements RowMapper<UserEntry> {
 
     @Override
     public UserEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        long roleId = rs.getLong("role_id");
-
         DateTime lastActivity = rs.getTimestamp("last_activity") == null
                 ? null : new DateTime(rs.getTimestamp("last_activity"));
 
+        String organizationId = rs.getString("organization_id");
+        String tenantId = rs.getString("tenant_id");
+
         return UserEntry.create(
-                rs.getLong("id"),
-                rs.getLong("organization_id"),
-                rs.getLong("tenant_id"),
+                UUID.fromString(rs.getString("uuid")),
+                organizationId == null ? null : UUID.fromString(organizationId),
+                tenantId == null ? null : UUID.fromString(tenantId),
                 rs.getString("password"),
                 rs.getString("password_salt"),
-                roleId == 0 ? null : roleId,
                 rs.getString("email"),
                 rs.getString("name"),
                 rs.getBoolean("is_orgadmin"),

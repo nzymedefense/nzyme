@@ -19,7 +19,7 @@ public class PreMFAAuthenticationFilterTest extends RESTAuthenticationFilterTest
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), false);
+        String sessionId = createSession(user.uuid(), false);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Bearer " + sessionId
@@ -36,7 +36,7 @@ public class PreMFAAuthenticationFilterTest extends RESTAuthenticationFilterTest
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), false);
+        String sessionId = createSession(user.uuid(), false);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Bearer " + sessionId
@@ -91,7 +91,7 @@ public class PreMFAAuthenticationFilterTest extends RESTAuthenticationFilterTest
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), false);
+        String sessionId = createSession(user.uuid(), false);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Wtf " + sessionId

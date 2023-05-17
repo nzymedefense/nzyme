@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class OrganizationDetailsResponse {
 
     @JsonProperty("id")
-    public abstract long id();
+    public abstract UUID id();
 
     @JsonProperty("name")
     public abstract String name();
@@ -34,7 +36,7 @@ public abstract class OrganizationDetailsResponse {
     @JsonProperty("is_deletable")
     public abstract boolean isDeletable();
 
-    public static OrganizationDetailsResponse create(long id, String name, String description, DateTime createdAt, DateTime updatedAt, long tenantsCount, long usersCount, long tapsCount, boolean isDeletable) {
+    public static OrganizationDetailsResponse create(UUID id, String name, String description, DateTime createdAt, DateTime updatedAt, long tenantsCount, long usersCount, long tapsCount, boolean isDeletable) {
         return builder()
                 .id(id)
                 .name(name)
@@ -54,7 +56,7 @@ public abstract class OrganizationDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder id(UUID id);
 
         public abstract Builder name(String name);
 

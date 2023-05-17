@@ -3,11 +3,13 @@ package app.nzyme.core.rest.responses.authentication;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class SessionUserInformationDetailsResponse {
 
     @JsonProperty("id")
-    public abstract long id();
+    public abstract UUID id();
 
     @JsonProperty("email")
     public abstract String email();
@@ -15,7 +17,7 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    public static SessionUserInformationDetailsResponse create(long id, String email, String name) {
+    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name) {
         return builder()
                 .id(id)
                 .email(email)
@@ -29,7 +31,7 @@ public abstract class SessionUserInformationDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder id(UUID id);
 
         public abstract Builder email(String email);
 

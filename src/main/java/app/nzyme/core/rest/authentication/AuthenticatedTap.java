@@ -8,10 +8,10 @@ public class AuthenticatedTap implements Principal {
     private final UUID uuid;
     private final String name;
 
-    private final long organizationId;
-    private final long tenantId;
+    private final UUID organizationId;
+    private final UUID tenantId;
 
-    public AuthenticatedTap(UUID uuid, String name, long organizationId, long tenantId) {
+    public AuthenticatedTap(UUID uuid, String name, UUID organizationId, UUID tenantId) {
         this.uuid = uuid;
         this.name = name;
         this.organizationId = organizationId;
@@ -27,11 +27,11 @@ public class AuthenticatedTap implements Principal {
         return name;
     }
 
-    public long getOrganizationId() {
+    public UUID getOrganizationId() {
         return organizationId;
     }
 
-    public long getTenantId() {
+    public UUID getTenantId() {
         return tenantId;
     }
 

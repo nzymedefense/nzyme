@@ -4,13 +4,14 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class SessionEntryWithUserDetails {
 
     public abstract Long id();
     public abstract String sessionId();
-    public abstract long userId();
+    public abstract UUID userId();
     public abstract boolean isSuperadmin();
     public abstract boolean isOrgadmin();
     public abstract String userEmail();
@@ -19,10 +20,10 @@ public abstract class SessionEntryWithUserDetails {
     public abstract DateTime createdAt();
 
     @Nullable
-    public abstract Long organizationId();
+    public abstract UUID organizationId();
 
     @Nullable
-    public abstract Long tenantId();
+    public abstract UUID tenantId();
 
     @Nullable
     public abstract DateTime lastActivity();
@@ -32,7 +33,7 @@ public abstract class SessionEntryWithUserDetails {
     @Nullable
     public abstract DateTime mfaRequestedAt();
 
-    public static SessionEntryWithUserDetails create(Long id, String sessionId, long userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, Long organizationId, Long tenantId, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
+    public static SessionEntryWithUserDetails create(Long id, String sessionId, UUID userId, boolean isSuperadmin, boolean isOrgadmin, String userEmail, String userName, String remoteIp, DateTime createdAt, UUID organizationId, UUID tenantId, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
         return builder()
                 .id(id)
                 .sessionId(sessionId)
@@ -61,7 +62,7 @@ public abstract class SessionEntryWithUserDetails {
 
         public abstract Builder sessionId(String sessionId);
 
-        public abstract Builder userId(long userId);
+        public abstract Builder userId(UUID userId);
 
         public abstract Builder isSuperadmin(boolean isSuperadmin);
 
@@ -75,9 +76,9 @@ public abstract class SessionEntryWithUserDetails {
 
         public abstract Builder createdAt(DateTime createdAt);
 
-        public abstract Builder organizationId(Long organizationId);
+        public abstract Builder organizationId(UUID organizationId);
 
-        public abstract Builder tenantId(Long tenantId);
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder lastActivity(DateTime lastActivity);
 

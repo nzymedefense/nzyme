@@ -14,10 +14,10 @@ public abstract class TapPermissionDetailsResponse {
     public abstract UUID uuid();
 
     @JsonProperty("organization_d")
-    public abstract long organizationId();
+    public abstract UUID organizationId();
 
     @JsonProperty("tenant_id")
-    public abstract long tenantId();
+    public abstract UUID tenantId();
 
     @JsonProperty("name")
     public abstract String name();
@@ -38,7 +38,7 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("last_report")
     public abstract DateTime lastReport();
 
-    public static TapPermissionDetailsResponse create(UUID uuid, long organizationId, long tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -60,9 +60,9 @@ public abstract class TapPermissionDetailsResponse {
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder organizationId(long organizationId);
+        public abstract Builder organizationId(UUID organizationId);
 
-        public abstract Builder tenantId(long tenantId);
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder name(String name);
 

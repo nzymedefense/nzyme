@@ -3,19 +3,20 @@ package app.nzyme.core.rest.authentication;
 import org.joda.time.DateTime;
 
 import java.security.Principal;
+import java.util.UUID;
 
 public class AuthenticatedUser implements Principal {
 
-    private final long userId;
+    private final UUID userId;
     private final String sessionId;
     private final String email;
 
     private final DateTime sessionCreatedAt;
 
-    private final long organizationId;
-    private final long tenantId;
+    private final UUID organizationId;
+    private final UUID tenantId;
 
-    public AuthenticatedUser(long userId, String sessionId, String email, DateTime sessionCreatedAt, long organizationId, long tenantId) {
+    public AuthenticatedUser(UUID userId, String sessionId, String email, DateTime sessionCreatedAt, UUID organizationId, UUID tenantId) {
         this.userId = userId;
         this.sessionId = sessionId;
         this.email = email;
@@ -24,7 +25,7 @@ public class AuthenticatedUser implements Principal {
         this.tenantId = tenantId;
     }
 
-    public long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
@@ -40,11 +41,11 @@ public class AuthenticatedUser implements Principal {
         return sessionCreatedAt;
     }
 
-    public long getOrganizationId() {
+    public UUID getOrganizationId() {
         return organizationId;
     }
 
-    public long getTenantId() {
+    public UUID getTenantId() {
         return tenantId;
     }
 

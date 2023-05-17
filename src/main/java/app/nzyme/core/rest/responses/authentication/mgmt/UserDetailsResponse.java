@@ -12,19 +12,15 @@ import java.util.UUID;
 public abstract class UserDetailsResponse {
 
     @JsonProperty("id")
-    public abstract long id();
+    public abstract UUID id();
 
     @JsonProperty("organization_id")
     @Nullable
-    public abstract Long organization_id();
+    public abstract UUID organization_id();
 
     @JsonProperty("tenant_id")
     @Nullable
-    public abstract Long tenantId();
-
-    @JsonProperty("role_id")
-    @Nullable
-    public abstract Long roleId();
+    public abstract UUID tenantId();
 
     @JsonProperty("email")
     public abstract String email();
@@ -67,12 +63,11 @@ public abstract class UserDetailsResponse {
     @JsonProperty("tap_permissions")
     public abstract List<UUID> tapPermissions();
 
-    public static UserDetailsResponse create(long id, Long organization_id, Long tenantId, Long roleId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions, boolean allowAccessAllTenantTaps, List<UUID> tapPermissions) {
+    public static UserDetailsResponse create(UUID id, UUID organization_id, UUID tenantId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions, boolean allowAccessAllTenantTaps, List<UUID> tapPermissions) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
                 .tenantId(tenantId)
-                .roleId(roleId)
                 .email(email)
                 .name(name)
                 .createdAt(createdAt)
@@ -91,16 +86,14 @@ public abstract class UserDetailsResponse {
     public static Builder builder() {
         return new AutoValue_UserDetailsResponse.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder id(UUID id);
 
-        public abstract Builder organization_id(Long organization_id);
+        public abstract Builder organization_id(UUID organization_id);
 
-        public abstract Builder tenantId(Long tenantId);
-
-        public abstract Builder roleId(Long roleId);
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder email(String email);
 

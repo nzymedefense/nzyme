@@ -3,18 +3,20 @@ package app.nzyme.core.security.authentication.db;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.UUID;
+
 @AutoValue
 public abstract class OrganizationEntry {
 
-    public abstract long id();
+    public abstract UUID uuid();
     public abstract String name();
     public abstract String description();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static OrganizationEntry create(long id, String name, String description, DateTime createdAt, DateTime updatedAt) {
+    public static OrganizationEntry create(UUID uuid, String name, String description, DateTime createdAt, DateTime updatedAt) {
         return builder()
-                .id(id)
+                .uuid(uuid)
                 .name(name)
                 .description(description)
                 .createdAt(createdAt)
@@ -28,7 +30,7 @@ public abstract class OrganizationEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder uuid(UUID uuid);
 
         public abstract Builder name(String name);
 

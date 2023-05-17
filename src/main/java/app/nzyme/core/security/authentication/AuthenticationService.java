@@ -63,7 +63,7 @@ public class AuthenticationService {
         LOG.info("Creating default organization and tenant.");
 
         OrganizationEntry organization = createOrganization("Default Organization", "The nzyme default organization");
-        createTenant(organization.id(), "Default Tenant", "The nzyme default tenant");
+        createTenant(organization.uuid(), "Default Tenant", "The nzyme default tenant");
     }
 
     public long countSuperAdministrators() {
@@ -97,9 +97,9 @@ public class AuthenticationService {
     public UserEntry createSuperAdministrator(String name, String email,PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
                                 "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(NULL, NULL, NULL, :email, :password, :password_salt, :name, " +
+                                "VALUES(NULL, NULL, :email, :password, :password_salt, :name, " +
                                 ":created_at, :updated_at, true, false) RETURNING *")
                         .bind("email", email)
                         .bind("password", password.hash())
@@ -136,7 +136,7 @@ public class AuthenticationService {
 
     public List<OrganizationEntry> findAllOrganizations(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
+                handle.createQuery("SELECT uuid, name, description, created_at, updated_at FROM auth_organizations " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset)
@@ -155,7 +155,7 @@ public class AuthenticationService {
 
     public Optional<OrganizationEntry> findOrganization(UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
+                handle.createQuery("SELECT uuid, name, description, created_at, updated_at FROM auth_organizations " +
                                 "WHERE uuid = :id")
                         .bind("id", id)
                         .mapTo(OrganizationEntry.class)
@@ -203,7 +203,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_tenants " +
                                 "WHERE organization_id = :organization_id")
-                        .bind("organization_id", o.id())
+                        .bind("organization_id", o.uuid())
                         .mapTo(Long.class)
                         .one()
         );
@@ -213,7 +213,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users " +
                                 "WHERE organization_id = :organization_id")
-                        .bind("organization_id", o.id())
+                        .bind("organization_id", o.uuid())
                         .mapTo(Long.class)
                         .one()
         );
@@ -223,7 +223,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM taps " +
                                 "WHERE organization_id = :organization_id")
-                        .bind("organization_id", o.id())
+                        .bind("organization_id", o.uuid())
                         .mapTo(Long.class)
                         .one()
         );
@@ -236,7 +236,7 @@ public class AuthenticationService {
         return organizationTenantCount == 0 && totalOrganizationsCount > 1;
     }
 
-    public List<UserEntry> findAllOrganizationAdministrators(long organizationId, int limit, int offset) {
+    public List<UserEntry> findAllOrganizationAdministrators(UUID organizationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users WHERE is_orgadmin = true AND organization_id = :organization_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
@@ -248,10 +248,10 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findOrganizationAdministrator(long organizationId, long userId) {
+    public Optional<UserEntry> findOrganizationAdministrator(UUID organizationId, UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users " +
-                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND uuid = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("user_id", userId)
                         .mapTo(UserEntry.class)
@@ -259,7 +259,7 @@ public class AuthenticationService {
         );
     }
 
-    public long countOrganizationAdministrators(long organizationId) {
+    public long countOrganizationAdministrators(UUID organizationId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users " +
                                 "WHERE is_orgadmin = true AND organization_id = :organization_id")
@@ -269,15 +269,15 @@ public class AuthenticationService {
         );
     }
 
-    public UserEntry createOrganizationAdministrator(long organizationId,
+    public UserEntry createOrganizationAdministrator(UUID organizationId,
                                                      String name,
                                                      String email,
                                                      PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
                                 "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(:organization_id, NULL, NULL, :email, :password, :password_salt, :name, " +
+                                "VALUES(:organization_id, NULL,, :email, :password, :password_salt, :name, " +
                                 ":created_at, :updated_at, false, true) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("email", email)
@@ -291,7 +291,7 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteOrganizationAdministrator(long organizationId, UUID userId) {
+    public void deleteOrganizationAdministrator(UUID organizationId, UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
                                 "WHERE is_orgadmin = true AND organization_id = :organization_id AND uuid = :user_id")
@@ -301,7 +301,7 @@ public class AuthenticationService {
         );
     }
 
-    public TenantEntry createTenant(long organizationId, String name, String description) {
+    public TenantEntry createTenant(UUID organizationId, String name, String description) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_tenants(organization_id, name, description, created_at, updated_at) " +
@@ -316,9 +316,9 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(long organizationId, int limit, int offset) {
+    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(UUID organizationId, int limit, int offset) {
         List<TenantEntry> tenants = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
+                handle.createQuery("SELECT uuid, organization_id, name, description, created_at, updated_at " +
                                 "FROM auth_tenants WHERE organization_id = :organization_id " +
                                 "ORDER BY name DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
@@ -337,7 +337,7 @@ public class AuthenticationService {
 
     public Optional<TenantEntry> findTenant(UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
+                handle.createQuery("SELECT uuid, organization_id, name, description, created_at, updated_at " +
                                 "FROM auth_tenants WHERE uuid = :id")
                         .bind("id", tenantId)
                         .mapTo(TenantEntry.class)
@@ -380,7 +380,7 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, UUID userId) {
+    public Optional<UserEntry> findUserOfTenant(UUID organizationId, UUID tenantId, UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND uuid = :user_id")
@@ -392,7 +392,7 @@ public class AuthenticationService {
         );
     }
 
-    public List<UserEntry> findAllUsersOfTenant(long organizationId, long tenantId, int limit, int offset) {
+    public List<UserEntry> findAllUsersOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
@@ -414,7 +414,7 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findUserByUuid(UUID id) {
+    public Optional<UserEntry> findUserById(UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users WHERE uuid = :id")
                         .bind("id", id)
@@ -423,7 +423,7 @@ public class AuthenticationService {
         );
     }
 
-    public List<String> findPermissionsOfUser(long userId) {
+    public List<String> findPermissionsOfUser(UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT permission FROM auth_permissions WHERE user_id = :user_id")
                         .bind("user_id", userId)
@@ -432,7 +432,7 @@ public class AuthenticationService {
         );
     }
 
-    public List<UUID> findTapPermissionsOfUser(long userId) {
+    public List<UUID> findTapPermissionsOfUser(UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT t.uuid FROM auth_users_taps AS u " +
                                 "LEFT JOIN taps t on u.tap_id = t.uuid " +
@@ -443,7 +443,6 @@ public class AuthenticationService {
         );
     }
 
-
     public void setUserTapPermissionsAllowAll(UUID userId, boolean allowAccessAllTenantTaps) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET access_all_tenant_taps = :state WHERE uuid = :user_id")
@@ -453,7 +452,7 @@ public class AuthenticationService {
         );
     }
 
-    public void setUserTapPermissions(long userId, List<UUID> newPermissions) {
+    public void setUserTapPermissions(UUID userId, List<UUID> newPermissions) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users_taps WHERE user_id = :user_id")
                         .bind("user_id", userId)
@@ -471,7 +470,7 @@ public class AuthenticationService {
         }
     }
 
-    public void setUserPermissions(long userId, List<String> permissions) {
+    public void setUserPermissions(UUID userId, List<String> permissions) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_permissions WHERE user_id = :user_id")
                         .bind("user_id", userId)
@@ -487,19 +486,18 @@ public class AuthenticationService {
                             .execute()
             );
         }
-
     }
 
-    public UserEntry createUserOfTenant(long organizationId,
-                                   long tenantId,
-                                   String name,
-                                   String email,
-                                   PasswordHasher.GeneratedHashAndSalt password) {
+    public UserEntry createUserOfTenant(UUID organizationId,
+                                        UUID tenantId,
+                                        String name,
+                                        String email,
+                                        PasswordHasher.GeneratedHashAndSalt password) {
         DateTime now = new DateTime();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, role_id, email, password, " +
+                handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
                                 "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(:organization_id, :tenant_id, NULL, :email, :password, :password_salt, :name, " +
+                                "VALUES(:organization_id, :tenant_id, :email, :password, :password_salt, :name, " +
                                 ":created_at, :updated_at, false, false) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -536,7 +534,7 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteUserOfTenant(long organizationId, long tenantId, UUID userId) {
+    public void deleteUserOfTenant(UUID organizationId, UUID tenantId, UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :user_id")
@@ -563,8 +561,8 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_users WHERE organization_id = :organization_id AND " +
                                 "tenant_id = :tenant_id")
-                        .bind("organization_id", t.organizationId())
-                        .bind("tenant_id", t.id())
+                        .bind("organization_id", t.organizationUuid())
+                        .bind("tenant_id", t.uuid())
                         .mapTo(Long.class)
                         .one()
         );
@@ -574,8 +572,8 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM taps WHERE organization_id = :organization_id AND " +
                                 "tenant_id = :tenant_id")
-                        .bind("organization_id", t.organizationId())
-                        .bind("tenant_id", t.id())
+                        .bind("organization_id", t.organizationUuid())
+                        .bind("tenant_id", t.organizationUuid())
                         .mapTo(Long.class)
                         .one()
         );
@@ -652,7 +650,7 @@ public class AuthenticationService {
         );
     }
 
-    public void createSession(String sessionId, long userId, String remoteIp) {
+    public void createSession(String sessionId, UUID userId, String remoteIp) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at, " +
                                 "mfa_valid, mfa_requested_at) VALUES(:sessionid, :user_id, :remote_ip, NOW(), " +
@@ -670,7 +668,7 @@ public class AuthenticationService {
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
                                 "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
-                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "ORDER BY u.email ASC " +
                                 "LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
@@ -680,13 +678,13 @@ public class AuthenticationService {
         );
     }
 
-    public List<SessionEntryWithUserDetails> findSessionsOfOrganization(long organizationId, int limit, int offset) {
+    public List<SessionEntryWithUserDetails> findSessionsOfOrganization(UUID organizationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
                                 "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
-                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id " +
                                 "ORDER BY u.email ASC " +
                                 "LIMIT :limit OFFSET :offset")
@@ -698,13 +696,13 @@ public class AuthenticationService {
         );
     }
 
-    public List<SessionEntryWithUserDetails> findSessionsOfTenant(long organizationId, long tenantId, int limit, int offset) {
+    public List<SessionEntryWithUserDetails> findSessionsOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.id, s.sessionid, s.user_id, s.remote_ip, s.created_at, u.last_activity, " +
                                 "u.tenant_id, u.organization_id, u.email, u.name, u.is_superadmin, u.is_orgadmin, " +
                                 "s.mfa_valid, s.mfa_requested_at " +
                                 "FROM auth_sessions AS s " +
-                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id " +
                                 "ORDER BY u.email ASC " +
                                 "LIMIT :limit OFFSET :offset")
@@ -763,10 +761,10 @@ public class AuthenticationService {
         );
     }
 
-    public long countSessionsOfOrganization(long organizationId) {
+    public long countSessionsOfOrganization(UUID organizationId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_sessions AS s " +
-                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id")
                         .bind("organization_id", organizationId)
                         .mapTo(Long.class)
@@ -774,10 +772,10 @@ public class AuthenticationService {
         );
     }
 
-    public long countSessionsOfTenant(long organizationId, long tenantId) {
+    public long countSessionsOfTenant(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_sessions AS s " +
-                                "LEFT JOIN auth_users u ON s.user_id = u.id " +
+                                "LEFT JOIN auth_users u ON s.user_id = u.uuid " +
                                 "WHERE u.organization_id = :organization_id AND u.tenant_id = :tenant_id")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -804,7 +802,7 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteAllSessionsOfUser(long userId) {
+    public void deleteAllSessionsOfUser(UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_sessions WHERE user_id = :user_id")
                         .bind("user_id", userId)
@@ -812,7 +810,7 @@ public class AuthenticationService {
         );
     }
 
-    public TapPermissionEntry createTap(long organizationId, long tenantId, String secret, String name, String description) {
+    public TapPermissionEntry createTap(UUID organizationId, UUID tenantId, String secret, String name, String description) {
         String encryptedSecret;
         try {
             encryptedSecret = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(secret.getBytes()));
@@ -837,11 +835,11 @@ public class AuthenticationService {
         );
     }
 
-    public List<TapPermissionEntry> findAllTapsOfTenant(long organizationId, long tenantId) {
+    public List<TapPermissionEntry> findAllTapsOfTenant(UUID organizationId, UUID tenantId) {
         return findAllTapsOfTenant(organizationId, tenantId, Integer.MAX_VALUE, 0);
     }
 
-    public List<TapPermissionEntry> findAllTapsOfTenant(long organizationId, long tenantId, int limit, int offset) {
+    public List<TapPermissionEntry> findAllTapsOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
@@ -856,7 +854,7 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<TapPermissionEntry> findTap(long organizationId, long tenantId, UUID tapId) {
+    public Optional<TapPermissionEntry> findTap(UUID organizationId, UUID tenantId, UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
                                 "description, secret, created_at, updated_at, last_report FROM taps " +
@@ -902,7 +900,7 @@ public class AuthenticationService {
         return Optional.empty();
     }
 
-    public void deleteTap(long organizationId, long tenantId, UUID tapId) {
+    public void deleteTap(UUID organizationId, UUID tenantId, UUID tapId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM taps WHERE organization_id = :organization_id " +
                                 "AND tenant_id = :tenant_id AND uuid = :uuid")
@@ -919,7 +917,7 @@ public class AuthenticationService {
         );
     }
 
-    public void editTap(long organizationId, long tenantId, UUID tapId, String name, String description) {
+    public void editTap(UUID organizationId, UUID tenantId, UUID tapId, String name, String description) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET name = :name, description = :description, updated_at = NOW() " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :uuid")
@@ -931,7 +929,7 @@ public class AuthenticationService {
                         .execute()
         );    }
 
-    public void cycleTapSecret(long organizationId, long tenantId, UUID tapId, String newSecret) {
+    public void cycleTapSecret(UUID organizationId, UUID tenantId, UUID tapId, String newSecret) {
         String encryptedSecret;
         try {
             encryptedSecret = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(newSecret.getBytes()));
@@ -969,8 +967,8 @@ public class AuthenticationService {
 
             // Delete all sessions of users that have been inactive for 15 minutes.
             List<Long> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT u.id FROM auth_users AS u " +
-                                    "LEFT JOIN auth_sessions AS s ON s.user_id = u.id " +
+                    handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
+                                    "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
                                     "WHERE s.mfa_valid = true AND u.last_activity < :timeout")
                             .bind("timeout", DateTime.now().minusMinutes(15))
                             .mapTo(Long.class)

@@ -80,12 +80,12 @@ public class UserProfileResource extends UserAuthenticatedResource {
         PasswordHasher.GeneratedHashAndSalt newPasswordHash = hasher.createHash(r.newPassword());
 
         nzyme.getAuthenticationService().editUserPassword(
-                user.get().id(),
+                user.get().uuid(),
                 newPasswordHash
         );
 
         // Invalidate session of user.
-        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
 
         return Response.ok().build();
     }

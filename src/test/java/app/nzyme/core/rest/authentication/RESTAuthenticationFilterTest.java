@@ -23,7 +23,7 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), true);
+        String sessionId = createSession(user.uuid(), true);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Bearer " + sessionId
@@ -34,13 +34,13 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
     }
 
     @Test
-    public void testFilterRejectsSessionWithoutPassedMFAPass() throws IOException {
+    public void testFilterRejectsSessionWithoutPassedMFA() throws IOException {
         NzymeNode nzyme = new MockNzyme();
         RESTAuthenticationFilter f = new RESTAuthenticationFilter(nzyme);
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), false);
+        String sessionId = createSession(user.uuid(), false);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Bearer " + sessionId
@@ -95,7 +95,7 @@ public class RESTAuthenticationFilterTest extends RESTAuthenticationFilterTestBa
 
         createUser("test@example.org", "123123123123");
         UserEntry user = createUser("lennart@example.org", "456456456456");
-        String sessionId = createSession(user.id(), true);
+        String sessionId = createSession(user.uuid(), true);
 
         MockHeaderContainerRequest ctx = new MockHeaderContainerRequest(
                 "Wtf " + sessionId

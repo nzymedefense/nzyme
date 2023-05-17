@@ -6,14 +6,15 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class TenantEntryMapper implements RowMapper<TenantEntry> {
 
     @Override
     public TenantEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return TenantEntry.create(
-                rs.getLong("id"),
-                rs.getLong("organization_id"),
+                UUID.fromString(rs.getString("uuid")),
+                UUID.fromString(rs.getString("organization_id")),
                 rs.getString("name"),
                 rs.getString("description"),
                 new DateTime(rs.getTimestamp("created_at")),

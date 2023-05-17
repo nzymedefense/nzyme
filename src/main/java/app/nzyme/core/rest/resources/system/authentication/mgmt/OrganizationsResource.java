@@ -65,11 +65,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{id}")
-    public Response find(@PathParam("id") long id) {
-        if (id <= 0) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
+    public Response find(@PathParam("id") UUID id) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -92,7 +88,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{id}")
-    public Response update(@PathParam("id") long id, UpdateOrganizationRequest req) {
+    public Response update(@PathParam("id") UUID id, UpdateOrganizationRequest req) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -106,7 +102,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @DELETE
     @Path("/show/{id}")
-    public Response delete(@PathParam("id") long id) {
+    public Response delete(@PathParam("id") UUID id) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -124,15 +120,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants")
-    public Response findTenantsOfOrganization(@PathParam("organizationId") long organizationId,
+    public Response findTenantsOfOrganization(@PathParam("organizationId") UUID organizationId,
                                               @QueryParam("limit") int limit,
                                               @QueryParam("offset") int offset) {
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        if (organizationId <= 0) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -143,7 +135,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         Optional<List<TenantEntry>> tenants = nzyme.getAuthenticationService().findAllTenantsOfOrganization(
-                org.get().id(), limit, offset);
+                org.get().uuid(), limit, offset);
 
         List<TenantDetailsResponse> response = Lists.newArrayList();
         if (tenants.isPresent()) {
@@ -160,7 +152,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/administrators")
-    public Response findAllOrganizationAdministrators(@PathParam("organizationId") long organizationId,
+    public Response findAllOrganizationAdministrators(@PathParam("organizationId") UUID organizationId,
                                                       @QueryParam("limit") int limit,
                                                       @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -176,11 +168,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         List<UserDetailsResponse> users = Lists.newArrayList();
         for (UserEntry user : nzyme.getAuthenticationService().findAllOrganizationAdministrators(
-                org.get().id(), limit, offset)) {
+                org.get().uuid(), limit, offset)) {
             users.add(userEntryToResponse(user, Collections.emptyList(), Collections.emptyList()));
         }
 
-        long orgAdminCount = nzyme.getAuthenticationService().countOrganizationAdministrators(org.get().id());
+        long orgAdminCount = nzyme.getAuthenticationService().countOrganizationAdministrators(org.get().uuid());
 
         return Response.ok(UsersListResponse.create(orgAdminCount, users)).build();
     }
@@ -188,8 +180,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @Path("/show/{organizationId}/administrators/show/{id}")
     public Response findOrganizationAdministrator(@Context SecurityContext sc,
-                                                  @PathParam("organizationId") long organizationId,
-                                                  @PathParam("id") long userId) {
+                                                  @PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
@@ -198,7 +190,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        boolean isDeletable = sessionUser.getUserId() != userId;
+        boolean isDeletable = !sessionUser.getUserId().equals(userId);
 
         return Response.ok(OrganizationAdministratorDetailsResponse.create(
                 userEntryToResponse(orgAdmin.get(), Collections.emptyList(), Collections.emptyList()), isDeletable
@@ -207,7 +199,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/show/{organizationId}/administrators")
-    public Response createOrganizationAdministrator(@PathParam("organizationId") long organizationId,
+    public Response createOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
                                                     CreateUserRequest req) {
         if (!validateCreateUserRequest(req)) {
             LOG.info("Invalid parameters in create user request.");
@@ -236,8 +228,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/administrators/show/{id}")
-    public Response editOrganizationAdministrator(@PathParam("organizationId") long organizationId,
-                                                  @PathParam("id") long userId,
+    public Response editOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("id") UUID userId,
                                                   UpdateUserRequest req) {
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
@@ -270,8 +262,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/administrators/show/{id}/password")
-    public Response editOrganizationAdministratorPassword(@PathParam("organizationId") long organizationId,
-                                                          @PathParam("id") long userId,
+    public Response editOrganizationAdministratorPassword(@PathParam("organizationId") UUID organizationId,
+                                                          @PathParam("id") UUID userId,
                                                           UpdatePasswordRequest req) {
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
@@ -303,8 +295,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @Path("/show/{organizationId}/administrators/show/{id}")
     public Response deleteOrganizationAdministrator(@Context SecurityContext sc,
-                                                    @PathParam("organizationId") long organizationId,
-                                                    @PathParam("id") long userId) {
+                                                    @PathParam("organizationId") UUID organizationId,
+                                                    @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
 
         if (sessionUser.getUserId() == userId) {
@@ -326,8 +318,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/show/{organizationId}/administrators/show/{id}/mfa/reset")
-    public Response resetOrganizationAdministratorMFA(@PathParam("organizationId") long organizationId,
-                                                      @PathParam("id") long userId) {
+    public Response resetOrganizationAdministratorMFA(@PathParam("organizationId") UUID organizationId,
+                                                      @PathParam("id") UUID userId) {
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
 
@@ -345,12 +337,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response findTenantOfOrganization(@PathParam("organizationId") long organizationId,
-                                             @PathParam("tenantId") long tenantId) {
-        if (organizationId <= 0 || tenantId <= 0) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
+    public Response findTenantOfOrganization(@PathParam("organizationId") UUID organizationId,
+                                             @PathParam("tenantId") UUID tenantId) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
 
         if (org.isEmpty()) {
@@ -368,7 +356,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/show/{organizationId}/tenants/")
-    public Response createTenant(@PathParam("organizationId") long organizationId, CreateTenantRequest req) {
+    public Response createTenant(@PathParam("organizationId") UUID organizationId, CreateTenantRequest req) {
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -384,8 +372,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response updateTenant(@PathParam("organizationId") long organizationId,
-                                 @PathParam("tenantId") long tenantId,
+    public Response updateTenant(@PathParam("organizationId") UUID organizationId,
+                                 @PathParam("tenantId") UUID tenantId,
                                  UpdateTenantRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -398,8 +386,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @DELETE
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response deleteTenant(@PathParam("organizationId") long organizationId,
-                                 @PathParam("tenantId") long tenantId) {
+    public Response deleteTenant(@PathParam("organizationId") UUID organizationId,
+                                 @PathParam("tenantId") UUID tenantId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -411,8 +399,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
-    public Response findAllUsersOfTenant(@PathParam("organizationId") long organizationId,
-                                         @PathParam("tenantId") long tenantId,
+    public Response findAllUsersOfTenant(@PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId,
                                          @QueryParam("limit") int limit,
                                          @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -429,8 +417,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 organizationId, tenantId, limit, offset)) {
             users.add(userEntryToResponse(
                     user,
-                    nzyme.getAuthenticationService().findPermissionsOfUser(user.id()),
-                    nzyme.getAuthenticationService().findTapPermissionsOfUser(user.id())
+                    nzyme.getAuthenticationService().findPermissionsOfUser(user.uuid()),
+                    nzyme.getAuthenticationService().findTapPermissionsOfUser(user.uuid())
             ));
         }
 
@@ -444,9 +432,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response findUserOfTenant(@Context SecurityContext sc,
-                                     @PathParam("organizationId") long organizationId,
-                                     @PathParam("tenantId") long tenantId,
-                                     @PathParam("userId") long userId) {
+                                     @PathParam("organizationId") UUID organizationId,
+                                     @PathParam("tenantId") UUID tenantId,
+                                     @PathParam("userId") UUID userId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -464,8 +452,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok(UserOfTenantDetailsResponse.create(
                 userEntryToResponse(
                         user.get(),
-                        nzyme.getAuthenticationService().findPermissionsOfUser(user.get().id()),
-                        nzyme.getAuthenticationService().findTapPermissionsOfUser(user.get().id())
+                        nzyme.getAuthenticationService().findPermissionsOfUser(user.get().uuid()),
+                        nzyme.getAuthenticationService().findTapPermissionsOfUser(user.get().uuid())
                 ),
                 isDeletable)
         ).build();
@@ -473,8 +461,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
-    public Response createUserOfTenant(@PathParam("organizationId") long organizationId,
-                                       @PathParam("tenantId") long tenantId,
+    public Response createUserOfTenant(@PathParam("organizationId") UUID organizationId,
+                                       @PathParam("tenantId") UUID tenantId,
                                        CreateUserRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -508,9 +496,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
-    public Response editUserOfTenant(@PathParam("organizationId") long organizationId,
-                                     @PathParam("tenantId") long tenantId,
-                                     @PathParam("userId") long userId,
+    public Response editUserOfTenant(@PathParam("organizationId") UUID organizationId,
+                                     @PathParam("tenantId") UUID tenantId,
+                                     @PathParam("userId") UUID userId,
                                      UpdateUserRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -546,9 +534,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/taps")
-    public Response editUserOfTenantTapPermissions(@PathParam("organizationId") long organizationId,
-                                                   @PathParam("tenantId") long tenantId,
-                                                   @PathParam("userId") long userId,
+    public Response editUserOfTenantTapPermissions(@PathParam("organizationId") UUID organizationId,
+                                                   @PathParam("tenantId") UUID tenantId,
+                                                   @PathParam("userId") UUID userId,
                                                    UpdateUserTapPermissionsRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -576,19 +564,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             }
         }
 
-        nzyme.getAuthenticationService().setUserTapPermissions(user.get().id(), newPermissions);
+        nzyme.getAuthenticationService().setUserTapPermissions(user.get().uuid(), newPermissions);
 
         // Update access all flag.
-        nzyme.getAuthenticationService().setUserTapPermissionsAllowAll(user.get().id(), req.allowAccessAllTenantTaps());
+        nzyme.getAuthenticationService().setUserTapPermissionsAllowAll(user.get().uuid(), req.allowAccessAllTenantTaps());
 
         return Response.ok().build();
     }
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/permissions")
-    public Response editUserOfTenantPermissions(@PathParam("organizationId") long organizationId,
-                                                @PathParam("tenantId") long tenantId,
-                                                @PathParam("userId") long userId,
+    public Response editUserOfTenantPermissions(@PathParam("organizationId") UUID organizationId,
+                                                @PathParam("tenantId") UUID tenantId,
+                                                @PathParam("userId") UUID userId,
                                                 UpdateUserPermissionsRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -600,7 +588,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().setUserPermissions(user.get().id(), req.permissions());
+        nzyme.getAuthenticationService().setUserPermissions(user.get().uuid(), req.permissions());
 
         return Response.ok().build();
     }
@@ -608,9 +596,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response deleteUserOfTenant(@Context SecurityContext sc,
-                                       @PathParam("organizationId") long organizationId,
-                                       @PathParam("tenantId") long tenantId,
-                                       @PathParam("userId") long userId) {
+                                       @PathParam("organizationId") UUID organizationId,
+                                       @PathParam("tenantId") UUID tenantId,
+                                       @PathParam("userId") UUID userId) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -634,9 +622,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/password")
-    public Response editUserOfTenantPassword(@PathParam("organizationId") long organizationId,
-                                             @PathParam("tenantId") long tenantId,
-                                             @PathParam("userId") long userId,
+    public Response editUserOfTenantPassword(@PathParam("organizationId") UUID organizationId,
+                                             @PathParam("tenantId") UUID tenantId,
+                                             @PathParam("userId") UUID userId,
                                              UpdatePasswordRequest req) {
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -662,23 +650,23 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
 
         // Invalidate session of user.
-        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
 
         return Response.ok().build();
     }
 
     @POST
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/mfa/reset")
-    public Response resetMFAOfUserOfTenant(@PathParam("organizationId") long organizationId,
-                                           @PathParam("tenantId") long tenantId,
-                                           @PathParam("userId") long userId) {
+    public Response resetMFAOfUserOfTenant(@PathParam("organizationId") UUID organizationId,
+                                           @PathParam("tenantId") UUID tenantId,
+                                           @PathParam("userId") UUID userId) {
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
 
         if (user.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().resetMFAOfUser(user.get().id());
+        nzyme.getAuthenticationService().resetMFAOfUser(user.get().uuid());
 
         LOG.info("Reset MFA credentials of user [{}] on admin request.", user.get().email());
 
@@ -719,15 +707,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/sessions")
-    public Response findSessionsOfOrganization(@PathParam("organizationId") long organizationId,
+    public Response findSessionsOfOrganization(@PathParam("organizationId") UUID organizationId,
                                                @QueryParam("limit") int limit,
                                                @QueryParam("offset") int offset) {
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
-        if (organizationId <= 0) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -764,8 +748,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/sessions")
-    public Response findSessionsOfTenant(@PathParam("organizationId") long organizationId,
-                                         @PathParam("tenantId") long tenantId,
+    public Response findSessionsOfTenant(@PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId,
                                          @QueryParam("limit") int limit,
                                          @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -811,11 +795,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
-    public Response findAllTaps(@PathParam("organizationId") long organizationId,
-                                @PathParam("tenantId") long tenantId,
+    public Response findAllTaps(@PathParam("organizationId") UUID organizationId,
+                                @PathParam("tenantId") UUID tenantId,
                                 @QueryParam("limit") int limit,
                                 @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -842,8 +825,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response findTap(@PathParam("organizationId") long organizationId,
-                            @PathParam("tenantId") long tenantId,
+    public Response findTap(@PathParam("organizationId") UUID organizationId,
+                            @PathParam("tenantId") UUID tenantId,
                             @PathParam("tapUuid") String tapUuid) {
         UUID tapId;
         try {
@@ -867,8 +850,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
-    public Response createTap(@PathParam("organizationId") long organizationId,
-                              @PathParam("tenantId") long tenantId,
+    public Response createTap(@PathParam("organizationId") UUID organizationId,
+                              @PathParam("tenantId") UUID tenantId,
                               CreateTapRequest req) {
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -893,8 +876,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response editTap(@PathParam("organizationId") long organizationId,
-                            @PathParam("tenantId") long tenantId,
+    public Response editTap(@PathParam("organizationId") UUID organizationId,
+                            @PathParam("tenantId") UUID tenantId,
                             @PathParam("tapUuid") String tapUuid,
                             UpdateTapRequest req) {
         UUID tapId;
@@ -921,8 +904,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @DELETE
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response deleteTap(@PathParam("organizationId") long organizationId,
-                            @PathParam("tenantId") long tenantId,
+    public Response deleteTap(@PathParam("organizationId") UUID organizationId,
+                            @PathParam("tenantId") UUID tenantId,
                             @PathParam("tapUuid") String tapUuid) {
         UUID tapId;
         try {
@@ -948,8 +931,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}/secret/cycle")
-    public Response cycleTapSecret(@PathParam("organizationId") long organizationId,
-                                   @PathParam("tenantId") long tenantId,
+    public Response cycleTapSecret(@PathParam("organizationId") UUID organizationId,
+                                   @PathParam("tenantId") UUID tenantId,
                                    @PathParam("tapUuid") String tapUuid) {
         UUID tapId;
         try {
@@ -998,7 +981,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/superadmins/show/{id}")
-    public Response findSuperAdministrator(@Context SecurityContext sc, @PathParam("id") Long userId) {
+    public Response findSuperAdministrator(@Context SecurityContext sc, @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
@@ -1047,7 +1030,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/superadmins/show/{userId}")
-    public Response editSuperAdministrator(@PathParam("userId") long userId,
+    public Response editSuperAdministrator(@PathParam("userId") UUID userId,
                                            UpdateUserRequest req) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
@@ -1079,7 +1062,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @Path("/superadmins/show/{userId}/password")
-    public Response editSuperAdministratorPassword(@PathParam("userId") long userId, UpdatePasswordRequest req) {
+    public Response editSuperAdministratorPassword(@PathParam("userId") UUID userId, UpdatePasswordRequest req) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {
@@ -1100,7 +1083,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
 
         // Invalidate session of user.
-        nzyme.getAuthenticationService().deleteAllSessionsOfUser(superAdmin.get().id());
+        nzyme.getAuthenticationService().deleteAllSessionsOfUser(superAdmin.get().uuid());
 
         return Response.ok().build();
     }
@@ -1108,10 +1091,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @DELETE
     @Path("/superadmins/show/{id}")
-    public Response deleteSuperAdministrator(@Context SecurityContext sc, @PathParam("id") Long userId) {
+    public Response deleteSuperAdministrator(@Context SecurityContext sc, @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
 
-        if (sessionUser.getUserId() == userId) {
+        if (sessionUser.getUserId().equals(userId)) {
             LOG.warn("Super administrators cannot delete themselves.");
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -1134,14 +1117,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/superadmins/show/{id}/mfa/reset")
-    public Response resetSuperAdministratorMFA(@PathParam("id") Long userId) {
+    public Response resetSuperAdministratorMFA(@PathParam("id") UUID userId) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().resetMFAOfUser(superAdmin.get().id());
+        nzyme.getAuthenticationService().resetMFAOfUser(superAdmin.get().uuid());
 
         LOG.info("Reset MFA credentials of super administrator [{}] on admin request.", superAdmin.get().email());
 
@@ -1167,7 +1150,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     private OrganizationDetailsResponse organizationEntryToResponse(OrganizationEntry org) {
         return OrganizationDetailsResponse.create(
-                org.id(),
+                org.uuid(),
                 org.name(),
                 org.description(),
                 org.createdAt(),
@@ -1181,8 +1164,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     private TenantDetailsResponse tenantEntryToResponse(TenantEntry t) {
         return TenantDetailsResponse.create(
-                t.id(),
-                t.organizationId(),
+                t.uuid(),
+                t.organizationUuid(),
                 t.name(),
                 t.description(),
                 t.createdAt(),
@@ -1195,10 +1178,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     private UserDetailsResponse userEntryToResponse(UserEntry u, List<String> permissions, List<UUID> tapPermissions) {
         return UserDetailsResponse.create(
-                u.id(),
+                u.uuid(),
                 u.organizationId(),
                 u.tenantId(),
-                u.roleId(),
                 u.email(),
                 u.name(),
                 u.createdAt(),
@@ -1235,23 +1217,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         );
     }
 
-    private boolean organizationExists(long organizationId) {
-        if (organizationId <= 0) {
-            return false;
-        }
-
-        if (nzyme.getAuthenticationService().findOrganization(organizationId).isEmpty()) {
-            return false;
-        }
-
-        return true;
+    private boolean organizationExists(UUID organizationId) {
+        return nzyme.getAuthenticationService().findOrganization(organizationId).isPresent();
     }
 
-    private boolean organizationAndTenantExists(long organizationId, long tenantId) {
-        if (organizationId <= 0 || tenantId <= 0) {
-            return false;
-        }
-
+    private boolean organizationAndTenantExists(UUID organizationId, UUID tenantId) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
 
         if (org.isEmpty()) {
@@ -1260,11 +1230,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         Optional<TenantEntry> tenant = nzyme.getAuthenticationService().findTenant(tenantId);
 
-        if (tenant.isEmpty()) {
-            return false;
-        }
-
-        return true;
+        return tenant.isPresent();
     }
 
     public static boolean validateCreateUserRequest(CreateUserRequest req) {

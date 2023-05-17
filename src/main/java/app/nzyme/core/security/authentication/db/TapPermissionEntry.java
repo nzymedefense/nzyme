@@ -10,8 +10,8 @@ import java.util.UUID;
 public abstract class TapPermissionEntry {
 
     public abstract UUID uuid();
-    public abstract long organizationId();
-    public abstract long tenantId();
+    public abstract UUID organizationId();
+    public abstract UUID tenantId();
 
     public abstract String name();
     public abstract String description();
@@ -24,7 +24,7 @@ public abstract class TapPermissionEntry {
     @Nullable
     public abstract DateTime lastReport();
 
-    public static TapPermissionEntry create(UUID uuid, long organizationId, long tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    public static TapPermissionEntry create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -46,9 +46,9 @@ public abstract class TapPermissionEntry {
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder organizationId(long organizationId);
+        public abstract Builder organizationId(UUID organizationId);
 
-        public abstract Builder tenantId(long tenantId);
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder name(String name);
 

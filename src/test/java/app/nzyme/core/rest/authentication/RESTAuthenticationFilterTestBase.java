@@ -8,6 +8,8 @@ import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
 import org.testng.annotations.BeforeMethod;
 
+import java.util.UUID;
+
 public class RESTAuthenticationFilterTestBase {
 
     @BeforeMethod
@@ -28,16 +30,16 @@ public class RESTAuthenticationFilterTestBase {
         PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(password);
 
         OrganizationEntry org = nzyme.getAuthenticationService().createOrganization("test org", "test org");
-        TenantEntry tenant = nzyme.getAuthenticationService().createTenant(org.id(), "test tenant", "test tenant");
+        TenantEntry tenant = nzyme.getAuthenticationService().createTenant(org.uuid(), "test tenant", "test tenant");
 
-        UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.id(), tenant.id(), "test user", email, hash);
+        UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.uuid(), tenant.uuid(), "test user", email, hash);
 
-        nzyme.getAuthenticationService().setUserMFAComplete(user.id(), true);
+        nzyme.getAuthenticationService().setUserMFAComplete(user.uuid(), true);
 
         return user;
     }
 
-    protected String createSession(long userId, boolean passedMfa) {
+    protected String createSession(UUID userId, boolean passedMfa) {
         MockNzyme nzyme = new MockNzyme();
 
         String sessionId = SessionId.createSessionId();

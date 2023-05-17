@@ -1,27 +1,24 @@
 package app.nzyme.core.security.authentication.db;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class UserEntry {
 
-    public abstract long id();
+    public abstract UUID uuid();
 
     @Nullable
-    public abstract Long organizationId();
+    public abstract UUID organizationId();
 
     @Nullable
-    public abstract Long tenantId();
+    public abstract UUID tenantId();
 
     public abstract String passwordHash();
     public abstract String passwordSalt();
-
-    @Nullable
-    public abstract Long roleId();
 
     public abstract String email();
     public abstract String name();
@@ -57,14 +54,13 @@ public abstract class UserEntry {
 
     public abstract boolean accessAllTenantTaps();
 
-    public static UserEntry create(long id, Long organizationId, Long tenantId, String passwordHash, String passwordSalt, Long roleId, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps) {
+    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps) {
         return builder()
-                .id(id)
+                .uuid(uuid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .passwordHash(passwordHash)
                 .passwordSalt(passwordSalt)
-                .roleId(roleId)
                 .email(email)
                 .name(name)
                 .isOrganizationAdmin(isOrganizationAdmin)
@@ -89,17 +85,15 @@ public abstract class UserEntry {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(long id);
+        public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder organizationId(Long organizationId);
+        public abstract Builder organizationId(UUID organizationId);
 
-        public abstract Builder tenantId(Long tenantId);
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder passwordHash(String passwordHash);
 
         public abstract Builder passwordSalt(String passwordSalt);
-
-        public abstract Builder roleId(Long roleId);
 
         public abstract Builder email(String email);
 

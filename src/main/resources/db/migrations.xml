@@ -2275,4 +2275,106 @@
         <dropTable tableName="auth_roles" />
     </changeSet>
 
+    <changeSet id="fix_bigint_uuid_relations" author="lennartkoopmann">
+        <dropColumn tableName="auth_permissions" columnName="user_id" />
+        <addColumn tableName="auth_permissions">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="link_users2permissions"
+                                 baseTableName="auth_permissions"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="auth_users"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <dropColumn tableName="auth_sessions" columnName="user_id" />
+        <addColumn tableName="auth_sessions">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="link_users2sessions"
+                                 baseTableName="auth_sessions"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="auth_users"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <dropColumn tableName="auth_tenants" columnName="organization_id" />
+        <addColumn tableName="auth_tenants">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="link_tenants2orgs"
+                                 baseTableName="auth_tenants"
+                                 baseColumnNames="organization_id"
+                                 referencedTableName="auth_organizations"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="RESTRICT"
+        />
+
+        <dropColumn tableName="auth_users" columnName="tenant_id" />
+        <addColumn tableName="auth_users">
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="link_users2tenants"
+                                 baseTableName="auth_users"
+                                 baseColumnNames="tenant_id"
+                                 referencedTableName="auth_tenants"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="RESTRICT"
+        />
+
+        <dropColumn tableName="auth_users" columnName="organization_id" />
+        <addColumn tableName="auth_users">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="auth_users_taps" columnName="user_id" />
+        <addColumn tableName="auth_users_taps">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="link_users2tapperms"
+                                 baseTableName="auth_users_taps"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="auth_users"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <dropColumn tableName="taps" columnName="organization_id" />
+        <addColumn tableName="taps">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="taps" columnName="tenant_id" />
+        <addColumn tableName="taps">
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <dropColumn tableName="auth_users" columnName="role_id" />
+    </changeSet>
+
+    <changeSet id="fix_null_constraints_after_uuid_change" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="auth_users" columnName="organization_id" />
+        <dropNotNullConstraint tableName="auth_users" columnName="tenant_id" />
+    </changeSet>
+
 </databaseChangeLog>

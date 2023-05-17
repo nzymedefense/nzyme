@@ -4,12 +4,13 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class SessionEntry {
 
     public abstract String sessionId();
-    public abstract long userId();
+    public abstract UUID userId();
     public abstract String remoteIp();
     public abstract boolean elevated();
     @Nullable
@@ -19,7 +20,7 @@ public abstract class SessionEntry {
     @Nullable
     public abstract DateTime mfaRequestedAt();
 
-    public static SessionEntry create(String sessionId, long userId, String remoteIp, boolean elevated, DateTime elevatedSince, boolean mfaValid, DateTime createdAt, DateTime mfaRequestedAt) {
+    public static SessionEntry create(String sessionId, UUID userId, String remoteIp, boolean elevated, DateTime elevatedSince, boolean mfaValid, DateTime createdAt, DateTime mfaRequestedAt) {
         return builder()
                 .sessionId(sessionId)
                 .userId(userId)
@@ -40,7 +41,7 @@ public abstract class SessionEntry {
     public abstract static class Builder {
         public abstract Builder sessionId(String sessionId);
 
-        public abstract Builder userId(long userId);
+        public abstract Builder userId(UUID userId);
 
         public abstract Builder remoteIp(String remoteIp);
 

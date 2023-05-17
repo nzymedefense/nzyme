@@ -83,7 +83,7 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
 
             // Authenticated. Set last activity information.
             nzyme.getAuthenticationService().updateLastUserActivity(
-                    user.get().id(),
+                    user.get().uuid(),
                     remoteIp,
                     nzyme.getGeoIpService().lookup(InetAddress.getByName(remoteIp))
                             .orElse(null)
@@ -96,7 +96,7 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
                 @Override
                 public Principal getUserPrincipal() {
                     return new AuthenticatedUser(
-                            user.get().id(),
+                            user.get().uuid(),
                             session.get().sessionId(),
                             user.get().email(),
                             session.get().createdAt(),

@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 @AutoValue
 public abstract class SessionDetailsResponse {
@@ -14,14 +15,14 @@ public abstract class SessionDetailsResponse {
 
     @JsonProperty("organization_id")
     @Nullable
-    public abstract Long organizationId();
+    public abstract UUID organizationId();
 
     @JsonProperty("tenant_id")
     @Nullable
-    public abstract Long tenantId();
+    public abstract UUID tenantId();
 
     @JsonProperty("user_id")
-    public abstract long userId();
+    public abstract UUID userId();
 
     @JsonProperty("user_email")
     public abstract String userEmail();
@@ -52,7 +53,7 @@ public abstract class SessionDetailsResponse {
     @Nullable
     public abstract DateTime mfaRequestedAt();
 
-    public static SessionDetailsResponse create(Long id, Long organizationId, Long tenantId, long userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
+    public static SessionDetailsResponse create(Long id, UUID organizationId, UUID tenantId, UUID userId, String userEmail, String userName, boolean isSuperadmin, boolean isOrgadmin, String remoteIp, DateTime createdAt, DateTime lastActivity, boolean mfaValid, DateTime mfaRequestedAt) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -78,11 +79,11 @@ public abstract class SessionDetailsResponse {
     public abstract static class Builder {
         public abstract Builder id(Long id);
 
-        public abstract Builder organizationId(Long organizationId);
+        public abstract Builder organizationId(UUID organizationId);
 
-        public abstract Builder tenantId(Long tenantId);
+        public abstract Builder tenantId(UUID tenantId);
 
-        public abstract Builder userId(long userId);
+        public abstract Builder userId(UUID userId);
 
         public abstract Builder userEmail(String userEmail);
 

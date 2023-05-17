@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class SessionEntryMapper implements RowMapper<SessionEntry> {
 
@@ -18,7 +19,7 @@ public class SessionEntryMapper implements RowMapper<SessionEntry> {
 
         return SessionEntry.create(
                 rs.getString("sessionid"),
-                rs.getLong("user_id"),
+                UUID.fromString(rs.getString("user_id")),
                 rs.getString("remote_ip"),
                 rs.getBoolean("elevated"),
                 elevatedSince,

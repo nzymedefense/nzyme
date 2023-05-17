@@ -133,8 +133,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             // Correct password. Create session.
             String sessionId = SessionId.createSessionId();
 
-            nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().id());
-            nzyme.getAuthenticationService().createSession(sessionId, user.get().id(), remoteIp);
+            nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
+            nzyme.getAuthenticationService().createSession(sessionId, user.get().uuid(), remoteIp);
 
             LOG.info("Creating session for user [{}]", username);
             return Response.status(Response.Status.CREATED).entity(SessionTokenResponse.create(sessionId)).build();
@@ -169,7 +169,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
-                        user.get().id(),
+                        user.get().uuid(),
                         user.get().email(),
                         user.get().name()
                 ),
@@ -237,8 +237,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             }
 
             // Store encrypted data in database.
-            nzyme.getAuthenticationService().setUserTOTPSecret(user.get().id(), encryptedUserSecret);
-            nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), encryptedRecoveryCodesJson);
+            nzyme.getAuthenticationService().setUserTOTPSecret(user.get().uuid(), encryptedUserSecret);
+            nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().uuid(), encryptedRecoveryCodesJson);
         } else {
             // User already has a secret (but MFA setup not complete. Aborted wizard?) Use existing secret.
             try {
@@ -293,7 +293,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().setUserMFAComplete(user.get().id(), true);
+        nzyme.getAuthenticationService().setUserMFAComplete(user.get().uuid(), true);
 
         return Response.ok().build();
     }
@@ -367,7 +367,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         }
 
         Optional<Map<String, Boolean>> codes = nzyme.getAuthenticationService()
-                .getUserMFARecoveryCodes(user.get().id());
+                .getUserMFARecoveryCodes(user.get().uuid());
 
         if (codes.isEmpty()) {
             LOG.warn("No MFA recovery codes found for user [{}].", user.get().email());
@@ -411,7 +411,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
-        nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().id(), encryptedRecoveryCodesJson);
+        nzyme.getAuthenticationService().setUserMFARecoveryCodes(user.get().uuid(), encryptedRecoveryCodesJson);
 
         LOG.info("User [{}] passed MFA challenge with recovery code.", user.get().email());
         nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());

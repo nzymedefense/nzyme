@@ -13,10 +13,13 @@ public class TapPermissionEntryMapper implements RowMapper<TapPermissionEntry> {
 
     @Override
     public TapPermissionEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        String organizationId = rs.getString("organization_id");
+        String tenantId = rs.getString("tenant_id");
+
         return TapPermissionEntry.create(
                 UUID.fromString(rs.getString("uuid")),
-                rs.getLong("organization_id"),
-                rs.getLong("tenant_id"),
+                organizationId == null ? null : UUID.fromString(organizationId),
+                tenantId == null ? null : UUID.fromString(tenantId),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("secret"),

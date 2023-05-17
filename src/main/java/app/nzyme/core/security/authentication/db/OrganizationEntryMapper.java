@@ -6,13 +6,14 @@ import org.joda.time.DateTime;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class OrganizationEntryMapper implements RowMapper<OrganizationEntry> {
 
     @Override
     public OrganizationEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return OrganizationEntry.create(
-                rs.getLong("id"),
+                UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
                 rs.getString("description"),
                 new DateTime(rs.getTimestamp("created_at")),
