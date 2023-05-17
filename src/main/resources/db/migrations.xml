@@ -2250,4 +2250,29 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_uuids_to_all_auth_tables" author="lennartkoopmann">
+        <addColumn tableName="auth_organizations">
+            <column name="uuid" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_tenants">
+            <column name="uuid" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="uuid" type="uuid" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remove_unused_table" author="lennartkoopmann">
+        <dropForeignKeyConstraint baseTableName="auth_users" constraintName="link_users2roles" />
+        <dropTable tableName="auth_roles" />
+    </changeSet>
+
 </databaseChangeLog>

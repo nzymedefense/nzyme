@@ -85,9 +85,9 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findSuperAdministrator(long userId) {
+    public Optional<UserEntry> findSuperAdministrator(UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM auth_users WHERE is_superadmin = true AND id = :user_id")
+                handle.createQuery("SELECT * FROM auth_users WHERE is_superadmin = true AND uuid = :user_id")
                         .bind("user_id", userId)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -112,9 +112,9 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteSuperAdministrator(long userId) {
+    public void deleteSuperAdministrator(UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM auth_users WHERE is_superadmin = true AND id = :user_id")
+                handle.createUpdate("DELETE FROM auth_users WHERE is_superadmin = true AND uuid = :user_id")
                         .bind("user_id", userId)
                         .execute()
         );
@@ -153,17 +153,17 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<OrganizationEntry> findOrganization(long id) {
+    public Optional<OrganizationEntry> findOrganization(UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, name, description, created_at, updated_at FROM auth_organizations " +
-                                "WHERE id = :id")
+                                "WHERE uuid = :id")
                         .bind("id", id)
                         .mapTo(OrganizationEntry.class)
                         .findOne()
         );
     }
 
-    public void updateOrganization(long id, String name, String description) {
+    public void updateOrganization(UUID id, String name, String description) {
         Optional<OrganizationEntry> org = findOrganization(id);
 
         if (org.isEmpty()) {
@@ -172,7 +172,7 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_organizations SET name = :name, description = :description, " +
-                                "updated_at = NOW() WHERE id = :id")
+                                "updated_at = NOW() WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
                         .bind("id", id)
@@ -180,7 +180,7 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteOrganization(long id) {
+    public void deleteOrganization(UUID id) {
         Optional<OrganizationEntry> org = findOrganization(id);
 
         if (org.isEmpty()) {
@@ -193,7 +193,7 @@ public class AuthenticationService {
         }
 
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM auth_organizations WHERE id = :id")
+                handle.createUpdate("DELETE FROM auth_organizations WHERE uuid = :id")
                         .bind("id", id)
                         .execute()
         );
@@ -291,10 +291,10 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteOrganizationAdministrator(long organizationId, long userId) {
+    public void deleteOrganizationAdministrator(long organizationId, UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
-                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND id = :user_id")
+                                "WHERE is_orgadmin = true AND organization_id = :organization_id AND uuid = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("user_id", userId)
                         .execute()
@@ -335,17 +335,17 @@ public class AuthenticationService {
         }
     }
 
-    public Optional<TenantEntry> findTenant(long tenantId) {
+    public Optional<TenantEntry> findTenant(UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT id, organization_id, name, description, created_at, updated_at " +
-                                "FROM auth_tenants WHERE id = :id")
+                                "FROM auth_tenants WHERE uuid = :id")
                         .bind("id", tenantId)
                         .mapTo(TenantEntry.class)
                         .findOne()
         );
     }
 
-    public void updateTenant(long id, String name, String description) {
+    public void updateTenant(UUID id, String name, String description) {
         Optional<TenantEntry> tenant = findTenant(id);
 
         if (tenant.isEmpty()) {
@@ -354,7 +354,7 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants SET name = :name, description = :description, " +
-                                "updated_at = NOW() WHERE id = :id")
+                                "updated_at = NOW() WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
                         .bind("id", id)
@@ -362,7 +362,7 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteTenant(long id) {
+    public void deleteTenant(UUID id) {
         Optional<TenantEntry> tenant = findTenant(id);
 
         if (tenant.isEmpty()) {
@@ -374,16 +374,16 @@ public class AuthenticationService {
         }
 
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("DELETE FROM auth_tenants WHERE id = :id")
+                handle.createUpdate("DELETE FROM auth_tenants WHERE uuid = :id")
                         .bind("id", id)
                         .execute()
         );
     }
 
-    public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, long userId) {
+    public Optional<UserEntry> findUserOfTenant(long organizationId, long tenantId, UUID userId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_users WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "AND id = :user_id")
+                                "AND uuid = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("user_id", userId)
@@ -414,9 +414,9 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<UserEntry> findUserById(long id) {
+    public Optional<UserEntry> findUserByUuid(UUID id) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM auth_users WHERE id = :id")
+                handle.createQuery("SELECT * FROM auth_users WHERE uuid = :id")
                         .bind("id", id)
                         .mapTo(UserEntry.class)
                         .findOne()
@@ -444,9 +444,9 @@ public class AuthenticationService {
     }
 
 
-    public void setUserTapPermissionsAllowAll(long userId, boolean allowAccessAllTenantTaps) {
+    public void setUserTapPermissionsAllowAll(UUID userId, boolean allowAccessAllTenantTaps) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET access_all_tenant_taps = :state WHERE id = :user_id")
+                handle.createUpdate("UPDATE auth_users SET access_all_tenant_taps = :state WHERE uuid = :user_id")
                         .bind("state", allowAccessAllTenantTaps)
                         .bind("user_id", userId)
                         .execute()
@@ -514,10 +514,10 @@ public class AuthenticationService {
         );
     }
 
-    public void editUser(long userId, String name, String email) {
+    public void editUser(UUID userId, String name, String email) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET name = :name, email = :email, updated_at = NOW() " +
-                                "WHERE id = :user_id")
+                                "WHERE uuid = :user_id")
                         .bind("name", name)
                         .bind("email", email)
                         .bind("user_id", userId)
@@ -525,10 +525,10 @@ public class AuthenticationService {
         );
     }
 
-    public void editUserPassword(long userId, PasswordHasher.GeneratedHashAndSalt password) {
+    public void editUserPassword(UUID userId, PasswordHasher.GeneratedHashAndSalt password) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET password = :password, password_salt = :password_salt, " +
-                        "updated_at = NOW() WHERE id = :user_id")
+                        "updated_at = NOW() WHERE uuid = :user_id")
                         .bind("password", password.hash())
                         .bind("password_salt", password.salt())
                         .bind("user_id", userId)
@@ -536,10 +536,10 @@ public class AuthenticationService {
         );
     }
 
-    public void deleteUserOfTenant(long organizationId, long tenantId, long userId) {
+    public void deleteUserOfTenant(long organizationId, long tenantId, UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_users " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND id = :user_id")
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id AND uuid = :user_id")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("user_id", userId)
@@ -547,10 +547,10 @@ public class AuthenticationService {
         );
     }
 
-    public void resetMFAOfUser(long userId) {
+    public void resetMFAOfUser(UUID userId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET mfa_complete = false, " +
-                                "totp_secret = NULL, mfa_recovery_codes = NULL WHERE id = :user_id")
+                                "totp_secret = NULL, mfa_recovery_codes = NULL WHERE uuid = :user_id")
                         .bind("user_id", userId)
                         .execute()
         );
@@ -596,27 +596,27 @@ public class AuthenticationService {
         return count > 0;
     }
 
-    public void setUserTOTPSecret(long userId, String secret) {
+    public void setUserTOTPSecret(UUID userId, String secret) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET totp_secret = :secret WHERE id = :user_id")
+                handle.createUpdate("UPDATE auth_users SET totp_secret = :secret WHERE uuid = :user_id")
                         .bind("secret", secret)
                         .bind("user_id", userId)
                         .execute()
         );
     }
 
-    public void setUserMFARecoveryCodes(long userId, String recoveryCodes) {
+    public void setUserMFARecoveryCodes(UUID userId, String recoveryCodes) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET mfa_recovery_codes = :recovery_codes WHERE id = :user_id")
+                handle.createUpdate("UPDATE auth_users SET mfa_recovery_codes = :recovery_codes WHERE uuid = :user_id")
                         .bind("recovery_codes", recoveryCodes)
                         .bind("user_id", userId)
                         .execute()
         );
     }
 
-    public Optional<Map<String, Boolean>> getUserMFARecoveryCodes(long userId) {
+    public Optional<Map<String, Boolean>> getUserMFARecoveryCodes(UUID userId) {
         Optional<String> result = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT mfa_recovery_codes FROM auth_users WHERE id = :user_id")
+                handle.createQuery("SELECT mfa_recovery_codes FROM auth_users WHERE uuid = :user_id")
                         .bind("user_id", userId)
                         .mapTo(String.class)
                         .findOne()
@@ -643,9 +643,9 @@ public class AuthenticationService {
         }
     }
 
-    public void setUserMFAComplete(long userId, boolean complete) {
+    public void setUserMFAComplete(UUID userId, boolean complete) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_users SET mfa_complete = :mfa_complete WHERE id = :user_id")
+                handle.createUpdate("UPDATE auth_users SET mfa_complete = :mfa_complete WHERE uuid = :user_id")
                         .bind("mfa_complete", complete)
                         .bind("user_id", userId)
                         .execute()
@@ -786,7 +786,7 @@ public class AuthenticationService {
         );
     }
 
-    public void updateLastUserActivity(long userId, String remoteIp, @Nullable GeoIpLookupResult remoteIpGeo) {
+    public void updateLastUserActivity(UUID userId, String remoteIp, @Nullable GeoIpLookupResult remoteIpGeo) {
         String countryCode = remoteIpGeo != null && remoteIpGeo.geo() != null ? remoteIpGeo.geo().countryCode() : null;
         String city = remoteIpGeo != null && remoteIpGeo.geo() != null ? remoteIpGeo.geo().city() : null;
         String asnName = remoteIpGeo != null && remoteIpGeo.asn() != null ? remoteIpGeo.asn().name() : null;;
@@ -794,7 +794,7 @@ public class AuthenticationService {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_users SET last_activity = NOW(), last_remote_ip = :remote_ip, " +
                                 "last_geo_country = :country_code, last_geo_city = :city, last_geo_asn = :asn " +
-                                "WHERE id = :user_id")
+                                "WHERE uuid = :user_id")
                         .bind("remote_ip", remoteIp)
                         .bind("country_code", countryCode)
                         .bind("city", city)
