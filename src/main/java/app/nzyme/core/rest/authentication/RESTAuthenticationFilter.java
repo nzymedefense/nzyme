@@ -20,6 +20,7 @@ package app.nzyme.core.rest.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.db.SessionEntry;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.net.HttpHeaders;
 import org.apache.commons.validator.routines.InetAddressValidator;
@@ -28,20 +29,21 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.security.Principal;
 import java.util.Optional;
 
-@RESTSecured
+@RESTSecured(PermissionLevel.ANY)
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class RESTAuthenticationFilter implements ContainerRequestFilter {
@@ -49,6 +51,9 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
     private static final Logger LOG = LogManager.getLogger(RESTAuthenticationFilter.class);
 
     private final NzymeNode nzyme;
+
+    @Context
+    ResourceInfo resourceInfo;
 
     @Context
     private javax.inject.Provider<Request> requestProvider;
@@ -61,6 +66,26 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        Method resourceMethod = resourceInfo.getResourceMethod();
+        Class resourceClass = resourceInfo.getResourceClass();
+
+        RESTSecured methodAnnotation = resourceMethod.getAnnotation(RESTSecured.class);
+        RESTSecured classAnnotation = (RESTSecured) resourceClass.getAnnotation(RESTSecured.class);
+
+        PermissionLevel resourcePermissionLevel;
+        if (methodAnnotation == null && classAnnotation == null) {
+            LOG.error("RESTSecured is NULL. Cannot continue. Resource: [/{}]",
+                    requestContext.getUriInfo().getPath());
+            abortWithUnauthorized(requestContext);
+            return;
+        } else {
+            if (methodAnnotation == null) {
+                resourcePermissionLevel = classAnnotation.value();
+            } else {
+                resourcePermissionLevel = methodAnnotation.value();
+            }
+        }
+
         String remoteIp = "";
         if (requestProvider != null) { // For tests.
             final Request request = requestProvider.get();
@@ -99,6 +124,31 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 return;
             }
 
+            // Check if we have the permissions required by resource.
+            switch (resourcePermissionLevel) {
+                case SUPERADMINISTRATOR:
+                    if (!user.get().isSuperAdmin()) {
+                        LOG.warn("User <{}> requested resource [/{}] which requires super administrator permissions " +
+                                        "but is not super administrator.",
+                                user.get().email(), requestContext.getUriInfo().getPath());
+                        abortWithUnauthorized(requestContext);
+                        return;
+                    }
+                    break;
+                case ORGADMINISTRATOR:
+                    if (!user.get().isSuperAdmin() && !user.get().isOrganizationAdmin()) {
+                        LOG.warn("User <{}> requested resource [/{}] which requires organization administrator permissions " +
+                                        "but is not organization administrator.",
+                                user.get().email(), requestContext.getUriInfo().getPath());
+                        abortWithUnauthorized(requestContext);
+                        return;
+                    }
+                    break;
+                case ANY:
+                    // Fine.
+                    break;
+            }
+
             // Authenticated. Set last activity information.
             nzyme.getAuthenticationService().updateLastUserActivity(
                     user.get().uuid(),
@@ -113,13 +163,16 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
 
                 @Override
                 public Principal getUserPrincipal() {
+                    UserEntry u = user.get();
                     return new AuthenticatedUser(
-                            user.get().uuid(),
+                            u.uuid(),
                             session.get().sessionId(),
-                            user.get().email(),
+                            u.email(),
                             session.get().createdAt(),
-                            user.get().organizationId(),
-                            user.get().tenantId()
+                            u.organizationId(),
+                            u.tenantId(),
+                            u.isOrganizationAdmin(),
+                            u.isSuperAdmin()
                     );
                 }
 

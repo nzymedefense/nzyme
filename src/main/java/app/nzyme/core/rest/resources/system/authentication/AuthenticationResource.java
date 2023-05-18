@@ -33,6 +33,7 @@ import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
 import app.nzyme.core.security.sessions.db.SessionEntry;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.requests.CreateSessionRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -164,14 +165,20 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        UserEntry u = user.get();
+
+        List<String> featurePermissions = nzyme.getAuthenticationService().findPermissionsOfUser(u.uuid());
         DateTime mfaExpiresAt = session.get().mfaRequestedAt() == null
                 ? null : session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES);
 
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(
-                        user.get().uuid(),
-                        user.get().email(),
-                        user.get().name()
+                        u.uuid(),
+                        u.email(),
+                        u.name(),
+                        u.isSuperAdmin(),
+                        u.isOrganizationAdmin(),
+                        featurePermissions
                 ),
                 session.get().mfaValid(),
                 user.get().mfaComplete(),
@@ -420,9 +427,9 @@ public class AuthenticationResource extends UserAuthenticatedResource {
     }
 
     @DELETE
-    @RESTSecured
+    @RESTSecured(PermissionLevel.ANY)
     @Path("/session")
-    public Response deleteSession(@Context SecurityContext sc) {
+    public Response deleteSessionOfOwnUser(@Context SecurityContext sc) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
         nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.getUserId());
 

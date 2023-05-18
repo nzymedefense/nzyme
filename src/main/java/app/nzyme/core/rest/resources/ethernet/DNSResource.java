@@ -1,19 +1,17 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.core.ethernet.dns.db.DNSPairSummary;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucket;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummary;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.rest.resources.NetworksResource;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSPairSummaryResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsBucketResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSStatisticsResponse;
 import app.nzyme.core.rest.responses.ethernet.dns.DNSTrafficSummaryResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
@@ -28,10 +26,8 @@ import java.util.Map;
 
 @Path("/api/ethernet/dns")
 @Produces(MediaType.APPLICATION_JSON)
-@RESTSecured
+@RESTSecured(PermissionLevel.ANY)
 public class DNSResource {
-
-    private static final Logger LOG = LogManager.getLogger(NetworksResource.class);
 
     @Inject
     private NzymeNode nzyme;

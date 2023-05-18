@@ -23,13 +23,9 @@ public class TapClockIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findTaps();
-        if (taps.isEmpty()) {
-            // No recently active taps.
-            return IndicatorStatus.green(this);
-        }
+        List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
-        for (Tap tap : taps.get()) {
+        for (Tap tap : taps) {
             // We only want to check very recently active taps.
             if (tap.lastReport() == null || tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
                 LOG.debug("Skipping inactive tap [{}].", tap.name());

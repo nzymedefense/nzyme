@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -41,7 +42,7 @@ import java.util.List;
 
 @Path("/api/asset-inventory")
 @Produces(MediaType.APPLICATION_JSON)
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 public class AssetInventoryResource {
 
     @Inject

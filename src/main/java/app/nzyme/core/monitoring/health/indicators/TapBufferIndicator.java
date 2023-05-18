@@ -20,26 +20,22 @@ public class TapBufferIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findTaps();
+        List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
-        if (taps.isPresent()) {
-            for (Tap tap : taps.get()) {
-                Optional<List<Bus>> buses = tapManager.findBusesOfTap(tap.uuid());
+        for (Tap tap : taps) {
+            Optional<List<Bus>> buses = tapManager.findBusesOfTap(tap.uuid());
 
-                if (buses.isPresent()) {
-                    for (Bus bus : buses.get()) {
-                        Optional<List<Channel>> channels = tapManager.findChannelsOfBus(bus.id());
+            if (buses.isPresent()) {
+                for (Bus bus : buses.get()) {
+                    Optional<List<Channel>> channels = tapManager.findChannelsOfBus(bus.id());
 
-                        if (channels.isPresent()) {
-                            for (Channel channel : channels.get()) {
-                                if (channel.watermark() > 75*channel.capacity()/100) {
-                                    return IndicatorStatus.red(this);
-                                }
+                    if (channels.isPresent()) {
+                        for (Channel channel : channels.get()) {
+                            if (channel.watermark() > 75*channel.capacity()/100) {
+                                return IndicatorStatus.red(this);
                             }
-
                         }
                     }
-
                 }
             }
         }

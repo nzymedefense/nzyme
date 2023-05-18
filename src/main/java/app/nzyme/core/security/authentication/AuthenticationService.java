@@ -277,7 +277,7 @@ public class AuthenticationService {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO auth_users(organization_id, tenant_id, email, password, " +
                                 "password_salt, name, created_at, updated_at, is_superadmin, is_orgadmin) " +
-                                "VALUES(:organization_id, NULL,, :email, :password, :password_salt, :name, " +
+                                "VALUES(:organization_id, NULL, :email, :password, :password_salt, :name, " +
                                 ":created_at, :updated_at, false, true) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("email", email)
@@ -573,7 +573,7 @@ public class AuthenticationService {
                 handle.createQuery("SELECT COUNT(*) FROM taps WHERE organization_id = :organization_id AND " +
                                 "tenant_id = :tenant_id")
                         .bind("organization_id", t.organizationUuid())
-                        .bind("tenant_id", t.organizationUuid())
+                        .bind("tenant_id", t.uuid())
                         .mapTo(Long.class)
                         .one()
         );

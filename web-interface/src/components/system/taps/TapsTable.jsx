@@ -11,7 +11,7 @@ function TapsTable(props) {
   }
 
   if (taps.length === 0) {
-    return <div className="alert alert-warning">No nzyme taps were created yet.</div>
+    return <div className="alert alert-warning mb-0">No nzyme taps found.</div>
   }
 
   return (

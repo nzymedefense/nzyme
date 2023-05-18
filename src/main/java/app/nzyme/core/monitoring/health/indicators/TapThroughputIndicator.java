@@ -22,21 +22,19 @@ public class TapThroughputIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findTaps();
+        List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
-        if (taps.isPresent()) {
-            for (Tap tap : taps.get()) {
-                if (tap.lastReport() == null || tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
-                    continue;
-                }
+        for (Tap tap : taps) {
+            if (tap.lastReport() == null || tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
+                continue;
+            }
 
-                TapMetrics metrics = tapManager.findMetricsOfTap(tap.uuid());
-                for (TapMetricsGauge gauge : metrics.gauges()) {
-                    if (gauge.metricName().equals("system.captures.throughput_bit_sec")) {
-                        // Oh god why is it Double
-                        if (DoubleMath.fuzzyEquals(gauge.metricValue(), 0, 0.01)) {
-                            return IndicatorStatus.orange(this);
-                        }
+            TapMetrics metrics = tapManager.findMetricsOfTap(tap.uuid());
+            for (TapMetricsGauge gauge : metrics.gauges()) {
+                if (gauge.metricName().equals("system.captures.throughput_bit_sec")) {
+                    // Oh god why is it Double
+                    if (DoubleMath.fuzzyEquals(gauge.metricValue(), 0, 0.01)) {
+                        return IndicatorStatus.orange(this);
                     }
                 }
             }

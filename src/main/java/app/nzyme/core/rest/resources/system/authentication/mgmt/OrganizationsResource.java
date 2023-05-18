@@ -17,6 +17,7 @@ import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.authentication.roles.Permission;
 import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -36,7 +37,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/system/authentication/mgmt/organizations")
-@RESTSecured
 @Produces(MediaType.APPLICATION_JSON)
 public class OrganizationsResource extends UserAuthenticatedResource {
 
@@ -46,6 +46,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     public Response findAll(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
@@ -64,6 +65,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{id}")
     public Response find(@PathParam("id") UUID id) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
@@ -72,10 +74,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Check if user is org admin for this org.
+
         return Response.ok(organizationEntryToResponse(org.get())).build();
     }
 
     @POST
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     public Response create(CreateOrganizationRequest req) {
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -87,6 +92,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{id}")
     public Response update(@PathParam("id") UUID id, UpdateOrganizationRequest req) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
@@ -101,6 +107,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @DELETE
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{id}")
     public Response delete(@PathParam("id") UUID id) {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
@@ -119,6 +126,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants")
     public Response findTenantsOfOrganization(@PathParam("organizationId") UUID organizationId,
                                               @QueryParam("limit") int limit,
@@ -151,6 +159,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators")
     public Response findAllOrganizationAdministrators(@PathParam("organizationId") UUID organizationId,
                                                       @QueryParam("limit") int limit,
@@ -178,6 +187,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}")
     public Response findOrganizationAdministrator(@Context SecurityContext sc,
                                                   @PathParam("organizationId") UUID organizationId,
@@ -198,6 +208,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators")
     public Response createOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
                                                     CreateUserRequest req) {
@@ -227,6 +238,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}")
     public Response editOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
                                                   @PathParam("id") UUID userId,
@@ -261,6 +273,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}/password")
     public Response editOrganizationAdministratorPassword(@PathParam("organizationId") UUID organizationId,
                                                           @PathParam("id") UUID userId,
@@ -291,8 +304,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-
     @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}")
     public Response deleteOrganizationAdministrator(@Context SecurityContext sc,
                                                     @PathParam("organizationId") UUID organizationId,
@@ -317,6 +330,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}/mfa/reset")
     public Response resetOrganizationAdministratorMFA(@PathParam("organizationId") UUID organizationId,
                                                       @PathParam("id") UUID userId) {
@@ -336,6 +350,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response findTenantOfOrganization(@PathParam("organizationId") UUID organizationId,
                                              @PathParam("tenantId") UUID tenantId) {
@@ -355,6 +370,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/")
     public Response createTenant(@PathParam("organizationId") UUID organizationId, CreateTenantRequest req) {
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
@@ -371,6 +387,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response updateTenant(@PathParam("organizationId") UUID organizationId,
                                  @PathParam("tenantId") UUID tenantId,
@@ -385,6 +402,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
     public Response deleteTenant(@PathParam("organizationId") UUID organizationId,
                                  @PathParam("tenantId") UUID tenantId) {
@@ -398,6 +416,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response findAllUsersOfTenant(@PathParam("organizationId") UUID organizationId,
                                          @PathParam("tenantId") UUID tenantId,
@@ -430,6 +449,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response findUserOfTenant(@Context SecurityContext sc,
                                      @PathParam("organizationId") UUID organizationId,
@@ -460,6 +480,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
     public Response createUserOfTenant(@PathParam("organizationId") UUID organizationId,
                                        @PathParam("tenantId") UUID tenantId,
@@ -495,6 +516,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response editUserOfTenant(@PathParam("organizationId") UUID organizationId,
                                      @PathParam("tenantId") UUID tenantId,
@@ -533,6 +555,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/taps")
     public Response editUserOfTenantTapPermissions(@PathParam("organizationId") UUID organizationId,
                                                    @PathParam("tenantId") UUID tenantId,
@@ -573,6 +596,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/permissions")
     public Response editUserOfTenantPermissions(@PathParam("organizationId") UUID organizationId,
                                                 @PathParam("tenantId") UUID tenantId,
@@ -594,6 +618,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
     public Response deleteUserOfTenant(@Context SecurityContext sc,
                                        @PathParam("organizationId") UUID organizationId,
@@ -621,6 +646,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/password")
     public Response editUserOfTenantPassword(@PathParam("organizationId") UUID organizationId,
                                              @PathParam("tenantId") UUID tenantId,
@@ -656,6 +682,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/mfa/reset")
     public Response resetMFAOfUserOfTenant(@PathParam("organizationId") UUID organizationId,
                                            @PathParam("tenantId") UUID tenantId,
@@ -674,6 +701,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/sessions")
     public Response findAllSessions(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -706,6 +734,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/sessions")
     public Response findSessionsOfOrganization(@PathParam("organizationId") UUID organizationId,
                                                @QueryParam("limit") int limit,
@@ -747,6 +776,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/sessions")
     public Response findSessionsOfTenant(@PathParam("organizationId") UUID organizationId,
                                          @PathParam("tenantId") UUID tenantId,
@@ -788,14 +818,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
 
     @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/sessions/show/{sessionId}")
     public Response invalidateSession(@PathParam("sessionId") long sessionId) {
+        // TODO check org permissions! org admin can only delete org sessions
         nzyme.getAuthenticationService().deleteSession(sessionId);
 
         return Response.ok().build();
     }
 
     @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response findAllTaps(@PathParam("organizationId") UUID organizationId,
                                 @PathParam("tenantId") UUID tenantId,
@@ -824,6 +857,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
     public Response findTap(@PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
@@ -849,6 +883,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
     public Response createTap(@PathParam("organizationId") UUID organizationId,
                               @PathParam("tenantId") UUID tenantId,
@@ -875,6 +910,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
     public Response editTap(@PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
@@ -903,6 +939,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
     public Response deleteTap(@PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
@@ -930,6 +967,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}/secret/cycle")
     public Response cycleTapSecret(@PathParam("organizationId") UUID organizationId,
                                    @PathParam("tenantId") UUID tenantId,
@@ -958,6 +996,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins")
     public Response findAllSuperAdministrators(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
         if (limit > 250) {
@@ -980,6 +1019,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{id}")
     public Response findSuperAdministrator(@Context SecurityContext sc, @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
@@ -1002,6 +1042,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins")
     public Response createSuperAdministrator(CreateUserRequest req) {
         if (!validateCreateUserRequest(req)) {
@@ -1029,6 +1070,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{userId}")
     public Response editSuperAdministrator(@PathParam("userId") UUID userId,
                                            UpdateUserRequest req) {
@@ -1061,6 +1103,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{userId}/password")
     public Response editSuperAdministratorPassword(@PathParam("userId") UUID userId, UpdatePasswordRequest req) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
@@ -1088,8 +1131,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-
     @DELETE
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{id}")
     public Response deleteSuperAdministrator(@Context SecurityContext sc, @PathParam("id") UUID userId) {
         AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
@@ -1116,6 +1159,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @POST
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{id}/mfa/reset")
     public Response resetSuperAdministratorMFA(@PathParam("id") UUID userId) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
@@ -1132,6 +1176,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/permissions/all")
     public Response getAllPermissions() {
         List<PermissionDetailsResponse> permissions = Lists.newArrayList();

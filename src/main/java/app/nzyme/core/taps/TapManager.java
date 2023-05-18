@@ -1,6 +1,9 @@
 package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.security.authentication.db.UserEntry;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import app.nzyme.core.taps.metrics.BucketSize;
@@ -14,10 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -224,14 +224,81 @@ public class TapManager {
         });
     }
 
-    public Optional<List<Tap>> findTaps() {
-        List<Tap> taps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM taps ORDER BY name ASC")
+
+    public List<Tap> findAllTapsByUUIDs(List<UUID> tapIds) {
+        if (tapIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE uuid IN (<ids>) " +
+                                "ORDER BY name ASC")
+                        .bindList("ids", tapIds)
                         .mapTo(Tap.class)
                         .list()
         );
+    }
 
-        return taps == null || taps.isEmpty() ? Optional.empty() : Optional.of(taps);
+    public List<Tap> findAllTapsOfAllUsers() {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps")
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
+    public List<UUID> allTapUUIDsAccessibleByUser(AuthenticatedUser user) {
+        List<UUID> allTaps = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT uuid FROM taps")
+                        .mapTo(UUID.class)
+                        .list()
+        );
+
+        if (user.isSuperAdministrator()) {
+            return allTaps;
+        }
+
+        if (user.isOrganizationAdministrator()) {
+            if (user.getOrganizationId() == null) {
+                throw new RuntimeException("NULL organization ID.");
+            }
+
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT uuid FROM taps WHERE organization_id = :organization_id")
+                            .bind("organization_id", user.getOrganizationId())
+                            .mapTo(UUID.class)
+                            .list()
+            );
+        }
+
+        // Get taps from user permissions.
+        List<UUID> tapPermissions = nzyme.getAuthenticationService().findTapPermissionsOfUser(user.getUserId());
+
+        if (tapPermissions.isEmpty()) {
+            // User has access to all taps of tenant.
+            if (user.getOrganizationId() == null || user.getTenantId() == null) {
+                throw new RuntimeException("NULL organization or tenant ID.");
+            }
+
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT uuid FROM taps " +
+                                    "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                            .bind("organization_id", user.getOrganizationId())
+                            .bind("tenant_id", user.getTenantId())
+                            .mapTo(UUID.class)
+                            .list()
+            );
+        } else {
+            // Return only specifically allowed taps.
+            List<UUID> validatedTaps = Lists.newArrayList();
+            for (UUID permission : tapPermissions) {
+                if (allTaps.contains(permission)) {
+                    validatedTaps.add(permission);
+                }
+            }
+
+            return validatedTaps;
+        }
     }
 
     public Optional<Tap> findTap(UUID uuid) {

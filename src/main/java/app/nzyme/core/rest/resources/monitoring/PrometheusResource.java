@@ -5,6 +5,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitoring.exporters.prometheus.PrometheusFormatter;
@@ -52,7 +53,7 @@ public class PrometheusResource {
     }
 
     @GET
-    @RESTSecured
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/configuration")
     public Response configuration() {
         boolean reportEnabled = nzyme.getDatabaseCoreRegistry()
@@ -108,7 +109,7 @@ public class PrometheusResource {
     }
 
     @PUT
-    @RESTSecured
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/configuration")
     public Response update(PrometheusConfigurationUpdateRequest ur) {
         if (ur.change().isEmpty()) {

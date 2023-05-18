@@ -19,13 +19,9 @@ public class TapOfflineIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findTaps();
+        List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
-        if (taps.isEmpty()) {
-            return IndicatorStatus.green(this);
-        }
-
-        for (Tap tap : taps.get()) {
+        for (Tap tap : taps) {
             if (tap.lastReport() != null && tap.lastReport().isBefore(DateTime.now().minusMinutes(2))) {
                 return IndicatorStatus.orange(this);
             }

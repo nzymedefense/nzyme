@@ -18,6 +18,7 @@
 package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.beust.jcommander.internal.Lists;
 import app.nzyme.core.MemoryRegistry;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -35,7 +36,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/system")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class SystemResource {
 

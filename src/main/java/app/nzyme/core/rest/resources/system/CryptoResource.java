@@ -16,6 +16,7 @@ import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -42,7 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Path("/api/system/crypto")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class CryptoResource {
 
@@ -559,7 +560,6 @@ public class CryptoResource {
     }
 
     @PUT
-    @RESTSecured
     @Path("/pgp/configuration")
     public Response update(PGPConfigurationUpdateRequest ur) {
         if (ur.change().isEmpty()) {

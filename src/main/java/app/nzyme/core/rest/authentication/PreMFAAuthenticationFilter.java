@@ -95,13 +95,16 @@ public class PreMFAAuthenticationFilter implements ContainerRequestFilter {
 
                 @Override
                 public Principal getUserPrincipal() {
+                    UserEntry u = user.get();
                     return new AuthenticatedUser(
-                            user.get().uuid(),
+                            u.uuid(),
                             session.get().sessionId(),
-                            user.get().email(),
+                            u.email(),
                             session.get().createdAt(),
-                            user.get().organizationId(),
-                            user.get().tenantId()
+                            u.organizationId(),
+                            u.tenantId(),
+                            u.isOrganizationAdmin(),
+                            u.isSuperAdmin()
                     );
                 }
 

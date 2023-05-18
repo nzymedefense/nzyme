@@ -8,6 +8,7 @@ import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.rest.responses.userprofile.UserProfileDetailsResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import org.apache.logging.log4j.LogManager;
@@ -19,13 +20,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/user")
 @Produces(MediaType.APPLICATION_JSON)
-@RESTSecured
+@RESTSecured(PermissionLevel.ANY)
 public class UserProfileResource extends UserAuthenticatedResource {
 
     private static final Logger LOG = LogManager.getLogger(UserProfileResource.class);

@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.monitoring;
 
 import app.nzyme.plugin.RegistryCryptoException;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
 import app.nzyme.core.NzymeNode;
@@ -18,7 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 
 @Path("/api/system/monitoring")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class MonitoringResource {
 

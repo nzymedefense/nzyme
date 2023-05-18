@@ -17,6 +17,7 @@
 
 package app.nzyme.core.bandits.trackers.hid.webhid.rest.resources;
 
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.NzymeTracker;
 import app.nzyme.core.bandits.trackers.hid.webhid.WebHID;
@@ -31,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/api/state")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class TrackerWebHIDResource {
 

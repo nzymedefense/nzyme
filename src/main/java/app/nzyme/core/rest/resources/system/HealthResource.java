@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.monitoring.health.db.IndicatorStatus;
 import app.nzyme.core.rest.responses.system.HealthIndicatorResponse;
 import app.nzyme.core.rest.responses.system.HealthResponse;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Maps;
 import org.joda.time.DateTime;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/system/health")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class HealthResource {
 

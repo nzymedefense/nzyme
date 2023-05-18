@@ -1,6 +1,9 @@
 package app.nzyme.core.rest.resources.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -23,31 +26,34 @@ import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/taps")
-@RESTSecured
+@RESTSecured(PermissionLevel.ORGADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
-public class TapsResource {
-
-    private static final Logger LOG = LogManager.getLogger(TapsResource.class);
+public class TapsResource extends UserAuthenticatedResource {
 
     @Inject
     private NzymeNode nzyme;
 
     @GET
-    public Response findAll() {
+    public Response findAll(@Context SecurityContext sc) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+
+        // Get all UUIDs of taps the user can access.
+        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser);
+
         List<TapDetailsResponse> tapsResponse = Lists.newArrayList();
-        Optional<List<Tap>> taps = nzyme.getTapManager().findTaps();
-        if (taps.isPresent()) {
-            for (Tap tap : taps.get()) {
-                tapsResponse.add(buildTapResponse(tap));
-            }
+        for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
+            tapsResponse.add(buildTapResponse(tap));
         }
 
         return Response.ok(TapListResponse.create(tapsResponse.size(), tapsResponse)).build();
@@ -55,11 +61,10 @@ public class TapsResource {
 
     @GET
     @Path("/show/{uuid}")
-    public Response findTap(@PathParam("uuid") String tapId) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(tapId);
-        } catch(IllegalArgumentException e) {
+    public Response findTap(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(uuid)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -74,11 +79,10 @@ public class TapsResource {
 
     @GET
     @Path("/show/{uuid}/metrics")
-    public Response tapMetrics(@PathParam("uuid") String tapId) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(tapId);
-        } catch(IllegalArgumentException e) {
+    public Response tapMetrics(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(uuid)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
@@ -112,11 +116,12 @@ public class TapsResource {
 
     @GET
     @Path("/show/{uuid}/metrics/gauges/{metricName}/histogram")
-    public Response tapMetricsGauge(@PathParam("uuid") String tapId, @PathParam("metricName") String metricName) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(tapId);
-        } catch(IllegalArgumentException e) {
+    public Response tapMetricsGauge(@Context SecurityContext sc,
+                                    @PathParam("uuid") UUID uuid,
+                                    @PathParam("metricName") String metricName) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(uuid)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 

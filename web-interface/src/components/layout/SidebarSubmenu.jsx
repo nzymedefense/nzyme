@@ -1,6 +1,13 @@
 import React from 'react'
 
 function SidebarSubmenu (props) {
+
+  const show = props.show;
+
+  if (!show) {
+    return null;
+  }
+
   let className = 'nav-link'
   let expanded = ''
   if ((window.location.pathname === '/' && props.subhref === '/') || (props.subhref !== '/' && window.location.pathname.startsWith(props.subhref))) {

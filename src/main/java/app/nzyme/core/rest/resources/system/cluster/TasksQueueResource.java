@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.responses.distributed.TasksQueueTaskResponse;
 import app.nzyme.core.rest.responses.distributed.TasksQueueTasksListResponse;
 import app.nzyme.plugin.distributed.tasksqueue.StoredTask;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +17,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/system/cluster/tasksqueue")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class TasksQueueResource {
 

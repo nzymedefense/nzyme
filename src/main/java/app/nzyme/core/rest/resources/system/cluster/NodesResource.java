@@ -15,6 +15,7 @@ import app.nzyme.core.util.MetricNames;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Snapshot;
@@ -35,7 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/system/cluster/nodes")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class NodesResource {
 

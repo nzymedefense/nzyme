@@ -1,12 +1,14 @@
-import React from 'react'
+import React, {useContext} from 'react'
 import ApiRoutes from '../../util/ApiRoutes'
 import NavigationLink from './NavigationLink'
 import SidebarSubmenu from './SidebarSubmenu'
 import UserProfileBlock from "./UserProfileBlock";
 
-function Sidebar(props) {
+import {UserContext} from "../../App";
 
-  const user = props.user;
+function Sidebar() {
+
+  const user = useContext(UserContext);
 
   return (
   <div id="nav-side">
@@ -24,14 +26,20 @@ function Sidebar(props) {
         title="Dashboard"
         icon={<i className="sidebar-icon fa-regular fa-map" />} />
 
-      <SidebarSubmenu title="Ethernet" subhref="/ethernet" icon={<i className="sidebar-icon fa-solid fa-network-wired" />}>
+      <SidebarSubmenu title="Ethernet"
+                      subhref="/ethernet"
+                      icon={<i className="sidebar-icon fa-solid fa-network-wired" />}
+                      show={true}>
         <NavigationLink
           href={ApiRoutes.ETHERNET.DNS.INDEX}
           title="DNS"
           icon={<i className="sidebar-icon fa-solid fa-signs-post" />} />
       </SidebarSubmenu>
 
-      <SidebarSubmenu title="WiFi" subhref="/dot11" icon={<i className="sidebar-icon fa-solid fa-wifi" />}>
+      <SidebarSubmenu title="WiFi"
+                      subhref="/dot11"
+                      icon={<i className="sidebar-icon fa-solid fa-wifi" />}
+                      show={true}>
         <NavigationLink
           href={ApiRoutes.DOT11.NETWORKS.INDEX}
           title="Networks"
@@ -48,7 +56,12 @@ function Sidebar(props) {
           icon={<i className="sidebar-icon fa-solid fa-clipboard-list" />} />
       </SidebarSubmenu>
 
-      <SidebarSubmenu title="Retrospective" subhref="/retro" icon={<i className="sidebar-icon fa-solid fa-box-archive" />}>
+      <SidebarSubmenu title="Retrospective"
+                      subhref="/retro"
+                      icon={<i className="sidebar-icon fa-solid fa-box-archive" />}
+                      show={user.is_orgadmin
+                          || user.is_superadmin
+                          || user.feature_permissions.includes("retrospective_view") }>
         <NavigationLink
           href={ApiRoutes.RETRO.SEARCH.INDEX}
           title="Search"
@@ -65,12 +78,23 @@ function Sidebar(props) {
           icon={<i className="sidebar-icon fa-solid fa-wrench" />} />
       </SidebarSubmenu>
 
-      <NavigationLink
-        href={ApiRoutes.REPORTING.INDEX}
-        title="Reporting"
-        icon={<i className="sidebar-icon fa-solid fa-file-circle-check" />} />
+      <SidebarSubmenu title="Reporting"
+                      subhref="/reporting"
+                      icon={<i className="sidebar-icon fa-solid fa-file-circle-check" />}
+                      show={user.is_orgadmin
+                          || user.is_superadmin
+                          || user.feature_permissions.includes("reports_manage")
+                          || user.feature_permissions.includes("reports_view")}>
+        <NavigationLink
+            href={ApiRoutes.REPORTING.INDEX}
+            title="Reporting"
+            icon={<i className="sidebar-icon fa-solid fa-file-circle-check" />} />
+      </SidebarSubmenu>
 
-      <SidebarSubmenu title="System" subhref="/system" icon={<i className="sidebar-icon fa-solid fa-screwdriver-wrench" />}>
+      <SidebarSubmenu title="System"
+                      subhref="/system"
+                      icon={<i className="sidebar-icon fa-solid fa-screwdriver-wrench"/>}
+                      show={user.is_orgadmin || user.is_superadmin } >
         <NavigationLink
           href={ApiRoutes.SYSTEM.CLUSTER.INDEX}
           title="Cluster &amp; Nodes"

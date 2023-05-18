@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest.resources.system;
 
+import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.probes.Dot11Probe;
@@ -36,7 +37,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/system/probes")
-@RESTSecured
+@RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProbesResource {
 
@@ -44,7 +45,6 @@ public class ProbesResource {
     private NzymeNode nzyme;
 
     @GET
-    @RESTSecured
     public Response all() {
         List<ProbeResponse> response = Lists.newArrayList();
         for (Dot11Probe probe : nzyme.getProbes()) {

@@ -19,16 +19,14 @@ public class TapDropIndicator extends Indicator {
 
     @Override
     protected IndicatorStatus doRun() {
-        Optional<List<Tap>> taps = tapManager.findTaps();
+        List<Tap> taps = tapManager.findAllTapsOfAllUsers();
 
-        if (taps.isPresent()) {
-            for (Tap tap : taps.get()) {
-                Optional<List<Capture>> capturesOfTap = tapManager.findCapturesOfTap(tap.uuid());
-                if (capturesOfTap.isPresent()) {
-                    for (Capture capture : capturesOfTap.get()) {
-                        if (capture.droppedBuffer() > 0 || capture.droppedInterface() > 0) {
-                            return IndicatorStatus.red(this);
-                        }
+        for (Tap tap : taps) {
+            Optional<List<Capture>> capturesOfTap = tapManager.findCapturesOfTap(tap.uuid());
+            if (capturesOfTap.isPresent()) {
+                for (Capture capture : capturesOfTap.get()) {
+                    if (capture.droppedBuffer() > 0 || capture.droppedInterface() > 0) {
+                        return IndicatorStatus.red(this);
                     }
                 }
             }
