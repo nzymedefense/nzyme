@@ -16,6 +16,7 @@ import app.nzyme.core.security.authentication.db.TenantEntry;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.authentication.roles.Permission;
 import app.nzyme.core.security.authentication.roles.Permissions;
+import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -67,7 +68,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{id}")
-    public Response find(@PathParam("id") UUID id) {
+    public Response find(@Context SecurityContext sc, @PathParam("id") UUID id) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
@@ -75,6 +78,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         return Response.ok(organizationEntryToResponse(org.get())).build();
     }
@@ -92,12 +98,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
-    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{id}")
-    public Response update(@PathParam("id") UUID id, UpdateOrganizationRequest req) {
+    public Response update(@Context SecurityContext sc,
+                           @PathParam("id") UUID id,
+                           UpdateOrganizationRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
         if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -128,9 +142,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants")
-    public Response findTenantsOfOrganization(@PathParam("organizationId") UUID organizationId,
+    public Response findTenantsOfOrganization(@Context SecurityContext sc,
+                                              @PathParam("organizationId") UUID organizationId,
                                               @QueryParam("limit") int limit,
                                               @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -139,6 +156,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
 
         if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -161,9 +183,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators")
-    public Response findAllOrganizationAdministrators(@PathParam("organizationId") UUID organizationId,
+    public Response findAllOrganizationAdministrators(@Context SecurityContext sc,
+                                                      @PathParam("organizationId") UUID organizationId,
                                                       @QueryParam("limit") int limit,
                                                       @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -172,6 +197,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
 
         if (org.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(org.get().uuid())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -192,7 +222,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response findOrganizationAdministrator(@Context SecurityContext sc,
                                                   @PathParam("organizationId") UUID organizationId,
                                                   @PathParam("id") UUID userId) {
-        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
 
@@ -200,7 +230,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        boolean isDeletable = !sessionUser.getUserId().equals(userId);
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        boolean isDeletable = !authenticatedUser.getUserId().equals(userId);
 
         return Response.ok(OrganizationAdministratorDetailsResponse.create(
                 userEntryToResponse(orgAdmin.get(), Collections.emptyList(), Collections.emptyList()), isDeletable
@@ -210,11 +245,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators")
-    public Response createOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
+    public Response createOrganizationAdministrator(@Context SecurityContext sc,
+                                                    @PathParam("organizationId") UUID organizationId,
                                                     CreateUserRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!validateCreateUserRequest(req)) {
             LOG.info("Invalid parameters in create user request.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
@@ -240,13 +283,21 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}")
-    public Response editOrganizationAdministrator(@PathParam("organizationId") UUID organizationId,
+    public Response editOrganizationAdministrator(@Context SecurityContext sc,
+                                                  @PathParam("organizationId") UUID organizationId,
                                                   @PathParam("id") UUID userId,
                                                   UpdateUserRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
 
         if (orgAdmin.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -275,9 +326,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}/password")
-    public Response editOrganizationAdministratorPassword(@PathParam("organizationId") UUID organizationId,
+    public Response editOrganizationAdministratorPassword(@Context SecurityContext sc,
+                                                          @PathParam("organizationId") UUID organizationId,
                                                           @PathParam("id") UUID userId,
                                                           UpdatePasswordRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
 
@@ -288,6 +342,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         if (!validateUpdatePasswordRequest(req)) {
             LOG.info("Invalid password in update password request.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         PasswordHasher hasher = new PasswordHasher(nzyme.getMetrics());
@@ -310,11 +369,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response deleteOrganizationAdministrator(@Context SecurityContext sc,
                                                     @PathParam("organizationId") UUID organizationId,
                                                     @PathParam("id") UUID userId) {
-        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        if (sessionUser.getUserId() == userId) {
+        if (authenticatedUser.getUserId() == userId) {
             LOG.warn("Organization administrators cannot delete themselves.");
             return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
@@ -332,8 +396,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/administrators/show/{id}/mfa/reset")
-    public Response resetOrganizationAdministratorMFA(@PathParam("organizationId") UUID organizationId,
+    public Response resetOrganizationAdministratorMFA(@Context SecurityContext sc,
+                                                      @PathParam("organizationId") UUID organizationId,
                                                       @PathParam("id") UUID userId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
                 organizationId, userId);
 
@@ -352,11 +424,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response findTenantOfOrganization(@PathParam("organizationId") UUID organizationId,
+    public Response findTenantOfOrganization(@Context SecurityContext sc,
+                                             @PathParam("organizationId") UUID organizationId,
                                              @PathParam("tenantId") UUID tenantId) {
-        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        if (org.isEmpty()) {
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -372,12 +446,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/")
-    public Response createTenant(@PathParam("organizationId") UUID organizationId, CreateTenantRequest req) {
+    public Response createTenant(@Context SecurityContext sc,
+                                 @PathParam("organizationId") UUID organizationId,
+                                 CreateTenantRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        if (!organizationExists(organizationId)) {
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -389,10 +468,18 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response updateTenant(@PathParam("organizationId") UUID organizationId,
+    public Response updateTenant(@Context SecurityContext sc,
+                                 @PathParam("organizationId") UUID organizationId,
                                  @PathParam("tenantId") UUID tenantId,
                                  UpdateTenantRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -404,9 +491,17 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}")
-    public Response deleteTenant(@PathParam("organizationId") UUID organizationId,
+    public Response deleteTenant(@Context SecurityContext sc,
+                                 @PathParam("organizationId") UUID organizationId,
                                  @PathParam("tenantId") UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -418,10 +513,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
-    public Response findAllUsersOfTenant(@PathParam("organizationId") UUID organizationId,
+    public Response findAllUsersOfTenant(@Context SecurityContext sc,
+                                         @PathParam("organizationId") UUID organizationId,
                                          @PathParam("tenantId") UUID tenantId,
                                          @QueryParam("limit") int limit,
                                          @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -429,6 +527,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         List<UserDetailsResponse> users = Lists.newArrayList();
@@ -455,6 +558,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                      @PathParam("organizationId") UUID organizationId,
                                      @PathParam("tenantId") UUID tenantId,
                                      @PathParam("userId") UUID userId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -465,9 +570,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         // Users cannot delete themselves.
-        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
-        boolean isDeletable = sessionUser.getUserId() != userId;
+        boolean isDeletable = authenticatedUser.getUserId() != userId;
 
         return Response.ok(UserOfTenantDetailsResponse.create(
                 userEntryToResponse(
@@ -482,9 +591,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users")
-    public Response createUserOfTenant(@PathParam("organizationId") UUID organizationId,
+    public Response createUserOfTenant(@Context SecurityContext sc,
+                                       @PathParam("organizationId") UUID organizationId,
                                        @PathParam("tenantId") UUID tenantId,
                                        CreateUserRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -492,6 +604,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         if (!validateCreateUserRequest(req)) {
             LOG.info("Invalid parameters in create user request.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         if (nzyme.getAuthenticationService().userWithEmailExists(req.email().toLowerCase())) {
@@ -518,10 +635,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}")
-    public Response editUserOfTenant(@PathParam("organizationId") UUID organizationId,
+    public Response editUserOfTenant(@Context SecurityContext sc,
+                                     @PathParam("organizationId") UUID organizationId,
                                      @PathParam("tenantId") UUID tenantId,
                                      @PathParam("userId") UUID userId,
                                      UpdateUserRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -535,6 +655,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         if (!validateUpdateUserRequest(req)) {
             LOG.info("Invalid parameters in update user request.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         if (!user.get().email().equals(req.email()) && nzyme.getAuthenticationService().userWithEmailExists(
@@ -557,10 +682,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/taps")
-    public Response editUserOfTenantTapPermissions(@PathParam("organizationId") UUID organizationId,
+    public Response editUserOfTenantTapPermissions(@Context SecurityContext sc,
+                                                   @PathParam("organizationId") UUID organizationId,
                                                    @PathParam("tenantId") UUID tenantId,
                                                    @PathParam("userId") UUID userId,
                                                    UpdateUserTapPermissionsRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -568,6 +696,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
 
         if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -598,10 +731,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/permissions")
-    public Response editUserOfTenantPermissions(@PathParam("organizationId") UUID organizationId,
+    public Response editUserOfTenantPermissions(@Context SecurityContext sc,
+                                                @PathParam("organizationId") UUID organizationId,
                                                 @PathParam("tenantId") UUID tenantId,
                                                 @PathParam("userId") UUID userId,
                                                 UpdateUserPermissionsRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -609,6 +745,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
 
         if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -624,6 +765,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                        @PathParam("organizationId") UUID organizationId,
                                        @PathParam("tenantId") UUID tenantId,
                                        @PathParam("userId") UUID userId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -634,8 +777,12 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
-        if (sessionUser.getUserId() == userId) {
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (authenticatedUser.getUserId() == userId) {
             LOG.warn("User [{}] cannot delete themselves.", user.get().email());
             return Response.status(Response.Status.FORBIDDEN).build();
         }
@@ -648,10 +795,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/password")
-    public Response editUserOfTenantPassword(@PathParam("organizationId") UUID organizationId,
+    public Response editUserOfTenantPassword(@Context SecurityContext sc,
+                                             @PathParam("organizationId") UUID organizationId,
                                              @PathParam("tenantId") UUID tenantId,
                                              @PathParam("userId") UUID userId,
                                              UpdatePasswordRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -659,6 +809,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
 
         if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -684,12 +839,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/users/show/{userId}/mfa/reset")
-    public Response resetMFAOfUserOfTenant(@PathParam("organizationId") UUID organizationId,
+    public Response resetMFAOfUserOfTenant(@Context SecurityContext sc,
+                                           @PathParam("organizationId") UUID organizationId,
                                            @PathParam("tenantId") UUID tenantId,
                                            @PathParam("userId") UUID userId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         Optional<UserEntry> user = nzyme.getAuthenticationService().findUserOfTenant(organizationId, tenantId, userId);
 
         if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -736,17 +899,23 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/sessions")
-    public Response findSessionsOfOrganization(@PathParam("organizationId") UUID organizationId,
+    public Response findSessionsOfOrganization(@Context SecurityContext sc,
+                                               @PathParam("organizationId") UUID organizationId,
                                                @QueryParam("limit") int limit,
                                                @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(organizationId);
+        if(!organizationExists(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
-        if (org.isEmpty()) {
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -778,10 +947,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/sessions")
-    public Response findSessionsOfTenant(@PathParam("organizationId") UUID organizationId,
+    public Response findSessionsOfTenant(@Context SecurityContext sc,
+                                         @PathParam("organizationId") UUID organizationId,
                                          @PathParam("tenantId") UUID tenantId,
                                          @QueryParam("limit") int limit,
                                          @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -789,6 +961,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         List<SessionDetailsResponse> sessions = Lists.newArrayList();
@@ -820,8 +997,28 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/sessions/show/{sessionId}")
-    public Response invalidateSession(@PathParam("sessionId") long sessionId) {
-        // TODO check org permissions! org admin can only delete org sessions
+    public Response invalidateSession(@Context SecurityContext sc,
+                                      @PathParam("sessionId") long sessionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<SessionEntry> session = nzyme.getAuthenticationService()
+                .findSessionWithOrWithoutPassedMFAById(sessionId);
+
+        if (session.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<UserEntry> user = nzyme.getAuthenticationService().findUserById(session.get().userId());
+
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(user.get().organizationId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         nzyme.getAuthenticationService().deleteSession(sessionId);
 
         return Response.ok().build();
@@ -859,18 +1056,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response findTap(@PathParam("organizationId") UUID organizationId,
+    public Response findTap(@Context SecurityContext sc,
+                            @PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
-                            @PathParam("tapUuid") String tapUuid) {
-        UUID tapId;
-        try {
-            tapId = UUID.fromString(tapUuid);
-        } catch(IllegalArgumentException ignored) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+                            @PathParam("tapUuid") UUID tapId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
@@ -885,15 +1083,23 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
-    public Response createTap(@PathParam("organizationId") UUID organizationId,
+    public Response createTap(@Context SecurityContext sc,
+                              @PathParam("organizationId") UUID organizationId,
                               @PathParam("tenantId") UUID tenantId,
                               CreateTapRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         String secret = RandomStringUtils.random(64, true, true);
@@ -912,19 +1118,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response editTap(@PathParam("organizationId") UUID organizationId,
+    public Response editTap(@Context SecurityContext sc,
+                            @PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
-                            @PathParam("tapUuid") String tapUuid,
+                            @PathParam("tapUuid") UUID tapId,
                             UpdateTapRequest req) {
-        UUID tapId;
-        try {
-            tapId = UUID.fromString(tapUuid);
-        } catch(IllegalArgumentException ignored) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
@@ -941,18 +1148,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @DELETE
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}")
-    public Response deleteTap(@PathParam("organizationId") UUID organizationId,
-                            @PathParam("tenantId") UUID tenantId,
-                            @PathParam("tapUuid") String tapUuid) {
-        UUID tapId;
-        try {
-            tapId = UUID.fromString(tapUuid);
-        } catch(IllegalArgumentException ignored) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+    public Response deleteTap(@Context SecurityContext sc,
+                              @PathParam("organizationId") UUID organizationId,
+                              @PathParam("tenantId") UUID tenantId,
+                              @PathParam("tapUuid") UUID tapId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
@@ -969,18 +1177,19 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps/show/{tapUuid}/secret/cycle")
-    public Response cycleTapSecret(@PathParam("organizationId") UUID organizationId,
+    public Response cycleTapSecret(@Context SecurityContext sc,
+                                   @PathParam("organizationId") UUID organizationId,
                                    @PathParam("tenantId") UUID tenantId,
-                                   @PathParam("tapUuid") String tapUuid) {
-        UUID tapId;
-        try {
-            tapId = UUID.fromString(tapUuid);
-        } catch(IllegalArgumentException ignored) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+                                   @PathParam("tapUuid") UUID tapId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);

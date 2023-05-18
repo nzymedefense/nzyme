@@ -725,6 +725,16 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<SessionEntry> findSessionWithOrWithoutPassedMFAById(long id) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
+                                "mfa_valid, mfa_requested_at FROM auth_sessions WHERE id = :id")
+                        .bind("id", id)
+                        .mapTo(SessionEntry.class)
+                        .findOne()
+        );
+    }
+
     public Optional<SessionEntry> findSessionWithPassedMFABySessionId(String sessionId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT sessionid, user_id, remote_ip, created_at, elevated, elevated_since, " +
