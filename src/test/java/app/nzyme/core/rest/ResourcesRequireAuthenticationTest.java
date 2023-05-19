@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest;
 
+import app.nzyme.core.rest.authentication.PreMFASecured;
 import com.google.common.collect.ImmutableList;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.authentication.PrometheusBasicAuthSecured;
@@ -44,6 +45,7 @@ public class ResourcesRequireAuthenticationTest {
             "WebInterfaceAssetsResource.getIndex",
             "WebInterfaceAssetsResource.get",
             "PingResource.ping",
+            "InitialUserResource.createInitialUser",
             "AuthenticationResource.createSession",
             "TrackerWebHIDAssetsResource.getPage",
             "TrackerWebHIDAssetsResource.getFavicon",
@@ -51,6 +53,14 @@ public class ResourcesRequireAuthenticationTest {
             "TrackerWebHIDAssetsResource.getFont",
             "TrackerWebHIDAssetsResource.getPNG",
             "TrackerWebHIDAssetsResource.getJS"
+    );
+
+    private final List<String> PREMFA_AUTHENTICATED = ImmutableList.of(
+            "AuthenticationResource.getSessionInformation",
+            "AuthenticationResource.initializeMfaSetup",
+            "AuthenticationResource.completeMfaSetup",
+            "AuthenticationResource.verifyMfa",
+            "AuthenticationResource.mfaRecoveryCodeValidation"
     );
 
     private final List<String> TAP_SECRET_AUTHENTICATED = ImmutableList.of(
@@ -87,6 +97,10 @@ public class ResourcesRequireAuthenticationTest {
                 if (TAP_SECRET_AUTHENTICATED.contains(id)) {
                     if (!method.isAnnotationPresent(TapSecured.class) && !clazz.isAnnotationPresent(TapSecured.class)) {
                         fail("REST resource " + id + " is not annotated with @TapSecured.");
+                    }
+                } else if (PREMFA_AUTHENTICATED.contains(id)) {
+                    if (!method.isAnnotationPresent(PreMFASecured.class) && !clazz.isAnnotationPresent(PreMFASecured.class)) {
+                        fail("REST resource " + id + " is not annotated with @PreMFASecured.");
                     }
                 } else if (PROMETHEUS_BASIC_AUTHENTICATED.contains(id)) {
                     if (!method.isAnnotationPresent(PrometheusBasicAuthSecured.class) && !clazz.isAnnotationPresent(PrometheusBasicAuthSecured.class)) {
