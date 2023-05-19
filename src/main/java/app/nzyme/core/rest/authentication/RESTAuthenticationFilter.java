@@ -19,9 +19,12 @@ package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.UserEntry;
+import app.nzyme.core.security.authentication.roles.Permission;
+import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +44,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @RESTSecured(PermissionLevel.ANY)
@@ -73,6 +78,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
         RESTSecured classAnnotation = (RESTSecured) resourceClass.getAnnotation(RESTSecured.class);
 
         PermissionLevel resourcePermissionLevel;
+        String[] features = null;
         if (methodAnnotation == null && classAnnotation == null) {
             LOG.error("RESTSecured is NULL. Cannot continue. Resource: [/{}]",
                     requestContext.getUriInfo().getPath());
@@ -81,9 +87,18 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
         } else {
             if (methodAnnotation == null) {
                 resourcePermissionLevel = classAnnotation.value();
+                features = classAnnotation.featurePermissions();
             } else {
                 resourcePermissionLevel = methodAnnotation.value();
+                features = methodAnnotation.featurePermissions();
             }
+        }
+
+        Optional<List<String>> requiredFeaturePermissions;
+        if (features != null && features.length > 0) {
+            requiredFeaturePermissions = Optional.of(Arrays.asList(features));
+        } else {
+            requiredFeaturePermissions = Optional.empty();
         }
 
         String remoteIp = "";
@@ -147,6 +162,19 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                 case ANY:
                     // Fine.
                     break;
+            }
+
+            // Check if we also need a feature permission.
+            if (requiredFeaturePermissions.isPresent() && !user.get().isOrganizationAdmin() && !user.get().isSuperAdmin()) {
+                List<String> userPermissions = nzyme.getAuthenticationService().findPermissionsOfUser(user.get().uuid());
+                for (String requiredPermission : requiredFeaturePermissions.get()) {
+                    if(!userPermissions.contains(requiredPermission)) {
+                        LOG.warn("User <{}> requested resource [/{}] which requires missing feature permission [{}].",
+                                user.get().email(), requestContext.getUriInfo().getPath(), requiredPermission);
+                        abortWithUnauthorized(requestContext);
+                        return;
+                    }
+                }
             }
 
             // Authenticated. Set last activity information.

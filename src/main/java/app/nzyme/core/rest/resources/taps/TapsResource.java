@@ -47,7 +47,6 @@ public class TapsResource extends UserAuthenticatedResource {
     public Response findAll(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-
         // Get all UUIDs of taps the user can access.
         List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser);
 
