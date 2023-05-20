@@ -1,29 +1,33 @@
 import React from 'react'
-import NotificationCount from './NotificationCount'
 
-class NavigationLink extends React.Component {
-  render () {
-    let className = 'nav-link'
-    let liClassName = ''
-    if ((window.location.pathname === '/' && this.props.href === '/') || (this.props.href !== '/' && window.location.pathname.startsWith(this.props.href))) {
-      className += ' nav-link-active'
-      liClassName = 'nav-item-active'
-    }
+function NavigationLink(props) {
 
-    return (
-        <li className={'nav-item ' + liClassName}>
-            <a href={this.props.href} className={className}>
-                <span className="nav-icon">
-                    {this.props.icon}
-                </span>
+  const href = props.href;
+  const icon = props.icon;
+  const title = props.title;
 
-                {this.props.title}
+  const show = props.show === undefined ? true : props.show;
 
-                <NotificationCount count={this.props.notificationCount} />
-            </a>
-        </li>
-    )
+  if (!show) {
+    return null;
   }
+
+  let className = 'nav-link'
+  let liClassName = '';
+  if ((window.location.pathname === '/' && href === '/')
+      || (href !== '/' && window.location.pathname.startsWith(href))) {
+    className += ' nav-link-active'
+    liClassName = 'nav-item-active'
+  }
+  return (
+    <li className={'nav-item ' + liClassName}>
+      <a href={href} className={className}>
+        <span className="nav-icon">{icon}</span>
+        {title}
+      </a>
+    </li>
+  )
+
 }
 
 export default NavigationLink
