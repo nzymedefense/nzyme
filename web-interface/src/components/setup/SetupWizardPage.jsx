@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+  import React, {useState} from "react";
 import AssetStylesheet from "../misc/AssetStylesheet";
 import CreateUserForm from "../system/authentication/management/users/shared/CreateUserForm";
 import {notify} from "react-notify-toast";
@@ -48,8 +48,7 @@ function SetupWizardPage() {
                         <p>
                           Super Administrators possess unrestricted access to all features and data within this nzyme
                           installation. While this role is ideal for initial setup, it is recommended to transition
-                          to a user with tailored permissions for your everyday tasks, ensuring optimal security and
-                          efficiency.
+                          to a user with tailored permissions for your everyday tasks.
                         </p>
 
                         <CreateUserForm onClick={onCreateUserClick}
