@@ -178,6 +178,8 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                         u.name(),
                         u.isSuperAdmin(),
                         u.isOrganizationAdmin(),
+                        u.organizationId(),
+                        u.tenantId(),
                         featurePermissions
                 ),
                 session.get().mfaValid(),

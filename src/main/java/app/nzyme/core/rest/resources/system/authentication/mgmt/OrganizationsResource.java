@@ -98,7 +98,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @PUT
-    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{id}")
     public Response update(@Context SecurityContext sc,
                            @PathParam("id") UUID id,

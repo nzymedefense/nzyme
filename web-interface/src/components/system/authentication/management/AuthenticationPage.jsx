@@ -1,10 +1,20 @@
-import React from "react";
+import React, {useContext} from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import OrganizationsTable from "./organizations/OrganizationsTable";
 import GlobalSessions from "./sessions/GlobalSessions";
 import SuperAdminTable from "./users/superadmins/SuperAdminTable";
+import {Navigate} from "react-router-dom";
+import Routes from "../../../../util/ApiRoutes";
+import {UserContext} from "../../../../App";
 
 function AuthenticationPage() {
+
+  const user = useContext(UserContext);
+
+  // Send an Org Admin directly to their org page because they won't be able to access anything here.
+  if (user.is_orgadmin) {
+    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(user.organization_id)} />
+  }
 
   return (
       <React.Fragment>

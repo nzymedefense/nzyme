@@ -3,6 +3,7 @@ package app.nzyme.core.rest.responses.authentication;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,16 +25,26 @@ public abstract class SessionUserInformationDetailsResponse {
     @JsonProperty("is_orgadmin")
     public abstract boolean isOrgAdmin();
 
+    @Nullable
+    @JsonProperty("organization_id")
+    public abstract UUID organizationId();
+
+    @Nullable
+    @JsonProperty("tenant_id")
+    public abstract UUID tenantId();
+
     @JsonProperty("feature_permissions")
     public abstract List<String> featurePermissions();
 
-    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, List<String> featurePermissions) {
+    public static SessionUserInformationDetailsResponse create(UUID id, String email, String name, boolean isSuperAdmin, boolean isOrgAdmin, UUID organizationId, UUID tenantId, List<String> featurePermissions) {
         return builder()
                 .id(id)
                 .email(email)
                 .name(name)
                 .isSuperAdmin(isSuperAdmin)
                 .isOrgAdmin(isOrgAdmin)
+                .organizationId(organizationId)
+                .tenantId(tenantId)
                 .featurePermissions(featurePermissions)
                 .build();
     }
@@ -53,6 +64,10 @@ public abstract class SessionUserInformationDetailsResponse {
         public abstract Builder isSuperAdmin(boolean isSuperAdmin);
 
         public abstract Builder isOrgAdmin(boolean isOrgAdmin);
+
+        public abstract Builder organizationId(UUID organizationId);
+
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder featurePermissions(List<String> featurePermissions);
 

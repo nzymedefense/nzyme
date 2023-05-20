@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
 import Routes from "../../../../../util/ApiRoutes";
 import AuthenticationManagementService from "../../../../../services/AuthenticationManagementService";
@@ -8,10 +8,13 @@ import TenantsTable from "../tenants/TenantsTable";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
+import {UserContext} from "../../../../../App";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
 function OrganizationDetailsPage() {
+
+  const user = useContext(UserContext);
 
   const { organizationId } = useParams();
 
@@ -59,9 +62,11 @@ function OrganizationDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
               <a className="btn btn-secondary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>{' '}
+
+              { user.is_superadmin ?
               <a className="btn btn-primary" href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EDIT(organization.id)}>
                 Edit Organization
-              </a>
+              </a> : null }
             </span>
           </div>
 
@@ -126,6 +131,7 @@ function OrganizationDetailsPage() {
           </div>
 
           <div className="col-md-6">
+            { user.is_superadmin ?
             <div className="row">
               <div className="col-md-12">
                 <div className="card">
@@ -143,6 +149,7 @@ function OrganizationDetailsPage() {
                 </div>
               </div>
             </div>
+            : null }
           </div>
         </div>
 
