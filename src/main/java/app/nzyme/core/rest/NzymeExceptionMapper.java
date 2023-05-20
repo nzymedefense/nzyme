@@ -19,6 +19,7 @@ package app.nzyme.core.rest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.server.ParamException;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -34,6 +35,10 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
     public Response toResponse(Throwable t) {
         if (t instanceof NotFoundException) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (t instanceof ParamException) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         LOG.error("Error while handling REST call.", t);
