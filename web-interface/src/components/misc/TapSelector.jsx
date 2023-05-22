@@ -9,21 +9,11 @@ function TapSelector(props) {
   const [show, setShow] = useState(false);
 
   const [availableTaps, setAvailableTaps] = useState(null);
+  const [availableTapsUUIDs, setAvailableTapsUUIDs] = useState(null);
   const [preSelectedTaps, setPreSelectedTaps] = useState(null);
   const [selectedTaps, setSelectedTaps] = useState(null);
 
   const [buttonText, setButtonText] = useState(null);
-
-  useEffect(() => {
-    if (selectedTaps !== null) {
-      console.log(selectedTaps)
-      if (selectedTaps === "*") {
-        setButtonText("All Taps Selected");
-      } else {
-        setButtonText(selectedTaps.length + " Taps Selected");
-      }
-    }
-  }, [selectedTaps])
 
   useEffect(() => {
     tapsService.findAllTaps(setAvailableTaps);
@@ -36,8 +26,48 @@ function TapSelector(props) {
       setSelectedTaps(lsTaps);
       setPreSelectedTaps(lsTaps);
     }
-
   }, [])
+
+  useEffect(() => {
+    if (selectedTaps !== null) {
+      if (selectedTaps === "*") {
+        setButtonText("All Taps Selected");
+      } else {
+        /*
+         * Reset everything if a tap is no longer available (permissions may have changed or local
+         * storage came from other session)
+         */
+        if (availableTapsUUIDs !== null) {
+          let invalidTapFound = false;
+          selectedTaps.forEach(function (selectedTap) {
+            if (!availableTapsUUIDs.includes(selectedTap)) {
+              invalidTapFound = true;
+            }
+          });
+
+          if (invalidTapFound) {
+            Store.set("selected_taps", "*");
+            setSelectedTaps("*");
+            setPreSelectedTaps("*");
+          }
+        }
+
+        setButtonText(selectedTaps.length + " Taps Selected");
+      }
+    }
+  }, [selectedTaps, availableTaps])
+
+  useEffect(() => {
+    if (availableTaps !== null) {
+      const uuids = [];
+
+      availableTaps.forEach(function (availableTap) {
+        uuids.push(availableTap.uuid);
+      });
+
+      setAvailableTapsUUIDs(uuids);
+    }
+  }, [availableTaps]);
 
   const toggleMenu = function() {
     setShow(!show);
