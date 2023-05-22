@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
 
@@ -6,36 +6,95 @@ const tapsService = new TapsService();
 
 function TapSelector(props) {
 
+  const [show, setShow] = useState(false);
+
   const [availableTaps, setAvailableTaps] = useState(null);
+  const [preSelectedTaps, setPreSelectedTaps] = useState(null);
   const [selectedTaps, setSelectedTaps] = useState(null);
+
+  const [isAllTaps, setIsAllTaps] = useState(null);
+
+  const [buttonText, setButtonText] = useState(null);
+
+  useEffect(() => {
+    if (selectedTaps !== null) {
+      if (isAllTaps) {
+        setButtonText("All Taps Selected");
+      } else {
+        setButtonText(selectedTaps.length + " Taps Selected");
+      }
+    }
+  }, [selectedTaps])
 
   useEffect(() => {
     tapsService.findAllTaps(setAvailableTaps);
 
     let lsTaps = Store.get("selected_taps");
-    if (lsTaps === undefined || lsTaps === null || lsTaps !== Array) {
-      lsTaps = [];
-    }
+    if (lsTaps === "*") {
+      setIsAllTaps(true);
+      setSelectedTaps([]);
+      setPreSelectedTaps([]);
+    } else {
+      if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
+        setSelectedTaps([]);
+        setPreSelectedTaps([]);
 
-    setSelectedTaps(lsTaps);
+      } else {
+        setSelectedTaps(lsTaps);
+        setPreSelectedTaps(lsTaps);
+
+      }
+    }
   }, [])
+
+  const toggleMenu = function() {
+    setShow(!show);
+  }
 
   const handleTapSelection = function(e, uuid) {
     e.preventDefault();
 
-    const taps = [...selectedTaps];
-    if (selectedTaps.includes(uuid)) {
-      const idx = taps.indexOf(uuid);
-      taps.splice(idx);
-      setSelectedTaps(taps);
+    setIsAllTaps(false);
+
+    const taps = preSelectedTaps === "*" ? [] : [...preSelectedTaps];
+    if (taps.includes(uuid)) {
+      // Remove a tap.
+      if (taps.length > 1) {
+        const idx = taps.indexOf(uuid);
+        taps.splice(idx, 1);
+        setPreSelectedTaps(taps);
+      } else {
+        // Removed last tap.
+        setPreSelectedTaps([]);
+        setIsAllTaps(true);
+      }
     } else {
+      // Add a new tap.
       taps.push(uuid);
-      setSelectedTaps(taps);
+      setPreSelectedTaps(taps);
     }
+  }
+
+  const onSelectTaps = function(e) {
+    e.preventDefault();
+
+    if (isAllTaps) {
+      Store.set("selected_taps", "*");
+      setSelectedTaps("*");
+    } else {
+      Store.set("selected_taps", preSelectedTaps);
+      setSelectedTaps(preSelectedTaps);
+    }
+
+    setShow(false);
   }
 
   const selectAllTaps = function(e) {
     e.preventDefault();
+
+    setIsAllTaps(true);
+    setSelectedTaps("*");
+    setPreSelectedTaps("*");
   }
 
   if (availableTaps === null || selectedTaps === null) {
@@ -51,14 +110,17 @@ function TapSelector(props) {
   return (
     <React.Fragment>
       <div className="dropdown">
-        <button className="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                aria-expanded="false" data-bs-auto-close="outside">
-          All Taps Selected
+        <button className="btn btn-outline-secondary dropdown-toggle"
+                type="button"
+                aria-expanded="false"
+                data-bs-auto-close="false"
+                onClick={toggleMenu}>
+          {buttonText}
         </button>
-        <ul className="dropdown-menu">
+        <ul className="dropdown-menu" style={{display: show ? "block" : "none"}}>
           <li>
-            <a className="dropdown-item" href="#" onClick={selectAllTaps}>
-              Select App Taps
+            <a className={"dropdown-item " + (isAllTaps ? "active" : null)} href="#" onClick={selectAllTaps}>
+              All Taps
             </a>
           </li>
           <li><hr className="dropdown-divider" /></li>
@@ -66,12 +128,19 @@ function TapSelector(props) {
           {availableTaps.map(function(tap, i) {
             return (
                 <li key={"tapselector-tap-" + i}>
-                  <a className="dropdown-item" href="#" onClick={(e) => handleTapSelection(e, tap.uuid)}>
+                  <a className={"dropdown-item " + (preSelectedTaps.includes(tap.uuid) ? "active" : null)}
+                     href="#"
+                     onClick={(e) => handleTapSelection(e, tap.uuid)}>
                     {tap.name}
                   </a>
                 </li>
             )
           })}
+          <li className="tap-selector-actions">
+            <button className="btn btn-primary tap-selector-select" onClick={onSelectTaps}>
+              Select Taps
+            </button>
+          </li>
         </ul>
       </div>
     </React.Fragment>
