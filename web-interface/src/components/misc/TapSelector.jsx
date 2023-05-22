@@ -16,7 +16,7 @@ function TapSelector(props) {
   const [buttonText, setButtonText] = useState(null);
 
   useEffect(() => {
-    tapsService.findAllTaps(setAvailableTaps);
+    tapsService.findAllTapsHighLevel(setAvailableTaps);
 
     let lsTaps = Store.get("selected_taps");
     if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
@@ -29,30 +29,34 @@ function TapSelector(props) {
   }, [])
 
   useEffect(() => {
-    if (selectedTaps !== null) {
-      if (selectedTaps === "*") {
-        setButtonText("All Taps Selected");
+    if (selectedTaps !== null && availableTaps != null) {
+      if (availableTaps.length === 0) {
+        setButtonText("No access to any taps.");
       } else {
-        /*
-         * Reset everything if a tap is no longer available (permissions may have changed or local
-         * storage came from other session)
-         */
-        if (availableTapsUUIDs !== null) {
-          let invalidTapFound = false;
-          selectedTaps.forEach(function (selectedTap) {
-            if (!availableTapsUUIDs.includes(selectedTap)) {
-              invalidTapFound = true;
+        if (selectedTaps === "*") {
+          setButtonText("All Taps Selected");
+        } else {
+          /*
+           * Reset everything if a tap is no longer available (permissions may have changed or local
+           * storage came from other session)
+           */
+          if (availableTapsUUIDs !== null) {
+            let invalidTapFound = false;
+            selectedTaps.forEach(function (selectedTap) {
+              if (!availableTapsUUIDs.includes(selectedTap)) {
+                invalidTapFound = true;
+              }
+            });
+
+            if (invalidTapFound) {
+              Store.set("selected_taps", "*");
+              setSelectedTaps("*");
+              setPreSelectedTaps("*");
             }
-          });
-
-          if (invalidTapFound) {
-            Store.set("selected_taps", "*");
-            setSelectedTaps("*");
-            setPreSelectedTaps("*");
           }
-        }
 
-        setButtonText(selectedTaps.length + " Taps Selected");
+          setButtonText(selectedTaps.length + " Taps Selected");
+        }
       }
     }
   }, [selectedTaps, availableTaps])
@@ -66,6 +70,8 @@ function TapSelector(props) {
       });
 
       setAvailableTapsUUIDs(uuids);
+      setSelectedTaps("*");
+      Store.set("selected_taps", "*");
     }
   }, [availableTaps]);
 
@@ -126,7 +132,8 @@ function TapSelector(props) {
                 type="button"
                 aria-expanded="false"
                 data-bs-auto-close="false"
-                onClick={toggleMenu}>
+                onClick={toggleMenu}
+                disabled={availableTaps.length === 0}>
           {buttonText}
         </button>
         <ul className="dropdown-menu" style={{display: show ? "block" : "none"}}>

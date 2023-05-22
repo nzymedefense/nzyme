@@ -200,7 +200,8 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
                             u.organizationId(),
                             u.tenantId(),
                             u.isOrganizationAdmin(),
-                            u.isSuperAdmin()
+                            u.isSuperAdmin(),
+                            u.accessAllTenantTaps()
                     );
                 }
 

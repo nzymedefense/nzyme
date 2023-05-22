@@ -19,6 +19,8 @@ public class AuthenticatedUser implements Principal {
     private final boolean isOrganizationAdministrator;
     private final boolean isSuperAdministrator;
 
+    public boolean accessAllTenantTaps;
+
     public AuthenticatedUser(UUID userId,
                              String sessionId,
                              String email,
@@ -26,7 +28,8 @@ public class AuthenticatedUser implements Principal {
                              UUID organizationId,
                              UUID tenantId,
                              final boolean isOrganizationAdministrator,
-                             boolean isSuperAdministrator) {
+                             boolean isSuperAdministrator,
+                             boolean accessAllTenantTaps) {
         this.userId = userId;
         this.sessionId = sessionId;
         this.email = email;
@@ -35,6 +38,7 @@ public class AuthenticatedUser implements Principal {
         this.tenantId = tenantId;
         this.isOrganizationAdministrator = isOrganizationAdministrator;
         this.isSuperAdministrator = isSuperAdministrator;
+        this.accessAllTenantTaps = accessAllTenantTaps;
     }
 
     public UUID getUserId() {
@@ -67,6 +71,10 @@ public class AuthenticatedUser implements Principal {
 
     public boolean isSuperAdministrator() {
         return isSuperAdministrator;
+    }
+
+    public boolean isAccessAllTenantTaps() {
+        return accessAllTenantTaps;
     }
 
     @Override

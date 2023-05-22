@@ -1,6 +1,13 @@
 import RESTClient from '../util/RESTClient'
 
 class TapService {
+
+  findAllTapsHighLevel(setTaps) {
+    RESTClient.get('/taps/highlevel', {}, function (response) {
+      setTaps(response.data.taps)
+    })
+  }
+
   findAllTaps (setTaps) {
     RESTClient.get('/taps', {}, function (response) {
       setTaps(response.data.taps)

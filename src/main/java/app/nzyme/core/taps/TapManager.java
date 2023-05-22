@@ -271,23 +271,29 @@ public class TapManager {
             );
         }
 
+        // User is tenant user, check that it has required fields.
+        if (user.getOrganizationId() == null || user.getTenantId() == null) {
+            throw new RuntimeException("NULL organization or tenant ID.");
+        }
+
         // Get taps from user permissions.
         List<UUID> tapPermissions = nzyme.getAuthenticationService().findTapPermissionsOfUser(user.getUserId());
 
         if (tapPermissions.isEmpty()) {
-            // User has access to all taps of tenant.
-            if (user.getOrganizationId() == null || user.getTenantId() == null) {
-                throw new RuntimeException("NULL organization or tenant ID.");
+            // User has no specific tap permissions. Check if all taps are allowed.
+            if (user.accessAllTenantTaps) {
+                return nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT uuid FROM taps " +
+                                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                .bind("organization_id", user.getOrganizationId())
+                                .bind("tenant_id", user.getTenantId())
+                                .mapTo(UUID.class)
+                                .list()
+                );
+            } else {
+                // User is not allowed to use all taps and has no specific tap permissions.
+                return Collections.emptyList();
             }
-
-            return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT uuid FROM taps " +
-                                    "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
-                            .bind("organization_id", user.getOrganizationId())
-                            .bind("tenant_id", user.getTenantId())
-                            .mapTo(UUID.class)
-                            .list()
-            );
         } else {
             // Return only specifically allowed taps.
             List<UUID> validatedTaps = Lists.newArrayList();

@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/taps")
-@RESTSecured(PermissionLevel.ORGADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class TapsResource extends UserAuthenticatedResource {
 
@@ -44,6 +43,24 @@ public class TapsResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
+    @RESTSecured(PermissionLevel.ANY)
+    @Path("/highlevel")
+    public Response findAllWithHighLevelInformation(@Context SecurityContext sc) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Get all UUIDs of taps the user can access.
+        List<UUID> uuids = nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser);
+
+        List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
+        for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
+            tapsResponse.add(TapHighLevelInformationDetailsResponse.create(tap.uuid(), tap.name()));
+        }
+
+        return Response.ok(TapHighLevelInformationListResponse.create(tapsResponse)).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     public Response findAll(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
@@ -59,6 +76,7 @@ public class TapsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{uuid}")
     public Response findTap(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -77,6 +95,7 @@ public class TapsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{uuid}/metrics")
     public Response tapMetrics(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -114,6 +133,7 @@ public class TapsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{uuid}/metrics/gauges/{metricName}/histogram")
     public Response tapMetricsGauge(@Context SecurityContext sc,
                                     @PathParam("uuid") UUID uuid,
