@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import UserProfileService from "../../services/UserProfileService";
 import Routes from "../../util/ApiRoutes";
 
@@ -9,6 +9,11 @@ import {notify} from "react-notify-toast";
 const userProfileService = new UserProfileService();
 
 function ChangeOwnPasswordPage() {
+
+  const maskCurrent = useRef();
+  const [maskedCurrent, setMaskedCurrent] = useState(true);
+  const maskNew = useRef();
+  const [maskedNew, setMaskedNew] = useState(true);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -25,6 +30,30 @@ function ChangeOwnPasswordPage() {
       setPasswordValidation(undefined);
     }
   }, [newPassword])
+
+  const toggleMaskCurrent = function() {
+    if (maskedCurrent) {
+      // Unmask password.
+      maskCurrent.current.classList.remove('text-muted');
+      setMaskedCurrent(false);
+    } else {
+      // Mask password.
+      maskCurrent.current.classList.add('text-muted');
+      setMaskedCurrent(true);
+    }
+  }
+
+  const toggleMaskNew = function() {
+    if (maskedNew) {
+      // Unmask password.
+      maskNew.current.classList.remove('text-muted');
+      setMaskedNew(false);
+    } else {
+      // Mask password.
+      maskNew.current.classList.add('text-muted');
+      setMaskedNew(true);
+    }
+  }
 
   const onSubmit = function(e) {
     e.preventDefault();
@@ -75,8 +104,12 @@ function ChangeOwnPasswordPage() {
                     <form>
                       <div className="mb-3">
                         <label htmlFor="currentPassword" className="form-label">Current Password</label>
-                        <input type="password" className="form-control" id="currentPassword" aria-describedby="currentPassword"
-                               value={currentPassword} onChange={(e) => { updateValue(e, setCurrentPassword) }} />
+                        <div style={{display: "block"}}>
+                          <input type={maskedCurrent ? "password" : "input"} className="form-control" id="currentPassword" aria-describedby="currentPassword"
+                                 value={currentPassword} onChange={(e) => { updateValue(e, setCurrentPassword) }}
+                                 style={{width: "100%", display: "inline-block"}} />
+                          <i className="fa fa-eye text-muted" style={{marginLeft: -30, cursor: "pointer"}} onClick={toggleMaskCurrent} ref={maskCurrent}></i>
+                        </div>
                         <div className="form-text">
                           Your current password
                         </div>
@@ -84,8 +117,12 @@ function ChangeOwnPasswordPage() {
 
                       <div className="mb-3">
                         <label htmlFor="password" className="form-label">New Password</label>
-                        <input type="password" className="form-control" id="password" aria-describedby="password"
-                               autoComplete="new-password" value={newPassword} onChange={(e) => { updateValue(e, setNewPassword) }} />
+                        <div style={{display: "block"}}>
+                          <input type={maskedNew ? "password" : "input"} className="form-control" id="password" aria-describedby="password"
+                                 autoComplete="new-password" value={newPassword} onChange={(e) => { updateValue(e, setNewPassword) }}
+                                 style={{width: "100%", display: "inline-block"}} />
+                          <i className="fa fa-eye text-muted" style={{marginLeft: -30, cursor: "pointer"}} onClick={toggleMaskNew} ref={maskNew}></i>
+                        </div>
                         <div className="form-text">
                           Your new password{' '}
                           <InlineFormValidationMessage message={passwordValidation} />

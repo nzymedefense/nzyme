@@ -1,10 +1,13 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import InlineFormValidationMessage from "../../../../../misc/InlineFormValidationMessage";
 import FormSubmitErrorMessage from "../../../../../misc/FormSubmitErrorMessage";
 
 function CreateUserForm(props) {
 
   const EMAILREGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+
+  const mask = useRef();
+  const [masked, setMasked] = useState(true);
 
   const onClick = props.onClick;
   const submitText = props.submitText;
@@ -33,6 +36,18 @@ function CreateUserForm(props) {
       setPasswordValidation(undefined);
     }
   }, [password])
+
+  const toggleMask = function() {
+    if (masked) {
+      // Unmask password.
+      mask.current.classList.remove('text-muted');
+      setMasked(false);
+    } else {
+      // Mask password.
+      mask.current.classList.add('text-muted');
+      setMasked(true);
+    }
+  }
 
   const updateValue = function(e, setter) {
     setter(e.target.value);
@@ -72,8 +87,12 @@ function CreateUserForm(props) {
 
         <div className="mb-3">
           <label htmlFor="password" className="form-label">Password</label>
-          <input type="password" className="form-control" id="password" aria-describedby="password"
-                 autoComplete="new-password" value={password} onChange={(e) => { updateValue(e, setPassword) }} />
+          <div style={{display: "block"}}>
+            <input type={masked ? "password" : "input"} className="form-control" id="password" aria-describedby="password"
+                   autoComplete="new-password" value={password} onChange={(e) => { updateValue(e, setPassword) }}
+                   style={{width: "100%", display: "inline-block"}} />
+            <i className="fa fa-eye text-muted" style={{marginLeft: -30, cursor: "pointer"}} onClick={toggleMask} ref={mask}></i>
+          </div>
           <div className="form-text">
             The password of the new user.{' '}
             <InlineFormValidationMessage message={passwordValidation} />
