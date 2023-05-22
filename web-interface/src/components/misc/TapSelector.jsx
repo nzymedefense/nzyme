@@ -12,13 +12,12 @@ function TapSelector(props) {
   const [preSelectedTaps, setPreSelectedTaps] = useState(null);
   const [selectedTaps, setSelectedTaps] = useState(null);
 
-  const [isAllTaps, setIsAllTaps] = useState(null);
-
   const [buttonText, setButtonText] = useState(null);
 
   useEffect(() => {
     if (selectedTaps !== null) {
-      if (isAllTaps) {
+      console.log(selectedTaps)
+      if (selectedTaps === "*") {
         setButtonText("All Taps Selected");
       } else {
         setButtonText(selectedTaps.length + " Taps Selected");
@@ -30,21 +29,14 @@ function TapSelector(props) {
     tapsService.findAllTaps(setAvailableTaps);
 
     let lsTaps = Store.get("selected_taps");
-    if (lsTaps === "*") {
-      setIsAllTaps(true);
-      setSelectedTaps([]);
-      setPreSelectedTaps([]);
+    if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
+      setSelectedTaps("*");
+      setPreSelectedTaps("*");
     } else {
-      if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
-        setSelectedTaps([]);
-        setPreSelectedTaps([]);
-
-      } else {
-        setSelectedTaps(lsTaps);
-        setPreSelectedTaps(lsTaps);
-
-      }
+      setSelectedTaps(lsTaps);
+      setPreSelectedTaps(lsTaps);
     }
+
   }, [])
 
   const toggleMenu = function() {
@@ -53,8 +45,6 @@ function TapSelector(props) {
 
   const handleTapSelection = function(e, uuid) {
     e.preventDefault();
-
-    setIsAllTaps(false);
 
     const taps = preSelectedTaps === "*" ? [] : [...preSelectedTaps];
     if (taps.includes(uuid)) {
@@ -65,8 +55,7 @@ function TapSelector(props) {
         setPreSelectedTaps(taps);
       } else {
         // Removed last tap.
-        setPreSelectedTaps([]);
-        setIsAllTaps(true);
+        setPreSelectedTaps("*");
       }
     } else {
       // Add a new tap.
@@ -78,13 +67,8 @@ function TapSelector(props) {
   const onSelectTaps = function(e) {
     e.preventDefault();
 
-    if (isAllTaps) {
-      Store.set("selected_taps", "*");
-      setSelectedTaps("*");
-    } else {
-      Store.set("selected_taps", preSelectedTaps);
-      setSelectedTaps(preSelectedTaps);
-    }
+    Store.set("selected_taps", preSelectedTaps);
+    setSelectedTaps(preSelectedTaps);
 
     setShow(false);
   }
@@ -92,8 +76,6 @@ function TapSelector(props) {
   const selectAllTaps = function(e) {
     e.preventDefault();
 
-    setIsAllTaps(true);
-    setSelectedTaps("*");
     setPreSelectedTaps("*");
   }
 
@@ -119,12 +101,11 @@ function TapSelector(props) {
         </button>
         <ul className="dropdown-menu" style={{display: show ? "block" : "none"}}>
           <li>
-            <a className={"dropdown-item " + (isAllTaps ? "active" : null)} href="#" onClick={selectAllTaps}>
+            <a className={"dropdown-item " + (preSelectedTaps === "*" ? "active" : null)} href="#" onClick={selectAllTaps}>
               All Taps
             </a>
           </li>
           <li><hr className="dropdown-divider" /></li>
-          <li><h6 className="dropdown-header">Individual Taps</h6></li>
           {availableTaps.map(function(tap, i) {
             return (
                 <li key={"tapselector-tap-" + i}>
@@ -137,7 +118,7 @@ function TapSelector(props) {
             )
           })}
           <li className="tap-selector-actions">
-            <button className="btn btn-primary tap-selector-select" onClick={onSelectTaps}>
+            <button className="btn btn-primary btn-sm tap-selector-select" onClick={onSelectTaps}>
               Select Taps
             </button>
           </li>

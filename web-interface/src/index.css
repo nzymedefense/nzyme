@@ -61,15 +61,48 @@ img.initializing-layer2 {
     margin-left: 3px;
 }
 
-.tap-selector button.tap-selector-select {
+div.tap-selector button.tap-selector-select {
     display: block;
     width: 100%;
 }
 
-.tap-selector li.tap-selector-actions {
+div.tap-selector li.tap-selector-actions {
     margin-top: 8px;
     padding-left: 10px;
     padding-right: 10px;
+}
+
+div.tap-selector ul {
+    background-color: #2b2d42;
+    color: #fff;
+    font-size: 13px;
+}
+
+div.tap-selector ul a.active {
+    color: #fff;
+    background-color: #4d505e;
+}
+
+div.tap-selector ul li a:hover {
+    color: #fff;
+    background-color: #4d505e;
+}
+
+div.tap-selector ul li a:focus {
+    color: #fff;
+    background-color: #2b2d42;
+}
+
+div.tap-selector ul li a.active:focus {
+    color: #fff;
+    background-color: #4d505e;
+}
+
+
+div.tap-selector ul li a {
+    color: #fff;
+    padding-top: 7px;
+    padding-bottom: 5px;
 }
 
 #nav-side {
