@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useRef, useState} from 'react'
 import AuthenticationService from '../../../services/AuthenticationService'
 import AssetStylesheet from "../../misc/AssetStylesheet";
 import Store from "../../../util/Store";
@@ -7,6 +7,9 @@ import LoginFailedMessage from "./LoginFailedMessage";
 const authenticationService = new AuthenticationService();
 
 function LoginPage() {
+
+  const mask = useRef();
+  const [isMasked, setIsMasked] = useState(true);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -17,6 +20,18 @@ function LoginPage() {
   const [success, setSuccess] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
   const [loginFailedMessage, setLoginFailedMessage] = useState(null);
+
+  const toggleMask = function() {
+    if (isMasked) {
+      // Unmask password.
+      mask.current.classList.remove('text-muted');
+      setIsMasked(false);
+    } else {
+      // Mask password.
+      mask.current.classList.add('text-muted');
+      setIsMasked(true);
+    }
+  }
 
   const onSubmit = function(e) {
     e.preventDefault()
@@ -74,12 +89,16 @@ function LoginPage() {
 
                         <div className="form-outline mb-4">
                           <label className="form-label" htmlFor="password">Password</label>
-                          <input type="password"
+                          <input style={{display: "inline-block"}}
+                                 type={isMasked ? "password" : "input"}
                                  id="password"
                                  className="form-control"
                                  value={password}
                                  onChange={(e) => { updateValue(e, setPassword) }}
                                  required />
+                          <i className="fa fa-eye text-muted"
+                             style={{marginLeft: -30, cursor: "pointer"}}
+                             onClick={toggleMask} ref={mask} />
                         </div>
 
                         <div className="pt-1 mb-3">
