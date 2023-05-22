@@ -57,6 +57,10 @@ img.initializing-layer2 {
     padding: 8px 12px;
 }
 
+.tap-selector {
+    margin-left: 3px;
+}
+
 #nav-side {
     background-color: #2b2d42;
     width: 230px;
