@@ -11,22 +11,28 @@ function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const [loginInProgress, setLoginInProgress] = useState(false);
+  const DEFAULT_TEXT = "Sign In";
+
+  const [submitText, setSubmitText] = useState(DEFAULT_TEXT)
+  const [success, setSuccess] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
   const [loginFailedMessage, setLoginFailedMessage] = useState(null);
 
   const onSubmit = function(e) {
     e.preventDefault()
-    setLoginInProgress(true);
     setLoginFailed(false);
 
+    setSubmitText("Signing in ...")
+
     authenticationService.createSession(username, password, function(sessionId) {
+      setSuccess(true);
+      setSubmitText("Success! Please wait...");
+
       Store.set('sessionid', sessionId)
-      setLoginInProgress(false);
     }, function(message) {
+      setSubmitText(DEFAULT_TEXT)
       setLoginFailed(true);
       setLoginFailedMessage(message);
-      setLoginInProgress(false);
     })
   }
 
@@ -77,8 +83,8 @@ function LoginPage() {
                         </div>
 
                         <div className="pt-1 mb-3">
-                          <button className="btn btn-dark btn-block" type="submit">
-                            {loginInProgress ? 'Signing in ...' : 'Sign in'}
+                          <button className={"btn btn-block " + (success ? "btn-success" : "btn-dark")} type="submit">
+                            {success ? <i className="fa-solid fa-thumbs-up"></i> : null } {submitText}
                           </button>
                         </div>
                       </form>
@@ -90,7 +96,6 @@ function LoginPage() {
                       <source src={window.appConfig.assetsUri + "static/loginsplash.mp4"} type="video/mp4" />
                     </video>
                   </div>
-
                 </div>
               </div>
             </div>
