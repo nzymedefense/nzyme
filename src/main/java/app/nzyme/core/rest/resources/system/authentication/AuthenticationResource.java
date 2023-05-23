@@ -384,16 +384,25 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         }
 
         List<String> unusedCodes = Lists.newArrayList();
+        List<String> usedCodes = Lists.newArrayList();
         for (Map.Entry<String, Boolean> code : codes.get().entrySet()) {
             if (!code.getValue()) {
                 unusedCodes.add(code.getKey());
+            } else {
+                usedCodes.add(code.getKey());
             }
         }
 
         // Check if the code is valid.
         if (!unusedCodes.contains(req.code())) {
-            LOG.warn("User [{}] attempted to use invalid MFA recovery code.", user.get().email());
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            if (usedCodes.contains(req.code())) {
+                // This recovery code has been used before. Alert!
+                LOG.warn("User [{}] attempted to use previously used MFA recovery code.", user.get().email());
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            } else {
+                LOG.warn("User [{}] attempted to use invalid MFA recovery code.", user.get().email());
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
         }
 
         // Write remaining codes back to DB.
