@@ -130,6 +130,15 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             salt = generated.salt();
         }
 
+        // Delay if user is throttled.
+        if (user.isPresent() && user.get().isLoginThrottled()) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
         if (hasher.compareHash(password, hash, salt)) {
             // Correct password. Create session.
             String sessionId = SessionId.createSessionId();
@@ -137,9 +146,14 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
             nzyme.getAuthenticationService().createSession(sessionId, user.get().uuid(), remoteIp);
 
+            nzyme.getAuthenticationService().markUserSuccessfulLogin(user.get());
+
             LOG.info("Creating session for user [{}]", username);
             return Response.status(Response.Status.CREATED).entity(SessionTokenResponse.create(sessionId)).build();
         } else {
+            // Failed login for an existing user.
+            user.ifPresent(u -> nzyme.getAuthenticationService().markUserFailedLogin(u));
+
             LOG.warn("Failed login attempt for user [{}].", username);
             return Response.status(Response.Status.FORBIDDEN).build();
         }

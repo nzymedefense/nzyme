@@ -2377,4 +2377,22 @@
         <dropNotNullConstraint tableName="auth_users" columnName="tenant_id" />
     </changeSet>
 
+    <changeSet id="add_user_login_bruteforce_detection" author="lennartkoopmann">
+        <addColumn tableName="auth_users">
+            <column name="failed_login_count" type="int">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_users">
+            <column name="last_failed_login" type="timestamp with time zone">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remove_unneeded_last_failed_login_timestamp" author="lennartkoopmann">
+        <dropColumn tableName="auth_users" columnName="last_failed_login" />
+    </changeSet>
+
 </databaseChangeLog>

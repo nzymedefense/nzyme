@@ -6,6 +6,7 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
 import {notify} from "react-notify-toast";
 import LastUserActivity from "../shared/LastUserActivity";
+import LoginThrottleWarning from "../shared/LoginThrottleWarning";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -83,6 +84,8 @@ function SuperAdminDetailsPage() {
             <h1>Super Administrator &quot;{user.email}&quot;</h1>
           </div>
         </div>
+
+        <LoginThrottleWarning show={user.is_login_throttled} />
 
         <div className="row mt-3">
           <div className="col-md-8">

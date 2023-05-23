@@ -650,6 +650,23 @@ public class AuthenticationService {
         );
     }
 
+    public void markUserFailedLogin(UserEntry user) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET failed_login_count = COALESCE(failed_login_count+1, 1) " +
+                                "WHERE uuid = :user_id")
+                        .bind("user_id", user.uuid())
+                        .execute()
+        );
+    }
+
+    public void markUserSuccessfulLogin(UserEntry user) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_users SET failed_login_count = NULL WHERE uuid = :user_id")
+                        .bind("user_id", user.uuid())
+                        .execute()
+        );
+    }
+
     public void createSession(String sessionId, UUID userId, String remoteIp) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_sessions(sessionid, user_id, remote_ip, created_at, " +

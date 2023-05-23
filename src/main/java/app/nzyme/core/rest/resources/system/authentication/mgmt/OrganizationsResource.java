@@ -1446,7 +1446,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 u.lastGeoAsn(),
                 permissions,
                 u.accessAllTenantTaps(),
-                tapPermissions
+                tapPermissions,
+                u.isLoginThrottled()
         );
     }
 

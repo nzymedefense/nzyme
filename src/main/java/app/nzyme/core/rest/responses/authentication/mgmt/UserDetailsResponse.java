@@ -63,7 +63,10 @@ public abstract class UserDetailsResponse {
     @JsonProperty("tap_permissions")
     public abstract List<UUID> tapPermissions();
 
-    public static UserDetailsResponse create(UUID id, UUID organization_id, UUID tenantId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions, boolean allowAccessAllTenantTaps, List<UUID> tapPermissions) {
+    @JsonProperty("is_login_throttled")
+    public abstract boolean isLoginThrottled();
+
+    public static UserDetailsResponse create(UUID id, UUID organization_id, UUID tenantId, String email, String name, DateTime createdAt, DateTime updatedAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, List<String> permissions, boolean allowAccessAllTenantTaps, List<UUID> tapPermissions, boolean isLoginThrottled) {
         return builder()
                 .id(id)
                 .organization_id(organization_id)
@@ -80,13 +83,14 @@ public abstract class UserDetailsResponse {
                 .permissions(permissions)
                 .allowAccessAllTenantTaps(allowAccessAllTenantTaps)
                 .tapPermissions(tapPermissions)
+                .isLoginThrottled(isLoginThrottled)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_UserDetailsResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(UUID id);
@@ -118,6 +122,8 @@ public abstract class UserDetailsResponse {
         public abstract Builder allowAccessAllTenantTaps(boolean allowAccessAllTenantTaps);
 
         public abstract Builder tapPermissions(List<UUID> tapPermissions);
+
+        public abstract Builder isLoginThrottled(boolean isLoginThrottled);
 
         public abstract UserDetailsResponse build();
     }
