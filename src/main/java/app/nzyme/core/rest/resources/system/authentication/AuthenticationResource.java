@@ -30,6 +30,7 @@ import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
 import app.nzyme.core.rest.responses.authentication.SessionUserInformationDetailsResponse;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
+import app.nzyme.core.security.authentication.RecoveryCodes;
 import app.nzyme.core.security.authentication.db.UserEntry;
 import app.nzyme.core.security.sessions.SessionId;
 import app.nzyme.core.security.sessions.db.SessionEntry;
@@ -47,7 +48,6 @@ import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
-import dev.samstevens.totp.recovery.RecoveryCodeGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
@@ -213,7 +213,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         if (Strings.isNullOrEmpty(user.get().totpSecret())) {
             // Store secret and recovery codes with user.
             SecretGenerator secretGenerator = new DefaultSecretGenerator();
-            RecoveryCodeGenerator recoveryCodeGenerator = new RecoveryCodeGenerator();
+            RecoveryCodes recoveryCodeGenerator = new RecoveryCodes();
 
             userSecret = secretGenerator.generate();
             recoveryCodes = Maps.newHashMap();
