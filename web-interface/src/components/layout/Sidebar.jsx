@@ -34,6 +34,10 @@ function Sidebar() {
             href={ApiRoutes.ETHERNET.DNS.INDEX}
             title="DNS"
             icon={<i className="sidebar-icon fa-solid fa-signs-post" />} />
+        <NavigationLink
+            href="#"
+            title="Beacons"
+            icon={<i className="sidebar-icon fa-solid fa-location-arrow" />} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="WiFi"
