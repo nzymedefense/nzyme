@@ -1,17 +1,21 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
+import {TapContext} from "../../App";
 
 const tapsService = new TapsService();
 
 function TapSelector(props) {
 
+  const tapContext = useContext(TapContext);
+
+  const selectedTaps = tapContext.taps;
+  const setSelectedTaps = tapContext.set;
   const [show, setShow] = useState(false);
 
   const [availableTaps, setAvailableTaps] = useState(null);
   const [availableTapsUUIDs, setAvailableTapsUUIDs] = useState(null);
   const [preSelectedTaps, setPreSelectedTaps] = useState(null);
-  const [selectedTaps, setSelectedTaps] = useState(null);
 
   const [buttonText, setButtonText] = useState(null);
 

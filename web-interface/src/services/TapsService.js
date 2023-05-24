@@ -8,25 +8,25 @@ class TapService {
     })
   }
 
-  findAllTaps (setTaps) {
+  findAllTaps(setTaps) {
     RESTClient.get('/taps', {}, function (response) {
       setTaps(response.data.taps)
     })
   }
 
-  findTap (uuid, setTap) {
+  findTap(uuid, setTap) {
     RESTClient.get('/taps/show/' + uuid, {}, function (response) {
       setTap(response.data)
     })
   }
 
-  findMetricsOfTap (uuid, setTapMetrics) {
+  findMetricsOfTap(uuid, setTapMetrics) {
     RESTClient.get('/taps/show/' + uuid + '/metrics', {}, function (response) {
       setTapMetrics(response.data)
     })
   }
 
-  findGaugeMetricHistogramOfTap (uuid, metricName, setTapMetric) {
+  findGaugeMetricHistogramOfTap(uuid, metricName, setTapMetric) {
     RESTClient.get('/taps/show/' + uuid + '/metrics/gauges/' + metricName + '/histogram', {}, function (response) {
       setTapMetric(response.data)
     })

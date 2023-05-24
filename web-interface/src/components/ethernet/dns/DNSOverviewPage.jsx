@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, {useContext, useEffect, useState} from 'react'
 import DNSStatisticsChart from './DNSStatisticsChart'
 import EthernetService from '../../../services/EthernetService'
 import DNSNumbers from './DNSNumbers'
 import DNSContactAttempsSummaryTable from './DNSContactAttempsSummaryTable'
-import TapSelector from "../../misc/TapSelector";
+import {TapContext} from "../../../App";
 
 function byteConversion (x) {
   return x / 1024
@@ -11,18 +11,17 @@ function byteConversion (x) {
 
 const ethernetService = new EthernetService()
 
-function fetchData (hours, setStatistics) {
-  ethernetService.findDNSStatistics(hours, setStatistics)
-}
-
 function DNSOverviewPage () {
   const [statistics, setStatistics] = useState(null)
 
+  const tapContext = useContext(TapContext);
+
+  const selectedTaps = tapContext.taps;
+
   useEffect(() => {
-    fetchData(24, setStatistics)
-    const id = setInterval(() => fetchData(24, setStatistics), 5000)
-    return () => clearInterval(id)
-  }, [setStatistics])
+    setStatistics(null);
+    ethernetService.findDNSStatistics(24, selectedTaps, setStatistics);
+  }, [selectedTaps])
 
   return (
     <div>

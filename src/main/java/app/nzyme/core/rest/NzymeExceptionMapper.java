@@ -25,6 +25,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.security.InvalidParameterException;
 
 @Provider
 public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
@@ -37,7 +38,7 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (t instanceof ParamException) {
+        if (t instanceof ParamException || t instanceof InvalidParameterException) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 

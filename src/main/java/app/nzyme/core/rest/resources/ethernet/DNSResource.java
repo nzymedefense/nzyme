@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.ethernet;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,27 +20,34 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Path("/api/ethernet/dns")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
-public class DNSResource {
+public class DNSResource extends TapDataHandlingResource {
 
     @Inject
     private NzymeNode nzyme;
 
     @GET
     @Path("/statistics")
-    public Response statistics(@QueryParam("hours") int hours) {
+    public Response statistics(@Context SecurityContext sc,
+                               @QueryParam("hours") int hours,
+                               @QueryParam("taps") String tapIds) {
         if (hours <= 0) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(hours);
+        List<UUID> taps = parseAndValidateTapIds(getAuthenticatedUser(sc), nzyme, tapIds);
+
+        List<DNSStatisticsBucket> statistics = nzyme.getEthernet().dns().getStatistics(hours, taps);
 
         Map<DateTime, DNSStatisticsBucketResponse> buckets = Maps.newHashMap();
         for (DNSStatisticsBucket b : statistics) {
@@ -53,10 +61,10 @@ public class DNSResource {
             ));
         }
 
-        DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(hours);
+        DNSTrafficSummary trafficSummary = nzyme.getEthernet().dns().getTrafficSummary(hours, taps);
 
         List<DNSPairSummaryResponse> pairSummary = Lists.newArrayList();
-        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(hours, 10)) {
+        for (DNSPairSummary ps : nzyme.getEthernet().dns().getPairSummary(hours, 10, taps)) {
             pairSummary.add(DNSPairSummaryResponse.create(ps.server(), ps.requestCount(), ps.clientCount()));
         }
 
