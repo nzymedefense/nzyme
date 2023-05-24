@@ -993,12 +993,12 @@ public class AuthenticationService {
             );
 
             // Delete all sessions of users that have been inactive for 15 minutes.
-            List<Long> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
+            List<UUID> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
                                     "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
                                     "WHERE s.mfa_valid = true AND u.last_activity < :timeout")
                             .bind("timeout", DateTime.now().minusMinutes(15))
-                            .mapTo(Long.class)
+                            .mapTo(UUID.class)
                             .list()
             );
 
