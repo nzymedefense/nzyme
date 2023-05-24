@@ -2395,4 +2395,111 @@
         <dropColumn tableName="auth_users" columnName="last_failed_login" />
     </changeSet>
 
+    <changeSet id="create_events" author="lennartkoopmann">
+        <createTable tableName="event_actions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="action_type" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="event_subscriptions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="subscription_type" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="reference" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="event_action_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="events">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="event_type" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="reference" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="actions_fired" type="text">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="change_events_layout" author="lennartkoopmann">
+        <addDefaultValue tableName="events" columnName="uuid" defaultValueComputed="gen_random_uuid()" />
+        <dropColumn tableName="events" columnName="title" />
+        <dropColumn tableName="events" columnName="description" />
+        <addColumn tableName="events">
+            <column name="details" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_timestamp_to_events" author="lennartkoopmann">
+        <addColumn tableName="events">
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

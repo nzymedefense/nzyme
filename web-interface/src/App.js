@@ -86,6 +86,7 @@ import EditOrganizationAdminPage
 import IntegrationsPage from "./components/system/integrations/IntegrationsPage";
 import UserProfilePage from "./components/userprofile/UserProfilePage";
 import ChangeOwnPasswordPage from "./components/userprofile/ChangeOwnPasswordPage";
+import EventsPage from "./components/system/events/EventsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -297,6 +298,9 @@ function App() {
 
                           { /* System/Integrations */ }
                           <Route path={ApiRoutes.SYSTEM.INTEGRATIONS.INDEX} element={<IntegrationsPage />} />
+
+                          { /* System/Events */ }
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.INDEX} element={<EventsPage />} />
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

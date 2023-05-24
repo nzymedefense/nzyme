@@ -20,6 +20,13 @@ class SystemService {
     RESTClient.put('/system/health/indicators/configuration', configuration, successCallback)
   }
 
+  findAllEvents(setEvents, limit, offset, eventTypes) {
+    RESTClient.get('/system/events',
+        {limit: limit, offset: offset, event_types: eventTypes.join(",")}, function (response) {
+          setEvents(response.data);
+        })
+  }
+
 }
 
 export default SystemService

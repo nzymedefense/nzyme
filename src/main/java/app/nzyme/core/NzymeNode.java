@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.rest.server.NzymeHttpServer;
@@ -94,6 +95,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
     List<Dot11Probe> getProbes();
     AlertsService getAlertsService();
     ContactManager getContactManager();
+    EventEngine getEventEngine();
 
     TapManager getTapManager();
 

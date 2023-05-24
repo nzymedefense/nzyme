@@ -79,6 +79,9 @@ const ApiRoutes = {
       GEOIP: {
         IPINFO: '/system/integrations/geoip/ipinfo'
       }
+    },
+    EVENTS: {
+      INDEX: '/system/events'
     }
   },
   REPORTING: {

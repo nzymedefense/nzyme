@@ -1,6 +1,8 @@
 package app.nzyme.core.rest.resources.user;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.events.types.SystemEvent;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.UpdateUserOwnPasswordRequest;
@@ -13,6 +15,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -87,6 +90,13 @@ public class UserProfileResource extends UserAuthenticatedResource {
         // Invalidate session of user.
         nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_PASSWORD_CHANGED,
+                DateTime.now(),
+                "Password of user [" + user.get().email() + "] was changed by same user."
+        ), user.get().organizationId(), user.get().tenantId());
+
         return Response.ok().build();
     }
 
@@ -112,6 +122,13 @@ public class UserProfileResource extends UserAuthenticatedResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         nzyme.getAuthenticationService().resetMFAOfUser(authenticatedUser.getUserId());
+
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_MFA_RESET,
+                DateTime.now(),
+                "MFA method of user [" + authenticatedUser.getEmail() + "] was reset by same user."
+        ), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
         return Response.ok().build();
     }

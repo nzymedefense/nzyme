@@ -21,6 +21,8 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
+import app.nzyme.core.events.EventEngine;
+import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.periodicals.distributed.NodeUpdater;
@@ -158,6 +160,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final AlertsService alerts;
     private final ContactManager contactManager;
     private final TrackerManager trackerManager;
+    private final EventEngine eventEngine;
 
     private final HealthMonitor healthMonitor;
 
@@ -256,6 +259,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.alerts = new AlertsService(this);
         this.alerts.registerCallbacks(configuration.alertCallbacks());
         this.contactManager = new ContactManager(this);
+        this.eventEngine = new EventEngineImpl(this);
 
         this.tablesService = new TablesService(this);
 
@@ -615,6 +619,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public AlertsService getAlertsService() {
         return alerts;
+    }
+
+    @Override
+    public EventEngine getEventEngine() {
+        return eventEngine;
     }
 
     @Override

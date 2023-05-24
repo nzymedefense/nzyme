@@ -2,6 +2,8 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.events.types.SystemEvent;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -25,6 +27,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -360,6 +363,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         // Invalidate session of user.
         nzyme.getAuthenticationService().deleteAllSessionsOfUser(userId);
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_PASSWORD_CHANGED,
+                DateTime.now(),
+                "Password of organization administrator [" + orgAdmin.get().email() + "] was changed by administrator."
+        ), organizationId, null);
+
         return Response.ok().build();
     }
 
@@ -417,6 +427,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         LOG.info("Reset MFA credentials of organization administrator [{}] on admin request.",
                 orgAdmin.get().email());
+
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_MFA_RESET,
+                DateTime.now(),
+                "MFA method of organization administrator [" + orgAdmin.get().email() + "] was reset by administrator."
+        ), organizationId, null);
 
         return Response.ok().build();
     }
@@ -833,6 +850,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         // Invalidate session of user.
         nzyme.getAuthenticationService().deleteAllSessionsOfUser(user.get().uuid());
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_PASSWORD_CHANGED,
+                DateTime.now(),
+                "Password of user [" + user.get().email() + "] was changed by administrator."
+        ), organizationId, tenantId);
+
         return Response.ok().build();
     }
 
@@ -859,6 +883,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().resetMFAOfUser(user.get().uuid());
 
         LOG.info("Reset MFA credentials of user [{}] on admin request.", user.get().email());
+
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_MFA_RESET,
+                DateTime.now(),
+                "MFA method of user [" + user.get().email() + "] was reset by administrator."
+        ), organizationId, tenantId);
 
         return Response.ok().build();
     }
@@ -1337,6 +1368,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         // Invalidate session of user.
         nzyme.getAuthenticationService().deleteAllSessionsOfUser(superAdmin.get().uuid());
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_PASSWORD_CHANGED,
+                DateTime.now(),
+                "Password of super administrator [" + superAdmin.get().email() + "] was changed by administrator."
+        ), null, null);
+
         return Response.ok().build();
     }
 
@@ -1380,6 +1418,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().resetMFAOfUser(superAdmin.get().uuid());
 
         LOG.info("Reset MFA credentials of super administrator [{}] on admin request.", superAdmin.get().email());
+
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_MFA_RESET,
+                DateTime.now(),
+                "MFA method of super administrator [" + superAdmin.get().email() + "] was reset by administrator."
+        ), null, null);
 
         return Response.ok().build();
     }

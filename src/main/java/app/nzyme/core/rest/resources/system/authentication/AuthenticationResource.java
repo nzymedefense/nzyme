@@ -19,6 +19,8 @@ package app.nzyme.core.rest.resources.system.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.events.types.SystemEvent;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.authentication.PreMFASecured;
@@ -79,9 +81,6 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
     @Inject
     private NzymeNode nzyme;
-
-    @Context
-    SecurityContext securityContext;
 
     @POST
     @Path("/session")
@@ -412,6 +411,15 @@ public class AuthenticationResource extends UserAuthenticatedResource {
             if (usedCodes.contains(req.code())) {
                 // This recovery code has been used before. Alert!
                 LOG.warn("User [{}] attempted to use previously used MFA recovery code.", user.get().email());
+
+                // System event.
+                nzyme.getEventEngine().processEvent(SystemEvent.create(
+                        SystemEventType.AUTHENTICAITON_MFA_RECOVERY_CODE_REUSED,
+                        DateTime.now(),
+                        "User [" + user.get().email() + "] attempted to reuse one of their previously utilized " +
+                                "MFA recovery codes for login, which was unsuccessful."
+                ), user.get().organizationId(), user.get().tenantId());
+
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             } else {
                 LOG.warn("User [{}] attempted to use invalid MFA recovery code.", user.get().email());
@@ -447,6 +455,13 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         LOG.info("User [{}] passed MFA challenge with recovery code.", user.get().email());
         nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
+
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_USED,
+                DateTime.now(),
+                "User [" + user.get().email() + "] used a MFA recovery code to log in."
+        ), user.get().organizationId(), user.get().tenantId());
 
         return Response.ok().build();
     }

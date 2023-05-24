@@ -11,7 +11,7 @@ function IntegrationsPage() {
           </div>
         </div>
 
-        <div className="row">
+        <div className="row mt-3">
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">

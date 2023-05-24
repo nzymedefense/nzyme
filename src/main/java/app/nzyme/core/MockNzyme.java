@@ -22,6 +22,8 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
+import app.nzyme.core.events.EventEngine;
+import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
 import app.nzyme.core.registry.RegistryChangeMonitorImpl;
@@ -121,6 +123,7 @@ public class MockNzyme implements NzymeNode {
     private final GeoIpService geoIp;
     private final Registry registry;
     private final RegistryChangeMonitor registryChangeMonitor;
+    private final EventEngine eventEngine;
 
     public MockNzyme() {
         this(0, Integer.MAX_VALUE, TimeUnit.DAYS);
@@ -170,6 +173,8 @@ public class MockNzyme implements NzymeNode {
 
         this.geoIp = new GeoIpService(this);
         this.geoIp.initialize();
+
+        this.eventEngine = new EventEngineImpl(this);
 
         this.nodeManager = new NodeManager(this);
         try {
@@ -467,6 +472,11 @@ public class MockNzyme implements NzymeNode {
 
     public Registry getRegistry(String s) {
         return registry;
+    }
+
+    @Override
+    public EventEngine getEventEngine() {
+        return eventEngine;
     }
 
     @Override

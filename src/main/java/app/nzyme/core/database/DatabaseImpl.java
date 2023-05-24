@@ -8,6 +8,7 @@ import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucketMapper;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshotMapper;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageEntryMapper;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueEntryMapper;
+import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.monitoring.health.db.IndicatorStatusMapper;
 import app.nzyme.core.registry.RegistryEntryMapper;
 import app.nzyme.core.security.authentication.db.OrganizationEntryMapper;
@@ -119,7 +120,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TapPermissionEntryMapper())
                 .registerRowMapper(new SessionEntryMapper())
                 .registerRowMapper(new SessionEntryWithUserDetailsMapper())
-                .registerRowMapper(new RegistryEntryMapper());
+                .registerRowMapper(new RegistryEntryMapper())
+                .registerRowMapper(new EventEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
