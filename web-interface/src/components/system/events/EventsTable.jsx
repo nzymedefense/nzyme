@@ -3,6 +3,7 @@ import SystemService from "../../../services/SystemService";
 import Paginator from "../../misc/Paginator";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import moment from "moment";
+import EventsTableFilters from "./EventsTableFilters";
 
 const systemService = new SystemService();
 
@@ -13,25 +14,22 @@ function EventsTable() {
   const [events, setEvents] = useState();
   const [page, setPage] = useState(1);
 
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(["SYSTEM", "DETECTION"]);
+
   useEffect(() => {
     setEvents(null);
-    systemService.findAllEvents(setEvents, PER_PAGE, (page-1)*PER_PAGE, ["SYSTEM", "DETECTION"]);
-  }, [page]);
+    systemService.findAllEvents(setEvents, PER_PAGE, (page-1)*PER_PAGE, filters);
+  }, [page, filters]);
 
   if (!events) {
     return <LoadingSpinner />
   }
 
-  if (events.events.length === 0) {
-    return (
-        <div className="alert alert-info mb-0">
-          No events found.
-        </div>
-    )
-  }
-
   return (
       <React.Fragment>
+        <EventsTableFilters show={showFilters} filters={filters} setFilters={setFilters} />
+
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>

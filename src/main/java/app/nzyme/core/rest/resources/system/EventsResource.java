@@ -21,6 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/api/system/events")
@@ -38,8 +39,9 @@ public class EventsResource extends UserAuthenticatedResource {
                                   @QueryParam("event_types") String eventTypes) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+
         if (Strings.isNullOrEmpty(eventTypes)) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.ok(EventsListResponse.create(0, Collections.emptyList())).build();
         }
 
         List<String> types = Splitter.on(",").splitToList(eventTypes);

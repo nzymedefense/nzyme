@@ -10,7 +10,9 @@ import java.util.UUID;
 public abstract class EventEntry {
 
     public abstract UUID uuid();
+    @Nullable
     public abstract UUID organizationId();
+    @Nullable
     public abstract UUID tenantId();
     public abstract String eventType();
     public abstract String reference();
