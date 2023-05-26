@@ -20,6 +20,11 @@ class IntegrationsService {
     RESTClient.put('/system/integrations/geoip/providers/ipinfofree/configuration', { change: newConfig }, successCallback, errorCallback)
   }
 
+  getSmtpConfiguration(setConfiguration) {
+    RESTClient.get('/system/integrations/smtp/configuration', {}, function(response) {
+      setConfiguration(response.data);
+    })
+  }
 
 }
 

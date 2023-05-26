@@ -1,5 +1,6 @@
 import React from "react";
 import GeoIpProviderOverview from "./geoip/GeoIpProviderOverview";
+import SmtpIntegration from "./smtp/SmtpIntegration";
 
 function IntegrationsPage() {
 
@@ -15,14 +16,31 @@ function IntegrationsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Geo IP</h3>
+                <h3>SMTP / Email</h3>
 
                 <p>
-                  Geo IP integrations let nzyme translate IP addresses into corresponding geo information like country,
-                  city or even  longitude and latitude as well as other related metadata.
+                  With the configuration of an SMTP connection, Nzyme gains the capability to send emails for alerts,
+                  system events, and other trigger actions.
                 </p>
 
-                <GeoIpProviderOverview />
+                <SmtpIntegration />
+              </div>
+            </div>
+          </div>
+
+          <div className="row mt-3">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Geo IP</h3>
+
+                  <p>
+                    By utilizing Geo IP integrations, nzyme can convert IP addresses into corresponding geographic
+                    information such as country, city, longitude, latitude, and other related metadata.
+                  </p>
+
+                  <GeoIpProviderOverview />
+                </div>
               </div>
             </div>
           </div>
