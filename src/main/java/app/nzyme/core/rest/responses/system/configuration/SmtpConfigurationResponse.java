@@ -23,7 +23,7 @@ public abstract class SmtpConfigurationResponse {
     @JsonProperty("smtp_password")
     public abstract EncryptedConfigurationEntryResponse password();
 
-    @JsonProperty("smtp_from")
+    @JsonProperty("smtp_from_address")
     public abstract ConfigurationEntryResponse from();
 
     public static SmtpConfigurationResponse create(ConfigurationEntryResponse transportStrategy, ConfigurationEntryResponse host, ConfigurationEntryResponse port, ConfigurationEntryResponse username, EncryptedConfigurationEntryResponse password, ConfigurationEntryResponse from) {

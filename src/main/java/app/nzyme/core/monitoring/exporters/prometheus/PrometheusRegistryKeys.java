@@ -1,5 +1,6 @@
 package app.nzyme.core.monitoring.exporters.prometheus;
 
+import app.nzyme.plugin.EncryptedRegistryKey;
 import app.nzyme.plugin.RegistryKey;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraint;
 
@@ -26,12 +27,11 @@ public class PrometheusRegistryKeys {
             false
     );
 
-    public static final RegistryKey REST_REPORT_PASSWORD = RegistryKey.create(
+    public static final EncryptedRegistryKey REST_REPORT_PASSWORD = EncryptedRegistryKey.create(
             "prometheus_rest_report_password",
             Optional.of(new ArrayList<>(){{
                 add(ConfigurationEntryConstraint.createStringLengthConstraint(1, 255));
             }}),
-            Optional.empty(),
             false
     );
 

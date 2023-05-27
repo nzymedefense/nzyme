@@ -16,7 +16,7 @@ public class SMTPConfigurationRegistryKeys {
                         new ArrayList<>(){{
                             add("SMTP");
                             add("SMTPS");
-                            add("SMTP_TLS");
+                            add("SMTP TLS");
                         }}
                 ));
             }}),

@@ -2,8 +2,11 @@ package app.nzyme.core.rest.resources.system.integrations;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
+import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
+import app.nzyme.core.rest.requests.SmtpIntegrationConfigurationUpdateRequest;
 import app.nzyme.core.rest.responses.system.configuration.SmtpConfigurationResponse;
 import app.nzyme.plugin.RegistryCryptoException;
+import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
@@ -20,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
+import java.util.Map;
 
 @Path("/api/system/integrations/smtp")
 @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
@@ -66,7 +70,7 @@ public class SmtpIntegrationResource {
                         SMTPConfigurationRegistryKeys.TRANSPORT_STRATEGY.key(),
                         "Transport Strategy",
                         transportStrategy,
-                        ConfigurationEntryValueType.STRING,
+                        ConfigurationEntryValueType.ENUM_STRINGS,
                         SMTPConfigurationRegistryKeys.TRANSPORT_STRATEGY.defaultValue().orElse(null),
                         SMTPConfigurationRegistryKeys.TRANSPORT_STRATEGY.requiresRestart(),
                         SMTPConfigurationRegistryKeys.TRANSPORT_STRATEGY.constraints().orElse(Collections.emptyList()),
@@ -128,7 +132,59 @@ public class SmtpIntegrationResource {
 
     @PUT
     @Path("/configuration")
-    public Response updateSmtpConfiguration() {
+    public Response updateSmtpConfiguration(SmtpIntegrationConfigurationUpdateRequest ur) {
+        if (ur.change().isEmpty()) {
+            LOG.info("Empty configuration parameters.");
+            return Response.status(422).build();
+        }
+
+        for (Map.Entry<String, Object> c : ur.change().entrySet()) {
+            boolean encrypted = false;
+            switch (c.getKey()) {
+                case "smtp_transport_strategy":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.TRANSPORT_STRATEGY, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "smtp_host":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.HOST, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "smtp_port":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.PORT, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "smtp_username":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.USERNAME, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "smtp_password":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.PASSWORD, c)) {
+                        return Response.status(422).build();
+                    }
+                    encrypted = true;
+                    break;
+                case "smtp_from_address":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.FROM_ADDRESS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+            }
+
+            if (encrypted) {
+                try {
+                    nzyme.getDatabaseCoreRegistry().setEncryptedValue(c.getKey(), c.getValue().toString());
+                } catch (RegistryCryptoException e) {
+                    return Response.serverError().build();
+                }
+            } else {
+                nzyme.getDatabaseCoreRegistry().setValue(c.getKey(), c.getValue().toString());
+            }
+        }
+
         return Response.ok().build();
     }
 

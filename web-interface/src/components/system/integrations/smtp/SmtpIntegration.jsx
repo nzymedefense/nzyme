@@ -16,7 +16,7 @@ function SmtpIntegration() {
   useEffect(() => {
     setConfiguration(null);
     integrationsService.getSmtpConfiguration(setConfiguration);
-  }, [])
+  }, [localRevision])
 
   if (!configuration) {
     return <LoadingSpinner />
@@ -44,7 +44,77 @@ function SmtpIntegration() {
             <ConfigurationModal config={configuration.smtp_transport_strategy}
                                 setGlobalConfig={setConfiguration}
                                 setLocalRevision={setLocalRevision}
-                                dbUpdateCallback={null} />
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
+        <tr>
+          <td>Hostname</td>
+          <td>
+            <ConfigurationValue value={configuration.smtp_host.value}
+                                configKey={configuration.smtp_host.key}
+                                required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.smtp_host}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
+        <tr>
+          <td>Port</td>
+          <td>
+            <ConfigurationValue value={configuration.smtp_port.value}
+                                configKey={configuration.smtp_port.key}
+                                required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.smtp_port}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
+        <tr>
+          <td>Username</td>
+          <td>
+            <ConfigurationValue value={configuration.smtp_username.value}
+                                configKey={configuration.smtp_username.key}
+                                required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.smtp_username}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
+        <tr>
+          <td>Password</td>
+          <td>
+            <EncryptedConfigurationValue isSet={configuration.smtp_password.value_is_set}
+                                         configKey={configuration.smtp_password.key}
+                                         required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.smtp_password}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
+        <tr>
+          <td>From Address</td>
+          <td>
+            <ConfigurationValue value={configuration.smtp_from_address.value}
+                                configKey={configuration.smtp_from_address.key}
+                                required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.smtp_from_address}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
           </td>
         </tr>
         </tbody>

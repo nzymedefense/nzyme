@@ -26,6 +26,10 @@ class IntegrationsService {
     })
   }
 
+  updateSmtpConfiguration(newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/integrations/smtp/configuration', { change: newConfig }, successCallback, errorCallback)
+  }
+
 }
 
 export default IntegrationsService

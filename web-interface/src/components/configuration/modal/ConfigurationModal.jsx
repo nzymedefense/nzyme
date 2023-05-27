@@ -40,16 +40,19 @@ function ConfigurationModal (props) {
           const cData = constraint.data
 
           switch (constraint.type) {
-            case 'STRING_LENGTH':
+            case "STRING_LENGTH":
               setFormDisabled(inputValue.length < cData.min || inputValue.length > cData.max)
               break
-            case 'NUMBER_RANGE':
+            case "NUMBER_RANGE":
               /* eslint-disable no-case-declarations */
               const numValue = parseInt(inputValue, 10)
               setFormDisabled(isNaN(numValue) || numValue < cData.min || numValue > cData.max)
               break
-            case 'SIMPLE_BOOLEAN':
+            case "SIMPLE_BOOLEAN":
               setFormDisabled(!(inputValue === true || inputValue === false))
+              break
+            case "ENUM_STRINGS":
+              setFormDisabled(!cData.strings.includes(inputValue))
               break
             default:
               setFormDisabled(true)
@@ -117,6 +120,7 @@ function ConfigurationModal (props) {
                             <ConfigurationInputField
                                 type={props.config.value_type}
                                 title={props.config.key_human_readable}
+                                constraints={props.config.constraints}
                                 fieldKey={key}
                                 value={inputValue}
                                 setValue={setInputValue}

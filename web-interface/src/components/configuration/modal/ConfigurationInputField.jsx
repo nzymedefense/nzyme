@@ -1,6 +1,9 @@
 import React from 'react'
 
 function ConfigurationInputField (props) {
+
+  const constraints = props.constraints;
+
   function updateValue (value) {
     if (!props.disabled) {
       props.setValue(value)
@@ -32,11 +35,30 @@ function ConfigurationInputField (props) {
                            role="switch"
                            id={'switch-' + props.fieldKey}
                            checked={ props.value }
-                           onChange={(e) => { updateValue(e.target.checked) } } />
+                           onChange={(e) => { updateValue(e.target.checked) }} />
                     <label className="form-check-label" htmlFor={'switch-' + props.fieldKey}>
                         {props.title}
                     </label>
                 </div>
+      )
+    case 'ENUM_STRINGS':
+      const options = [];
+      for (let i = 0; i < constraints.length; i++) {
+        const ctx = constraints[i];
+        if (ctx.type === "ENUM_STRINGS") {
+          for (let i = 0; i < ctx.data.strings.length; i++) {
+            options.push(ctx.data.strings[i]);
+          }
+        }
+      }
+
+      return (
+          <select className="form-select" onChange={(e) => { updateValue(e.target.value) }} defaultValue={props.value}>
+            <option value="">Please select an option</option>
+            {options.sort((a, b) => a.localeCompare(b)).map(function (option, i) {
+              return <option key={"configoption-" + i}>{option}</option>
+            })}
+          </select>
       )
     default:
       return <div>Unknown field type.</div>
