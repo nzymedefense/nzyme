@@ -17,6 +17,9 @@ const ApiRoutes = {
             CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/admins/create`,
             DETAILS: (organizationId, userId) => `/system/authentication/organizations/show/${organizationId}/admins/show/${userId}`,
             EDIT: (organizationId, userId) => `/system/authentication/organizations/show/${organizationId}/admins/show/${userId}/edit`,
+          },
+          ACTIONS: {
+            CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events/actions/create`,
           }
         },
         TENANTS: {
@@ -81,7 +84,7 @@ const ApiRoutes = {
       }
     },
     EVENTS: {
-      INDEX: '/system/events'
+      INDEX: '/system/events',
     }
   },
   REPORTING: {

@@ -104,7 +104,8 @@ function TenantDetailsPage() {
 
                       <TenantUsersTable organizationId={organization.id} tenantId={tenant.id} />
 
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)}
+                         className="btn btn-sm btn-secondary">
                         Create User
                       </a>
                     </div>
@@ -120,7 +121,8 @@ function TenantDetailsPage() {
 
                       <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id} />
 
-                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-primary">
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)}
+                         className="btn btn-sm btn-secondary">
                         Create Tap
                       </a>
                     </div>

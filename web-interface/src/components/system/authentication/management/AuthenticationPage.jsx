@@ -34,7 +34,8 @@ function AuthenticationPage() {
 
                     <OrganizationsTable />
 
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE} className="btn btn-sm btn-primary">
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.CREATE}
+                       className="btn btn-sm btn-secondary">
                       Create Organization
                     </a>
                   </div>
@@ -50,7 +51,8 @@ function AuthenticationPage() {
 
                     <SuperAdminTable />
 
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} className="btn btn-sm btn-primary">
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE}
+                       className="btn btn-sm btn-secondary">
                       Create Super Administrator
                     </a>
                   </div>

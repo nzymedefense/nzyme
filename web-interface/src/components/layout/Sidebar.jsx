@@ -110,7 +110,7 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-server" />} />
         <NavigationLink
             href={ApiRoutes.SYSTEM.EVENTS.INDEX}
-            title="Events &amp; Triggers"
+            title="Events &amp; Actions"
             icon={<i className="sidebar-icon fa-solid fa-bolt" />} />
         <NavigationLink
             href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}

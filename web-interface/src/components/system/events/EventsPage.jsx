@@ -7,7 +7,7 @@ function EventsPage() {
       <React.Fragment>
         <div className="row">
           <div className="col-md-12">
-            <h1>Events &amp; Triggers</h1>
+            <h1>Events &amp; Actions</h1>
           </div>
         </div>
 

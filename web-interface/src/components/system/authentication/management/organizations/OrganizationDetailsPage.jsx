@@ -9,6 +9,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 import {UserContext} from "../../../../../App";
+import Actions from "./actions/Actions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -106,7 +107,7 @@ function OrganizationDetailsPage() {
                     <TenantsTable organizationId={organization.id} />
 
                     <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(organization.id)}
-                       className="btn btn-sm btn-primary">
+                       className="btn btn-sm btn-secondary">
                       Create Tenant
                     </a>
                   </div>
@@ -123,9 +124,27 @@ function OrganizationDetailsPage() {
                     <OrganizationAdminTable organization={organization} />
 
                     <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(organization.id)}
-                       className="btn btn-sm btn-primary">
+                       className="btn btn-sm btn-secondary">
                       Create Organization Administrator
                     </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Event Actions</h3>
+
+                    <p>
+                      Events, such as system notifications or detection alerts, within this organization, have the
+                      ability to trigger the following actions. It is important to note that tenants of this
+                      organization must be assigned access to individual event actions.
+                    </p>
+
+                    <Actions organizationId={organizationId} />
                   </div>
                 </div>
               </div>
