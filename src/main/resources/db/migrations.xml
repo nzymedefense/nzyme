@@ -2505,5 +2505,27 @@
     <changeSet id="remove_tenant_id_from_event_actions" author="lennartkoopmann">
         <dropColumn tableName="event_actions" columnName="tenant_id" />
     </changeSet>
+    
+    <changeSet id="add_configuration_to_event_actions" author="lennartkoopmann">
+        <addColumn tableName="event_actions">
+            <column name="configuration" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_timestamps_to_event_actions" author="lennartkoopmann">
+        <addColumn tableName="event_actions">
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="event_actions">
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

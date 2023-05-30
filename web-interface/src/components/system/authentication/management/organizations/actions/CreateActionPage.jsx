@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import ActionFormProxy from "./ActionFormProxy";
@@ -12,6 +12,8 @@ function CreateActionPage() {
 
   const { organizationId } = useParams();
 
+  const [complete, setComplete] = useState(false);
+
   const [organization, setOrganization] = useState(null);
   const [type, setType] = useState("");
 
@@ -21,6 +23,10 @@ function CreateActionPage() {
 
   if (!organization) {
     return <LoadingSpinner />
+  }
+
+  if (complete) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
   }
 
   return (
@@ -68,7 +74,7 @@ function CreateActionPage() {
                   <option value="wasm_exec">Execute WASM binary</option>
                 </select>
 
-                <ActionFormProxy type={type} />
+                <ActionFormProxy type={type} setComplete={setComplete} organizationId={organization.id} />
 
               </div>
             </div>

@@ -138,6 +138,7 @@ public class NzymeHttpServer {
         resourceConfig.register(UserProfileResource.class);
         resourceConfig.register(EventsResource.class);
         resourceConfig.register(SmtpIntegrationResource.class);
+        resourceConfig.register(EventActionsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

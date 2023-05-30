@@ -1,17 +1,22 @@
 import React from "react";
-import SplunkActionForm from "./forms/SplunkActionForm";
+import CreateEmailAction from "./forms/email/CreateEmailAction";
+import CreateSplunkAction from "./forms/splunk/SplunkActionForm";
 
 function ActionFormProxy(props) {
 
+  const organizationId = props.organizationId;
   const type = props.type;
+  const setComplete = props.setComplete;
 
   if (!type) {
     return null;
   }
 
   switch (type) {
+    case "email":
+      return <CreateEmailAction setComplete={setComplete} organizationId={organizationId} />
     case "splunk_message":
-      return <SplunkActionForm />
+      return <CreateSplunkAction setComplete={setComplete} organizationId={organizationId} />
     default:
       return "TYPE NOT IMPLEMENTED."
   }

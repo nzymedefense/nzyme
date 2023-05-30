@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.db.EventEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
@@ -49,13 +50,13 @@ public class EventsResource extends UserAuthenticatedResource {
         List<EventEntry> events;
         long totalEvents;
         if (authenticatedUser.isSuperAdministrator()) {
-            events = nzyme.getEventEngine().findAllEventsOfAllOrganizations(types, limit, offset);
-            totalEvents = nzyme.getEventEngine().countAllEventsOfAllOrganizations();
+            events = ((EventEngineImpl) nzyme.getEventEngine()).findAllEventsOfAllOrganizations(types, limit, offset);
+            totalEvents = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventsOfAllOrganizations();
         } else {
             // Organization admin.
-            events = nzyme.getEventEngine()
+            events = ((EventEngineImpl) nzyme.getEventEngine())
                     .findAllEventsOfOrganization(types, authenticatedUser.getOrganizationId(), limit, offset);
-            totalEvents = nzyme.getEventEngine().countAllEventsOfOrganization(authenticatedUser.getOrganizationId());
+            totalEvents = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventsOfOrganization(authenticatedUser.getOrganizationId());
         }
 
         List<EventDetailsResponse> result = Lists.newArrayList();

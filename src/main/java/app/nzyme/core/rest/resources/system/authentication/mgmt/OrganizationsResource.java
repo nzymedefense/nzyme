@@ -2,6 +2,9 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.events.db.EventActionEntry;
+import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
@@ -10,6 +13,8 @@ import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.authentication.SessionDetailsResponse;
 import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.*;
+import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
+import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
@@ -1233,6 +1238,44 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().cycleTapSecret(organizationId, tenantId, tapId, newSecret);
 
         return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/events/actions")
+    public Response findAllEventActionsOfOrganization(@Context SecurityContext sc,
+                                                      @PathParam("organizationId") UUID organizationId,
+                                                      @QueryParam("limit") int limit,
+                                                      @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationExists(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long total = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventActionsOfOrganization(organizationId);
+        List<EventActionDetailsResponse> events = Lists.newArrayList();
+        for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
+                .findAllEventActionsOfOrganization(organizationId, limit, offset)) {
+            EventActionType actionType = EventActionType.valueOf(ea.actionType());
+
+            events.add(EventActionDetailsResponse.create(
+                    ea.uuid(),
+                    ea.organizationId(),
+                    actionType.name(),
+                    actionType.getHumanReadable(),
+                    ea.name(),
+                    ea.description(),
+                    ea.createdAt(),
+                    ea.updatedAt()
+            ));
+        }
+
+        return Response.ok(EventActionsListResponse.create(total, events)).build();
     }
 
     @GET

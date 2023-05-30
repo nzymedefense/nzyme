@@ -1,6 +1,6 @@
 import React from "react";
 
-function SplunkActionForm() {
+function CreateSplunkAction() {
 
   return (
       <form className="mt-3">
@@ -19,4 +19,4 @@ function SplunkActionForm() {
 
 }
 
-export default SplunkActionForm;
+export default CreateSplunkAction;

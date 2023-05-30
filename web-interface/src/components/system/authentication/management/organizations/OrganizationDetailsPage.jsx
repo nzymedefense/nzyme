@@ -9,7 +9,7 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 import {UserContext} from "../../../../../App";
-import Actions from "./actions/Actions";
+import OrganizationActions from "./actions/OrganizationActions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -144,7 +144,7 @@ function OrganizationDetailsPage() {
                       organization must be assigned access to individual event actions.
                     </p>
 
-                    <Actions organizationId={organizationId} />
+                    <OrganizationActions organizationId={organizationId} />
                   </div>
                 </div>
               </div>

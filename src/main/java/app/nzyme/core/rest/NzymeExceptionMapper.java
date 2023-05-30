@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest;
 
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ParamException;
@@ -41,6 +42,13 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
         if (t instanceof ParamException || t instanceof InvalidParameterException) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+
+        // AutoValue JSON creation error. Swallow but also log because this is likely a programming problem.
+        if (t instanceof ValueInstantiationException) {
+            LOG.error(t);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
 
         LOG.error("Error while handling REST call.", t);
         return Response.serverError().build();
