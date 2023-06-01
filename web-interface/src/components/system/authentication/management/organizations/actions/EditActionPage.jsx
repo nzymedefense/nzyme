@@ -1,17 +1,16 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import Routes from "../../../../../../util/ApiRoutes";
+import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import EventActionsService from "../../../../../../services/EventActionsService";
-import ActionDetailsProxy from "./details/ActionDetailsProxy";
-import moment from "moment";
+import ApiRoutes from "../../../../../../util/ApiRoutes";
+import ActionFormProxy from "./forms/ActionFormProxy";
+import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
-function ActionDetailsPage() {
+function EditActionPage() {
 
   const { organizationId } = useParams();
   const { actionId } = useParams();
@@ -19,10 +18,23 @@ function ActionDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [action, setAction] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
     authenticationMgmtService.findOrganization(organizationId, setOrganization);
     eventActionsService.findActionOfOrganization(organizationId, actionId, setAction)
   }, [organizationId, actionId])
+
+  const onSubmit = function(name, description, subjectPrefix, receivers) {
+    eventActionsService.updateEmailAction(action.id, name, description, subjectPrefix, receivers, function() {
+      notify.show('Action updated.', 'success');
+      setRedirect(true);
+    })
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)} />
+  }
 
   if (!organization || !action) {
     return <LoadingSpinner />
@@ -31,7 +43,7 @@ function ActionDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-9">
+          <div className="col-md-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item">
@@ -44,21 +56,21 @@ function ActionDetailsPage() {
                   </a>
                 </li>
                 <li className="breadcrumb-item">Actions</li>
-                <li className="breadcrumb-item active" aria-current="page">{action.name}</li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)}>
+                    {action.name}
+                  </a>
+                </li>
+                <li className="breadcrumb-item active" aria-current="page">Edit</li>
               </ol>
             </nav>
           </div>
 
-          <div className="col-md-3">
-            <span className="float-end">
-            <a className="btn btn-secondary"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizationId)}>
+          <div className="col-md-2">
+            <a className="btn btn-primary float-end"
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)}>
               Back
-            </a>{' '}
-            <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(organization.id, action.id)}>
-              Edit Action
             </a>
-            </span>
           </div>
 
           <div className="col-md-12">
@@ -72,42 +84,18 @@ function ActionDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Description</h3>
+                    <h3>Edit Action</h3>
 
-                    <p className="mb-0">
-                      {action.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                    <div className="mb-3">
+                      <label htmlFor="actionType" className="form-label">Action Type</label>
+                      <input type="text"
+                             className="form-control"
+                             id="actionType"
+                             value={action.action_type_human_readable}
+                             disabled={true} />
+                    </div>
 
-            <div className="row mt-3">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h3>Details</h3>
-
-                    <dl>
-                      <dt>Type</dt>
-                      <dd title={action.action_type}>{action.action_type_human_readable}</dd>
-                      <dt>Created at</dt>
-                      <dd title={moment(action.created_at).format()}>{moment(action.created_at).fromNow()}</dd>
-                      <dt>Updated at</dt>
-                      <dd title={moment(action.updated_at).format()}>{moment(action.updated_at).fromNow()}</dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="row mt-3">
-              <div className="col-md-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h3>Configuration</h3>
-
-                    <ActionDetailsProxy action={action} />
+                    <ActionFormProxy action={action} onSubmit={onSubmit} type={action.action_type} buttonText="Update Action" />
                   </div>
                 </div>
               </div>
@@ -116,7 +104,6 @@ function ActionDetailsPage() {
         </div>
       </React.Fragment>
   )
-
 }
 
-export default ActionDetailsPage;
+export default EditActionPage;

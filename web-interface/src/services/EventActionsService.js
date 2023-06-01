@@ -26,6 +26,15 @@ class EventActionsService {
     }, successCallback);
   }
 
+  updateEmailAction(actionId, name, description, subjectPrefix, receivers, successCallback) {
+    RESTClient.put("/system/events/actions/email/" + actionId, {
+      "name": name,
+      "description": description,
+      "subject_prefix": subjectPrefix,
+      "receivers": receivers
+    }, successCallback);
+  }
+
 }
 
 export default EventActionsService;

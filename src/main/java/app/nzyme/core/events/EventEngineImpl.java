@@ -122,6 +122,16 @@ public class EventEngineImpl implements EventEngine {
         );
     }
 
+    public Optional<EventActionEntry> findEventAction(UUID actionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM event_actions WHERE uuid = :action_id")
+                        .bind("action_id", actionId)
+                        .mapTo(EventActionEntry.class)
+                        .findOne()
+        );
+    }
+
+
     public Optional<EventActionEntry> findEventActionOfOrganization(UUID organizationId, UUID actionId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM event_actions WHERE organization_id = :organization_id " +
@@ -145,6 +155,18 @@ public class EventEngineImpl implements EventEngine {
                         .bind("uuid", UUID.randomUUID())
                         .bind("action_type", actionType)
                         .bind("organization_id", organizationId)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("configuration", configuration)
+                        .execute()
+        );
+    }
+
+    public void updateAction(UUID actionId, String name, String description, String configuration) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE event_actions SET name = :name, description = :description, " +
+                                "configuration = :configuration, updated_at = NOW() WHERE uuid = :id")
+                        .bind("id", actionId)
                         .bind("name", name)
                         .bind("description", description)
                         .bind("configuration", configuration)

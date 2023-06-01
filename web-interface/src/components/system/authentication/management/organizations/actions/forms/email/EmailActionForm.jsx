@@ -3,18 +3,32 @@ import EmailReceiverList from "./EmailReceiverList";
 
 function EmailActionForm(props) {
 
+  const action = props.action; // for edit
+  const buttonText = props.buttonText;
   const onSubmit = props.onSubmit;
 
   const EMAILREGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [subjectPrefix, setSubjectPrefix] = useState("[nzyme]");
+  const [name, setName] = useState(action && action.name ? action.name : "");
+  const [description, setDescription] = useState(action && action.description ? action.description : "");
+  const [subjectPrefix, setSubjectPrefix] = useState(action && action.configuration && action.configuration.subject_prefix
+      ? action.configuration.subject_prefix : "[nzyme]");
   const [newReceiverInput, setNewReceiverInput] = useState("");
-  const [receivers, setReceivers] = useState([]);
+  const [receivers, setReceivers] = useState(action && action.configuration && action.configuration.receivers
+      ? action.configuration.receivers : []);
+
+  const [submitText, setSubmitText] = useState(buttonText);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submit = function() {
+    setIsSubmitting(true);
+    setSubmitText("Submitting ... Please Wait")
+
+    onSubmit(name, description, subjectPrefix, receivers);
+  }
 
   const formReady = function() {
-    return subjectPrefix && subjectPrefix !== ""
+    return !isSubmitting && subjectPrefix && subjectPrefix !== ""
   }
 
   const addReceiverReady = function() {
@@ -99,8 +113,8 @@ function EmailActionForm(props) {
         <button type="button"
                 className="btn btn-primary"
                 disabled={!formReady()}
-                onClick={() => onSubmit(name, description, subjectPrefix, receivers)}>
-          Create Action
+                onClick={submit}>
+          {submitText}
         </button>
       </form>
   )

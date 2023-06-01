@@ -10,8 +10,8 @@ import java.util.UUID;
 @AutoValue
 public abstract class EventActionDetailsResponse {
 
-    @JsonProperty("uuid")
-    public abstract UUID uuid();
+    @JsonProperty("id")
+    public abstract UUID id();
 
     @JsonProperty("organization_id")
     public abstract UUID organizationId();
@@ -37,9 +37,9 @@ public abstract class EventActionDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static EventActionDetailsResponse create(UUID uuid, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, DateTime createdAt, DateTime updatedAt) {
+    public static EventActionDetailsResponse create(UUID id, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, DateTime createdAt, DateTime updatedAt) {
         return builder()
-                .uuid(uuid)
+                .id(id)
                 .organizationId(organizationId)
                 .actionType(actionType)
                 .actionTypeHumanReadable(actionTypeHumanReadable)
@@ -57,7 +57,7 @@ public abstract class EventActionDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder uuid(UUID uuid);
+        public abstract Builder id(UUID id);
 
         public abstract Builder organizationId(UUID organizationId);
 

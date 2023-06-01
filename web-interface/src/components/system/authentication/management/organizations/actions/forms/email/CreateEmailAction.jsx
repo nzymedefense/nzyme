@@ -17,7 +17,7 @@ function CreateEmailAction(props) {
     })
   }
 
-  return <EmailActionForm onSubmit={onSubmit} />
+  return <EmailActionForm onSubmit={onSubmit} buttonText="Create Action" />
 
 }
 

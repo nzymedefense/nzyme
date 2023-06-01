@@ -42,7 +42,7 @@ function ActionsTable(props) {
                   </td>
                   <td>{action.name}</td>
                   <td>
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.uuid)}>
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.id)}>
                       Details
                     </a>
                   </td>

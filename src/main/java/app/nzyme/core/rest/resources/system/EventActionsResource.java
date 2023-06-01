@@ -10,6 +10,7 @@ import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateEmailEventActionRequest;
+import app.nzyme.core.rest.requests.UpdateEmailEventActionRequest;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -17,7 +18,6 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.google.common.io.BaseEncoding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,9 +29,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/system/events/actions")
-
 @Produces(MediaType.APPLICATION_JSON)
 public class EventActionsResource extends UserAuthenticatedResource {
 
@@ -57,7 +58,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
 
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
-    @Path("email")
+    @Path("/email")
     public Response createEmailAction(@Context SecurityContext sc, @Valid CreateEmailEventActionRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
@@ -79,6 +80,46 @@ public class EventActionsResource extends UserAuthenticatedResource {
         ((EventEngineImpl) nzyme.getEventEngine()).createEventAction(
                 req.organizationId(),
                 EventActionType.EMAIL,
+                req.name(),
+                req.description(),
+                config
+        );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/email/{actionId}")
+    public Response updateEmailAction(@Context SecurityContext sc,
+                                      @Valid UpdateEmailEventActionRequest req,
+                                      @PathParam("actionId") UUID actionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Find action.
+        Optional<EventActionEntry> action = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(actionId);
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check permissions.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (!action.get().organizationId().equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        String config;
+        try {
+            config = om.writeValueAsString(EmailActionConfiguration.create(req.subjectPrefix(), req.receivers()));
+        } catch (JsonProcessingException e) {
+            LOG.error("Could not create action configuration.", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        ((EventEngineImpl) nzyme.getEventEngine()).updateAction(
+                action.get().uuid(),
                 req.name(),
                 req.description(),
                 config

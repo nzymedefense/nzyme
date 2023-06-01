@@ -4,7 +4,7 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import ActionFormProxy from "./forms/ActionFormProxy";
+import CreateActionProxy from "./forms/CreateActionProxy";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -74,7 +74,7 @@ function CreateActionPage() {
                   <option value="wasm_exec">Execute WASM binary</option>
                 </select>
 
-                <ActionFormProxy type={type} setComplete={setComplete} organizationId={organization.id} />
+                <CreateActionProxy type={type} setComplete={setComplete} organizationId={organization.id} />
               </div>
             </div>
           </div>

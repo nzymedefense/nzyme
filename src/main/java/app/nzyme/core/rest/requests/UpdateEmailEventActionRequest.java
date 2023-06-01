@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @AutoValue
-public abstract class CreateEmailEventActionRequest {
+public abstract class UpdateEmailEventActionRequest {
 
     @NotEmpty
     public abstract String name();
@@ -25,26 +25,21 @@ public abstract class CreateEmailEventActionRequest {
     @NotNull
     public abstract List<String> receivers();
 
-    @Nullable
-    public abstract UUID organizationId();
-
     @JsonCreator
-    public static CreateEmailEventActionRequest create(@JsonProperty("name") String name,
+    public static UpdateEmailEventActionRequest create(@JsonProperty("name") String name,
                                                        @JsonProperty("description") String description,
                                                        @JsonProperty("subject_prefix") String subjectPrefix,
-                                                       @JsonProperty("receivers") List<String> receivers,
-                                                       @JsonProperty("organization_id") UUID organizationId) {
+                                                       @JsonProperty("receivers") List<String> receivers) {
         return builder()
                 .name(name)
                 .description(description)
                 .subjectPrefix(subjectPrefix)
                 .receivers(receivers)
-                .organizationId(organizationId)
                 .build();
     }
 
     public static Builder builder() {
-        return new AutoValue_CreateEmailEventActionRequest.Builder();
+        return new AutoValue_UpdateEmailEventActionRequest.Builder();
     }
 
     @AutoValue.Builder
@@ -57,8 +52,6 @@ public abstract class CreateEmailEventActionRequest {
 
         public abstract Builder receivers(List<String> receivers);
 
-        public abstract Builder organizationId(UUID organizationId);
-
-        public abstract CreateEmailEventActionRequest build();
+        public abstract UpdateEmailEventActionRequest build();
     }
 }

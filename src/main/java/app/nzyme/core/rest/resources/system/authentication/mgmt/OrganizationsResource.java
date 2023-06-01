@@ -40,6 +40,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
