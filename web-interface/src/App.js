@@ -88,6 +88,7 @@ import UserProfilePage from "./components/userprofile/UserProfilePage";
 import ChangeOwnPasswordPage from "./components/userprofile/ChangeOwnPasswordPage";
 import EventsPage from "./components/system/events/EventsPage";
 import CreateActionPage from "./components/system/authentication/management/organizations/actions/CreateActionPage";
+import ActionDetailsPage from "./components/system/authentication/management/organizations/actions/ActionDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -265,6 +266,7 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.CREATE(':organizationId')} element={<CreateActionPage />} />
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<ActionDetailsPage />} />
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>

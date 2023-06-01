@@ -9,6 +9,7 @@ import app.nzyme.core.events.types.SystemEvent;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class EventEngineImpl implements EventEngine {
@@ -118,6 +119,17 @@ public class EventEngineImpl implements EventEngine {
                         .bind("offset", offset)
                         .mapTo(EventActionEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<EventActionEntry> findEventActionOfOrganization(UUID organizationId, UUID actionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM event_actions WHERE organization_id = :organization_id " +
+                                "AND uuid = :action_id")
+                        .bind("organization_id", organizationId)
+                        .bind("action_id", actionId)
+                        .mapTo(EventActionEntry.class)
+                        .findOne()
         );
     }
 

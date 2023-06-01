@@ -1,9 +1,11 @@
 import React from "react";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import Paginator from "../../../../../misc/Paginator";
+import ApiRoutes from "../../../../../../util/ApiRoutes";
 
 function ActionsTable(props) {
 
+  const organizationId = props.organizationId;
   const actions = props.actions;
   const perPage = props.perPage;
   const page = props.page;
@@ -40,7 +42,9 @@ function ActionsTable(props) {
                   </td>
                   <td>{action.name}</td>
                   <td>
-                    <a href="">Details</a>
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.uuid)}>
+                      Details
+                    </a>
                   </td>
                 </tr>
             )

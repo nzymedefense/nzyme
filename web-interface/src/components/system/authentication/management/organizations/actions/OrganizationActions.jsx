@@ -20,7 +20,8 @@ function OrganizationActions(props) {
 
   return (
       <React.Fragment>
-        <ActionsTable actions={actions}
+        <ActionsTable organizationId={organizationId}
+                      actions={actions}
                       perPage={PER_PAGE}
                       page={page}
                       setPage={setPage} />

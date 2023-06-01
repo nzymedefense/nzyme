@@ -1279,6 +1279,44 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/events/actions/show/{actionId}")
+    public Response findEventActionOfOrganization(@Context SecurityContext sc,
+                                                      @PathParam("organizationId") UUID organizationId,
+                                                      @PathParam("actionId") UUID actionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationExists(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<EventActionEntry> ea = ((EventEngineImpl) nzyme.getEventEngine()).findEventActionOfOrganization(
+                organizationId,
+                actionId
+        );
+
+        if (ea.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        EventActionType actionType = EventActionType.valueOf(ea.get().actionType());
+        return Response.ok(EventActionDetailsResponse.create(
+                ea.get().uuid(),
+                ea.get().organizationId(),
+                actionType.name(),
+                actionType.getHumanReadable(),
+                ea.get().name(),
+                ea.get().description(),
+                ea.get().createdAt(),
+                ea.get().updatedAt()
+        )).build();
+    }
+
+    @GET
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins")
     public Response findAllSuperAdministrators(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {

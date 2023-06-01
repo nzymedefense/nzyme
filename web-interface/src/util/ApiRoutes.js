@@ -19,6 +19,7 @@ const ApiRoutes = {
             EDIT: (organizationId, userId) => `/system/authentication/organizations/show/${organizationId}/admins/show/${userId}/edit`,
           },
           ACTIONS: {
+            DETAILS: (organizationId, actionId) => `/system/authentication/organizations/show/${organizationId}/events/actions/show/${actionId}`,
             CREATE: (organizationId) => `/system/authentication/organizations/show/${organizationId}/events/actions/create`,
           }
         },
