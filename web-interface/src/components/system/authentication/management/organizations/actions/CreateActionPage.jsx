@@ -4,7 +4,7 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import ActionFormProxy from "./ActionFormProxy";
+import ActionFormProxy from "./forms/ActionFormProxy";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -75,7 +75,6 @@ function CreateActionPage() {
                 </select>
 
                 <ActionFormProxy type={type} setComplete={setComplete} organizationId={organization.id} />
-
               </div>
             </div>
           </div>

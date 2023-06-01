@@ -1,6 +1,6 @@
 import React from "react";
-import CreateEmailAction from "./forms/email/CreateEmailAction";
-import CreateSplunkAction from "./forms/splunk/SplunkActionForm";
+import CreateEmailAction from "../forms/email/CreateEmailAction";
+import CreateSplunkAction from "../forms/splunk/SplunkActionForm";
 
 function ActionFormProxy(props) {
 

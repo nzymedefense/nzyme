@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.events.types.SystemEvent;
@@ -27,7 +28,11 @@ import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,10 +45,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Path("/api/system/authentication/mgmt/organizations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -1261,18 +1263,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<EventActionDetailsResponse> events = Lists.newArrayList();
         for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
                 .findAllEventActionsOfOrganization(organizationId, limit, offset)) {
-            EventActionType actionType = EventActionType.valueOf(ea.actionType());
-
-            events.add(EventActionDetailsResponse.create(
-                    ea.uuid(),
-                    ea.organizationId(),
-                    actionType.name(),
-                    actionType.getHumanReadable(),
-                    ea.name(),
-                    ea.description(),
-                    ea.createdAt(),
-                    ea.updatedAt()
-            ));
+            events.add(EventActionUtilities.eventActionEntryToResponse(ea));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -1303,17 +1294,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        EventActionType actionType = EventActionType.valueOf(ea.get().actionType());
-        return Response.ok(EventActionDetailsResponse.create(
-                ea.get().uuid(),
-                ea.get().organizationId(),
-                actionType.name(),
-                actionType.getHumanReadable(),
-                ea.get().name(),
-                ea.get().description(),
-                ea.get().createdAt(),
-                ea.get().updatedAt()
-        )).build();
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get())).build();
     }
 
     @GET

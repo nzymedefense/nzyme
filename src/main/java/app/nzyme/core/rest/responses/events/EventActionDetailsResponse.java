@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.Map;
 import java.util.UUID;
 
 @AutoValue
@@ -27,13 +28,16 @@ public abstract class EventActionDetailsResponse {
     @JsonProperty("description")
     public abstract String description();
 
+    @JsonProperty("configuration")
+    public abstract Map<String, Object> configuration();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static EventActionDetailsResponse create(UUID uuid, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, DateTime createdAt, DateTime updatedAt) {
+    public static EventActionDetailsResponse create(UUID uuid, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -41,6 +45,7 @@ public abstract class EventActionDetailsResponse {
                 .actionTypeHumanReadable(actionTypeHumanReadable)
                 .name(name)
                 .description(description)
+                .configuration(configuration)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -63,6 +68,8 @@ public abstract class EventActionDetailsResponse {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder configuration(Map<String, Object> configuration);
 
         public abstract Builder createdAt(DateTime createdAt);
 

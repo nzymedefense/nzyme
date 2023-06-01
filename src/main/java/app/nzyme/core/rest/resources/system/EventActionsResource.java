@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.EventActionType;
@@ -13,6 +14,7 @@ import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
@@ -47,18 +49,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
         List<EventActionDetailsResponse> events = Lists.newArrayList();
         for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
                 .findAllEventActionsOfAllOrganizations(limit, offset)) {
-            EventActionType actionType = EventActionType.valueOf(ea.actionType());
-
-            events.add(EventActionDetailsResponse.create(
-                    ea.uuid(),
-                    ea.organizationId(),
-                    actionType.name(),
-                    actionType.getHumanReadable(),
-                    ea.name(),
-                    ea.description(),
-                    ea.createdAt(),
-                    ea.updatedAt()
-            ));
+            events.add(EventActionUtilities.eventActionEntryToResponse(ea));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -77,11 +68,10 @@ public class EventActionsResource extends UserAuthenticatedResource {
             }
         }
 
-        String encryptedConfig;
+        String config;
         try {
-            String config = om.writeValueAsString(EmailActionConfiguration.create(req.subjectPrefix(), req.receivers()));
-            encryptedConfig = BaseEncoding.base64().encode(nzyme.getCrypto().encryptWithClusterKey(config.getBytes()));
-        } catch (Exception | Crypto.CryptoOperationException e) {
+            config = om.writeValueAsString(EmailActionConfiguration.create(req.subjectPrefix(), req.receivers()));
+        } catch (JsonProcessingException e) {
             LOG.error("Could not create action configuration.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -91,7 +81,7 @@ public class EventActionsResource extends UserAuthenticatedResource {
                 EventActionType.EMAIL,
                 req.name(),
                 req.description(),
-                encryptedConfig
+                config
         );
 
         return Response.ok().build();
