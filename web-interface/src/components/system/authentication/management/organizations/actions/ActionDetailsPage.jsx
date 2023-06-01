@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import Routes from "../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
@@ -7,6 +7,7 @@ import AuthenticationManagementService from "../../../../../../services/Authenti
 import EventActionsService from "../../../../../../services/EventActionsService";
 import ActionDetailsProxy from "./details/ActionDetailsProxy";
 import moment from "moment";
+import {notify} from "react-notify-toast";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -19,10 +20,27 @@ function ActionDetailsPage() {
   const [organization, setOrganization] = useState(null);
   const [action, setAction] = useState(null);
 
+  const [deleted, setDeleted] = useState(false);
+
   useEffect(() => {
     authenticationMgmtService.findOrganization(organizationId, setOrganization);
     eventActionsService.findActionOfOrganization(organizationId, actionId, setAction)
   }, [organizationId, actionId])
+
+  const onDelete = function() {
+    if (!confirm("Really delete action?")) {
+      return;
+    }
+
+    eventActionsService.deleteAction(action.id, function() {
+      setDeleted(true);
+      notify.show('Action deleted.', 'success');
+    })
+  }
+
+  if (deleted) {
+    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
+  }
 
   if (!organization || !action) {
     return <LoadingSpinner />
@@ -52,7 +70,7 @@ function ActionDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
             <a className="btn btn-secondary"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organizationId)}>
+               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
               Back
             </a>{' '}
             <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(organization.id, action.id)}>
@@ -67,7 +85,7 @@ function ActionDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-md-8">
             <div className="row">
               <div className="col-md-12">
                 <div className="card">
@@ -108,6 +126,27 @@ function ActionDetailsPage() {
                     <h3>Configuration</h3>
 
                     <ActionDetailsProxy action={action} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Delete Action</h3>
+
+                    <p>
+                      <strong>Note:</strong> You can only delete actions that are not currently subscribed to any events
+                      like system notifiations or detection alerts.
+                    </p>
+
+                    <button type="button" className="btn btn-danger" onClick={onDelete}>
+                      Delete Action
+                    </button>
                   </div>
                 </div>
               </div>

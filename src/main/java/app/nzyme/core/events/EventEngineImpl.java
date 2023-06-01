@@ -174,4 +174,11 @@ public class EventEngineImpl implements EventEngine {
         );
     }
 
+    public void deleteEventAction(UUID actionId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM event_actions WHERE uuid = :action_id")
+                        .bind("action_id", actionId)
+                        .execute()
+        );
+    }
 }

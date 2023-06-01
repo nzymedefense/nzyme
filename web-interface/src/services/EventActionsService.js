@@ -16,6 +16,11 @@ class EventActionsService {
         })
   }
 
+  deleteAction(actionId, successCallback) {
+    RESTClient.delete("/system/events/actions/show/" + actionId,
+        {}, successCallback);
+  }
+
   createEmailAction(organizationId, name, description, subjectPrefix, receivers, successCallback) {
     RESTClient.post("/system/events/actions/email", {
       "organization_id": organizationId,

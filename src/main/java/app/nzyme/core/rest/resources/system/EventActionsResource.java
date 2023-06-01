@@ -56,6 +56,32 @@ public class EventActionsResource extends UserAuthenticatedResource {
         return Response.ok(EventActionsListResponse.create(total, events)).build();
     }
 
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{actionId}")
+    public Response deleteAction(@Context SecurityContext sc,
+                                 @PathParam("actionId") UUID actionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Find action.
+        Optional<EventActionEntry> action = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(actionId);
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check permissions.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (!action.get().organizationId().equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        ((EventEngineImpl) nzyme.getEventEngine()).deleteEventAction(actionId);
+
+        return Response.ok().build();
+    }
+
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/email")
