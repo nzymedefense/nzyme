@@ -5,7 +5,6 @@ import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.db.EventActionEntry;
-import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
@@ -28,11 +27,7 @@ import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +35,6 @@ import org.bouncycastle.util.encoders.Base64;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -1274,8 +1268,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/events/actions/show/{actionId}")
     public Response findEventActionOfOrganization(@Context SecurityContext sc,
-                                                      @PathParam("organizationId") UUID organizationId,
-                                                      @PathParam("actionId") UUID actionId) {
+                                                  @PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("actionId") UUID actionId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationExists(organizationId)) {

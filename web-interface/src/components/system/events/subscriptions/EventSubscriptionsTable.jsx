@@ -1,6 +1,7 @@
 import React from "react";
 import Paginator from "../../../misc/Paginator";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function EventSubscriptionsTable(props) {
 
@@ -32,7 +33,7 @@ function EventSubscriptionsTable(props) {
                   <td title={type.id}>{type.name}</td>
                   <td>{type.subscriptions}</td>
                   <td>
-                    <a href="#">Manage</a>
+                    <a href={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(type.id.toLowerCase())}>Manage</a>
                   </td>
                 </tr>
             )

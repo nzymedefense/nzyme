@@ -15,7 +15,8 @@ public class EventActionEntryMapper implements RowMapper<EventActionEntry> {
         return EventActionEntry.create(
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("action_type"),
-                UUID.fromString(rs.getString("organization_id")),
+                rs.getString("organization_id") == null ?
+                        null : UUID.fromString(rs.getString("organization_id")),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("configuration"),

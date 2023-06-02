@@ -87,9 +87,16 @@ import IntegrationsPage from "./components/system/integrations/IntegrationsPage"
 import UserProfilePage from "./components/userprofile/UserProfilePage";
 import ChangeOwnPasswordPage from "./components/userprofile/ChangeOwnPasswordPage";
 import EventsPage from "./components/system/events/EventsPage";
-import CreateActionPage from "./components/system/authentication/management/organizations/actions/CreateActionPage";
-import ActionDetailsPage from "./components/system/authentication/management/organizations/actions/ActionDetailsPage";
-import EditActionPage from "./components/system/authentication/management/organizations/actions/EditActionPage";
+import EventSubscriptionDetailsPage from "./components/system/events/subscriptions/EventSubscriptionDetailsPage";
+import CreateOrganizationActionPage
+  from "./components/system/authentication/management/organizations/actions/CreateOrganizationActionPage";
+import OrganizationActionDetailsPage
+  from "./components/system/authentication/management/organizations/actions/OrganizationActionDetailsPage";
+import EditOrganizationActionPage
+  from "./components/system/authentication/management/organizations/actions/EditOrganizationActionPage";
+import ActionDetailsPage from "./components/system/events/actions/ActionDetailsPage";
+import CreateActionPage from "./components/system/events/actions/CreateActionPage";
+import EditActionPage from "./components/system/events/actions/EditActionPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -266,9 +273,9 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.CREATE(':organizationId')} element={<CreateOrganizationAdministratorPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.DETAILS(':organizationId', ':userId')} element={<OrganizationAdminDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ADMINS.EDIT(':organizationId', ':userId')} element={<EditOrganizationAdminPage />}/>
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.CREATE(':organizationId')} element={<CreateActionPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<ActionDetailsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditActionPage />} />
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.CREATE(':organizationId')} element={<CreateOrganizationActionPage />} />
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<OrganizationActionDetailsPage />} />
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditOrganizationActionPage />} />
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
@@ -307,6 +314,10 @@ function App() {
 
                           { /* System/Events */ }
                           <Route path={ApiRoutes.SYSTEM.EVENTS.INDEX} element={<EventsPage />} />
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(':eventId')} element={<EventSubscriptionDetailsPage />} />
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(':actionId')} element={<ActionDetailsPage />} />
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(':actionId')} element={<EditActionPage />} />
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.CREATE} element={<CreateActionPage />} />
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

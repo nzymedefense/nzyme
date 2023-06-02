@@ -3,6 +3,7 @@ package app.nzyme.core.events.db;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue
@@ -10,6 +11,7 @@ public abstract class EventActionEntry {
 
     public abstract UUID uuid();
     public abstract String actionType();
+    @Nullable
     public abstract UUID organizationId();
     public abstract String name();
     public abstract String description();

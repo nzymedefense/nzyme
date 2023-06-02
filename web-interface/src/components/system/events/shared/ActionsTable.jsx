@@ -1,7 +1,7 @@
 import React from "react";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import Paginator from "../../../../../misc/Paginator";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../util/ApiRoutes";
+import Paginator from "../../../misc/Paginator";
 
 function ActionsTable(props) {
 
@@ -28,23 +28,23 @@ function ActionsTable(props) {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>Type</th>
             <th>Name</th>
-            <th>&nbsp;</th>
+            <th>Type</th>
           </tr>
           </thead>
           <tbody>
           {actions.actions.map((action, i) => {
             return (
                 <tr key={"eventaction-" + i}>
+                  <td>
+                    <a href={organizationId
+                        ? ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.id)
+                        : ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(action.id) }>
+                      {action.name}
+                    </a>
+                  </td>
                   <td title={action.action_type}>
                     {action.action_type_human_readable}
-                  </td>
-                  <td>{action.name}</td>
-                  <td>
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.id)}>
-                      Details
-                    </a>
                   </td>
                 </tr>
             )

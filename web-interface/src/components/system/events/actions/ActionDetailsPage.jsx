@@ -1,31 +1,24 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import Routes from "../../../../../../util/ApiRoutes";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import EventActionsService from "../../../../../../services/EventActionsService";
-import ActionDetailsProxy from "./details/ActionDetailsProxy";
-import moment from "moment";
 import {notify} from "react-notify-toast";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import ActionDetails from "../shared/ActionDetails";
+import ActionDetailsProxy from "../shared/details/ActionDetailsProxy";
+import EventActionsService from "../../../../services/EventActionsService";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
-const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
 function ActionDetailsPage() {
 
-  const { organizationId } = useParams();
   const { actionId } = useParams();
 
-  const [organization, setOrganization] = useState(null);
   const [action, setAction] = useState(null);
-
   const [deleted, setDeleted] = useState(false);
 
   useEffect(() => {
-    authenticationMgmtService.findOrganization(organizationId, setOrganization);
-    eventActionsService.findActionOfOrganization(organizationId, actionId, setAction)
-  }, [organizationId, actionId])
+    eventActionsService.findAction(actionId, setAction)
+  }, [actionId])
 
   const onDelete = function() {
     if (!confirm("Really delete action?")) {
@@ -39,10 +32,10 @@ function ActionDetailsPage() {
   }
 
   if (deleted) {
-    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.EVENTS.INDEX} />
   }
 
-  if (!organization || !action) {
+  if (!action) {
     return <LoadingSpinner />
   }
 
@@ -52,15 +45,7 @@ function ActionDetailsPage() {
           <div className="col-md-9">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
-                </li>
-                <li className="breadcrumb-item">Organizations</li>
-                <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
-                    {organization.name}
-                  </a>
-                </li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Events &amp; Actions</a></li>
                 <li className="breadcrumb-item">Actions</li>
                 <li className="breadcrumb-item active" aria-current="page">{action.name}</li>
               </ol>
@@ -69,16 +54,17 @@ function ActionDetailsPage() {
 
           <div className="col-md-3">
             <span className="float-end">
-            <a className="btn btn-secondary"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
-              Back
-            </a>{' '}
-            <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(organization.id, action.id)}>
-              Edit Action
-            </a>
+              <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.EVENTS.INDEX}>
+                Back
+              </a>{' '}
+              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(action.id)}>
+                Edit Action
+              </a>
             </span>
           </div>
+        </div>
 
+        <div className="row">
           <div className="col-md-12">
             <h1>Event Action &quot;{action.name}&quot;</h1>
           </div>
@@ -106,14 +92,7 @@ function ActionDetailsPage() {
                   <div className="card-body">
                     <h3>Details</h3>
 
-                    <dl>
-                      <dt>Type</dt>
-                      <dd title={action.action_type}>{action.action_type_human_readable}</dd>
-                      <dt>Created at</dt>
-                      <dd title={moment(action.created_at).format()}>{moment(action.created_at).fromNow()}</dd>
-                      <dt>Updated at</dt>
-                      <dd title={moment(action.updated_at).format()}>{moment(action.updated_at).fromNow()}</dd>
-                    </dl>
+                    <ActionDetails action={action} />
                   </div>
                 </div>
               </div>
@@ -141,7 +120,7 @@ function ActionDetailsPage() {
 
                     <p>
                       <strong>Note:</strong> You can only delete actions that are not currently subscribed to any events
-                      like system notifiations or detection alerts.
+                      like system notifications or detection alerts.
                     </p>
 
                     <button type="button" className="btn btn-danger" onClick={onDelete}>

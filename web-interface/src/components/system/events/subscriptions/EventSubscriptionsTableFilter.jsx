@@ -29,7 +29,7 @@ function EventSubscriptionsTableFilter(props) {
                  type="checkbox"
                  role="switch"
                  checked={categories.includes("AUTHENTICATION")}
-                 onClick={() => handleCategorySelect("AUTHENTICATION") } />
+                 onChange={() => handleCategorySelect("AUTHENTICATION") } />
           <label className="form-check-label" htmlFor="filterAuthentication">
             Authentication
           </label>
@@ -41,7 +41,7 @@ function EventSubscriptionsTableFilter(props) {
                  type="checkbox"
                  role="switch"
                  checked={categories.includes("HEALTH_INDICATOR")}
-                 onClick={() => handleCategorySelect("HEALTH_INDICATOR") } />
+                 onChange={() => handleCategorySelect("HEALTH_INDICATOR") } />
           <label className="form-check-label" htmlFor="filterHealthIndicator">
             System Health Indicator
           </label>

@@ -87,6 +87,14 @@ const ApiRoutes = {
     },
     EVENTS: {
       INDEX: '/system/events',
+      ACTIONS: {
+        DETAILS: actionId => `/system/events/actions/show/${actionId}`,
+        CREATE: '/system/events/actions/create',
+        EDIT: actionId => `/system/events/actions/show/${actionId}/edit`,
+      },
+      SUBSCRIPTIONS: {
+        DETAILS: eventId => `/system/events/subscriptions/${eventId}`
+      }
     }
   },
   REPORTING: {

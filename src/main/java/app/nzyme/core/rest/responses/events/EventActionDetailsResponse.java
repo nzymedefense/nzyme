@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ public abstract class EventActionDetailsResponse {
     public abstract UUID id();
 
     @JsonProperty("organization_id")
+    @Nullable
     public abstract UUID organizationId();
 
     @JsonProperty("action_type")

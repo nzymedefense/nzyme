@@ -2,10 +2,23 @@ import RESTClient from '../util/RESTClient'
 
 class EventActionsService {
 
+  findAllActions(setActions, limit, offset) {
+    RESTClient.get("/system/events/actions",
+        {limit: limit, offset: offset}, function(response) {
+          setActions(response.data);
+        })
+  }
+
   findAllActionsOfOrganization(organizationId, setActions, limit, offset) {
     RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/events/actions",
         {limit: limit, offset: offset}, function(response) {
       setActions(response.data);
+    })
+  }
+
+  findAction(actionId, setAction) {
+    RESTClient.get("/system/events/actions/show/" + actionId, {}, function(response) {
+          setAction(response.data);
     })
   }
 

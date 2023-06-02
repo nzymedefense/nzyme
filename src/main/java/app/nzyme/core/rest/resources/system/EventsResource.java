@@ -33,7 +33,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/api/system/events")
-@RESTSecured(PermissionLevel.ORGADMINISTRATOR)
 @Produces(MediaType.APPLICATION_JSON)
 public class EventsResource extends UserAuthenticatedResource {
 
@@ -41,6 +40,7 @@ public class EventsResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     public Response findAllEvents(@Context SecurityContext sc,
                                   @QueryParam("limit") int limit,
                                   @QueryParam("offset") int offset,
@@ -81,6 +81,7 @@ public class EventsResource extends UserAuthenticatedResource {
 
     @GET
     @Path("/types")
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     public Response findAllEventTypes(@Context SecurityContext sc,
                                       @QueryParam("limit") int limit,
                                       @QueryParam("offset") int offset,

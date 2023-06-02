@@ -4,13 +4,13 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import EventActionsService from "../../../../../../services/EventActionsService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
-import ActionFormProxy from "./forms/ActionFormProxy";
 import {notify} from "react-notify-toast";
+import ActionFormProxy from "../../../../events/shared/forms/ActionFormProxy";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
 
-function EditActionPage() {
+function EditOrganizationActionPage() {
 
   const { organizationId } = useParams();
   const { actionId } = useParams();
@@ -25,6 +25,7 @@ function EditActionPage() {
     eventActionsService.findActionOfOrganization(organizationId, actionId, setAction)
   }, [organizationId, actionId])
 
+  // TODO move this to a proxy of sorts. Hardcoded to Email currently. SAME FOR SUPERADMIN
   const onSubmit = function(name, description, subjectPrefix, receivers) {
     eventActionsService.updateEmailAction(action.id, name, description, subjectPrefix, receivers, function() {
       notify.show('Action updated.', 'success');
@@ -106,4 +107,4 @@ function EditActionPage() {
   )
 }
 
-export default EditActionPage;
+export default EditOrganizationActionPage;

@@ -83,9 +83,9 @@ public class EventEngineImpl implements EventEngine {
         );
     }
 
-    public long countAllEventActionsOfAllOrganizations() {
+    public long countAllEventActionsOfSuperadministrators() {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM event_actions")
+                handle.createQuery("SELECT COUNT(*) FROM event_actions WHERE organization_id IS NULL")
                         .mapTo(Long.class)
                         .one()
         );
@@ -100,9 +100,11 @@ public class EventEngineImpl implements EventEngine {
         );
     }
 
-    public List<EventActionEntry> findAllEventActionsOfAllOrganizations(int limit, int offset) {
+    public List<EventActionEntry> findAllEventActionsOfSuperadministrators(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM event_actions ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                handle.createQuery("SELECT * FROM event_actions " +
+                                "WHERE organization_id IS NULL ORDER BY name ASC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(EventActionEntry.class)

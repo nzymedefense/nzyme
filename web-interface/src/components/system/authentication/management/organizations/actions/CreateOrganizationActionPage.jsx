@@ -4,11 +4,12 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import CreateActionProxy from "./forms/CreateActionProxy";
+import CreateActionProxy from "../../../../events/shared/forms/CreateActionProxy";
+import CreateActionSelect from "../../../../events/shared/forms/CreateActionSelect";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
-function CreateActionPage() {
+function CreateOrganizationActionPage() {
 
   const { organizationId } = useParams();
 
@@ -62,18 +63,7 @@ function CreateActionPage() {
               <div className="card-body">
                 <h3>Create Action</h3>
 
-                <label htmlFor="actiontype" className="form-label">Action Type</label>
-                <select id="actiontype"
-                        className="form-select"
-                        value={type} onChange={(e) => setType(e.target.value)}>
-                  <option value="">Please select an action type</option>
-                  <option value="email">Send email</option>
-                  <option value="splunk_message">Send Splunk message</option>
-                  <option value="opensearch_message">Send OpenSearch message</option>
-                  <option value="graylog_message">Send Graylog message</option>
-                  <option value="wasm_exec">Execute WASM binary</option>
-                </select>
-
+                <CreateActionSelect type={type} setType={setType} />
                 <CreateActionProxy type={type} setComplete={setComplete} organizationId={organization.id} />
               </div>
             </div>
@@ -84,4 +74,4 @@ function CreateActionPage() {
 
 }
 
-export default CreateActionPage;
+export default CreateOrganizationActionPage;

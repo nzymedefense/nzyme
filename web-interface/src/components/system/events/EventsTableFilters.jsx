@@ -29,7 +29,7 @@ function EventsTableFilters(props) {
                  type="checkbox"
                  role="switch"
                  checked={filters.includes("SYSTEM")}
-                 onClick={() => handleSelect("SYSTEM") } />
+                 onChange={() => handleSelect("SYSTEM") } />
           <label className="form-check-label" htmlFor="filterSystem">
             System
           </label>
@@ -41,7 +41,7 @@ function EventsTableFilters(props) {
                  type="checkbox"
                  role="switch"
                  checked={filters.includes("DETECTION")}
-                 onClick={() => handleSelect("DETECTION") } />
+                 onChange={() => handleSelect("DETECTION") } />
           <label className="form-check-label" htmlFor="filterDetection">
             Detection
           </label>

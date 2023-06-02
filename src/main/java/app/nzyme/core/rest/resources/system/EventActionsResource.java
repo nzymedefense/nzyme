@@ -45,15 +45,30 @@ public class EventActionsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
-    public Response findAllActions(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
-        long total = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventActionsOfAllOrganizations();
+    public Response findAllActionsOfSuperAdministrators(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
+        long total = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventActionsOfSuperadministrators();
         List<EventActionDetailsResponse> events = Lists.newArrayList();
         for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
-                .findAllEventActionsOfAllOrganizations(limit, offset)) {
+                .findAllEventActionsOfSuperadministrators(limit, offset)) {
             events.add(EventActionUtilities.eventActionEntryToResponse(ea));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @Path("/show/{actionId}")
+    public Response findAction(@PathParam("actionId") UUID actionId) {
+        Optional<EventActionEntry> ea = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(
+                actionId
+        );
+
+        if (ea.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get())).build();
     }
 
     @DELETE
