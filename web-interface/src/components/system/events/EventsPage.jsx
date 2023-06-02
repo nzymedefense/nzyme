@@ -1,5 +1,6 @@
 import React from "react";
-import EventsTable from "./EventsTable";
+import Events from "./Events";
+import EventSubscriptions from "./subscriptions/EventSubscriptions";
 
 function EventsPage() {
 
@@ -12,6 +13,23 @@ function EventsPage() {
         </div>
 
         <div className="row mt-3">
+          <div className="col-md-8">
+            <div className="card">
+              <div className="card-body">
+                <h3>Event Subscriptions</h3>
+
+                <p>
+                  This super administrator view of event subscriptions does not include organization-specific
+                  event types, which are instead managed on the respective organization management pages.
+                </p>
+
+                <EventSubscriptions />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
@@ -19,11 +37,11 @@ function EventsPage() {
 
                 <p>
                   The table below displays all recorded events that can trigger actions within nzyme. Please note
-                  that detection alerts have been organized in a separate section in the navigation panel for easier
-                  and streamlined management.
+                  that detection alerts have additionally been organized in a separate section in the navigation panel
+                  for easier and streamlined management.
                 </p>
 
-                <EventsTable />
+                <Events />
               </div>
             </div>
           </div>

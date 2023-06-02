@@ -68,6 +68,15 @@ function HealthPage(props) {
               <div className="card-body">
                 <h3>Configuration</h3>
 
+                <div className="row">
+                  <div className="col-md-12">
+                    <p>
+                      You can enable or disable individual indicators. Disabled indicators will be marked as disabled, not run,
+                      and not trigger event subscriptions.
+                    </p>
+                  </div>
+                </div>
+
                 <HealthConsoleConfiguration indicators={indicators} />
               </div>
             </div>

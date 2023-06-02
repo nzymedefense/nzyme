@@ -1,4 +1,4 @@
-package app.nzyme.core.rest.responses.system;
+package app.nzyme.core.rest.responses.events;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;

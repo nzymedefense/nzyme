@@ -414,7 +414,7 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
                 // System event.
                 nzyme.getEventEngine().processEvent(SystemEvent.create(
-                        SystemEventType.AUTHENTICAITON_MFA_RECOVERY_CODE_REUSED,
+                        SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_REUSED,
                         DateTime.now(),
                         "User [" + user.get().email() + "] attempted to reuse one of their previously utilized " +
                                 "MFA recovery codes for login, which was unsuccessful."

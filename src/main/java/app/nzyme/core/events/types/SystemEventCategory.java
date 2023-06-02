@@ -2,16 +2,17 @@ package app.nzyme.core.events.types;
 
 public enum SystemEventCategory {
 
-    AUTHENTICATION("Authentication");
+    AUTHENTICATION("Authentication"),
+    HEALTH_INDICATOR("System Health Indicator");
 
-    private final String name;
+    private final String humanReadableName;
 
-    SystemEventCategory(String name) {
-        this.name = name;
+    SystemEventCategory(String humanReadableName) {
+        this.humanReadableName = humanReadableName;
     }
 
-    public String getName() {
-        return name;
+    public String getHumanReadableName() {
+        return humanReadableName;
     }
 
 }

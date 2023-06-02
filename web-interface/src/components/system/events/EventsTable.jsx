@@ -1,35 +1,25 @@
-import React, {useEffect, useState} from "react";
-import SystemService from "../../../services/SystemService";
+import React from "react";
+import moment from "moment/moment";
 import Paginator from "../../misc/Paginator";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import moment from "moment";
-import EventsTableFilters from "./EventsTableFilters";
 
-const systemService = new SystemService();
+function EventsTable(props) {
 
-function EventsTable() {
+  const events = props.events;
+  const perPage = props.perPage;
+  const setPage = props.setPage;
+  const page = props.page;
 
-  const PER_PAGE = 25;
-
-  const [events, setEvents] = useState();
-  const [page, setPage] = useState(1);
-
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState(["SYSTEM", "DETECTION"]);
-
-  useEffect(() => {
-    setEvents(null);
-    systemService.findAllEvents(setEvents, PER_PAGE, (page-1)*PER_PAGE, filters);
-  }, [page, filters]);
-
-  if (!events) {
+  if (events === null || events === undefined) {
     return <LoadingSpinner />
+  }
+
+  if (events.events.length === 0) {
+    return <div className="alert alert-info mt-1 mb-0">No events found.</div>
   }
 
   return (
       <React.Fragment>
-        <EventsTableFilters show={showFilters} filters={filters} setFilters={setFilters} />
-
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
@@ -53,7 +43,7 @@ function EventsTable() {
           </tbody>
         </table>
 
-        <Paginator itemCount={events.count} perPage={PER_PAGE} setPage={setPage} page={page} />
+        <Paginator itemCount={events.count} perPage={perPage} setPage={setPage} page={page} />
       </React.Fragment>
   )
 

@@ -2,7 +2,6 @@ import React from "react";
 
 function EventsTableFilters(props) {
 
-  const show = props.show;
   const filters = props.filters;
   const setFilters = props.setFilters;
 

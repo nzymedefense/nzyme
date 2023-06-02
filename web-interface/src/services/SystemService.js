@@ -27,6 +27,21 @@ class SystemService {
         })
   }
 
+  findAllEventTypes(setEventTypes, limit, offset, categories) {
+    RESTClient.get('/system/events/types',
+        {limit: limit, offset: offset, categories: categories.join(",")}, function (response) {
+          setEventTypes(response.data);
+        })
+  }
+
+  findAllEventTypesOfOrganization(setEventTypes, organizationId, limit, offset, categories) {
+    RESTClient.get('/system/events/types',
+        {organization_id: organizationId, limit: limit, offset: offset, categories: categories.join(",")},
+        function (response) {
+      setEventTypes(response.data);
+        })
+  }
+
 }
 
 export default SystemService

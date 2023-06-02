@@ -39,46 +39,35 @@ function HealthConsoleConfiguration(props) {
   }
 
   return (
-      <React.Fragment>
-        <div className="row">
-          <div className="col-md-12">
-            <p>
-              You can enable or disable individual indicators. Disabled indicators will be marked as disabled, not run,
-              and not trigger alerts.
-            </p>
-          </div>
-        </div>
+      <div className="row">
+        <div className="col-md-12">
+          <table className="table table-sm table-hover table-striped">
+            <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Active</th>
+            </tr>
+            </thead>
+            <tbody>
+            {Object.keys(indicators).sort((a, b) => a.localeCompare(b)).map(function (key, i) {
+              return (
+                  <tr key={"indicatorconf-" + key}>
+                    <td>{indicators[key].name}</td>
+                    <td>
+                      <input type="checkbox"
+                             data-indicator-id={indicators[key].id}
+                             checked={isIndicatorSelected(indicators[key].id)}
+                             onChange={onIndicatorSelect} />
+                    </td>
+                  </tr>
+              )
+            })}
+            </tbody>
+          </table>
 
-        <div className="row">
-          <div className="col-md-12">
-            <table className="table table-sm table-hover table-striped">
-              <thead>
-              <tr>
-                <th>Indicator</th>
-                <th>Active</th>
-              </tr>
-              </thead>
-              <tbody>
-              {Object.keys(indicators).sort((a, b) => a.localeCompare(b)).map(function (key, i) {
-                return (
-                    <tr key={"indicatorconf-" + key}>
-                      <td>{indicators[key].name}</td>
-                      <td>
-                        <input type="checkbox"
-                               data-indicator-id={indicators[key].id}
-                               checked={isIndicatorSelected(indicators[key].id)}
-                               onChange={onIndicatorSelect} />
-                      </td>
-                    </tr>
-                )
-              })}
-              </tbody>
-            </table>
-
-            <button className="btn btn-success" onClick={saveConfiguration}>Save Configuration</button>
-          </div>
+          <button className="btn btn-success" onClick={saveConfiguration}>Save Configuration</button>
         </div>
-      </React.Fragment>
+      </div>
   )
 
 }
