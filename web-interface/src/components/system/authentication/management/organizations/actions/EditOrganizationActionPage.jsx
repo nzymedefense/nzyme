@@ -4,8 +4,7 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import EventActionsService from "../../../../../../services/EventActionsService";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
-import ActionFormProxy from "../../../../events/shared/forms/ActionFormProxy";
+import EditActionProxy from "../../../../events/shared/forms/EditActionProxy";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -18,22 +17,14 @@ function EditOrganizationActionPage() {
   const [organization, setOrganization] = useState(null);
   const [action, setAction] = useState(null);
 
-  const [redirect, setRedirect] = useState(false);
+  const [complete, setComplete] = useState(false);
 
   useEffect(() => {
     authenticationMgmtService.findOrganization(organizationId, setOrganization);
     eventActionsService.findActionOfOrganization(organizationId, actionId, setAction)
   }, [organizationId, actionId])
 
-  // TODO move this to a proxy of sorts. Hardcoded to Email currently. SAME FOR SUPERADMIN
-  const onSubmit = function(name, description, subjectPrefix, receivers) {
-    eventActionsService.updateEmailAction(action.id, name, description, subjectPrefix, receivers, function() {
-      notify.show('Action updated.', 'success');
-      setRedirect(true);
-    })
-  }
-
-  if (redirect) {
+  if (complete) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)} />
   }
 
@@ -96,7 +87,7 @@ function EditOrganizationActionPage() {
                              disabled={true} />
                     </div>
 
-                    <ActionFormProxy action={action} onSubmit={onSubmit} type={action.action_type} buttonText="Update Action" />
+                    <EditActionProxy action={action} type={action.action_type} setComplete={setComplete} />
                   </div>
                 </div>
               </div>

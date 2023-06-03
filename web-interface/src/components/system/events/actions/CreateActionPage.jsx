@@ -20,7 +20,7 @@ function CreateActionPage() {
           <div className="col-md-10">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href={Routes.SYSTEM.EVENTS.INDEX}>Events &amp; Actions</a></li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Events &amp; Actions</a></li>
                 <li className="breadcrumb-item">Actions</li>
                 <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
@@ -28,7 +28,7 @@ function CreateActionPage() {
           </div>
 
           <div className="col-md-2">
-            <a className="btn btn-primary float-end" href={Routes.SYSTEM.EVENTS.INDEX}>Back</a>
+            <a className="btn btn-primary float-end" href={ApiRoutes.SYSTEM.EVENTS.INDEX}>Back</a>
           </div>
         </div>
 

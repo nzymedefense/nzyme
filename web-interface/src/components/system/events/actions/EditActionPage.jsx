@@ -3,8 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import EventActionsService from "../../../../services/EventActionsService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
-import ActionFormProxy from "../shared/forms/ActionFormProxy";
+import EditActionProxy from "../shared/forms/EditActionProxy";
 
 const eventActionsService = new EventActionsService();
 
@@ -14,21 +13,14 @@ function EditActionPage() {
 
   const [action, setAction] = useState(null);
 
-  const [redirect, setRedirect] = useState(false);
+  const [complete, setComplete] = useState(false);
 
   useEffect(() => {
     eventActionsService.findAction(actionId, setAction)
   }, [actionId])
 
-  // TODO move this to a proxy of sorts. Hardcoded to Email currently. SAME FOR SUPERADMIN
-  const onSubmit = function(name, description, subjectPrefix, receivers) {
-    eventActionsService.updateEmailAction(action.id, name, description, subjectPrefix, receivers, function() {
-      notify.show('Action updated.', 'success');
-      setRedirect(true);
-    })
-  }
 
-  if (redirect) {
+  if (complete) {
     return <Navigate to={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(action.id)} />
   }
 
@@ -79,7 +71,7 @@ function EditActionPage() {
                              disabled={true} />
                     </div>
 
-                    <ActionFormProxy action={action} onSubmit={onSubmit} type={action.action_type} buttonText="Update Action" />
+                    <EditActionProxy action={action} type={action.action_type} setComplete={setComplete} />
                   </div>
                 </div>
               </div>
