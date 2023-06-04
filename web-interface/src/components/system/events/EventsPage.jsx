@@ -19,7 +19,7 @@ function EventsPage() {
               <div className="col-md-8">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Actions</h3>
+                    <h3>Super Administrator Actions</h3>
 
                     <p>
                       Events, such as system notifications or detection alerts have the ability to trigger the following
@@ -37,7 +37,7 @@ function EventsPage() {
               <div className="col-md-8">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Event Subscriptions</h3>
+                    <h3>Super Administrator Event Subscriptions</h3>
 
                     <p>
                       This super administrator view of event subscriptions does not include organization-specific
@@ -56,7 +56,7 @@ function EventsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Recorded Events</h3>
+                <h3>All Recorded Events</h3>
 
                 <p>
                   The table below displays all recorded events that can trigger actions within nzyme. Please note
