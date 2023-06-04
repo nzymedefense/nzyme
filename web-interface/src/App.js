@@ -314,7 +314,7 @@ function App() {
 
                           { /* System/Events */ }
                           <Route path={ApiRoutes.SYSTEM.EVENTS.INDEX} element={<EventsPage />} />
-                          <Route path={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(':eventId')} element={<EventSubscriptionDetailsPage />} />
+                          <Route path={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(':eventTypeName')} element={<EventSubscriptionDetailsPage />} />
                           <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(':actionId')} element={<ActionDetailsPage />} />
                           <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(':actionId')} element={<EditActionPage />} />
                           <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.CREATE} element={<CreateActionPage />} />

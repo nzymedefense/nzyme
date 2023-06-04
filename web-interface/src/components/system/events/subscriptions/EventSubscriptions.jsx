@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import SystemService from "../../../../services/SystemService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import EventSubscriptionsTable from "./EventSubscriptionsTable";
-import EventSubscriptionsTableFilter from "./EventSubscriptionsTableFilter";
+import EventTypesTable from "./EventTypesTable";
+import EventTypesTableFilter from "./EventTypesTableFilter";
 
 const systemService = new SystemService();
 
@@ -26,9 +26,9 @@ function EventSubscriptions(props) {
 
   return (
       <React.Fragment>
-        <EventSubscriptionsTableFilter categories={categories} setCategories={setCategories} />
+        <EventTypesTableFilter categories={categories} setCategories={setCategories} />
 
-        <EventSubscriptionsTable eventTypes={eventTypes} perPage={PER_PAGE} setPage={setPage} page={page} />
+        <EventTypesTable eventTypes={eventTypes} perPage={PER_PAGE} setPage={setPage} page={page} />
       </React.Fragment>
   )
 

@@ -3,6 +3,9 @@ package app.nzyme.core.rest.responses.events;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import java.util.List;
+import java.util.UUID;
+
 @AutoValue
 public abstract class EventTypeDetailsResponse {
 
@@ -22,9 +25,9 @@ public abstract class EventTypeDetailsResponse {
     public abstract String description();
 
     @JsonProperty("subscriptions")
-    public abstract Long subscriptions();
+    public abstract List<SubscriptionDetailsResponse> subscriptions();
 
-    public static EventTypeDetailsResponse create(String id, String categoryId, String categoryName, String name, String description, Long subscriptions) {
+    public static EventTypeDetailsResponse create(String id, String categoryId, String categoryName, String name, String description, List<SubscriptionDetailsResponse> subscriptions) {
         return builder()
                 .id(id)
                 .categoryId(categoryId)
@@ -51,7 +54,7 @@ public abstract class EventTypeDetailsResponse {
 
         public abstract Builder description(String description);
 
-        public abstract Builder subscriptions(Long subscriptions);
+        public abstract Builder subscriptions(List<SubscriptionDetailsResponse> subscriptions);
 
         public abstract EventTypeDetailsResponse build();
     }

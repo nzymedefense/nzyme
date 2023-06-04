@@ -93,7 +93,7 @@ const ApiRoutes = {
         EDIT: actionId => `/system/events/actions/show/${actionId}/edit`,
       },
       SUBSCRIPTIONS: {
-        DETAILS: eventId => `/system/events/subscriptions/${eventId}`
+        DETAILS: eventTypeName => `/system/events/subscriptions/${eventTypeName}`
       }
     }
   },

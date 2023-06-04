@@ -3,10 +3,12 @@ package app.nzyme.core.rest.resources.system;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.db.EventEntry;
+import app.nzyme.core.events.types.EventType;
 import app.nzyme.core.events.types.SystemEventScope;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.SystemEventSubscriptionRequest;
 import app.nzyme.core.rest.responses.events.EventDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventTypeDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventTypesListResponse;
@@ -19,10 +21,9 @@ import com.google.common.collect.Lists;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -134,11 +135,65 @@ public class EventsResource extends UserAuthenticatedResource {
                     entry.getCategory().getHumanReadableName(),
                     entry.getHumanReadableName(),
                     entry.getDescription(),
-                    0L // TODO count descriptions
+                    Lists.newArrayList() // TODO subscriptions
             ));
         }
 
         return Response.ok(EventTypesListResponse.create(totalEvents, result)).build();
     }
+
+    @GET
+    @Path("/types/system/show/{eventTypeName}")
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    public Response findSystemEventType(@Context SecurityContext sc,
+                                        @PathParam("eventTypeName") @NotEmpty String eventTypeName,
+                                        @QueryParam("organization_id") @Nullable UUID organizationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Org admins can only request data for own org. (types are always the same, but subs are not)
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (organizationId == null || !organizationId.equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        SystemEventType eventType;
+        try {
+            eventType = SystemEventType.valueOf(eventTypeName.toUpperCase());
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!authenticatedUser.isSuperAdministrator() && !eventType.getScope().equals(SystemEventScope.ORGANIZATION)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        return Response.ok(EventTypeDetailsResponse.create(
+                eventType.name(),
+                eventType.getCategory().name(),
+                eventType.getCategory().getHumanReadableName(),
+                eventType.getHumanReadableName(),
+                eventType.getDescription(),
+                Lists.newArrayList() // TODO subscriptions, ONLY FOR ORG OF USER
+        )).build();
+    }
+
+
+
+
+    @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/types/system/show/{eventTypeName}/subscriptions")
+    public Response subscribeActionToSystemEvent(@Context SecurityContext sc,
+                                                 @PathParam("eventTypeName") @NotEmpty String eventTypeName,
+                                                 @Valid SystemEventSubscriptionRequest request) {
+        // check if superadmin and event type
+        // check if orgadmin has access to action
+    }
+
+
+
+
+    // unsubscribe action from event
 
 }

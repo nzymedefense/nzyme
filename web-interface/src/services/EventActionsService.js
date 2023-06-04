@@ -2,6 +2,12 @@ import RESTClient from '../util/RESTClient'
 
 class EventActionsService {
 
+  findSystemEventType(eventTypeName, setEventType) {
+    RESTClient.get("/system/events/types/system/show/" + eventTypeName, {}, function(response) {
+      setEventType(response.data);
+    })
+  }
+
   findAllActions(setActions, limit, offset) {
     RESTClient.get("/system/events/actions",
         {limit: limit, offset: offset}, function(response) {

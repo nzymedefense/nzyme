@@ -1,6 +1,6 @@
 import React from "react";
 
-function EventSubscriptionsTableFilter(props) {
+function EventTypesTableFilter(props) {
 
   const categories = props.categories;
   const setCategories = props.setCategories;
@@ -51,4 +51,4 @@ function EventSubscriptionsTableFilter(props) {
 
 }
 
-export default EventSubscriptionsTableFilter;
+export default EventTypesTableFilter;
