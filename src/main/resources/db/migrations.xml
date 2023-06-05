@@ -2528,4 +2528,21 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="change_event_subscriptions_field_names_add_uuid_org_id" author="lennartkoopmann">
+        <renameColumn tableName="event_subscriptions" oldColumnName="subscription_type" newColumnName="event_type" />
+        <renameColumn tableName="event_subscriptions" oldColumnName="event_action_id" newColumnName="action_name" />
+
+        <addColumn tableName="event_subscriptions">
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="event_subscriptions">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
 </databaseChangeLog>

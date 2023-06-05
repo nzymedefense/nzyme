@@ -3,9 +3,7 @@ package app.nzyme.core.events;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
-import app.nzyme.core.events.types.EventActionType;
-import app.nzyme.core.events.types.EventType;
-import app.nzyme.core.events.types.SystemEvent;
+import app.nzyme.core.events.types.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -183,4 +181,45 @@ public class EventEngineImpl implements EventEngine {
                         .execute()
         );
     }
+
+    public void subscribeActionToEvent(@Nullable UUID organizationId, EventType eventType, String reference, UUID actionId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO event_subscriptions(organization_id, event_type, reference, action_id) " +
+                                "VALUES(:organization_id, :event_type, :reference, :action_id)")
+                        .bind("organization_id", organizationId)
+                        .bind("event_type", eventType)
+                        .bind("reference", reference)
+                        .bind("action_id", actionId)
+                        .execute()
+        );
+    }
+
+    public void unsubscribeActionFromEvent(UUID subscriptionId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM event_subscriptions WHERE uuid = :uuid")
+                        .bind("uuid", subscriptionId)
+                        .execute()
+        );
+    }
+
+    public Optional<UUID> findActionOfSubscription(UUID subscriptionId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT action_id FROM event_subscriptions WHERE uuid = :uuid")
+                        .bind("uuid", subscriptionId)
+                        .mapTo(UUID.class)
+                        .findOne()
+        );
+    }
+
+    public List<UUID> findAllActionsOfSubscription(@Nullable UUID organizationId, String reference) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                                "WHERE reference = :reference AND organization_id = :organizationId")
+                        .bind("referece", reference)
+                        .bind("organization_id", organizationId)
+                        .mapTo(UUID.class)
+                        .list()
+        );
+    }
+
 }

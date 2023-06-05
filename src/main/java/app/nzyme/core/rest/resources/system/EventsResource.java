@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.EventEngineImpl;
+import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
 import app.nzyme.core.events.types.EventType;
 import app.nzyme.core.events.types.SystemEventScope;
@@ -9,10 +10,7 @@ import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.SystemEventSubscriptionRequest;
-import app.nzyme.core.rest.responses.events.EventDetailsResponse;
-import app.nzyme.core.rest.responses.events.EventTypeDetailsResponse;
-import app.nzyme.core.rest.responses.events.EventTypesListResponse;
-import app.nzyme.core.rest.responses.events.EventsListResponse;
+import app.nzyme.core.rest.responses.events.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Splitter;
@@ -30,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -127,15 +126,27 @@ public class EventsResource extends UserAuthenticatedResource {
                 .limit(limit)
                 .collect(Collectors.toList());
 
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+
         List<EventTypeDetailsResponse> result = Lists.newArrayList();
         for (SystemEventType entry : page) {
+            List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
+            for (UUID uuid : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), entry.name())) {
+                eventEngine.findEventAction(uuid).ifPresent(eventActionEntry -> subscriptions.add(
+                        SubscriptionDetailsResponse.create(
+                            eventActionEntry.uuid(),
+                            eventActionEntry.name()
+                        )
+                ));
+            }
+
             result.add(EventTypeDetailsResponse.create(
                     entry.name(),
                     entry.getCategory().name(),
                     entry.getCategory().getHumanReadableName(),
                     entry.getHumanReadableName(),
                     entry.getDescription(),
-                    Lists.newArrayList() // TODO subscriptions
+                    subscriptions
             ));
         }
 
@@ -168,32 +179,108 @@ public class EventsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+        List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
+        for (UUID uuid : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventType.name())) {
+            eventEngine.findEventAction(uuid).ifPresent(eventActionEntry -> subscriptions.add(
+                    SubscriptionDetailsResponse.create(
+                            eventActionEntry.uuid(),
+                            eventActionEntry.name()
+                    )
+            ));
+        }
+
         return Response.ok(EventTypeDetailsResponse.create(
                 eventType.name(),
                 eventType.getCategory().name(),
                 eventType.getCategory().getHumanReadableName(),
                 eventType.getHumanReadableName(),
                 eventType.getDescription(),
-                Lists.newArrayList() // TODO subscriptions, ONLY FOR ORG OF USER
+                subscriptions
         )).build();
     }
-
-
-
 
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/types/system/show/{eventTypeName}/subscriptions")
     public Response subscribeActionToSystemEvent(@Context SecurityContext sc,
                                                  @PathParam("eventTypeName") @NotEmpty String eventTypeName,
-                                                 @Valid SystemEventSubscriptionRequest request) {
-        // check if superadmin and event type
-        // check if orgadmin has access to action
+                                                 @Valid SystemEventSubscriptionRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        SystemEventType eventType;
+        try {
+            eventType = SystemEventType.valueOf(eventTypeName.toUpperCase());
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+
+        // Pull action.
+        Optional<EventActionEntry> action = eventEngine.findEventAction(req.actionId());
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if orgadmin has access to event type.
+        if (!authenticatedUser.isSuperAdministrator() && !eventType.getScope().equals(SystemEventScope.ORGANIZATION)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        // Only superadmins can subscribe system/superadmin actions.
+        if (!authenticatedUser.isSuperAdministrator() && action.get().organizationId() == null) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        // Check if orgadmin has access to this action and can subscribe it.
+        if (!authenticatedUser.isSuperAdministrator() && !action.get().organizationId()
+                .equals(authenticatedUser.getOrganizationId())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        eventEngine.subscribeActionToEvent(action.get().organizationId(), EventType.SYSTEM, eventType.name(), action.get().uuid());
+
+        return Response.ok().build();
     }
 
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/types/system/show/{eventTypeName}/subscriptions/show/{subscriptionId}")
+    public Response unsubscribeActionFromSystemEvent(@Context SecurityContext sc,
+                                                     @PathParam("eventTypeName") @NotEmpty String eventTypeName,
+                                                     @PathParam("subscriptionId") UUID subscriptionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
 
+        // Fetch action UUID from subscription.
+        Optional<UUID> actionUuid = eventEngine.findActionOfSubscription(subscriptionId);
 
-    // unsubscribe action from event
+        if (actionUuid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Fetch action.
+        Optional<EventActionEntry> action = eventEngine.findEventAction(actionUuid.get());
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if superadmin or event is subscription of org.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (action.get().organizationId() == null
+                    || !(action.get().organizationId().equals(authenticatedUser.getOrganizationId()))) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        // Delete subscription.
+        eventEngine.unsubscribeActionFromEvent(subscriptionId);
+
+        return Response.ok().build();
+    }
 
 }

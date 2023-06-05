@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 import java.util.List;
-import java.util.UUID;
 
 @AutoValue
 public abstract class EventTypeDetailsResponse {
