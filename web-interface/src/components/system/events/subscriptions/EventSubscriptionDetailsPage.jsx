@@ -5,6 +5,7 @@ import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import EventSubscriptionsTable from "./EventSubscriptionsTable";
 import EventSubscriptionActionSelector from "./EventSubscriptionActionSelector";
+import {notify} from "react-notify-toast";
 
 const eventActionsService = new EventActionsService();
 
@@ -15,13 +16,20 @@ function EventSubscriptionDetailsPage() {
   const [eventType, setEventType] = useState(null);
   const [actions, setActions] = useState(null);
 
+  const [revision, setRevision] = useState(0);
+
   useEffect(() => {
+    setActions(null);
+
     eventActionsService.findSystemEventType(eventTypeName, setEventType);
     eventActionsService.findAllActions(setActions, 9999999, 0);
-  }, [eventTypeName])
+  }, [eventTypeName, revision])
 
   const onActionSelect = function(actionId) {
-    console.log(actionId);
+    eventActionsService.subscribeActionToEvent(eventType.id, actionId, function() {
+      notify.show("Subscribed action to event.", "success");
+      setRevision(revision+1);
+    })
   }
 
   if (!eventType || !actions) {

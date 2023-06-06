@@ -25,6 +25,7 @@ function EventSubscriptionActionSelector(props) {
         <select id="action"
                 className="form-select"
                 value={selectedAction}
+                name="action"
                 onChange={(e) => setSelectedAction(e.target.value)}>
           <option value="">Please select an action</option>
           {actions.sort((a, b) => a.action_type_human_readable.localeCompare(b.action_type_human_readable)).map((action, i) => {

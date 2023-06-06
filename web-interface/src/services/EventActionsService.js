@@ -40,6 +40,11 @@ class EventActionsService {
         {}, successCallback);
   }
 
+  subscribeActionToEvent(eventTypeName, actionId, successCallback) {
+    RESTClient.post("/system/events/types/system/show/" + eventTypeName + "/subscriptions",
+        {action_id: actionId}, successCallback);
+  }
+
   createEmailAction(organizationId, name, description, subjectPrefix, receivers, successCallback) {
     RESTClient.post("/system/events/actions/email", {
       "organization_id": organizationId,

@@ -2544,5 +2544,13 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
+    <changeSet id="fix_error_in_event_subscription_action_id_rename" author="lennartkoopmann">
+        <renameColumn tableName="event_subscriptions" oldColumnName="action_name" newColumnName="action_id" />
+    </changeSet>
+
+    <changeSet id="fix_another_error_in_event_subscriptions_4654234" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="event_subscriptions" columnName="organization_id" />
+    </changeSet>
+
 </databaseChangeLog>
