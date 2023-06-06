@@ -40,9 +40,14 @@ class EventActionsService {
         {}, successCallback);
   }
 
-  subscribeActionToEvent(eventTypeName, actionId, successCallback) {
+  subscribeActionToEvent(eventTypeName, actionId, successCallback, errorCallback) {
     RESTClient.post("/system/events/types/system/show/" + eventTypeName + "/subscriptions",
-        {action_id: actionId}, successCallback);
+        {action_id: actionId}, successCallback, errorCallback);
+  }
+
+  unsubscribeActionFromEvent(eventTypeName, subscriptionId, successCallback) {
+    RESTClient.delete("/system/events/types/system/show/" + eventTypeName + "/subscriptions/show/" + subscriptionId,
+        successCallback);
   }
 
   createEmailAction(organizationId, name, description, subjectPrefix, receivers, successCallback) {

@@ -17,6 +17,7 @@ function EventSubscriptionDetailsPage() {
   const [actions, setActions] = useState(null);
 
   const [revision, setRevision] = useState(0);
+  const [subscriptionError, setSubscriptionError] = useState(null);
 
   useEffect(() => {
     setActions(null);
@@ -28,6 +29,19 @@ function EventSubscriptionDetailsPage() {
   const onActionSelect = function(actionId) {
     eventActionsService.subscribeActionToEvent(eventType.id, actionId, function() {
       notify.show("Subscribed action to event.", "success");
+      setRevision(revision+1);
+    }, function(error) {
+      setSubscriptionError(error.response.data.message);
+    });
+  }
+
+  const onUnsubscribeClick = function(subscriptionId) {
+    if (!confirm("Really unsubscribe action from event?")) {
+      return;
+    }
+
+    eventActionsService.unsubscribeActionFromEvent(eventType.id, subscriptionId, function() {
+      notify.show("Unsubscribed action from event.", "success");
       setRevision(revision+1);
     })
   }
@@ -70,14 +84,17 @@ function EventSubscriptionDetailsPage() {
               <div className="card-body">
                 <h3>Subscribed Actions</h3>
 
-                <EventSubscriptionsTable subscriptions={eventType.subscriptions} />
-                <EventSubscriptionActionSelector onSubmit={onActionSelect} actions={actions.actions} />
+                <EventSubscriptionsTable subscriptions={eventType.subscriptions}
+                                         onUnsubscribeClick={onUnsubscribeClick} />
+
+                <h4 className="mt-4 mb-0">Subscribe Action</h4>
+                <EventSubscriptionActionSelector onSubmit={onActionSelect}
+                                                 actions={actions.actions}
+                                                 subscriptionError={subscriptionError} />
               </div>
             </div>
           </div>
         </div>
-
-
       </React.Fragment>
   )
 

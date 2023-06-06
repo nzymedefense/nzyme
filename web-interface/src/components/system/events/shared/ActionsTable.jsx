@@ -33,7 +33,7 @@ function ActionsTable(props) {
           </tr>
           </thead>
           <tbody>
-          {actions.actions.map((action, i) => {
+          {actions.actions.sort((a, b) => a.action_type_human_readable.localeCompare(b.action_type_human_readable)).map((action, i) => {
             return (
                 <tr key={"eventaction-" + i}>
                   <td>

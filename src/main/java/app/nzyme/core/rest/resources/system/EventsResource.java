@@ -4,6 +4,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
+import app.nzyme.core.events.db.SubscriptionEntry;
+import app.nzyme.core.events.types.EventActionType;
 import app.nzyme.core.events.types.EventType;
 import app.nzyme.core.events.types.SystemEventScope;
 import app.nzyme.core.events.types.SystemEventType;
@@ -11,11 +13,14 @@ import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.SystemEventSubscriptionRequest;
 import app.nzyme.core.rest.responses.events.*;
+import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -35,6 +40,8 @@ import java.util.stream.Collectors;
 @Path("/api/system/events")
 @Produces(MediaType.APPLICATION_JSON)
 public class EventsResource extends UserAuthenticatedResource {
+
+    private static final Logger LOG = LogManager.getLogger(UserAuthenticatedResource.class);
 
     @Inject
     private NzymeNode nzyme;
@@ -131,13 +138,10 @@ public class EventsResource extends UserAuthenticatedResource {
         List<EventTypeDetailsResponse> result = Lists.newArrayList();
         for (SystemEventType entry : page) {
             List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
-            for (UUID uuid : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), entry.name())) {
-                eventEngine.findEventAction(uuid).ifPresent(eventActionEntry -> subscriptions.add(
-                        SubscriptionDetailsResponse.create(
-                            eventActionEntry.uuid(),
-                            eventActionEntry.name()
-                        )
-                ));
+            for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), entry.name())) {
+                eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->
+                    subscriptions.add(buildSubscriptionDetailsResponse(sub, eventActionEntry))
+                );
             }
 
             result.add(EventTypeDetailsResponse.create(
@@ -181,13 +185,10 @@ public class EventsResource extends UserAuthenticatedResource {
 
         EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
         List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
-        for (UUID uuid : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventType.name())) {
-            eventEngine.findEventAction(uuid).ifPresent(eventActionEntry -> subscriptions.add(
-                    SubscriptionDetailsResponse.create(
-                            eventActionEntry.uuid(),
-                            eventActionEntry.name()
-                    )
-            ));
+        for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventType.name())) {
+            eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->
+                    subscriptions.add(buildSubscriptionDetailsResponse(sub, eventActionEntry))
+            );
         }
 
         return Response.ok(EventTypeDetailsResponse.create(
@@ -240,6 +241,17 @@ public class EventsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
+        // Check if this event already has this action ID subscribed to it.
+        for (SubscriptionEntry sub : eventEngine
+                .findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventTypeName)) {
+            if (sub.actionId().equals(action.get().uuid())) {
+                return Response
+                        .status(Response.Status.UNAUTHORIZED)
+                        .entity(ErrorResponse.create("Action is already subscribed to this event."))
+                        .build();
+            }
+        }
+
         eventEngine.subscribeActionToEvent(action.get().organizationId(), EventType.SYSTEM, eventType.name(), action.get().uuid());
 
         return Response.ok().build();
@@ -281,6 +293,19 @@ public class EventsResource extends UserAuthenticatedResource {
         eventEngine.unsubscribeActionFromEvent(subscriptionId);
 
         return Response.ok().build();
+    }
+
+    private static SubscriptionDetailsResponse buildSubscriptionDetailsResponse(SubscriptionEntry subscriptionEntry,
+                                                                                EventActionEntry eventActionEntry) {
+        EventActionType eventActionType = EventActionType.valueOf(eventActionEntry.actionType());
+
+        return SubscriptionDetailsResponse.create(
+                subscriptionEntry.uuid(),
+                eventActionEntry.uuid(),
+                eventActionType.name(),
+                eventActionType.getHumanReadable(),
+                eventActionEntry.name()
+        );
     }
 
 }

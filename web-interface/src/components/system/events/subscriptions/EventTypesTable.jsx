@@ -26,7 +26,7 @@ function EventTypesTable(props) {
           </tr>
           </thead>
           <tbody>
-          {eventTypes.types.map((type, i) => {
+          {eventTypes.types.sort((a, b) => a.category_id.localeCompare(b.category_id)).map((type, i) => {
             return (
                 <tr key={"eventtype-" + i}>
                   <td title={type.category_id}>{type.category_name}</td>

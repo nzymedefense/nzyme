@@ -4,6 +4,7 @@ function EventSubscriptionActionSelector(props) {
 
   const onSubmit = props.onSubmit;
   const actions = props.actions;
+  const subscriptionError = props.subscriptionError;
 
   const [selectedAction, setSelectedAction] = useState("");
 
@@ -21,28 +22,32 @@ function EventSubscriptionActionSelector(props) {
   }
 
   return (
-      <div className="input-group mt-3">
-        <select id="action"
-                className="form-select"
-                value={selectedAction}
-                name="action"
-                onChange={(e) => setSelectedAction(e.target.value)}>
-          <option value="">Please select an action</option>
-          {actions.sort((a, b) => a.action_type_human_readable.localeCompare(b.action_type_human_readable)).map((action, i) => {
-            return (
-              <option key={"actionselector-" + i} value={action.id}>
-                ({action.action_type_human_readable}) {action.name}
-              </option>
-            )
-          })}
-        </select>
-        <button className="btn btn-primary"
-                type="button"
-                disabled={selectedAction === ""}
-                onClick={() => onSubmit(selectedAction)}>
-          Subscribe Action
-        </button>
-      </div>
+      <React.Fragment>
+        <div className="input-group mt-3">
+          <select id="action"
+                  className="form-select"
+                  value={selectedAction}
+                  name="action"
+                  onChange={(e) => setSelectedAction(e.target.value)}>
+            <option value="">Please select an action</option>
+            {actions.sort((a, b) => a.action_type_human_readable.localeCompare(b.action_type_human_readable)).map((action, i) => {
+              return (
+                <option key={"actionselector-" + i} value={action.id}>
+                  ({action.action_type_human_readable}) {action.name}
+                </option>
+              )
+            })}
+          </select>
+          <button className="btn btn-primary"
+                  type="button"
+                  disabled={selectedAction === ""}
+                  onClick={() => onSubmit(selectedAction)}>
+            Subscribe Action
+          </button>
+        </div>
+
+        {subscriptionError ? <div className="alert alert-danger mt-2 mb-0">Could not subscribe action: {subscriptionError}</div> : null }
+      </React.Fragment>
   )
 
 }

@@ -3,6 +3,7 @@ package app.nzyme.core.events;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
+import app.nzyme.core.events.db.SubscriptionEntry;
 import app.nzyme.core.events.types.*;
 
 import javax.annotation.Nullable;
@@ -212,22 +213,22 @@ public class EventEngineImpl implements EventEngine {
         );
     }
 
-    public List<UUID> findAllActionsOfSubscription(@Nullable UUID organizationId, String reference) {
+    public List<SubscriptionEntry> findAllActionsOfSubscription(@Nullable UUID organizationId, String reference) {
         if (organizationId == null) {
             return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                    handle.createQuery("SELECT * FROM event_subscriptions " +
                                     "WHERE reference = :reference AND organization_id IS NULL")
                             .bind("reference", reference)
-                            .mapTo(UUID.class)
+                            .mapTo(SubscriptionEntry.class)
                             .list()
             );
         } else {
             return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                    handle.createQuery("SELECT * FROM event_subscriptions " +
                                     "WHERE reference = :reference AND organization_id = :organization_id")
                             .bind("reference", reference)
                             .bind("organization_id", organizationId)
-                            .mapTo(UUID.class)
+                            .mapTo(SubscriptionEntry.class)
                             .list()
             );
         }
