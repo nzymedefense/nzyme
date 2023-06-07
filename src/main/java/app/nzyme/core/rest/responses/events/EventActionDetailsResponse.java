@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,13 +34,16 @@ public abstract class EventActionDetailsResponse {
     @JsonProperty("configuration")
     public abstract Map<String, Object> configuration();
 
+    @JsonProperty("subscribed_to_events")
+    public abstract List<EventTypeDetailsResponse> subscribedToEvents();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static EventActionDetailsResponse create(UUID id, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, DateTime createdAt, DateTime updatedAt) {
+    public static EventActionDetailsResponse create(UUID id, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, List<EventTypeDetailsResponse> subscribedToEvents, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -48,6 +52,7 @@ public abstract class EventActionDetailsResponse {
                 .name(name)
                 .description(description)
                 .configuration(configuration)
+                .subscribedToEvents(subscribedToEvents)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -72,6 +77,8 @@ public abstract class EventActionDetailsResponse {
         public abstract Builder description(String description);
 
         public abstract Builder configuration(Map<String, Object> configuration);
+
+        public abstract Builder subscribedToEvents(List<EventTypeDetailsResponse> subscribedToEvents);
 
         public abstract Builder createdAt(DateTime createdAt);
 

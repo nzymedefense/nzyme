@@ -30,7 +30,9 @@ function EventSubscriptionsTable(props) {
             return (
                 <tr key={"actionsub-" + i}>
                   <td>
-                    <a href={organizationId ? "FOO" : ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(sub.action_id)}>
+                    <a href={organizationId
+                        ? ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(organizationId, sub.action_id)
+                        : ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(sub.action_id)}>
                       {sub.action_name}
                     </a>
                   </td>

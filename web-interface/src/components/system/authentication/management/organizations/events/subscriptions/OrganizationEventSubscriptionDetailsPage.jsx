@@ -105,7 +105,8 @@ function OrganizationEventSubscriptionDetailsPage() {
               <div className="card-body">
                 <h3>Subscribed Actions</h3>
 
-                <EventSubscriptionsTable subscriptions={eventType.subscriptions}
+                <EventSubscriptionsTable organizationId={organizationId}
+                                         subscriptions={eventType.subscriptions}
                                          onUnsubscribeClick={onUnsubscribeClick} />
 
                 <h4 className="mt-4 mb-0">Subscribe Action</h4>

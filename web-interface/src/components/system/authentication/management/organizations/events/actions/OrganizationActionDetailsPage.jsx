@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
-import Routes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import EventActionsService from "../../../../../../../services/EventActionsService";
-import moment from "moment";
 import {notify} from "react-notify-toast";
 import ActionDetailsProxy from "../../../../../events/shared/details/ActionDetailsProxy";
 import ActionDetails from "../../../../../events/shared/ActionDetails";
+import EventTypesTable from "../../../../../events/shared/subscriptions/EventTypesTable";
+import SubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SubscriptionsOfActionTable";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -128,6 +128,20 @@ function OrganizationActionDetailsPage() {
                     <h3>Configuration</h3>
 
                     <ActionDetailsProxy action={action} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Subscriptions</h3>
+
+                    <p>This action is subscribed to the following events:</p>
+
+                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events} />
                   </div>
                 </div>
               </div>

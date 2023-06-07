@@ -5,6 +5,9 @@ import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
 import app.nzyme.core.events.db.SubscriptionEntry;
 import app.nzyme.core.events.types.*;
+import com.google.common.collect.Lists;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -12,6 +15,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class EventEngineImpl implements EventEngine {
+
+    private static final Logger LOG = LogManager.getLogger(EventEngineImpl.class);
 
     private final NzymeNode nzyme;
 
@@ -232,6 +237,27 @@ public class EventEngineImpl implements EventEngine {
                             .list()
             );
         }
+    }
+
+    public List<SystemEventType> findAllEventTypesActionIsSubscribedTo(UUID actionId) {
+        List<String> systemEventTypes = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT reference FROM event_subscriptions " +
+                                "WHERE action_id = :action_id AND event_type = 'SYSTEM'")
+                        .bind("action_id", actionId)
+                        .mapTo(String.class)
+                        .list()
+        );
+
+        List<SystemEventType> result = Lists.newArrayList();
+        for (String type : systemEventTypes) {
+            try {
+                result.add(SystemEventType.valueOf(type));
+            } catch(IllegalArgumentException e) {
+                LOG.error("Invalid/unknown system event type [{}]. Skipping.", type);
+            }
+        }
+
+        return result;
     }
 
 }

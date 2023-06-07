@@ -1254,11 +1254,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        long total = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventActionsOfOrganization(organizationId);
+        EventEngineImpl eventEngine = (EventEngineImpl) nzyme.getEventEngine();
+
+        long total = eventEngine.countAllEventActionsOfOrganization(organizationId);
         List<EventActionDetailsResponse> events = Lists.newArrayList();
-        for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
-                .findAllEventActionsOfOrganization(organizationId, limit, offset)) {
-            events.add(EventActionUtilities.eventActionEntryToResponse(ea));
+        for (EventActionEntry ea : eventEngine.findAllEventActionsOfOrganization(organizationId, limit, offset)) {
+            List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.uuid());
+            events.add(EventActionUtilities.eventActionEntryToResponse(ea, subs));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -1280,16 +1282,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<EventActionEntry> ea = ((EventEngineImpl) nzyme.getEventEngine()).findEventActionOfOrganization(
-                organizationId,
-                actionId
-        );
+        EventEngineImpl eventEngine = (EventEngineImpl) nzyme.getEventEngine();
+        Optional<EventActionEntry> ea = eventEngine.findEventActionOfOrganization(organizationId, actionId);
 
         if (ea.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get())).build();
+        List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.get().uuid());
+
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get(), subs)).build();
     }
 
     @GET

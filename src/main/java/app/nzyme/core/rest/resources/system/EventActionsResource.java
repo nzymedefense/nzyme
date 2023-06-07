@@ -7,6 +7,7 @@ import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.EventActionType;
+import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateEmailEventActionRequest;
@@ -46,11 +47,13 @@ public class EventActionsResource extends UserAuthenticatedResource {
     @GET
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     public Response findAllActionsOfSuperAdministrators(@QueryParam("limit") int limit, @QueryParam("offset") int offset) {
-        long total = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventActionsOfSuperadministrators();
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+        long total = eventEngine.countAllEventActionsOfSuperadministrators();
         List<EventActionDetailsResponse> events = Lists.newArrayList();
-        for (EventActionEntry ea : ((EventEngineImpl) nzyme.getEventEngine())
-                .findAllEventActionsOfSuperadministrators(limit, offset)) {
-            events.add(EventActionUtilities.eventActionEntryToResponse(ea));
+        for (EventActionEntry ea : eventEngine.findAllEventActionsOfSuperadministrators(limit, offset)) {
+
+            List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.uuid());
+            events.add(EventActionUtilities.eventActionEntryToResponse(ea, subs));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -60,15 +63,17 @@ public class EventActionsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/show/{actionId}")
     public Response findAction(@PathParam("actionId") UUID actionId) {
-        Optional<EventActionEntry> ea = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(
-                actionId
-        );
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+
+        Optional<EventActionEntry> ea = eventEngine.findEventAction(actionId);
 
         if (ea.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get())).build();
+        List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.get().uuid());
+
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get(), subs)).build();
     }
 
     @DELETE

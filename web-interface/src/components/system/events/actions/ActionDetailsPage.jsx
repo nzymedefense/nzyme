@@ -6,6 +6,7 @@ import ActionDetails from "../shared/ActionDetails";
 import ActionDetailsProxy from "../shared/details/ActionDetailsProxy";
 import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import SubscriptionsOfActionTable from "../shared/subscriptions/SubscriptionsOfActionTable";
 
 const eventActionsService = new EventActionsService();
 
@@ -105,6 +106,20 @@ function ActionDetailsPage() {
                     <h3>Configuration</h3>
 
                     <ActionDetailsProxy action={action} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Subscriptions</h3>
+
+                    <p>This action is subscribed to the following events:</p>
+
+                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events} />
                   </div>
                 </div>
               </div>
