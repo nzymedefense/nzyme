@@ -25,7 +25,7 @@ function EditOrganizationActionPage() {
   }, [organizationId, actionId])
 
   if (complete) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(organization.id, action.id)} />
   }
 
   if (!organization || !action) {
@@ -47,9 +47,13 @@ function EditOrganizationActionPage() {
                     {organization.name}
                   </a>
                 </li>
-                <li className="breadcrumb-item">Actions</li>
                 <li className="breadcrumb-item">
-                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)}>
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}>
+                    Events &amp; Actions
+                  </a>
+                </li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(organization.id, action.id)}>
                     {action.name}
                   </a>
                 </li>
@@ -60,7 +64,7 @@ function EditOrganizationActionPage() {
 
           <div className="col-md-2">
             <a className="btn btn-primary float-end"
-               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organization.id, action.id)}>
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(organization.id, action.id)}>
               Back
             </a>
           </div>

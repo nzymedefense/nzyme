@@ -28,7 +28,10 @@ function EmailActionForm(props) {
   }
 
   const formReady = function() {
-    return !isSubmitting && subjectPrefix && subjectPrefix !== ""
+    return !isSubmitting
+        && name && name !== ""
+        && description && description !== ""
+        && subjectPrefix && subjectPrefix !== ""
   }
 
   const addReceiverReady = function() {

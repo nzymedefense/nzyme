@@ -38,7 +38,7 @@ function ActionsTable(props) {
                 <tr key={"eventaction-" + i}>
                   <td>
                     <a href={organizationId
-                        ? ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.DETAILS(organizationId, action.id)
+                        ? ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(organizationId, action.id)
                         : ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(action.id) }>
                       {action.name}
                     </a>

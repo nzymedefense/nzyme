@@ -72,7 +72,9 @@ function OrganizationDetailsPage() {
               </a> : null }
             </span>
           </div>
+        </div>
 
+        <div className="row">
           <div className="col-md-12">
             <h1>Organization &quot;{organization.name}&quot;</h1>
           </div>
@@ -136,15 +138,17 @@ function OrganizationDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Event Actions</h3>
+                    <h3>Events &amp; Actions</h3>
 
                     <p>
                       Events, such as system notifications or detection alerts, within this organization, have the
-                      ability to trigger the following actions. It is important to note that tenants of this
-                      organization must be assigned access to individual event actions.
+                      ability to trigger actions, which are managed on the events & action pages.
                     </p>
 
-                    <OrganizationActions organizationId={organizationId} />
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}
+                       className="btn btn-secondary btn-sm">
+                      Manage Organization Events &amp; Actions
+                    </a>
                   </div>
                 </div>
               </div>

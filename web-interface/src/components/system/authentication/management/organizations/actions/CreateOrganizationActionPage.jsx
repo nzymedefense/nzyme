@@ -27,7 +27,7 @@ function CreateOrganizationActionPage() {
   }
 
   if (complete) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)} />
   }
 
   return (
@@ -46,6 +46,11 @@ function CreateOrganizationActionPage() {
                     {organization.name}
                   </a>
                 </li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}>
+                    Events &amp; Actions
+                  </a>
+                </li>
                 <li className="breadcrumb-item">Actions</li>
                 <li className="breadcrumb-item active" aria-current="page">Create</li>
               </ol>
@@ -53,7 +58,10 @@ function CreateOrganizationActionPage() {
           </div>
 
           <div className="col-md-2">
-            <a className="btn btn-primary float-end" href={Routes.SYSTEM.EVENTS.INDEX}>Back</a>
+            <a className="btn btn-primary float-end"
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}>
+              Back
+            </a>
           </div>
         </div>
 

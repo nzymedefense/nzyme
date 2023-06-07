@@ -40,7 +40,7 @@ function OrganizationActionDetailsPage() {
   }
 
   if (deleted) {
-    return <Navigate to={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)} />
   }
 
   if (!organization || !action) {
@@ -62,6 +62,11 @@ function OrganizationActionDetailsPage() {
                     {organization.name}
                   </a>
                 </li>
+                <li className="breadcrumb-item">
+                  <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}>
+                    Events &amp; Actions
+                  </a>
+                </li>
                 <li className="breadcrumb-item">Actions</li>
                 <li className="breadcrumb-item active" aria-current="page">{action.name}</li>
               </ol>
@@ -74,7 +79,8 @@ function OrganizationActionDetailsPage() {
                href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
               Back
             </a>{' '}
-            <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.EDIT(organization.id, action.id)}>
+            <a className="btn btn-primary"
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.EDIT(organization.id, action.id)}>
               Edit Action
             </a>
             </span>

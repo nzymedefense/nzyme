@@ -28,7 +28,7 @@ function OrganizationActions(props) {
                       setPage={setPage} />
 
         <a className="btn btn-secondary btn-sm"
-           href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.ACTIONS.CREATE(organizationId)}>
+           href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.CREATE(organizationId)}>
           Create Action
         </a>
       </React.Fragment>
