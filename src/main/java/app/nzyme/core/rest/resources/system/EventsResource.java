@@ -51,25 +51,34 @@ public class EventsResource extends UserAuthenticatedResource {
     public Response findAllEvents(@Context SecurityContext sc,
                                   @QueryParam("limit") int limit,
                                   @QueryParam("offset") int offset,
-                                  @QueryParam("event_types") String eventTypes) {
+                                  @QueryParam("event_types")String eventTypes,
+                                  @QueryParam("organization_id") @Nullable UUID organizationId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (Strings.isNullOrEmpty(eventTypes)) {
             return Response.ok(EventsListResponse.create(0, Collections.emptyList())).build();
         }
 
+        // Check if user is allowed to access the requested org.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (organizationId == null || !organizationId.equals(authenticatedUser.getOrganizationId())) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
         List<String> types = Splitter.on(",").splitToList(eventTypes);
 
         List<EventEntry> events;
         long totalEvents;
-        if (authenticatedUser.isSuperAdministrator()) {
+        if (organizationId == null) {
+            // Superadmin.
             events = ((EventEngineImpl) nzyme.getEventEngine()).findAllEventsOfAllOrganizations(types, limit, offset);
             totalEvents = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventsOfAllOrganizations();
         } else {
             // Organization admin.
             events = ((EventEngineImpl) nzyme.getEventEngine())
-                    .findAllEventsOfOrganization(types, authenticatedUser.getOrganizationId(), limit, offset);
-            totalEvents = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventsOfOrganization(authenticatedUser.getOrganizationId());
+                    .findAllEventsOfOrganization(types, organizationId, limit, offset);
+            totalEvents = ((EventEngineImpl) nzyme.getEventEngine()).countAllEventsOfOrganization(organizationId);
         }
 
         List<EventDetailsResponse> result = Lists.newArrayList();
@@ -112,13 +121,13 @@ public class EventsResource extends UserAuthenticatedResource {
         List<SystemEventType> types = Lists.newArrayList();
         int totalEvents = 0;
         for (SystemEventType type : SystemEventType.values()) {
-            if (!authenticatedUser.isSuperAdministrator() && type.getScope().equals(SystemEventScope.SYSTEM)) {
-                // Skip system event types for non-superadmins.
+            if (organizationId == null && type.getScope().equals(SystemEventScope.ORGANIZATION)) {
+                // Skip organization event types for system/superadmin view.
                 continue;
             }
 
-            if (authenticatedUser.isSuperAdministrator() && type.getScope().equals(SystemEventScope.ORGANIZATION)) {
-                // Skip organization event types for superadmins.
+            if (organizationId != null && !type.getScope().equals(SystemEventScope.ORGANIZATION)) {
+                // Skip all non-org event types for org request.
                 continue;
             }
 
@@ -138,7 +147,7 @@ public class EventsResource extends UserAuthenticatedResource {
         List<EventTypeDetailsResponse> result = Lists.newArrayList();
         for (SystemEventType entry : page) {
             List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
-            for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), entry.name())) {
+            for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(organizationId, entry.name())) {
                 eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->
                     subscriptions.add(buildSubscriptionDetailsResponse(sub, eventActionEntry))
                 );
@@ -185,7 +194,7 @@ public class EventsResource extends UserAuthenticatedResource {
 
         EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
         List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
-        for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventType.name())) {
+        for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(organizationId, eventType.name())) {
             eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->
                     subscriptions.add(buildSubscriptionDetailsResponse(sub, eventActionEntry))
             );
@@ -243,7 +252,7 @@ public class EventsResource extends UserAuthenticatedResource {
 
         // Check if this event already has this action ID subscribed to it.
         for (SubscriptionEntry sub : eventEngine
-                .findAllActionsOfSubscription(authenticatedUser.getOrganizationId(), eventTypeName)) {
+                .findAllActionsOfSubscription(req.organizationId(), eventTypeName)) {
             if (sub.actionId().equals(action.get().uuid())) {
                 return Response
                         .status(Response.Status.UNAUTHORIZED)

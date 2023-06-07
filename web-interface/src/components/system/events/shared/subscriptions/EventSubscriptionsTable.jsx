@@ -1,8 +1,9 @@
 import React from "react";
-import ApiRoutes from "../../../../util/ApiRoutes";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 function EventSubscriptionsTable(props) {
 
+  const organizationId = props.organizationId;
   const subscriptions = props.subscriptions;
   const onUnsubscribeClick = props.onUnsubscribeClick;
 
@@ -29,7 +30,9 @@ function EventSubscriptionsTable(props) {
             return (
                 <tr key={"actionsub-" + i}>
                   <td>
-                    <a href={ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(sub.action_id)}>{sub.action_name}</a>
+                    <a href={organizationId ? "FOO" : ApiRoutes.SYSTEM.EVENTS.ACTIONS.DETAILS(sub.action_id)}>
+                      {sub.action_name}
+                    </a>
                   </td>
                   <td title={sub.action_type}>{sub.action_type_human_readable}</td>
                   <td>

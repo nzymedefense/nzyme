@@ -2,8 +2,9 @@ import RESTClient from '../util/RESTClient'
 
 class EventActionsService {
 
-  findSystemEventType(eventTypeName, setEventType) {
-    RESTClient.get("/system/events/types/system/show/" + eventTypeName, {}, function(response) {
+  findSystemEventType(eventTypeName, setEventType, organizationId = undefined) {
+    const params = organizationId ? {organization_id: organizationId} : {};
+    RESTClient.get("/system/events/types/system/show/" + eventTypeName, params, function(response) {
       setEventType(response.data);
     })
   }
@@ -40,9 +41,11 @@ class EventActionsService {
         {}, successCallback);
   }
 
-  subscribeActionToEvent(eventTypeName, actionId, successCallback, errorCallback) {
+  subscribeActionToEvent(eventTypeName, actionId, organizationId, successCallback, errorCallback) {
+    const data = organizationId ? {organization_id: organizationId, action_id: actionId} : {action_id: actionId};
+
     RESTClient.post("/system/events/types/system/show/" + eventTypeName + "/subscriptions",
-        {action_id: actionId}, successCallback, errorCallback);
+        data, successCallback, errorCallback);
   }
 
   unsubscribeActionFromEvent(eventTypeName, subscriptionId, successCallback) {

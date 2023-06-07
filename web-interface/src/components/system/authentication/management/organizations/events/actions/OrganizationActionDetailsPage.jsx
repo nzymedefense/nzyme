@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import Routes from "../../../../../../util/ApiRoutes";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import EventActionsService from "../../../../../../services/EventActionsService";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
+import Routes from "../../../../../../../util/ApiRoutes";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
+import EventActionsService from "../../../../../../../services/EventActionsService";
 import moment from "moment";
 import {notify} from "react-notify-toast";
-import ActionDetailsProxy from "../../../../events/shared/details/ActionDetailsProxy";
-import ActionDetails from "../../../../events/shared/ActionDetails";
+import ActionDetailsProxy from "../../../../../events/shared/details/ActionDetailsProxy";
+import ActionDetails from "../../../../../events/shared/ActionDetails";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -76,7 +76,7 @@ function OrganizationActionDetailsPage() {
           <div className="col-md-3">
             <span className="float-end">
             <a className="btn btn-secondary"
-               href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.DETAILS(organization.id)}>
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(organization.id)}>
               Back
             </a>{' '}
             <a className="btn btn-primary"

@@ -1,11 +1,13 @@
 import React, {useEffect, useState} from "react";
-import SystemService from "../../../services/SystemService";
-import EventsTableFilters from "./shared/events/EventsTableFilters";
-import EventsTable from "./shared/events/EventsTable";
+import EventsTableFilters from "../../../../events/shared/events/EventsTableFilters";
+import EventsTable from "../../../../events/shared/events/EventsTable";
+import SystemService from "../../../../../../services/SystemService";
 
 const systemService = new SystemService();
 
-function Events() {
+function OrganizationEvents(props) {
+
+  const organizationId = props.organizationId;
 
   const PER_PAGE = 25;
 
@@ -16,7 +18,7 @@ function Events() {
 
   useEffect(() => {
     setEvents(null);
-    systemService.findAllEvents(setEvents, PER_PAGE, (page-1)*PER_PAGE, filters);
+    systemService.findAllEvents(setEvents, PER_PAGE, (page-1)*PER_PAGE, filters, organizationId);
   }, [page, filters]);
 
   return (
@@ -29,4 +31,4 @@ function Events() {
 
 }
 
-export default Events;
+export default OrganizationEvents;

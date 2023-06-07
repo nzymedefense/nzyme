@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import EventActionsService from "../../../../../../services/EventActionsService";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import EditActionProxy from "../../../../events/shared/forms/EditActionProxy";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
+import EventActionsService from "../../../../../../../services/EventActionsService";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
+import EditActionProxy from "../../../../../events/shared/forms/EditActionProxy";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();

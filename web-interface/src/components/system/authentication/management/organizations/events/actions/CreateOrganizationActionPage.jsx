@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
-import Routes from "../../../../../../util/ApiRoutes";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
+import Routes from "../../../../../../../util/ApiRoutes";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import {Navigate, useParams} from "react-router-dom";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import CreateActionProxy from "../../../../events/shared/forms/CreateActionProxy";
-import CreateActionSelect from "../../../../events/shared/forms/CreateActionSelect";
+import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import CreateActionProxy from "../../../../../events/shared/forms/CreateActionProxy";
+import CreateActionSelect from "../../../../../events/shared/forms/CreateActionSelect";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 

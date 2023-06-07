@@ -1,10 +1,11 @@
 import React from "react";
-import Paginator from "../../../misc/Paginator";
-import LoadingSpinner from "../../../misc/LoadingSpinner";
-import ApiRoutes from "../../../../util/ApiRoutes";
+import Paginator from "../../../../misc/Paginator";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../../util/ApiRoutes";
 
 function EventTypesTable(props) {
 
+  const organizationId = props.organizationId;
   const eventTypes = props.eventTypes;
   const perPage = props.perPage;
   const setPage = props.setPage;
@@ -33,7 +34,7 @@ function EventTypesTable(props) {
                   <td title={type.id}>{type.name}</td>
                   <td>{type.subscriptions.length}</td>
                   <td>
-                    <a href={ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(type.id.toLowerCase())}>Manage</a>
+                    <a href={organizationId ? ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.SUBSCRIPTIONS.DETAILS(organizationId, type.id.toLowerCase()) : ApiRoutes.SYSTEM.EVENTS.SUBSCRIPTIONS.DETAILS(type.id.toLowerCase())}>Manage</a>
                   </td>
                 </tr>
             )

@@ -1,7 +1,7 @@
 import React from "react";
 import moment from "moment/moment";
-import Paginator from "../../misc/Paginator";
-import LoadingSpinner from "../../misc/LoadingSpinner";
+import Paginator from "../../../../misc/Paginator";
+import LoadingSpinner from "../../../../misc/LoadingSpinner";
 
 function EventsTable(props) {
 

@@ -19,15 +19,14 @@ function EventsPage() {
               <div className="col-md-8">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Super Administrator Actions</h3>
+                    <h3>Super Administrator Event Subscriptions</h3>
 
                     <p>
-                      Events, such as system notifications or detection alerts have the ability to trigger the following
-                      actions. This super administrator view of event actions does not include organization-specific
-                      actions, which are instead managed on the respective organization management pages.
+                      This super administrator view of event subscriptions does not include organization-specific
+                      event types, which are instead managed on the respective organization management pages.
                     </p>
 
-                    <Actions />
+                    <EventSubscriptions />
                   </div>
                 </div>
               </div>
@@ -37,14 +36,15 @@ function EventsPage() {
               <div className="col-md-8">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Super Administrator Event Subscriptions</h3>
+                    <h3>Super Administrator Actions</h3>
 
                     <p>
-                      This super administrator view of event subscriptions does not include organization-specific
-                      event types, which are instead managed on the respective organization management pages.
+                      Events, such as system notifications or detection alerts have the ability to trigger the following
+                      actions. This super administrator view of event actions does not include organization-specific
+                      actions, which are instead managed on the respective organization management pages.
                     </p>
 
-                    <EventSubscriptions />
+                    <Actions />
                   </div>
                 </div>
               </div>

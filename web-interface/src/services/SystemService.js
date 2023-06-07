@@ -20,9 +20,15 @@ class SystemService {
     RESTClient.put('/system/health/indicators/configuration', configuration, successCallback)
   }
 
-  findAllEvents(setEvents, limit, offset, eventTypes) {
+  findAllEvents(setEvents, limit, offset, eventTypes, organizationId = undefined) {
+    const params = {limit: limit, offset: offset, event_types: eventTypes.join(",")};
+
+    if (organizationId) {
+      params["organization_id"] = organizationId;
+    }
+
     RESTClient.get('/system/events',
-        {limit: limit, offset: offset, event_types: eventTypes.join(",")}, function (response) {
+        params, function (response) {
           setEvents(response.data);
         })
   }

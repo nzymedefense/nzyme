@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import SystemService from "../../../../services/SystemService";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import EventTypesTable from "./EventTypesTable";
-import EventTypesTableFilter from "./EventTypesTableFilter";
+import EventTypesTable from "../shared/subscriptions/EventTypesTable";
+import EventTypesTableFilter from "../shared/subscriptions/EventTypesTableFilter";
 
 const systemService = new SystemService();
 

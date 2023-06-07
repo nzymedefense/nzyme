@@ -3,8 +3,8 @@ import {useParams} from "react-router-dom";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import EventSubscriptionsTable from "./EventSubscriptionsTable";
-import EventSubscriptionActionSelector from "./EventSubscriptionActionSelector";
+import EventSubscriptionsTable from "../shared/subscriptions/EventSubscriptionsTable";
+import EventSubscriptionActionSelector from "../shared/subscriptions/EventSubscriptionActionSelector";
 import {notify} from "react-notify-toast";
 
 const eventActionsService = new EventActionsService();
@@ -27,7 +27,7 @@ function EventSubscriptionDetailsPage() {
   }, [eventTypeName, revision])
 
   const onActionSelect = function(actionId) {
-    eventActionsService.subscribeActionToEvent(eventType.id, actionId, function() {
+    eventActionsService.subscribeActionToEvent(eventType.id, actionId, null,function() {
       notify.show("Subscribed action to event.", "success");
       setRevision(revision+1);
     }, function(error) {

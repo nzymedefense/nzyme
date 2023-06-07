@@ -89,15 +89,17 @@ import ChangeOwnPasswordPage from "./components/userprofile/ChangeOwnPasswordPag
 import EventsPage from "./components/system/events/EventsPage";
 import EventSubscriptionDetailsPage from "./components/system/events/subscriptions/EventSubscriptionDetailsPage";
 import CreateOrganizationActionPage
-  from "./components/system/authentication/management/organizations/actions/CreateOrganizationActionPage";
+  from "./components/system/authentication/management/organizations/events/actions/CreateOrganizationActionPage";
 import OrganizationActionDetailsPage
-  from "./components/system/authentication/management/organizations/actions/OrganizationActionDetailsPage";
+  from "./components/system/authentication/management/organizations/events/actions/OrganizationActionDetailsPage";
 import EditOrganizationActionPage
-  from "./components/system/authentication/management/organizations/actions/EditOrganizationActionPage";
+  from "./components/system/authentication/management/organizations/events/actions/EditOrganizationActionPage";
 import ActionDetailsPage from "./components/system/events/actions/ActionDetailsPage";
 import CreateActionPage from "./components/system/events/actions/CreateActionPage";
 import EditActionPage from "./components/system/events/actions/EditActionPage";
-import OrganizationEventsPage from "./components/system/authentication/management/organizations/OrganizationEventsPage";
+import OrganizationEventsPage from "./components/system/authentication/management/organizations/events/OrganizationEventsPage";
+import OrganizationEventSubscriptionDetailsPage
+  from "./components/system/authentication/management/organizations/events/subscriptions/OrganizationEventSubscriptionDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -278,6 +280,7 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.CREATE(':organizationId')} element={<CreateOrganizationActionPage />} />
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.DETAILS(':organizationId', ':actionId')} element={<OrganizationActionDetailsPage />} />
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.ACTIONS.EDIT(':organizationId', ':actionId')} element={<EditOrganizationActionPage />} />
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':eventTypeName')} element={<OrganizationEventSubscriptionDetailsPage />} />
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>

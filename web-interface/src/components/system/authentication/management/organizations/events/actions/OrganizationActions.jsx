@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
-import EventActionsService from "../../../../../../services/EventActionsService";
-import ActionsTable from "../../../../events/shared/ActionsTable";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
+import EventActionsService from "../../../../../../../services/EventActionsService";
+import ActionsTable from "../../../../../events/shared/ActionsTable";
 
 const eventActionsService = new EventActionsService();
 
