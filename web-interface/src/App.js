@@ -14,24 +14,9 @@ import NotConnectedPage from './components/misc/NotConnectedPage'
 import NotFoundPage from './components/misc/NotFoundPage'
 import ApiRoutes from './util/ApiRoutes'
 import Footer from './components/layout/Footer'
-import NetworksPage from './components/networks/NetworksPage'
-import NetworkDetailsPage from './components/networks/details/NetworkDetailsPage'
 import LoginPage from './components/system/authentication/LoginPage'
 import Store from './util/Store'
-import BanditsPage from './components/bandits/BanditsPage'
-import CreateBanditPage from './components/bandits/management/CreateBanditPage'
-import BanditDetailPage from './components/bandits/BanditDetailPage'
-import EditBanditPage from './components/bandits/management/EditBanditPage'
-import CreateIdentifierPage from './components/bandits/management/identifiers/CreateIdentifierPage'
-import TrackerDetailPage from './components/bandits/trackers/TrackerDetailPage'
 import PingService from './services/PingService'
-import AssetsPage from './components/system/assets/AssetsPage'
-import ReportsPage from './components/reports/ReportsPage'
-import ScheduleReportPage from './components/reports/ScheduleReportPage'
-import ReportDetailsPage from './components/reports/ReportDetailsPage'
-import ReportExecutionLogDetailsPage from './components/reports/ReportExecutionLogDetailsPage'
-import NetworkDetailsPageRedirector from './components/networks/details/NetworkDetailsPageRedirector'
-import BanditContactDetailsPage from './components/bandits/BanditContactDetailsPage'
 import Sidebar from './components/layout/Sidebar'
 import VersionPage from './components/system/VersionPage'
 import DarkMode from './components/layout/DarkMode'
@@ -324,33 +309,6 @@ function App() {
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
-
-                          { /* Networks. */}
-                          <Route path={ApiRoutes.DOT11.NETWORKS.INDEX} element={<NetworksPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.SHOW(':bssid', ':ssid', ':channel')} element={<NetworkDetailsPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.PROXY(':bssid', ':ssid')} element={<NetworkDetailsPageRedirector />} />
-
-                          { /* Alerts. */}
-                          <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
-                          <Route exact path={ApiRoutes.ALERTS.SHOW(':alertId')} element={<AlertDetailsPage />}/>
-
-                          { /* Bandits. */}
-                          <Route path={ApiRoutes.DOT11.BANDITS.INDEX} element={<BanditsPage />}/>
-                          <Route path={ApiRoutes.DOT11.BANDITS.NEW} element={<CreateBanditPage />}/>
-                          <Route path={ApiRoutes.DOT11.BANDITS.SHOW(':banditId')} element={<BanditDetailPage />} />
-                          <Route path={ApiRoutes.DOT11.BANDITS.CONTACT_DETAILS(':banditUUID', ':contactUUID')} element={<BanditContactDetailsPage />} />
-                          <Route path={ApiRoutes.DOT11.BANDITS.EDIT(':banditId')} element={<EditBanditPage />} />
-                          <Route path={ApiRoutes.DOT11.BANDITS.NEW_IDENTIFIER(':banditId')} element={<CreateIdentifierPage />} />
-                          <Route path={ApiRoutes.DOT11.BANDITS.SHOW_TRACKER(':trackerName')} element={<TrackerDetailPage />} />
-
-                          { /* Wireless Assets. */}
-                          <Route path={ApiRoutes.DOT11.ASSETS.INDEX} element={<AssetsPage />}/>
-
-                          { /* Reports. */}
-                          <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportsPage />}/>
-                          <Route path={ApiRoutes.REPORTING.SCHEDULE} element={<ScheduleReportPage />} />
-                          <Route path={ApiRoutes.REPORTING.DETAILS(':reportName')} element={<ReportDetailsPage />} />
-                          <Route path={ApiRoutes.REPORTING.EXECUTION_LOG_DETAILS(':reportName', ':executionId')} element={<ReportExecutionLogDetailsPage />} />
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
