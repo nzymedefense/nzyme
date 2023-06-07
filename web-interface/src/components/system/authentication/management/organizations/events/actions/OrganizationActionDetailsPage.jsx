@@ -7,7 +7,6 @@ import EventActionsService from "../../../../../../../services/EventActionsServi
 import {notify} from "react-notify-toast";
 import ActionDetailsProxy from "../../../../../events/shared/details/ActionDetailsProxy";
 import ActionDetails from "../../../../../events/shared/ActionDetails";
-import EventTypesTable from "../../../../../events/shared/subscriptions/EventTypesTable";
 import SubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SubscriptionsOfActionTable";
 
 const authenticationMgmtService = new AuthenticationManagementService();
@@ -141,7 +140,8 @@ function OrganizationActionDetailsPage() {
 
                     <p>This action is subscribed to the following events:</p>
 
-                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events} />
+                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events}
+                                                organizationId={organization.id} />
                   </div>
                 </div>
               </div>
@@ -160,7 +160,10 @@ function OrganizationActionDetailsPage() {
                       like system notifications or detection alerts.
                     </p>
 
-                    <button type="button" className="btn btn-danger" onClick={onDelete}>
+                    <button type="button"
+                            className="btn btn-danger"
+                            onClick={onDelete}
+                            disabled={action.subscribed_to_events.length > 0}>
                       Delete Action
                     </button>
                   </div>

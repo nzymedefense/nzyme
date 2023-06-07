@@ -37,8 +37,7 @@ class EventActionsService {
   }
 
   deleteAction(actionId, successCallback) {
-    RESTClient.delete("/system/events/actions/show/" + actionId,
-        {}, successCallback);
+    RESTClient.delete("/system/events/actions/show/" + actionId, successCallback);
   }
 
   subscribeActionToEvent(eventTypeName, actionId, organizationId, successCallback, errorCallback) {

@@ -138,7 +138,10 @@ function ActionDetailsPage() {
                       like system notifications or detection alerts.
                     </p>
 
-                    <button type="button" className="btn btn-danger" onClick={onDelete}>
+                    <button type="button"
+                            className="btn btn-danger"
+                            onClick={onDelete}
+                            disabled={action.subscribed_to_events.length > 0}>
                       Delete Action
                     </button>
                   </div>

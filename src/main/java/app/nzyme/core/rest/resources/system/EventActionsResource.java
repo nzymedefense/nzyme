@@ -83,8 +83,10 @@ public class EventActionsResource extends UserAuthenticatedResource {
                                  @PathParam("actionId") UUID actionId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        EventEngineImpl eventEngine = (EventEngineImpl) nzyme.getEventEngine();
+
         // Find action.
-        Optional<EventActionEntry> action = ((EventEngineImpl) nzyme.getEventEngine()).findEventAction(actionId);
+        Optional<EventActionEntry> action = eventEngine.findEventAction(actionId);
 
         if (action.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -97,7 +99,13 @@ public class EventActionsResource extends UserAuthenticatedResource {
             }
         }
 
-        ((EventEngineImpl) nzyme.getEventEngine()).deleteEventAction(actionId);
+        // Check if action has active subscriptions.
+        List<SystemEventType> subscribedEventTypes = eventEngine.findAllEventTypesActionIsSubscribedTo(action.get().uuid());
+        if (!subscribedEventTypes.isEmpty()) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        eventEngine.deleteEventAction(actionId);
 
         return Response.ok().build();
     }
