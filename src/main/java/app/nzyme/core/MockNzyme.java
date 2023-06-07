@@ -41,32 +41,14 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import app.nzyme.core.alerts.Alert;
-import app.nzyme.core.alerts.service.AlertsService;
-import app.nzyme.core.bandits.engine.ContactManager;
-import app.nzyme.core.bandits.trackers.GroundStation;
-import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
 import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.configuration.node.NodeConfigurationLoader;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
-import app.nzyme.core.dot11.Dot11MetaInformation;
-import app.nzyme.core.dot11.anonymization.Anonymizer;
-import app.nzyme.core.dot11.clients.Clients;
-import app.nzyme.core.dot11.frames.Dot11Frame;
-import app.nzyme.core.dot11.networks.sentry.Sentry;
-import app.nzyme.core.dot11.probes.Dot11Probe;
-import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.notifications.Notification;
-import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
-import app.nzyme.core.processing.FrameProcessor;
-import app.nzyme.core.remote.forwarders.Forwarder;
-import app.nzyme.core.scheduler.SchedulingService;
-import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 import liquibase.exception.LiquibaseException;
@@ -97,22 +79,12 @@ public class MockNzyme implements NzymeNode {
     private final NodeIdentification nodeIdentification;
 
     private final NodeConfiguration configuration;
-    private final SystemStatus systemStatus;
-    private final Networks networks;
-    private final Clients clients;
     private final OUIManager ouiManager;
     private final MetricRegistry metricRegistry;
-    private final AlertsService alertsService;
-    private final ContactManager contactManager;
     private final ObjectMapper objectMapper;
     private final MemoryRegistry memoryRegistry;
     private final Version version;
     private final Database database;
-    private final List<Uplink> uplinks;
-    private final List<Forwarder> forwarders;
-    private final FrameProcessor frameProcessor;
-    private final Anonymizer anonymizer;
-    private final Sentry sentry;
     private final Path dataDirectory;
     private final MessageBus messageBus;
     private final TasksQueue tasksQueue;
@@ -126,17 +98,15 @@ public class MockNzyme implements NzymeNode {
     private final EventEngine eventEngine;
 
     public MockNzyme() {
-        this(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        this(Integer.MAX_VALUE, TimeUnit.DAYS);
     }
 
-    public MockNzyme(int sentryInterval, int taskAndMessagePollInterval, TimeUnit taskAndMessagePollIntervalUnit) {
+    public MockNzyme(int taskAndMessagePollInterval, TimeUnit taskAndMessagePollIntervalUnit) {
         this.version = new Version();
 
         this.baseConfiguration = BaseConfiguration.create(
                 "mocky-mock-" + new Random().nextInt(Integer.MAX_VALUE),
-                Role.NODE,
-                "foo",
-                false
+                "foo"
         );
 
         try {
@@ -195,30 +165,15 @@ public class MockNzyme implements NzymeNode {
 
         this.authenticationService = new AuthenticationService(this);
 
-        this.uplinks = Lists.newArrayList();
-        this.forwarders = Lists.newArrayList();
-
-        this.frameProcessor = new FrameProcessor();
 
         this.database.useHandle(handle -> handle.execute("TRUNCATE sentry_ssids"));
 
         this.crypto = new Crypto(this);
 
         this.memoryRegistry = new MemoryRegistry();
-        this.systemStatus = new SystemStatus();
-        this.networks = new Networks(this);
-        this.clients = new Clients(this);
         this.ouiManager = new OUIManager(this);
-        this.alertsService = new AlertsService(this);
         this.objectMapper = new ObjectMapper();
-        this.contactManager = new ContactManager(this);
-        this.anonymizer = new Anonymizer(false, "/tmp");
 
-        if (sentryInterval == 0) {
-            this.sentry = null;
-        } else {
-            this.sentry = new Sentry(this, sentryInterval);
-        }
     }
 
     @Override
@@ -274,55 +229,8 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public FrameProcessor getFrameProcessor() {
-        return frameProcessor;
-    }
-
-    @Override
     public GeoIpService getGeoIpService() {
         return geoIp;
-    }
-
-    @Override
-    public Networks getNetworks() {
-        return networks;
-    }
-
-    @Override
-    public Sentry getSentry() {
-        return sentry;
-    }
-
-    @Override
-    public Clients getClients() {
-        return clients;
-    }
-
-    @Override
-    public void registerUplink(Uplink uplink) {
-        this.uplinks.add(uplink);
-    }
-
-    @Override
-    public void notifyUplinks(Notification notification, Dot11MetaInformation meta) {
-        for (Uplink uplink : uplinks) {
-            uplink.notify(notification, meta);
-        }
-    }
-
-    @Override
-    public void notifyUplinksOfAlert(Alert alert) {
-        for (Uplink uplink : uplinks) {
-            uplink.notifyOfAlert(alert);
-        }
-    }
-
-    @Override
-    public void forwardFrame(Dot11Frame frame) {
-        for (Forwarder forwarder : forwarders) {
-            forwarder.forward(frame);
-        }
-
     }
 
     @Override
@@ -356,33 +264,8 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public List<Dot11Probe> getProbes() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public AlertsService getAlertsService() {
-        return alertsService;
-    }
-
-    @Override
-    public ContactManager getContactManager() {
-        return contactManager;
-    }
-
-    @Override
     public TapManager getTapManager() {
         return null;
-    }
-
-    @Override
-    public List<String> getIgnoredFingerprints() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void registerIgnoredFingerprint(String fingerprint) {
-
     }
 
     @Override
@@ -391,33 +274,8 @@ public class MockNzyme implements NzymeNode {
     }
 
     @Override
-    public TrackerManager getTrackerManager() {
-        return null;
-    }
-
-    @Override
-    public GroundStation getGroundStation() {
-        return null;
-    }
-
-    @Override
-    public SystemStatus getSystemStatus() {
-        return systemStatus;
-    }
-
-    @Override
-    public SchedulingService getSchedulingService() {
-        return null;
-    }
-
-    @Override
     public OUIManager getOUIManager() {
         return ouiManager;
-    }
-
-    @Override
-    public Anonymizer getAnonymizer() {
-        return anonymizer;
     }
 
     @Override

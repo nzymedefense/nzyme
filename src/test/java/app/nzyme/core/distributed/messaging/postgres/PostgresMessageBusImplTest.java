@@ -34,7 +34,7 @@ public class PostgresMessageBusImplTest {
 
     @Test
     public void testSendAndPollWithSuccessfulResult() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
 
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
@@ -88,7 +88,7 @@ public class PostgresMessageBusImplTest {
 
     @Test
     public void testSendAndPollWithFailureResult() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
 
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
@@ -142,7 +142,7 @@ public class PostgresMessageBusImplTest {
 
     @Test
     public void testRetentionCleaning() {
-        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         assertEquals(messageBusMessagesTotalCount(nzyme.getDatabase()), 0);
 
         nzyme.getMessageBus().send(Message.create(
@@ -176,15 +176,15 @@ public class PostgresMessageBusImplTest {
     @Test
     public void testSendToAllOnlineNodes() {
         UUID n1ID = UUID.randomUUID();
-        NzymeNode n1 =  new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode n1 =  new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         n1.getNodeManager().registerSelf(n1ID);
 
         UUID n2ID = UUID.randomUUID();
-        NzymeNode n2 =  new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode n2 =  new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         n2.getNodeManager().registerSelf(n2ID);
 
         UUID n3ID = UUID.randomUUID();
-        NzymeNode n3 =  new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode n3 =  new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         n3.getNodeManager().registerSelf(n3ID);
 
         n1.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
@@ -208,7 +208,7 @@ public class PostgresMessageBusImplTest {
 
     @Test
     public void testRespectsCurrentCycle() throws InterruptedException {
-        NzymeNode nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        NzymeNode nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
 
         final AtomicInteger counter = new AtomicInteger(0);
         nzyme.getMessageBus().onMessageReceived(MessageType.CHECK_RESTART_HTTP_SERVER, new MessageHandler() {
@@ -262,7 +262,7 @@ public class PostgresMessageBusImplTest {
         );
         assertEquals(counter.get(), 1);
 
-        nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
 
         assertEquals(counter.get(), 1);
 

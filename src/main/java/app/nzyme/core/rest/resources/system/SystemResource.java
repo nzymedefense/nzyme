@@ -19,13 +19,9 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.plugin.rest.security.PermissionLevel;
-import com.beust.jcommander.internal.Lists;
 import app.nzyme.core.MemoryRegistry;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import app.nzyme.core.rest.responses.system.SystemStatusResponse;
-import app.nzyme.core.rest.responses.system.SystemStatusStateResponse;
 import app.nzyme.core.rest.responses.system.VersionResponse;
-import app.nzyme.core.systemstatus.SystemStatus;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -33,7 +29,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 @Path("/api/system")
 @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
@@ -46,16 +41,7 @@ public class SystemResource {
     @GET
     @Path("/status")
     public Response getStatus() {
-        List<SystemStatusStateResponse> states = Lists.newArrayList();
-
-        for (SystemStatus.TYPE type : SystemStatus.TYPE.values()) {
-            states.add(SystemStatusStateResponse.create(
-                    type,
-                    nzyme.getSystemStatus().isInStatus(type)
-            ));
-        }
-
-        return Response.ok(SystemStatusResponse.create(states)).build();
+        return Response.ok().build();
     }
 
     @GET

@@ -116,9 +116,7 @@ public class NzymeHttpServer {
         // Register REST API resources.
         resourceConfig.register(AuthenticationResource.class);
         resourceConfig.register(PingResource.class);
-        resourceConfig.register(ProbesResource.class);
         resourceConfig.register(SystemResource.class);
-        resourceConfig.register(AssetInventoryResource.class);
         resourceConfig.register(StatusResource.class);
         resourceConfig.register(TablesResource.class);
         resourceConfig.register(TapsResource.class);

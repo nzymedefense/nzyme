@@ -20,7 +20,6 @@ package app.nzyme.core.configuration.base;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
-import app.nzyme.core.Role;
 import app.nzyme.core.configuration.ConfigurationKeys;
 import app.nzyme.core.configuration.ConfigurationValidator;
 import app.nzyme.core.configuration.IncompleteConfigurationException;
@@ -52,32 +51,18 @@ public class BaseConfigurationLoader {
     }
 
     public BaseConfiguration get() {
-        return BaseConfiguration.create(parseNodeName(), parseRole(), parseDataDirectory(), parseAnonymize());
+        return BaseConfiguration.create(parseNodeName(), parseDataDirectory());
     }
 
     public String parseNodeName() {
         return general.getString(ConfigurationKeys.NAME);
     }
 
-    public Role parseRole() {
-        return general.getEnum(Role.class, ConfigurationKeys.ROLE);
-    }
-
     private String parseDataDirectory() {
         return general.getString(ConfigurationKeys.DATA_DIRECTORY);
     }
 
-    public boolean parseAnonymize() {
-        if (!general.hasPath(ConfigurationKeys.ANONYMIZE)) {
-            return false;
-        } else {
-            return general.getBoolean(ConfigurationKeys.ANONYMIZE);
-        }
-    }
-
     public void validate() throws InvalidConfigurationException, IncompleteConfigurationException {
-        ConfigurationValidator.expectEnum(general, ConfigurationKeys.ROLE, ConfigurationKeys.GENERAL, Role.class);
-
         // Node ID exists and is valid.
         ConfigurationValidator.expect(general, ConfigurationKeys.NAME, ConfigurationKeys.GENERAL, String.class);
         if(!Tools.isSafeNodeName(parseNodeName())) {

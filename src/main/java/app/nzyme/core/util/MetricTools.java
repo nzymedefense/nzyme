@@ -4,7 +4,6 @@ import com.codahale.metrics.*;
 
 public class MetricTools {
 
-
     public static Meter getMeter(MetricRegistry metrics, String name) {
         Meter meter = metrics.getMeters().get(name);
         return meter == null ? new Meter() : meter;

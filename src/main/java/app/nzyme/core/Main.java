@@ -26,8 +26,6 @@ import app.nzyme.core.configuration.InvalidConfigurationException;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.configuration.base.BaseConfigurationLoader;
 import app.nzyme.core.configuration.node.NodeConfigurationLoader;
-import app.nzyme.core.configuration.tracker.TrackerConfiguration;
-import app.nzyme.core.configuration.tracker.TrackerConfigurationLoader;
 import app.nzyme.core.database.DatabaseImpl;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.Level;
@@ -76,68 +74,43 @@ public class Main {
             System.exit(FAILURE);
         }
 
-        switch (baseConfiguration.mode()) {
-            case NODE:
-                NodeConfiguration nodeConfiguration = null;
-                try {
-                    nodeConfiguration = new NodeConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
-                } catch (InvalidConfigurationException | ConfigException e) {
-                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
-                    System.exit(FAILURE);
-                } catch (IncompleteConfigurationException e) {
-                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
-                    System.exit(FAILURE);
-                } catch (FileNotFoundException e) {
-                    LOG.error("Could not read configuration file.", e);
-                    System.exit(FAILURE);
-                }
 
-                // Database.
-                DatabaseImpl database = new DatabaseImpl(nodeConfiguration);
-                try {
-                    database.initializeAndMigrate();
-                } catch (LiquibaseException e) {
-                    LOG.fatal("Error during database initialization and migration.", e);
-                    System.exit(FAILURE);
-                }
-
-                NzymeNode nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
-
-                try {
-                    nzyme.initialize();
-                } catch(Exception e) {
-                    LOG.fatal("Could not initialize nzyme.", e);
-                    System.exit(FAILURE);
-                }
-
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    Thread.currentThread().setName("shutdown-hook");
-                    nzyme.shutdown();
-                }));
-                break;
-            case TRACKER:
-                TrackerConfiguration trackerConfiguration = null;
-                try {
-                    trackerConfiguration = new TrackerConfigurationLoader(new File(cliArguments.getConfigFilePath())).get();
-                } catch (InvalidConfigurationException | ConfigException e) {
-                    LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
-                    System.exit(FAILURE);
-                } catch (IncompleteConfigurationException e) {
-                    LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
-                    System.exit(FAILURE);
-                } catch (FileNotFoundException e) {
-                    LOG.error("Could not read configuration file.", e);
-                    System.exit(FAILURE);
-                }
-
-                NzymeTracker tracker = new NzymeTrackerImpl(baseConfiguration, trackerConfiguration);
-                try {
-                    tracker.initialize();
-                } catch (Exception e) {
-                    LOG.fatal("Could not initialize nzyme.", e);
-                    System.exit(FAILURE);
-                }
+        NodeConfiguration nodeConfiguration = null;
+        try {
+            nodeConfiguration = new NodeConfigurationLoader(new File(cliArguments.getConfigFilePath()), false).get();
+        } catch (InvalidConfigurationException | ConfigException e) {
+            LOG.error("Invalid configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (IncompleteConfigurationException e) {
+            LOG.error("Incomplete configuration. Please refer to the example configuration file or documentation.", e);
+            System.exit(FAILURE);
+        } catch (FileNotFoundException e) {
+            LOG.error("Could not read configuration file.", e);
+            System.exit(FAILURE);
         }
+
+        // Database.
+        DatabaseImpl database = new DatabaseImpl(nodeConfiguration);
+        try {
+            database.initializeAndMigrate();
+        } catch (LiquibaseException e) {
+            LOG.fatal("Error during database initialization and migration.", e);
+            System.exit(FAILURE);
+        }
+
+        NzymeNode nzyme = new NzymeNodeImpl(baseConfiguration, nodeConfiguration, database);
+
+        try {
+            nzyme.initialize();
+        } catch(Exception e) {
+            LOG.fatal("Could not initialize nzyme.", e);
+            System.exit(FAILURE);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Thread.currentThread().setName("shutdown-hook");
+            nzyme.shutdown();
+        }));
 
         while(true) {
             // https://www.youtube.com/watch?v=Vmb1tqYqyII#t=47s

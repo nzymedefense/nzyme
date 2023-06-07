@@ -31,23 +31,10 @@ import app.nzyme.plugin.distributed.tasksqueue.TasksQueue;
 import app.nzyme.plugin.retro.RetroService;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import app.nzyme.core.alerts.service.AlertsService;
-import app.nzyme.core.bandits.engine.ContactManager;
-import app.nzyme.core.bandits.trackers.GroundStation;
-import app.nzyme.core.bandits.trackers.TrackerManager;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.Crypto;
-import app.nzyme.core.dot11.anonymization.Anonymizer;
-import app.nzyme.core.dot11.clients.Clients;
-import app.nzyme.core.dot11.networks.sentry.Sentry;
-import app.nzyme.core.dot11.probes.Dot11Probe;
-import app.nzyme.core.dot11.networks.Networks;
 import app.nzyme.core.ethernet.Ethernet;
-import app.nzyme.core.notifications.Uplink;
 import app.nzyme.core.ouis.OUIManager;
-import app.nzyme.core.processing.FrameProcessor;
-import app.nzyme.core.scheduler.SchedulingService;
-import app.nzyme.core.systemstatus.SystemStatus;
 import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.taps.TapManager;
 
@@ -55,7 +42,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabaseProvider, NodeIdentificationProvider, MetricsRegistryProvider {
+public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdentificationProvider, MetricsRegistryProvider {
 
     void initialize();
     void shutdown();
@@ -71,15 +58,7 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     Ethernet getEthernet();
 
-    FrameProcessor getFrameProcessor();
-
     GeoIpService getGeoIpService();
-
-    Networks getNetworks();
-    Sentry getSentry();
-    Clients getClients();
-
-    void registerUplink(Uplink uplink);
 
     NodeConfiguration getConfiguration();
     BaseConfiguration getBaseConfiguration();
@@ -92,28 +71,13 @@ public interface NzymeNode extends RemoteConnector, PluginEntryPoint, DatabasePr
 
     Database getDatabase();
 
-    List<Dot11Probe> getProbes();
-    AlertsService getAlertsService();
-    ContactManager getContactManager();
     EventEngine getEventEngine();
 
     TapManager getTapManager();
 
-    List<String> getIgnoredFingerprints();
-    void registerIgnoredFingerprint(String fingerprint);
-
     TablesService getTablesService();
 
-    TrackerManager getTrackerManager();
-    GroundStation getGroundStation();
-
-    SystemStatus getSystemStatus();
-
-    SchedulingService getSchedulingService();
-
     OUIManager getOUIManager();
-
-    Anonymizer getAnonymizer();
 
     List<String> getInitializedPlugins();
 

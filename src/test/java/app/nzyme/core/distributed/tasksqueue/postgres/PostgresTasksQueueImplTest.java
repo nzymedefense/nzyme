@@ -52,7 +52,7 @@ public class PostgresTasksQueueImplTest {
 
     @Test
     public void testPublishSuccess() throws InterruptedException {
-        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
         assertEquals(countTotalTasks(nzyme), 0);
@@ -115,7 +115,7 @@ public class PostgresTasksQueueImplTest {
 
     @Test
     public void testPublishFailure() throws InterruptedException {
-        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
         assertEquals(countTotalTasks(nzyme), 0);
@@ -178,13 +178,13 @@ public class PostgresTasksQueueImplTest {
 
     @Test
     public void testMultiProducerSingleConsumer() throws IOException, InterruptedException {
-        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
         assertEquals(countTotalTasks(nzyme), 0);
 
         cleanDataFolder(); // This makes nzyme generate new node UUID.
 
-        MockNzyme nzyme2 = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme2 = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq2 = (PostgresTasksQueueImpl) nzyme2.getTasksQueue();
         assertEquals(countTotalTasks(nzyme2), 0);
 
@@ -223,13 +223,13 @@ public class PostgresTasksQueueImplTest {
 
     @Test
     public void testMultiProducerSingleConsumerNotAllowedToSelfProcess() throws IOException, InterruptedException {
-        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
         assertEquals(countTotalTasks(nzyme), 0);
 
         cleanDataFolder(); // This makes nzyme generate new node UUID.
 
-        MockNzyme nzyme2 = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme2 = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq2 = (PostgresTasksQueueImpl) nzyme2.getTasksQueue();
         assertEquals(countTotalTasks(nzyme2), 0);
 
@@ -284,7 +284,7 @@ public class PostgresTasksQueueImplTest {
 
     @Test
     public void testRetentionCleaning() {
-        MockNzyme nzyme = new MockNzyme(0, Integer.MAX_VALUE, TimeUnit.DAYS);
+        MockNzyme nzyme = new MockNzyme(Integer.MAX_VALUE, TimeUnit.DAYS);
         PostgresTasksQueueImpl tq = (PostgresTasksQueueImpl) nzyme.getTasksQueue();
 
         assertEquals(countTotalTasks(nzyme), 0);

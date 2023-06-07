@@ -51,41 +51,6 @@ public class Tools {
         }
     }
 
-    public static boolean isHumanlyReadable(String string) {
-        int length = string.length();
-
-        // Check if it only consists of control chars or whitespaces.
-        int controlChars = 0;
-        int whitespaces = 0;
-        for (char c : string.toCharArray()) {
-            if (Character.isISOControl(c)) {
-                controlChars++;
-            }
-
-            if (Character.isISOControl(c)) {
-                whitespaces++;
-            }
-        }
-
-        if (length == controlChars || length == whitespaces) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static int calculateSignalQuality(int antennaSignal) {
-        if(antennaSignal >= -50) {
-            return 100;
-        }
-
-        if(antennaSignal <= -100) {
-            return 0;
-        }
-
-        return 2*(antennaSignal+100);
-    }
-
     public static boolean isSafeParameter(String x) {
         if (x == null) {
             return true;
@@ -104,29 +69,6 @@ public class Tools {
         }
 
         return x.length() < 255 && SAFE_ID.matcher(x).matches();
-    }
-
-    public static String byteArrayToHexPrettyPrint(byte[] a) {
-        StringBuilder sb = new StringBuilder(a.length * 2);
-        for(byte b: a)
-            sb.append(String.format("%02x", b)).append(" ");
-        return sb.toString();
-    }
-
-    public static String safeAlphanumericString(String x) {
-        return x.replaceAll("[^A-Za-z0-9]", "");
-    }
-
-    public static Integer getInteger(Object value) {
-        if (value instanceof String) {
-            return Integer.parseInt((String) value);
-        }
-
-        if (value instanceof Integer) {
-            return (Integer) value;
-        }
-
-        throw new RuntimeException("Cannot cast object of type [" + value.getClass().getCanonicalName() + "] to Integer.");
     }
 
     public static Recipient parseEmailAddress(String s) throws InvalidConfigurationException {

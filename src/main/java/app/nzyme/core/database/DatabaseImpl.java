@@ -20,18 +20,10 @@ import app.nzyme.core.security.authentication.db.UserEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryMapper;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetailsMapper;
 import app.nzyme.plugin.Database;
-import app.nzyme.core.alerts.service.AlertDatabaseEntryMapper;
-import app.nzyme.core.bandits.database.*;
 import app.nzyme.core.crypto.database.PGPKeyFingerprintMapper;
-import app.nzyme.core.dot11.deauth.db.DeauthenticationMonitorRecordingMapper;
-import app.nzyme.core.dot11.networks.beaconrate.BeaconRateMapper;
-import app.nzyme.core.dot11.networks.sentry.db.SentrySSIDMapper;
-import app.nzyme.core.dot11.networks.signalstrength.SignalIndexHistogramHistoryDBEntryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSPairSummaryMapper;
 import app.nzyme.core.ethernet.dns.db.DNSStatisticsBucketMapper;
 import app.nzyme.core.ethernet.dns.db.DNSTrafficSummaryMapper;
-import app.nzyme.core.reporting.db.ExecutionLogEntryMapper;
-import app.nzyme.core.reporting.db.ScheduledReportEntryMapper;
 import app.nzyme.core.taps.db.*;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeAggregationMapper;
 import app.nzyme.core.taps.db.metrics.TapMetricsGaugeMapper;
@@ -85,19 +77,6 @@ public class DatabaseImpl implements Database {
         this.jdbi = Jdbi.create("jdbc:" + configuration.databasePath())
                 .installPlugin(new PostgresPlugin())
                 .installPlugin(new JodaTimePlugin())
-                .registerRowMapper(new BeaconRateMapper())
-                .registerRowMapper(new SignalIndexHistogramHistoryDBEntryMapper())
-                .registerRowMapper(new AlertDatabaseEntryMapper())
-                .registerRowMapper(new BanditMapper())
-                .registerRowMapper(new BanditIdentifierMapper())
-                .registerRowMapper(new ContactMapper())
-                .registerRowMapper(new SentrySSIDMapper())
-                .registerRowMapper(new DeauthenticationMonitorRecordingMapper())
-                .registerRowMapper(new ScheduledReportEntryMapper())
-                .registerRowMapper(new ExecutionLogEntryMapper())
-                .registerRowMapper(new ContactRecordMapper())
-                .registerRowMapper(new ContactRecordValueAggregationMapper())
-                .registerRowMapper(new ContactRecorderHistogramEntryMapper())
                 .registerRowMapper(new TapMapper())
                 .registerRowMapper(new BusMapper())
                 .registerRowMapper(new ChannelMapper())

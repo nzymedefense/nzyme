@@ -18,22 +18,17 @@
 package app.nzyme.core.configuration.base;
 
 import com.google.auto.value.AutoValue;
-import app.nzyme.core.Role;
 
 @AutoValue
 public abstract class BaseConfiguration {
 
     public abstract String name();
-    public abstract Role mode();
     public abstract String dataDirectory();
-    public abstract Boolean anonymize();
 
-    public static BaseConfiguration create(String name, Role mode, String dataDirectory, Boolean anonymize) {
+    public static BaseConfiguration create(String name, String dataDirectory) {
         return builder()
                 .name(name)
-                .mode(mode)
                 .dataDirectory(dataDirectory)
-                .anonymize(anonymize)
                 .build();
     }
 
@@ -45,13 +40,8 @@ public abstract class BaseConfiguration {
     public abstract static class Builder {
         public abstract Builder name(String name);
 
-        public abstract Builder mode(Role mode);
-
         public abstract Builder dataDirectory(String dataDirectory);
-
-        public abstract Builder anonymize(Boolean anonymize);
 
         public abstract BaseConfiguration build();
     }
-
 }

@@ -2,14 +2,8 @@
 
 # General nzyme configuration.
 general: {
-  role: NODE
-
   # The ID or name of this nzyme instance. Must be unique and contain only alphanumeric characters, underscores and dashes.
   name: nzyme-node-01
-
-  # Admin password SHA256 hash. (64 characters) - generate with, for example, sha256sum on Linux: $ echo -n secretpassword | sha256sum
-  # You will use this password to log in to the web interface.
-  admin_password_hash:
 
   # Path to postgreSQL database. Make sure to change username, password and database name. (This is described in the documentation)
   database_path: "postgresql://localhost:5432/nzyme?user=nzyme&password=YOUR_PASSWORD"
@@ -29,42 +23,6 @@ general: {
   # Nzyme is using NTP to compare clocks to world reference time and alert you if there is time drift. Default: pool.ntp.org
   ntp_server: pool.ntp.org
 
-  alerting {
-    # Notifications and callbacks for triggered alerts.
-    callbacks: [
-      {
-        type: email
-        enabled: false
-
-        # One of: SMTP, SMTPS or SMTP_TLS
-        transport_strategy: SMTP_TLS
-
-        host: smtp.example.org
-        port: 587
-        username: "your_username"
-        password: "your_password"
-
-        from: "nzyme <nzyme@example.org>"
-        subject_prefix: "[NZYME]"
-
-        recipients: [
-          "Somebody <somebody@example.org>",
-          "Somebody Else <somebody.else@example.org>"
-        ]
-      }
-
-      {
-        type: file
-        enabled: false
-
-        path: /var/log/nzyme/alerts.log
-      }
-    ]
-
-    # Length of the training period. Do not change this if you don't know what this means.
-    training_period_seconds: 300
-  }
-
   # Regularly check if this version of nzyme is outdated?
   versionchecks: true
 }
@@ -79,103 +37,3 @@ interfaces: {
   # that your web browser will use to try to connect to nzyme and it has to be reachable for it.) Must be https://.
   http_external_uri: "https://127.0.0.1:22900/"
 }
-
-# List of uplinks. Sends frame meta information and alerts to log management systems like Graylog for threat hunting and
-# forensics. See https://go.nzyme.org/uplinks
-uplinks: []
-
-# 802.11/Wifi adapters that are designated to read traffic.
-# The more monitors you have listening on different channels, the more traffic will be picked up and the more
-# traffic will be available as the basis for alerts and analysis.
-# See: https://go.nzyme.org/configuration-reference
-802_11_monitors: [
-  {
-    # The 802.11/WiFi adapter name. (from `ifconfig` or `ip link`)
-    device: wlx00c0ca971201
-
-    # WiFi interface and 802.11 channels to use. Nzyme will cycle your network adapters through these channels.
-    # Consider local legal requirements and regulations.
-    # See also: https://en.wikipedia.org/wiki/List_of_WLAN_channels
-    channels: [1,2,3,4,5,6,7,8,9,10,11]
-
-    # There is no way for nzyme to configure your wifi interface directly. We are using direct operating system commands to
-    # configure the adapter. Examples for Linux are in the documentation.
-    channel_hop_command: "sudo /sbin/iwconfig {interface} channel {channel}"
-
-    # Channel hop interval in seconds. Leave at default if you don't know what this is.
-    channel_hop_interval: 1
-
-    # Time this monitor can remain without recording any frames until it is marked as failing. Under certain conditions,
-    # it can be normal to not record any frames for an extended period of time. If you receive warnings and alerts for
-    # failed probes when there were simply no frames to record, increase this value. Default: 60
-    max_idle_time_seconds: 60
-
-    # Skip the automatic monitor mode configuration of this interface. Only enable this if for some reason libpcap can't
-    # properly configure this interface into monitor mode. In that case, you can try to set it manually instead.
-    skip_enable_monitor: false
-  }
-]
-
-# A list of all your 802.11/WiFi networks. This will be used for automatic alerting.
-# It is recommended to leave this empty or on default at first start of nzyme and
-# then build it using the data nzyme shows in the web interface. For example, the
-# "security" and "fingerprints" strings can be copied from the web interface.
-# See: https://go.nzyme.org/network-monitoring
-802_11_networks: [
-  {
-    ssid: mywifinetwork
-    channels: [1,2,3,4,5,6,7,8,9,10,11,12,13]
-    security: [WPA2-PSK-CCMP]
-    beacon_rate: 40
-    bssids: [
-      {
-        address: "f0:9f:c2:dd:18:f6",
-        fingerprints: [ 8ba95bfb6207749c01479235017a76b15ad63c387fd0bcc74593388f81326ca0 ]
-      }
-    ]
-  }
-]
-
-# The deauthentication monitor is used to monitor the number of recorded of deauthentication and disassociation frames.
-# The global_threshold parameter is used to control when a DEAUTH_FLOOD alert is triggered.
-deauth_monitor {
-  global_threshold: 10
-}
-
-# List of enabled 802.11/WiFi alert types. Remove or comment out (#) an alert type to mute it.
-# See: https://go.nzyme.org/alerting
-802_11_alerts: [
-  unexpected_bssid
-  unexpected_ssid
-  crypto_change
-  unexpected_channel
-  unexpected_fingerprint
-  beacon_rate_anomaly
-  multiple_signal_tracks
-  pwnagotchi_advertisement
-  bandit_contact
-  unknown_ssid
-  deauth_flood
-]
-
-# Optional: Traps to set up. See: https://go.nzyme.org/deception-and-traps
-802_11_traps: []
-
-reporting: {
-  email: {
-    # One of: SMTP, SMTPS or SMTP_TLS
-    transport_strategy: SMTP_TLS
-
-    host: smtp.example.org
-    port: 587
-    username: "your_username"
-    password: "your_password"
-
-    from: "nzyme <nzyme@example.org>"
-    subject_prefix: "[NZYME]"
-  }
-}
-
-# Optional: A device to communicate with nzyme trackers, used to track down physical location of bandits. Please read
-# more in the documentation. See: https://go.nzyme.org/bandits-and-trackers
-groundstation_device: {}
