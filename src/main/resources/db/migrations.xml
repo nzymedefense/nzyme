@@ -2553,4 +2553,30 @@
         <dropNotNullConstraint tableName="event_subscriptions" columnName="organization_id" />
     </changeSet>
 
+    <changeSet id="remove_tables_for_v200" author="lennartkoopmann">
+        <dropTable tableName="alerts" />
+        <dropTable tableName="contact_records" />
+        <dropTable tableName="contacts" />
+        <dropTable tableName="bandit_identifiers" />
+        <dropTable tableName="bandits" />
+        <dropTable tableName="beacon_rate_history" />
+        <dropTable tableName="deauth_monitor" />
+        <dropTable tableName="report_execution_log" />
+        <dropTable tableName="report_metadata" />
+        <dropTable tableName="report_receivers_email" />
+        <dropTable tableName="scheduler_blob_triggers" />
+        <dropTable tableName="scheduler_calendars" />
+        <dropTable tableName="scheduler_cron_triggers" />
+        <dropTable tableName="scheduler_fired_triggers" />
+        <dropTable tableName="scheduler_simprop_triggers" />
+        <dropTable tableName="scheduler_simple_triggers" />
+        <dropTable tableName="scheduler_triggers" />
+        <dropTable tableName="scheduler_job_details" />
+        <dropTable tableName="scheduler_locks" />
+        <dropTable tableName="scheduler_paused_trigger_grps" />
+        <dropTable tableName="scheduler_scheduler_state" />
+        <dropTable tableName="sentry_ssids" />
+        <dropTable tableName="sigidx_histogram_history" />
+    </changeSet>
+
 </databaseChangeLog>
