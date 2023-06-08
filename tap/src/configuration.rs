@@ -7,6 +7,7 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
     pub general: General,
+    pub wifi: Wifi,
     pub ethernet: Ethernet,
     pub performance: Performance,
     pub misc: Misc
@@ -25,8 +26,14 @@ pub struct Ethernet {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct Wifi {
+    pub wifi_listen_interfaces: Vec<String>
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct Performance {
-    pub ethernet_brokers: i32
+    pub ethernet_brokers: i32,
+    pub wifi_brokers: i32
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -55,6 +62,10 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
     }
     if doc.performance.ethernet_brokers <= 0 {
         bail!("Configuration variable `ethernet_brokers` must be set to a value greater than 0.");
+    }
+
+    if doc.performance.wifi_brokers <= 0 {
+        bail!("Configuration variable `wifi_brokers` must be set to a value greater than 0.");
     }
 
     // Test if URL can be parsed.

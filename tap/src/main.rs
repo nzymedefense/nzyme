@@ -66,32 +66,39 @@ fn main() {
     });
 
     // Ethernet handler.
-    let handlerbus = bus.clone();
+    let ethernet_handlerbus = bus.clone();
     thread::spawn(move || {
-        brokers::ethernet_broker::EthernetBroker::new(handlerbus, configuration.performance.ethernet_brokers as usize).run();
+        brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
+    // WiFi handler.
+    let wifi_handlerbus = bus.clone();
+    thread::spawn(move || {
+        brokers::dot11_broker::Dot11Broker::new(wifi_handlerbus, configuration.performance.wifi_brokers as usize).run();
+    });
+
+
     // Ethernet Capture.
-    for interface in configuration.clone().ethernet.ethernet_listen_interfaces {
-        let capturemetrics = metrics.clone();
+    for interface_name in configuration.clone().ethernet.ethernet_listen_interfaces {
+        let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
         thread::spawn(move || {
-            let mut ec = ethernet::capture::Capture {
-                metrics: capturemetrics.clone(),
+            let mut ethernet_capture = ethernet::capture::Capture {
+                metrics: capture_metrics.clone(),
                 bus: capture_bus
             };
 
-            match capturemetrics.lock() {
-                Ok(mut metrics) => metrics.register_new_capture(interface.clone(), metrics::CaptureType::Ethernet),
+            match capture_metrics.lock() {
+                Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::Ethernet),
                 Err(e) => error!("Could not aquire mutex of metrics: {}", e)
             }
 
             loop {
-                ec.run(&interface);
+                ethernet_capture.run(&interface_name);
 
-                error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface);
-                match capturemetrics.lock() {
-                    Ok(mut metrics) => metrics.mark_capture_as_failed(&interface),
+                error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface_name);
+                match capture_metrics.lock() {
+                    Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
                     Err(e) => error!("Could not aquire mutex of metrics: {}", e)
                 }
                 thread::sleep(time::Duration::from_secs(5));
@@ -99,25 +106,33 @@ fn main() {
         });
     }
 
-    // WiFi capture. TODO load from config
-    /*let mut dot11cap = dot11::capture::Capture {
-        metrics: metrics.clone(),
-        bus: bus.clone()
-    };
+    // WiFi capture.
+    for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
+        let capture_metrics = metrics.clone();
+        let capture_bus = bus.clone();
+        thread::spawn(move || {
+            let mut dot11_capture = dot11::capture::Capture {
+                metrics: capture_metrics.clone(),
+                bus: capture_bus.clone()
+            };
 
-    let dot11metrics = metrics.clone();
-    thread::spawn(move || {
-        loop {
-            dot11cap.run("wlx9cefd5fd8c3e".to_string());
-
-            error!("WiFi capture [TODO TODO TODO] disconnected. Retrying in 5 seconds."); // TODO
-            match dot11metrics.lock() {
-                Ok(mut metrics) => metrics.mark_capture_as_failed("wlx9cefd5fd8c3e".to_string()), // TODO
+            match capture_metrics.lock() {
+                Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
                 Err(e) => error!("Could not aquire mutex of metrics: {}", e)
             }
-            thread::sleep(time::Duration::from_secs(5));
-        }
-    });*/
+    
+            loop {
+                dot11_capture.run(&interface_name);
+
+                error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", interface_name); 
+                match capture_metrics.lock() {
+                    Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                    Err(e) => error!("Could not aquire mutex of metrics: {}", e)
+                }
+                thread::sleep(time::Duration::from_secs(5));
+            }
+        });
+    }
     
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());

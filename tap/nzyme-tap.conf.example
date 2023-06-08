@@ -6,8 +6,12 @@ accept_insecure_certs = false
 [ethernet]
 ethernet_listen_interfaces = [ "eth0" ]
 
+[wifi]
+wifi_listen_interfaces = [ "wlan0" ]
+
 [performance]
-ethernet_brokers = 2
+ethernet_brokers = 1
+wifi_brokers = 1
 
 [misc]
 training_period_minutes = 5

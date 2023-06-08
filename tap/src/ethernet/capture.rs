@@ -60,19 +60,19 @@ impl Capture<> {
                 }
             };
 
+            let len = packet.data.len();
+
             match self.metrics.lock() {
                 Ok(mut metrics) => {
                     match stats {
                         Ok(stats) => {
-                            metrics.increment_processed_bytes_total(packet.clone().len() as u32);
+                            metrics.increment_processed_bytes_total(len as u32);
                             metrics.update_capture(device_name, true, stats.dropped, stats.if_dropped);
                         },
                         Err(ref e) => { // TOOD add error
                             error!("Could not fetch handle stats for capture [{}] metrics update: {}", device_name, e);
                         }
                     }
-
-
                 },
                 Err(e) => error!("Could not acquire metrics mutex: {}", e)
             }
@@ -82,15 +82,15 @@ impl Capture<> {
                 continue;
             }
 
-            let len = packet.data.len();
+            
             let data = EthernetData {
                 data: packet.data.to_vec()
             };
 
-            // Write to Ethernet handler pipeline.
+            // Write to Ethernet broker pipeline.
             match self.bus.ethernet_broker.sender.lock() {
                 Ok(mut sender) => { sender.send_packet(Arc::new(data), len as u32) },
-                Err(e) => error!("Could not aquire ethernet handler channel mutex: {}", e)
+                Err(e) => error!("Could not aquire ethernet broker channel mutex: {}", e)
             }
         }
     }

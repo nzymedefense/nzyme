@@ -38,6 +38,7 @@ pub struct ChannelUtilization {
 
 pub struct Channels {
     ethernet_broker: ChannelUtilization,
+    dot11_broker: ChannelUtilization,
     ethernet_pipeline: ChannelUtilization,
     arp_pipeline: ChannelUtilization,
     tcp_pipeline: ChannelUtilization,
@@ -47,7 +48,8 @@ pub struct Channels {
 
 #[derive(Clone, Display)]
 pub enum CaptureType {
-    Ethernet
+    Ethernet,
+    WiFi
 }
 
 #[derive(Clone)]
@@ -76,6 +78,7 @@ impl Metrics {
             processed_bytes: TotalWithAverage::default(),
             channels: Channels {
                 ethernet_broker: ChannelUtilization::default(),
+                dot11_broker: ChannelUtilization::default(),
                 ethernet_pipeline: ChannelUtilization::default(),
                 arp_pipeline: ChannelUtilization::default(),
                 tcp_pipeline: ChannelUtilization::default(),
@@ -98,13 +101,14 @@ impl Metrics {
         }
     }
     
-    pub fn register_new_capture(&mut self, name: String, capture_type: CaptureType) {
-        if self.captures.contains_key(&name) {
+    pub fn register_new_capture(&mut self, name: &str, capture_type: CaptureType) {
+        if self.captures.contains_key(name) {
             error!("Attempt to re-register new capture. Ignoring.");
         } else {
-            self.captures.insert(name.clone(), Capture {
+            let sname = name.to_string();
+            self.captures.insert(sname.clone(), Capture {
                 capture_type,
-                interface_name: name,
+                interface_name: sname.clone(),
                 is_running: false,
                 received: 0,
                 dropped_buffer: 0,
@@ -152,6 +156,7 @@ impl Metrics {
     pub fn select_channel(&mut self, channel: &ChannelName) -> &mut ChannelUtilization {
         match channel {
             ChannelName::EthernetBroker => &mut self.channels.ethernet_broker,
+            ChannelName::Dot11Broker => &mut self.channels.dot11_broker,
             ChannelName::EthernetPipeline => &mut self.channels.ethernet_pipeline,
             ChannelName::ArpPipeline => &mut self.channels.arp_pipeline,
             ChannelName::TcpPipeline => &mut self.channels.tcp_pipeline,

@@ -12,7 +12,7 @@ use crate::{
         DNSPacket,
         TCPPacket
     },
-    metrics::Metrics
+    metrics::Metrics, dot11::frames::Dot11Frame
 };
 
 use super::channel_names::ChannelName;
@@ -21,13 +21,12 @@ pub struct Bus {
     pub name: String,
 
     pub ethernet_broker: NzymeChannel<EthernetData>,
+    pub dot11_broker: NzymeChannel<Dot11Frame>,
 
     pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
-
     pub tcp_pipeline: NzymeChannel<TCPPacket>,
     pub udp_pipeline: NzymeChannel<UDPPacket>,
-
     pub dns_pipeline: NzymeChannel<DNSPacket>
 }
 
@@ -74,7 +73,8 @@ impl Bus<> {
 
     pub fn new(metrics: Arc<Mutex<Metrics>>, name: String) -> Self {
         let (ethernet_broker_sender, ethernet_broker_receiver) = bounded(65536); // TODO configurable
-        
+        let (dot11_broker_sender, dot11_broker_receiver) = bounded(65536); // TODO configurable
+
         let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
@@ -92,6 +92,14 @@ impl Bus<> {
                     name: ChannelName::EthernetBroker
                 }),
                 receiver: Arc::new(ethernet_broker_receiver),
+            },
+            dot11_broker: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: dot11_broker_sender,
+                    name: ChannelName::Dot11Broker
+                }),
+                receiver: Arc::new(dot11_broker_receiver),
             },
             ethernet_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

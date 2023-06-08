@@ -1,10 +1,10 @@
-/*use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex};
 
-use log::{error, info};
+use log::{error, info, debug};
 
 use crate::{
     messagebus::bus::Bus,
-    metrics::Metrics,
+    metrics::Metrics, dot11::frames::Dot11Frame,
 };
 
 pub struct Capture {
@@ -14,8 +14,6 @@ pub struct Capture {
 
 impl Capture<> {
 
-    // TODO remove linter hint
-    #![allow(clippy::unused_self)]
     pub fn run(&mut self, device_name: &str) {
         info!("Starting WiFi capture on [{}]", device_name);
 
@@ -52,14 +50,46 @@ impl Capture<> {
         let stats = handle.stats();
 
         loop {
-            let packet = match handle.next_packet() {
+            let frame = match handle.next_packet() {
                 Ok(packet) => packet,
                 Err(e) => {
-                    error!("Ethernet capture exception: {}", e);
+                    error!("Dot11 capture exception: {}", e);
                     continue;
                 }
             };
 
+            let length = frame.data.len();
+
+            match self.metrics.lock() {
+                Ok(mut metrics) => {
+                    match stats {
+                        Ok(stats) => {
+                            metrics.increment_processed_bytes_total(length as u32);
+                            metrics.update_capture(device_name, true, stats.dropped, stats.if_dropped);
+                        },
+                        Err(ref e) => { // TOOD add error
+                            error!("Could not fetch handle stats for capture [{}] metrics update: {}", device_name, e);
+                        }
+                    }
+                },
+                Err(e) => error!("Could not acquire metrics mutex: {}", e)
+            }
+
+            if frame.len() < 4{ 
+                debug!("Packet too small. Wouldn't even fit radiotap length information. Skipping.");
+                continue;
+            }
+
+            let data = Dot11Frame {
+                data: frame.data.to_vec()
+            };
+
+        
+            // Write to Dot11 broker pipeline.
+            match self.bus.dot11_broker.sender.lock() {
+                Ok(mut sender) => { sender.send_packet(Arc::new(data), length as u32) },
+                Err(e) => error!("Could not aquire dot11 handler broker mutex: {}", e)
+            }
         }
     }
-}*/
+}
