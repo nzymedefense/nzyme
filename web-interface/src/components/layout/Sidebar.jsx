@@ -115,7 +115,7 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-bolt" />} />
         <NavigationLink
             href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}
-            title="Authentication"
+            title={user.is_superadmin ? "Authentication" : "Organization" }
             icon={<i className="sidebar-icon fa-solid fa-users" />} />
         <NavigationLink
             show={user.is_superadmin}

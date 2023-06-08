@@ -9,7 +9,6 @@ import ApiRoutes from "../../../../../util/ApiRoutes";
 import OrganizationSessions from "../sessions/OrganizationSessions";
 import OrganizationAdminTable from "../users/orgadmins/OrganizationAdminTable";
 import {UserContext} from "../../../../../App";
-import OrganizationActions from "./events/actions/OrganizationActions";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
