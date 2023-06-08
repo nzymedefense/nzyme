@@ -5,14 +5,14 @@ public enum SystemEventType {
     AUTHENTICATION_PASSWORD_CHANGED(
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.ORGANIZATION,
-            "A user password was changed",
+            "A user's password was changed",
             "The password for an user has been modified, either by the user themselves or by an administrator."
     ),
 
     AUTHENTICATION_MFA_RESET(
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.ORGANIZATION,
-            "MFA method was reset",
+            "A user's MFA method was reset",
             "Multi-factor method for an user has been reset, either by the user themselves or by an " +
                     "administrator."
     ),
@@ -20,16 +20,24 @@ public enum SystemEventType {
     AUTHENTICATION_MFA_RECOVERY_CODE_USED(
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.ORGANIZATION,
-            "MFA recovery code was used",
+            "A user's MFA recovery code was used",
             "A user has successfully utilized one of their MFA recovery codes to log in."
     ),
 
     AUTHENTICATION_MFA_RECOVERY_CODE_REUSED(
             SystemEventCategory.AUTHENTICATION,
             SystemEventScope.ORGANIZATION,
-            "MFA recovery code was re-used",
+            "A user's MFA recovery code was re-used",
             "A user attempted to reuse one of their previously utilized MFA recovery codes for login, which " +
                     "was unsuccessful."
+    ),
+
+    AUTHENTICATION_USER_LOGIN_THROTTLED(
+            SystemEventCategory.AUTHENTICATION,
+            SystemEventScope.ORGANIZATION,
+            "A user's login attempts were throttled",
+            "Due to multiple unsuccessful login attempts by a user, their subsequent login attempts have been " +
+                    "intentionally delayed and slowed down until a successful login is achieved."
     ),
 
     AUTHENTICATION_SUPERADMIN_CREATED(
@@ -68,6 +76,14 @@ public enum SystemEventType {
             "A super administrator MFA recovery code was re-used",
             "A user attempted to reuse one of their previously utilized MFA recovery codes for login, which " +
                     "was unsuccessful."
+    ),
+
+    AUTHENTICATION_SUPERADMIN_LOGIN_THROTTLED(
+            SystemEventCategory.AUTHENTICATION,
+            SystemEventScope.SYSTEM,
+            "A super administrator's login attempts were throttled",
+            "Due to multiple unsuccessful login attempts by a super administrator, their subsequent login " +
+                    "attempts have been intentionally delayed and slowed down until a successful login is achieved."
     ),
 
     HEALTH_INDICATOR_CRYPTO_SYNC_TOGGLED(

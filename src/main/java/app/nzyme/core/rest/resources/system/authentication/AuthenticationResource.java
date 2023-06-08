@@ -131,6 +131,23 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         // Delay if user is throttled.
         if (user.isPresent() && user.get().isLoginThrottled()) {
+            // If this is the initial throttle, create system event.
+            if (user.get().failedLoginCount() == 5) {
+                if (user.get().isSuperAdmin()) {
+                    nzyme.getEventEngine().processEvent(SystemEvent.create(
+                            SystemEventType.AUTHENTICATION_SUPERADMIN_LOGIN_THROTTLED,
+                            DateTime.now(),
+                            "Login attempts of super administrator [" + user.get().email() + "] were throttled."
+                    ), null, null);
+                } else {
+                    nzyme.getEventEngine().processEvent(SystemEvent.create(
+                            SystemEventType.AUTHENTICATION_USER_LOGIN_THROTTLED,
+                            DateTime.now(),
+                            "Login attempts of user [" + user.get().email() + "] were throttled."
+                    ), user.get().organizationId(), user.get().tenantId());
+                }
+            }
+
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {

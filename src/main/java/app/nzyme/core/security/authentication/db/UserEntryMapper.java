@@ -39,6 +39,7 @@ public class UserEntryMapper implements RowMapper<UserEntry> {
                 rs.getString("last_geo_country"),
                 rs.getString("last_geo_asn"),
                 rs.getBoolean("access_all_tenant_taps"),
+                rs.getLong("failed_login_count"),
                 rs.getLong("failed_login_count") >= 5
         );
     }

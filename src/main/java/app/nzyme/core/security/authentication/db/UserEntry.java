@@ -54,9 +54,11 @@ public abstract class UserEntry {
 
     public abstract boolean accessAllTenantTaps();
 
+    public abstract long failedLoginCount();
+
     public abstract boolean isLoginThrottled();
 
-    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps, boolean isLoginThrottled) {
+    public static UserEntry create(UUID uuid, UUID organizationId, UUID tenantId, String passwordHash, String passwordSalt, String email, String name, boolean isOrganizationAdmin, boolean isSuperAdmin, String totpSecret, boolean mfaComplete, String mfaRecoveryCodes, DateTime updatedAt, DateTime createdAt, DateTime lastActivity, String lastRemoteIp, String lastGeoCity, String lastGeoCountry, String lastGeoAsn, boolean accessAllTenantTaps, long failedLoginCount, boolean isLoginThrottled) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -78,6 +80,7 @@ public abstract class UserEntry {
                 .lastGeoCountry(lastGeoCountry)
                 .lastGeoAsn(lastGeoAsn)
                 .accessAllTenantTaps(accessAllTenantTaps)
+                .failedLoginCount(failedLoginCount)
                 .isLoginThrottled(isLoginThrottled)
                 .build();
     }
@@ -127,6 +130,8 @@ public abstract class UserEntry {
         public abstract Builder lastGeoAsn(String lastGeoAsn);
 
         public abstract Builder accessAllTenantTaps(boolean accessAllTenantTaps);
+
+        public abstract Builder failedLoginCount(long failedLoginCount);
 
         public abstract Builder isLoginThrottled(boolean isLoginThrottled);
 
