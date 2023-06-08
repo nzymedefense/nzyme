@@ -413,12 +413,21 @@ public class AuthenticationResource extends UserAuthenticatedResource {
                 LOG.warn("User [{}] attempted to use previously used MFA recovery code.", user.get().email());
 
                 // System event.
-                nzyme.getEventEngine().processEvent(SystemEvent.create(
-                        SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_REUSED,
-                        DateTime.now(),
-                        "User [" + user.get().email() + "] attempted to reuse one of their previously utilized " +
-                                "MFA recovery codes for login, which was unsuccessful."
-                ), user.get().organizationId(), user.get().tenantId());
+                if (user.get().isSuperAdmin()) {
+                    nzyme.getEventEngine().processEvent(SystemEvent.create(
+                            SystemEventType.AUTHENTICATION_SUPERADMIN_MFA_RECOVERY_CODE_REUSED,
+                            DateTime.now(),
+                            "Super administrator [" + user.get().email() + "] attempted to reuse one of their " +
+                                    "previously utilized MFA recovery codes for login, which was unsuccessful."
+                    ), null, null);
+                } else {
+                    nzyme.getEventEngine().processEvent(SystemEvent.create(
+                            SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_REUSED,
+                            DateTime.now(),
+                            "User [" + user.get().email() + "] attempted to reuse one of their previously utilized " +
+                                    "MFA recovery codes for login, which was unsuccessful."
+                    ), user.get().organizationId(), user.get().tenantId());
+                }
 
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             } else {
@@ -457,11 +466,19 @@ public class AuthenticationResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().markSessionAsMFAValid(session.get().sessionId());
 
         // System event.
-        nzyme.getEventEngine().processEvent(SystemEvent.create(
-                SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_USED,
-                DateTime.now(),
-                "User [" + user.get().email() + "] used a MFA recovery code to log in."
-        ), user.get().organizationId(), user.get().tenantId());
+        if (user.get().isSuperAdmin()) {
+            nzyme.getEventEngine().processEvent(SystemEvent.create(
+                    SystemEventType.AUTHENTICATION_SUPERADMIN_MFA_RECOVERY_CODE_USED,
+                    DateTime.now(),
+                    "Super administrator [" + user.get().email() + "] used a MFA recovery code to log in."
+            ), null, null);
+        } else {
+            nzyme.getEventEngine().processEvent(SystemEvent.create(
+                    SystemEventType.AUTHENTICATION_MFA_RECOVERY_CODE_USED,
+                    DateTime.now(),
+                    "User [" + user.get().email() + "] used a MFA recovery code to log in."
+            ), user.get().organizationId(), user.get().tenantId());
+        }
 
         return Response.ok().build();
     }

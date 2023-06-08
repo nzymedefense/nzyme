@@ -1365,6 +1365,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 hash
         );
 
+        // System event.
+        nzyme.getEventEngine().processEvent(SystemEvent.create(
+                SystemEventType.AUTHENTICATION_SUPERADMIN_CREATED,
+                DateTime.now(),
+                "A new super administrator [" + req.email() + "] was created."
+        ), null, null);
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -1404,7 +1411,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{userId}/password")
-    public Response editSuperAdministratorPassword(@PathParam("userId") UUID userId, UpdatePasswordRequest req) {
+    public Response editSuperAdministratorPassword(@Context SecurityContext sc,
+                                                   @PathParam("userId") UUID userId,
+                                                   UpdatePasswordRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {
@@ -1429,9 +1439,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         // System event.
         nzyme.getEventEngine().processEvent(SystemEvent.create(
-                SystemEventType.AUTHENTICATION_PASSWORD_CHANGED,
+                SystemEventType.AUTHENTICATION_SUPERADMIN_PASSWORD_CHANGED,
                 DateTime.now(),
-                "Password of super administrator [" + superAdmin.get().email() + "] was changed by administrator."
+                "Password of super administrator [" + superAdmin.get().email() + "] was changed by [" +
+                        authenticatedUser.getEmail() + "]."
         ), null, null);
 
         return Response.ok().build();
@@ -1467,7 +1478,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{id}/mfa/reset")
-    public Response resetSuperAdministratorMFA(@PathParam("id") UUID userId) {
+    public Response resetSuperAdministratorMFA(@Context SecurityContext sc, @PathParam("id") UUID userId) {
+        AuthenticatedUser sessionUser = getAuthenticatedUser(sc);
+
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {
@@ -1480,9 +1493,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         // System event.
         nzyme.getEventEngine().processEvent(SystemEvent.create(
-                SystemEventType.AUTHENTICATION_MFA_RESET,
+                SystemEventType.AUTHENTICATION_SUPERADMIN_MFA_RESET,
                 DateTime.now(),
-                "MFA method of super administrator [" + superAdmin.get().email() + "] was reset by administrator."
+                "MFA method of super administrator [" + superAdmin.get().email() + "] was reset by ["
+                        + sessionUser + "]"
         ), null, null);
 
         return Response.ok().build();
