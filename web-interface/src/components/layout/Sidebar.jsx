@@ -109,6 +109,7 @@ function Sidebar() {
             title="Taps"
             icon={<i className="sidebar-icon fa-solid fa-server" />} />
         <NavigationLink
+            show={user.is_superadmin} 
             href={ApiRoutes.SYSTEM.EVENTS.INDEX}
             title="Events &amp; Actions"
             icon={<i className="sidebar-icon fa-solid fa-bolt" />} />
