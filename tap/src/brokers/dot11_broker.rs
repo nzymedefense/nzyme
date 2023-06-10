@@ -1,9 +1,9 @@
-use std::{sync::Arc, thread};
+use std::{sync::Arc, thread, panic::catch_unwind};
 
 use anyhow::{Error, bail};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::{info, debug, warn, trace};
+use log::{info, debug, warn, trace, error};
 
 use crate::{messagebus::bus::Bus, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags}};
 
@@ -29,8 +29,14 @@ impl Dot11Broker {
             let receiver = self.bus.dot11_broker.receiver.clone();
             let bus = self.bus.clone();
             thread::spawn(move || {
-                for packet in receiver.iter() {
-                    Self::handle(&packet, &bus);
+                for frame in receiver.iter() {
+                    let handler_result = catch_unwind(|| {
+                        Self::handle(&frame, &bus)
+                    });
+
+                    if handler_result.is_err() {
+                        error!("Unexpected error in frame handling. Skipping.");
+                    }
                 }
             });
         }

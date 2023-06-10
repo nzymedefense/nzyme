@@ -1,3 +1,4 @@
+use std::panic::catch_unwind;
 use std::{thread, sync::Arc};
 
 use chrono::Utc;
@@ -45,7 +46,13 @@ impl EthernetBroker {
             let bus = self.bus.clone();
             thread::spawn(move || {
                 for packet in receiver.iter() {
-                    Self::handle(&packet, &bus);
+                    let handler_result = catch_unwind(|| {
+                        Self::handle(&packet, &bus)
+                    });
+
+                    if handler_result.is_err() {
+                        error!("Unexpected error in packet handling. Skipping.");
+                    }
                 }
             });
         }
