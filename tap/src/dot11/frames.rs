@@ -1,11 +1,17 @@
 #[derive(Debug)]
 pub struct Dot11Frame {
+    pub interface_name: String,
     pub data: Vec<u8>
 }
 
 #[derive(Debug)]
 pub struct RadiotapHeader {
-    pub data_rate: Option<u16>
+    pub is_wep: Option<bool>,
+    pub data_rate: Option<u16>,
+    pub frequency: Option<u16>,
+    pub channel: Option<u16>,
+    pub antenna_signal: Option<i8>,
+    pub antenna: Option<u8>
 }
 
 #[derive(Debug)]
@@ -40,6 +46,18 @@ pub struct RadiotapHeaderPresentFlags {
     pub radiotap_ns_next: bool,
     pub vendor_nx_next: bool,
     pub ext: bool
+}
+
+#[derive(Debug)]
+pub struct RadiotapHeaderFlags {
+    pub cfp: bool,
+    pub preamble: bool,
+    pub wep: bool,
+    pub fragmentation: bool,
+    pub fcs_at_end: bool,
+    pub data_pad: bool,
+    pub bad_fcs: bool,
+    pub short_gi: bool
 }
 
 #[derive(Debug)]

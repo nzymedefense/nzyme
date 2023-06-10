@@ -81,6 +81,7 @@ impl Capture<> {
             }
 
             let data = Dot11Frame {
+                interface_name: device_name.to_string(),
                 data: frame.data.to_vec()
             };
 
