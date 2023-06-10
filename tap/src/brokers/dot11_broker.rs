@@ -2,7 +2,7 @@ use std::{sync::Arc, thread};
 
 use anyhow::{Error, bail};
 use bitvec::{view::BitView, order::Lsb0};
-use byteorder::{ByteOrder, LittleEndian, BigEndian};
+use byteorder::{ByteOrder, LittleEndian};
 use log::{info, debug, warn, trace};
 
 use crate::{messagebus::bus::Bus, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags}};
@@ -36,7 +36,8 @@ impl Dot11Broker {
         }
     }
 
-    fn handle(data: &Arc<Dot11Frame>, bus: &Arc<Bus>) {
+    #[allow(unused_assignments)] // for the last cursor assignment, which is good to avoid bugs when extending.
+    fn handle(data: &Arc<Dot11Frame>, _bus: &Arc<Bus>) {
         // Parse header.
         if data.data.len() < 4 {
             debug!("Received WiFi frame is too short. [{:?}]", data);
@@ -332,7 +333,7 @@ impl Dot11Broker {
             5520 => Ok(104),
             5530 => Ok(106),
             5540 => Ok(108),
-            5500 => Ok(110),
+            5550 => Ok(110),
             5560 => Ok(112),
             5570 => Ok(114),
             5580 => Ok(116),
