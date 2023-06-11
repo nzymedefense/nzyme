@@ -110,6 +110,7 @@ fn main() {
     for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
         let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
+        let capture_conf = configuration.clone();
         thread::spawn(move || {
             let mut dot11_capture = dot11::capture::Capture {
                 metrics: capture_metrics.clone(),
@@ -122,7 +123,7 @@ fn main() {
             }
     
             loop {
-                dot11_capture.run(&interface_name);
+                dot11_capture.run(&interface_name, &capture_conf.wifi.ip_path, &capture_conf.wifi.iw_path);
 
                 error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", interface_name); 
                 match capture_metrics.lock() {

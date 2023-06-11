@@ -27,7 +27,9 @@ pub struct Ethernet {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Wifi {
-    pub wifi_listen_interfaces: Vec<String>
+    pub wifi_listen_interfaces: Vec<String>,
+    pub ip_path: String,
+    pub iw_path: String
 }
 
 #[derive(Debug, Clone, Deserialize)]

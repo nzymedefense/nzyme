@@ -8,6 +8,8 @@ ethernet_listen_interfaces = [ "eth0" ]
 
 [wifi]
 wifi_listen_interfaces = [ "wlan0" ]
+ip_path = "/usr/sbin/ip"
+iw_path = "/usr/sbin/iw"
 
 [performance]
 ethernet_brokers = 1

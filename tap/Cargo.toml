@@ -55,3 +55,4 @@ entropy = "0.4.1"
 clokwerk = "0.3.5"
 clap = { version = "3.2.15", features = ["derive"] }
 toml = "0.7.3"
+caps = "0.5.5"
