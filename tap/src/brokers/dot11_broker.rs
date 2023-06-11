@@ -5,7 +5,7 @@ use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
 use log::{info, debug, warn, trace, error};
 
-use crate::{messagebus::bus::Bus, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags}};
+use crate::{messagebus::bus::Bus, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType}};
 
 pub struct Dot11Broker {
     num_threads: usize,
@@ -46,14 +46,14 @@ impl Dot11Broker {
     fn handle(data: &Arc<Dot11Frame>, _bus: &Arc<Bus>) {
         // Parse header.
         if data.data.len() < 4 {
-            debug!("Received WiFi frame is too short. [{:?}]", data);
+            trace!("Received WiFi frame is too short. [{:?}]", data);
             return;
         }
 
         let header_length = LittleEndian::read_u16(&data.data[2..4]) as usize;
 
         if data.data.len() < header_length {
-            debug!("Received WiFi frame shorter than reported header length.");
+            trace!("Received WiFi frame shorter than reported header length.");
             return;
         }
 
@@ -61,7 +61,7 @@ impl Dot11Broker {
         let header_data = &data.data[0..header_length];
 
         if data.data.len() < 8 {
-            debug!("Received WiFi frame too short to fit present flags and anything else.");
+            trace!("Received WiFi frame too short to fit present flags and anything else.");
             return;
         }
 
@@ -76,7 +76,7 @@ impl Dot11Broker {
 
         let mut cursor = 8;
 
-        // Variable fields. Not always set.
+        // Variable fields follow. Not always set.
 
         // TSFT.
         if present_flags.tsft {
@@ -229,7 +229,20 @@ impl Dot11Broker {
             antenna
         };
 
-        info!("{:?}", radiotap);
+        let payload = &data.data[header_length..data.data.len()];
+
+        if payload.len() < 2 {
+            trace!("Payload too short.");
+            return;
+        }
+
+        let frame_type = parse_frame_type(&payload[0]);
+
+        // Register frame type metrics.
+
+        // Send to handler pipelines. (management, control, data?)
+
+        info!("type: {:?}", frame_type);
     }
 
     fn parse_present_flags(mask: &[u8]) -> Result<RadiotapHeaderPresentFlags, Error> {
@@ -375,4 +388,82 @@ impl Dot11Broker {
         }
     }
 
+}
+
+fn parse_frame_type(mask: &u8) -> FrameType {
+    match mask {
+        // Management.
+        0b0000_0000 => FrameType::AssociationRequest,
+        0b0001_0000 => FrameType::AssociationResponse,
+        0b0010_0000 => FrameType::ReAssociationRequest,
+        0b0011_0000 => FrameType::ReAssociationResponse,
+        0b0100_0000 => FrameType::ProbeRequest,
+        0b0101_0000 => FrameType::ProbeResponse,
+        0b0110_0000 => FrameType::TimingAdvertisement,
+        0b0111_0000 => FrameType::Reserved,
+        0b1000_0000 => FrameType::Beacon,
+        0b1001_0000 => FrameType::Atim,
+        0b1010_0000 => FrameType::Disassocation,
+        0b1011_0000 => FrameType::Authentication,
+        0b1100_0000 => FrameType::Deauthentication,
+        0b1101_0000 => FrameType::Action,
+        0b1110_0000 => FrameType::ActionNoAck,
+        0b1111_0000 => FrameType::Reserved,
+
+        // Control.
+        0b0000_0100 => FrameType::Reserved,
+        0b0001_0100 => FrameType::Reserved,
+        0b0010_0100 => FrameType::Trigger,
+        0b0011_0100 => FrameType::Tack,
+        0b0100_0100 => FrameType::BeamformingReportPoll,
+        0b0101_0100 => FrameType::VhtHeNdpAnnouncement,
+        0b0110_0100 => FrameType::ControlFrameExtension,
+        0b0111_0100 => FrameType::ControlWrapper,
+        0b1000_0100 => FrameType::BlockAckRequest,
+        0b1001_0100 => FrameType::BlockAck,
+        0b1010_0100 => FrameType::PsPoll,
+        0b1011_0100 => FrameType::Rts,
+        0b1100_0100 => FrameType::Cts,
+        0b1101_0100 => FrameType::Ack,
+        0b1110_0100 => FrameType::CfEnd,
+        0b1111_0100 => FrameType::CfEndCfAck,
+
+        // Data.
+        0b0000_1000 => FrameType::Data,
+        0b0001_1000 => FrameType::Reserved,
+        0b0010_1000 => FrameType::Reserved,
+        0b0011_1000 => FrameType::Reserved,
+        0b0100_1000 => FrameType::Null,
+        0b0101_1000 => FrameType::Reserved,
+        0b0110_1000 => FrameType::Reserved,
+        0b0111_1000 => FrameType::Reserved,
+        0b1000_1000 => FrameType::QosData,
+        0b1001_1000 => FrameType::QosDataCfAck,
+        0b1010_1000 => FrameType::QosDataCfPoll,
+        0b1011_1000 => FrameType::QosDataCfAckCfPoll,
+        0b1100_1000 => FrameType::QosNull,
+        0b1101_1000 => FrameType::Reserved,
+        0b1110_1000 => FrameType::QosCfPoll,
+        0b1111_1000 => FrameType::QosCfAckCfPoll,
+
+        // Extension.
+        0b0000_1100 => FrameType::DmgBeacon,
+        0b0001_1100 => FrameType::S1gBeacon,
+        0b0010_1100 => FrameType::Reserved,
+        0b0011_1100 => FrameType::Reserved,
+        0b0100_1100 => FrameType::Reserved,
+        0b0101_1100 => FrameType::Reserved,
+        0b0110_1100 => FrameType::Reserved,
+        0b0111_1100 => FrameType::Reserved,
+        0b1000_1100 => FrameType::Reserved,
+        0b1001_1100 => FrameType::Reserved,
+        0b1010_1100 => FrameType::Reserved,
+        0b1011_1100 => FrameType::Reserved,
+        0b1100_1100 => FrameType::Reserved,
+        0b1101_1100 => FrameType::Reserved,
+        0b1110_1100 => FrameType::Reserved,
+        0b1111_1100 => FrameType::Reserved,
+
+        _ => FrameType::Invalid
+    }
 }

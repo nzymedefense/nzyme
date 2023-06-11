@@ -61,6 +61,52 @@ pub struct RadiotapHeaderFlags {
 }
 
 #[derive(Debug)]
+pub enum FrameType {
+    AssociationRequest,
+    AssociationResponse,
+    ReAssociationRequest,
+    ReAssociationResponse,
+    ProbeRequest,
+    ProbeResponse,
+    TimingAdvertisement,
+    Beacon,
+    Atim,
+    Disassocation,
+    Authentication,
+    Deauthentication,
+    Action,
+    ActionNoAck,
+    Trigger,
+    Tack,
+    BeamformingReportPoll,
+    VhtHeNdpAnnouncement,
+    ControlFrameExtension,
+    ControlWrapper,
+    BlockAckRequest,
+    BlockAck,
+    PsPoll,
+    Rts,
+    Cts,
+    Ack,
+    CfEnd,
+    CfEndCfAck,
+    Data,
+    Null,
+    QosData,
+    QosDataCfAck,
+    QosDataCfPoll,
+    QosDataCfAckCfPoll,
+    QosNull,
+    QosCfPoll,
+    QosCfAckCfPoll,
+    DmgBeacon,
+    S1gBeacon,
+    Reserved,
+    Invalid
+}
+
+
+#[derive(Debug)]
 pub struct Dot11ManagementFrame {
     pub header: Vec<u8>,
     pub payload: Vec<u8>,
