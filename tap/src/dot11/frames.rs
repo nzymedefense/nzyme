@@ -125,3 +125,78 @@ pub struct Dot11Frame {
     pub frame_type: FrameSubType,
     pub payload: Vec<u8>,
 }
+
+pub struct BeaconCapabilities {
+    is_infrastructure: bool,
+    is_independent: bool,
+    cfp_participation: bool,
+    wep_supported: bool,
+    short_preamble_allowed: bool,
+    pbcc_allowed: bool,
+    channel_agility_in_use: bool,
+    spectrum_management_implemented: bool,
+    short_slot_type_in_use: bool,
+    auto_power_save_delivery_implemented: bool,
+    radio_measurement_implemented: bool,
+    dsss_ofdm_allowed: bool,
+    delayed_block_ack_implemented: bool,
+    immediate_block_ack_implemented: bool
+}
+
+pub struct EncryptionInformation {
+    pub protocol: EncryptionProtocol,
+    pub encryption_mode: EncryptionMode,
+    pub key_management_mode: KeyManagementMode
+}
+
+pub enum EncryptionProtocol {
+    None,
+    WPA1,
+    WPA2,
+    WPA3
+}
+
+pub enum KeyManagementMode {
+    Unknown,
+    EAM,
+    PSK,
+    FTEAM,
+    FTPSK,
+    EAMSHA256,
+    PSKSHA256,
+    TDLS,
+    SAE,
+    FTSAESHA256,
+    APPEERKEY,
+    EAMEAPSHA256,
+    EAMEAPSHA384,
+    FTEAMSHA384
+}
+
+pub enum EncryptionMode {
+    Unknown,
+    WEP,
+    TKIP,
+    CCMP,
+    WEP104,
+    BIPCMAC128,
+    GCMP128,
+    GCMP256,
+    CCMP256,
+    BIPGMAC128,
+    BIPGMAC256,
+    BIPCMAC256
+}
+
+
+pub struct Dot11BeaconFrame {
+    pub destination: String,
+    pub transmitter: String,
+    pub timestamp: u64,
+    pub interval: u16,
+    pub capabilities: BeaconCapabilities,
+    pub ssid: String,
+    pub fingerprint: String,
+    pub encryption: EncryptionInformation,
+    pub has_wps: bool
+}
