@@ -3,9 +3,9 @@ use std::{sync::Arc, thread, panic::catch_unwind};
 use anyhow::{Error, bail};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::{info, debug, warn, trace, error};
+use log::{info, warn, trace, error};
 
-use crate::{messagebus::bus::Bus, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType}};
+use crate::{messagebus::{bus::Bus, channel_names::ChannelName}, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType, FrameTypeInformation, FrameSubType, Dot11RawFrame}, to_pipeline};
 
 pub struct Dot11Broker {
     num_threads: usize,
@@ -43,7 +43,7 @@ impl Dot11Broker {
     }
 
     #[allow(unused_assignments)] // for the last cursor assignment, which is good to avoid bugs when extending.
-    fn handle(data: &Arc<Dot11Frame>, _bus: &Arc<Bus>) {
+    fn handle(data: &Arc<Dot11RawFrame>, bus: &Arc<Bus>) {
         // Parse header.
         if data.data.len() < 4 {
             trace!("Received WiFi frame is too short. [{:?}]", data);
@@ -220,7 +220,7 @@ impl Dot11Broker {
             Option::None
         };
 
-        let radiotap = RadiotapHeader { 
+        let radiotap_header = RadiotapHeader { 
             is_wep,
             data_rate,
             frequency,
@@ -238,11 +238,34 @@ impl Dot11Broker {
 
         let frame_type = parse_frame_type(&payload[0]);
 
-        // Register frame type metrics.
-
-        // Send to handler pipelines. (management, control, data?)
-
-        info!("type: {:?}", frame_type);
+        // Send to handler pipelines.
+        match frame_type.frame_type {
+            FrameType::Management => {
+                to_pipeline!(
+                    ChannelName::Dot11ManagementFramePipeline,
+                    bus.dot11_management_pipeline.sender,
+                    Arc::new(Dot11Frame {
+                        header: radiotap_header,
+                        frame_type: frame_type.frame_subtype,
+                        payload: payload.to_vec()
+                    }),
+                    payload.len() as u32
+                );
+            },
+            FrameType::Control | FrameType::Data | FrameType::Extension | FrameType::Invalid => {
+                // Not (yet) handled frame types.
+                to_pipeline!(
+                    ChannelName::Dot11IgnoredFramePipeline,
+                    bus.dot11_ignored_pipeline.sender,
+                    Arc::new(Dot11Frame {
+                        header: radiotap_header,
+                        frame_type: frame_type.frame_subtype,
+                        payload: payload.to_vec()
+                    }),
+                    payload.len() as u32
+                );
+            }
+        }
     }
 
     fn parse_present_flags(mask: &[u8]) -> Result<RadiotapHeaderPresentFlags, Error> {
@@ -390,80 +413,80 @@ impl Dot11Broker {
 
 }
 
-fn parse_frame_type(mask: &u8) -> FrameType {
+fn parse_frame_type(mask: &u8) -> FrameTypeInformation {
     match mask {
         // Management.
-        0b0000_0000 => FrameType::AssociationRequest,
-        0b0001_0000 => FrameType::AssociationResponse,
-        0b0010_0000 => FrameType::ReAssociationRequest,
-        0b0011_0000 => FrameType::ReAssociationResponse,
-        0b0100_0000 => FrameType::ProbeRequest,
-        0b0101_0000 => FrameType::ProbeResponse,
-        0b0110_0000 => FrameType::TimingAdvertisement,
-        0b0111_0000 => FrameType::Reserved,
-        0b1000_0000 => FrameType::Beacon,
-        0b1001_0000 => FrameType::Atim,
-        0b1010_0000 => FrameType::Disassocation,
-        0b1011_0000 => FrameType::Authentication,
-        0b1100_0000 => FrameType::Deauthentication,
-        0b1101_0000 => FrameType::Action,
-        0b1110_0000 => FrameType::ActionNoAck,
-        0b1111_0000 => FrameType::Reserved,
+        0b0000_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::AssociationRequest },
+        0b0001_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::AssociationResponse },
+        0b0010_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::ReAssociationRequest },
+        0b0011_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::ReAssociationResponse },
+        0b0100_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::ProbeRequest },
+        0b0101_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::ProbeResponse },
+        0b0110_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::TimingAdvertisement },
+        0b0111_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Reserved },
+        0b1000_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Beacon },
+        0b1001_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Atim },
+        0b1010_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Disassocation },
+        0b1011_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Authentication },
+        0b1100_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Deauthentication },
+        0b1101_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Action },
+        0b1110_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::ActionNoAck },
+        0b1111_0000 => FrameTypeInformation { frame_type: FrameType::Management, frame_subtype: FrameSubType::Reserved },
 
         // Control.
-        0b0000_0100 => FrameType::Reserved,
-        0b0001_0100 => FrameType::Reserved,
-        0b0010_0100 => FrameType::Trigger,
-        0b0011_0100 => FrameType::Tack,
-        0b0100_0100 => FrameType::BeamformingReportPoll,
-        0b0101_0100 => FrameType::VhtHeNdpAnnouncement,
-        0b0110_0100 => FrameType::ControlFrameExtension,
-        0b0111_0100 => FrameType::ControlWrapper,
-        0b1000_0100 => FrameType::BlockAckRequest,
-        0b1001_0100 => FrameType::BlockAck,
-        0b1010_0100 => FrameType::PsPoll,
-        0b1011_0100 => FrameType::Rts,
-        0b1100_0100 => FrameType::Cts,
-        0b1101_0100 => FrameType::Ack,
-        0b1110_0100 => FrameType::CfEnd,
-        0b1111_0100 => FrameType::CfEndCfAck,
+        0b0000_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Reserved },
+        0b0001_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Reserved },
+        0b0010_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Trigger },
+        0b0011_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Tack },
+        0b0100_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::BeamformingReportPoll },
+        0b0101_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::VhtHeNdpAnnouncement },
+        0b0110_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::ControlFrameExtension },
+        0b0111_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::ControlWrapper },
+        0b1000_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::BlockAckRequest },
+        0b1001_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::BlockAck },
+        0b1010_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::PsPoll },
+        0b1011_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Rts },
+        0b1100_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Cts },
+        0b1101_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::Ack },
+        0b1110_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::CfEnd },
+        0b1111_0100 => FrameTypeInformation { frame_type: FrameType::Control, frame_subtype: FrameSubType::CfEndCfAck },
 
         // Data.
-        0b0000_1000 => FrameType::Data,
-        0b0001_1000 => FrameType::Reserved,
-        0b0010_1000 => FrameType::Reserved,
-        0b0011_1000 => FrameType::Reserved,
-        0b0100_1000 => FrameType::Null,
-        0b0101_1000 => FrameType::Reserved,
-        0b0110_1000 => FrameType::Reserved,
-        0b0111_1000 => FrameType::Reserved,
-        0b1000_1000 => FrameType::QosData,
-        0b1001_1000 => FrameType::QosDataCfAck,
-        0b1010_1000 => FrameType::QosDataCfPoll,
-        0b1011_1000 => FrameType::QosDataCfAckCfPoll,
-        0b1100_1000 => FrameType::QosNull,
-        0b1101_1000 => FrameType::Reserved,
-        0b1110_1000 => FrameType::QosCfPoll,
-        0b1111_1000 => FrameType::QosCfAckCfPoll,
+        0b0000_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Data },
+        0b0001_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b0010_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b0011_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b0100_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Null },
+        0b0101_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b0110_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b0111_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b1000_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosData },
+        0b1001_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosDataCfAck },
+        0b1010_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosDataCfPoll },
+        0b1011_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosDataCfAckCfPoll },
+        0b1100_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosNull },
+        0b1101_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::Reserved },
+        0b1110_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosCfPoll },
+        0b1111_1000 => FrameTypeInformation { frame_type: FrameType::Data, frame_subtype: FrameSubType::QosCfAckCfPoll },
 
         // Extension.
-        0b0000_1100 => FrameType::DmgBeacon,
-        0b0001_1100 => FrameType::S1gBeacon,
-        0b0010_1100 => FrameType::Reserved,
-        0b0011_1100 => FrameType::Reserved,
-        0b0100_1100 => FrameType::Reserved,
-        0b0101_1100 => FrameType::Reserved,
-        0b0110_1100 => FrameType::Reserved,
-        0b0111_1100 => FrameType::Reserved,
-        0b1000_1100 => FrameType::Reserved,
-        0b1001_1100 => FrameType::Reserved,
-        0b1010_1100 => FrameType::Reserved,
-        0b1011_1100 => FrameType::Reserved,
-        0b1100_1100 => FrameType::Reserved,
-        0b1101_1100 => FrameType::Reserved,
-        0b1110_1100 => FrameType::Reserved,
-        0b1111_1100 => FrameType::Reserved,
+        0b0000_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::DmgBeacon },
+        0b0001_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::S1gBeacon },
+        0b0010_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b0011_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b0100_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b0101_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b0110_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b0111_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1000_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1001_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1010_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1011_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1100_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1101_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1110_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
+        0b1111_1100 => FrameTypeInformation { frame_type: FrameType::Extension, frame_subtype: FrameSubType::Reserved },
 
-        _ => FrameType::Invalid
+        _ => FrameTypeInformation { frame_type: FrameType::Invalid, frame_subtype: FrameSubType::Invalid }
     }
 }

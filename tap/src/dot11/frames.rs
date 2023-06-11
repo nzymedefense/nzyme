@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub struct Dot11Frame {
+pub struct Dot11RawFrame {
     pub interface_name: String,
     pub data: Vec<u8>
 }
@@ -60,8 +60,21 @@ pub struct RadiotapHeaderFlags {
     pub short_gi: bool
 }
 
-#[derive(Debug)]
+pub struct FrameTypeInformation {
+    pub frame_type: FrameType,
+    pub frame_subtype: FrameSubType
+}
+
 pub enum FrameType {
+    Management,
+    Control,
+    Data,
+    Extension,
+    Invalid
+}
+
+#[derive(Debug)]
+pub enum FrameSubType {
     AssociationRequest,
     AssociationResponse,
     ReAssociationRequest,
@@ -107,7 +120,8 @@ pub enum FrameType {
 
 
 #[derive(Debug)]
-pub struct Dot11ManagementFrame {
-    pub header: Vec<u8>,
+pub struct Dot11Frame {
+    pub header: RadiotapHeader,
+    pub frame_type: FrameSubType,
     pub payload: Vec<u8>,
 }

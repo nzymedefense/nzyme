@@ -39,6 +39,10 @@ pub struct ChannelUtilization {
 pub struct Channels {
     ethernet_broker: ChannelUtilization,
     dot11_broker: ChannelUtilization,
+
+    dot11_management_pipeline: ChannelUtilization,
+    dot11_ignored_pipeline: ChannelUtilization,
+
     ethernet_pipeline: ChannelUtilization,
     arp_pipeline: ChannelUtilization,
     tcp_pipeline: ChannelUtilization,
@@ -79,6 +83,8 @@ impl Metrics {
             channels: Channels {
                 ethernet_broker: ChannelUtilization::default(),
                 dot11_broker: ChannelUtilization::default(),
+                dot11_management_pipeline: ChannelUtilization::default(),
+                dot11_ignored_pipeline: ChannelUtilization::default(),
                 ethernet_pipeline: ChannelUtilization::default(),
                 arp_pipeline: ChannelUtilization::default(),
                 tcp_pipeline: ChannelUtilization::default(),
@@ -157,6 +163,8 @@ impl Metrics {
         match channel {
             ChannelName::EthernetBroker => &mut self.channels.ethernet_broker,
             ChannelName::Dot11Broker => &mut self.channels.dot11_broker,
+            ChannelName::Dot11ManagementFramePipeline => &mut self.channels.dot11_management_pipeline,
+            ChannelName::Dot11IgnoredFramePipeline => &mut self.channels.dot11_ignored_pipeline,
             ChannelName::EthernetPipeline => &mut self.channels.ethernet_pipeline,
             ChannelName::ArpPipeline => &mut self.channels.arp_pipeline,
             ChannelName::TcpPipeline => &mut self.channels.tcp_pipeline,

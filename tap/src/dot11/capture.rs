@@ -4,7 +4,7 @@ use log::{error, info, debug};
 
 use crate::{
     messagebus::bus::Bus,
-    metrics::Metrics, dot11::frames::Dot11Frame,
+    metrics::Metrics, dot11::frames::Dot11RawFrame,
 };
 
 pub struct Capture {
@@ -80,7 +80,7 @@ impl Capture<> {
                 continue;
             }
 
-            let data = Dot11Frame {
+            let data = Dot11RawFrame {
                 interface_name: device_name.to_string(),
                 data: frame.data.to_vec()
             };

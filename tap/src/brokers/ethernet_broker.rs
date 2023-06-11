@@ -8,21 +8,13 @@ use crate::ethernet::packets::EthernetData;
 use crate::ethernet::parsers::{udp_parser, dns_parser, tcp_parser};
 use crate::messagebus::bus::Bus;
 use crate::messagebus::channel_names::ChannelName;
+use crate::to_pipeline;
 use crate::{helpers::network::to_mac_address_string, ethernet::types};
 use crate::ethernet::{
     packets::EthernetPacket,
     types::{EtherType, find_ethertype},
     parsers::{ipv4_parser, ipv6_parser, arp_parser}
 };
-
-macro_rules! to_pipeline {
-    ($name:expr, $sender:expr, $packet: expr, $len: expr) => {
-        match $sender.lock() {
-            Ok(mut sender) => sender.send_packet($packet, $len),
-            Err(e) => error!("Could not acquire sender mutex of channel [{:?}]: {}", $name, e)
-        }
-    };
-}
 
 pub struct EthernetBroker {
     num_threads: usize,
