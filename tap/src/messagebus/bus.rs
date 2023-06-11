@@ -23,8 +23,7 @@ pub struct Bus {
     pub ethernet_broker: NzymeChannel<EthernetData>,
     pub dot11_broker: NzymeChannel<Dot11RawFrame>,
 
-    pub dot11_management_pipeline: NzymeChannel<Dot11Frame>,
-    pub dot11_ignored_pipeline: NzymeChannel<Dot11Frame>,
+    pub dot11_frames_pipeline: NzymeChannel<Dot11Frame>,
 
     pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
@@ -78,8 +77,7 @@ impl Bus<> {
         let (ethernet_broker_sender, ethernet_broker_receiver) = bounded(65536); // TODO configurable
         let (dot11_broker_sender, dot11_broker_receiver) = bounded(65536); // TODO configurable
 
-        let (dot11_management_sender, dot11_management_receiver) = bounded(8192); // TODO configurable
-        let (dot11_ignored_sender, dot11_ignored_receiver) = bounded(24576); // TODO configurable
+        let (dot11_frames_sender, dot11_frames_receiver) = bounded(65536); // TODO configurable
 
         let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
@@ -107,21 +105,13 @@ impl Bus<> {
                 }),
                 receiver: Arc::new(dot11_broker_receiver),
             },
-            dot11_management_pipeline: NzymeChannel {
+            dot11_frames_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
                     metrics: metrics.clone(),
-                    sender: dot11_management_sender,
-                    name: ChannelName::Dot11ManagementFramePipeline
+                    sender: dot11_frames_sender,
+                    name: ChannelName::Dot11FramesPipeline
                 }),
-                receiver: Arc::new(dot11_management_receiver),
-            },
-            dot11_ignored_pipeline: NzymeChannel {
-                sender: Mutex::new(NzymeChannelSender {
-                    metrics: metrics.clone(),
-                    sender: dot11_ignored_sender,
-                    name: ChannelName::Dot11IgnoredFramePipeline
-                }),
-                receiver: Arc::new(dot11_ignored_receiver),
+                receiver: Arc::new(dot11_frames_receiver),
             },
             ethernet_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

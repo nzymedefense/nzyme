@@ -238,34 +238,17 @@ impl Dot11Broker {
 
         let frame_type = parse_frame_type(&payload[0]);
 
-        // Send to handler pipelines.
-        match frame_type.frame_type {
-            FrameType::Management => {
-                to_pipeline!(
-                    ChannelName::Dot11ManagementFramePipeline,
-                    bus.dot11_management_pipeline.sender,
-                    Arc::new(Dot11Frame {
-                        header: radiotap_header,
-                        frame_type: frame_type.frame_subtype,
-                        payload: payload.to_vec()
-                    }),
-                    payload.len() as u32
-                );
-            },
-            FrameType::Control | FrameType::Data | FrameType::Extension | FrameType::Invalid => {
-                // Not (yet) handled frame types.
-                to_pipeline!(
-                    ChannelName::Dot11IgnoredFramePipeline,
-                    bus.dot11_ignored_pipeline.sender,
-                    Arc::new(Dot11Frame {
-                        header: radiotap_header,
-                        frame_type: frame_type.frame_subtype,
-                        payload: payload.to_vec()
-                    }),
-                    payload.len() as u32
-                );
-            }
-        }
+        // Send to processor pipeline.
+        to_pipeline!(
+            ChannelName::Dot11FramesPipeline,
+            bus.dot11_frames_pipeline.sender,
+            Arc::new(Dot11Frame {
+                header: radiotap_header,
+                frame_type: frame_type.frame_subtype,
+                payload: payload.to_vec()
+            }),
+            payload.len() as u32
+        );
     }
 
     fn parse_present_flags(mask: &[u8]) -> Result<RadiotapHeaderPresentFlags, Error> {

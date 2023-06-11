@@ -5,8 +5,7 @@ pub enum ChannelName {
     EthernetBroker,
     Dot11Broker,
 
-    Dot11ManagementFramePipeline,
-    Dot11IgnoredFramePipeline,
+    Dot11FramesPipeline,
 
     EthernetPipeline,
     ArpPipeline,

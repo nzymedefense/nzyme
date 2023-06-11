@@ -7,12 +7,15 @@ use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state:
 use super::{
     arp_processor::ARPProcessor,
     dns_processor::DnsProcessor,
-    udp_processor::UDPProcessor, tcp_processor::TCPProcessor
+    udp_processor::UDPProcessor, 
+    tcp_processor::TCPProcessor, dot11_frame_processor::Dot11FrameProcessor,
 };
 
 pub fn spawn(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
     spawn_base_ethernet(bus.clone());
-    spawn_base_arp(bus.clone(), tables.clone()); // TODO borrow. don't pass entire tables struct in spawn*
+    spawn_base_dot11_management(bus.clone());
+
+    spawn_base_arp(bus.clone(), tables.clone()); // TODO borrow
     
     spawn_base_tcp(bus.clone(), &tables.clone());
     spawn_base_udp(bus.clone(), &tables.clone());    
@@ -29,6 +32,19 @@ fn spawn_base_ethernet(bus: Arc<Bus>) {
         }
 
         error!("Ethernet receiver disconnected.");
+        exit(exit_code::EX_UNAVAILABLE);
+    });
+}
+
+fn spawn_base_dot11_management(bus: Arc<Bus>) {
+    let mut processor = Dot11FrameProcessor{};
+
+    thread::spawn(move || {
+        for frame in bus.dot11_frames_pipeline.receiver.iter() {
+            processor.process(&frame);
+        }
+
+        error!("Dot11 frames receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }
