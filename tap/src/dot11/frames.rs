@@ -1,3 +1,5 @@
+use strum_macros::Display;
+
 #[derive(Debug)]
 pub struct Dot11RawFrame {
     pub interface_name: String,
@@ -126,21 +128,31 @@ pub struct Dot11Frame {
     pub payload: Vec<u8>,
 }
 
+#[derive(Debug)]
 pub struct BeaconCapabilities {
-    is_infrastructure: bool,
-    is_independent: bool,
-    cfp_participation: bool,
-    wep_supported: bool,
-    short_preamble_allowed: bool,
-    pbcc_allowed: bool,
-    channel_agility_in_use: bool,
-    spectrum_management_implemented: bool,
-    short_slot_type_in_use: bool,
-    auto_power_save_delivery_implemented: bool,
-    radio_measurement_implemented: bool,
-    dsss_ofdm_allowed: bool,
-    delayed_block_ack_implemented: bool,
-    immediate_block_ack_implemented: bool
+    pub infrastructure_type: InfraStructureType,
+    pub secured: bool,
+    pub short_preamble: bool,
+    pub pbcc: bool,
+    pub channel_agility: bool,
+    pub short_slot_time: bool,
+    pub dsss_ofdm: bool
+}
+
+#[derive(Debug)]
+pub struct BeaconTaggedParameters {
+    pub ssid: Option<String>,
+    pub supported_rates: Option<Vec<String>>,
+    pub extended_supported_rates: Option<Vec<String>>,
+    
+    pub country_information: Option<Vec<u8>>,
+}
+
+#[derive(Debug, Display)]
+pub enum InfraStructureType {
+    Invalid,
+    AccessPoint,
+    AdHoc
 }
 
 pub struct EncryptionInformation {
@@ -188,7 +200,6 @@ pub enum EncryptionMode {
     BIPCMAC256
 }
 
-
 pub struct Dot11BeaconFrame {
     pub destination: String,
     pub transmitter: String,
@@ -196,6 +207,7 @@ pub struct Dot11BeaconFrame {
     pub interval: u16,
     pub capabilities: BeaconCapabilities,
     pub ssid: String,
+
     pub fingerprint: String,
     pub encryption: EncryptionInformation,
     pub has_wps: bool

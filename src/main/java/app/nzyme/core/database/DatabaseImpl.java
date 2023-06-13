@@ -62,6 +62,7 @@ public class DatabaseImpl implements Database {
 
     public static final DateTimeFormatter BUCKET_DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
             .appendPattern("yyyy-MM-dd HH:mm:ss")
+
             .toFormatter().withZoneUTC();
 
     private final NodeConfiguration configuration;
