@@ -144,7 +144,6 @@ pub struct BeaconTaggedParameters {
     pub ssid: Option<String>,
     pub supported_rates: Option<Vec<String>>,
     pub extended_supported_rates: Option<Vec<String>>,
-    
     pub country_information: Option<Vec<u8>>,
 }
 

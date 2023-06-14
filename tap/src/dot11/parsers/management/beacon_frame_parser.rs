@@ -1,9 +1,10 @@
-use std::sync::Arc;
+use std::{sync::Arc, io::Read};
 
 use anyhow::{Error, bail};
-use bitvec::{view::BitView, order::Lsb0};
-use byteorder::{LittleEndian, ByteOrder};
+use bitvec::{view::BitView, order::Lsb0, store::BitStore, prelude::Msb0};
+use byteorder::{LittleEndian, ByteOrder, ReadBytesExt};
 use log::{info, trace};
+use serde::__private::from_utf8_lossy;
 
 use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters}, helpers::network::to_mac_address_string};
 
@@ -24,6 +25,9 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
     let capabilities = parse_capabilities(&frame.payload[34..36]);
 
     // Tagged parameters.
+    let mut ssid: Option<String> = Option::None;
+    let mut supportedRates: Option<Vec<String>> = Option::None;
+    let mut extendedSupportedRates: Option<Vec<String>> = Option::None;
     let mut cursor: usize = 36;
     if frame.payload.len() > 36+2 {
         loop {
@@ -42,10 +46,26 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
 
             match number {
                 0 => {
-                    info!("SSID! len: {}, val: {}", length, std::str::from_utf8(data).unwrap_or("[invalid-encoding]"))
+                    // SSID.
+                    let ssid_s = from_utf8_lossy(data).to_string();
+                    if !ssid_s.trim().is_empty() {
+                        ssid = Option::Some(ssid_s);
+                    }
                 },
-                _ => info!("tag#{} len: {}", number, length)
+                1 => {
+                    // Supported rates.
+                    supportedRates = Option::Some(parse_supported_rates(data));
+                }
+                7 => {
+                    todo!()
+                }
+                50 => {
+                    // Extended supported Rates.
+                    extendedSupportedRates = Option::Some(parse_extended_supported_rates(data));
+                }
+                _ => {}
             };
+
 
             if cursor >= frame.payload.len() {
                 break;
@@ -53,8 +73,14 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
         }
     } else {
         trace!("Tagged parameters are too short. Not calculating for this frame.");
-
     }
+
+    /*let tagged_params = BeaconTaggedParameters {
+        ssid,
+        supported_rates: todo!(),
+        extended_supported_rates: todo!(),
+        country_information: todo!(),
+    }*/
 
     //info!("caps: {:?}", capabilities);
 
@@ -96,6 +122,42 @@ pub fn parse_capabilities(mask: &[u8]) -> Result<BeaconCapabilities, Error> {
     })
 }
 
+fn parse_supported_rates(data: &[u8]) -> Vec<String> {
+    let mut rates: Vec<String> = Vec::new();
+
+    for rate in data {
+        match rate {
+            2   => rates.push("1".to_string()),
+            4   => rates.push("2".to_string()),
+            11  => rates.push("5.5".to_string()),
+            12  => rates.push("6".to_string()),
+            18  => rates.push("9".to_string()),
+            22  => rates.push("11".to_string()),
+            24  => rates.push("12".to_string()),
+            36  => rates.push("18".to_string()),
+            44  => rates.push("22".to_string()),
+            48  => rates.push("24".to_string()),
+            66  => rates.push("33".to_string()),
+            72  => rates.push("36".to_string()),
+            96  => rates.push("48".to_string()),
+            108 => rates.push("54".to_string()),
+            _   => trace!("Invalid supported rate <{}>", rate)
+        }
+    }
+
+    rates
+}
+
+fn parse_extended_supported_rates(data: &[u8]) -> Vec<String> {
+    let mut rates: Vec<String> = Vec::new();
+
+    for rate in data {
+        rates.push((rate >> 1).to_string());
+    }
+
+    rates
+}
+
 pub fn calculate_fingerprint(caps: BeaconCapabilities, params: BeaconTaggedParameters) -> String {
     let mut factors: Vec<u8> = Vec::new();
 
@@ -112,23 +174,22 @@ pub fn calculate_fingerprint(caps: BeaconCapabilities, params: BeaconTaggedParam
     factors.push(caps.short_slot_time as u8);
     factors.push(caps.dsss_ofdm as u8);
 
-    if params.supported_rates.is_some() {
+    /*if params.supported_rates.is_some() {
         // TODO use a string appender logic here.
         factors.extend(&params.supported_rates.unwrap());
-    }
+    }*/
     
     if params.country_information.is_some() {
         factors.extend(&params.country_information.unwrap());
     }
 
     /*
-    .add(1)   // Supported Rates
-    .add(7)   // Country Information
-
-    
-    .add(45)  // HT Capabilities
-    .add(50)  // Extended Supported Rates
-    .add(127) // Extended Capabilities
+      TODO:
+       1   // Supported Rates
+       7   // Country Information
+       45  // HT Capabilities
+       50  // Extended Supported Rates
+       127 // Extended Capabilities
      */
 
     "tbd".to_string()
