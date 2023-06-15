@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use anyhow::{Error, bail};
 use bitvec::{view::BitView, order::Lsb0};
-use byteorder::{LittleEndian, ByteOrder, BigEndian};
+use byteorder::{LittleEndian, ByteOrder};
 use log::{trace, info};
 use sha2::{Sha256, Digest};
 
-use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters, CountryInformation, RegulatoryEnvironment}, helpers::network::to_mac_address_string};
+use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters, CountryInformation, RegulatoryEnvironment, SecurityInformation, CipherSuite, KeyManagementMode, CipherSuites, EncryptionProtocol}, helpers::network::to_mac_address_string};
 
 pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
 
-    if frame.payload.len() < 12 {
+    if frame.payload.len() < 37 {
         bail!("Beacon frame payload too short to hold fixed parameters. Discarding.");
     }
 
@@ -35,6 +35,8 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
     let mut country_information: Option<CountryInformation> = Option::None;
     let mut ht_capabilities: Option<Vec<u8>> = Option::None;
     let mut extended_capabilities: Option<Vec<u8>> = Option::None;
+    let mut security: Vec<SecurityInformation> = Vec::new();
+    let mut security_bytes: Vec<u8> = Vec::new(); // Raw bytes for quick fingerprint calculation.
 
     // WPS.
     let mut has_wps = false;
@@ -81,7 +83,25 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
                     ht_capabilities = Option::Some(data.to_vec());
                 },
                 48 => {
-                    // WPA.
+                    // RSN. (WPA 2/3)
+                    let suites: CipherSuites = match parse_wpa_security(&data) {
+                        Ok(suites) => suites,
+                        Err(e) => {
+                            trace!("Could not parse RSN information: {}", e);
+                            continue;
+                        }
+                    };
+
+                    let protocols: Vec<EncryptionProtocol>;
+                    if suites.key_management_modes.contains(&KeyManagementMode::SAE) 
+                            || suites.key_management_modes.contains(&KeyManagementMode::FTSAE) {
+                        protocols = vec![EncryptionProtocol::WPA2, EncryptionProtocol::WPA3];
+                    } else {
+                        protocols = vec![EncryptionProtocol::WPA2];
+                    }
+
+                    security.push(SecurityInformation {protocols, suites: Option::Some(suites)});
+                    security_bytes.extend(data);
                 }
                 50 => {
                     // Extended supported rates.
@@ -101,12 +121,28 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
                     match &data[0..3] {
                         // Microsoft Corp.
                         [0x00,0x50,0xf2] => {
-                            match &data[4] {
+                            match &data[3] {
                                 // WPS.
                                 0x04 => has_wps = true,
-                                // WPA.
-                                0x01 => todo!("WPA parsing."),
-                                _ => {}
+
+                                // WPA 1.
+                                0x01 => {
+                                    let suites: CipherSuites = match parse_wpa_security(&data[4..data.len()]) {
+                                        Ok(suites) => suites,
+                                        Err(e) => {
+                                            trace!("Could not parse WPA1 information: {}", e);
+                                            continue;
+                                        }
+                                    };
+                
+                                    security.push(SecurityInformation {
+                                        protocols: vec![EncryptionProtocol::WPA1],
+                                        suites: Option::Some(suites)
+                                    });
+                                    security_bytes.extend(data);
+                                }
+                                
+                                _ => { /* Ignore other types. */ }
                             }
                         },
                         _ => {}
@@ -133,7 +169,17 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
         extended_capabilities
     };
 
-    let fingerprint = calculate_fingerprint(&capabilities, &tagged_parameters);
+    // If there is no WPA1/2/3, but the privacy bit is set, WEP is in use.
+    if capabilities.privacy && security.is_empty() {
+        security.push(
+            SecurityInformation { 
+                protocols: vec![EncryptionProtocol::WEP],
+                suites: Option::None
+            }
+        )
+    }
+
+    let fingerprint = calculate_fingerprint(&capabilities, &tagged_parameters, &has_wps, &security_bytes);
 
     Ok(Dot11BeaconFrame{
         destination,
@@ -144,7 +190,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
         ssid,
         tagged_parameters,
         fingerprint,
-        encryption: Option::None,
+        security,
         has_wps
     })
 }
@@ -203,7 +249,7 @@ pub fn parse_capabilities(mask: &[u8]) -> Result<BeaconCapabilities, Error> {
 
     Ok(BeaconCapabilities {
         infrastructure_type,
-        secured: *bmask.get(4).unwrap(),
+        privacy: *bmask.get(4).unwrap(),
         short_preamble: *bmask.get(5).unwrap(),
         pbcc: *bmask.get(6).unwrap(),
         channel_agility: *bmask.get(7).unwrap(),
@@ -248,7 +294,109 @@ fn parse_extended_supported_rates(data: &[u8]) -> Vec<String> {
     rates
 }
 
-pub fn calculate_fingerprint(caps: &BeaconCapabilities, tagged_params: &BeaconTaggedParameters) -> String {
+fn parse_wpa_security(data: &[u8]) -> Result<CipherSuites, Error> {
+    if LittleEndian::read_u16(&data[0..2]) != 1 {
+        bail!("Unsupported RSN/WPA version <{:?}>.", &data)
+    }
+
+    if data.len() < 5 {
+        bail!{"RSN/WPA info doesn't fit group cipher suite."}
+    }
+
+    // Group cipher.
+    let group_cipher = match parse_cipher_suite(&data[2..6]) {
+        Ok(cs) => cs,
+        Err(e) => bail!("Could not parse group cipher suite: {}", e)
+    };
+
+    if data.len() < 8 {
+        bail!{"RSN doesn't fit pairwise cipher suite count."};
+    }
+
+    let mut pairwise_ciphers: Vec<CipherSuite> = Vec::new();
+    let pair_suite_count = LittleEndian::read_u16(&data[6..8]) as usize;
+    let mut cursor: usize = 8;
+    for _ in 0..pair_suite_count {
+        match parse_cipher_suite(&data[cursor..cursor+4]) {
+            Ok(cipher) => pairwise_ciphers.push(cipher),
+            Err(e) => bail!("Could not parse pairwise cipher: {}", e)
+        }
+        cursor += 4;
+    }
+
+    if data.len() < cursor+3 {
+        bail!{"RSN doesn't fit key management suite count."};
+    }
+
+
+    let mut key_management_modes: Vec<KeyManagementMode> = Vec::new();
+    let key_management_suite_count = LittleEndian::read_u16(&data[cursor..cursor+2]) as usize;
+    cursor+=2;
+    for _ in 0..key_management_suite_count {
+        match parse_key_management_suite(&data[cursor..cursor+4]) {
+            Ok(cipher) => key_management_modes.push(cipher),
+            Err(e) => bail!("Could not parse key management cipher: {}", e)
+        }
+        cursor += 4;
+    }
+
+    Ok (CipherSuites {
+        group_cipher,
+        pairwise_ciphers,
+        key_management_modes
+    })
+}
+
+fn parse_key_management_suite(data: &[u8]) -> Result<KeyManagementMode, Error> {
+    if data.len() != 4 {
+        bail!("Invalid cipher suite length: <{}>.", data.len())
+    }
+
+    if data[0..3] != [0x00, 0x0f, 0xac] && data[0..3] != [0x00, 0x50, 0xf2] {
+        bail!("Invalid cipher suite OUI: <{:02x?}>.", data)
+    }
+
+    match data[3] {
+        0x01 => Ok(KeyManagementMode::X802_1),
+        0x02 => Ok(KeyManagementMode::PSK),
+        0x03 => Ok(KeyManagementMode::FT802_1X),
+        0x04 => Ok(KeyManagementMode::FTPSK),
+        0x08 => Ok(KeyManagementMode::SAE),
+        0x09 => Ok(KeyManagementMode::FTSAE),
+        _ => Ok(KeyManagementMode::Unknown)
+    }
+}
+
+fn parse_cipher_suite(data: &[u8]) -> Result<CipherSuite, Error> {
+    if data.len() != 4 {
+        bail!("Invalid cipher suite length: <{}>.", data.len())
+    }
+
+    if data[0..3] != [0x00, 0x0f, 0xac] && data[0..3] != [0x00, 0x50, 0xf2] {
+        bail!("Invalid cipher suite OUI: <{:02x?}>.", data)
+    }
+
+    match data[3] {
+        0x00 => Ok(CipherSuite::None),
+        0x01 => Ok(CipherSuite::WEP),
+        0x02 => Ok(CipherSuite::TKIP),
+        0x04 => Ok(CipherSuite::CCMP),
+        0x05 => Ok(CipherSuite::WEP104),
+        0x06 => Ok(CipherSuite::BIPCMAC128),
+        0x08 => Ok(CipherSuite::GCMP128),
+        0x09 => Ok(CipherSuite::GCMP256),
+        0x0a => Ok(CipherSuite::CCMP256),
+        0x0b => Ok(CipherSuite::BIPGMAC128),
+        0x0c => Ok(CipherSuite::BIPGMAC256),
+        0x0d => Ok(CipherSuite::BIPCMAC256),
+        _ => Ok(CipherSuite::Unknown)
+    }
+}
+
+pub fn calculate_fingerprint(caps: &BeaconCapabilities,
+                             tagged_params: &BeaconTaggedParameters,
+                             has_wps: &bool,
+                             security: &Vec<u8>) -> String {
     let mut factors: Vec<u8> = Vec::new();
 
     // Infrastructure type.
@@ -259,7 +407,7 @@ pub fn calculate_fingerprint(caps: &BeaconCapabilities, tagged_params: &BeaconTa
     }
 
     // Additional capabitilies information.
-    factors.push(caps.secured as u8);
+    factors.push(caps.privacy as u8);
     factors.push(caps.short_preamble as u8);
     factors.push(caps.pbcc as u8);
     factors.push(caps.channel_agility as u8);
@@ -291,6 +439,10 @@ pub fn calculate_fingerprint(caps: &BeaconCapabilities, tagged_params: &BeaconTa
     }
 
     // WPS
+    factors.push(*has_wps as u8);
+
+    // Security / Encryption.
+    factors.extend(security);
 
     let hash = Sha256::digest(factors);
 

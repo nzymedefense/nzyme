@@ -131,7 +131,7 @@ pub struct Dot11Frame {
 #[derive(Debug)]
 pub struct BeaconCapabilities {
     pub infrastructure_type: InfraStructureType,
-    pub secured: bool,
+    pub privacy: bool,
     pub short_preamble: bool,
     pub pbcc: bool,
     pub channel_agility: bool,
@@ -175,37 +175,41 @@ pub enum InfraStructureType {
     AdHoc
 }
 
-pub struct EncryptionInformation {
-    pub protocol: EncryptionProtocol,
-    pub encryption_mode: EncryptionMode,
-    pub key_management_mode: KeyManagementMode
+#[derive(Debug)]
+pub struct SecurityInformation {
+    pub protocols: Vec<EncryptionProtocol>,
+    pub suites: Option<CipherSuites> // Optional in case protocol is WEP
 }
 
+#[derive(Debug)]
+pub struct CipherSuites {
+    pub group_cipher: CipherSuite,
+    pub pairwise_ciphers: Vec<CipherSuite>,
+    pub key_management_modes: Vec<KeyManagementMode>
+}
+
+#[derive(Debug, Display, Copy, Clone)]
 pub enum EncryptionProtocol {
-    None,
+    WEP,
     WPA1,
     WPA2,
     WPA3
 }
 
+#[derive(Debug, Display, PartialEq)]
 pub enum KeyManagementMode {
     Unknown,
-    EAM,
+    X802_1,
     PSK,
-    FTEAM,
-    FTPSK,
-    EAMSHA256,
-    PSKSHA256,
-    TDLS,
     SAE,
-    FTSAESHA256,
-    APPEERKEY,
-    EAMEAPSHA256,
-    EAMEAPSHA384,
-    FTEAMSHA384
+    FT802_1X,
+    FTPSK,
+    FTSAE
 }
 
-pub enum EncryptionMode {
+#[derive(Debug, Display)]
+pub enum CipherSuite {
+    None,
     Unknown,
     WEP,
     TKIP,
@@ -230,6 +234,6 @@ pub struct Dot11BeaconFrame {
     pub tagged_parameters: BeaconTaggedParameters,
 
     pub fingerprint: String,
-    pub encryption: Option<EncryptionInformation>,
+    pub security: Vec<SecurityInformation>,
     pub has_wps: bool
 }
