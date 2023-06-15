@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::{Error, bail};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{LittleEndian, ByteOrder};
-use log::{trace, info};
+use log::{trace};
 use sha2::{Sha256, Digest};
 
 use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters, CountryInformation, RegulatoryEnvironment, SecurityInformation, CipherSuite, KeyManagementMode, CipherSuites, EncryptionProtocol}, helpers::network::to_mac_address_string};

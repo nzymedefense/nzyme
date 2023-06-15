@@ -13,7 +13,7 @@ use super::{
 
 pub fn spawn(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
     spawn_base_ethernet(bus.clone());
-    spawn_base_dot11_management(bus.clone());
+    spawn_base_dot11_management(bus.clone(), &tables.clone());
 
     spawn_base_arp(bus.clone(), tables.clone()); // TODO borrow
     
@@ -36,8 +36,8 @@ fn spawn_base_ethernet(bus: Arc<Bus>) {
     });
 }
 
-fn spawn_base_dot11_management(bus: Arc<Bus>) {
-    let mut processor = Dot11FrameProcessor{};
+fn spawn_base_dot11_management(bus: Arc<Bus>, tables: &Arc<Tables>) {
+    let processor = Dot11FrameProcessor::new(tables.dot11_networks.clone());
 
     thread::spawn(move || {
         for frame in bus.dot11_frames_pipeline.receiver.iter() {

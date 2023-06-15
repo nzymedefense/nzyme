@@ -1,17 +1,28 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
-use crate::dot11::{frames::{Dot11Frame, FrameSubType}, parsers::management::beacon_frame_parser};
+use log::trace;
+
+use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame}, parsers::management::beacon_frame_parser}, data::dot11_networks_table::Dot11NetworksTable};
 
 pub struct Dot11FrameProcessor {
-
+    networks_table: Arc<Mutex<Dot11NetworksTable>>
 }
 
 impl Dot11FrameProcessor {
 
-    pub fn process(&mut self, frame: &Arc<Dot11Frame>) {
+    pub fn new(networks_table: Arc<Mutex<Dot11NetworksTable>>) -> Self {
+        Self {
+            networks_table
+        }
+    }
+
+    pub fn process(&self, frame: &Arc<Dot11Frame>) {
         match frame.frame_type {
             FrameSubType::Beacon => {
-                beacon_frame_parser::parse(frame);
+                match beacon_frame_parser::parse(frame) {
+                    Ok(beacon) => self.handle_beacon(beacon),
+                    Err(e) => trace!("Could not parse beacon frame: {}", e)
+                }
             }
 
             FrameSubType::AssociationRequest |
@@ -56,5 +67,9 @@ impl Dot11FrameProcessor {
             FrameSubType::Invalid => { /* ignored */ }
         }
     }
+
+    fn handle_beacon(&self, beacon: Dot11BeaconFrame) {
+        todo!()
+    }    
 
 }
