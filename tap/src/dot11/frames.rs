@@ -144,7 +144,28 @@ pub struct BeaconTaggedParameters {
     pub ssid: Option<String>,
     pub supported_rates: Option<Vec<String>>,
     pub extended_supported_rates: Option<Vec<String>>,
-    pub country_information: Option<Vec<u8>>,
+    pub country_information: Option<CountryInformation>,
+    
+    // Not parsing, only keeping for fingerprint calculation.
+    pub ht_capabilities: Option<Vec<u8>>,
+    pub extended_capabilities: Option<Vec<u8>>
+}
+
+#[derive(Debug)]
+pub struct CountryInformation {
+    pub country_code: String,
+    pub environment: RegulatoryEnvironment,
+    pub first_channel: u8,
+    pub channel_count: u8,
+    pub max_transmit_power: u8
+}
+
+#[derive(Debug)]
+pub enum RegulatoryEnvironment {
+    All,
+    Indoors,
+    Outdoors,
+    Unknown
 }
 
 #[derive(Debug, Display)]
@@ -205,9 +226,10 @@ pub struct Dot11BeaconFrame {
     pub timestamp: u64,
     pub interval: u16,
     pub capabilities: BeaconCapabilities,
-    pub ssid: String,
+    pub ssid: Option<String>,
+    pub tagged_parameters: BeaconTaggedParameters,
 
     pub fingerprint: String,
-    pub encryption: EncryptionInformation,
+    pub encryption: Option<EncryptionInformation>,
     pub has_wps: bool
 }

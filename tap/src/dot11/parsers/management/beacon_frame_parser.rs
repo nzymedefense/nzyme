@@ -1,18 +1,17 @@
-use std::{sync::Arc, io::Read};
+use std::sync::Arc;
 
 use anyhow::{Error, bail};
-use bitvec::{view::BitView, order::Lsb0, store::BitStore, prelude::Msb0};
-use byteorder::{LittleEndian, ByteOrder, ReadBytesExt};
-use log::{info, trace};
-use serde::__private::from_utf8_lossy;
+use bitvec::{view::BitView, order::Lsb0};
+use byteorder::{LittleEndian, ByteOrder, BigEndian};
+use log::{trace, info};
+use sha2::{Sha256, Digest};
 
-use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters}, helpers::network::to_mac_address_string};
+use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, BeaconCapabilities, InfraStructureType, BeaconTaggedParameters, CountryInformation, RegulatoryEnvironment}, helpers::network::to_mac_address_string};
 
-pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
+pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
 
     if frame.payload.len() < 12 {
-        trace!("Beacon frame payload too short to hold fixed parameters. Discarding.");
-        return
+        bail!("Beacon frame payload too short to hold fixed parameters. Discarding.");
     }
 
     // MAC header.
@@ -22,12 +21,24 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
     // Fixed capabilities.
     let timestamp = LittleEndian::read_u64(&frame.payload[24..32]);
     let interval = LittleEndian::read_u16(&frame.payload[32..34]);
-    let capabilities = parse_capabilities(&frame.payload[34..36]);
+    let capabilities = match parse_capabilities(&frame.payload[34..36]) {
+        Ok(caps) => caps,
+        Err(e) => {
+            bail!("Could not parse beacon capabilities. Skipping frame. Error: {}", e);
+        }
+    };
 
     // Tagged parameters.
     let mut ssid: Option<String> = Option::None;
-    let mut supportedRates: Option<Vec<String>> = Option::None;
-    let mut extendedSupportedRates: Option<Vec<String>> = Option::None;
+    let mut supported_rates: Option<Vec<String>> = Option::None;
+    let mut extended_supported_rates: Option<Vec<String>> = Option::None;
+    let mut country_information: Option<CountryInformation> = Option::None;
+    let mut ht_capabilities: Option<Vec<u8>> = Option::None;
+    let mut extended_capabilities: Option<Vec<u8>> = Option::None;
+
+    // WPS.
+    let mut has_wps = false;
+
     let mut cursor: usize = 36;
     if frame.payload.len() > 36+2 {
         loop {
@@ -47,21 +58,59 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
             match number {
                 0 => {
                     // SSID.
-                    let ssid_s = from_utf8_lossy(data).to_string();
+                    let ssid_s = String::from_utf8_lossy(&data).to_string();
                     if !ssid_s.trim().is_empty() {
                         ssid = Option::Some(ssid_s);
                     }
                 },
                 1 => {
                     // Supported rates.
-                    supportedRates = Option::Some(parse_supported_rates(data));
+                    supported_rates = Option::Some(parse_supported_rates(&data));
                 }
                 7 => {
-                    todo!()
+                    // Country information.
+                    match parse_country_information(&data) {
+                        Ok(ci) => {
+                            country_information = Option::Some(ci);
+                        },
+                        Err(e) => trace!("Could not parse country information: {}", e)
+                    }
+                }
+                45 => {
+                    // HT capabilities.
+                    ht_capabilities = Option::Some(data.to_vec());
+                },
+                48 => {
+                    // WPA.
                 }
                 50 => {
-                    // Extended supported Rates.
-                    extendedSupportedRates = Option::Some(parse_extended_supported_rates(data));
+                    // Extended supported rates.
+                    extended_supported_rates = Option::Some(parse_extended_supported_rates(&data));
+                },
+                127 => {
+                    // Extended capabilities.
+                    extended_capabilities = Option::Some(data.to_vec());
+                }
+                221 => {
+                    // Vendor tags.
+                    if data.len() < 4 {
+                        trace!("Vendor tag too short to hold even OUI tag. Skipping.");
+                        continue;
+                    }
+
+                    match &data[0..3] {
+                        // Microsoft Corp.
+                        [0x00,0x50,0xf2] => {
+                            match &data[4] {
+                                // WPS.
+                                0x04 => has_wps = true,
+                                // WPA.
+                                0x01 => todo!("WPA parsing."),
+                                _ => {}
+                            }
+                        },
+                        _ => {}
+                    }
                 }
                 _ => {}
             };
@@ -75,15 +124,56 @@ pub fn parse(frame: &Arc<Dot11Frame>) { //-> Result<Dot11BeaconFrame, Error> {
         trace!("Tagged parameters are too short. Not calculating for this frame.");
     }
 
-    /*let tagged_params = BeaconTaggedParameters {
+    let tagged_parameters = BeaconTaggedParameters {
+        ssid: ssid.clone(),
+        supported_rates,
+        extended_supported_rates,
+        country_information,
+        ht_capabilities,
+        extended_capabilities
+    };
+
+    let fingerprint = calculate_fingerprint(&capabilities, &tagged_parameters);
+
+    Ok(Dot11BeaconFrame{
+        destination,
+        transmitter,
+        timestamp,
+        interval,
+        capabilities,
         ssid,
-        supported_rates: todo!(),
-        extended_supported_rates: todo!(),
-        country_information: todo!(),
-    }*/
+        tagged_parameters,
+        fingerprint,
+        encryption: Option::None,
+        has_wps
+    })
+}
 
-    //info!("caps: {:?}", capabilities);
+fn parse_country_information(data: &[u8]) -> Result<CountryInformation, Error> {
+    if !data.len() != 6 {
+        bail!("Country information must be 8 bytes, provided <{}>.", data.len());
+    }
+ 
+    let country_code = String::from_utf8_lossy(&data[0..2]).to_string();
 
+    let environment = match &data[2] {
+        32 => RegulatoryEnvironment::All,
+        73 => RegulatoryEnvironment::Indoors,
+        79 => RegulatoryEnvironment::Outdoors,
+        _ => RegulatoryEnvironment::Unknown
+    };
+
+    let first_channel = *&data[3];
+    let channel_count = *&data[4];
+    let max_transmit_power = *&data[5];
+
+    Ok(CountryInformation {
+        country_code,
+        environment,
+        first_channel,
+        channel_count,
+        max_transmit_power,
+    })
 }
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<BeaconCapabilities, Error> {
@@ -158,15 +248,17 @@ fn parse_extended_supported_rates(data: &[u8]) -> Vec<String> {
     rates
 }
 
-pub fn calculate_fingerprint(caps: BeaconCapabilities, params: BeaconTaggedParameters) -> String {
+pub fn calculate_fingerprint(caps: &BeaconCapabilities, tagged_params: &BeaconTaggedParameters) -> String {
     let mut factors: Vec<u8> = Vec::new();
 
+    // Infrastructure type.
     match caps.infrastructure_type {
         InfraStructureType::Invalid => factors.push(0),
         InfraStructureType::AccessPoint => factors.push(1),
         InfraStructureType::AdHoc => factors.push(2),
     }
 
+    // Additional capabitilies information.
     factors.push(caps.secured as u8);
     factors.push(caps.short_preamble as u8);
     factors.push(caps.pbcc as u8);
@@ -174,23 +266,33 @@ pub fn calculate_fingerprint(caps: BeaconCapabilities, params: BeaconTaggedParam
     factors.push(caps.short_slot_time as u8);
     factors.push(caps.dsss_ofdm as u8);
 
-    /*if params.supported_rates.is_some() {
-        // TODO use a string appender logic here.
-        factors.extend(&params.supported_rates.unwrap());
-    }*/
+    // Supported rates.
+    if tagged_params.supported_rates.is_some() {
+        for rate in tagged_params.supported_rates.as_ref().unwrap() {
+            factors.extend(rate.as_bytes());
+        }
+    }
     
-    if params.country_information.is_some() {
-        factors.extend(&params.country_information.unwrap());
+    // Extended spported rates.
+    if tagged_params.extended_supported_rates.is_some() {
+        for rate in tagged_params.extended_supported_rates.as_ref().unwrap() {
+            factors.extend(rate.as_bytes());
+        }
     }
 
-    /*
-      TODO:
-       1   // Supported Rates
-       7   // Country Information
-       45  // HT Capabilities
-       50  // Extended Supported Rates
-       127 // Extended Capabilities
-     */
+    // HT capabilities.
+    if tagged_params.ht_capabilities.is_some() {
+        factors.extend(tagged_params.ht_capabilities.as_ref().unwrap());
+    }
 
-    "tbd".to_string()
+    // Extended capabilities.
+    if tagged_params.extended_capabilities.is_some() {
+        factors.extend(tagged_params.extended_capabilities.as_ref().unwrap());
+    }
+
+    // WPS
+
+    let hash = Sha256::digest(factors);
+
+    format!("{:2x}", hash)
 }
