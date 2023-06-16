@@ -2,17 +2,17 @@ use std::sync::{Arc, Mutex};
 
 use log::{trace, error};
 
-use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame}, parsers::management::beacon_frame_parser}, data::dot11_networks_table::Dot11NetworksTable};
+use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame}, parsers::management::beacon_frame_parser}, data::dot11_table::Dot11Table};
 
 pub struct Dot11FrameProcessor {
-    networks_table: Arc<Mutex<Dot11NetworksTable>>
+    dot11_table: Arc<Mutex<Dot11Table>>
 }
 
 impl Dot11FrameProcessor {
 
-    pub fn new(networks_table: Arc<Mutex<Dot11NetworksTable>>) -> Self {
+    pub fn new(dot11_table: Arc<Mutex<Dot11Table>>) -> Self {
         Self {
-            networks_table
+            dot11_table
         }
     }
 
@@ -69,9 +69,9 @@ impl Dot11FrameProcessor {
     }
 
     fn handle_beacon(&self, beacon: Dot11BeaconFrame) {
-        match self.networks_table.lock() {
+        match self.dot11_table.lock() {
             Ok(mut table) => table.register_beacon_frame(beacon),
-            Err(e) => error!("Could not acquire 802.11 networks table: {}", e)
+            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
         }
     }    
 

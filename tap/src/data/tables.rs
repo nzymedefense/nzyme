@@ -8,13 +8,13 @@ use std::time::Duration;
 
 use crate::metrics::Metrics;
 
-use super::{dns_table::DnsTable, l4_table::L4Table, dot11_networks_table::Dot11NetworksTable};
+use super::{dns_table::DnsTable, l4_table::L4Table, dot11_table::Dot11Table};
 
 pub struct Tables {
     pub arp: Arc<Mutex<HashMap<String, HashMap<String, u128>>>>,
     pub dns: Arc<Mutex<DnsTable>>,
     pub l4: Arc<Mutex<L4Table>>,
-    pub dot11_networks: Arc<Mutex<Dot11NetworksTable>>
+    pub dot11: Arc<Mutex<Dot11Table>>
 }
 
 impl Tables {
@@ -23,8 +23,8 @@ impl Tables {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics))),
-            l4: Arc::new(Mutex::new(L4Table::new())),
-            dot11_networks: Arc::new(Mutex::new(Dot11NetworksTable::new()))
+            l4:  Arc::new(Mutex::new(L4Table::new())),
+            dot11: Arc::new(Mutex::new(Dot11Table::new()))
         }
     }
 

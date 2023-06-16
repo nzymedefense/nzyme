@@ -8,7 +8,8 @@ use super::{
     arp_processor::ARPProcessor,
     dns_processor::DnsProcessor,
     udp_processor::UDPProcessor, 
-    tcp_processor::TCPProcessor, dot11_frame_processor::Dot11FrameProcessor,
+    tcp_processor::TCPProcessor,
+    dot11_frame_processor::Dot11FrameProcessor,
 };
 
 pub fn spawn(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
@@ -37,14 +38,14 @@ fn spawn_base_ethernet(bus: Arc<Bus>) {
 }
 
 fn spawn_base_dot11_management(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let processor = Dot11FrameProcessor::new(tables.dot11_networks.clone());
+    let processor = Dot11FrameProcessor::new(tables.dot11.clone());
 
     thread::spawn(move || {
         for frame in bus.dot11_frames_pipeline.receiver.iter() {
             processor.process(&frame);
         }
 
-        error!("Dot11 frames receiver disconnected.");
+        error!("802.11 frames receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
 }

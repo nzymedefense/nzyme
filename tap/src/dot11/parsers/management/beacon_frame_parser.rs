@@ -182,6 +182,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
     let fingerprint = calculate_fingerprint(&capabilities, &tagged_parameters, &has_wps, &security_bytes);
 
     Ok(Dot11BeaconFrame{
+        header: frame.header.clone(),
         destination,
         transmitter,
         timestamp,

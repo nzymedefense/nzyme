@@ -1,3 +1,4 @@
+
 use std::{sync::{Mutex, Arc}, collections::HashMap};
 
 use chrono::{DateTime, Utc};
@@ -101,7 +102,7 @@ impl L4Table {
         }
     }
 
-    pub fn as_report(&mut self) -> L4TableReport {
+    pub fn to_report(&mut self) -> L4TableReport {
         let retro_pairs = match self.retro_connections.lock() {
             Ok(connections) => {
                 let mut result = Vec::new();

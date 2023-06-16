@@ -6,7 +6,7 @@ pub struct Dot11RawFrame {
     pub data: Vec<u8>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RadiotapHeader {
     pub is_wep: Option<bool>,
     pub data_rate: Option<u16>,
@@ -181,19 +181,19 @@ pub struct SecurityInformation {
     pub suites: Option<CipherSuites> // Optional in case protocol is WEP
 }
 
-#[derive(Debug)]
-pub struct CipherSuites {
-    pub group_cipher: CipherSuite,
-    pub pairwise_ciphers: Vec<CipherSuite>,
-    pub key_management_modes: Vec<KeyManagementMode>
-}
-
 #[derive(Debug, Display, Copy, Clone)]
 pub enum EncryptionProtocol {
     WEP,
     WPA1,
     WPA2,
     WPA3
+}
+
+#[derive(Debug)]
+pub struct CipherSuites {
+    pub group_cipher: CipherSuite,
+    pub pairwise_ciphers: Vec<CipherSuite>,
+    pub key_management_modes: Vec<KeyManagementMode>
 }
 
 #[derive(Debug, Display, PartialEq)]
@@ -225,6 +225,7 @@ pub enum CipherSuite {
 }
 
 pub struct Dot11BeaconFrame {
+    pub header: RadiotapHeader,
     pub destination: String,
     pub transmitter: String,
     pub timestamp: u64,
@@ -232,7 +233,6 @@ pub struct Dot11BeaconFrame {
     pub capabilities: BeaconCapabilities,
     pub ssid: Option<String>,
     pub tagged_parameters: BeaconTaggedParameters,
-
     pub fingerprint: String,
     pub security: Vec<SecurityInformation>,
     pub has_wps: bool

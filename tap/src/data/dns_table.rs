@@ -18,7 +18,6 @@ use crate::{
 use chrono::{DateTime, Utc};
 use log::error;
 
-
 pub struct DnsTable {
     ips: Mutex<HashMap<String, DnsStatistics>>,
     nxdomains: Mutex<Vec<NXDomainLog>>,

@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
@@ -56,7 +56,8 @@ pub struct TablesReport {
     pub timestamp: DateTime<Utc>,
     pub arp: HashMap<String, HashMap<String, u128>>,
     pub dns: DnsTableReport,
-    pub l4: L4TableReport
+    pub l4: L4TableReport,
+    pub dot11: Dot11TableReport
 }
 
 #[derive(Serialize)]
@@ -136,6 +137,41 @@ pub struct L4RetroPairReport {
     pub connection_count: u64,
     pub size: u64,
     pub timestamp: DateTime<Utc>
+}
+
+pub struct Dot11TableReport {
+    pub bssids: HashMap<String, BssidReport>,
+}
+
+pub struct BssidReport {
+    pub advertised_networks: HashMap<String, AdvertisedNetworkReport>,
+    pub hidden_ssid_frames: u128,
+    pub signal_strength: SignalStrengthReport,
+    pub fingerprints: Vec<String>,
+}
+
+pub struct AdvertisedNetworkReport {
+    pub security: Vec<SecurityInformationReport>,
+    pub fingerprints: Vec<String>,
+    pub wps: bool,
+    pub signal_strength: SignalStrengthReport
+}
+
+pub struct SignalStrengthReport {
+    pub min: i8,
+    pub max: i8,
+    pub average: f32
+}
+
+pub struct SecurityInformationReport {
+    pub protocols: Vec<String>,
+    pub suites: Dot11CipherSuites
+}
+
+pub struct Dot11CipherSuites {
+    pub group_cipher: String,
+    pub pairwise_ciphers: Vec<String>,
+    pub key_management_modes: Vec<String>
 }
 
 impl TotalWithAverage {

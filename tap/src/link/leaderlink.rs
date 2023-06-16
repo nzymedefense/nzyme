@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     configuration::Configuration,
-    metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, L4TableReport}
+    metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, L4TableReport, Dot11TableReport}
 };
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TablesReport, TotalWithAverage, ChannelReport, CaptureReport}};
@@ -171,9 +171,7 @@ impl Leaderlink {
         };
 
         let dns = match self.tables.dns.lock() {
-            Ok(dns) => {
-                dns.to_report()
-            }
+            Ok(dns) => dns.to_report(),
             Err(e) => {
                 error!("Could not aquire DNS table mutex. {}", e);
                 DnsTableReport {
@@ -188,9 +186,7 @@ impl Leaderlink {
         };
 
         let l4 = match self.tables.l4.lock() {
-            Ok(mut l4) => {
-                l4.as_report()
-            },
+            Ok(mut l4) => l4.to_report(),
             Err(e) => {
                 error!("Could not acquire L4 table mutex. {}", e);
                 L4TableReport {
@@ -199,11 +195,23 @@ impl Leaderlink {
             }
         };
 
+        let dot11 = match self.tables.dot11.lock() {
+            Ok(dot11) => dot11.to_report(),
+            Err(e) => {
+                error!("Could not acquire 802.11 networks table mutex. {}", e);
+
+                Dot11TableReport {
+                    bssids: HashMap::new()
+                }
+            }
+        };
+
         let tables = TablesReport {
             timestamp: Utc::now(),
             arp,
             dns,
-            l4
+            l4,
+            dot11
         };
 
         self.http_client
