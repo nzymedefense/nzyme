@@ -199,7 +199,6 @@ impl Leaderlink {
             Ok(dot11) => dot11.to_report(),
             Err(e) => {
                 error!("Could not acquire 802.11 networks table mutex. {}", e);
-
                 Dot11TableReport {
                     bssids: HashMap::new()
                 }

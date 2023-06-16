@@ -37,32 +37,25 @@ impl Tables {
 
     pub fn calculate_metrics(&self) {
         match self.dns.lock() {
-            Ok(dns) => {
-                dns.calculate_metrics();
-            },
-            Err(e) => {
-                error!("Could not acquire mutex to calculate DNS metrics: {}", e);
-            }
+            Ok(dns) => dns.calculate_metrics(),
+            Err(e) => error!("Could not acquire mutex to calculate DNS metrics: {}", e)
         }
     }
 
     pub fn clear_ephemeral(&self) {
         match self.dns.lock() {
-            Ok(dns) => {
-                dns.clear_ephemeral();
-            },
-            Err(e) => {
-                error!("Could not acquire mutex to clear DNS table: {}", e);
-            }
+            Ok(dns) => dns.clear_ephemeral(),
+            Err(e) => error!("Could not acquire mutex to clear DNS table: {}", e)
         }
         
         match self.l4.lock() {
-            Ok(mut l4) => {
-                l4.clear_ephemeral();
-            },
-            Err(e) => {
-                error!("Could not acquire mutex to clear L4 table: {}", e);
-            }
+            Ok(mut l4) => l4.clear_ephemeral(),
+            Err(e) => error!("Could not acquire mutex to clear L4 table: {}", e)
+        }
+
+        match self.dot11.lock() {
+            Ok(mut dot11) => dot11.clear_ephemeral(),
+            Err(e) => error!("Could not acquire mutex to clear 802.11 table: {}", e)
         }
     }
 

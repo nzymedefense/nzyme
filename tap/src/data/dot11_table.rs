@@ -118,6 +118,13 @@ impl Dot11Table {
         }
     }
 
+    pub fn clear_ephemeral(&mut self) {
+        match self.bssids.lock() {
+            Ok(mut bssids) => bssids.clear(),
+            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e)
+        }
+    }
+
     pub fn to_report(&self) -> Dot11TableReport {
         let mut bssid_report: HashMap<String, BssidReport> = HashMap::new();
 
