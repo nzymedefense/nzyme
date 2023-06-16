@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use log::trace;
+use log::{trace, error};
 
 use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame}, parsers::management::beacon_frame_parser}, data::dot11_networks_table::Dot11NetworksTable};
 
@@ -69,7 +69,10 @@ impl Dot11FrameProcessor {
     }
 
     fn handle_beacon(&self, beacon: Dot11BeaconFrame) {
-        todo!()
+        match self.networks_table.lock() {
+            Ok(mut table) => table.register_beacon_frame(beacon),
+            Err(e) => error!("Could not acquire 802.11 networks table: {}", e)
+        }
     }    
 
 }
