@@ -17,6 +17,7 @@
 
 package app.nzyme.core.rest.resources.taps.reports.tables;
 
+import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -30,18 +31,20 @@ public abstract class TablesReport {
     public abstract DateTime timestamp();
     public abstract Map<String, Map<String, Long>> arp();
     public abstract DNSTablesReport dns();
-
+    public abstract Dot11TablesReport dot11();
     public abstract L4TablesReport l4();
 
     @JsonCreator
     public static TablesReport create(@JsonProperty("timestamp") DateTime timestamp,
                                       @JsonProperty("arp") Map<String, Map<String, Long>> arp,
                                       @JsonProperty("dns") DNSTablesReport dns,
+                                      @JsonProperty("dot11") Dot11TablesReport dot11,
                                       @JsonProperty("l4") L4TablesReport l4) {
         return builder()
                 .timestamp(timestamp)
                 .arp(arp)
                 .dns(dns)
+                .dot11(dot11)
                 .l4(l4)
                 .build();
     }
@@ -57,6 +60,8 @@ public abstract class TablesReport {
         public abstract Builder arp(Map<String, Map<String, Long>> arp);
 
         public abstract Builder dns(DNSTablesReport dns);
+
+        public abstract Builder dot11(Dot11TablesReport dot11);
 
         public abstract Builder l4(L4TablesReport l4);
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use log::error;
+use log::{error};
 
 use crate::{
     dot11::frames::{Dot11BeaconFrame, SecurityInformation},
@@ -48,7 +48,7 @@ impl Dot11Table {
             Ok(mut bssids) => {
                 match bssids.get_mut(&beacon.transmitter) {
                     Some(bssid) => {
-                        // Update existing BSSID.
+                        // Update existing SSIDs of BSSID.
                         match beacon.ssid {
                             Some(ssid) => {
                                 // Has this BSSID advertised this SSID before?
@@ -59,7 +59,7 @@ impl Dot11Table {
                                         ssid.wps = beacon.has_wps;
 
                                         if !ssid.fingerprints.contains(&beacon.fingerprint) {
-                                            ssid.fingerprints.push(beacon.fingerprint);
+                                            ssid.fingerprints.push(beacon.fingerprint.clone());
                                         }
 
                                         ssid.signal_strengths.push(signal_strength);
@@ -70,7 +70,7 @@ impl Dot11Table {
                                             ssid,
                                             AdvertisedNetwork {
                                                 security: beacon.security,
-                                                fingerprints: vec![beacon.fingerprint],
+                                                fingerprints: vec![beacon.fingerprint.clone()],
                                                 wps: beacon.has_wps,
                                                 signal_strengths: vec![signal_strength],
                                             },
@@ -83,6 +83,12 @@ impl Dot11Table {
                                 bssid.hidden_ssid_frames += 1;
                             }
                         }
+
+                        // Update BSSID.
+                        if !bssid.fingerprints.contains(&beacon.fingerprint) {
+                            bssid.fingerprints.push(beacon.fingerprint);
+                        }
+                        bssid.signal_strengths.push(signal_strength);
                     }
                     None => {
                         // BSSID not yet in table.
@@ -206,10 +212,9 @@ impl Dot11Table {
 }
 
 fn calculate_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrengthReport {
-    let count = signal_strengths.clone().len() as i128;
     let mut sum: i128 = 0;
     let mut min = 0;
-    let mut max = 0;
+    let mut max = -100;
     for ss in signal_strengths {
         sum += *ss as i128;
 
@@ -222,9 +227,12 @@ fn calculate_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrength
         }
     }
 
+    let count = signal_strengths.clone().len() as i128;
+    let average = (sum / count) as f32;
+
     SignalStrengthReport {
         min,
         max,
-        average: (sum / count) as f32,
+        average,
     }
 }

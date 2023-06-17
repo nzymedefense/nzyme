@@ -139,10 +139,12 @@ pub struct L4RetroPairReport {
     pub timestamp: DateTime<Utc>
 }
 
+#[derive(Serialize)]
 pub struct Dot11TableReport {
     pub bssids: HashMap<String, BssidReport>,
 }
 
+#[derive(Serialize)]
 pub struct BssidReport {
     pub advertised_networks: HashMap<String, AdvertisedNetworkReport>,
     pub hidden_ssid_frames: u128,
@@ -150,6 +152,7 @@ pub struct BssidReport {
     pub fingerprints: Vec<String>,
 }
 
+#[derive(Serialize)]
 pub struct AdvertisedNetworkReport {
     pub security: Vec<SecurityInformationReport>,
     pub fingerprints: Vec<String>,
@@ -157,17 +160,20 @@ pub struct AdvertisedNetworkReport {
     pub signal_strength: SignalStrengthReport
 }
 
+#[derive(Serialize)]
 pub struct SignalStrengthReport {
     pub min: i8,
     pub max: i8,
     pub average: f32
 }
 
+#[derive(Serialize)]
 pub struct SecurityInformationReport {
     pub protocols: Vec<String>,
     pub suites: Dot11CipherSuites
 }
 
+#[derive(Serialize)]
 pub struct Dot11CipherSuites {
     pub group_cipher: String,
     pub pairwise_ciphers: Vec<String>,
@@ -209,6 +215,7 @@ impl Serialize for TablesReport {
         state.serialize_field("arp", &self.arp)?;
         state.serialize_field("dns", &self.dns)?;
         state.serialize_field("l4", &self.l4)?;
+        state.serialize_field("dot11", &self.dot11)?;
         state.end()
     }
 

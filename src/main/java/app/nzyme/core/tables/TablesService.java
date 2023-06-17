@@ -17,6 +17,7 @@
 
 package app.nzyme.core.tables;
 
+import app.nzyme.core.tables.dot11.Dot11Table;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import app.nzyme.core.NzymeNode;
@@ -41,6 +42,7 @@ public class TablesService {
 
         this.tables = new ImmutableMap.Builder<String, DataTable>()
                 .put("dns", new DNSTable(this))
+                .put("dot11", new Dot11Table(this))
                 .build();
 
         Executors.newSingleThreadScheduledExecutor(
@@ -61,6 +63,10 @@ public class TablesService {
 
     public DNSTable dns() {
         return (DNSTable) tables.get("dns");
+    }
+
+    public Dot11Table dot11() {
+        return (Dot11Table) tables.get("dot11");
     }
 
     public NzymeNode getNzyme() {

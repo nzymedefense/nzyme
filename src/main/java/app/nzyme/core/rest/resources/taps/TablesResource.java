@@ -56,6 +56,9 @@ public class TablesResource {
         // DNS.
         nzyme.getTablesService().dns().handleReport(tapId, report.timestamp(), report.dns());
 
+        // 802.11
+        nzyme.getTablesService().dot11().handleReport(tapId, report.timestamp(), report.dot11());
+
         // Submit to Retro if service is present. TODO move to tap UUIDs instead of names.
         /*if (nzyme.retroService().isPresent()) {
             // TODO queue this. Don't wait for completion.
