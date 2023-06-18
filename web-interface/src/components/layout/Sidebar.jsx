@@ -45,8 +45,8 @@ function Sidebar() {
                       icon={<i className="sidebar-icon fa-solid fa-wifi" />}
                       show={true}>
         <NavigationLink
-            href={ApiRoutes.DOT11.NETWORKS.INDEX}
-            title="Networks"
+            href={ApiRoutes.DOT11.NETWORKS.BSSIDS}
+            title="Access Points"
             icon={<i className="sidebar-icon fa-solid fa-list" />} />
 
         <NavigationLink

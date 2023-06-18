@@ -83,6 +83,7 @@ import EditActionPage from "./components/system/events/actions/EditActionPage";
 import OrganizationEventsPage from "./components/system/authentication/management/organizations/events/OrganizationEventsPage";
 import OrganizationEventSubscriptionDetailsPage
   from "./components/system/authentication/management/organizations/events/subscriptions/OrganizationEventSubscriptionDetailsPage";
+import BSSIDsPage from "./components/dot11/bssids/BSSIDsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -309,6 +310,9 @@ function App() {
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
+
+                          { /* 802.11/Networks. */}
+                          <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

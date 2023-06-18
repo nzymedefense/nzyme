@@ -116,9 +116,7 @@ const ApiRoutes = {
   },
   DOT11: {
     NETWORKS: {
-      INDEX: '/dot11/networks',
-      SHOW: (bssid, ssid, channel) => `/dot11/networks/show/${bssid}/${ssid}/${channel}`,
-      PROXY: (bssid, ssid) => `/dot11/networks/show/${bssid}/${ssid}`
+      BSSIDS: '/dot11/bssids',
     },
     BANDITS: {
       INDEX: '/dot11/bandits',

@@ -2,7 +2,6 @@ package app.nzyme.core.rest;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.resources.ethernet.DNSResource;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -15,7 +14,7 @@ import java.util.UUID;
 
 public class TapDataHandlingResource extends UserAuthenticatedResource {
 
-    private static final Logger LOG = LogManager.getLogger(DNSResource.class);
+    private static final Logger LOG = LogManager.getLogger(TapDataHandlingResource.class);
 
     protected final List<UUID> parseAndValidateTapIds(AuthenticatedUser requestingUser,
                                                       NzymeNode nzyme,

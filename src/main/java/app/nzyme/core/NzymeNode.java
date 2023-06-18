@@ -20,6 +20,7 @@ package app.nzyme.core;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
+import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.monitoring.health.HealthMonitor;
@@ -57,6 +58,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     HealthMonitor getHealthMonitor();
 
     Ethernet getEthernet();
+    Dot11 getDot11();
 
     GeoIpService getGeoIpService();
 

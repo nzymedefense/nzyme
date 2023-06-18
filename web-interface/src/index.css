@@ -634,3 +634,15 @@ span.flag-inline {
     height: 11px;
     width: 15px;
 }
+
+i.signal-strength-good {
+    color: #198754;
+}
+
+i.signal-strength-ok {
+    color: #fd7e14;
+}
+
+i.signal-strength-bad {
+    color: #dc3545;
+}

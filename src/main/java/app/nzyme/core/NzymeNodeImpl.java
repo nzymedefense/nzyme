@@ -21,6 +21,7 @@ import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
+import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -101,6 +102,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final GeoIpService geoIpService;
 
     private final Ethernet ethernet;
+    private final Dot11 dot11;
 
     private final TablesService tablesService;
 
@@ -152,6 +154,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.httpServer = new NzymeHttpServer(this, this.pluginRestResources);
 
         this.ethernet = new Ethernet(this);
+        this.dot11 = new Dot11(this);
 
         this.tapManager = new TapManager(this);
 
@@ -295,6 +298,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public Ethernet getEthernet() {
         return ethernet;
+    }
+
+    @Override
+    public Dot11 getDot11() {
+        return dot11;
     }
 
     @Override

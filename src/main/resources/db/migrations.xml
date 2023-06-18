@@ -2579,4 +2579,237 @@
         <dropTable tableName="sigidx_histogram_history" />
     </changeSet>
 
+    <changeSet id="first_802_11_tables" author="lennartkoopmann">
+        <createTable tableName="dot11_bssids">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)" >
+                <constraints nullable="false" />
+            </column>
+
+            <column name="oui" type="text" >
+                <constraints nullable="true" />
+            </column>
+
+            <column name="signal_strength_average" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_min" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_max" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_taps2bssids"
+                                 baseTableName="dot11_bssids"
+                                 baseColumnNames="tap_uuid"
+                                 referencedTableName="taps"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="create_802_11_ssids_table" author="lennartkoopmann">
+        <createTable tableName="dot11_ssids">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="security_protocol" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="security_suites" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="fingerprints" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="is_wps" type="boolean">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_average" type="float">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_min" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_max" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_ssids2bssids"
+                                 baseTableName="dot11_ssids"
+                                 baseColumnNames="bssid_id"
+                                 referencedTableName="dot11_bssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="add_fingerprints_to_bssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_bssids">
+            <column name="fingerprints" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_ssid_security_protocol_longer" author="lennartkoopmann">
+        <modifyDataType tableName="dot11_ssids" columnName="security_suites" newDataType="varchar(32)" />
+    </changeSet>
+
+    <changeSet id="add_actual_ssid_to_ssids_lmao" author="lennartkoopmann">
+        <addColumn tableName="dot11_ssids">
+            <column name="ssid" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_ssid_security_suites_text" author="lennartkoopmann">
+        <modifyDataType tableName="dot11_ssids" columnName="security_suites" newDataType="text" />
+    </changeSet>
+
+    <changeSet id="move_fingerprints_to_table" author="lennartkoopmann">
+        <createTable tableName="dot11_fingerprints">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fingerprint" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+        <dropColumn tableName="dot11_bssids" columnName="fingerprints" />
+        <dropColumn tableName="dot11_ssids" columnName="fingerprints" />
+
+        <addForeignKeyConstraint constraintName="link_fingerprints2bssids"
+                                 baseTableName="dot11_fingerprints"
+                                 baseColumnNames="bssid_id"
+                                 referencedTableName="dot11_bssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <addForeignKeyConstraint constraintName="link_fingerprints2ssids"
+                                 baseTableName="dot11_fingerprints"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="add_indices_to_first_dot11_tables" author="lennartkoopmann">
+        <createIndex tableName="dot11_bssids" indexName="bssids_table_lookup">
+            <column name="created_at" />
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="dot11_bssids" indexName="bssids_single_lookup">
+            <column name="bssid" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex tableName="dot11_ssids" indexName="ssids_by_bssid_lookup">
+            <column name="created_at" />
+            <column name="bssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_fingerprints" indexName="fingerprint_bssid_lookup">
+            <column name="bssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_fingerprints" indexName="fingerprint_ssid_lookup">
+            <column name="ssid_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_hidden_frame_counter_to_bssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_bssids">
+            <column name="hidden_ssid_frames" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_actual_ssids_and_bssids_to_fingerprints" author="lennartkoopmann">
+        <addColumn tableName="dot11_fingerprints">
+            <column name="ssid" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_fingerprints">
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_actual_bssid_to_ssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_ssids">
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_timestamp_to_fingerprints" author="lennartkoopmann">
+        <addColumn tableName="dot11_fingerprints">
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
