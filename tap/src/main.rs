@@ -112,7 +112,7 @@ fn main() {
     }
 
     // WiFi capture.
-    for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
+    /*for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
         let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
         let capture_conf = configuration.clone();
@@ -138,7 +138,7 @@ fn main() {
                 thread::sleep(time::Duration::from_secs(5));
             }
         });
-    }
+    }*/
     
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());
