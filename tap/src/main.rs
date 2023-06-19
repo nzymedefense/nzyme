@@ -22,6 +22,8 @@ use log::{error, info};
 use messagebus::bus::Bus;
 use system_state::SystemState;
 
+use crate::dot11::channel_hopper::ChannelHopper;
+
 #[derive(Parser,Debug)]
 struct Arguments {
     #[clap(short, long, forbid_empty_values = true)]
@@ -70,6 +72,9 @@ fn main() {
     thread::spawn(move || {
         brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
+
+    let ch = ChannelHopper {};
+    ch.initialize();
 
     // WiFi handler.
     let wifi_handlerbus = bus.clone();

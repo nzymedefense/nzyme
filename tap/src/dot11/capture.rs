@@ -13,7 +13,7 @@ pub struct Capture {
     pub bus: Arc<Bus>
 }
 
-impl Capture<> {
+impl Capture {
 
     pub fn run(&mut self, device_name: &str, cmd_ip: &str, cmd_iw: &str) {
         info!("Starting WiFi capture on [{}]", device_name);
