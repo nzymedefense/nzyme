@@ -22,7 +22,7 @@ use log::{error, info};
 use messagebus::bus::Bus;
 use system_state::SystemState;
 
-use crate::dot11::channel_hopper::ChannelHopper;
+use crate::dot11::nl::Nl;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -73,8 +73,11 @@ fn main() {
         brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
-    let ch = ChannelHopper {};
-    ch.initialize();
+    let nl = Nl {};
+    match nl.fetch_device(&"wlx9cefd5fbba9e".to_string()) {
+        Ok(device) => info!("{:?}", device),
+        Err(e) => info!("TEST: {}", e)
+    }
 
     // WiFi handler.
     let wifi_handlerbus = bus.clone();
