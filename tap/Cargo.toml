@@ -57,4 +57,4 @@ clap = { version = "3.2.15", features = ["derive"] }
 toml = "0.7.3"
 caps = "0.5.5"
 sha2 = "0.10"
-neli = { version = "0.7.0-rc.1", features = ["async"] }
+neli = "0.7.0-rc.1"

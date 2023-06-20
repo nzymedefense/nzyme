@@ -825,7 +825,6 @@ dependencies = [
  "log",
  "neli-proc-macros",
  "parking_lot",
- "tokio",
 ]
 
 [[package]]

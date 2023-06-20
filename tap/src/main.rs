@@ -79,6 +79,11 @@ fn main() {
         Err(e) => info!("TEST: {}", e)
     }
 
+    match nl.set_device_frequency(&"wlx9cefd5fbba9e".to_string(), 5825) {
+        Ok(_) => info!("frequency set"),
+        Err(e) => info!("TEST: {}", e)
+    }
+
     // WiFi handler.
     let wifi_handlerbus = bus.clone();
     thread::spawn(move || {
