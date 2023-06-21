@@ -20,9 +20,10 @@ use data::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
 use messagebus::bus::Bus;
+use sha2::digest::typenum::N1;
 use system_state::SystemState;
 
-use crate::dot11::nl::Nl;
+use crate::dot11::{nl::Nl, channel_hopper::ChannelHopper};
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -73,17 +74,6 @@ fn main() {
         brokers::ethernet_broker::EthernetBroker::new(ethernet_handlerbus, configuration.performance.ethernet_brokers as usize).run();
     });
 
-    let nl = Nl {};
-    match nl.fetch_device(&"wlx9cefd5fbba9e".to_string()) {
-        Ok(device) => info!("{:?}", device),
-        Err(e) => info!("TEST: {}", e)
-    }
-
-    match nl.set_device_frequency(&"wlx9cefd5fbba9e".to_string(), 5825) {
-        Ok(_) => info!("frequency set"),
-        Err(e) => info!("TEST: {}", e)
-    }
-
     // WiFi handler.
     let wifi_handlerbus = bus.clone();
     thread::spawn(move || {
@@ -120,7 +110,7 @@ fn main() {
     }
 
     // WiFi capture.
-    /*for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
+    for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
         let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
         let capture_conf = configuration.clone();
@@ -146,8 +136,11 @@ fn main() {
                 thread::sleep(time::Duration::from_secs(5));
             }
         });
-    }*/
-    
+    }
+
+    let ch = ChannelHopper::new(configuration.clone().wifi.wifi_listen_interfaces);
+    ch.initialize();
+
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());
 

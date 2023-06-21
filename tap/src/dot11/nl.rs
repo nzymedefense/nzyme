@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::iter::once;
 
 use anyhow::{Error, bail};
 use byteorder::{LittleEndian, ByteOrder};
@@ -32,7 +33,9 @@ pub enum Nl80211Attribute {
     IfName = 4,
     IfType = 5,
     WiPhyBands = 22,
-    WiPhyFreq = 38
+    WiPhyFreq = 38,
+    SplitWiphyDump = 174
+
 }
 impl neli::consts::genl::NlAttrType for Nl80211Attribute {}
 
@@ -246,9 +249,21 @@ impl Nl {
             None => bail!("Interface [{}] not found.", device_name)
         };
 
+        let attr_filter_wiphy_dump_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::WiPhy).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct WiPhy Netlink attribute type: {}", e)
+        };
+
+        let attr_filter_wiphy_dump = match NlattrBuilder::default().nla_type(attr_filter_wiphy_dump_type)
+                                        .nla_payload(interface_info.phy_index).build() {
+            Ok(attr) => attr,
+            Err(e) => bail!("Could not construct WiPhy Netlink attribute: {}", e)
+        };
+
         let get_wiphy = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
                     .cmd(Nl80211Command::GetWiPhy)
                     .version(1)
+                    .attrs(once(attr_filter_wiphy_dump).collect())
                     .build() {
                 Ok(pl) => pl, 
                 Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
@@ -297,7 +312,6 @@ impl Nl {
             Ok(attr) => attr,
             Err(e) => bail!("Could not construct IfIndex Netlink attribute: {}", e) 
         };
-
 
         let attr_wiphy_freq_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::WiPhyFreq).build() {
             Ok(t) => t,
