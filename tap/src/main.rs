@@ -20,10 +20,9 @@ use data::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
 use messagebus::bus::Bus;
-use sha2::digest::typenum::N1;
 use system_state::SystemState;
 
-use crate::dot11::{nl::Nl, channel_hopper::ChannelHopper};
+use crate::dot11::{channel_hopper::ChannelHopper};
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -139,7 +138,7 @@ fn main() {
     }
 
     let ch = ChannelHopper::new(configuration.clone().wifi.wifi_listen_interfaces);
-    ch.initialize();
+    ch.spawn_loop();
 
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());

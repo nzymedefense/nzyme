@@ -228,7 +228,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
         };
     
-        let recv_if = match socket.send(family_id,NlmF::DUMP,NlPayload::Payload(get_if_payload)) {
+        let recv_if = match socket.send(family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetIf Netlink command: {}", e)
         };
@@ -334,7 +334,7 @@ impl Nl {
         };
 
         let recv_channel_resp: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
-                                    match socket.send(family_id, NlmF::empty(), NlPayload::Payload(payload)){
+                                    match socket.send(family_id, NlmF::ACK, NlPayload::Payload(payload)){
             Ok(recv) => recv,
             Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
         };
