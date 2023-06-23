@@ -646,3 +646,7 @@ i.signal-strength-ok {
 i.signal-strength-bad {
     color: #dc3545;
 }
+
+span.hidden-ssid {
+    color: #c0c0c0;
+}

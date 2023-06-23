@@ -4,13 +4,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @AutoValue
-public abstract class BSSIDDetailsResponse {
+public abstract class BSSIDSummaryDetailsResponse {
 
     @JsonProperty("bssid")
     public abstract String bssid();
+
+    @JsonProperty("oui")
+    @Nullable
+    public abstract String oui();
+
+    @JsonProperty("security_protocols")
+    @Nullable
+    public abstract List<String> securityProtocols();
 
     @JsonProperty("signal_strength_average")
     public abstract float signalStrengthAverage();
@@ -27,9 +36,11 @@ public abstract class BSSIDDetailsResponse {
     @JsonProperty("has_hidden_ssid_advertisements")
     public abstract boolean hasHiddenSSIDAdvertisements();
 
-    public static BSSIDDetailsResponse create(String bssid, float signalStrengthAverage, DateTime lastSeen, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements) {
+    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime lastSeen, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements) {
         return builder()
                 .bssid(bssid)
+                .oui(oui)
+                .securityProtocols(securityProtocols)
                 .signalStrengthAverage(signalStrengthAverage)
                 .lastSeen(lastSeen)
                 .fingerprints(fingerprints)
@@ -39,12 +50,16 @@ public abstract class BSSIDDetailsResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_BSSIDDetailsResponse.Builder();
+        return new AutoValue_BSSIDSummaryDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder bssid(String bssid);
+
+        public abstract Builder oui(String oui);
+
+        public abstract Builder securityProtocols(List<String> securityProtocols);
 
         public abstract Builder signalStrengthAverage(float signalStrengthAverage);
 
@@ -56,7 +71,6 @@ public abstract class BSSIDDetailsResponse {
 
         public abstract Builder hasHiddenSSIDAdvertisements(boolean hasHiddenSSIDAdvertisements);
 
-        public abstract BSSIDDetailsResponse build();
+        public abstract BSSIDSummaryDetailsResponse build();
     }
-
 }

@@ -9,9 +9,9 @@ import java.util.List;
 public abstract class BSSIDListResponse {
 
     @JsonProperty("bssids")
-    public abstract List<BSSIDDetailsResponse> bssids();
+    public abstract List<BSSIDSummaryDetailsResponse> bssids();
 
-    public static BSSIDListResponse create(List<BSSIDDetailsResponse> bssids) {
+    public static BSSIDListResponse create(List<BSSIDSummaryDetailsResponse> bssids) {
         return builder()
                 .bssids(bssids)
                 .build();
@@ -23,7 +23,7 @@ public abstract class BSSIDListResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bssids(List<BSSIDDetailsResponse> bssids);
+        public abstract Builder bssids(List<BSSIDSummaryDetailsResponse> bssids);
 
         public abstract BSSIDListResponse build();
     }

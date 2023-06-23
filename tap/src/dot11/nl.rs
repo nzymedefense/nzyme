@@ -4,6 +4,7 @@ use std::iter::once;
 use anyhow::{Error, bail};
 use byteorder::{LittleEndian, ByteOrder};
 
+use log::trace;
 use neli::genl::{NlattrBuilder, AttrTypeBuilder};
 use neli::router::synchronous::{NlRouter, NlRouterReceiverHandle};
 use neli::{
@@ -43,7 +44,8 @@ impl neli::consts::genl::NlAttrType for Nl80211Attribute {}
 struct InterfaceResponse {
     pub name: String,
     pub phy_index: u32,
-    pub dev_type: u32,
+    pub if_index: u32,
+    pub dev_type: u32
 }
 
 #[derive(Debug)]
@@ -55,17 +57,23 @@ struct PhyResponse {
 #[derive(Debug)]
 pub struct DeviceSummary {
     pub name: String,
+    pub if_index: u32,
     pub supported_frequencies: Vec<u32>
 }
 
 fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> InterfaceResponse {
     let mut name: String = "".to_string();
     let mut phy_index: u32 = 0;
+    let mut if_index: u32 = 0;
     let mut dev_type: u32 = 0;
 
     for attr in msg.get_payload().unwrap().attrs().iter() {
         if attr.nla_type().nla_type().eq(&Nl80211Attribute::WiPhy) {
             phy_index = LittleEndian::read_u32(&attr.nla_payload().as_ref()[0..4]);
+        }
+
+        if attr.nla_type().nla_type().eq(&Nl80211Attribute::IfIndex) {
+            if_index = LittleEndian::read_u32(&attr.nla_payload().as_ref()[0..4]);
         }
 
         if attr.nla_type().nla_type().eq(&Nl80211Attribute::IfName) {
@@ -79,7 +87,7 @@ fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl
         }
     }
 
-    InterfaceResponse { name, phy_index, dev_type }
+    InterfaceResponse { name, phy_index, dev_type, if_index }
 }
 
 fn handle_phy_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> PhyResponse {
@@ -210,16 +218,31 @@ fn parse_frequency_from_attributes(attr: &[u8]) -> Option<u32> {
 }
 
 // We might need member variables at some point in the future for metrics or stuff.
-pub struct Nl {}
+pub struct Nl {
+    socket: NlRouter,
+    family_id: u16
+}
 
 impl Nl {
 
-    pub fn fetch_device(&self, device_name: &String) -> Result<DeviceSummary, Error> {
-        let (socket, family_id) = match self.get_nl_socket() {
-            Ok(s) => s,
+    pub fn new() -> Result<Self, Error> {
+        let (socket, _) = match NlRouter::connect(NlFamily::Generic, Some(0), Groups::empty()) {
+            Ok(sock) => sock,
             Err(e) => bail!("Could not open Netlink socket: {}", e)
         };
 
+        let family_id = match socket.resolve_genl_family("nl80211") {
+            Ok(family_id) => family_id,
+            Err(e) => bail!("Could not resolve Netlink family: {}", e)
+        };
+
+        Ok(Self {
+            socket,
+            family_id
+        })
+    }
+
+    pub fn fetch_device(&self, device_name: &String) -> Result<DeviceSummary, Error> {
         let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
                     .cmd(Nl80211Command::GetIf)
                     .version(1)
@@ -228,7 +251,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
         };
     
-        let recv_if = match socket.send(family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
+        let recv_if = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetIf Netlink command: {}", e)
         };
@@ -269,7 +292,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
         };
 
-        let recv_phy = match socket.send(family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
+        let recv_phy = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetWiPhy Netlink command: {}", e)
         };
@@ -293,14 +316,15 @@ impl Nl {
         Ok(DeviceSummary {
             name: interface_info.name.clone(),
             supported_frequencies: phy_info.supported_frequencies.clone(),
+            if_index: interface_info.if_index
         })
     }
 
 
     pub fn set_device_frequency(&self, device_name: &String, frequency: u32) -> Result<(), Error> {
-        let (socket, family_id) = match self.get_nl_socket() {
-            Ok(s) => s,
-            Err(e) => bail!("Could not open Netlink socket: {}", e)
+        let device = match self.fetch_device(device_name) {
+            Ok(device) => device,
+            Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)
         };
 
         let attr_if_index_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::IfIndex).build() {
@@ -308,7 +332,8 @@ impl Nl {
             Err(e) => bail!("Could not construct IfIndex Netlink attribute type: {}", e)
         };
 
-        let attr_if_index = match NlattrBuilder::default().nla_type(attr_if_index_type).nla_payload(3).build() {
+        let attr_if_index = match NlattrBuilder::default().nla_type(attr_if_index_type)
+                                    .nla_payload(device.if_index).build() {
             Ok(attr) => attr,
             Err(e) => bail!("Could not construct IfIndex Netlink attribute: {}", e) 
         };
@@ -333,34 +358,21 @@ impl Nl {
             Err(e) => bail!("Could not construct WiPhyFreq Netlink command payload: {}", e)
         };
 
-        let recv_channel_resp: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
-                                    match socket.send(family_id, NlmF::ACK, NlPayload::Payload(payload)){
+        let recv: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
+                                    match self.socket.send(self.family_id, NlmF::ACK, NlPayload::Payload(payload)){
             Ok(recv) => recv,
             Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
         };
 
-        for msg in recv_channel_resp {
+        for msg in recv {
             match msg {
-                Ok(_) => {},
-                Err(e) => bail!("Could not set frequency of device [{}]: {:?}", device_name, e),
-            };
+                Ok(_) => trace!("WiPhyFreq ack"),
+                Err(e) => bail!("Could not parse GetWiPhy Netlink response: {}", e)
+            };            
         }
 
         Ok(())
     }
 
-    fn get_nl_socket(&self) -> Result<(NlRouter, u16), Error> {
-        let (sock, _) = match NlRouter::connect(NlFamily::Generic, Some(0), Groups::empty()) {
-            Ok(sock) => sock,
-            Err(e) => bail!("Could not open Netlink socket: {}", e)
-        };
-
-        let family_id = match sock.resolve_genl_family("nl80211") {
-            Ok(family_id) => family_id,
-            Err(e) => bail!("Could not resolve Netlink family: {}", e)
-        };
-        
-        Ok((sock, family_id))
-    }
 
 }

@@ -137,7 +137,13 @@ fn main() {
         });
     }
 
-    let ch = ChannelHopper::new(configuration.clone().wifi.wifi_listen_interfaces);
+    let ch = match ChannelHopper::new(configuration.clone().wifi.wifi_listen_interfaces) {
+        Ok(ch) => ch,
+        Err(e) => {
+            error!("Could not initialize ChannelHopper: {}", e);
+            exit(exit_code::EX_OSERR);
+        }
+    };
     ch.spawn_loop();
 
     // Processors. TODO follow impl method like metrics aggr/mon
@@ -154,7 +160,6 @@ fn main() {
     thread::spawn(move || {
         metrics::MetricsMonitor::new(monitormetrics).run();
     });
-
 
     thread::spawn(move || { // TODO capsule into struct
         let mut leaderlink = match Leaderlink::new(configuration, metrics, bus, tables) {

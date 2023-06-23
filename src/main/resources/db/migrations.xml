@@ -2812,4 +2812,22 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="make_ssid_security_protocol_larger" author="lennartkoopmann">
+        <modifyDataType tableName="dot11_ssids" columnName="security_protocol" newDataType="text" />
+    </changeSet>
+
+    <changeSet id="add_tap_uuid_to_fingerprints_and_ssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_fingerprints">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_ssids">
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

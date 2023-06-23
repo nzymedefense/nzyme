@@ -11,12 +11,13 @@ function BSSIDsPage() {
   const tapContext = useContext(TapContext);
 
   const [bssids, setBSSIDs] = useState(null);
+  const [minutes, setMinutes] = useState(15);
 
   const selectedTaps = tapContext.taps;
 
   useEffect(() => {
     setBSSIDs(null);
-    dot11Service.findAllBSSIDs(15, selectedTaps, setBSSIDs);
+    dot11Service.findAllBSSIDs(minutes, selectedTaps, setBSSIDs);
   }, [selectedTaps])
 
   if (!bssids) {
@@ -34,7 +35,7 @@ function BSSIDsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <BSSIDsTable bssids={bssids} />
+                  <BSSIDsTable bssids={bssids} minutes={minutes} />
                 </div>
               </div>
             </div>

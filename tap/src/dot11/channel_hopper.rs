@@ -1,5 +1,6 @@
 use std::{collections::HashMap, thread::{sleep, self}};
 
+use anyhow::{Error, bail};
 use log::{error, info, debug};
 use rand::seq::SliceRandom;
 use systemstat::Duration;
@@ -12,11 +13,16 @@ pub struct ChannelHopper {
 
 impl ChannelHopper {
 
-    pub fn new(device_names: Vec<String>) -> Self {
+    pub fn new(device_names: Vec<String>) -> Result<Self, Error> {
         // Define adapters with their channels
         let mut adapters: HashMap<String, Vec<u32>> = HashMap::new();
 
-        let nl = Nl{};
+        let nl = match Nl::new() {
+            Ok(nl) => nl,
+            Err(e) => {
+                bail!("Could not establish Netlink connection: {}", e);
+            }
+        };
 
         for device_name in device_names {
             match nl.fetch_device(&device_name) {
@@ -46,13 +52,21 @@ impl ChannelHopper {
             }
         }
 
-        ChannelHopper { device_assignments }
+        Ok(ChannelHopper { device_assignments })
     }
 
     pub fn spawn_loop(&self) {
         let device_assigments = self.device_assignments.clone();
 
         info!("Channel map: {:?}", device_assigments);
+
+        let nl = match Nl::new() {
+            Ok(nl) => nl,
+            Err(e) => {
+                error!("Could not establish Netlink connection: {}", e);
+                return
+            }
+        };
 
         thread::spawn(move || {
             let mut positions: HashMap<&String, u16> = HashMap::new();
@@ -61,7 +75,6 @@ impl ChannelHopper {
                 positions.insert(&device, 0);
             }
     
-            let nl = Nl{};
             loop {
                 for (device, channels) in &device_assigments {
                     let position = *positions.get(&device).unwrap() as usize;

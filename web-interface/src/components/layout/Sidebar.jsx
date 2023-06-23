@@ -45,6 +45,11 @@ function Sidebar() {
                       icon={<i className="sidebar-icon fa-solid fa-wifi" />}
                       show={true}>
         <NavigationLink
+            href="#"
+            title="Overview"
+            icon={<i className="sidebar-icon fa-solid fa-ranking-star" />} />
+
+        <NavigationLink
             href={ApiRoutes.DOT11.NETWORKS.BSSIDS}
             title="Access Points"
             icon={<i className="sidebar-icon fa-solid fa-list" />} />
@@ -56,7 +61,7 @@ function Sidebar() {
 
         <NavigationLink
             href={ApiRoutes.DOT11.ASSETS.INDEX}
-            title="WiFi Assets"
+            title="Assets"
             icon={<i className="sidebar-icon fa-solid fa-clipboard-list" />} />
       </SidebarSubmenu>
 

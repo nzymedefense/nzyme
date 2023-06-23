@@ -63,11 +63,12 @@ public class Dot11Table implements DataTable {
             // BSSID Fingerprints.
             for (String fingerprint : report.fingerprints()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
-                        handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, bssid_id, " +
-                                        "created_at) VALUES(:uuid, :fingerprint, :bssid_id, :created_at)")
+                        handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, bssid_id, tap_uuid, " +
+                                        "created_at) VALUES(:uuid, :fingerprint, :bssid_id, :tap_uuid, :created_at)")
                                 .bind("uuid", UUID.randomUUID())
                                 .bind("fingerprint", fingerprint)
                                 .bind("bssid_id", bssidDatabaseId)
+                                .bind("tap_uuid", tapUuid)
                                 .bind("created_at", now)
                                 .execute()
                 );
@@ -97,14 +98,15 @@ public class Dot11Table implements DataTable {
                 }
 
                 Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                        handle.createQuery("INSERT INTO dot11_ssids(uuid, bssid_id, ssid, bssid, " +
+                        handle.createQuery("INSERT INTO dot11_ssids(uuid, bssid_id, tap_uuid, ssid, bssid, " +
                                         "security_protocol, security_suites, is_wps, signal_strength_average, " +
                                         "signal_strength_max, signal_strength_min, created_at) VALUES(:uuid, " +
-                                        ":bssid_id, :ssid, :bssid, :security_protocol, :security_suites, :is_wps, " +
-                                        ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
-                                        ":created_at) RETURNING *")
+                                        ":bssid_id, :tap_uuid, :ssid, :bssid, :security_protocol, :security_suites, " +
+                                        ":is_wps, :signal_strength_average, :signal_strength_max, " +
+                                        ":signal_strength_min, :created_at) RETURNING *")
                                 .bind("uuid", UUID.randomUUID())
                                 .bind("bssid_id", bssidDatabaseId)
+                                .bind("tap_uuid", tapUuid)
                                 .bind("ssid", ssid)
                                 .bind("bssid", bssid)
                                 .bind("security_protocol", Joiner.on("/").join(securityProtocols))
@@ -122,10 +124,12 @@ public class Dot11Table implements DataTable {
                 for (String fingerprint : ssidReport.fingerprints()) {
                     tablesService.getNzyme().getDatabase().useHandle(handle ->
                             handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, ssid_id, " +
-                                            "created_at) VALUES(:uuid, :fingerprint, :ssid_id, :created_at)")
+                                            "tap_uuid, created_at) VALUES(:uuid, :fingerprint, :ssid_id, :tap_uuid, " +
+                                            ":created_at)")
                                     .bind("uuid", UUID.randomUUID())
                                     .bind("fingerprint", fingerprint)
                                     .bind("ssid_id", ssidDatabaseId)
+                                    .bind("tap_uuid", tapUuid)
                                     .bind("created_at", now)
                                     .execute()
                     );
@@ -137,7 +141,7 @@ public class Dot11Table implements DataTable {
 
     @Override
     public void retentionClean() {
-        // called to retention clean db tables
+        // called to retention clean db tables TODO
     }
 
 }

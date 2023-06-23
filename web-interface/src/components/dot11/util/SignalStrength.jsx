@@ -7,7 +7,7 @@ function SignalStrength(props) {
   let strengthClassName;
   if (strength > -50) {
     strengthClassName = "signal-strength-good";
-  } else if (strength <= -68 && strength >= -71) {
+  } else if (strength <= -50 && strength >= -71) {
     strengthClassName = "signal-strength-ok";
   } else if (strength < -71) {
     strengthClassName = "signal-strength-bad";
