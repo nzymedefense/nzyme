@@ -4,7 +4,7 @@ use std::iter::once;
 use anyhow::{Error, bail};
 use byteorder::{LittleEndian, ByteOrder};
 
-use log::trace;
+use log::{trace, info};
 use neli::genl::{NlattrBuilder, AttrTypeBuilder};
 use neli::router::synchronous::{NlRouter, NlRouterReceiverHandle};
 use neli::{
@@ -251,7 +251,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
         };
     
-        let recv_if = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
+        let recv_if = match self.socket.send(self.family_id, NlmF::DUMP | NlmF::ACK, NlPayload::Payload(get_if_payload)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetIf Netlink command: {}", e)
         };
@@ -292,7 +292,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
         };
 
-        let recv_phy = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
+        let recv_phy = match self.socket.send(self.family_id, NlmF::DUMP | NlmF::ACK, NlPayload::Payload(get_wiphy)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetWiPhy Netlink command: {}", e)
         };
@@ -358,18 +358,13 @@ impl Nl {
             Err(e) => bail!("Could not construct WiPhyFreq Netlink command payload: {}", e)
         };
 
-        let recv: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
-                                    match self.socket.send(self.family_id, NlmF::ACK, NlPayload::Payload(payload)){
+        info!("device: {:?} freq: {:?} payload: {:?}", device, frequency, payload);
+
+        let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
+                                    match self.socket.send(self.family_id, NlmF::empty(), NlPayload::Payload(payload)){
             Ok(recv) => recv,
             Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
         };
-
-        for msg in recv {
-            match msg {
-                Ok(_) => trace!("WiPhyFreq ack"),
-                Err(e) => bail!("Could not parse GetWiPhy Netlink response: {}", e)
-            };            
-        }
 
         Ok(())
     }
