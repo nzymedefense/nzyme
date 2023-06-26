@@ -1,9 +1,6 @@
 package app.nzyme.core.tables.dot11;
 
-import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11AdvertisedNetwork;
-import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11BSSIDReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
-import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11TablesReport;
+import app.nzyme.core.rest.resources.taps.reports.tables.dot11.*;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,8 +33,6 @@ public class Dot11Table implements DataTable {
     }
 
     public void writeBSSIDs(UUID tapUuid, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
-        DateTime now = DateTime.now();
-
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -55,7 +50,7 @@ public class Dot11Table implements DataTable {
                             .bind("signal_strength_max", report.signalStrength().max())
                             .bind("signal_strength_min", report.signalStrength().min())
                             .bind("hidden_ssid_frames", report.hiddenSSIDFrames())
-                            .bind("created_at", now)
+                            .bind("created_at", timestamp)
                             .mapTo(Long.class)
                             .one()
             );
@@ -69,70 +64,98 @@ public class Dot11Table implements DataTable {
                                 .bind("fingerprint", fingerprint)
                                 .bind("bssid_id", bssidDatabaseId)
                                 .bind("tap_uuid", tapUuid)
-                                .bind("created_at", now)
+                                .bind("created_at", timestamp)
                                 .execute()
                 );
             }
 
             for (Map.Entry<String, Dot11AdvertisedNetwork> ssidEntry : report.advertisedNetworks().entrySet()) {
-                String ssid = ssidEntry.getKey();
-                Dot11AdvertisedNetwork ssidReport = ssidEntry.getValue();
-
-                List<String> securityProtocols = Lists.newArrayList();
-                Map<String, String> suiteMap = Maps.newHashMap();
-                for (Dot11SecurityInformationReport sec : ssidReport.security()) {
-                    securityProtocols.addAll(sec.protocols());
-
-                    suiteMap.put("group_cipher", sec.suites().groupCipher());
-                    suiteMap.put("pairwise_ciphers",
-                            Joiner.on(",").join(sec.suites().pairwiseCiphers()));
-                    suiteMap.put("key_management_modes",
-                            Joiner.on(",").join(sec.suites().keyManagementModes()));
-                }
-
-                String securitySuites;
                 try {
-                    securitySuites = this.om.writeValueAsString(suiteMap);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
+                    String ssid = ssidEntry.getKey();
+                    Dot11AdvertisedNetwork ssidReport = ssidEntry.getValue();
 
-                Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                        handle.createQuery("INSERT INTO dot11_ssids(uuid, bssid_id, tap_uuid, ssid, bssid, " +
-                                        "security_protocol, security_suites, is_wps, signal_strength_average, " +
-                                        "signal_strength_max, signal_strength_min, created_at) VALUES(:uuid, " +
-                                        ":bssid_id, :tap_uuid, :ssid, :bssid, :security_protocol, :security_suites, " +
-                                        ":is_wps, :signal_strength_average, :signal_strength_max, " +
-                                        ":signal_strength_min, :created_at) RETURNING *")
-                                .bind("uuid", UUID.randomUUID())
-                                .bind("bssid_id", bssidDatabaseId)
-                                .bind("tap_uuid", tapUuid)
-                                .bind("ssid", ssid)
-                                .bind("bssid", bssid)
-                                .bind("security_protocol", Joiner.on("/").join(securityProtocols))
-                                .bind("security_suites", securitySuites)
-                                .bind("is_wps", ssidReport.wps())
-                                .bind("signal_strength_average", ssidReport.signalStrength().average())
-                                .bind("signal_strength_max", ssidReport.signalStrength().max())
-                                .bind("signal_strength_min", ssidReport.signalStrength().min())
-                                .bind("created_at", now)
-                                .mapTo(Long.class)
-                                .one()
-                );
+                    List<String> securityProtocols = Lists.newArrayList();
+                    Map<String, String> suiteMap = Maps.newHashMap();
+                    for (Dot11SecurityInformationReport sec : ssidReport.security()) {
+                        securityProtocols.addAll(sec.protocols());
 
-                // SSID Fingerprints.
-                for (String fingerprint : ssidReport.fingerprints()) {
-                    tablesService.getNzyme().getDatabase().useHandle(handle ->
-                            handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, ssid_id, " +
-                                            "tap_uuid, created_at) VALUES(:uuid, :fingerprint, :ssid_id, :tap_uuid, " +
-                                            ":created_at)")
+                        suiteMap.put("group_cipher", sec.suites().groupCipher());
+                        suiteMap.put("pairwise_ciphers",
+                                Joiner.on(",").join(sec.suites().pairwiseCiphers()));
+                        suiteMap.put("key_management_modes",
+                                Joiner.on(",").join(sec.suites().keyManagementModes()));
+                    }
+
+                    String securitySuites;
+                    try {
+                        securitySuites = this.om.writeValueAsString(suiteMap);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
+                            handle.createQuery("INSERT INTO dot11_ssids(uuid, bssid_id, tap_uuid, ssid, bssid, " +
+                                            "security_protocol, security_suites, is_wps, signal_strength_average, " +
+                                            "signal_strength_max, signal_strength_min, created_at) VALUES(:uuid, " +
+                                            ":bssid_id, :tap_uuid, :ssid, :bssid, :security_protocol, :security_suites, " +
+                                            ":is_wps, :signal_strength_average, :signal_strength_max, " +
+                                            ":signal_strength_min, :created_at) RETURNING *")
                                     .bind("uuid", UUID.randomUUID())
-                                    .bind("fingerprint", fingerprint)
-                                    .bind("ssid_id", ssidDatabaseId)
+                                    .bind("bssid_id", bssidDatabaseId)
                                     .bind("tap_uuid", tapUuid)
-                                    .bind("created_at", now)
-                                    .execute()
+                                    .bind("ssid", ssid)
+                                    .bind("bssid", bssid)
+                                    .bind("security_protocol", Joiner.on("/").join(securityProtocols))
+                                    .bind("security_suites", securitySuites)
+                                    .bind("is_wps", ssidReport.wps())
+                                    .bind("signal_strength_average", ssidReport.signalStrength().average())
+                                    .bind("signal_strength_max", ssidReport.signalStrength().max())
+                                    .bind("signal_strength_min", ssidReport.signalStrength().min())
+                                    .bind("created_at", timestamp)
+                                    .mapTo(Long.class)
+                                    .one()
                     );
+
+                    // SSID Fingerprints.
+                    for (String fingerprint : ssidReport.fingerprints()) {
+                        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                                handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, ssid_id, " +
+                                                "tap_uuid, created_at) VALUES(:uuid, :fingerprint, :ssid_id, :tap_uuid, " +
+                                                ":created_at)")
+                                        .bind("uuid", UUID.randomUUID())
+                                        .bind("fingerprint", fingerprint)
+                                        .bind("ssid_id", ssidDatabaseId)
+                                        .bind("tap_uuid", tapUuid)
+                                        .bind("created_at", timestamp)
+                                        .execute()
+                        );
+                    }
+
+                    // Channel Statistics.
+                    for (Map.Entry<Long, Map<String, Dot11ChannelStatisticsReport>> cs : ssidReport.channelStatistics().entrySet()) {
+                        long frequency = cs.getKey();
+                        for (Map.Entry<String, Dot11ChannelStatisticsReport> ft : cs.getValue().entrySet()) {
+                            String frameType = ft.getKey();
+                            Dot11ChannelStatisticsReport stats = ft.getValue();
+
+                            tablesService.getNzyme().getDatabase().useHandle(handle ->
+                                    handle.createUpdate("INSERT INTO dot11_channels(uuid, ssid_id, frequency, " +
+                                                    "frame_type, stats_bytes, stats_frames) VALUES(:uuid, :ssid_id, " +
+                                                    ":frequency, :frame_type, :stats_bytes, :stats_frames)")
+                                            .bind("uuid", UUID.randomUUID())
+                                            .bind("ssid_id", ssidDatabaseId)
+                                            .bind("frequency", frequency)
+                                            .bind("frame_type", frameType.toLowerCase())
+                                            .bind("stats_bytes", stats.bytes())
+                                            .bind("stats_frames", stats.frames())
+                                            .execute()
+                            );
+                        }
+                    }
+
+                } catch(Exception e) {
+                    LOG.error("Could not write SSID.", e);
+                    continue;
                 }
             }
         }

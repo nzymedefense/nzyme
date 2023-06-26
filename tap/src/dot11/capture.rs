@@ -218,7 +218,6 @@ impl Capture {
                 interface_name: device_name.to_string(),
                 data: frame.data.to_vec()
             };
-
         
             // Write to Dot11 broker pipeline.
             match self.bus.dot11_broker.sender.lock() {

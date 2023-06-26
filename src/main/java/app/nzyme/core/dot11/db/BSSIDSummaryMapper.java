@@ -27,7 +27,8 @@ public class BSSIDSummaryMapper implements RowMapper<BSSIDSummary> {
                 new DateTime(rs.getTimestamp("last_seen")),
                 rs.getLong("hidden_ssid_frames"),
                 ssids,
-                Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray())
+                Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
+                Lists.newArrayList((String[]) rs.getArray("fingerprints").getArray())
         );
     }
 

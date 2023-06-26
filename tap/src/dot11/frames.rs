@@ -75,7 +75,7 @@ pub enum FrameType {
     Invalid
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display, Eq, PartialEq, Hash)]
 pub enum FrameSubType {
     AssociationRequest,
     AssociationResponse,
@@ -126,6 +126,7 @@ pub struct Dot11Frame {
     pub header: RadiotapHeader,
     pub frame_type: FrameSubType,
     pub payload: Vec<u8>,
+    pub length: usize
 }
 
 #[derive(Debug)]
@@ -225,6 +226,7 @@ pub enum CipherSuite {
 }
 
 pub struct Dot11BeaconFrame {
+    pub length: usize,
     pub header: RadiotapHeader,
     pub destination: String,
     pub transmitter: String,

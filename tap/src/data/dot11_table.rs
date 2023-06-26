@@ -3,10 +3,10 @@ use std::{collections::HashMap, sync::Mutex};
 use log::{error};
 
 use crate::{
-    dot11::frames::{Dot11BeaconFrame, SecurityInformation},
+    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType},
     link::payloads::{
         AdvertisedNetworkReport, BssidReport, Dot11CipherSuites, Dot11TableReport,
-        SecurityInformationReport, SignalStrengthReport,
+        SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport,
     },
 };
 
@@ -24,11 +24,18 @@ pub struct Bssid {
 }
 
 #[derive(Debug)]
+pub struct Dot11ChannelStatistics {
+    frames: u128,
+    bytes: u128
+}
+
+#[derive(Debug)]
 pub struct AdvertisedNetwork {
     pub security: Vec<SecurityInformation>,
     pub fingerprints: Vec<String>,
     pub wps: bool,
     pub signal_strengths: Vec<i8>,
+    pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
 }
 
 impl Dot11Table {
@@ -62,6 +69,9 @@ impl Dot11Table {
                                             ssid.fingerprints.push(beacon.fingerprint.clone());
                                         }
 
+                                        Self::update_existing_channel_statistics(
+                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length, ssid
+                                        );
                                         ssid.signal_strengths.push(signal_strength);
                                     }
                                     None => {
@@ -73,6 +83,8 @@ impl Dot11Table {
                                                 fingerprints: vec![beacon.fingerprint.clone()],
                                                 wps: beacon.has_wps,
                                                 signal_strengths: vec![signal_strength],
+                                                channel_statistics: Self::build_initial_channel_statistics(
+                                                    FrameSubType::Beacon, beacon.header.frequency, beacon.length)
                                             },
                                         );
                                     }
@@ -101,6 +113,8 @@ impl Dot11Table {
                                         fingerprints: vec![beacon.fingerprint.clone()],
                                         wps: beacon.has_wps,
                                         signal_strengths: vec![signal_strength],
+                                        channel_statistics: Self::build_initial_channel_statistics(
+                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length)
                                     },
                                 )]),
                                 0,
@@ -114,13 +128,59 @@ impl Dot11Table {
                                 advertised_networks,
                                 hidden_ssid_frames,
                                 signal_strengths: vec![signal_strength],
-                                fingerprints: vec![beacon.fingerprint],
+                                fingerprints: vec![beacon.fingerprint]
                             },
                         );
                     }
                 };
             }
             Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+        }
+    }
+
+    pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: Option<u16>, frame_length: usize) 
+            -> HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>> {
+        let mut channel_statistics = HashMap::new();
+        if let Some(freq) = frequency {
+            let mut stats = HashMap::new();
+            stats.insert(
+                frame_subtype,
+                Dot11ChannelStatistics {
+                    frames: 1,
+                    bytes: frame_length as u128
+                }
+            );
+
+            channel_statistics.insert(freq, stats);
+        }
+
+        channel_statistics
+    }
+
+    pub fn update_existing_channel_statistics(frame_subtype: FrameSubType, frequency: Option<u16>, frame_length: usize,
+            ssid: &mut AdvertisedNetwork) {
+        if let Some(freq) = frequency {
+            match ssid.channel_statistics.get_mut(&freq) {
+                Some(types) => {
+                    match types.get_mut(&frame_subtype) {
+                        Some(stats) => {
+                            // Add frame to stats.
+                            stats.frames += 1;
+                            stats.bytes += frame_length as u128;
+                        },
+                        None => {
+                            // First frame of this subtype on this frequency.
+                            types.insert(frame_subtype, Dot11ChannelStatistics {
+                                frames: 1,
+                                bytes: frame_length as u128
+                            });
+                        }
+                    }
+                },
+                None => {
+                    // First frame for this frequency.
+                }
+            }
         }
     }
 
@@ -176,6 +236,21 @@ impl Dot11Table {
                             netsec_report.push(SecurityInformationReport { protocols, suites });
                         }
 
+                        let mut channel_statistics = HashMap::new();
+                        for (frequency, frame_types) in &netinfo.channel_statistics {
+                            let mut frame_type_summary = HashMap::new();
+                            for (frame_type, stats) in frame_types {
+                                frame_type_summary.insert(
+                                    frame_type.to_string().to_lowercase(),
+                                    Dot11ChannelStatisticsReport {
+                                        frames: stats.frames,
+                                        bytes: stats.bytes
+                                    });
+                            }
+
+                            channel_statistics.insert(*frequency, frame_type_summary);
+                        }
+
                         advertised_networks.insert(
                             ssid.clone(),
                             AdvertisedNetworkReport {
@@ -185,6 +260,7 @@ impl Dot11Table {
                                 signal_strength: calculate_signal_strengh_report(
                                     &netinfo.signal_strengths,
                                 ),
+                                channel_statistics
                             },
                         );
                     }

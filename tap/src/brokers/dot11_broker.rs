@@ -245,7 +245,8 @@ impl Dot11Broker {
             Arc::new(Dot11Frame {
                 header: radiotap_header,
                 frame_type: frame_type.frame_subtype,
-                payload: payload.to_vec()
+                payload: payload.to_vec(),
+                length: data.data.len()
             }),
             payload.len() as u32
         );

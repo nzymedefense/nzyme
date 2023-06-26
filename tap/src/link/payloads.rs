@@ -157,7 +157,8 @@ pub struct AdvertisedNetworkReport {
     pub security: Vec<SecurityInformationReport>,
     pub fingerprints: Vec<String>,
     pub wps: bool,
-    pub signal_strength: SignalStrengthReport
+    pub signal_strength: SignalStrengthReport,
+    pub channel_statistics: HashMap<u16, HashMap<String, Dot11ChannelStatisticsReport>>
 }
 
 #[derive(Serialize)]
@@ -178,6 +179,12 @@ pub struct Dot11CipherSuites {
     pub group_cipher: String,
     pub pairwise_ciphers: Vec<String>,
     pub key_management_modes: Vec<String>
+}
+
+#[derive(Serialize)]
+pub struct Dot11ChannelStatisticsReport {
+    pub frames: u128,
+    pub bytes: u128
 }
 
 impl TotalWithAverage {

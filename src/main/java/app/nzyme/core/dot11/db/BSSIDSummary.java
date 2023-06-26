@@ -14,8 +14,9 @@ public abstract class BSSIDSummary {
     public abstract long hiddenSSIDFrames();
     public abstract List<String> ssids();
     public abstract List<String> securityProtocols();
+    public abstract List<String> fingerprints();
 
-    public static BSSIDSummary create(String bssid, float signalStrengthAverage, DateTime lastSeen, long hiddenSSIDFrames, List<String> ssids, List<String> securityProtocols) {
+    public static BSSIDSummary create(String bssid, float signalStrengthAverage, DateTime lastSeen, long hiddenSSIDFrames, List<String> ssids, List<String> securityProtocols, List<String> fingerprints) {
         return builder()
                 .bssid(bssid)
                 .signalStrengthAverage(signalStrengthAverage)
@@ -23,6 +24,7 @@ public abstract class BSSIDSummary {
                 .hiddenSSIDFrames(hiddenSSIDFrames)
                 .ssids(ssids)
                 .securityProtocols(securityProtocols)
+                .fingerprints(fingerprints)
                 .build();
     }
 
@@ -43,6 +45,8 @@ public abstract class BSSIDSummary {
         public abstract Builder ssids(List<String> ssids);
 
         public abstract Builder securityProtocols(List<String> securityProtocols);
+
+        public abstract Builder fingerprints(List<String> fingerprints);
 
         public abstract BSSIDSummary build();
     }

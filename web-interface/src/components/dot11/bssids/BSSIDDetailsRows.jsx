@@ -1,7 +1,9 @@
 import React from "react";
 import SignalStrength from "../util/SignalStrength";
 import moment from "moment/moment";
+import numeral from "numeral";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import Channel from "../util/Channel";
 
 function BSSIDDetailsRows(props) {
 
@@ -36,23 +38,29 @@ function BSSIDDetailsRows(props) {
 
   return (
     <React.Fragment>
-      {ssids.sort((a, b) => a.ssid.localeCompare(b.ssid)).map(function (ssid, i) {
-        return (
-            <tr key={"ssid-" + i}>
-              <td colSpan={COLSPAN}>
-                <table className="table table-sm table-hover table-striped mb-0">
-                  <thead>
-                  <tr>
-                    <th>SSID</th>
-                    <th>Signal Strength</th>
-                    <th>Security</th>
-                    <th>WPS</th>
-                    <th>Last Seen</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr>
+      <tr>
+        <td colSpan={COLSPAN}>
+          <table className="table table-sm table-hover table-striped mb-0">
+            <thead>
+            <tr>
+              <th>SSID</th>
+              <th>Channel</th>
+              <th>Usage</th>
+              <th>Signal Strength</th>
+              <th>Security</th>
+              <th>WPS</th>
+              <th>Last Seen</th>
+            </tr>
+            </thead>
+            <tbody>
+              {ssids.sort((a, b) => a.ssid.localeCompare(b.ssid)).sort((a, b) => b.is_main_active - a.is_main_active).map(function (ssid, i) {
+                return (
+                  <tr key={"ssid-" + i}>
                     <td>{ssid.ssid}</td>
+                    <td>
+                      <Channel channel={ssid.channel} frequency={ssid.frequency} is_main_active={ssid.is_main_active} />
+                    </td>
+                    <td>{numeral(ssid.total_frames).format("0,0")} frames / {numeral(ssid.total_bytes).format("0,0b")}</td>
                     <td><SignalStrength strength={ssid.signal_strength_average} /></td>
                     <td>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</td>
                     <td>{ssid.is_wps.join(",")}</td>
@@ -60,12 +68,12 @@ function BSSIDDetailsRows(props) {
                       {moment(ssid.last_seen).fromNow()}
                     </td>
                   </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-        )
-      })}
+                )
+              })}
+            </tbody>
+          </table>
+        </td>
+      </tr>
     </React.Fragment>
   )
 

@@ -12,8 +12,23 @@ public abstract class SSIDSummaryDetailsResponse {
     @JsonProperty("ssid")
     public abstract String ssid();
 
+    @JsonProperty("frequency")
+    public abstract long frequency();
+
+    @JsonProperty("channel")
+    public abstract long channel();
+
     @JsonProperty("signal_strength_average")
     public abstract float signalStrengthAverage();
+
+    @JsonProperty("total_frames")
+    public abstract long totalFrames();
+
+    @JsonProperty("total_bytes")
+    public abstract long totalBytes();
+
+    @JsonProperty("is_main_active")
+    public abstract boolean isMainActive();
 
     @JsonProperty("security_protocols")
     public abstract List<String> securityProtocols();
@@ -24,10 +39,15 @@ public abstract class SSIDSummaryDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDSummaryDetailsResponse create(String ssid, float signalStrengthAverage, List<String> securityProtocols, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDSummaryDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .ssid(ssid)
+                .frequency(frequency)
+                .channel(channel)
                 .signalStrengthAverage(signalStrengthAverage)
+                .totalFrames(totalFrames)
+                .totalBytes(totalBytes)
+                .isMainActive(isMainActive)
                 .securityProtocols(securityProtocols)
                 .isWps(isWps)
                 .lastSeen(lastSeen)
@@ -42,7 +62,17 @@ public abstract class SSIDSummaryDetailsResponse {
     public abstract static class Builder {
         public abstract Builder ssid(String ssid);
 
+        public abstract Builder frequency(long frequency);
+
+        public abstract Builder channel(long channel);
+
         public abstract Builder signalStrengthAverage(float signalStrengthAverage);
+
+        public abstract Builder totalFrames(long totalFrames);
+
+        public abstract Builder totalBytes(long totalBytes);
+
+        public abstract Builder isMainActive(boolean isMainActive);
 
         public abstract Builder securityProtocols(List<String> securityProtocols);
 

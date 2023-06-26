@@ -41,6 +41,8 @@ impl ChannelHopper {
             }
         }
 
+        info!("Available adapters and channels: {:?}", adapters);
+
         let mut device_assignments: HashMap<String, Vec<u32>> = HashMap::new();
 
         for (channel, adapters) in channels {

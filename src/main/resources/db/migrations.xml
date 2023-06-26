@@ -2830,4 +2830,61 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="remove_ssid_and_bssid_fields_from_fingerprints" author="lennartkoopmann">
+        <dropColumn tableName="dot11_fingerprints" columnName="ssid" />
+        <dropColumn tableName="dot11_fingerprints" columnName="bssid" />
+    </changeSet>
+
+    <changeSet id="create_dot11_channels" author="lennartkoopmann">
+        <createTable tableName="dot11_channels">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frequency" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_channels2ssids"
+                                 baseTableName="dot11_channels"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_channels" indexName="channel_ssid_id_lookup">
+            <column name="ssid_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_stats_fields_to_dot11_channels" author="lennrtkoopmann">
+        <addColumn tableName="dot11_channels">
+            <column name="frame_type" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_channels">
+            <column name="stats_bytes" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_channels">
+            <column name="stats_frames" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -183,6 +183,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
 
     Ok(Dot11BeaconFrame{
         header: frame.header.clone(),
+        length: frame.length,
         destination,
         transmitter,
         timestamp,
