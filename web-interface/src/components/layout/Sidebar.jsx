@@ -55,7 +55,7 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-list" />} />
 
         <NavigationLink
-            href={ApiRoutes.DOT11.BANDITS.INDEX}
+            href="#"
             title="Bandits"
             icon={<i className="sidebar-icon fa-solid fa-satellite-dish" />} />
 
@@ -124,7 +124,7 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-users" />} />
         <NavigationLink
             show={user.is_superadmin}
-            href="/foo"
+            href={ApiRoutes.SYSTEM.DATABASE.INDEX}
             title="Database"
             icon={<i className="sidebar-icon fa-solid fa-database" />} />
         <NavigationLink

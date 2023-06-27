@@ -139,6 +139,7 @@ public class NzymeHttpServer {
         resourceConfig.register(SmtpIntegrationResource.class);
         resourceConfig.register(EventActionsResource.class);
         resourceConfig.register(Dot11Resource.class);
+        resourceConfig.register(DatabaseResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

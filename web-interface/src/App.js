@@ -84,6 +84,8 @@ import OrganizationEventsPage from "./components/system/authentication/managemen
 import OrganizationEventSubscriptionDetailsPage
   from "./components/system/authentication/management/organizations/events/subscriptions/OrganizationEventSubscriptionDetailsPage";
 import BSSIDsPage from "./components/dot11/bssids/BSSIDsPage";
+import DatabasePage from "./components/system/database/DatabasePage";
+import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -308,11 +310,15 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.EDIT(':actionId')} element={<EditActionPage />} />
                           <Route path={ApiRoutes.SYSTEM.EVENTS.ACTIONS.CREATE} element={<CreateActionPage />} />
 
+                          { /* System/Database */ }
+                          <Route path={ApiRoutes.SYSTEM.DATABASE.INDEX} element={<DatabasePage />} />
+
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
+                          <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssid', ':ssid', ':channel')} element={<SSIDDetailsPage />} />
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

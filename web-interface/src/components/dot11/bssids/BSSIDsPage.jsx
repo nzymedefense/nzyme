@@ -3,6 +3,7 @@ import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import BSSIDsTable from "./BSSIDsTable";
+import TimeRangeSelector from "../../misc/TimeRangeSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -35,6 +36,8 @@ function BSSIDsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
+                  <TimeRangeSelector />
+
                   <BSSIDsTable bssids={bssids} minutes={minutes} />
                 </div>
               </div>

@@ -55,15 +55,15 @@ const ApiRoutes = {
     TAPS: {
       INDEX: '/system/taps',
       DETAILS: uuid => `/system/taps/show/${uuid}`,
-      METRICDETAILS: (uuid, metricType, metricName) => `/system/taps/show/${uuid}/metrics/${metricType}/${metricName}`
+      METRICDETAILS: (uuid, metricType, metricName) => `/system/taps/show/${uuid}/metrics/show/${metricType}/${metricName}`
     },
     CRYPTO: {
       INDEX: '/system/crypto',
       TLS: {
-        CERTIFICATE: nodeUUID => `/system/crypto/tls/certificate/${nodeUUID}`,
+        CERTIFICATE: nodeUUID => `/system/crypto/tls/certificate/show/${nodeUUID}`,
         WILDCARD: {
           UPLOAD: '/system/crypto/tls/certificate/wildcard/upload',
-          EDIT: (certificateId) => `/system/crypto/tls/certificate/wildcard/${certificateId}`
+          EDIT: (certificateId) => `/system/crypto/tls/certificate/wildcard/show/${certificateId}`
         }
       }
     },
@@ -85,6 +85,9 @@ const ApiRoutes = {
     HEALTH: {
       INDEX: '/system/health'
     },
+    DATABASE: {
+      INDEX: '/system/database'
+    },
     INTEGRATIONS: {
       INDEX: '/system/integrations',
       GEOIP: {
@@ -99,7 +102,7 @@ const ApiRoutes = {
         EDIT: actionId => `/system/events/actions/show/${actionId}/edit`,
       },
       SUBSCRIPTIONS: {
-        DETAILS: eventTypeName => `/system/events/subscriptions/${eventTypeName}`
+        DETAILS: eventTypeName => `/system/events/subscriptions/show/${eventTypeName}`
       }
     }
   },
@@ -107,7 +110,7 @@ const ApiRoutes = {
     INDEX: '/reporting',
     SCHEDULE: '/reporting/schedule',
     DETAILS: name => `/reporting/show/${name}`,
-    EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/${executionId}`
+    EXECUTION_LOG_DETAILS: (name, executionId) => `/reporting/show/${name}/execution/show/${executionId}`
   },
   ETHERNET: {
     DNS: {
@@ -117,15 +120,7 @@ const ApiRoutes = {
   DOT11: {
     NETWORKS: {
       BSSIDS: '/dot11/bssids',
-    },
-    BANDITS: {
-      INDEX: '/dot11/bandits',
-      SHOW_TRACKER: (name) => `/dot11/bandits/trackers/show/${name}`,
-      SHOW: (uuid) => `/dot11/bandits/show/${uuid}`,
-      NEW: '/dot11/bandits/new',
-      EDIT: (uuid) => `/dot11/bandits/edit/${uuid}`,
-      NEW_IDENTIFIER: (banditUUID) => `/dot11/bandits/show/${banditUUID}/identifiers/new`,
-      CONTACT_DETAILS: (banditUUID, contactUUID) => `/dot11/bandits/show/${banditUUID}/contacts/${contactUUID}`
+      SSID: (bssid, ssid, channel) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/channels/show/${channel}`
     },
     ASSETS: {
       INDEX: '/system/assets/index'

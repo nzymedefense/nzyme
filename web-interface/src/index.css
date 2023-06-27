@@ -654,3 +654,11 @@ span.hidden-ssid {
 span.main-active-channel {
     border-bottom: 2px solid #000;
 }
+
+div.timerange-selector {
+    width: 100%;
+}
+
+div.timerange-selector-options {
+
+}

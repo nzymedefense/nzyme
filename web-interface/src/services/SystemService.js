@@ -48,6 +48,12 @@ class SystemService {
         })
   }
 
+  getDatabaseSummary(setSummary) {
+    RESTClient.get("/system/database", {}, function(response) {
+      setSummary(response.data);
+    })
+  }
+
 }
 
 export default SystemService

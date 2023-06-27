@@ -17,7 +17,7 @@ impl ChannelHopper {
         // Define adapters with their channels
         let mut adapters: HashMap<String, Vec<u32>> = HashMap::new();
 
-        let nl = match Nl::new() {
+        let mut nl = match Nl::new() {
             Ok(nl) => nl,
             Err(e) => {
                 bail!("Could not establish Netlink connection: {}", e);
@@ -62,7 +62,7 @@ impl ChannelHopper {
 
         info!("Channel map: {:?}", device_assigments);
 
-        let nl = match Nl::new() {
+        let mut nl = match Nl::new() {
             Ok(nl) => nl,
             Err(e) => {
                 error!("Could not establish Netlink connection: {}", e);

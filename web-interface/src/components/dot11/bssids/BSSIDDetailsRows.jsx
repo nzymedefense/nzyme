@@ -4,11 +4,13 @@ import moment from "moment/moment";
 import numeral from "numeral";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Channel from "../util/Channel";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function BSSIDDetailsRows(props) {
 
   const COLSPAN = 6;
 
+  const bssid = props.bssid;
   const ssids = props.ssids;
   const loading = props.loading;
 
@@ -56,7 +58,9 @@ function BSSIDDetailsRows(props) {
               {ssids.sort((a, b) => a.ssid.localeCompare(b.ssid)).sort((a, b) => b.is_main_active - a.is_main_active).map(function (ssid, i) {
                 return (
                   <tr key={"ssid-" + i}>
-                    <td>{ssid.ssid}</td>
+                    <td>
+                      <a href={ApiRoutes.DOT11.NETWORKS.SSID(bssid.bssid, ssid.ssid, ssid.channel)}>{ssid.ssid}</a>
+                    </td>
                     <td>
                       <Channel channel={ssid.channel} frequency={ssid.frequency} is_main_active={ssid.is_main_active} />
                     </td>

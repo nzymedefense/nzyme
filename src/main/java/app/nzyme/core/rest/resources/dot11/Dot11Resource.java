@@ -119,4 +119,18 @@ public class Dot11Resource extends TapDataHandlingResource {
         return Response.ok(SSIDListResponse.create(ssidsResult)).build();
     }
 
+    @GET
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/channels/show/{channel}/")
+    public Response bssids(@Context SecurityContext sc,
+                           @PathParam("bssid") String bssid,
+                           @PathParam("ssid") String ssid,
+                           @PathParam("channel") int channel,
+                           @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+
+
+    }
+
 }

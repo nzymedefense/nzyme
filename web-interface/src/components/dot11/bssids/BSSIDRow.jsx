@@ -19,7 +19,9 @@ function BSSIDRow(props) {
 
   const selectedTaps = tapContext.taps;
 
-  const onExpandClick = function(bssid) {
+  const onExpandClick = function(e, bssid) {
+    e.preventDefault();
+
     if (ssidsLoading) {
       // Don't do anything if already loading.
       return;
@@ -40,20 +42,20 @@ function BSSIDRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#" onClick={() => onExpandClick(bssid.bssid)}>{bssid.bssid}</a>
+            <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} /></td>
           <td>
             { bssid.has_hidden_ssid_advertisements ? <span className="hidden-ssid">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
             <SSIDsList ssids={bssid.advertised_ssid_names} />
           </td>
-          <td>{bssid.security_protocols.length === 0 ? "None" : bssid.security_protocols.join(",")}</td>
+          <td>{bssid.security_protocols.length === 0 ? "None" : bssid.security_protocols.join(", ")}</td>
           <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
           <td title={moment(bssid.last_seen).format()}>
             {moment(bssid.last_seen).fromNow()}
           </td>
         </tr>
-        <BSSIDDetailsRows ssids={ssids} loading={ssidsLoading} />
+        <BSSIDDetailsRows bssid={bssid} ssids={ssids} loading={ssidsLoading} />
       </React.Fragment>
   )
 

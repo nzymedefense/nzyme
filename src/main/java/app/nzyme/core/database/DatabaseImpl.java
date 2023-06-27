@@ -132,7 +132,15 @@ public class DatabaseImpl implements Database {
         return withHandle(handle ->
                 handle.createQuery("SELECT pg_database_size(current_database())")
                 .mapTo(Long.class)
-                .first());
+                .one());
+    }
+
+    public long getTableSize(String tableName) {
+        return withHandle(handle ->
+                handle.createQuery("SELECT pg_total_relation_size(:table)")
+                        .bind("table", tableName)
+                        .mapTo(Long.class)
+                        .one());
     }
 
     @Override

@@ -53,7 +53,7 @@ struct PhyResponse {
     supported_frequencies: Vec<u32>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DeviceSummary {
     pub name: String,
     pub if_index: u32,
@@ -219,7 +219,8 @@ fn parse_frequency_from_attributes(attr: &[u8]) -> Option<u32> {
 // We might need member variables at some point in the future for metrics or stuff.
 pub struct Nl {
     socket: NlRouter,
-    family_id: u16
+    family_id: u16,
+    devices: HashMap<String, DeviceSummary>
 }
 
 impl Nl {
@@ -235,13 +236,20 @@ impl Nl {
             Err(e) => bail!("Could not resolve Netlink family: {}", e)
         };
 
+        let devices = HashMap::new();
+
         Ok(Self {
             socket,
+            devices,
             family_id
         })
     }
 
-    pub fn fetch_device(&self, device_name: &String) -> Result<DeviceSummary, Error> {
+    pub fn fetch_device(&mut self, device_name: &String) -> Result<DeviceSummary, Error> {
+        if let Some(device) = self.devices.get(device_name) {
+            return Ok(device.clone());
+        }
+
         let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
                     .cmd(Nl80211Command::GetIf)
                     .version(1)
@@ -312,15 +320,18 @@ impl Nl {
             None => bail!("Phy #[{}] not found.", interface_info.phy_index)
         };
 
-        Ok(DeviceSummary {
+        let device_summary = DeviceSummary {
             name: interface_info.name.clone(),
             supported_frequencies: phy_info.supported_frequencies.clone(),
             if_index: interface_info.if_index
-        })
+        };
+
+        self.devices.insert(device_name.clone(), device_summary.clone());
+
+        Ok(device_summary)
     }
 
-
-    pub fn set_device_frequency(&self, device_name: &String, frequency: u32) -> Result<(), Error> {
+    pub fn set_device_frequency(&mut self, device_name: &String, frequency: u32) -> Result<(), Error> {
         let device = match self.fetch_device(device_name) {
             Ok(device) => device,
             Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)

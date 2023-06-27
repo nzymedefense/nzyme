@@ -87,6 +87,8 @@ public class Dot11 {
         );
     }
 
+
+
     private static Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
 
     static {
