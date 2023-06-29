@@ -1,6 +1,7 @@
 package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.dot11.db.BSSIDAndSSIDCountHistogramEntry;
 import app.nzyme.core.dot11.db.BSSIDSummary;
 import app.nzyme.core.dot11.db.SSIDSummary;
 import com.google.common.collect.Maps;
@@ -26,9 +27,12 @@ public class Dot11 {
                                 "MAX(b.created_at) AS last_seen, SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
-                                "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids FROM dot11_bssids AS b " +
+                                "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types " +
+                                "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
@@ -73,10 +77,12 @@ public class Dot11 {
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(s.is_wps)) AS is_wps, " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
+                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "WHERE created_at > :cutoff AND bssid = :bssid AND tap_uuid IN (<taps>) " +
                                 "GROUP BY s.ssid, c.frequency")
                         .bind("bssid", bssid)
@@ -87,7 +93,20 @@ public class Dot11 {
         );
     }
 
-
+    public List<BSSIDAndSSIDCountHistogramEntry> findBSSIDAndSSIDCountHistogram(int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(b.bssid)) as bssid_count, " +
+                                "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC('minute', b.created_at) as bucket " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids s ON b.id = s.bssid_id " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
+                        .list()
+        );
+    }
 
     private static Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
 

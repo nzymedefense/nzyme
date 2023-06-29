@@ -16,6 +16,7 @@ public class SSIDSummaryMapper implements RowMapper<SSIDSummary> {
                 rs.getString("ssid"),
                 Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
                 Lists.newArrayList((Boolean[]) rs.getArray("is_wps").getArray()),
+                Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray()),
                 rs.getFloat("signal_strength_average"),
                 rs.getInt("frequency"),
                 rs.getLong("total_bytes"),

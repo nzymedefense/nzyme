@@ -5,6 +5,7 @@ function BSSIDsTable(props) {
 
   const bssids = props.bssids;
   const minutes = props.minutes;
+  const isAutoRefresh = props.isAutoRefresh;
 
   if (bssids.length === 0) {
     return <div className="alert alert-info mb-0">
@@ -18,6 +19,7 @@ function BSSIDsTable(props) {
         <tr>
           <th>BSSID</th>
           <th>Signal Strength</th>
+          <th>Mode</th>
           <th>Advertised SSIDs</th>
           <th>Security</th>
           <th>OUI</th>
@@ -27,7 +29,7 @@ function BSSIDsTable(props) {
         <tbody>
         {Object.keys(bssids.sort((a, b) => b.signal_strength_average - a.signal_strength_average))
             .map(function (key, i) {
-          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} minutes={minutes} />
+          return <BSSIDRow key={'bssid-' + i} bssid={bssids[key]} minutes={minutes} isAutoRefresh={isAutoRefresh} />
         })}
         </tbody>
       </table>

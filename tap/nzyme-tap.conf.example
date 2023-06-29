@@ -7,7 +7,7 @@ accept_insecure_certs = false
 ethernet_listen_interfaces = [ "eth0" ]
 
 [wifi]
-wifi_listen_interfaces = [ "wlan0" ]
+wifi_listen_interfaces = [ ]
 ip_path = "/usr/sbin/ip"
 iw_path = "/usr/sbin/iw"
 

@@ -33,13 +33,16 @@ public abstract class SSIDSummaryDetailsResponse {
     @JsonProperty("security_protocols")
     public abstract List<String> securityProtocols();
 
+    @JsonProperty("infrastructure_types")
+    public abstract List<String> infrastructureTypes();
+
     @JsonProperty("is_wps")
     public abstract List<Boolean> isWps();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDSummaryDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDSummaryDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<String> infrastructureTypes, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .ssid(ssid)
                 .frequency(frequency)
@@ -49,6 +52,7 @@ public abstract class SSIDSummaryDetailsResponse {
                 .totalBytes(totalBytes)
                 .isMainActive(isMainActive)
                 .securityProtocols(securityProtocols)
+                .infrastructureTypes(infrastructureTypes)
                 .isWps(isWps)
                 .lastSeen(lastSeen)
                 .build();
@@ -75,6 +79,8 @@ public abstract class SSIDSummaryDetailsResponse {
         public abstract Builder isMainActive(boolean isMainActive);
 
         public abstract Builder securityProtocols(List<String> securityProtocols);
+
+        public abstract Builder infrastructureTypes(List<String> infrastructureTypes);
 
         public abstract Builder isWps(List<Boolean> isWps);
 

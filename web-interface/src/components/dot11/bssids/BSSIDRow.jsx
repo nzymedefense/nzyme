@@ -5,6 +5,8 @@ import SignalStrength from "../util/SignalStrength";
 import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import BSSIDDetailsRows from "./BSSIDDetailsRows";
+import BSSIDSecurityProtocols from "./BSSIDSecurityProtocols";
+import InfrastructureTypes from "../util/InfrastructureTypes";
 
 const dot11Service = new Dot11Service();
 
@@ -13,6 +15,7 @@ function BSSIDRow(props) {
 
   const bssid = props.bssid;
   const minutes = props.minutes;
+  const isAutoRefresh = props.isAutoRefresh;
 
   const [ssids, setSSIDs] = useState(null);
   const [ssidsLoading, setSSIDsLoading] = useState(false);
@@ -45,14 +48,15 @@ function BSSIDRow(props) {
             <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} /></td>
+          <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>
           <td>
             { bssid.has_hidden_ssid_advertisements ? <span className="hidden-ssid">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
             <SSIDsList ssids={bssid.advertised_ssid_names} />
           </td>
-          <td>{bssid.security_protocols.length === 0 ? "None" : bssid.security_protocols.join(", ")}</td>
+          <td><BSSIDSecurityProtocols bssid={bssid} /></td>
           <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
           <td title={moment(bssid.last_seen).format()}>
-            {moment(bssid.last_seen).fromNow()}
+            {isAutoRefresh ? moment(bssid.last_seen).fromNow() : "n/a"}
           </td>
         </tr>
         <BSSIDDetailsRows bssid={bssid} ssids={ssids} loading={ssidsLoading} />

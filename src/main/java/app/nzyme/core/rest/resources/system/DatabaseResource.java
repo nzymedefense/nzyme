@@ -21,7 +21,6 @@ public class DatabaseResource {
     @Inject
     private NzymeNode nzyme;
 
-    @Path("/")
     @GET
     public Response summary() {
         DatabaseImpl db = (DatabaseImpl) nzyme.getDatabase();
@@ -33,7 +32,8 @@ public class DatabaseResource {
         long dot11Size = db.getTableSize("dot11_bssids")
                 + db.getTableSize("dot11_channels")
                 + db.getTableSize("dot11_fingerprints")
-                + db.getTableSize("dot11_ssids");
+                + db.getTableSize("dot11_ssids")
+                + db.getTableSize("dot11_infrastructure_types");
 
         return Response.ok(DatabaseSummaryResponse.create(
                 totalSize, ethernetSize, dot11Size

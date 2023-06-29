@@ -2,20 +2,19 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.db.BSSIDAndSSIDCountHistogramEntry;
 import app.nzyme.core.dot11.db.BSSIDSummary;
 import app.nzyme.core.dot11.db.SSIDSummary;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.rest.responses.dot11.BSSIDSummaryDetailsResponse;
-import app.nzyme.core.rest.responses.dot11.BSSIDListResponse;
-import app.nzyme.core.rest.responses.dot11.SSIDListResponse;
-import app.nzyme.core.rest.responses.dot11.SSIDSummaryDetailsResponse;
+import app.nzyme.core.rest.responses.dot11.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -55,7 +54,8 @@ public class Dot11Resource extends TapDataHandlingResource {
                     bssid.lastSeen(),
                     bssid.fingerprints(),
                     bssid.ssids(),
-                    bssid.hiddenSSIDFrames() > 0
+                    bssid.hiddenSSIDFrames() > 0,
+                    bssid.infrastructureTypes()
             ));
         }
 
@@ -90,9 +90,10 @@ public class Dot11Resource extends TapDataHandlingResource {
         for (Map.Entry<String, Map<Integer, Long>> channel : activeChannels.entrySet()) {
             String ssid = channel.getKey();
             int mostActiveChannel = 0;
-            int highestCount = 0;
+            long highestCount = 0;
             for (Map.Entry<Integer, Long> count : channel.getValue().entrySet()) {
                 if (count.getValue() > highestCount) {
+                    highestCount = count.getValue();
                     mostActiveChannel = count.getKey();
                 }
             }
@@ -111,12 +112,33 @@ public class Dot11Resource extends TapDataHandlingResource {
                     ssid.totalBytes(),
                     mostActiveChannels.get(ssid.ssid()).equals(ssid.frequency()),
                     ssid.securityProtocols(),
+                    ssid.infrastructureTypes(),
                     ssid.isWps(),
                     ssid.lastSeen()
             ));
         }
 
         return Response.ok(SSIDListResponse.create(ssidsResult)).build();
+    }
+
+    @GET
+    @Path("/bssids/histogram")
+    public Response histogram(@Context SecurityContext sc,
+                           @QueryParam("minutes") int minutes,
+                           @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Map<DateTime, BSSIDAndSSIDHistogramValueResponse> values = Maps.newHashMap();
+        for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11().findBSSIDAndSSIDCountHistogram(minutes, tapUuids)) {
+            values.put(h.bucket(), BSSIDAndSSIDHistogramValueResponse.create(
+                    h.bucket(),
+                    h.bssidCount(),
+                    h.ssidCount()
+            ));
+        }
+
+        return Response.ok(BSSIDAndSSIDHistogramResponse.create(values)).build();
     }
 
     @GET
@@ -130,7 +152,7 @@ public class Dot11Resource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
 
-
+        return Response.ok().build();
     }
 
 }

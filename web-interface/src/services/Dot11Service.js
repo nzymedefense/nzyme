@@ -20,6 +20,15 @@ class Dot11Service {
     })
   }
 
+  getBSSIDAndSSIDHistogram(minutes, taps, setBSSIDAndSSIDHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/histogram", { minutes: minutes, taps: tapsList },
+        function (response) {
+          setBSSIDAndSSIDHistogram(response.data)
+    })
+  }
+
 }
 
 export default Dot11Service

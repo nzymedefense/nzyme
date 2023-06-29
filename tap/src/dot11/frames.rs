@@ -169,7 +169,7 @@ pub enum RegulatoryEnvironment {
     Unknown
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Eq, PartialEq)]
 pub enum InfraStructureType {
     Invalid,
     AccessPoint,

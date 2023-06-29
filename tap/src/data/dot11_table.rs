@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Mutex};
 use log::{error};
 
 use crate::{
-    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType},
+    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType},
     link::payloads::{
         AdvertisedNetworkReport, BssidReport, Dot11CipherSuites, Dot11TableReport,
         SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport,
@@ -35,6 +35,7 @@ pub struct AdvertisedNetwork {
     pub fingerprints: Vec<String>,
     pub wps: bool,
     pub signal_strengths: Vec<i8>,
+    pub infrastructure_types: Vec<InfraStructureType>,
     pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
 }
 
@@ -69,6 +70,10 @@ impl Dot11Table {
                                             ssid.fingerprints.push(beacon.fingerprint.clone());
                                         }
 
+                                        if !ssid.infrastructure_types.contains(&beacon.capabilities.infrastructure_type) {
+                                            ssid.infrastructure_types.push(beacon.capabilities.infrastructure_type);
+                                        }
+
                                         Self::update_existing_channel_statistics(
                                             FrameSubType::Beacon, beacon.header.frequency, beacon.length, ssid
                                         );
@@ -83,8 +88,10 @@ impl Dot11Table {
                                                 fingerprints: vec![beacon.fingerprint.clone()],
                                                 wps: beacon.has_wps,
                                                 signal_strengths: vec![signal_strength],
+                                                infrastructure_types: vec![beacon.capabilities.infrastructure_type],
                                                 channel_statistics: Self::build_initial_channel_statistics(
-                                                    FrameSubType::Beacon, beacon.header.frequency, beacon.length)
+                                                    FrameSubType::Beacon, beacon.header.frequency, beacon.length
+                                                )
                                             },
                                         );
                                     }
@@ -113,6 +120,7 @@ impl Dot11Table {
                                         fingerprints: vec![beacon.fingerprint.clone()],
                                         wps: beacon.has_wps,
                                         signal_strengths: vec![signal_strength],
+                                        infrastructure_types: vec![beacon.capabilities.infrastructure_type],
                                         channel_statistics: Self::build_initial_channel_statistics(
                                             FrameSubType::Beacon, beacon.header.frequency, beacon.length)
                                     },
@@ -251,6 +259,11 @@ impl Dot11Table {
                             channel_statistics.insert(*frequency, frame_type_summary);
                         }
 
+                        let mut infrastructure_types: Vec<String> = Vec::new();
+                        for t in &netinfo.infrastructure_types {
+                            infrastructure_types.push(t.to_string());
+                        }
+
                         advertised_networks.insert(
                             ssid.clone(),
                             AdvertisedNetworkReport {
@@ -260,6 +273,7 @@ impl Dot11Table {
                                 signal_strength: calculate_signal_strengh_report(
                                     &netinfo.signal_strengths,
                                 ),
+                                infrastructure_types,
                                 channel_statistics
                             },
                         );

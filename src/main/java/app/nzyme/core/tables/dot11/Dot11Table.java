@@ -69,10 +69,10 @@ public class Dot11Table implements DataTable {
                 );
             }
 
-            for (Map.Entry<String, Dot11AdvertisedNetwork> ssidEntry : report.advertisedNetworks().entrySet()) {
+            for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {
                 try {
                     String ssid = ssidEntry.getKey();
-                    Dot11AdvertisedNetwork ssidReport = ssidEntry.getValue();
+                    Dot11AdvertisedNetworkReport ssidReport = ssidEntry.getValue();
 
                     List<String> securityProtocols = Lists.newArrayList();
                     Map<String, String> suiteMap = Maps.newHashMap();
@@ -153,6 +153,16 @@ public class Dot11Table implements DataTable {
                         }
                     }
 
+                    // Infrastructure Types.
+                    for (String infrastructureType : ssidReport.infrastructureTypes()) {
+                        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                                handle.createUpdate("INSERT INTO dot11_infrastructure_types(infrastructure_type," +
+                                                " ssid_id) VALUES(:infrastructure_type, :ssid_id)")
+                                        .bind("infrastructure_type", infrastructureType.toLowerCase())
+                                        .bind("ssid_id", ssidDatabaseId)
+                                        .execute()
+                        );
+                    }
                 } catch(Exception e) {
                     LOG.error("Could not write SSID.", e);
                     continue;

@@ -2887,4 +2887,32 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="create_dot11_infrastructure_types" author="lennartkoopmann">
+        <createTable tableName="dot11_infrastructure_types">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="infrastructure_type" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_iftypes2ssids"
+                                 baseTableName="dot11_infrastructure_types"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_infrastructure_types" indexName="iftype_ssid_id_lookup">
+            <column name="ssid_id" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

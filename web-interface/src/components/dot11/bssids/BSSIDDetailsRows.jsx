@@ -5,10 +5,11 @@ import numeral from "numeral";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Channel from "../util/Channel";
 import ApiRoutes from "../../../util/ApiRoutes";
+import InfrastructureTypes from "../util/InfrastructureTypes";
 
 function BSSIDDetailsRows(props) {
 
-  const COLSPAN = 6;
+  const COLSPAN = 7;
 
   const bssid = props.bssid;
   const ssids = props.ssids;
@@ -46,6 +47,7 @@ function BSSIDDetailsRows(props) {
             <thead>
             <tr>
               <th>SSID</th>
+              <th>Mode</th>
               <th>Channel</th>
               <th>Usage</th>
               <th>Signal Strength</th>
@@ -61,6 +63,7 @@ function BSSIDDetailsRows(props) {
                     <td>
                       <a href={ApiRoutes.DOT11.NETWORKS.SSID(bssid.bssid, ssid.ssid, ssid.channel)}>{ssid.ssid}</a>
                     </td>
+                    <td><InfrastructureTypes types={ssid.infrastructure_types} /></td>
                     <td>
                       <Channel channel={ssid.channel} frequency={ssid.frequency} is_main_active={ssid.is_main_active} />
                     </td>
