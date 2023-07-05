@@ -3,11 +3,11 @@ use std::{collections::HashMap, sync::Mutex};
 use log::{error};
 
 use crate::{
-    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType},
+    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType, Dot11DataFrame, Dot11DataFrameDirection},
     link::payloads::{
         AdvertisedNetworkReport, BssidReport, Dot11CipherSuites, Dot11TableReport,
-        SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport,
-    },
+        SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport, Dot11ClientStatisticsReport,
+    }, helpers::network::is_mac_address_multicast,
 };
 
 #[derive(Debug)]
@@ -18,6 +18,7 @@ pub struct Dot11Table {
 #[derive(Debug)]
 pub struct Bssid {
     pub advertised_networks: HashMap<String, AdvertisedNetwork>,
+    pub clients: HashMap<String, Dot11ClientStatistics>,
     pub hidden_ssid_frames: u128,
     pub signal_strengths: Vec<i8>,
     pub fingerprints: Vec<String>,
@@ -27,6 +28,14 @@ pub struct Bssid {
 pub struct Dot11ChannelStatistics {
     frames: u128,
     bytes: u128
+}
+
+#[derive(Debug)]
+pub struct Dot11ClientStatistics {
+    tx_frames: u128,
+    tx_bytes: u128,
+    rx_frames: u128,
+    rx_bytes: u128
 }
 
 #[derive(Debug)]
@@ -135,6 +144,7 @@ impl Dot11Table {
                             Bssid {
                                 advertised_networks,
                                 hidden_ssid_frames,
+                                clients: HashMap::new(),
                                 signal_strengths: vec![signal_strength],
                                 fingerprints: vec![beacon.fingerprint]
                             },
@@ -142,6 +152,58 @@ impl Dot11Table {
                     }
                 };
             }
+            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+        }
+    }
+
+    pub fn register_data_frame(&self, frame: Dot11DataFrame) {
+        let (sta, tx_frames, tx_bytes, rx_frames, rx_bytes) = match frame.ds.direction {
+            Dot11DataFrameDirection::Entering => {
+                (frame.ds.destination, 0, 0, 1, frame.length)
+            },
+            Dot11DataFrameDirection::Leaving => {
+                (frame.ds.destination, 1, frame.length, 0, 0)
+            },
+            Dot11DataFrameDirection::NotLeavingOrAdHoc |
+            Dot11DataFrameDirection::WDS => return
+        };
+
+        if frame.ds.direction == Dot11DataFrameDirection::Entering && sta == "FF:FF:FF:FF:FF:FF" {
+            // Ignore entering franes with wildcard destination.
+            return
+        }
+
+        if is_mac_address_multicast(&sta) {
+            // Not interested in multicast frames.
+            return
+        }
+
+        match self.bssids.lock() {
+            Ok(mut bssids) => {
+                match bssids.get_mut(&frame.ds.bssid) {
+                    Some(bssid) => {
+                        match bssid.clients.get_mut(&sta) {
+                            Some(client) => {
+                                // Update existing client.
+                                client.tx_frames += tx_frames;
+                                client.tx_bytes += tx_bytes as u128;
+                                client.rx_frames += rx_frames;
+                                client.rx_bytes += rx_bytes as u128;
+                            },
+                            None => {
+                                // First time seeing this client.
+                                bssid.clients.insert(sta, Dot11ClientStatistics {
+                                    tx_frames,
+                                    tx_bytes: tx_bytes as u128,
+                                    rx_frames,
+                                    rx_bytes: rx_bytes as u128
+                                });
+                            },
+                        }
+                    },
+                    None => {/* Ignore data frames for so far unknown BSSIDs. */},
+                }
+            },
             Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
         }
     }
@@ -186,7 +248,13 @@ impl Dot11Table {
                     }
                 },
                 None => {
-                    // First frame for this frequency.
+                    // First frame for this frequency. 
+                    let mut stats = HashMap::new();
+                    stats.insert(frame_subtype, Dot11ChannelStatistics {
+                        frames: 1,
+                        bytes: frame_length as u128
+                    });
+                    ssid.channel_statistics.insert(freq, stats);
                 }
             }
         }
@@ -279,10 +347,21 @@ impl Dot11Table {
                         );
                     }
 
+                    let mut clients = HashMap::new();
+                    for (sta, stats) in &info.clients {
+                        clients.insert(sta.clone(), Dot11ClientStatisticsReport {
+                            tx_frames: stats.tx_frames,
+                            tx_bytes: stats.tx_bytes,
+                            rx_frames: stats.rx_frames,
+                            rx_bytes: stats.rx_bytes,
+                        });
+                    }
+
                     bssid_report.insert(
                         bssid.clone(),
                         BssidReport {
                             advertised_networks,
+                            clients,
                             hidden_ssid_frames: info.hidden_ssid_frames,
                             signal_strength: calculate_signal_strengh_report(
                                 &info.signal_strengths,

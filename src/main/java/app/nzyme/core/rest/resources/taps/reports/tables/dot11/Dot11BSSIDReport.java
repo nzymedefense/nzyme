@@ -11,17 +11,20 @@ import java.util.Map;
 public abstract class Dot11BSSIDReport {
 
     public abstract Map<String, Dot11AdvertisedNetworkReport> advertisedNetworks();
+    public abstract Map<String, Dot11ClientStatisticsReport> clients();
     public abstract long hiddenSSIDFrames();
     public abstract Dot11SignalStrengthReport signalStrength();
     public abstract List<String> fingerprints();
 
     @JsonCreator
     public static Dot11BSSIDReport create(@JsonProperty("advertised_networks") Map<String, Dot11AdvertisedNetworkReport> advertisedNetworks,
+                                          @JsonProperty("clients") Map<String, Dot11ClientStatisticsReport> clients,
                                           @JsonProperty("hidden_ssid_frames") long hiddenSSIDFrames,
                                           @JsonProperty("signal_strength") Dot11SignalStrengthReport signalStrength,
                                           @JsonProperty("fingerprints") List<String> fingerprints) {
         return builder()
                 .advertisedNetworks(advertisedNetworks)
+                .clients(clients)
                 .hiddenSSIDFrames(hiddenSSIDFrames)
                 .signalStrength(signalStrength)
                 .fingerprints(fingerprints)
@@ -35,6 +38,8 @@ public abstract class Dot11BSSIDReport {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder advertisedNetworks(Map<String, Dot11AdvertisedNetworkReport> advertisedNetworks);
+
+        public abstract Builder clients(Map<String, Dot11ClientStatisticsReport> clients);
 
         public abstract Builder hiddenSSIDFrames(long hiddenSSIDFrames);
 

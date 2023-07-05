@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use log::{trace, error};
 
-use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame}, parsers::management::beacon_frame_parser}, data::dot11_table::Dot11Table};
+use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
 
 pub struct Dot11FrameProcessor {
     dot11_table: Arc<Mutex<Dot11Table>>
@@ -20,11 +20,26 @@ impl Dot11FrameProcessor {
         match frame.frame_type {
             FrameSubType::Beacon => {
                 match beacon_frame_parser::parse(frame) {
-                    Ok(beacon) => self.handle_beacon(beacon),
+                    Ok(frame) => self.handle_beacon_frame(frame),
                     Err(e) => trace!("Could not parse beacon frame: {}", e)
                 }
-            }
-
+            },
+            FrameSubType::Deauthentication => {
+                match deauthentication_frame_parser::parse(frame) {
+                    Ok(frame) => self.handle_deauthentication_frame(frame),
+                    Err(e) => trace!("Could not parse deauthentication frame: {}", e)
+                }
+            },
+            FrameSubType::Data |
+            FrameSubType::QosData |
+            FrameSubType::QosDataCfAck |
+            FrameSubType::QosDataCfPoll |
+            FrameSubType::QosDataCfAckCfPoll => {
+                match data_frame_parser::parse(frame) {
+                    Ok(frame) => self.handle_data_frame(frame),
+                    Err(e) => trace!("Could not parse data frame: {}", e)
+                }
+            },
             FrameSubType::AssociationRequest |
             FrameSubType::AssociationResponse |
             FrameSubType::ReAssociationRequest |
@@ -35,7 +50,6 @@ impl Dot11FrameProcessor {
             FrameSubType::Atim |
             FrameSubType::Disassocation |
             FrameSubType::Authentication |
-            FrameSubType::Deauthentication |
             FrameSubType::Action |
             FrameSubType::ActionNoAck |
             FrameSubType::Trigger |
@@ -52,12 +66,7 @@ impl Dot11FrameProcessor {
             FrameSubType::Ack |
             FrameSubType::CfEnd |
             FrameSubType::CfEndCfAck |
-            FrameSubType::Data |
             FrameSubType::Null |
-            FrameSubType::QosData |
-            FrameSubType::QosDataCfAck |
-            FrameSubType::QosDataCfPoll |
-            FrameSubType::QosDataCfAckCfPoll |
             FrameSubType::QosNull |
             FrameSubType::QosCfPoll |
             FrameSubType::QosCfAckCfPoll |
@@ -68,11 +77,22 @@ impl Dot11FrameProcessor {
         }
     }
 
-    fn handle_beacon(&self, beacon: Dot11BeaconFrame) {
+    fn handle_beacon_frame(&self, frame: Dot11BeaconFrame) {
         match self.dot11_table.lock() {
-            Ok(mut table) => table.register_beacon_frame(beacon),
+            Ok(mut table) => table.register_beacon_frame(frame),
             Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
         }
-    }    
+    }
+
+    fn handle_data_frame(&self, frame: Dot11DataFrame) {
+        match self.dot11_table.lock() {
+            Ok(table) => table.register_data_frame(frame),
+            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
+        }
+    }
+
+    fn handle_deauthentication_frame(&self, _: Dot11DeauthenticationFrame) {
+
+    }
 
 }

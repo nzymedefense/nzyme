@@ -147,6 +147,7 @@ pub struct Dot11TableReport {
 #[derive(Serialize)]
 pub struct BssidReport {
     pub advertised_networks: HashMap<String, AdvertisedNetworkReport>,
+    pub clients: HashMap<String, Dot11ClientStatisticsReport>,
     pub hidden_ssid_frames: u128,
     pub signal_strength: SignalStrengthReport,
     pub fingerprints: Vec<String>,
@@ -186,6 +187,14 @@ pub struct Dot11CipherSuites {
 pub struct Dot11ChannelStatisticsReport {
     pub frames: u128,
     pub bytes: u128
+}
+
+#[derive(Serialize)]
+pub struct Dot11ClientStatisticsReport {
+    pub tx_frames: u128,
+    pub tx_bytes: u128,
+    pub rx_frames: u128,
+    pub rx_bytes: u128
 }
 
 impl TotalWithAverage {

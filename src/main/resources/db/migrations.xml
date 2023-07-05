@@ -2915,4 +2915,52 @@
             <column name="ssid_id" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="create_dot11_clients" author="lennartkoopmann">
+        <createTable tableName="dot11_clients">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="client_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tx_frames" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tx_bytes" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="rx_frames" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="rx_bytes" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_clients2bssids"
+                                 baseTableName="dot11_clients"
+                                 baseColumnNames="bssid_id"
+                                 referencedTableName="dot11_bssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_clients" indexName="clients_bssid_id_lookup">
+            <column name="bssid_id" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

@@ -239,3 +239,36 @@ pub struct Dot11BeaconFrame {
     pub security: Vec<SecurityInformation>,
     pub has_wps: bool
 }
+
+#[derive(Debug)]
+pub struct Dot11DataFrame {
+    pub length: usize,
+    pub header: RadiotapHeader,
+    pub ds: Dot11DSInformation
+}
+
+#[derive(Debug)]
+pub struct Dot11DeauthenticationFrame {
+    pub length: usize,
+    pub header: RadiotapHeader,
+    pub destination: String,
+    pub transmitter: String,
+    pub bssid: String,
+    pub reason_code: u16
+}
+
+#[derive(Debug)]
+pub struct Dot11DSInformation {
+    pub destination: String,
+    pub source: String,
+    pub bssid: String,
+    pub direction: Dot11DataFrameDirection
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Dot11DataFrameDirection {
+    Entering,
+    Leaving,
+    NotLeavingOrAdHoc,
+    WDS
+}

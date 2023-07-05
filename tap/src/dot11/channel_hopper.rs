@@ -95,7 +95,7 @@ impl ChannelHopper {
                     positions.insert(device, next_position as u16);
                 }
 
-                sleep(Duration::from_millis(500));
+                sleep(Duration::from_millis(1000));
             }
         });
     }
