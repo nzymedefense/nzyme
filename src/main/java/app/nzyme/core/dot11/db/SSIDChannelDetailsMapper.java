@@ -8,11 +8,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class SSIDSummaryMapper implements RowMapper<SSIDSummary> {
+public class SSIDChannelDetailsMapper implements RowMapper<SSIDChannelDetails> {
 
     @Override
-    public SSIDSummary map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return SSIDSummary.create(
+    public SSIDChannelDetails map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return SSIDChannelDetails.create(
                 rs.getString("ssid"),
                 Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
                 Lists.newArrayList((Boolean[]) rs.getArray("is_wps").getArray()),

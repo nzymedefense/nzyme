@@ -30,8 +30,8 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
 
     // Tagged parameters.
     let mut ssid: Option<String> = Option::None;
-    let mut supported_rates: Option<Vec<String>> = Option::None;
-    let mut extended_supported_rates: Option<Vec<String>> = Option::None;
+    let mut supported_rates: Option<Vec<f32>> = Option::None;
+    let mut extended_supported_rates: Option<Vec<f32>> = Option::None;
     let mut country_information: Option<CountryInformation> = Option::None;
     let mut ht_capabilities: Option<Vec<u8>> = Option::None;
     let mut extended_capabilities: Option<Vec<u8>> = Option::None;
@@ -42,7 +42,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
     let mut has_wps = false;
 
     let mut cursor: usize = 36;
-    if frame.payload.len() > 36+2 {
+    if frame.payload.len() > cursor+2 {
         loop {
             let number = &frame.payload[cursor];
             cursor += 1;
@@ -260,25 +260,25 @@ pub fn parse_capabilities(mask: &[u8]) -> Result<BeaconCapabilities, Error> {
     })
 }
 
-fn parse_supported_rates(data: &[u8]) -> Vec<String> {
-    let mut rates: Vec<String> = Vec::new();
+fn parse_supported_rates(data: &[u8]) -> Vec<f32> {
+    let mut rates: Vec<f32> = Vec::new();
 
     for rate in data {
-        match rate {
-            2   => rates.push("1".to_string()),
-            4   => rates.push("2".to_string()),
-            11  => rates.push("5.5".to_string()),
-            12  => rates.push("6".to_string()),
-            18  => rates.push("9".to_string()),
-            22  => rates.push("11".to_string()),
-            24  => rates.push("12".to_string()),
-            36  => rates.push("18".to_string()),
-            44  => rates.push("22".to_string()),
-            48  => rates.push("24".to_string()),
-            66  => rates.push("33".to_string()),
-            72  => rates.push("36".to_string()),
-            96  => rates.push("48".to_string()),
-            108 => rates.push("54".to_string()),
+        match rate ^ 0b1000_0000 {
+            2   => rates.push(1.0),
+            4   => rates.push(2.0),
+            11  => rates.push(5.5),
+            12  => rates.push(6.0),
+            18  => rates.push(9.0),
+            22  => rates.push(11.0),
+            24  => rates.push(12.0),
+            36  => rates.push(18.0),
+            44  => rates.push(22.0),
+            48  => rates.push(24.0),
+            66  => rates.push(33.0),
+            72  => rates.push(36.0),
+            96  => rates.push(48.0),
+            108 => rates.push(54.0),
             _   => trace!("Invalid supported rate <{}>", rate)
         }
     }
@@ -286,11 +286,11 @@ fn parse_supported_rates(data: &[u8]) -> Vec<String> {
     rates
 }
 
-fn parse_extended_supported_rates(data: &[u8]) -> Vec<String> {
-    let mut rates: Vec<String> = Vec::new();
+fn parse_extended_supported_rates(data: &[u8]) -> Vec<f32> {
+    let mut rates: Vec<f32> = Vec::new();
 
     for rate in data {
-        rates.push((rate >> 1).to_string());
+        rates.push((rate >> 1) as f32);
     }
 
     rates
@@ -419,14 +419,14 @@ pub fn calculate_fingerprint(caps: &BeaconCapabilities,
     // Supported rates.
     if tagged_params.supported_rates.is_some() {
         for rate in tagged_params.supported_rates.as_ref().unwrap() {
-            factors.extend(rate.as_bytes());
+            factors.extend(rate.to_le_bytes());
         }
     }
     
     // Extended spported rates.
     if tagged_params.extended_supported_rates.is_some() {
         for rate in tagged_params.extended_supported_rates.as_ref().unwrap() {
-            factors.extend(rate.as_bytes());
+            factors.extend(rate.to_le_bytes());
         }
     }
 

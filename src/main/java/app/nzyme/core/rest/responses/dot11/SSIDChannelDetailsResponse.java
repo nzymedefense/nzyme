@@ -7,7 +7,7 @@ import org.joda.time.DateTime;
 import java.util.List;
 
 @AutoValue
-public abstract class SSIDSummaryDetailsResponse {
+public abstract class SSIDChannelDetailsResponse {
 
     @JsonProperty("ssid")
     public abstract String ssid();
@@ -42,7 +42,7 @@ public abstract class SSIDSummaryDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDSummaryDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<String> infrastructureTypes, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDChannelDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<String> infrastructureTypes, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .ssid(ssid)
                 .frequency(frequency)
@@ -59,7 +59,7 @@ public abstract class SSIDSummaryDetailsResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_SSIDSummaryDetailsResponse.Builder();
+        return new AutoValue_SSIDChannelDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -86,6 +86,6 @@ public abstract class SSIDSummaryDetailsResponse {
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract SSIDSummaryDetailsResponse build();
+        public abstract SSIDChannelDetailsResponse build();
     }
 }

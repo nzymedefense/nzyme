@@ -29,7 +29,7 @@ function InfrastructureTypes(props) {
             x += ", "
           }
 
-          return <span title={type}>{x}</span>
+          return <span key={"iftype-" + i} title={type}>{x}</span>
         })}
       </React.Fragment>
   )

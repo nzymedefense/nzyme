@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use log::{trace, error};
 
-use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
+use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11ProbeRequestFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser, probe_request_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
 
 pub struct Dot11FrameProcessor {
     dot11_table: Arc<Mutex<Dot11Table>>
@@ -30,6 +30,12 @@ impl Dot11FrameProcessor {
                     Err(e) => trace!("Could not parse deauthentication frame: {}", e)
                 }
             },
+            FrameSubType::ProbeRequest => {
+                match probe_request_frame_parser::parse(frame) {
+                    Ok(frame) => self.handle_probe_request_frame(frame),
+                    Err(e) => trace!("Could not parse probe response frame: {}", e)
+                }
+            },
             FrameSubType::Data |
             FrameSubType::QosData |
             FrameSubType::QosDataCfAck |
@@ -44,7 +50,6 @@ impl Dot11FrameProcessor {
             FrameSubType::AssociationResponse |
             FrameSubType::ReAssociationRequest |
             FrameSubType::ReAssociationResponse |
-            FrameSubType::ProbeRequest |
             FrameSubType::ProbeResponse |
             FrameSubType::TimingAdvertisement |
             FrameSubType::Atim |
@@ -80,6 +85,13 @@ impl Dot11FrameProcessor {
     fn handle_beacon_frame(&self, frame: Dot11BeaconFrame) {
         match self.dot11_table.lock() {
             Ok(mut table) => table.register_beacon_frame(frame),
+            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
+        }
+    }
+
+    fn handle_probe_request_frame(&self, frame: Dot11ProbeRequestFrame) {
+        match self.dot11_table.lock() {
+            Ok(table) => table.register_probe_request_frame(frame),
             Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
         }
     }

@@ -29,6 +29,15 @@ class Dot11Service {
     })
   }
 
+  findSSIDOfBSSID(bssid, ssid, minutes, taps, setSSID) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid,
+        { minutes: minutes, taps: tapsList }, function (response) {
+          setSSID(response.data);
+    })
+  }
+
 }
 
 export default Dot11Service

@@ -2,14 +2,14 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.db.BSSIDAndSSIDCountHistogramEntry;
-import app.nzyme.core.dot11.db.BSSIDSummary;
-import app.nzyme.core.dot11.db.SSIDSummary;
+import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.dot11.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/dot11/networks")
@@ -52,6 +53,7 @@ public class Dot11Resource extends TapDataHandlingResource {
                     bssid.securityProtocols(),
                     bssid.signalStrengthAverage(),
                     bssid.lastSeen(),
+                    bssid.clientCount(),
                     bssid.fingerprints(),
                     bssid.ssids(),
                     bssid.hiddenSSIDFrames() > 0,
@@ -75,11 +77,11 @@ public class Dot11Resource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<SSIDSummary> ssids = nzyme.getDot11().findSSIDsOfBSSID(minutes, bssid, tapUuids);
+        List<SSIDChannelDetails> ssids = nzyme.getDot11().findSSIDsOfBSSID(minutes, bssid, tapUuids);
 
         // Find main active channel per SSID.
         Map<String, Map<Integer, Long>> activeChannels = Maps.newHashMap();
-        for (SSIDSummary ssid : ssids) {
+        for (SSIDChannelDetails ssid : ssids) {
             if (!activeChannels.containsKey(ssid.ssid())) {
                 activeChannels.put(ssid.ssid(), Maps.newHashMap());
             }
@@ -101,9 +103,9 @@ public class Dot11Resource extends TapDataHandlingResource {
             mostActiveChannels.put(ssid, mostActiveChannel);
         }
 
-        List<SSIDSummaryDetailsResponse> ssidsResult = Lists.newArrayList();
-        for (SSIDSummary ssid : ssids) {
-            ssidsResult.add(SSIDSummaryDetailsResponse.create(
+        List<SSIDChannelDetailsResponse> ssidsResult = Lists.newArrayList();
+        for (SSIDChannelDetails ssid : ssids) {
+            ssidsResult.add(SSIDChannelDetailsResponse.create(
                     ssid.ssid(),
                     ssid.frequency(),
                     Dot11.frequencyToChannel(ssid.frequency()),
@@ -118,7 +120,7 @@ public class Dot11Resource extends TapDataHandlingResource {
             ));
         }
 
-        return Response.ok(SSIDListResponse.create(ssidsResult)).build();
+        return Response.ok(SSIDChannelListResponse.create(ssidsResult)).build();
     }
 
     @GET
@@ -142,17 +144,60 @@ public class Dot11Resource extends TapDataHandlingResource {
     }
 
     @GET
-    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/channels/show/{channel}/")
-    public Response bssids(@Context SecurityContext sc,
-                           @PathParam("bssid") String bssid,
-                           @PathParam("ssid") String ssid,
-                           @PathParam("channel") int channel,
-                           @QueryParam("taps") String taps) {
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}")
+    public Response ssidOfBSSID(@Context SecurityContext sc,
+                                @PathParam("bssid") String bssid,
+                                @PathParam("ssid") String ssid,
+                                @QueryParam("minutes") int minutes,
+                                @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
+        Optional<SSIDDetails> dbResult = nzyme.getDot11().findSSIDDetails(minutes, bssid, ssid, tapUuids);
 
-        return Response.ok().build();
+        if (dbResult.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        SSIDDetails ssidDetails = dbResult.get();
+
+        ObjectMapper om = new ObjectMapper();
+        List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
+        for (String suite : ssidDetails.securitySuites()) {
+            try {
+                Dot11SecuritySuiteJson info = om.readValue(suite, Dot11SecuritySuiteJson.class);
+                securitySuites.add(SecuritySuitesResponse.create(
+                        info.pairwiseCiphers(),
+                        info.groupCipher(),
+                        info.keyManagementModes(),
+                        Dot11.securitySuitesToIdentifier(info)
+                ));
+            } catch (JsonProcessingException e) {
+                LOG.error(e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+
+        SSIDDetailsResponse response = SSIDDetailsResponse.create(
+                bssid,
+                nzyme.getOUIManager().lookupBSSID(bssid),
+                ssidDetails.ssid(),
+                ssidDetails.signalStrengthAverage(),
+                ssidDetails.totalFrames(),
+                ssidDetails.totalBytes(),
+                ssidDetails.securityProtocols(),
+                ssidDetails.fingerprints(),
+                ssidDetails.rates(),
+                ssidDetails.infrastructureTypes(),
+                securitySuites,
+                ssidDetails.isWps(),
+                ssidDetails.lastSeen()
+        );
+
+        return Response.ok(response).build();
     }
+
+
 
 }

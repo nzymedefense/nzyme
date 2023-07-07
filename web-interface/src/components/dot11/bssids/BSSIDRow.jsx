@@ -1,5 +1,6 @@
 import React, {useContext, useState} from "react";
 import moment from "moment";
+import numeral from "numeral";
 import SSIDsList from "../util/SSIDsList";
 import SignalStrength from "../util/SignalStrength";
 import Dot11Service from "../../../services/Dot11Service";
@@ -53,6 +54,7 @@ function BSSIDRow(props) {
             { bssid.has_hidden_ssid_advertisements ? <span className="hidden-ssid">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }
             <SSIDsList ssids={bssid.advertised_ssid_names} />
           </td>
+          <td>{numeral(bssid.client_count).format("0,0")}</td>
           <td><BSSIDSecurityProtocols bssid={bssid} /></td>
           <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
           <td title={moment(bssid.last_seen).format()}>

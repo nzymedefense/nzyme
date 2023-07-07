@@ -142,6 +142,7 @@ pub struct L4RetroPairReport {
 #[derive(Serialize)]
 pub struct Dot11TableReport {
     pub bssids: HashMap<String, BssidReport>,
+    pub clients: HashMap<String, Dot11ClientReport>
 }
 
 #[derive(Serialize)]
@@ -154,9 +155,18 @@ pub struct BssidReport {
 }
 
 #[derive(Serialize)]
+pub struct Dot11ClientReport {
+    pub probe_request_ssids: Vec<String>,
+    pub wildcard_probe_requests: u128
+}
+
+#[derive(Serialize)]
 pub struct AdvertisedNetworkReport {
     pub security: Vec<SecurityInformationReport>,
     pub fingerprints: Vec<String>,
+    pub beacon_advertisements: u128,
+    pub proberesp_advertisements: u128,
+    pub rates: Vec<f32>,
     pub wps: bool,
     pub signal_strength: SignalStrengthReport,
     pub infrastructure_types: Vec<String>,

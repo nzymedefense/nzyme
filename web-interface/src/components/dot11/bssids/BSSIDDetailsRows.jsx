@@ -9,7 +9,7 @@ import InfrastructureTypes from "../util/InfrastructureTypes";
 
 function BSSIDDetailsRows(props) {
 
-  const COLSPAN = 7;
+  const COLSPAN = 8;
 
   const bssid = props.bssid;
   const ssids = props.ssids;

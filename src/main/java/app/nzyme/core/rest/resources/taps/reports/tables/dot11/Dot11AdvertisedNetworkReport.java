@@ -12,25 +12,34 @@ public abstract class Dot11AdvertisedNetworkReport {
 
     public abstract List<Dot11SecurityInformationReport> security();
     public abstract List<String> fingerprints();
+    public abstract List<Float> rates();
     public abstract boolean wps();
     public abstract Dot11SignalStrengthReport signalStrength();
     public abstract List<String> infrastructureTypes();
     public abstract Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics();
+    public abstract long beaconAdvertisements();
+    public abstract long probeResponseAdvertisements();
 
     @JsonCreator
     public static Dot11AdvertisedNetworkReport create(@JsonProperty("security") List<Dot11SecurityInformationReport> security,
                                                       @JsonProperty("fingerprints") List<String> fingerprints,
+                                                      @JsonProperty("rates") List<Float> rates,
                                                       @JsonProperty("wps") boolean wps,
                                                       @JsonProperty("signal_strength") Dot11SignalStrengthReport signalStrength,
                                                       @JsonProperty("infrastructure_types") List<String> infrastructureTypes,
-                                                      @JsonProperty("channel_statistics") Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics) {
+                                                      @JsonProperty("channel_statistics") Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics,
+                                                      @JsonProperty("beacon_advertisements") long beaconAdvertisements,
+                                                      @JsonProperty("proberesp_advertisements") long probeResponseAdvertisements) {
         return builder()
                 .security(security)
                 .fingerprints(fingerprints)
+                .rates(rates)
                 .wps(wps)
                 .signalStrength(signalStrength)
                 .infrastructureTypes(infrastructureTypes)
                 .channelStatistics(channelStatistics)
+                .beaconAdvertisements(beaconAdvertisements)
+                .probeResponseAdvertisements(probeResponseAdvertisements)
                 .build();
     }
 
@@ -44,6 +53,8 @@ public abstract class Dot11AdvertisedNetworkReport {
 
         public abstract Builder fingerprints(List<String> fingerprints);
 
+        public abstract Builder rates(List<Float> rates);
+
         public abstract Builder wps(boolean wps);
 
         public abstract Builder signalStrength(Dot11SignalStrengthReport signalStrength);
@@ -51,6 +62,10 @@ public abstract class Dot11AdvertisedNetworkReport {
         public abstract Builder infrastructureTypes(List<String> infrastructureTypes);
 
         public abstract Builder channelStatistics(Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics);
+
+        public abstract Builder beaconAdvertisements(long beaconAdvertisements);
+
+        public abstract Builder probeResponseAdvertisements(long probeResponseAdvertisements);
 
         public abstract Dot11AdvertisedNetworkReport build();
     }

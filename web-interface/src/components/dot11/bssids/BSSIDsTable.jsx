@@ -21,6 +21,7 @@ function BSSIDsTable(props) {
           <th>Signal Strength</th>
           <th>Mode</th>
           <th>Advertised SSIDs</th>
+          <th>Clients</th>
           <th>Security</th>
           <th>OUI</th>
           <th>Last Seen</th>

@@ -143,8 +143,8 @@ pub struct BeaconCapabilities {
 #[derive(Debug)]
 pub struct BeaconTaggedParameters {
     pub ssid: Option<String>,
-    pub supported_rates: Option<Vec<String>>,
-    pub extended_supported_rates: Option<Vec<String>>,
+    pub supported_rates: Option<Vec<f32>>,
+    pub extended_supported_rates: Option<Vec<f32>>,
     pub country_information: Option<CountryInformation>,
     
     // Not parsing, only keeping for fingerprint calculation.
@@ -225,6 +225,7 @@ pub enum CipherSuite {
     BIPCMAC256
 }
 
+#[derive(Debug)]
 pub struct Dot11BeaconFrame {
     pub length: usize,
     pub header: RadiotapHeader,
@@ -238,6 +239,14 @@ pub struct Dot11BeaconFrame {
     pub fingerprint: String,
     pub security: Vec<SecurityInformation>,
     pub has_wps: bool
+}
+
+#[derive(Debug)]
+pub struct Dot11ProbeRequestFrame {
+    pub length: usize,
+    pub header: RadiotapHeader,
+    pub transmitter: String,
+    pub ssid: Option<String>,
 }
 
 #[derive(Debug)]

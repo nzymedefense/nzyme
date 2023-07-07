@@ -3,8 +3,7 @@ import TimeRangeSelectorOptions from "./TimeRangeSelectorOptions";
 
 function TimeRangeSelector(props) {
 
-  const selectedTimeRange = props.setSelectedTimeRange;
-  const setSelectedTimeRange = props.setSelectedTimeRange; // start, end
+  const disabled = true;
 
   const [show, setShow] = useState(false);
 
@@ -13,13 +12,13 @@ function TimeRangeSelector(props) {
   }
 
   return (
-    <div className="timerange-selector">
-      <button type="button" className="btn btn-sm btn-secondary mb-2" onClick={onTrigger}>
-        Last 15 minutes <i className="fa-solid fa-caret-down"></i>
-      </button>
+      <React.Fragment>
+        <button type="button" className="btn btn-outline-secondary" onClick={onTrigger} disabled={disabled}>
+          { disabled ? "No Time Range Required" : <span>Last 15 minutes <i className="fa-solid fa-caret-down"></i></span> }
+        </button>
 
-      <TimeRangeSelectorOptions show={show} />
-    </div>
+        <TimeRangeSelectorOptions show={show} />
+      </React.Fragment>
   )
 
 }

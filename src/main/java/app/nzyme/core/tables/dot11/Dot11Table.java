@@ -30,6 +30,39 @@ public class Dot11Table implements DataTable {
 
     public void handleReport(UUID tapUuid, DateTime timestamp, Dot11TablesReport report) {
         writeBSSIDs(tapUuid, timestamp, report.bssids());
+        writeClients(tapUuid, timestamp, report.clients());
+    }
+
+    private void writeClients(UUID tapUuid, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
+        for (Map.Entry<String, Dot11ClientReport> entry : clients.entrySet()) {
+            String clientMac = entry.getKey();
+            Dot11ClientReport report = entry.getValue();
+
+            long clientDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
+                    handle.createQuery("INSERT INTO dot11_clients(tap_uuid, client_mac, wildcard_probe_requests, " +
+                                    "created_at) VALUES(:tap_uuid, :client_mac, :wildcard_probe_requests, " +
+                                    ":created_at) RETURNING id")
+                            .bind("tap_uuid", tapUuid)
+                            .bind("client_mac", clientMac)
+                            .bind("wildcard_probe_requests", report.wildcardProbeRequests())
+                            .bind("created_at", timestamp)
+                            .mapTo(Long.class)
+                            .one()
+            );
+
+            for (String ssid : report.probeRequestSSIDs()) {
+                tablesService.getNzyme().getDatabase().withHandle(handle ->
+                        handle.createUpdate("INSERT INTO dot11_client_probereq_ssids(client_id, ssid, tap_uuid) " +
+                                        "VALUES(:client_id, :ssid, :tap_uuid)")
+                                .bind("client_id", clientDatabaseId)
+                                .bind("ssid", ssid)
+                                .bind("tap_uuid", tapUuid)
+                                .execute()
+                );
+            }
+
+        }
+
     }
 
     public void writeBSSIDs(UUID tapUuid, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
@@ -38,12 +71,11 @@ public class Dot11Table implements DataTable {
             Dot11BSSIDReport report = entry.getValue();
 
             long bssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                    handle.createQuery("INSERT INTO dot11_bssids(uuid, tap_uuid, bssid, oui, " +
+                    handle.createQuery("INSERT INTO dot11_bssids(tap_uuid, bssid, oui, " +
                                     "signal_strength_average, signal_strength_max, signal_strength_min, " +
-                                    "hidden_ssid_frames, created_at) VALUES(:uuid, :tap_uuid, :bssid, NULL, " +
+                                    "hidden_ssid_frames, created_at) VALUES(:tap_uuid, :bssid, NULL, " +
                                     ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
                                     ":hidden_ssid_frames, :created_at) RETURNING id")
-                            .bind("uuid", UUID.randomUUID())
                             .bind("tap_uuid", tapUuid)
                             .bind("bssid", bssid)
                             .bind("signal_strength_average", report.signalStrength().average())
@@ -58,13 +90,10 @@ public class Dot11Table implements DataTable {
             // BSSID Fingerprints.
             for (String fingerprint : report.fingerprints()) {
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
-                        handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, bssid_id, tap_uuid, " +
-                                        "created_at) VALUES(:uuid, :fingerprint, :bssid_id, :tap_uuid, :created_at)")
-                                .bind("uuid", UUID.randomUUID())
+                        handle.createUpdate("INSERT INTO dot11_fingerprints(fingerprint, bssid_id) " +
+                                        "VALUES(:fingerprint, :bssid_id)")
                                 .bind("fingerprint", fingerprint)
                                 .bind("bssid_id", bssidDatabaseId)
-                                .bind("tap_uuid", tapUuid)
-                                .bind("created_at", timestamp)
                                 .execute()
                 );
             }
@@ -75,10 +104,9 @@ public class Dot11Table implements DataTable {
                 Dot11ClientStatisticsReport stats = client.getValue();
 
                 tablesService.getNzyme().getDatabase().useHandle(handle ->
-                        handle.createUpdate("INSERT INTO dot11_clients(uuid, bssid_id, client_mac, tx_frames, " +
-                                        "tx_bytes, rx_frames, rx_bytes) VALUES(:uuid, :bssid_id, :client_mac, " +
+                        handle.createUpdate("INSERT INTO dot11_bssid_clients(bssid_id, client_mac, tx_frames, " +
+                                        "tx_bytes, rx_frames, rx_bytes) VALUES(:bssid_id, :client_mac, " +
                                         ":tx_frames, :tx_bytes, :rx_frames, :rx_bytes)")
-                                .bind("uuid", UUID.randomUUID())
                                 .bind("bssid_id", bssidDatabaseId)
                                 .bind("client_mac", mac)
                                 .bind("tx_frames", stats.txFrames())
@@ -88,7 +116,6 @@ public class Dot11Table implements DataTable {
                                 .execute()
                 );
             }
-
 
             for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {
                 try {
@@ -115,13 +142,14 @@ public class Dot11Table implements DataTable {
                     }
 
                     Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
-                            handle.createQuery("INSERT INTO dot11_ssids(uuid, bssid_id, tap_uuid, ssid, bssid, " +
+                            handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
                                             "security_protocol, security_suites, is_wps, signal_strength_average, " +
-                                            "signal_strength_max, signal_strength_min, created_at) VALUES(:uuid, " +
-                                            ":bssid_id, :tap_uuid, :ssid, :bssid, :security_protocol, :security_suites, " +
-                                            ":is_wps, :signal_strength_average, :signal_strength_max, " +
-                                            ":signal_strength_min, :created_at) RETURNING *")
-                                    .bind("uuid", UUID.randomUUID())
+                                            "signal_strength_max, signal_strength_min, beacon_advertisements, " +
+                                            "proberesp_advertisements, created_at) VALUES(:bssid_id, :tap_uuid, " +
+                                            ":ssid, :bssid, :security_protocol, :security_suites, :is_wps, " +
+                                            ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
+                                            ":beacon_advertisements, :proberesp_advertisements, :created_at) " +
+                                            "RETURNING *")
                                     .bind("bssid_id", bssidDatabaseId)
                                     .bind("tap_uuid", tapUuid)
                                     .bind("ssid", ssid)
@@ -132,6 +160,8 @@ public class Dot11Table implements DataTable {
                                     .bind("signal_strength_average", ssidReport.signalStrength().average())
                                     .bind("signal_strength_max", ssidReport.signalStrength().max())
                                     .bind("signal_strength_min", ssidReport.signalStrength().min())
+                                    .bind("beacon_advertisements", ssidReport.beaconAdvertisements())
+                                    .bind("proberesp_advertisements", ssidReport.probeResponseAdvertisements())
                                     .bind("created_at", timestamp)
                                     .mapTo(Long.class)
                                     .one()
@@ -140,14 +170,21 @@ public class Dot11Table implements DataTable {
                     // SSID Fingerprints.
                     for (String fingerprint : ssidReport.fingerprints()) {
                         tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                handle.createUpdate("INSERT INTO dot11_fingerprints(uuid, fingerprint, ssid_id, " +
-                                                "tap_uuid, created_at) VALUES(:uuid, :fingerprint, :ssid_id, :tap_uuid, " +
-                                                ":created_at)")
-                                        .bind("uuid", UUID.randomUUID())
+                                handle.createUpdate("INSERT INTO dot11_fingerprints(fingerprint, ssid_id) " +
+                                                "VALUES(:fingerprint, :ssid_id)")
                                         .bind("fingerprint", fingerprint)
                                         .bind("ssid_id", ssidDatabaseId)
-                                        .bind("tap_uuid", tapUuid)
-                                        .bind("created_at", timestamp)
+                                        .execute()
+                        );
+                    }
+
+                    // SSID Rates.
+                    for (Float rate : ssidReport.rates()) {
+                        tablesService.getNzyme().getDatabase().useHandle(handle ->
+                                handle.createUpdate("INSERT INTO dot11_rates(rate, ssid_id) " +
+                                                "VALUES(:rate, :ssid_id)")
+                                        .bind("rate", rate)
+                                        .bind("ssid_id", ssidDatabaseId)
                                         .execute()
                         );
                     }
@@ -160,10 +197,9 @@ public class Dot11Table implements DataTable {
                             Dot11ChannelStatisticsReport stats = ft.getValue();
 
                             tablesService.getNzyme().getDatabase().useHandle(handle ->
-                                    handle.createUpdate("INSERT INTO dot11_channels(uuid, ssid_id, frequency, " +
-                                                    "frame_type, stats_bytes, stats_frames) VALUES(:uuid, :ssid_id, " +
+                                    handle.createUpdate("INSERT INTO dot11_channels(ssid_id, frequency, " +
+                                                    "frame_type, stats_bytes, stats_frames) VALUES(:ssid_id, " +
                                                     ":frequency, :frame_type, :stats_bytes, :stats_frames)")
-                                            .bind("uuid", UUID.randomUUID())
                                             .bind("ssid_id", ssidDatabaseId)
                                             .bind("frequency", frequency)
                                             .bind("frame_type", frameType.toLowerCase())

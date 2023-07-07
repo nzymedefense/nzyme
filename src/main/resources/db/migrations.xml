@@ -2963,4 +2963,131 @@
             <column name="bssid_id" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="remove_fields_from_dot11_fingerprints" author="lennartkoopmann">
+        <dropColumn tableName="dot11_fingerprints" columnName="uuid" />
+        <dropColumn tableName="dot11_fingerprints" columnName="created_at" />
+        <dropColumn tableName="dot11_fingerprints" columnName="tap_uuid" />
+    </changeSet>
+
+    <changeSet id="add_dot11_rates" author="lennartkoopmann">
+        <createTable tableName="dot11_rates">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="rate" type="varchar(12)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_rates2ssids"
+                                 baseTableName="dot11_rates"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_rates" indexName="rates_ssid_id_lookup">
+            <column name="ssid_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="change_dot11_rates_rate_type" author="lennartkoopmann">
+        <modifyDataType tableName="dot11_rates" columnName="rate" newDataType="float" />
+    </changeSet>
+
+    <changeSet id="add_beacon_and_proberesp_counts_to_dot11_ssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_ssids">
+            <column name="beacon_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_ssids">
+            <column name="proberesp_count" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_ssid_frame_counts_to_advertisements" author="lennartkoopmann">
+        <renameColumn tableName="dot11_ssids" oldColumnName="beacon_count" newColumnName="beacon_advertisements" />
+        <renameColumn tableName="dot11_ssids" oldColumnName="proberesp_count" newColumnName="proberesp_advertisements" />
+    </changeSet>
+
+    <changeSet id="remove_uuids_from_dot11_tables" author="lennartkoopmann">
+        <dropColumn tableName="dot11_bssids" columnName="uuid" />
+        <dropColumn tableName="dot11_channels" columnName="uuid" />
+        <dropColumn tableName="dot11_clients" columnName="uuid" />
+        <dropColumn tableName="dot11_ssids" columnName="uuid" />
+    </changeSet>
+
+    <changeSet id="create_actual_clients_table" author="lennartkoopmann">
+        <renameTable oldTableName="dot11_clients" newTableName="dot11_bssid_clients" />
+        <dropPrimaryKey tableName="dot11_bssid_clients" />
+        <addPrimaryKey tableName="dot11_bssid_clients" columnNames="id" />
+
+        <createTable tableName="dot11_clients">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="client_mac" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="wildcard_probe_requests" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="dot11_client_probereq_ssids">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="client_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_probreqs2ssids"
+                                 baseTableName="dot11_client_probereq_ssids"
+                                 baseColumnNames="client_id"
+                                 referencedTableName="dot11_clients"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <createIndex tableName="dot11_client_probereq_ssids" indexName="probereq_client_id_lookup">
+            <column name="client_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="fix_clients_tap_uuid_uniqueness" author="lennartkoopmann">
+        <dropUniqueConstraint tableName="dot11_clients" constraintName="dot11_clients_tap_uuid_key" />
+        <dropUniqueConstraint tableName="dot11_client_probereq_ssids" constraintName="dot11_client_probereq_ssids_tap_uuid_key" />
+    </changeSet>
 </databaseChangeLog>

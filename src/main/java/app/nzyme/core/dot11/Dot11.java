@@ -1,9 +1,7 @@
 package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.dot11.db.BSSIDAndSSIDCountHistogramEntry;
-import app.nzyme.core.dot11.db.BSSIDSummary;
-import app.nzyme.core.dot11.db.SSIDSummary;
+import app.nzyme.core.dot11.db.*;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,11 +26,13 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
-                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "COUNT(DISTINCT(c.client_mac)) AS client_count " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
@@ -53,26 +53,7 @@ public class Dot11 {
         ) > 0;
     }
 
-    public Optional<BSSIDSummary> findBSSID(String bssid, int minutes, List<UUID> taps) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
-                                "MAX(b.created_at) AS last_seen, SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
-                                "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
-                                "GROUP BY b.bssid")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bind("bssid", bssid)
-                        .bindList("taps", taps)
-                        .mapTo(BSSIDSummary.class)
-                        .findOne()
-        );
-    }
-
-    public List<SSIDSummary> findSSIDsOfBSSID(int minutes, String bssid, List<UUID> taps) {
+    public List<SSIDChannelDetails> findSSIDsOfBSSID(int minutes, String bssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
@@ -88,8 +69,35 @@ public class Dot11 {
                         .bind("bssid", bssid)
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
-                        .mapTo(SSIDSummary.class)
+                        .mapTo(SSIDChannelDetails.class)
                         .list()
+        );
+    }
+
+    public Optional<SSIDDetails> findSSIDDetails(int minutes, String bssid, String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT s.ssid, MAX(s.created_at) AS last_seen, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT(r.rate)) AS rates, " +
+                                "ARRAY_AGG(DISTINCT(s.is_wps)) AS is_wps, ARRAY_AGG(DISTINCT(i.infrastructure_type)) " +
+                                "AS infrastructure_types, AVG(s.signal_strength_average) AS signal_strength_average, " +
+                                "ARRAY_AGG(DISTINCT(s.security_suites)) AS security_suites, " +
+                                "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
+                                "FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
+                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
+                                "LEFT JOIN dot11_rates AS r on s.id = r.ssid_id " +
+                                "WHERE created_at > :cutoff AND bssid = :bssid AND ssid = :ssid " +
+                                "AND tap_uuid IN (<taps>) " +
+                                "GROUP BY ssid")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(SSIDDetails.class)
+                        .findOne()
         );
     }
 
@@ -106,6 +114,10 @@ public class Dot11 {
                         .mapTo(BSSIDAndSSIDCountHistogramEntry.class)
                         .list()
         );
+    }
+
+    public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
+        return suite.groupCipher() + "-" + suite.pairwiseCiphers() + "/" + suite.keyManagementModes();
     }
 
     private static Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();

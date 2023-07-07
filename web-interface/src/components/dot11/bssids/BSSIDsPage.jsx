@@ -3,27 +3,24 @@ import Dot11Service from "../../../services/Dot11Service";
 import {TapContext} from "../../../App";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import BSSIDsTable from "./BSSIDsTable";
-import TimeRangeSelector from "../../misc/TimeRangeSelector";
 import AutoRefreshSelector from "../../misc/AutoRefreshSelector";
-import moment from "moment";
 import BSSIDAndSSIDChart from "./BSSIDAndSSIDChart";
 
 const dot11Service = new Dot11Service();
+const MINUTES = 15;
 
 function BSSIDsPage() {
 
   const tapContext = useContext(TapContext);
+  const selectedTaps = tapContext.taps;
 
   const [bssids, setBSSIDs] = useState(null);
 
-  const [minutes, setMinutes] = useState(15);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const selectedTaps = tapContext.taps;
-
   const loadData = function() {
-    dot11Service.findAllBSSIDs(minutes, selectedTaps, setBSSIDs);
+    dot11Service.findAllBSSIDs(MINUTES, selectedTaps, setBSSIDs);
     setLastUpdated(new Date());
   }
 
@@ -83,11 +80,19 @@ function BSSIDsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <TimeRangeSelector />
-                  <AutoRefreshSelector isAutoRefresh={isAutoRefresh} setIsAutoRefresh={setIsAutoRefresh} />
+                  <div className="row">
+                    <div className="col-md-12">
+                      <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
+                                           setIsAutoRefresh={setIsAutoRefresh}
+                                           lastUpdated={lastUpdated} />
+                    </div>
+                  </div>
 
-                  {moment(lastUpdated).format()}
-                  <BSSIDsTable bssids={bssids} minutes={minutes} isAutoRefresh={isAutoRefresh} />
+                  <div className="row">
+                    <div className="col-md-12">
+                      <BSSIDsTable bssids={bssids} minutes={MINUTES} isAutoRefresh={isAutoRefresh} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

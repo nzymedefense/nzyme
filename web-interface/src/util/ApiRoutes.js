@@ -118,6 +118,7 @@ const ApiRoutes = {
     }
   },
   DOT11: {
+    OVERVIEW: '/dot11/overview',
     NETWORKS: {
       BSSIDS: '/dot11/bssids',
       SSID: (bssid, ssid, channel) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/channels/show/${channel}`

@@ -1,18 +1,19 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use log::{error};
+use log::error;
 
 use crate::{
-    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType, Dot11DataFrame, Dot11DataFrameDirection},
+    dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType, Dot11DataFrame, Dot11DataFrameDirection, Dot11ProbeRequestFrame},
     link::payloads::{
         AdvertisedNetworkReport, BssidReport, Dot11CipherSuites, Dot11TableReport,
-        SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport, Dot11ClientStatisticsReport,
+        SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport, Dot11ClientStatisticsReport, Dot11ClientReport,
     }, helpers::network::is_mac_address_multicast,
 };
 
 #[derive(Debug)]
 pub struct Dot11Table {
     pub bssids: Mutex<HashMap<String, Bssid>>,
+    pub clients: Mutex<HashMap<String, Client>>
 }
 
 #[derive(Debug)]
@@ -22,6 +23,13 @@ pub struct Bssid {
     pub hidden_ssid_frames: u128,
     pub signal_strengths: Vec<i8>,
     pub fingerprints: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct Client {
+    pub probe_request_ssids: Vec<String>,
+    pub wildcard_probe_requests: u128
+    // TODO add signal strength like BSSID
 }
 
 #[derive(Debug)]
@@ -41,7 +49,10 @@ pub struct Dot11ClientStatistics {
 #[derive(Debug)]
 pub struct AdvertisedNetwork {
     pub security: Vec<SecurityInformation>,
+    pub beacon_advertisements: u128,
+    pub proberesp_advertisements: u128,
     pub fingerprints: Vec<String>,
+    pub rates: Vec<f32>,
     pub wps: bool,
     pub signal_strengths: Vec<i8>,
     pub infrastructure_types: Vec<InfraStructureType>,
@@ -52,6 +63,7 @@ impl Dot11Table {
     pub fn new() -> Self {
         Self {
             bssids: Mutex::new(HashMap::new()),
+            clients: Mutex::new(HashMap::new())
         }
     }
 
@@ -79,6 +91,14 @@ impl Dot11Table {
                                             ssid.fingerprints.push(beacon.fingerprint.clone());
                                         }
 
+                                        if let Some(rates) = &beacon.tagged_parameters.supported_rates {
+                                            Self::update_existing_ssid_rates(ssid, &rates);
+                                        }
+
+                                        if let Some(rates) = &beacon.tagged_parameters.extended_supported_rates {
+                                            Self::update_existing_ssid_rates(ssid, &rates);
+                                        }
+
                                         if !ssid.infrastructure_types.contains(&beacon.capabilities.infrastructure_type) {
                                             ssid.infrastructure_types.push(beacon.capabilities.infrastructure_type);
                                         }
@@ -86,7 +106,10 @@ impl Dot11Table {
                                         Self::update_existing_channel_statistics(
                                             FrameSubType::Beacon, beacon.header.frequency, beacon.length, ssid
                                         );
+
                                         ssid.signal_strengths.push(signal_strength);
+
+                                        ssid.beacon_advertisements += 1;
                                     }
                                     None => {
                                         // Insert new SSID.
@@ -95,6 +118,12 @@ impl Dot11Table {
                                             AdvertisedNetwork {
                                                 security: beacon.security,
                                                 fingerprints: vec![beacon.fingerprint.clone()],
+                                                beacon_advertisements: 1,
+                                                proberesp_advertisements: 0,
+                                                rates: Self::build_initial_ssid_rates(
+                                                    &beacon.tagged_parameters.supported_rates,
+                                                    &beacon.tagged_parameters.extended_supported_rates
+                                                ),
                                                 wps: beacon.has_wps,
                                                 signal_strengths: vec![signal_strength],
                                                 infrastructure_types: vec![beacon.capabilities.infrastructure_type],
@@ -127,11 +156,18 @@ impl Dot11Table {
                                     AdvertisedNetwork {
                                         security: beacon.security,
                                         fingerprints: vec![beacon.fingerprint.clone()],
+                                        beacon_advertisements: 1,
+                                        proberesp_advertisements: 0,
+                                        rates: Self::build_initial_ssid_rates(
+                                            &beacon.tagged_parameters.supported_rates,
+                                            &beacon.tagged_parameters.extended_supported_rates
+                                        ),
                                         wps: beacon.has_wps,
                                         signal_strengths: vec![signal_strength],
                                         infrastructure_types: vec![beacon.capabilities.infrastructure_type],
                                         channel_statistics: Self::build_initial_channel_statistics(
-                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length)
+                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length
+                                        )
                                     },
                                 )]),
                                 0,
@@ -153,6 +189,46 @@ impl Dot11Table {
                 };
             }
             Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+        }
+    }
+
+    pub fn register_probe_request_frame(&self, frame: Dot11ProbeRequestFrame) {
+        match self.clients.lock() {
+            Ok(mut clients) => {
+                match clients.get_mut(&frame.transmitter) {
+                    Some(client) => {
+                        // Update existing client.
+                        match frame.ssid {
+                            Some(ssid) => {
+                                // Specific/SSID request.
+                                if !client.probe_request_ssids.contains(&ssid) {
+                                    client.probe_request_ssids.push(ssid);
+                                }
+                            },
+                            None => {
+                                // Wildcard request.
+                                client.wildcard_probe_requests += 1;
+                            }
+                        }
+                    },
+                    None => {
+                        // First time we are seeing this client.
+                        let (probe_request_ssids, wildcard_probe_requests) = match frame.ssid {
+                            Some(ssid) => (vec![ssid], 0),
+                            None => (Vec::new(), 1),
+                        };
+
+                        clients.insert(
+                            frame.transmitter,
+                            Client {
+                                probe_request_ssids,
+                                wildcard_probe_requests
+                            }
+                        );
+                    }
+                }
+            },
+            Err(e) => error!("Could not acqure clients table mutex: {}", e)
         }
     }
 
@@ -260,10 +336,40 @@ impl Dot11Table {
         }
     }
 
+    pub fn build_initial_ssid_rates(rates: &Option<Vec<f32>>, extended_rates: &Option<Vec<f32>>) -> Vec<f32> {
+        let mut result = Vec::new();
+        if let Some(rates) = rates {
+            for rate in rates {
+                result.push(rate.clone())
+            }
+        }
+
+        if let Some(rates) = extended_rates {
+            for rate in rates {
+                result.push(rate.clone())
+            }
+        }
+
+        result
+    }
+
+    pub fn update_existing_ssid_rates(ssid: &mut AdvertisedNetwork, rates: &Vec<f32>) {
+        for rate in rates {
+            if !ssid.rates.contains(rate) {
+                ssid.rates.push(rate.clone());
+            }
+        }
+    }
+
     pub fn clear_ephemeral(&mut self) {
         match self.bssids.lock() {
             Ok(mut bssids) => bssids.clear(),
             Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e)
+        }
+
+        match self.clients.lock() {
+            Ok(mut clients) => clients.clear(),
+            Err(e) => error!("Could not acquire clients table mutex: {}", e)
         }
     }
 
@@ -337,6 +443,9 @@ impl Dot11Table {
                             AdvertisedNetworkReport {
                                 security: netsec_report,
                                 fingerprints: netinfo.fingerprints.clone(),
+                                beacon_advertisements: netinfo.beacon_advertisements,
+                                proberesp_advertisements: netinfo.proberesp_advertisements,
+                                rates: netinfo.rates.clone(),
                                 wps: netinfo.wps,
                                 signal_strength: calculate_signal_strengh_report(
                                     &netinfo.signal_strengths,
@@ -374,8 +483,26 @@ impl Dot11Table {
             Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
         }
 
+        let mut clients_report: HashMap<String, Dot11ClientReport> = HashMap::new();
+
+        match self.clients.lock() {
+            Ok(clients) => {
+                for (client, info) in &*clients {
+                    clients_report.insert(
+                        client.clone(),
+                        Dot11ClientReport {
+                            probe_request_ssids: info.probe_request_ssids.clone(),
+                            wildcard_probe_requests: info.wildcard_probe_requests
+                        }
+                    );
+                }
+            },
+            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+        }
+
         Dot11TableReport {
             bssids: bssid_report,
+            clients: clients_report
         }
     }
 }

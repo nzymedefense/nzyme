@@ -85,7 +85,7 @@ function NodeDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>Node Information</h3>
-                <dl>
+                <dl className="mb-0">
                   <dt>Last Seen</dt>
                   <dd>
                     <span title={moment(node.last_seen).format()}>
@@ -116,7 +116,7 @@ function NodeDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>Host Information</h3>
-                <dl>
+                <dl className="mb-0">
                   <dt>Operating System</dt>
                   <dd>{node.os_information}</dd>
                   <dt>Maximum CPU Threads</dt>
@@ -210,7 +210,7 @@ function NodeDetailsPage() {
                       external address is what other nodes will use to connect to this node.
                     </p>
 
-                    <dl>
+                    <dl className="mb-0">
                       <dt>External Address</dt>
                       <dd>{node.http_external_uri}</dd>
                       <dt>Listen Address</dt>

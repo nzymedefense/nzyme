@@ -318,7 +318,7 @@ function App() {
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
-                          <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssid', ':ssid', ':channel')} element={<SSIDDetailsPage />} />
+                          <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':channelParam')} element={<SSIDDetailsPage />} />
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

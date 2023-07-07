@@ -3,6 +3,7 @@ import Store from '../../util/Store'
 import DarkModeButton from './DarkModeButton'
 import AuthenticationService from "../../services/AuthenticationService";
 import TapSelector from "../misc/TapSelector";
+import TimeRangeSelector from "../misc/TimeRangeSelector";
 
 const authService = new AuthenticationService();
 
@@ -32,6 +33,10 @@ class NavigationBar extends React.Component {
 
                 <div className="tap-selector">
                   <TapSelector />
+                </div>
+
+                <div className="timerange-selector">
+                  <TimeRangeSelector />
                 </div>
               </div>
 
