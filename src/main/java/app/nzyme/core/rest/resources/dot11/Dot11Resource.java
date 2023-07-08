@@ -45,7 +45,6 @@ public class Dot11Resource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
-        LOG.info("QUERY START");
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
             bssids.add(BSSIDSummaryDetailsResponse.create(
@@ -61,7 +60,6 @@ public class Dot11Resource extends TapDataHandlingResource {
                     bssid.infrastructureTypes()
             ));
         }
-        LOG.info("QUERY DONE");
 
         return Response.ok(BSSIDListResponse.create(bssids)).build();
     }
