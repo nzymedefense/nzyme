@@ -7,6 +7,7 @@ class Dot11Service {
 
     RESTClient.get("/dot11/networks/bssids", { minutes: minutes, taps: tapsList },
         function (response) {
+          console.log("DONE")
           setBSSIDs(response.data.bssids)
     })
   }

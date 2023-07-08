@@ -17,7 +17,7 @@ function BSSIDAndSSIDChart(props) {
 
   useEffect(() => {
     dot11Service.getBSSIDAndSSIDHistogram(24*60, selectedTaps, setHistogram);
-  }, [])
+  }, [selectedTaps])
 
   const formatData = function(data) {
     const result = {}

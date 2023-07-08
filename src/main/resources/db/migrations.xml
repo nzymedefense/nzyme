@@ -3090,4 +3090,36 @@
         <dropUniqueConstraint tableName="dot11_clients" constraintName="dot11_clients_tap_uuid_key" />
         <dropUniqueConstraint tableName="dot11_client_probereq_ssids" constraintName="dot11_client_probereq_ssids_tap_uuid_key" />
     </changeSet>
+
+    <changeSet id="add_bssids_index_for_bssid_lookup" author="lennartkoopmann">
+        <createIndex tableName="dot11_bssids" indexName="bssids_bssid_lookup">
+            <column name="bssid" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_more_indices_for_bssid_lookup" author="lennartkoopmann">
+        <createIndex tableName="dot11_bssids" indexName="bssids_bssid_timestamp">
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex tableName="dot11_bssids" indexName="bssids_bssid_tapuuid">
+            <column name="tap_uuid" />
+        </createIndex>
+
+        <createIndex tableName="dot11_ssids" indexName="ssids_bssid_lookup">
+            <column name="bssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_fingerprints" indexName="fingerprints_bssid_lookup">
+            <column name="bssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_infrastructure_types" indexName="infratypes_ssid_lookup">
+            <column name="ssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_bssid_clients" indexName="bssidclients_bssid_lookup">
+            <column name="bssid_id" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

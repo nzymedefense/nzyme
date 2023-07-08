@@ -9,6 +9,11 @@ import BSSIDAndSSIDChart from "./BSSIDAndSSIDChart";
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
 
+const loadData = function(taps, setBSSIDs, setLastUpdated) {
+  dot11Service.findAllBSSIDs(MINUTES, taps, setBSSIDs);
+  setLastUpdated(new Date());
+}
+
 function BSSIDsPage() {
 
   const tapContext = useContext(TapContext);
@@ -19,26 +24,18 @@ function BSSIDsPage() {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  const loadData = function() {
-    dot11Service.findAllBSSIDs(MINUTES, selectedTaps, setBSSIDs);
-    setLastUpdated(new Date());
-  }
-
   useEffect(() => {
     setBSSIDs(null);
-    loadData();
-  }, [selectedTaps])
+    loadData(selectedTaps, setBSSIDs, setLastUpdated);
 
-  useEffect(() => {
     const timer = setInterval(() => {
       if (isAutoRefresh) {
-        loadData();
+        loadData(selectedTaps, setBSSIDs, setLastUpdated);
       }
     }, 15000);
 
     return () => clearInterval(timer);
-  }, [isAutoRefresh])
-
+  }, [isAutoRefresh, selectedTaps])
 
   if (!bssids) {
     return <LoadingSpinner />
