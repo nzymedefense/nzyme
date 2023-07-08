@@ -178,7 +178,6 @@ public class Dot11Resource extends TapDataHandlingResource {
             }
         }
 
-
         SSIDDetailsResponse response = SSIDDetailsResponse.create(
                 bssid,
                 nzyme.getOUIManager().lookupBSSID(bssid),
@@ -198,6 +197,28 @@ public class Dot11Resource extends TapDataHandlingResource {
         return Response.ok(response).build();
     }
 
+    @GET
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/advertisements/histogram")
+    public Response ssidOfBSSIDAdvertisementHistogram(@Context SecurityContext sc,
+                                                      @PathParam("bssid") String bssid,
+                                                      @PathParam("ssid") String ssid,
+                                                      @QueryParam("minutes") int minutes,
+                                                      @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Map<DateTime, SSIDAdvertisementHistogramValueResponse> values = Maps.newHashMap();
+        for (SSIDAdvertisementHistogramEntry entry : nzyme.getDot11()
+                .findSSIDAdvertisementHistogram(bssid, ssid, minutes, tapUuids)) {
+            values.put(entry.bucket(), SSIDAdvertisementHistogramValueResponse.create(
+                    entry.bucket(),
+                    entry.beacons(),
+                    entry.probeResponses()
+            ));
+        }
+
+        return Response.ok(SSIDAdvertisementHistogramResponse.create(values)).build();
+    }
 
 
 }

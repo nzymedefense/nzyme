@@ -8,6 +8,7 @@ import SignalStrength from "../../util/SignalStrength";
 import InfrastructureTypes from "../../util/InfrastructureTypes";
 import WPSInformation from "../../util/WPSInformation";
 import SecuritySuites from "../../util/SecuritySuites";
+import SSIDAdvertisementHistogram from "./SSIDAdvertisementHistogram";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -22,6 +23,7 @@ function SSIDDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const [ssid, setSSID] = useState(null);
+  const [advertisementHistogramType, setHistogramAdvertisementType] = useState("beacon_count");
 
   useEffect(() => {
     dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, DEFAULT_MINUTES, selectedTaps, setSSID);
@@ -92,6 +94,38 @@ function SSIDDetailsPage() {
                 <dt>Suite</dt>
                 <dd><SecuritySuites suites={ssid.security_suites} /></dd>
               </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3 style={{display: "inline-block"}}>SSID Advertisements</h3>
+
+
+              <select className="form-select form-select-sm float-end" style={{width: 250}}
+                      onChange={(e) => { setHistogramAdvertisementType(e.target.value) }}
+                      value={advertisementHistogramType}>
+                <option value="beacon_count">Beacon Count</option>
+                <option value="proberesp_count">Probe Response Count</option>
+              </select>
+
+              <SSIDAdvertisementHistogram bssid={ssid.bssid} ssid={ssid.ssid} parameter={advertisementHistogramType} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>Active Channels</h3>
+
+              todo
             </div>
           </div>
         </div>

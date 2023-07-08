@@ -33,16 +33,12 @@ function BSSIDAndSSIDChart(props) {
     return <LoadingSpinner />
   }
 
-  return (
-      <React.Fragment>
-        <SimpleLineChart
-            height={200}
-            lineWidth={1}
-            customMarginBottom={35}
-            data={formatData(histogram.values)}
-        />
-      </React.Fragment>
-  )
+  return <SimpleLineChart
+          height={200}
+          lineWidth={1}
+          customMarginBottom={35}
+          data={formatData(histogram.values)}
+      />
 
 }
 

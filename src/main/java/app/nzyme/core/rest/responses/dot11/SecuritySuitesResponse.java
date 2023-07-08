@@ -3,19 +3,25 @@ package app.nzyme.core.rest.responses.dot11;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class SecuritySuitesResponse {
 
     @JsonProperty("pairwise_ciphers")
+    @Nullable
     public abstract String pairwiseCiphers();
 
     @JsonProperty("group_cipher")
+    @Nullable
     public abstract String groupCipher();
 
     @JsonProperty("key_management_modes")
+    @Nullable
     public abstract String keyManagementModes();
 
     @JsonProperty("identifier")
+    @Nullable
     public abstract String identifier();
 
     public static SecuritySuitesResponse create(String pairwiseCiphers, String groupCipher, String keyManagementModes, String identifier) {

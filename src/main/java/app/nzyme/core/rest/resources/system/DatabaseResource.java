@@ -36,7 +36,8 @@ public class DatabaseResource {
                 + db.getTableSize("dot11_infrastructure_types")
                 + db.getTableSize("dot11_bssid_clients")
                 + db.getTableSize("dot11_rates")
-                + db.getTableSize("dot11_clients");
+                + db.getTableSize("dot11_clients")
+                + db.getTableSize("dot11_client_probereq_ssids");
 
         return Response.ok(DatabaseSummaryResponse.create(
                 totalSize, ethernetSize, dot11Size

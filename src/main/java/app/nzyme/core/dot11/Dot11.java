@@ -45,9 +45,11 @@ public class Dot11 {
     public boolean bssidExist(String bssid, int minutes, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dot11_bssids " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>)")
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "AND bssid = :bssid")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
+                        .bind("bssid", bssid)
                         .mapTo(Long.class)
                         .one()
         ) > 0;
@@ -116,7 +118,27 @@ public class Dot11 {
         );
     }
 
+    public List<SSIDAdvertisementHistogramEntry> findSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
+                                "SUM(proberesp_advertisements) AS proberesponses, " +
+                                "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "AND bssid = :bssid AND ssid = :ssid " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .mapTo(SSIDAdvertisementHistogramEntry.class)
+                        .list()
+        );
+    }
+
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
+        if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
+            return "NONE";
+        }
         return suite.groupCipher() + "-" + suite.pairwiseCiphers() + "/" + suite.keyManagementModes();
     }
 

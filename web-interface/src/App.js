@@ -113,7 +113,7 @@ function App() {
   const [nzymeInformation, setNzymeInformation] = useState(null);
   const [userInformation, setUserInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
-  const [selectedTaps, setSelectedTaps] = useState(null);
+  const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
 
   const [fullyLoaded, setFullyLoaded] = useState(false);
 

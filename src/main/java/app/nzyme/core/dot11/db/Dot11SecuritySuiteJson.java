@@ -4,11 +4,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class Dot11SecuritySuiteJson {
 
+    @Nullable
     public abstract String pairwiseCiphers();
+
+    @Nullable
     public abstract String groupCipher();
+
+    @Nullable
     public abstract String keyManagementModes();
 
     @JsonCreator
