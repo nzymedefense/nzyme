@@ -26,14 +26,16 @@ function TapSelector(props) {
     if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
       setSelectedTaps("*");
       setPreSelectedTaps("*");
+      setButtonText("All Taps Selected");
     } else {
       setSelectedTaps(lsTaps);
       setPreSelectedTaps(lsTaps);
+      setButtonText(lsTaps.length + " Taps Selected");
     }
   }, [])
 
   useEffect(() => {
-    if (selectedTaps !== null && availableTaps != null) {
+    if (selectedTaps !== null && availableTaps !== null) {
       if (availableTaps.length === 0) {
         setButtonText("No access to any taps.");
       } else {
@@ -74,8 +76,6 @@ function TapSelector(props) {
       });
 
       setAvailableTapsUUIDs(uuids);
-      setSelectedTaps("*");
-      Store.set("selected_taps", "*");
     }
   }, [availableTaps]);
 
