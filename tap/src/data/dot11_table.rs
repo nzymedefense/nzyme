@@ -54,7 +54,7 @@ pub struct AdvertisedNetwork {
     pub fingerprints: Vec<String>,
     pub rates: Vec<f32>,
     pub wps: bool,
-    pub signal_strengths: Vec<i8>,
+    pub signal_strengths: HashMap<u16, Vec<i8>>,
     pub infrastructure_types: Vec<InfraStructureType>,
     pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
 }
@@ -107,7 +107,14 @@ impl Dot11Table {
                                             FrameSubType::Beacon, beacon.header.frequency, beacon.length, ssid
                                         );
 
-                                        ssid.signal_strengths.push(signal_strength);
+                                        if let Some(freq) = &beacon.header.frequency {
+                                            match ssid.signal_strengths.get_mut(freq) {
+                                                Some(ss) => ss.push(signal_strength),
+                                                None => {
+                                                    ssid.signal_strengths.insert(*freq, vec![signal_strength]);
+                                                },
+                                            }
+                                        }
 
                                         ssid.beacon_advertisements += 1;
                                     }
@@ -125,10 +132,10 @@ impl Dot11Table {
                                                     &beacon.tagged_parameters.extended_supported_rates
                                                 ),
                                                 wps: beacon.has_wps,
-                                                signal_strengths: vec![signal_strength],
+                                                signal_strengths: Self::build_initial_signal_strengths(&beacon.header.frequency, signal_strength),
                                                 infrastructure_types: vec![beacon.capabilities.infrastructure_type],
                                                 channel_statistics: Self::build_initial_channel_statistics(
-                                                    FrameSubType::Beacon, beacon.header.frequency, beacon.length
+                                                    FrameSubType::Beacon, &beacon.header.frequency, beacon.length
                                                 )
                                             },
                                         );
@@ -163,10 +170,12 @@ impl Dot11Table {
                                             &beacon.tagged_parameters.extended_supported_rates
                                         ),
                                         wps: beacon.has_wps,
-                                        signal_strengths: vec![signal_strength],
+                                        signal_strengths: Self::build_initial_signal_strengths(
+                                            &beacon.header.frequency, signal_strength
+                                        ),
                                         infrastructure_types: vec![beacon.capabilities.infrastructure_type],
                                         channel_statistics: Self::build_initial_channel_statistics(
-                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length
+                                            FrameSubType::Beacon, &beacon.header.frequency, beacon.length
                                         )
                                     },
                                 )]),
@@ -284,7 +293,7 @@ impl Dot11Table {
         }
     }
 
-    pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: Option<u16>, frame_length: usize) 
+    pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: &Option<u16>, frame_length: usize) 
             -> HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>> {
         let mut channel_statistics = HashMap::new();
         if let Some(freq) = frequency {
@@ -297,7 +306,7 @@ impl Dot11Table {
                 }
             );
 
-            channel_statistics.insert(freq, stats);
+            channel_statistics.insert(*freq, stats);
         }
 
         channel_statistics
@@ -359,6 +368,16 @@ impl Dot11Table {
                 ssid.rates.push(rate.clone());
             }
         }
+    }
+    pub fn build_initial_signal_strengths(channel: &Option<u16>, signal_strength: i8) -> HashMap<u16, Vec<i8>> {
+        let mut map = HashMap::new();
+
+        match channel {
+            Some(channel) => map.insert(*channel, vec![signal_strength]),
+            None => return map,
+        };
+
+        map
     }
 
     pub fn clear_ephemeral(&mut self) {
@@ -450,6 +469,7 @@ impl Dot11Table {
                                 signal_strength: calculate_signal_strengh_report(
                                     &netinfo.signal_strengths,
                                 ),
+                                signal_histogram: calculate_signal_histogram(&netinfo.signal_strengths),
                                 infrastructure_types,
                                 channel_statistics
                             },
@@ -472,7 +492,7 @@ impl Dot11Table {
                             advertised_networks,
                             clients,
                             hidden_ssid_frames: info.hidden_ssid_frames,
-                            signal_strength: calculate_signal_strengh_report(
+                            signal_strength: calculate_1d_signal_strengh_report(
                                 &info.signal_strengths,
                             ),
                             fingerprints: info.fingerprints.clone(),
@@ -507,7 +527,38 @@ impl Dot11Table {
     }
 }
 
-fn calculate_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrengthReport {
+// yo this all below here needs some serious refactoring and dedup lmao
+
+fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> SignalStrengthReport {
+    let mut sum: i128 = 0;
+    let mut min = 0;
+    let mut max = -100;
+
+    for channel in signal_strengths.values() {
+        for ss in channel {
+            sum += *ss as i128;
+
+            if ss > &max {
+                max = *ss;
+            }
+
+            if ss < &min {
+                min = *ss;
+            }
+        }
+    }
+
+    let count = signal_strengths.clone().len() as i128;
+    let average = (sum / count) as f32;
+
+    SignalStrengthReport {
+        min,
+        max,
+        average,
+    }
+}
+
+fn calculate_1d_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrengthReport {
     let mut sum: i128 = 0;
     let mut min = 0;
     let mut max = -100;
@@ -531,4 +582,35 @@ fn calculate_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStrength
         max,
         average,
     }
+}
+
+fn calculate_signal_histogram(signal_strengths: &HashMap<u16, Vec<i8>>) -> HashMap<u16, HashMap<i8, u128>> {
+    let mut histograms: HashMap<u16, HashMap<i8, u128>> = HashMap::new();
+
+    for (channel, signals) in signal_strengths {
+        match histograms.get_mut(channel) {
+            Some(channel) => {
+                // Update existing channel.
+                for signal in signals {
+                    match channel.get_mut(signal) {
+                        Some(existing) => { *existing += 1; },
+                        None => { channel.insert(*signal, 1); }
+                    }
+                }
+            },
+            None => {
+                // First time channel.
+                let mut histogram: HashMap<i8, u128> = HashMap::new();
+                for signal in signals {
+                    match histogram.get_mut(signal) {
+                        Some(existing) => { *existing += 1; },
+                        None => { histogram.insert(*signal, 1); }
+                    }
+                }
+                histograms.insert(*channel, histogram);
+            },
+        }
+    }
+
+    histograms
 }

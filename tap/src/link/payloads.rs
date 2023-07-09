@@ -169,6 +169,7 @@ pub struct AdvertisedNetworkReport {
     pub rates: Vec<f32>,
     pub wps: bool,
     pub signal_strength: SignalStrengthReport,
+    pub signal_histogram: HashMap<u16, HashMap<i8, u128>>,
     pub infrastructure_types: Vec<String>,
     pub channel_statistics: HashMap<u16, HashMap<String, Dot11ChannelStatisticsReport>>
 }

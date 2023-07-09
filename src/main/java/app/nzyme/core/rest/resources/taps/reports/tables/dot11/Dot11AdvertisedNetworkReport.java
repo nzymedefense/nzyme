@@ -15,6 +15,7 @@ public abstract class Dot11AdvertisedNetworkReport {
     public abstract List<Float> rates();
     public abstract boolean wps();
     public abstract Dot11SignalStrengthReport signalStrength();
+    public abstract Map<Long, Map<Long, Long>> signalHistogram();
     public abstract List<String> infrastructureTypes();
     public abstract Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics();
     public abstract long beaconAdvertisements();
@@ -26,6 +27,7 @@ public abstract class Dot11AdvertisedNetworkReport {
                                                       @JsonProperty("rates") List<Float> rates,
                                                       @JsonProperty("wps") boolean wps,
                                                       @JsonProperty("signal_strength") Dot11SignalStrengthReport signalStrength,
+                                                      @JsonProperty("signal_histogram") Map<Long, Map<Long, Long>> signalHistogram,
                                                       @JsonProperty("infrastructure_types") List<String> infrastructureTypes,
                                                       @JsonProperty("channel_statistics") Map<Long, Map<String, Dot11ChannelStatisticsReport>> channelStatistics,
                                                       @JsonProperty("beacon_advertisements") long beaconAdvertisements,
@@ -36,6 +38,7 @@ public abstract class Dot11AdvertisedNetworkReport {
                 .rates(rates)
                 .wps(wps)
                 .signalStrength(signalStrength)
+                .signalHistogram(signalHistogram)
                 .infrastructureTypes(infrastructureTypes)
                 .channelStatistics(channelStatistics)
                 .beaconAdvertisements(beaconAdvertisements)
@@ -58,6 +61,8 @@ public abstract class Dot11AdvertisedNetworkReport {
         public abstract Builder wps(boolean wps);
 
         public abstract Builder signalStrength(Dot11SignalStrengthReport signalStrength);
+
+        public abstract Builder signalHistogram(Map<Long, Map<Long, Long>> signalHistogram);
 
         public abstract Builder infrastructureTypes(List<String> infrastructureTypes);
 

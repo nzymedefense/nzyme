@@ -98,7 +98,7 @@ public class Dot11Table implements DataTable {
                 );
             }
 
-            // BSSID clients.
+            // BSSID Clients.
             for (Map.Entry<String, Dot11ClientStatisticsReport> client : report.clients().entrySet()) {
                 String mac = client.getKey();
                 Dot11ClientStatisticsReport stats = client.getValue();
@@ -140,6 +140,9 @@ public class Dot11Table implements DataTable {
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
+
+
+                    LOG.info(ssidReport.signalHistogram());
 
                     Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
                             handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
