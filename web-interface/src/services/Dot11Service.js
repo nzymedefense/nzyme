@@ -38,12 +38,21 @@ class Dot11Service {
     })
   }
 
-  getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, minutes, taps, setAdvertisementHistogram) {
+  getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, minutes, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/advertisements/histogram",
         { minutes: minutes, taps: tapsList }, function (response) {
-          setAdvertisementHistogram(response.data);
+          setHistogram(response.data);
+    })
+  }
+
+  getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, minutes, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/histogram",
+        { minutes: minutes, taps: tapsList }, function (response) {
+          setHistogram(response.data);
     })
   }
 

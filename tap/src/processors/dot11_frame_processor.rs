@@ -37,10 +37,14 @@ impl Dot11FrameProcessor {
                 }
             },
             FrameSubType::Data |
+            FrameSubType::Null |
             FrameSubType::QosData |
+            FrameSubType::QosNull |
             FrameSubType::QosDataCfAck |
             FrameSubType::QosDataCfPoll |
-            FrameSubType::QosDataCfAckCfPoll => {
+            FrameSubType::QosDataCfAckCfPoll |
+            FrameSubType::QosCfPoll |
+            FrameSubType::QosCfAckCfPoll => {
                 match data_frame_parser::parse(frame) {
                     Ok(frame) => self.handle_data_frame(frame),
                     Err(e) => trace!("Could not parse data frame: {}", e)
@@ -71,10 +75,6 @@ impl Dot11FrameProcessor {
             FrameSubType::Ack |
             FrameSubType::CfEnd |
             FrameSubType::CfEndCfAck |
-            FrameSubType::Null |
-            FrameSubType::QosNull |
-            FrameSubType::QosCfPoll |
-            FrameSubType::QosCfAckCfPoll |
             FrameSubType::DmgBeacon |
             FrameSubType::S1gBeacon |
             FrameSubType::Reserved |

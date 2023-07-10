@@ -135,6 +135,22 @@ public class Dot11 {
         );
     }
 
+    public List<ActiveChannel> getSSIDChannelUsageHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.frequency, sum(c.stats_frames) AS frames, sum(c.stats_bytes) AS bytes " +
+                                "FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels c on s.id = c.ssid_id " +
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
+                                "AND s.ssid = :ssid GROUP BY c.frequency")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .mapTo(ActiveChannel.class)
+                        .list()
+        );
+    }
+
     public List<ChannelHistogramEntry> getSSIDSignalStrengthWaterfall(String bssid,
                                                                       String ssid,
                                                                       int frequency,

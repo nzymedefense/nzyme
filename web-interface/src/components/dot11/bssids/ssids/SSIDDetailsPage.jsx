@@ -10,6 +10,7 @@ import WPSInformation from "../../util/WPSInformation";
 import SecuritySuites from "../../util/SecuritySuites";
 import SSIDAdvertisementHistogram from "./SSIDAdvertisementHistogram";
 import SSIDSignalWaterfallChart from "./SSIDSignalWaterfallChart";
+import SSIDChannelUsageHistogram from "./SSIDChannelUsageHistogram";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -84,17 +85,36 @@ function SSIDDetailsPage() {
         </div>
 
         <div className="col-md-6">
-          <div className="card">
-            <div className="card-body">
-              <h3>Security / Encryption</h3>
-              <dl className="mb-0">
-                <dt>Protocol</dt>
-                <dd>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</dd>
-                <dt>WPS</dt>
-                <dd><WPSInformation wps={ssid.is_wps} /></dd>
-                <dt>Suite</dt>
-                <dd><SecuritySuites suites={ssid.security_suites} /></dd>
-              </dl>
+          <div className="row">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Security / Encryption</h3>
+                  <dl className="mb-0">
+                    <dt>Protocol</dt>
+                    <dd>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</dd>
+                    <dt>WPS</dt>
+                    <dd><WPSInformation wps={ssid.is_wps} /></dd>
+                    <dt>Suite</dt>
+                    <dd><SecuritySuites suites={ssid.security_suites} /></dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="row mt-2">
+            <div className="col-md-12">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Fingerprints</h3>
+
+                  <ul className="mb-0">
+                  {ssid.fingerprints.map(function (fp) {
+                    return <li key={"fp-" +fp}>{fp}</li>
+                  })}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -122,11 +142,27 @@ function SSIDDetailsPage() {
 
       <div className="row mt-3">
         <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <h3>Active Channels</h3>
+          <div className="row">
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Active Channels</h3>
 
-              todo
+                  <SSIDChannelUsageHistogram bssid={ssid.bssid}
+                                             ssid={ssid.ssid}
+                                             minutes={15} />
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-6">
+              <div className="card">
+                <div className="card-body">
+                  <h3>Connected Clients</h3>
+
+                  TODO charts, allow to switch to table
+                </div>
+              </div>
             </div>
           </div>
         </div>

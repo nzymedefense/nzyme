@@ -17,6 +17,7 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -141,16 +142,32 @@ public class Dot11Resource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
-        Map<DateTime, BSSIDAndSSIDHistogramValueResponse> values = Maps.newHashMap();
+        Map<DateTime, BSSIDAndSSIDCountHistogramEntry> histogram = Maps.newHashMap();
         for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11().getBSSIDAndSSIDCountHistogram(minutes, tapUuids)) {
-            values.put(h.bucket(), BSSIDAndSSIDHistogramValueResponse.create(
-                    h.bucket(),
-                    h.bssidCount(),
-                    h.ssidCount()
-            ));
+            histogram.put(h.bucket(), h);
         }
 
-        return Response.ok(BSSIDAndSSIDHistogramResponse.create(values)).build();
+        Map<DateTime, BSSIDAndSSIDHistogramValueResponse> response = Maps.newTreeMap();
+        for (int x = minutes; x != 0; x--) {
+            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
+            BSSIDAndSSIDCountHistogramEntry entry = histogram.get(bucket);
+            if (entry == null) {
+                response.put(bucket,
+                        BSSIDAndSSIDHistogramValueResponse.create(bucket, 0, 0)
+                );
+            } else {
+                response.put(
+                        bucket,
+                        BSSIDAndSSIDHistogramValueResponse.create(
+                                entry.bucket(),
+                                entry.bssidCount(),
+                                entry.ssidCount()
+                        )
+                );
+            }
+        }
+
+        return Response.ok(BSSIDAndSSIDHistogramResponse.create(response)).build();
     }
 
     @GET
@@ -217,17 +234,56 @@ public class Dot11Resource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
-        Map<DateTime, SSIDAdvertisementHistogramValueResponse> values = Maps.newHashMap();
+        Map<DateTime, SSIDAdvertisementHistogramEntry> histogram = Maps.newHashMap();
         for (SSIDAdvertisementHistogramEntry entry : nzyme.getDot11()
                 .getSSIDAdvertisementHistogram(bssid, ssid, minutes, tapUuids)) {
-            values.put(entry.bucket(), SSIDAdvertisementHistogramValueResponse.create(
-                    entry.bucket(),
-                    entry.beacons(),
-                    entry.probeResponses()
+            histogram.put(entry.bucket(), entry);
+        }
+
+        Map<DateTime, SSIDAdvertisementHistogramValueResponse> response = Maps.newTreeMap();
+        for (int x = minutes; x != 0; x--) {
+            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
+            SSIDAdvertisementHistogramEntry entry = histogram.get(bucket);
+            if (entry == null) {
+                response.put(bucket,
+                        SSIDAdvertisementHistogramValueResponse.create(bucket, 0, 0)
+                );
+            } else {
+                response.put(
+                        bucket,
+                        SSIDAdvertisementHistogramValueResponse.create(
+                                entry.bucket(),
+                                entry.beacons(),
+                                entry.probeResponses()
+                        )
+                );
+            }
+        }
+
+        return Response.ok(SSIDAdvertisementHistogramResponse.create(response)).build();
+    }
+
+    @GET
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/frequencies/histogram")
+    public Response ssidOfBSSIDActiveChannelHistogram(@Context SecurityContext sc,
+                                                      @PathParam("bssid") String bssid,
+                                                      @PathParam("ssid") String ssid,
+                                                      @QueryParam("minutes") int minutes,
+                                                      @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        List<ActiveChannelDetailsResponse> channels = Lists.newArrayList();
+        for (ActiveChannel c : nzyme.getDot11().getSSIDChannelUsageHistogram(bssid, ssid, minutes, tapUuids)) {
+            channels.add(ActiveChannelDetailsResponse.create(
+                    Dot11.frequencyToChannel(c.frequency()),
+                    c.frequency(),
+                    c.frames(),
+                    c.bytes()
             ));
         }
 
-        return Response.ok(SSIDAdvertisementHistogramResponse.create(values)).build();
+        return Response.ok(ActiveChannelListResponse.create(channels)).build();
     }
 
     @GET
