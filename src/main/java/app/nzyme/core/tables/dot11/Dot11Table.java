@@ -140,9 +140,7 @@ public class Dot11Table implements DataTable {
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-
-                    LOG.info("SIGNAL STRENGTH: {}", ssidReport.signalStrength().average());
-
+                    
                     Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
                             handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
                                             "security_protocol, security_suites, is_wps, signal_strength_average, " +
