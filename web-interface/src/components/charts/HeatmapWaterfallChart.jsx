@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Plot from 'react-plotly.js'
+import Store from "../../util/Store";
 
 class HeatmapWaterfallChart extends React.Component {
   constructor (props) {
@@ -15,19 +16,31 @@ class HeatmapWaterfallChart extends React.Component {
     this.setState({ data: nextProps.data })
   }
 
-  hexToRgb (hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        }
-      : null
-  }
-
   render () {
     const data = this.state.data
+
+    const colors = {}
+    if (Store.get('dark_mode')) {
+      colors.background = '#2B2D42'
+      colors.text = '#ffffff'
+      colors.lines = '#8D99AE'
+      colors.grid = '#8D99AE'
+      colors.scale = [
+        [0, 'rgb(43, 45, 66)'], [0.35, 'rgb(13, 110, 253)'],
+        [0.5, 'rgb(190,190,190)'], [0.6, 'rgb(220,170,132)'],
+        [0.7, 'rgb(230,145,90)'], [1, 'rgb(178,10,28)']
+      ]
+    } else {
+      colors.background = '#ffffff'
+      colors.text = '#212529'
+      colors.lines = '#212529'
+      colors.grid = '#e3e3e3'
+      colors.scale =  [
+        [0, 'rgb(255,255,255)'], [0.35, 'rgb(13, 110, 253)'],
+        [0.5, 'rgb(190,190,190)'], [0.6, 'rgb(220,170,132)'],
+        [0.7, 'rgb(230,145,90)'], [1, 'rgb(178,10,28)']
+      ]
+    }
 
     const finalData = [
       {
@@ -37,13 +50,7 @@ class HeatmapWaterfallChart extends React.Component {
         type: 'heatmap',
         hovertemplate: this.props.hovertemplate,
         showscale: false,
-        colorscale: [
-          [0, this.hexToRgb(this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16')], [0.125, 'rgb(0,109,44)'],
-          [0.25, 'rgb(35,139,69)'], [0.375, 'rgb(65,171,93)'],
-          [0.5, 'rgb(116,196,118)'], [0.625, 'rgb(161,217,155)'],
-          [0.75, 'rgb(199,233,192)'], [0.875, 'rgb(229,245,224)'],
-          [1, 'rgb(247,252,245)']
-        ]
+        colorscale: colors.scale,
       }
     ]
 
@@ -60,21 +67,21 @@ class HeatmapWaterfallChart extends React.Component {
                   height: this.props.height,
                   width: this.props.width,
                   font: {
-                    family: "'Inconsolata', monospace",
-                    size: 10,
-                    color: this.props.textColor ? this.props.textColor : '#ffffff'
+                    family: "'Nunito Sans', sans-serif",
+                    size: 12,
+                    color: colors.text
                   },
                   margin: { l: marginLeft, r: marginRight, b: marginBottom, t: marginTop, pad: 0 },
                   title: { text: this.props.title },
-                  paper_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
-                  plot_bgcolor: this.props.backgroundColor ? this.props.backgroundColor : '#0c0d16',
+                  paper_bgcolor: colors.background,
+                  plot_bgcolor: colors.lines,
                   showlegend: false,
                   dragmode: false,
                   clickmode: 'none',
                   hovermode: this.props.disableHover ? false : 'x',
                   xaxis: { visible: true, title: this.props.xaxistitle },
                   yaxis: { visible: true, title: this.props.yaxistitle },
-                  shapes: this.props.layers.shapes,
+                  shapes: this.props.layers ? this.props.layers.shapes : null,
                   annotations: this.props.annotations ? this.props.annotations : []
                 }}
                 config={{

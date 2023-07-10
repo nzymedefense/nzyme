@@ -111,7 +111,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new SSIDChannelDetailsMapper())
                 .registerRowMapper(new BSSIDAndSSIDCountHistogramEntryMapper())
                 .registerRowMapper(new SSIDDetailsMapper())
-                .registerRowMapper(new SSIDAdvertisementHistogramEntryMapper());
+                .registerRowMapper(new SSIDAdvertisementHistogramEntryMapper())
+                .registerRowMapper(new ChannelHistogramEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

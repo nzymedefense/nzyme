@@ -41,6 +41,7 @@ function SSIDAdvertisementHistogram(props) {
           height={200}
           lineWidth={1}
           customMarginBottom={35}
+          customMarginRight={20}
           data={formatData(histogram.values)} />
       </React.Fragment>
   )

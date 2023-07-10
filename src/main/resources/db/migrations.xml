@@ -3122,4 +3122,66 @@
             <column name="bssid_id" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="add_dot11_channel_histogram_table" author="lennartkoopmann">
+        <createTable tableName="dot11_channel_histograms">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="channel_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_channelhistos2channels"
+                                 baseTableName="dot11_channel_histograms"
+                                 baseColumnNames="channel_id"
+                                 referencedTableName="dot11_channels"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="change_dot11_channel_histogram_table_to_connect_to_ssid_directly" author="lennartkoopmann">
+        <dropTable tableName="dot11_channel_histograms" />
+
+        <createTable tableName="dot11_channel_histograms">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frequency" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_channelhistos2ssids"
+                                 baseTableName="dot11_channel_histograms"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
 </databaseChangeLog>

@@ -103,7 +103,7 @@ public class Dot11 {
         );
     }
 
-    public List<BSSIDAndSSIDCountHistogramEntry> findBSSIDAndSSIDCountHistogram(int minutes, List<UUID> taps) {
+    public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(int minutes, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(b.bssid)) as bssid_count, " +
                                 "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC('minute', b.created_at) as bucket " +
@@ -118,7 +118,7 @@ public class Dot11 {
         );
     }
 
-    public List<SSIDAdvertisementHistogramEntry> findSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+    public List<SSIDAdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
@@ -131,6 +131,28 @@ public class Dot11 {
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .mapTo(SSIDAdvertisementHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<ChannelHistogramEntry> getSSIDSignalStrengthWaterfall(String bssid,
+                                                                      String ssid,
+                                                                      int frequency,
+                                                                      int minutes,
+                                                                      List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
+                                "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
+                                "WHERE created_at > :cutoff AND s.tap_uuid IN (<taps>) AND bssid = :bssid " +
+                                "AND ssid = :ssid AND h.frequency = :frequency " +
+                                "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("frequency", frequency)
+                        .mapTo(ChannelHistogramEntry.class)
                         .list()
         );
     }

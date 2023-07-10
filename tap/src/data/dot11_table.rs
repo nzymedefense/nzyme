@@ -533,9 +533,11 @@ fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> 
     let mut sum: i128 = 0;
     let mut min = 0;
     let mut max = -100;
+    let mut count = 0;
 
     for channel in signal_strengths.values() {
         for ss in channel {
+            count += 1;
             sum += *ss as i128;
 
             if ss > &max {
@@ -548,7 +550,6 @@ fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> 
         }
     }
 
-    let count = signal_strengths.clone().len() as i128;
     let average = (sum / count) as f32;
 
     SignalStrengthReport {
@@ -574,7 +575,7 @@ fn calculate_1d_signal_strengh_report(signal_strengths: &Vec<i8>) -> SignalStren
         }
     }
 
-    let count = signal_strengths.clone().len() as i128;
+    let count = signal_strengths.len() as i128;
     let average = (sum / count) as f32;
 
     SignalStrengthReport {

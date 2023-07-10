@@ -141,8 +141,7 @@ public class Dot11Table implements DataTable {
                         throw new RuntimeException(e);
                     }
 
-
-                    LOG.info(ssidReport.signalHistogram());
+                    LOG.info("SIGNAL STRENGTH: {}", ssidReport.signalStrength().average());
 
                     Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
                             handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
@@ -208,6 +207,23 @@ public class Dot11Table implements DataTable {
                                             .bind("frame_type", frameType.toLowerCase())
                                             .bind("stats_bytes", stats.bytes())
                                             .bind("stats_frames", stats.frames())
+                                            .execute()
+                            );
+                        }
+                    }
+
+                    // Write channel signal histogram.
+                    for (Map.Entry<Long, Map<Long, Long>> channel : ssidReport.signalHistogram().entrySet()) {
+                        long frequency = channel.getKey();
+                        for (Map.Entry<Long, Long> histo : channel.getValue().entrySet()) {
+                            tablesService.getNzyme().getDatabase().useHandle(handle ->
+                                    handle.createUpdate("INSERT INTO dot11_channel_histograms(ssid_id, frequency, " +
+                                                    "signal_strength, frame_count) VALUES(:ssid_id, :frequency, " +
+                                                    ":signal_strength, :frame_count)")
+                                            .bind("ssid_id", ssidDatabaseId)
+                                            .bind("frequency", frequency)
+                                            .bind("signal_strength", histo.getKey())
+                                            .bind("frame_count", histo.getValue())
                                             .execute()
                             );
                         }

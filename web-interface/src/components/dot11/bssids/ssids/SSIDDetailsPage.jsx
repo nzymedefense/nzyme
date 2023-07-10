@@ -9,6 +9,7 @@ import InfrastructureTypes from "../../util/InfrastructureTypes";
 import WPSInformation from "../../util/WPSInformation";
 import SecuritySuites from "../../util/SecuritySuites";
 import SSIDAdvertisementHistogram from "./SSIDAdvertisementHistogram";
+import SSIDSignalWaterfallChart from "./SSIDSignalWaterfallChart";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -17,7 +18,7 @@ function SSIDDetailsPage() {
 
   const {bssidParam} = useParams();
   const {ssidParam} = useParams();
-  const {channelParam} = useParams();
+  const {frequencyParam} = useParams();
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -126,6 +127,21 @@ function SSIDDetailsPage() {
               <h3>Active Channels</h3>
 
               todo
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>Signal Strength Waterfall</h3>
+
+              <SSIDSignalWaterfallChart bssid={ssid.bssid}
+                                        ssid={ssid.ssid}
+                                        frequency={frequencyParam}
+                                        minutes={24*60} />
             </div>
           </div>
         </div>

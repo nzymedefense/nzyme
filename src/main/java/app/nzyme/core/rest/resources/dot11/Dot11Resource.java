@@ -3,6 +3,8 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.dot11.tracks.Track;
+import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.dot11.*;
@@ -33,6 +35,14 @@ import java.util.UUID;
 public class Dot11Resource extends TapDataHandlingResource {
 
     private static final Logger LOG = LogManager.getLogger(Dot11Resource.class);
+
+    private final static List<Integer> DEFAULT_X_VALUES = Lists.newArrayList();
+
+    static {
+        for (int cnt = -100; cnt < 0; cnt++) {
+            DEFAULT_X_VALUES.add(cnt);
+        }
+    }
 
     @Inject
     private NzymeNode nzyme;
@@ -132,7 +142,7 @@ public class Dot11Resource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
         Map<DateTime, BSSIDAndSSIDHistogramValueResponse> values = Maps.newHashMap();
-        for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11().findBSSIDAndSSIDCountHistogram(minutes, tapUuids)) {
+        for (BSSIDAndSSIDCountHistogramEntry h : nzyme.getDot11().getBSSIDAndSSIDCountHistogram(minutes, tapUuids)) {
             values.put(h.bucket(), BSSIDAndSSIDHistogramValueResponse.create(
                     h.bucket(),
                     h.bssidCount(),
@@ -209,7 +219,7 @@ public class Dot11Resource extends TapDataHandlingResource {
 
         Map<DateTime, SSIDAdvertisementHistogramValueResponse> values = Maps.newHashMap();
         for (SSIDAdvertisementHistogramEntry entry : nzyme.getDot11()
-                .findSSIDAdvertisementHistogram(bssid, ssid, minutes, tapUuids)) {
+                .getSSIDAdvertisementHistogram(bssid, ssid, minutes, tapUuids)) {
             values.put(entry.bucket(), SSIDAdvertisementHistogramValueResponse.create(
                     entry.bucket(),
                     entry.beacons(),
@@ -218,6 +228,58 @@ public class Dot11Resource extends TapDataHandlingResource {
         }
 
         return Response.ok(SSIDAdvertisementHistogramResponse.create(values)).build();
+    }
+
+    @GET
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/frequencies/show/{frequency}/signal/waterfall")
+    public Response ssidOfBSSIDSignalWaterfall(@Context SecurityContext sc,
+                                               @PathParam("bssid") String bssid,
+                                               @PathParam("ssid") String ssid,
+                                               @PathParam("frequency") int frequency,
+                                               @QueryParam("minutes") int minutes,
+                                               @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                bssid, ssid, frequency, minutes, tapUuids);
+
+
+        Map<DateTime, Map<Integer, Long>> aggregated = Maps.newTreeMap();
+        for (ChannelHistogramEntry signal : signals) {
+            if (!aggregated.containsKey(signal.bucket())) {
+                aggregated.put(signal.bucket(), Maps.newHashMap());
+            }
+
+            aggregated.get(signal.bucket()).put(signal.signalStrength(), signal.frameCount());
+        }
+
+        List<List<Long>> z = Lists.newArrayList();
+        List<DateTime> y = Lists.newArrayList();
+
+        for (Map.Entry<DateTime, Map<Integer, Long>> entry : aggregated.entrySet()) {
+            List<Long> bucketSignals = Lists.newArrayList();
+            for(int cnt = -100; cnt < 0; cnt++) {
+                bucketSignals.add(entry.getValue().getOrDefault(cnt, 0L));
+            }
+
+            z.add(bucketSignals);
+            y.add(entry.getKey());
+        }
+
+        TrackDetector td = new TrackDetector();
+        List<SignalWaterfallTrackResponse> tracks = Lists.newArrayList();
+        for (Track track : td.detect(z, y, TrackDetector.DEFAULT_CONFIG)) {
+            tracks.add(SignalWaterfallTrackResponse.create(
+                    track.start(),
+                    track.end(),
+                    track.centerline(),
+                    track.minSignal(),
+                    track.maxSignal()
+            ));
+        }
+
+        return Response.ok(SignalWaterfallResponse.create(z, DEFAULT_X_VALUES, y, tracks)).build();
     }
 
 
