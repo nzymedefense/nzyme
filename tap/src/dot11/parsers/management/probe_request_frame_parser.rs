@@ -6,7 +6,7 @@ use log::trace;
 use crate::{dot11::frames::{Dot11Frame, Dot11ProbeRequestFrame}, helpers::network::to_mac_address_string};
 
 pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11ProbeRequestFrame, Error> {
-    if frame.length < 16 {
+    if frame.payload.len() < 16 {
         bail!("Probe request frame payload too short to hold fixed parameters. Discarding.");
     }
 

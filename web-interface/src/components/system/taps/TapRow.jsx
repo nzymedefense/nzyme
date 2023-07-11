@@ -2,7 +2,7 @@ import React from 'react'
 import numeral from 'numeral'
 import moment from 'moment'
 import ApiRoutes from '../../../util/ApiRoutes'
-import byteAverageToMbit from '../../../util/Tools'
+import {byteAverageToMbit} from "../../../util/Tools";
 
 function TapsRow (props) {
 

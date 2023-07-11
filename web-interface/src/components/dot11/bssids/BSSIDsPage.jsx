@@ -81,19 +81,22 @@ function BSSIDsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
-                                           setIsAutoRefresh={setIsAutoRefresh}
-                                           lastUpdated={lastUpdated} />
-                    </div>
+                  <h3 style={{display: "inline-block"}}>
+                    Access Points <small>Last 15 minutes</small>
+                  </h3>
+
+                  <div className="float-end">
+                    <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
+                                         setIsAutoRefresh={setIsAutoRefresh}
+                                         lastUpdated={lastUpdated} />
                   </div>
 
-                  <div className="row">
-                    <div className="col-md-12">
-                      <BSSIDsTable bssids={bssids} minutes={MINUTES} isAutoRefresh={isAutoRefresh} />
-                    </div>
-                  </div>
+                  <p className="text-muted">
+                    List of all access points advertised by recorded beacon or probe response frames. Click on a BSSID
+                    to open a list of all advertised SSIDs and their respective channels.
+                  </p>
+
+                  <BSSIDsTable bssids={bssids} minutes={MINUTES} isAutoRefresh={isAutoRefresh} />
                 </div>
               </div>
             </div>

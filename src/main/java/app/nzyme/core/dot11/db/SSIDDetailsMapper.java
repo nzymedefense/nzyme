@@ -20,6 +20,7 @@ public class SSIDDetailsMapper implements RowMapper<SSIDDetails> {
                 Lists.newArrayList((Boolean[]) rs.getArray("is_wps").getArray()),
                 Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray()),
                 Lists.newArrayList((String[]) rs.getArray("security_suites").getArray()),
+                Lists.newArrayList((String[]) rs.getArray("access_point_clients").getArray()),
                 rs.getFloat("signal_strength_average"),
                 rs.getLong("total_bytes"),
                 rs.getLong("total_frames"),

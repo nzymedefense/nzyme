@@ -11,6 +11,9 @@ import SecuritySuites from "../../util/SecuritySuites";
 import SSIDAdvertisementHistogram from "./SSIDAdvertisementHistogram";
 import SSIDSignalWaterfallChart from "./SSIDSignalWaterfallChart";
 import SSIDChannelUsageHistogram from "./SSIDChannelUsageHistogram";
+import SSIDAccessPointClients from "./SSIDAccessPointClients";
+import numeral from "numeral";
+import {dot11FrequencyToChannel} from "../../../../util/Tools";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -65,7 +68,9 @@ function SSIDDetailsPage() {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>SSID Information</h3>
+              <h3>
+                SSID Information <small>Last 15 minutes</small>
+              </h3>
               <dl className="mb-0">
                 <dt>BSSID</dt>
                 <dd>
@@ -89,7 +94,10 @@ function SSIDDetailsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3>Security / Encryption</h3>
+                  <h3>
+                    Security / Encryption <small>Last 15 minutes</small>
+                  </h3>
+
                   <dl className="mb-0">
                     <dt>Protocol</dt>
                     <dd>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</dd>
@@ -106,7 +114,9 @@ function SSIDDetailsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3>Fingerprints</h3>
+                  <h3>
+                    Fingerprints <small>Last 15 minutes</small>
+                  </h3>
 
                   <ul className="mb-0">
                   {ssid.fingerprints.map(function (fp) {
@@ -124,7 +134,9 @@ function SSIDDetailsPage() {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3 style={{display: "inline-block"}}>SSID Advertisements</h3>
+              <h3 style={{display: "inline-block"}}>
+                SSID Advertisements <small>Last 24 hours maximum</small>
+              </h3>
 
 
               <select className="form-select form-select-sm float-end" style={{width: 250}}
@@ -146,7 +158,9 @@ function SSIDDetailsPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>Active Channels</h3>
+                  <h3>
+                    Active Channels <small>Last 15 minutes</small>
+                  </h3>
 
                   <SSIDChannelUsageHistogram bssid={ssid.bssid}
                                              ssid={ssid.ssid}
@@ -158,9 +172,18 @@ function SSIDDetailsPage() {
             <div className="col-md-6">
               <div className="card">
                 <div className="card-body">
-                  <h3>Connected Clients</h3>
+                  <h3>
+                    Clients connected to BSSID <small>Last 15 minutes</small>
+                  </h3>
 
-                  TODO charts, allow to switch to table
+                  <p className="text-muted">
+                    Please note that recording clients generally demands closer proximity, as
+                    well as more precise matching of transmission-related parameters compared to recording access
+                    points. Additionally, many modern devices will randomize their MAC addresses and hide vendor
+                    information.
+                  </p>
+
+                  <SSIDAccessPointClients clients={ssid.access_point_clients} />
                 </div>
               </div>
             </div>
@@ -172,7 +195,9 @@ function SSIDDetailsPage() {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3>Signal Strength Waterfall</h3>
+              <h3>
+                Signal Strength Waterfall for Channel {dot11FrequencyToChannel(frequencyParam)} ({numeral(frequencyParam).format("0,0")} MHz) <small>Last 24 hours maximum</small>
+              </h3>
 
               <SSIDSignalWaterfallChart bssid={ssid.bssid}
                                         ssid={ssid.ssid}

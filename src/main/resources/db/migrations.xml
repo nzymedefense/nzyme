@@ -3184,4 +3184,25 @@
                                  onUpdate="NO ACTION"
                                  onDelete="CASCADE" />
     </changeSet>
+
+    <changeSet id="optimize_dot11_indices_20230711" author="lennartkoopmann">
+        <dropIndex tableName="dot11_bssid_clients" indexName="clients_bssid_id_lookup" /> <!-- duplicate -->
+        <dropIndex tableName="dot11_infrastructure_types" indexName="iftype_ssid_id_lookup" /> <!-- duplicate -->
+        <dropIndex tableName="dot11_fingerprints" indexName="fingerprints_bssid_lookup" /> <!-- duplicate -->
+
+        <createIndex tableName="dot11_channel_histograms" indexName="channelhistos_rellookup">
+            <column name="ssid_id" />
+        </createIndex>
+
+        <createIndex tableName="dot11_clients" indexName="clients_stdlookup">
+            <column name="tap_uuid" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createIndex tableName="dot11_clients" indexName="clients_directlookup">
+            <column name="tap_uuid" />
+            <column name="client_mac" />
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

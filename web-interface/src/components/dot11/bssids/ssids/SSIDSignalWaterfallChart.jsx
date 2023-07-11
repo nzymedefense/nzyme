@@ -4,6 +4,7 @@ import LoadingSpinner from "../../../misc/LoadingSpinner";
 import Dot11Service from "../../../../services/Dot11Service";
 import HeatmapWaterfallChart from "../../../charts/HeatmapWaterfallChart";
 import SignalLegendHelper from "../../../charts/SignalLegendHelper";
+import {singleTapSelected} from "../../../../util/Tools";
 
 const dot11Service = new Dot11Service();
 
@@ -123,8 +124,19 @@ function SSIDSignalWaterfallChart(props) {
   }
 
   useEffect(() => {
-    dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
+    if (singleTapSelected(selectedTaps)) {
+      dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
+    }
   }, [bssid, ssid, frequency, minutes, selectedTaps])
+
+  if (!singleTapSelected(selectedTaps)) {
+    return (
+        <div className="alert alert-info mb-0">
+          This chart appears only when a single tap is selected. Feeding data from multiple taps would not yield
+          meaningful results.
+        </div>
+    )
+  }
 
   if (!waterfall) {
     return <LoadingSpinner />

@@ -103,18 +103,20 @@ public class Dot11Table implements DataTable {
                 String mac = client.getKey();
                 Dot11ClientStatisticsReport stats = client.getValue();
 
-                tablesService.getNzyme().getDatabase().useHandle(handle ->
-                        handle.createUpdate("INSERT INTO dot11_bssid_clients(bssid_id, client_mac, tx_frames, " +
-                                        "tx_bytes, rx_frames, rx_bytes) VALUES(:bssid_id, :client_mac, " +
-                                        ":tx_frames, :tx_bytes, :rx_frames, :rx_bytes)")
-                                .bind("bssid_id", bssidDatabaseId)
-                                .bind("client_mac", mac)
-                                .bind("tx_frames", stats.txFrames())
-                                .bind("tx_bytes", stats.txBytes())
-                                .bind("rx_frames", stats.rxFrames())
-                                .bind("rx_bytes", stats.rxBytes())
-                                .execute()
-                );
+                if (!bssid.equals(mac)) { // Don't record BSSID itself.
+                    tablesService.getNzyme().getDatabase().useHandle(handle ->
+                            handle.createUpdate("INSERT INTO dot11_bssid_clients(bssid_id, client_mac, tx_frames, " +
+                                            "tx_bytes, rx_frames, rx_bytes) VALUES(:bssid_id, :client_mac, " +
+                                            ":tx_frames, :tx_bytes, :rx_frames, :rx_bytes)")
+                                    .bind("bssid_id", bssidDatabaseId)
+                                    .bind("client_mac", mac)
+                                    .bind("tx_frames", stats.txFrames())
+                                    .bind("tx_bytes", stats.txBytes())
+                                    .bind("rx_frames", stats.rxFrames())
+                                    .bind("rx_bytes", stats.rxBytes())
+                                    .execute()
+                    );
+                }
             }
 
             for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {

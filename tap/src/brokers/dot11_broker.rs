@@ -12,7 +12,6 @@ pub struct Dot11Broker {
     bus: Arc<Bus>
 }
 
-
 impl Dot11Broker {
 
     pub fn new(bus: Arc<Bus>, num_threads: usize) -> Self {
@@ -66,15 +65,15 @@ impl Dot11Broker {
         }
 
         // Present flags bitmask.
-        let present_flags = match Self::parse_present_flags(&header_data[4..8]) {
-            Ok(flags) => flags,
+        let (ca, present_flags) = match Self::parse_present_flags(&header_data[4..header_data.len()]) {
+            Ok((cursor_advance, flags)) => (cursor_advance, flags),
             Err(e) => {
                 warn!("Could not parse radiotap present flag bitmask: {}", e);
                 return
             }
         };
 
-        let mut cursor = 8;
+        let mut cursor = 4+ca;
 
         // Variable fields follow. Not always set.
 
@@ -88,9 +87,8 @@ impl Dot11Broker {
         let flags = if present_flags.flags {
             let frame_flags = Self::parse_flags(&header_data[cursor]);
 
-            // Abort if checksum check failed.
+            // Abort if checksum check failed. (Driver should not have passed this along.)
             if frame_flags.bad_fcs {
-                // TODO metrics here.
                 trace!("Filtering out bad FCS frame from interface [{}].", data.interface_name);
                 return
             }
@@ -252,20 +250,13 @@ impl Dot11Broker {
         );
     }
 
-    fn parse_present_flags(mask: &[u8]) -> Result<RadiotapHeaderPresentFlags, Error> {
-        if mask.len() != 4 {
-            bail!("Radiotap present flags must be 4 bytes, provided <{}>.", mask.len())
-        }
+    fn parse_present_flags(mask: &[u8]) -> Result<(usize, RadiotapHeaderPresentFlags), Error> {
+        assert!(mask.len() >= 4);
 
-        let bmask = mask.view_bits::<Lsb0>();
+        let mut flags_cursor = 4;
+        let bmask = mask[0..flags_cursor].view_bits::<Lsb0>();
 
-        /*
-         * We are using unwrap() here because the bounds length 
-         * above ensures enough bits for the access ops.
-         */
-
-        
-        Ok(RadiotapHeaderPresentFlags {
+        let first_flags = RadiotapHeaderPresentFlags {
             tsft: *bmask.get(0).unwrap(),
             flags: *bmask.get(1).unwrap(),
             rate: *bmask.get(2).unwrap(),
@@ -295,8 +286,35 @@ impl Dot11Broker {
             tlvs: *bmask.get(26).unwrap(),
             radiotap_ns_next: *bmask.get(27).unwrap(),
             vendor_nx_next: *bmask.get(28).unwrap(),
-            ext: *bmask.get(29).unwrap(),
-        })
+            ext: *bmask.get(29).unwrap()
+        };
+
+        if first_flags.ext {
+            loop {
+                /*
+                 * Some WiFi adapters will have multiple sets of present flags, indicated by
+                 * the `ext` set to true. It is currently unclear why. Best way here appears to be
+                 * using the first set of flags, ignore any that follows, but sufficiently advance
+                 * the cursor to resume reading of trailing information in the frame.
+                 */
+
+                if mask.len() < flags_cursor+4 {
+                    bail!("Invalid flags length {}, cursor: {}", mask.len(), flags_cursor);
+                }
+
+                let next_mask = mask[flags_cursor..flags_cursor+4].view_bits::<Lsb0>();
+
+                if *next_mask.get(29).unwrap() {
+                    flags_cursor += 4;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        flags_cursor += 4;
+
+        Ok((flags_cursor, first_flags))
     }
 
     fn parse_flags(mask: &u8) -> RadiotapHeaderFlags {

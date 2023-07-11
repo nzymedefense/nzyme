@@ -13,6 +13,10 @@ h5 {
     font-weight: bold;
 }
 
+small {
+    color: #6c757d;
+}
+
 .bg-danger {
     background-color: #EF233C !important;
 }

@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.dot11;
 
+import app.nzyme.core.dot11.db.BSSIDClientDetails;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
@@ -35,6 +36,9 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("fingerprints")
     public abstract List<String> fingerprints();
 
+    @JsonProperty("access_point_clients")
+    public abstract List<BSSIDClientDetails> accessPointClients();
+
     @JsonProperty("rates")
     public abstract List<Double> rates();
 
@@ -50,7 +54,7 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .bssid(bssid)
                 .bssidOui(bssidOui)
@@ -60,6 +64,7 @@ public abstract class SSIDDetailsResponse {
                 .totalBytes(totalBytes)
                 .securityProtocols(securityProtocols)
                 .fingerprints(fingerprints)
+                .accessPointClients(accessPointClients)
                 .rates(rates)
                 .infrastructureTypes(infrastructureTypes)
                 .securitySuites(securitySuites)
@@ -89,6 +94,8 @@ public abstract class SSIDDetailsResponse {
         public abstract Builder securityProtocols(List<String> securityProtocols);
 
         public abstract Builder fingerprints(List<String> fingerprints);
+
+        public abstract Builder accessPointClients(List<BSSIDClientDetails> accessPointClients);
 
         public abstract Builder rates(List<Double> rates);
 

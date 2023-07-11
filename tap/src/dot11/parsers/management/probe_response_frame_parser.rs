@@ -1,15 +1,11 @@
 use std::sync::Arc;
-
-use anyhow::{Error, bail};
-
-use byteorder::{LittleEndian, ByteOrder};
-use log::{trace};
-use sha2::{Sha256, Digest};
-
-use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, Dot11Capabilities, InfraStructureType, CountryInformation, RegulatoryEnvironment, SecurityInformation, CipherSuite, KeyManagementMode, CipherSuites, EncryptionProtocol}, helpers::network::to_mac_address_string};
+use anyhow::{bail, Error};
+use byteorder::{ByteOrder, LittleEndian};
+use crate::dot11::frames::{Dot11Frame, Dot11ProbeResponseFrame, EncryptionProtocol, SecurityInformation};
 use crate::dot11::parsers::management::advertising_frame_parser_tools::{calculate_fingerprint, decide_encryption_protocol, parse_capabilities, parse_tagged_parameters};
+use crate::helpers::network::to_mac_address_string;
 
-pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
+pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11ProbeResponseFrame, Error> {
     if frame.payload.len() < 37 {
         bail!("Beacon frame payload too short to hold fixed parameters. Discarding.");
     }
@@ -46,7 +42,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
         &tagged_data.security_bytes
     );
 
-    Ok(Dot11BeaconFrame{
+    Ok(Dot11ProbeResponseFrame{
         header: frame.header.clone(),
         length: frame.length,
         tagged_parameters: tagged_data.tagged_parameters,

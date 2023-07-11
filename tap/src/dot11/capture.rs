@@ -58,7 +58,6 @@ impl Capture {
             .arg("down")
             .spawn();
 
-
         match cmd_device_down {
             Ok(mut child) => {
                 match child.wait() {
@@ -89,7 +88,6 @@ impl Capture {
             .arg(device_name)
             .arg("set")
             .arg("monitor")
-            .arg("fcsfail")
             .arg("control")
             .arg("otherbss")
             .spawn();
@@ -116,7 +114,6 @@ impl Capture {
                 return;
             }
         }
-
 
         info!("Enabling interface [{}] ...", device_name);
 

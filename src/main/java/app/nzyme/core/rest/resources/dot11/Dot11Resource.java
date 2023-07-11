@@ -205,6 +205,13 @@ public class Dot11Resource extends TapDataHandlingResource {
             }
         }
 
+        List<BSSIDClientDetails> accessPointClients = Lists.newArrayList();
+        for (String mac : ssidDetails.accessPointClients()) {
+            if (mac != null) {
+                accessPointClients.add(BSSIDClientDetails.create(mac, nzyme.getOUIManager().lookupBSSID(mac)));
+            }
+        }
+
         SSIDDetailsResponse response = SSIDDetailsResponse.create(
                 bssid,
                 nzyme.getOUIManager().lookupBSSID(bssid),
@@ -214,6 +221,7 @@ public class Dot11Resource extends TapDataHandlingResource {
                 ssidDetails.totalBytes(),
                 ssidDetails.securityProtocols(),
                 ssidDetails.fingerprints(),
+                accessPointClients,
                 ssidDetails.rates(),
                 ssidDetails.infrastructureTypes(),
                 securitySuites,
@@ -296,6 +304,10 @@ public class Dot11Resource extends TapDataHandlingResource {
                                                @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        if (tapUuids.size() != 1) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
 
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                 bssid, ssid, frequency, minutes, tapUuids);

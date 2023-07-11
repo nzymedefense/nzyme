@@ -5,13 +5,13 @@ import LoadingSpinner from '../../../misc/LoadingSpinner'
 import moment from 'moment'
 import Routes from '../../../../util/ApiRoutes'
 import numeral from 'numeral'
-import byteAverageToMbit from '../../../../util/Tools'
 import Buses from './Buses'
 import TapInactiveWarning from './TapInactiveWarning'
 import CaptureConfiguration from '../capture/CaptureConfiguration'
 import TapMetrics from './metrics/TapMetrics'
 import TapMetricsChartProxy from './metrics/TapMetricsChartProxy'
 import TapClockWarning from "./TapClockWarning";
+import {byteAverageToMbit} from "../../../../util/Tools";
 
 const tapsService = new TapsService()
 

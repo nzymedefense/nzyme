@@ -6,7 +6,6 @@ use bitvec::{view::BitView, order::Lsb0};
 use crate::{dot11::frames::{Dot11DataFrame, Dot11Frame, Dot11DataFrameDirection, Dot11DSInformation}, helpers::network::to_mac_address_string};
 
 pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11DataFrame, Error> {
-
     if frame.payload.len() < 24 {
         bail!("Data frame payload too short to hold fixed parameters. Discarding.");
     };

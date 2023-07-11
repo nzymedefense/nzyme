@@ -15,12 +15,13 @@ public abstract class SSIDDetails {
     public abstract List<Boolean> isWps();
     public abstract List<String> infrastructureTypes();
     public abstract List<String> securitySuites();
+    public abstract List<String> accessPointClients();
     public abstract float signalStrengthAverage();
     public abstract long totalBytes();
     public abstract long totalFrames();
     public abstract DateTime lastSeen();
 
-    public static SSIDDetails create(String ssid, List<String> securityProtocols, List<String> fingerprints, List<Double> rates, List<Boolean> isWps, List<String> infrastructureTypes, List<String> securitySuites, float signalStrengthAverage, long totalBytes, long totalFrames, DateTime lastSeen) {
+    public static SSIDDetails create(String ssid, List<String> securityProtocols, List<String> fingerprints, List<Double> rates, List<Boolean> isWps, List<String> infrastructureTypes, List<String> securitySuites, List<String> accessPointClients, float signalStrengthAverage, long totalBytes, long totalFrames, DateTime lastSeen) {
         return builder()
                 .ssid(ssid)
                 .securityProtocols(securityProtocols)
@@ -29,6 +30,7 @@ public abstract class SSIDDetails {
                 .isWps(isWps)
                 .infrastructureTypes(infrastructureTypes)
                 .securitySuites(securitySuites)
+                .accessPointClients(accessPointClients)
                 .signalStrengthAverage(signalStrengthAverage)
                 .totalBytes(totalBytes)
                 .totalFrames(totalFrames)
@@ -55,6 +57,8 @@ public abstract class SSIDDetails {
         public abstract Builder infrastructureTypes(List<String> infrastructureTypes);
 
         public abstract Builder securitySuites(List<String> securitySuites);
+
+        public abstract Builder accessPointClients(List<String> accessPointClients);
 
         public abstract Builder signalStrengthAverage(float signalStrengthAverage);
 

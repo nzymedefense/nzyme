@@ -120,7 +120,6 @@ pub enum FrameSubType {
     Invalid
 }
 
-
 #[derive(Debug)]
 pub struct Dot11Frame {
     pub header: RadiotapHeader,
@@ -130,7 +129,7 @@ pub struct Dot11Frame {
 }
 
 #[derive(Debug)]
-pub struct BeaconCapabilities {
+pub struct Dot11Capabilities {
     pub infrastructure_type: InfraStructureType,
     pub privacy: bool,
     pub short_preamble: bool,
@@ -141,7 +140,7 @@ pub struct BeaconCapabilities {
 }
 
 #[derive(Debug)]
-pub struct BeaconTaggedParameters {
+pub struct TaggedParameters {
     pub ssid: Option<String>,
     pub supported_rates: Option<Vec<f32>>,
     pub extended_supported_rates: Option<Vec<f32>>,
@@ -233,9 +232,23 @@ pub struct Dot11BeaconFrame {
     pub transmitter: String,
     pub timestamp: u64,
     pub interval: u16,
-    pub capabilities: BeaconCapabilities,
-    pub ssid: Option<String>,
-    pub tagged_parameters: BeaconTaggedParameters,
+    pub capabilities: Dot11Capabilities,
+    pub tagged_parameters: TaggedParameters,
+    pub fingerprint: String,
+    pub security: Vec<SecurityInformation>,
+    pub has_wps: bool
+}
+
+#[derive(Debug)]
+pub struct Dot11ProbeResponseFrame {
+    pub length: usize,
+    pub header: RadiotapHeader,
+    pub destination: String,
+    pub transmitter: String,
+    pub timestamp: u64,
+    pub interval: u16,
+    pub capabilities: Dot11Capabilities,
+    pub tagged_parameters: TaggedParameters,
     pub fingerprint: String,
     pub security: Vec<SecurityInformation>,
     pub has_wps: bool

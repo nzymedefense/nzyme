@@ -6,7 +6,7 @@ use byteorder::{LittleEndian, ByteOrder};
 use crate::{dot11::frames::{Dot11Frame, Dot11DeauthenticationFrame}, helpers::network::to_mac_address_string};
 
 pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11DeauthenticationFrame, Error> {
-    if frame.length < 26 {
+    if frame.payload.len() < 26 {
         bail!("Deauthentication frame payload too short to hold fixed parameters. Discarding.");
     }
 

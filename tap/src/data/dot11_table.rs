@@ -9,6 +9,7 @@ use crate::{
         SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport, Dot11ClientStatisticsReport, Dot11ClientReport,
     }, helpers::network::is_mac_address_multicast,
 };
+use crate::dot11::frames::{Dot11Capabilities, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
 
 #[derive(Debug)]
 pub struct Dot11Table {
@@ -68,46 +69,84 @@ impl Dot11Table {
     }
 
     pub fn register_beacon_frame(&mut self, beacon: Dot11BeaconFrame) {
-        let signal_strength: i8 = match beacon.header.antenna_signal {
+        self.register_advertisement(
+            FrameSubType::Beacon,
+            beacon.length,
+            beacon.header,
+            beacon.transmitter,
+            beacon.tagged_parameters,
+            beacon.security,
+            beacon.has_wps,
+            beacon.fingerprint,
+            beacon.capabilities
+        );
+    }
+
+    pub fn register_probe_response_frame(&mut self, proberesp: Dot11ProbeResponseFrame) {
+        self.register_advertisement(
+            FrameSubType::ProbeResponse,
+            proberesp.length,
+            proberesp.header,
+            proberesp.transmitter,
+            proberesp.tagged_parameters,
+            proberesp.security,
+            proberesp.has_wps,
+            proberesp.fingerprint,
+            proberesp.capabilities
+        );
+    }
+
+    fn register_advertisement(&mut self,
+                              frame_type: FrameSubType,
+                              length: usize,
+                              header: RadiotapHeader,
+                              transmitter: String,
+                              tagged_parameters: TaggedParameters,
+                              security: Vec<SecurityInformation>,
+                              has_wps: bool,
+                              fingerprint: String,
+                              capabilities: Dot11Capabilities
+    ) {
+        let signal_strength: i8 = match header.antenna_signal {
             Some(s) => s,
             None => 0,
         };
 
         match self.bssids.lock() {
             Ok(mut bssids) => {
-                match bssids.get_mut(&beacon.transmitter) {
+                match bssids.get_mut(&transmitter) {
                     Some(bssid) => {
                         // Update existing SSIDs of BSSID.
-                        match beacon.ssid {
+                        match tagged_parameters.ssid {
                             Some(ssid) => {
                                 // Has this BSSID advertised this SSID before?
                                 match bssid.advertised_networks.get_mut(&ssid) {
                                     Some(ssid) => {
                                         // Update existing SSID.
-                                        ssid.security = beacon.security;
-                                        ssid.wps = beacon.has_wps;
+                                        ssid.security = security;
+                                        ssid.wps = has_wps;
 
-                                        if !ssid.fingerprints.contains(&beacon.fingerprint) {
-                                            ssid.fingerprints.push(beacon.fingerprint.clone());
+                                        if !ssid.fingerprints.contains(&fingerprint) {
+                                            ssid.fingerprints.push(fingerprint.clone());
                                         }
 
-                                        if let Some(rates) = &beacon.tagged_parameters.supported_rates {
+                                        if let Some(rates) = &tagged_parameters.supported_rates {
                                             Self::update_existing_ssid_rates(ssid, &rates);
                                         }
 
-                                        if let Some(rates) = &beacon.tagged_parameters.extended_supported_rates {
+                                        if let Some(rates) = &tagged_parameters.extended_supported_rates {
                                             Self::update_existing_ssid_rates(ssid, &rates);
                                         }
 
-                                        if !ssid.infrastructure_types.contains(&beacon.capabilities.infrastructure_type) {
-                                            ssid.infrastructure_types.push(beacon.capabilities.infrastructure_type);
+                                        if !ssid.infrastructure_types.contains(&capabilities.infrastructure_type) {
+                                            ssid.infrastructure_types.push(capabilities.infrastructure_type);
                                         }
 
                                         Self::update_existing_channel_statistics(
-                                            FrameSubType::Beacon, beacon.header.frequency, beacon.length, ssid
+                                            FrameSubType::Beacon, header.frequency, length, ssid
                                         );
 
-                                        if let Some(freq) = &beacon.header.frequency {
+                                        if let Some(freq) = &header.frequency {
                                             match ssid.signal_strengths.get_mut(freq) {
                                                 Some(ss) => ss.push(signal_strength),
                                                 None => {
@@ -116,26 +155,37 @@ impl Dot11Table {
                                             }
                                         }
 
-                                        ssid.beacon_advertisements += 1;
+                                        match frame_type {
+                                            FrameSubType::Beacon => ssid.beacon_advertisements += 1,
+                                            FrameSubType::ProbeResponse => ssid.proberesp_advertisements += 1,
+                                            _ => {}
+                                        };
                                     }
                                     None => {
                                         // Insert new SSID.
+                                        let (beacon_advertisements, proberesp_advertisements) =
+                                            match frame_type {
+                                                FrameSubType::Beacon => (1,0),
+                                                FrameSubType::ProbeResponse => (0,1),
+                                                _ => (0,0)
+                                            };
+
                                         bssid.advertised_networks.insert(
                                             ssid,
                                             AdvertisedNetwork {
-                                                security: beacon.security,
-                                                fingerprints: vec![beacon.fingerprint.clone()],
-                                                beacon_advertisements: 1,
-                                                proberesp_advertisements: 0,
+                                                security,
+                                                fingerprints: vec![fingerprint.clone()],
+                                                beacon_advertisements,
+                                                proberesp_advertisements,
                                                 rates: Self::build_initial_ssid_rates(
-                                                    &beacon.tagged_parameters.supported_rates,
-                                                    &beacon.tagged_parameters.extended_supported_rates
+                                                    &tagged_parameters.supported_rates,
+                                                    &tagged_parameters.extended_supported_rates
                                                 ),
-                                                wps: beacon.has_wps,
-                                                signal_strengths: Self::build_initial_signal_strengths(&beacon.header.frequency, signal_strength),
-                                                infrastructure_types: vec![beacon.capabilities.infrastructure_type],
+                                                wps: has_wps,
+                                                signal_strengths: Self::build_initial_signal_strengths(&header.frequency, signal_strength),
+                                                infrastructure_types: vec![capabilities.infrastructure_type],
                                                 channel_statistics: Self::build_initial_channel_statistics(
-                                                    FrameSubType::Beacon, &beacon.header.frequency, beacon.length
+                                                    FrameSubType::Beacon, &header.frequency, length
                                                 )
                                             },
                                         );
@@ -149,33 +199,40 @@ impl Dot11Table {
                         }
 
                         // Update BSSID.
-                        if !bssid.fingerprints.contains(&beacon.fingerprint) {
-                            bssid.fingerprints.push(beacon.fingerprint);
+                        if !bssid.fingerprints.contains(&fingerprint) {
+                            bssid.fingerprints.push(fingerprint);
                         }
                         bssid.signal_strengths.push(signal_strength);
                     }
                     None => {
                         // BSSID not yet in table.
-                        let (advertised_networks, hidden_ssid_frames) = match beacon.ssid {
+                        let (beacon_advertisements, proberesp_advertisements) =
+                            match frame_type {
+                                FrameSubType::Beacon => (1,0),
+                                FrameSubType::ProbeResponse => (0,1),
+                                _ => (0,0)
+                            };
+
+                        let (advertised_networks, hidden_ssid_frames) = match tagged_parameters.ssid {
                             Some(ssid) => (
                                 HashMap::from([(
                                     ssid,
                                     AdvertisedNetwork {
-                                        security: beacon.security,
-                                        fingerprints: vec![beacon.fingerprint.clone()],
-                                        beacon_advertisements: 1,
-                                        proberesp_advertisements: 0,
+                                        security,
+                                        fingerprints: vec![fingerprint.clone()],
+                                        beacon_advertisements,
+                                        proberesp_advertisements,
                                         rates: Self::build_initial_ssid_rates(
-                                            &beacon.tagged_parameters.supported_rates,
-                                            &beacon.tagged_parameters.extended_supported_rates
+                                            &tagged_parameters.supported_rates,
+                                            &tagged_parameters.extended_supported_rates
                                         ),
-                                        wps: beacon.has_wps,
+                                        wps: has_wps,
                                         signal_strengths: Self::build_initial_signal_strengths(
-                                            &beacon.header.frequency, signal_strength
+                                            &header.frequency, signal_strength
                                         ),
-                                        infrastructure_types: vec![beacon.capabilities.infrastructure_type],
+                                        infrastructure_types: vec![capabilities.infrastructure_type],
                                         channel_statistics: Self::build_initial_channel_statistics(
-                                            FrameSubType::Beacon, &beacon.header.frequency, beacon.length
+                                            FrameSubType::Beacon, &header.frequency, length
                                         )
                                     },
                                 )]),
@@ -185,13 +242,13 @@ impl Dot11Table {
                         };
 
                         bssids.insert(
-                            beacon.transmitter,
+                            transmitter,
                             Bssid {
                                 advertised_networks,
                                 hidden_ssid_frames,
                                 clients: HashMap::new(),
                                 signal_strengths: vec![signal_strength],
-                                fingerprints: vec![beacon.fingerprint]
+                                fingerprints: vec![fingerprint]
                             },
                         );
                     }

@@ -85,14 +85,17 @@ public class Dot11 {
                                 "ARRAY_AGG(DISTINCT(s.is_wps)) AS is_wps, ARRAY_AGG(DISTINCT(i.infrastructure_type)) " +
                                 "AS infrastructure_types, AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(s.security_suites)) AS security_suites, " +
+                                "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_bssids AS b on s.bssid_id = b.id " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
                                 "LEFT JOIN dot11_rates AS r on s.id = r.ssid_id " +
-                                "WHERE created_at > :cutoff AND bssid = :bssid AND ssid = :ssid " +
-                                "AND tap_uuid IN (<taps>) " +
+                                "LEFT JOIN dot11_bssid_clients cl on b.id = cl.bssid_id " +
+                                "WHERE s.created_at > :cutoff AND s.bssid = :bssid AND s.ssid = :ssid " +
+                                "AND s.tap_uuid IN (<taps>) " +
                                 "GROUP BY ssid")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bind("bssid", bssid)
