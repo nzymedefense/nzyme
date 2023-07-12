@@ -141,7 +141,6 @@ function SSIDDetailsPage() {
                 SSID Advertisements <small>Last 24 hours maximum</small>
               </h3>
 
-
               <select className="form-select form-select-sm float-end" style={{width: 250}}
                       onChange={(e) => { setHistogramAdvertisementType(e.target.value) }}
                       value={advertisementHistogramType}>

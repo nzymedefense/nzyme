@@ -2,6 +2,7 @@ package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.rest.responses.dot11.clients.Dot11Client;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -175,6 +176,21 @@ public class Dot11 {
                         .mapTo(ChannelHistogramEntry.class)
                         .list()
         );
+    }
+
+    public Optional<Dot11Client> findClient(String mac, int minutes, List<UUID> taps) {
+        // Search in bssid_clients and clients. Add frequencies it was active on. Add probe request SSIDs.
+
+        /*
+        SELECT c.client_mac, MAX(created_at) AS last_seen,
+ARRAY_AGG(DISTINCT(pr.ssid))
+FROM dot11_clients AS c
+LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id
+GROUP BY c.client_mac
+ORDER BY last_seen DESC
+         */
+
+        return Optional.empty();
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

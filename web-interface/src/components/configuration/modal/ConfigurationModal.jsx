@@ -99,7 +99,7 @@ function ConfigurationModal (props) {
 
   return (
         <React.Fragment>
-            <a href="web-interface/src/components/configuration/modal/ConfigurationModal#"
+            <a href="#"
                data-bs-toggle="modal"
                data-bs-target={'#configuration-dialog-' + key}>
                 Edit
