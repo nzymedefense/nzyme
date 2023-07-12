@@ -14,6 +14,7 @@ import SSIDChannelUsageHistogram from "./SSIDChannelUsageHistogram";
 import SSIDAccessPointClients from "./SSIDAccessPointClients";
 import numeral from "numeral";
 import {dot11FrequencyToChannel} from "../../../../util/Tools";
+import ChannelSelector from "../../util/ChannelSelector";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -26,6 +27,8 @@ function SSIDDetailsPage() {
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
+
+  const [selectedFrequency, setSelectedFrequency] = useState(parseInt(frequencyParam, 10));
 
   const [ssid, setSSID] = useState(null);
   const [advertisementHistogramType, setHistogramAdvertisementType] = useState("beacon_count");
@@ -195,13 +198,20 @@ function SSIDDetailsPage() {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3>
-                Signal Strength Waterfall for Channel {dot11FrequencyToChannel(frequencyParam)} ({numeral(frequencyParam).format("0,0")} MHz) <small>Last 24 hours maximum</small>
+              <h3 style={{display: "inline-block"}}>
+                Signal Strength Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
+                ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
               </h3>
+
+              <div className="float-end">
+                <ChannelSelector currentFrequency={selectedFrequency}
+                                 setFrequency={setSelectedFrequency}
+                                 frequencies={ssid.frequencies} />
+              </div>
 
               <SSIDSignalWaterfallChart bssid={ssid.bssid}
                                         ssid={ssid.ssid}
-                                        frequency={frequencyParam}
+                                        frequency={selectedFrequency}
                                         minutes={24*60} />
             </div>
           </div>

@@ -21,6 +21,9 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("ssid")
     public abstract String ssid();
 
+    @JsonProperty("frequencies")
+    public abstract List<Integer> frequencies();
+
     @JsonProperty("signal_strength_average")
     public abstract float signalStrengthAverage();
 
@@ -54,11 +57,12 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .bssid(bssid)
                 .bssidOui(bssidOui)
                 .ssid(ssid)
+                .frequencies(frequencies)
                 .signalStrengthAverage(signalStrengthAverage)
                 .totalFrames(totalFrames)
                 .totalBytes(totalBytes)
@@ -84,6 +88,8 @@ public abstract class SSIDDetailsResponse {
         public abstract Builder bssidOui(String bssidOui);
 
         public abstract Builder ssid(String ssid);
+
+        public abstract Builder frequencies(List<Integer> frequencies);
 
         public abstract Builder signalStrengthAverage(float signalStrengthAverage);
 

@@ -11,6 +11,7 @@ public abstract class SSIDDetails {
     public abstract String ssid();
     public abstract List<String> securityProtocols();
     public abstract List<String> fingerprints();
+    public abstract List<Integer> frequencies();
     public abstract List<Double> rates();
     public abstract List<Boolean> isWps();
     public abstract List<String> infrastructureTypes();
@@ -21,11 +22,12 @@ public abstract class SSIDDetails {
     public abstract long totalFrames();
     public abstract DateTime lastSeen();
 
-    public static SSIDDetails create(String ssid, List<String> securityProtocols, List<String> fingerprints, List<Double> rates, List<Boolean> isWps, List<String> infrastructureTypes, List<String> securitySuites, List<String> accessPointClients, float signalStrengthAverage, long totalBytes, long totalFrames, DateTime lastSeen) {
+    public static SSIDDetails create(String ssid, List<String> securityProtocols, List<String> fingerprints, List<Integer> frequencies, List<Double> rates, List<Boolean> isWps, List<String> infrastructureTypes, List<String> securitySuites, List<String> accessPointClients, float signalStrengthAverage, long totalBytes, long totalFrames, DateTime lastSeen) {
         return builder()
                 .ssid(ssid)
                 .securityProtocols(securityProtocols)
                 .fingerprints(fingerprints)
+                .frequencies(frequencies)
                 .rates(rates)
                 .isWps(isWps)
                 .infrastructureTypes(infrastructureTypes)
@@ -49,6 +51,8 @@ public abstract class SSIDDetails {
         public abstract Builder securityProtocols(List<String> securityProtocols);
 
         public abstract Builder fingerprints(List<String> fingerprints);
+
+        public abstract Builder frequencies(List<Integer> frequencies);
 
         public abstract Builder rates(List<Double> rates);
 

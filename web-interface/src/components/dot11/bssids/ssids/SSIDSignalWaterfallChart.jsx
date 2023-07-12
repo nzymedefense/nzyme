@@ -10,6 +10,8 @@ const dot11Service = new Dot11Service();
 
 function SSIDSignalWaterfallChart(props) {
 
+  const HEIGHT = 450;
+
   const bssid = props.bssid;
   const ssid = props.ssid;
   const frequency = props.frequency;
@@ -125,6 +127,7 @@ function SSIDSignalWaterfallChart(props) {
 
   useEffect(() => {
     if (singleTapSelected(selectedTaps)) {
+      setWaterfall(null);
       dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
     }
   }, [bssid, ssid, frequency, minutes, selectedTaps])
@@ -139,18 +142,17 @@ function SSIDSignalWaterfallChart(props) {
   }
 
   if (!waterfall) {
-    return <LoadingSpinner />
+    return <div style={{height: HEIGHT}}><LoadingSpinner /></div>
   }
 
   return <HeatmapWaterfallChart
-      height={450}
+      height={HEIGHT}
       xaxistitle="Signal Strength (dBm)"
       yaxistitle="Time"
       hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
       annotations={SignalLegendHelper.DEFAULT}
       data={formatData(waterfall)}
-      layers={formatTracks(waterfall, waterfall.tracks)}
-  />
+      layers={formatTracks(waterfall, waterfall.tracks)} />
 
 }
 

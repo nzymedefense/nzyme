@@ -16,6 +16,7 @@ public class SSIDDetailsMapper implements RowMapper<SSIDDetails> {
                 rs.getString("ssid"),
                 Lists.newArrayList((String[]) rs.getArray("security_protocols").getArray()),
                 Lists.newArrayList((String[]) rs.getArray("fingerprints").getArray()),
+                Lists.newArrayList((Integer[]) rs.getArray("frequencies").getArray()),
                 Lists.newArrayList((Double[]) rs.getArray("rates").getArray()),
                 Lists.newArrayList((Boolean[]) rs.getArray("is_wps").getArray()),
                 Lists.newArrayList((String[]) rs.getArray("infrastructure_types").getArray()),

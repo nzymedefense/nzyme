@@ -86,6 +86,7 @@ public class Dot11 {
                                 "AS infrastructure_types, AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "ARRAY_AGG(DISTINCT(s.security_suites)) AS security_suites, " +
                                 "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
+                                "ARRAY_AGG(DISTINCT(c.frequency)) AS frequencies, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_bssids AS b on s.bssid_id = b.id " +

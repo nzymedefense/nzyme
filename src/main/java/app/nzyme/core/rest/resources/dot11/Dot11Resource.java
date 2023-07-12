@@ -216,6 +216,7 @@ public class Dot11Resource extends TapDataHandlingResource {
                 bssid,
                 nzyme.getOUIManager().lookupBSSID(bssid),
                 ssidDetails.ssid(),
+                ssidDetails.frequencies(),
                 ssidDetails.signalStrengthAverage(),
                 ssidDetails.totalFrames(),
                 ssidDetails.totalBytes(),
