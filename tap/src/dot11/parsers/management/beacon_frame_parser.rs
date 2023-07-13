@@ -3,10 +3,8 @@ use std::sync::Arc;
 use anyhow::{Error, bail};
 
 use byteorder::{LittleEndian, ByteOrder};
-use log::{trace};
-use sha2::{Sha256, Digest};
 
-use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame, Dot11Capabilities, InfraStructureType, CountryInformation, RegulatoryEnvironment, SecurityInformation, CipherSuite, KeyManagementMode, CipherSuites, EncryptionProtocol}, helpers::network::to_mac_address_string};
+use crate::{dot11::frames::{Dot11Frame, Dot11BeaconFrame}, helpers::network::to_mac_address_string};
 use crate::dot11::parsers::management::advertising_frame_parser_tools::{calculate_fingerprint, decide_encryption_protocol, parse_capabilities, parse_tagged_parameters};
 
 pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {

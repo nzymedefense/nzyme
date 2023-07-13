@@ -62,11 +62,13 @@ pub struct RadiotapHeaderFlags {
     pub short_gi: bool
 }
 
+#[derive(Debug)]
 pub struct FrameTypeInformation {
     pub frame_type: FrameType,
     pub frame_subtype: FrameSubType
 }
 
+#[derive(Debug)]
 pub enum FrameType {
     Management,
     Control,

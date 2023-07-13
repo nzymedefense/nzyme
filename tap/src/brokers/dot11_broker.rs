@@ -303,16 +303,13 @@ impl Dot11Broker {
                 }
 
                 let next_mask = mask[flags_cursor..flags_cursor+4].view_bits::<Lsb0>();
+                flags_cursor += 4;
 
-                if *next_mask.get(29).unwrap() {
-                    flags_cursor += 4;
-                } else {
+                if !*next_mask.get(29).unwrap() {
                     break;
                 }
             }
         }
-
-        flags_cursor += 4;
 
         Ok((flags_cursor, first_flags))
     }
