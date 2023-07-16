@@ -36,6 +36,7 @@ const RESTClient = {
         successCallback(response)
       })
       .catch(function (error) {
+        console.log(error);
         if (error.response) {
           if (errorCallback) {
             errorCallback(error)

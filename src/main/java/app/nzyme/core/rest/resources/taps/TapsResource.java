@@ -51,7 +51,7 @@ public class TapsResource extends UserAuthenticatedResource {
 
         List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
-            tapsResponse.add(TapHighLevelInformationDetailsResponse.create(tap.uuid(), tap.name()));
+            tapsResponse.add(TapHighLevelInformationDetailsResponse.create(tap.uuid(), tap.name(), isTapActive(tap)));
         }
 
         return Response.ok(TapHighLevelInformationListResponse.create(tapsResponse)).build();
@@ -234,7 +234,7 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.memoryFree(),
                 tap.memoryUsed(),
                 tap.cpuLoad(),
-                tap.lastReport() == null ? false : tap.lastReport().isAfter(DateTime.now().minusMinutes(2)),
+                isTapActive(tap),
                 tap.clockDriftMs(),
                 tap.createdAt(),
                 tap.updatedAt(),
@@ -243,6 +243,10 @@ public class TapsResource extends UserAuthenticatedResource {
                 busesResponse,
                 capturesResponse
         );
+    }
+
+    private boolean isTapActive(Tap tap) {
+        return tap.lastReport() != null && tap.lastReport().isAfter(DateTime.now().minusMinutes(2));
     }
 
 }

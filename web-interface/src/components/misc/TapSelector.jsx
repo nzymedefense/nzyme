@@ -17,30 +17,45 @@ function TapSelector(props) {
   const [availableTapsUUIDs, setAvailableTapsUUIDs] = useState(null);
   const [preSelectedTaps, setPreSelectedTaps] = useState(null);
 
+  const [hasSelectedOfflineTap, setHasSelectedOfflineTap] = useState(false);
+
   const [buttonText, setButtonText] = useState(null);
 
   useEffect(() => {
-    tapsService.findAllTapsHighLevel(setAvailableTaps);
+    setAvailableTaps(null);
 
-    let lsTaps = Store.get("selected_taps");
-    if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
-      setSelectedTaps("*");
-      setPreSelectedTaps("*");
-      setButtonText("All Taps Selected");
-    } else {
-      setSelectedTaps(lsTaps);
-      setPreSelectedTaps(lsTaps);
-      setButtonText(lsTaps.length + " Taps Selected");
-    }
+    tapsService.findAllTapsHighLevel(function (response) {
+      setAvailableTaps(response.data.taps);
+
+      let lsTaps = Store.get("selected_taps");
+      if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
+        setSelectedTaps("*");
+        setPreSelectedTaps("*");
+        setButtonText("All Taps Selected");
+      } else {
+        setSelectedTaps(lsTaps);
+        setPreSelectedTaps(lsTaps);
+        setButtonText(lsTaps.length + " Taps Selected");
+      }
+    });
   }, [])
 
   useEffect(() => {
+    setHasSelectedOfflineTap(false); // Reset.
+
     if (selectedTaps !== null && availableTaps !== null) {
       if (availableTaps.length === 0) {
         setButtonText("No access to any taps.");
       } else {
         if (selectedTaps === "*") {
           setButtonText("All Taps Selected");
+
+          // Is any tap currently offline?
+          availableTaps.forEach(function (availableTap) {
+            if (!availableTap.is_online) {
+              setHasSelectedOfflineTap(true);
+            }
+          });
         } else {
           /*
            * Reset everything if a tap is no longer available (permissions may have changed or local
@@ -59,9 +74,22 @@ function TapSelector(props) {
               setSelectedTaps("*");
               setPreSelectedTaps("*");
             }
+
+            // Is any of the selected taps currently offline?
+            selectedTaps.forEach(function (selectedTap) {
+              availableTaps.forEach(function (availableTap) {
+                if (availableTap.uuid === selectedTap && !availableTap.is_online) {
+                  setHasSelectedOfflineTap(true);
+                }
+              });
+            });
           }
 
-          setButtonText(selectedTaps.length + " Taps Selected");
+          if (selectedTaps.length > 1) {
+            setButtonText(selectedTaps.length + " Taps Selected");
+          } else {
+            setButtonText("1 Tap Selected");
+          }
         }
       }
     }
@@ -119,7 +147,7 @@ function TapSelector(props) {
     setPreSelectedTaps("*");
   }
 
-  if (availableTaps === null || selectedTaps === null) {
+  if (availableTaps === null || selectedTaps === null || preSelectedTaps === null) {
     return (
         <div className="dropdown">
           <button className="btn btn-outline-secondary dropdown-toggle" type="button" disabled={true}>
@@ -138,7 +166,8 @@ function TapSelector(props) {
                 data-bs-auto-close="false"
                 onClick={toggleMenu}
                 disabled={availableTaps.length === 0}>
-          {buttonText}
+          {buttonText}{' '}
+          {hasSelectedOfflineTap ? <i className="fa-solid fa-triangle-exclamation text-warning"></i> : null }
         </button>
         <ul className="dropdown-menu" style={{display: show ? "block" : "none"}}>
           <li>
@@ -154,6 +183,8 @@ function TapSelector(props) {
                      href="#"
                      onClick={(e) => handleTapSelection(e, tap.uuid)}>
                     {tap.name}
+
+                    {!tap.is_online ? <span className="text-warning"> (Offline)</span> : null }
                   </a>
                 </li>
             )

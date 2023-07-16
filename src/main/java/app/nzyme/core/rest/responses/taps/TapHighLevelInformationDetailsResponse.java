@@ -14,10 +14,14 @@ public abstract class TapHighLevelInformationDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    public static TapHighLevelInformationDetailsResponse create(UUID uuid, String name) {
+    @JsonProperty("is_online")
+    public abstract boolean isOnline();
+
+    public static TapHighLevelInformationDetailsResponse create(UUID uuid, String name, boolean isOnline) {
         return builder()
                 .uuid(uuid)
                 .name(name)
+                .isOnline(isOnline)
                 .build();
     }
 
@@ -30,6 +34,8 @@ public abstract class TapHighLevelInformationDetailsResponse {
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder name(String name);
+
+        public abstract Builder isOnline(boolean isOnline);
 
         public abstract TapHighLevelInformationDetailsResponse build();
     }
