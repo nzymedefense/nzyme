@@ -33,7 +33,7 @@ import app.nzyme.core.rest.resources.taps.TablesResource;
 import app.nzyme.core.rest.resources.taps.TapsResource;
 import app.nzyme.core.rest.resources.user.UserProfileResource;
 import app.nzyme.plugin.distributed.messaging.*;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
@@ -110,7 +110,7 @@ public class NzymeHttpServer {
         resourceConfig.register(new CORSFilter());
         resourceConfig.register(new NzymeLeaderInjectionBinder(nzyme));
         resourceConfig.register(new ObjectMapperProvider());
-        resourceConfig.register(new JacksonJaxbJsonProvider());
+        resourceConfig.register(new JacksonJsonProvider());
         resourceConfig.register(new NzymeExceptionMapper());
         resourceConfig.register(new TapTableSizeInterceptor(nzyme));
         resourceConfig.register(MultiPartFeature.class);

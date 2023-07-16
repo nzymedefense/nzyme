@@ -1,12 +1,13 @@
 package app.nzyme.core.rest.authentication;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.*;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 
-public class MockHeaderContainerRequest implements ContainerRequestContext  {
+public class MockHeaderContainerRequest implements ContainerRequestContext {
 
     private final String value;
     public boolean aborted = false;

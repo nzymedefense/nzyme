@@ -24,15 +24,16 @@ import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Resources;
 import app.nzyme.core.rest.web.IndexHtmlGenerator;
-import org.glassfish.jersey.server.ContainerRequest;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.*;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.*;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import org.glassfish.jersey.server.ContainerRequest;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;

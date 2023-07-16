@@ -5,16 +5,16 @@ import app.nzyme.plugin.RegistryCryptoException;
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
 import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.ext.Provider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Optional;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @PrometheusBasicAuthSecured
 @Provider
 @Priority(Priorities.AUTHENTICATION)
-public class PrometheusBasicAuthFilter implements ContainerRequestFilter  {
+public class PrometheusBasicAuthFilter implements ContainerRequestFilter {
 
     private static final Logger LOG = LogManager.getLogger(PrometheusBasicAuthFilter.class);
 

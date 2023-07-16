@@ -2,7 +2,6 @@ package app.nzyme.core.rest.resources.system.integrations;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.integrations.geoip.GeoIpRegistryKeys;
-import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.integrations.geoip.ipinfo.IpInfoFreeGeoIpAdapter;
 import app.nzyme.core.rest.requests.ActivateGeoIpProviderRequest;
 import app.nzyme.core.rest.requests.IpInfoFreeConfigurationUpdateRequest;
@@ -14,16 +13,16 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.configuration.EncryptedConfigurationEntryResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import jakarta.ws.rs.PUT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.Map;
 
@@ -45,6 +44,7 @@ public class GeoIpIntegrationsResource {
 
         return Response.ok(GeoIpSummaryResponse.create(adapterName)).build();
     }
+
     @PUT
     @Path("/providers/active")
     public Response activateProvider(ActivateGeoIpProviderRequest req){

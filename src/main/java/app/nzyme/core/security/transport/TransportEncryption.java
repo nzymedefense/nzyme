@@ -18,8 +18,8 @@
 package app.nzyme.core.security.transport;
 
 import com.google.crypto.tink.subtle.AesGcmJce;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.constraints.NotNull;
 import java.security.GeneralSecurityException;
 
 public class TransportEncryption {

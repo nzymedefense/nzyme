@@ -18,9 +18,9 @@
 package app.nzyme.core.rest;
 
 import com.google.common.base.Strings;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.MultivaluedMap;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.MultivaluedMap;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;

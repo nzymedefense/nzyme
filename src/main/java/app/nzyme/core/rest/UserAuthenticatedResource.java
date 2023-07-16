@@ -1,10 +1,9 @@
 package app.nzyme.core.rest;
 
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.ws.rs.core.SecurityContext;
 
 public class UserAuthenticatedResource {
 

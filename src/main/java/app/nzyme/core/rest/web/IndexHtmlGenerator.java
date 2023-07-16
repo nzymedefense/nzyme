@@ -22,8 +22,8 @@ import com.floreysoft.jmte.Engine;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import app.nzyme.core.rest.RestTools;
+import jakarta.ws.rs.core.MultivaluedMap;
 
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

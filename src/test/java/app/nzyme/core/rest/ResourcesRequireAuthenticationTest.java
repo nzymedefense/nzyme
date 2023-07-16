@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import app.nzyme.core.rest.authentication.PrometheusBasicAuthSecured;
 import app.nzyme.core.rest.authentication.TapSecured;
+import jakarta.ws.rs.PUT;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
@@ -29,10 +30,9 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
 
 import java.lang.reflect.Method;
 import java.util.List;

@@ -19,27 +19,24 @@ package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.security.authentication.db.UserEntry;
-import app.nzyme.core.security.authentication.roles.Permission;
-import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ResourceInfo;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.ext.Provider;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.server.Request;
 
-import javax.annotation.Priority;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -61,7 +58,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
     ResourceInfo resourceInfo;
 
     @Context
-    private javax.inject.Provider<Request> requestProvider;
+    private jakarta.inject.Provider<Request> requestProvider;
 
     public static final String AUTHENTICATION_SCHEME = "Bearer";
 
@@ -80,9 +77,7 @@ public class RESTAuthenticationFilter implements ContainerRequestFilter {
         PermissionLevel resourcePermissionLevel;
         String[] features = null;
         if (methodAnnotation == null && classAnnotation == null) {
-            LOG.error("RESTSecured is NULL. Cannot continue. Resource: [/{}]",
-                    requestContext.getUriInfo().getPath());
-            abortWithUnauthorized(requestContext);
+            // This resource has no requested permissions.
             return;
         } else {
             if (methodAnnotation == null) {

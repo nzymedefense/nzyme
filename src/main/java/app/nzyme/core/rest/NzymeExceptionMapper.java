@@ -18,14 +18,14 @@
 package app.nzyme.core.rest;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ParamException;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
 import java.security.InvalidParameterException;
 
 @Provider
