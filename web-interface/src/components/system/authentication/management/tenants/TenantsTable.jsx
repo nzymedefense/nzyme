@@ -42,18 +42,18 @@ function TenantsTable(props) {
           </tr>
           </thead>
           <tbody>
-          {tenants.tenants.map(function (key, i) {
+          {tenants.tenants.map(function (tenant, i) {
             return (
                 <tr key={"tenant-" + i}>
                   <td>
                     <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(
-                        tenants.tenants[i].organization_id,
-                        tenants.tenants[i].id)}>
-                      {tenants.tenants[i].name}
+                        tenant.organization_id,
+                        tenant.id)}>
+                      {tenant.name}
                     </a>
                   </td>
-                  <td>{tenants.tenants[i].users_count}</td>
-                  <td>{tenants.tenants[i].taps_count}</td>
+                  <td>{tenant.users_count}</td>
+                  <td>{tenant.taps_count}</td>
                 </tr>
             )
           })}

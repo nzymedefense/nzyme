@@ -157,61 +157,67 @@ function SSIDDetailsPage() {
       <div className="row mt-3">
         <div className="col-md-12">
           <div className="row">
-            <div className="col-md-6">
-              <div className="card">
-                <div className="card-body">
-                  <h3>
-                    Active Channels <small>Last 15 minutes</small>
-                  </h3>
+            <div className="col-md-8">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>
+                        Active Channels <small>Last 15 minutes</small>
+                      </h3>
 
-                  <SSIDChannelUsageHistogram bssid={ssid.bssid}
-                                             ssid={ssid.ssid}
-                                             minutes={15} />
+                      <SSIDChannelUsageHistogram bssid={ssid.bssid}
+                                                 ssid={ssid.ssid}
+                                                 minutes={15} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3 style={{display: "inline-block"}}>
+                        Signal Strength Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
+                        ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
+                      </h3>
+
+                      <div className="float-end">
+                        <ChannelSelector currentFrequency={selectedFrequency}
+                                         setFrequency={setSelectedFrequency}
+                                         frequencies={ssid.frequencies} />
+                      </div>
+
+                      <SSIDSignalWaterfallChart bssid={ssid.bssid}
+                                                ssid={ssid.ssid}
+                                                frequency={selectedFrequency}
+                                                minutes={24*60} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="col-md-4">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>
+                        Clients connected to BSSID <small>Last 15 minutes</small>
+                      </h3>
 
-            <div className="col-md-6">
-              <div className="card">
-                <div className="card-body">
-                  <h3>
-                    Clients connected to BSSID <small>Last 15 minutes</small>
-                  </h3>
+                      <p className="text-muted">
+                        Please note that recording clients generally demands closer proximity, as
+                        well as more precise matching of transmission-related parameters compared to recording access
+                        points. Additionally, many modern devices will randomize their MAC addresses and hide vendor
+                        information.
+                      </p>
 
-                  <p className="text-muted">
-                    Please note that recording clients generally demands closer proximity, as
-                    well as more precise matching of transmission-related parameters compared to recording access
-                    points. Additionally, many modern devices will randomize their MAC addresses and hide vendor
-                    information.
-                  </p>
-
-                  <SSIDAccessPointClients clients={ssid.access_point_clients} />
+                      <SSIDAccessPointClients clients={ssid.access_point_clients} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row mt-3">
-        <div className="col-md-12">
-          <div className="card">
-            <div className="card-body">
-              <h3 style={{display: "inline-block"}}>
-                Signal Strength Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
-                ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
-              </h3>
-
-              <div className="float-end">
-                <ChannelSelector currentFrequency={selectedFrequency}
-                                 setFrequency={setSelectedFrequency}
-                                 frequencies={ssid.frequencies} />
-              </div>
-
-              <SSIDSignalWaterfallChart bssid={ssid.bssid}
-                                        ssid={ssid.ssid}
-                                        frequency={selectedFrequency}
-                                        minutes={24*60} />
             </div>
           </div>
         </div>

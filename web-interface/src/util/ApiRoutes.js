@@ -123,8 +123,8 @@ const ApiRoutes = {
       BSSIDS: '/dot11/bssids',
       SSID: (bssid, ssid, frequency) => `/dot11/bssids/show/${bssid}/ssids/show/${ssid}/frequencies/show/${frequency}`
     },
-    ASSETS: {
-      INDEX: '/system/assets/index'
+    CLIENTS: {
+      INDEX: '/dot11/clients'
     }
   },
   RETRO: {

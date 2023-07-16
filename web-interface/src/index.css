@@ -694,3 +694,13 @@ div.timerange-selector-options ul li {
 div.timerange-selector-options ul li a {
     text-decoration: none;
 }
+
+ul.client-bssids {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+ul.client-bssids li ul {
+    list-style-type: none;
+    padding-left: 13px;
+}

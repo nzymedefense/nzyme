@@ -65,6 +65,26 @@ class Dot11Service {
     })
   }
 
+  findAllConnectedClients(minutes, taps, setConnectedClients, limit, offset) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/clients/connected",
+        { minutes: minutes, taps: tapsList, limit: limit, offset: offset },
+        function (response) {
+          setConnectedClients(response.data)
+        })
+  }
+
+  findAllDisconnectedClients(minutes, taps, setDisconnectedClients, limit, offset) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/clients/disconnected",
+        { minutes: minutes, taps: tapsList, limit: limit, offset: offset },
+        function (response) {
+          setDisconnectedClients(response.data)
+    })
+  }
+
 }
 
 export default Dot11Service

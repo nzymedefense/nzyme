@@ -17,7 +17,6 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -33,9 +32,9 @@ import java.util.UUID;
 @Path("/api/dot11/networks")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
-public class Dot11Resource extends TapDataHandlingResource {
+public class Dot11NetworksResource extends TapDataHandlingResource {
 
-    private static final Logger LOG = LogManager.getLogger(Dot11Resource.class);
+    private static final Logger LOG = LogManager.getLogger(Dot11NetworksResource.class);
 
     private final static List<Integer> DEFAULT_X_VALUES = Lists.newArrayList();
 
@@ -60,7 +59,7 @@ public class Dot11Resource extends TapDataHandlingResource {
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     bssid.bssid(),
-                    nzyme.getOUIManager().lookupBSSID(bssid.bssid()),
+                    nzyme.getOUIManager().lookupMac(bssid.bssid()),
                     bssid.securityProtocols(),
                     bssid.signalStrengthAverage(),
                     bssid.lastSeen(),
@@ -208,13 +207,13 @@ public class Dot11Resource extends TapDataHandlingResource {
         List<BSSIDClientDetails> accessPointClients = Lists.newArrayList();
         for (String mac : ssidDetails.accessPointClients()) {
             if (mac != null) {
-                accessPointClients.add(BSSIDClientDetails.create(mac, nzyme.getOUIManager().lookupBSSID(mac)));
+                accessPointClients.add(BSSIDClientDetails.create(mac, nzyme.getOUIManager().lookupMac(mac)));
             }
         }
 
         SSIDDetailsResponse response = SSIDDetailsResponse.create(
                 bssid,
-                nzyme.getOUIManager().lookupBSSID(bssid),
+                nzyme.getOUIManager().lookupMac(bssid),
                 ssidDetails.ssid(),
                 ssidDetails.frequencies(),
                 ssidDetails.signalStrengthAverage(),

@@ -14,7 +14,8 @@ import app.nzyme.core.rest.authentication.TapAuthenticationFilter;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.rest.resources.*;
 import app.nzyme.core.rest.resources.assets.WebInterfaceAssetsResource;
-import app.nzyme.core.rest.resources.dot11.Dot11Resource;
+import app.nzyme.core.rest.resources.dot11.Dot11ClientsResource;
+import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
 import app.nzyme.core.rest.resources.system.authentication.AuthenticationResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.InitialUserResource;
 import app.nzyme.core.rest.resources.system.authentication.mgmt.OrganizationsResource;
@@ -138,8 +139,9 @@ public class NzymeHttpServer {
         resourceConfig.register(EventsResource.class);
         resourceConfig.register(SmtpIntegrationResource.class);
         resourceConfig.register(EventActionsResource.class);
-        resourceConfig.register(Dot11Resource.class);
+        resourceConfig.register(Dot11NetworksResource.class);
         resourceConfig.register(DatabaseResource.class);
+        resourceConfig.register(Dot11ClientsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

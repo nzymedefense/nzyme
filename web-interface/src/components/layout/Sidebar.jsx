@@ -52,17 +52,12 @@ function Sidebar() {
         <NavigationLink
             href={ApiRoutes.DOT11.NETWORKS.BSSIDS}
             title="Access Points"
-            icon={<i className="sidebar-icon fa-solid fa-list" />} />
+            icon={<i className="sidebar-icon fa-solid fa-tower-cell" />} />
 
         <NavigationLink
-            href="#"
-            title="Bandits"
-            icon={<i className="sidebar-icon fa-solid fa-satellite-dish" />} />
-
-        <NavigationLink
-            href={ApiRoutes.DOT11.ASSETS.INDEX}
-            title="Assets"
-            icon={<i className="sidebar-icon fa-solid fa-clipboard-list" />} />
+            href={ApiRoutes.DOT11.CLIENTS.INDEX}
+            title="Clients"
+            icon={<i className="sidebar-icon fa-solid fa-timeline" />} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Retrospective"

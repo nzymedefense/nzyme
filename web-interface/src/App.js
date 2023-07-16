@@ -86,6 +86,7 @@ import OrganizationEventSubscriptionDetailsPage
 import BSSIDsPage from "./components/dot11/bssids/BSSIDsPage";
 import DatabasePage from "./components/system/database/DatabasePage";
 import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
+import ClientsPage from "./components/dot11/clients/ClientsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -319,6 +320,9 @@ function App() {
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
+
+                          { /* 802.11/Clients. */}
+                          <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

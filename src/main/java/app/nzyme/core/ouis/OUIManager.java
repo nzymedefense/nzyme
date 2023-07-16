@@ -59,7 +59,7 @@ public class OUIManager {
     }
 
     @Nullable
-    public String lookupBSSID(String bssid) {
+    public String lookupMac(String bssid) {
         if (this.ouis == null || this.ouis.isEmpty()) {
             LOG.debug("Internal OUI table is NULL or empty.");
             return null;

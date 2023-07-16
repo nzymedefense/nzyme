@@ -41,8 +41,6 @@ import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.jodatime2.JodaTimePlugin;
 import org.jdbi.v3.postgres.PostgresPlugin;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 
 import java.sql.Timestamp;
 
@@ -95,7 +93,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new SSIDDetailsMapper())
                 .registerRowMapper(new SSIDAdvertisementHistogramEntryMapper())
                 .registerRowMapper(new ChannelHistogramEntryMapper())
-                .registerRowMapper(new ActiveChannelMapper());
+                .registerRowMapper(new ActiveChannelMapper())
+                .registerRowMapper(new ConnectedClientDetailsMapper())
+                .registerRowMapper(new DisconnectedClientDetailsMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

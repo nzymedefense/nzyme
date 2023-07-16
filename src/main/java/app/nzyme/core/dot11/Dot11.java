@@ -1,8 +1,9 @@
 package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
-import app.nzyme.core.rest.responses.dot11.clients.Dot11Client;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +16,22 @@ public class Dot11 {
     private static final Logger LOG = LogManager.getLogger(Dot11.class);
 
     private final NzymeNode nzyme;
+
+    public enum ClientOrderColumn {
+
+        LAST_SEEN("last_seen");
+
+        private final String columnName;
+
+        ClientOrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
 
     public Dot11(NzymeNode nzyme) {
         this.nzyme = nzyme;
@@ -178,19 +195,137 @@ public class Dot11 {
         );
     }
 
-    public Optional<Dot11Client> findClient(String mac, int minutes, List<UUID> taps) {
-        // Search in bssid_clients and clients. Add frequencies it was active on. Add probe request SSIDs.
+    public long countBSSIDClients(int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
 
-        /*
-        SELECT c.client_mac, MAX(created_at) AS last_seen,
-ARRAY_AGG(DISTINCT(pr.ssid))
-FROM dot11_clients AS c
-LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id
-GROUP BY c.client_mac
-ORDER BY last_seen DESC
-         */
+    public List<ConnectedClientDetails> findBSSIDClients(int minutes,
+                                                         List<UUID> taps,
+                                                         int limit,
+                                                         int offset,
+                                                         ClientOrderColumn orderColumn,
+                                                         OrderDirection orderDirection) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
+                                "MAX(b.created_at) AS last_seen " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY c.client_mac, b.bssid " +
+                                "HAVING c.client_mac IS NOT NULL " +
+                                "ORDER BY <order_column> <order_direction> " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(ConnectedClientDetails.class)
+                        .list()
+        );
+    }
 
-        return Optional.empty();
+    public List<String> findProbeRequestsOfClient(String clientMac,
+                                                  List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(s.ssid) " +
+                                "FROM dot11_clients AS c " +
+                                "LEFT JOIN dot11_client_probereq_ssids s on c.id = s.client_id " +
+                                "WHERE c.tap_uuid IN (<taps>) " +
+                                "AND c.client_mac = :client_mac AND s.ssid IS NOT NULL")
+                        .bindList("taps", taps)
+                        .bind("client_mac", clientMac)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public long countClients(int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
+                                "FROM dot11_clients AS c " +
+                                "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
+                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>)")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<DisconnectedClientDetails> findClients(int minutes,
+                                                       List<UUID> taps,
+                                                       int limit,
+                                                       int offset,
+                                                       ClientOrderColumn orderColumn,
+                                                       OrderDirection orderDirection) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.client_mac, MAX(created_at) AS last_seen, " +
+                                "ARRAY_AGG(DISTINCT(pr.ssid)) AS probe_requests " +
+                                "FROM dot11_clients AS c " +
+                                "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
+                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                "GROUP BY c.client_mac " +
+                                "ORDER BY <order_column> <order_direction> " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .define("order_column", orderColumn.getColumnName())
+                        .define("order_direction", orderDirection)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(DisconnectedClientDetails.class)
+                        .list()
+        );
+    }
+
+    public List<String> findBSSIDsClientWasConnectedTo(String clientMac, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                "WHERE c.client_mac = :client_mac " +
+                                "AND b.tap_uuid IN (<taps>)" +
+                                "GROUP by b.bssid")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<String> findSSIDsAdvertisedByBSSID(String bssid, List<UUID> taps) {
+        Optional<String[]> x = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT ARRAY_AGG(DISTINCT(s.ssid)) " +
+                                "FROM dot11_ssids AS s " +
+                                "WHERE s.created_at > (NOW() - INTERVAL '3 days') AND " +
+                                "s.bssid = :bssid AND s.tap_uuid IN (<taps>)")
+                        .bind("bssid", bssid)
+                        .bindList("taps", taps)
+                        .mapTo(String[].class)
+                        .findOne()
+        );
+
+        if (x.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = Lists.newArrayList();
+        for (String s : x.get()) {
+            result.add(s);
+        }
+
+        return result;
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

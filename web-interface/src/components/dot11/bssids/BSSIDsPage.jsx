@@ -25,10 +25,6 @@ function BSSIDsPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    console.log("INITIAL: " + selectedTaps)
-  }, [])
-
-  useEffect(() => {
     setBSSIDs(null);
     loadData(selectedTaps, setBSSIDs, setLastUpdated);
 

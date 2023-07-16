@@ -3205,4 +3205,20 @@
             <column name="created_at" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="change_dot11_bssids_index_order" author="lennartkoopmann">
+        <dropIndex tableName="dot11_bssids" indexName="bssids_table_lookup" />
+
+        <createIndex tableName="dot11_bssids" indexName="bssids_table_lookup">
+            <column name="tap_uuid" />
+            <column name="created_at" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_dot11_ssids_index_07152023" author="lennartkoopmann">
+        <createIndex tableName="dot11_ssids" indexName="ssids_bssid_direct_lookup">
+            <column name="bssid" />
+            <column name="tap_uuid" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
