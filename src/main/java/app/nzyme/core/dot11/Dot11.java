@@ -235,6 +235,18 @@ public class Dot11 {
         );
     }
 
+    public List<String> findMacAddressesOfAllBSSIDClients(int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(b.bssid) AS bssid " +
+                                "FROM dot11_bssids AS b " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
     public List<String> findProbeRequestsOfClient(String clientMac,
                                                   List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
@@ -265,6 +277,7 @@ public class Dot11 {
 
     public List<DisconnectedClientDetails> findClients(int minutes,
                                                        List<UUID> taps,
+                                                       List<String> excludeClientMacs,
                                                        int limit,
                                                        int offset,
                                                        ClientOrderColumn orderColumn,
@@ -275,16 +288,51 @@ public class Dot11 {
                                 "FROM dot11_clients AS c " +
                                 "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
                                 "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                "AND NOT c.client_mac IN (<exclude_client_macs>) " +
                                 "GROUP BY c.client_mac " +
                                 "ORDER BY <order_column> <order_direction> " +
                                 "LIMIT :limit OFFSET :offset")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
+                        .bindList("exclude_client_macs", excludeClientMacs)
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(DisconnectedClientDetails.class)
+                        .list()
+        );
+    }
+
+    public List<ClientHistogramEntry> getClientHistogram(int minutes, List<UUID> taps, List<String> excludeClientMacs) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
+                                "DATE_TRUNC('minute', c.created_at) as bucket " +
+                                "FROM dot11_clients AS c " +
+                                "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                "AND NOT c.client_mac IN (<exclude_client_macs>) " +
+                                "GROUP BY bucket " +
+                                "ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bindList("exclude_client_macs", excludeClientMacs)
+                        .mapTo(ClientHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<ClientHistogramEntry> getConnectedClientHistogram(int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
+                                "DATE_TRUNC('minute', b.created_at) as bucket " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY bucket " +
+                                "ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(ClientHistogramEntry.class)
                         .list()
         );
     }
