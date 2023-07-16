@@ -15,7 +15,7 @@ function MissingRetroPluginPage () {
                         <div className="card-body">
                             <h3>Plugin not installed</h3>
 
-                            TODO explain
+                            The retrospective plugin is not ready for this early release yet.
                         </div>
                     </div>
                 </div>

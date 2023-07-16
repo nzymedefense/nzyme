@@ -35,7 +35,7 @@ function Sidebar() {
             title="DNS"
             icon={<i className="sidebar-icon fa-solid fa-signs-post" />} />
         <NavigationLink
-            href="#"
+            href={ApiRoutes.ETHERNET.BEACONS.INDEX}
             title="Beacons"
             icon={<i className="sidebar-icon fa-solid fa-location-arrow" />} />
       </SidebarSubmenu>

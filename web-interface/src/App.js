@@ -87,6 +87,8 @@ import BSSIDsPage from "./components/dot11/bssids/BSSIDsPage";
 import DatabasePage from "./components/system/database/DatabasePage";
 import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
 import ClientsPage from "./components/dot11/clients/ClientsPage";
+import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
+import ReportingPage from "./components/reporting/ReportingPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -317,6 +319,9 @@ function App() {
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>
 
+                          { /* Ethernet/Beacons. */}
+                          <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
@@ -328,6 +333,9 @@ function App() {
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
                           <Route path={ApiRoutes.RETRO.SERVICE_SUMMARY} element={plugins.includes('retroplugin') ? <ServiceSummaryPage /> : <MissingRetroPluginPage /> }/>
                           <Route path={ApiRoutes.RETRO.CONFIGURATION} element={plugins.includes('retroplugin') ? <RetroConfigurationPage /> : <MissingRetroPluginPage /> }/>
+
+                          { /* Reporting. */}
+                          <Route path={ApiRoutes.REPORTING.INDEX} element={<ReportingPage />}/>
 
                           { /* 404. */}
                           <Route path={ApiRoutes.NOT_FOUND} element={<NotFoundPage />}/>

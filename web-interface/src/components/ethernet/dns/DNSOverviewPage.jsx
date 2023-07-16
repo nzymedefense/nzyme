@@ -31,6 +31,10 @@ function DNSOverviewPage () {
         </div>
       </div>
 
+      <div className="alert alert-danger">
+        This is an early alpha page that should not be taken as an example of what future functionality will look like.
+      </div>
+
       <div className="row mt-3">
         <DNSNumbers data={statistics} />
       </div>

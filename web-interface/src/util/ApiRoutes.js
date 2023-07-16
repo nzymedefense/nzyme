@@ -115,6 +115,9 @@ const ApiRoutes = {
   ETHERNET: {
     DNS: {
       INDEX: '/ethernet/dns'
+    },
+    BEACONS: {
+      INDEX: '/ethernet/beacons'
     }
   },
   DOT11: {

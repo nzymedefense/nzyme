@@ -20,6 +20,10 @@ function DatabasePage() {
           </div>
         </div>
 
+        <div className="alert alert-danger mb-0 mt-2">
+          This is an early alpha page that should not be taken as an example of what future functionality will look like.
+        </div>
+
         <div className="row">
           <div className="col-md-12">
             <div className="row mt-3">

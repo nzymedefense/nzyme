@@ -1,6 +1,6 @@
 import React from 'react'
 
-function OverviewPage() {
+function ReportingPage() {
 
   return (
       <div className="alert alert-danger">
@@ -10,4 +10,4 @@ function OverviewPage() {
 
 }
 
-export default OverviewPage
+export default ReportingPage;
