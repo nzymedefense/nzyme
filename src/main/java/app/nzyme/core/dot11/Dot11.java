@@ -3,6 +3,7 @@ package app.nzyme.core.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -374,6 +375,74 @@ public class Dot11 {
         }
 
         return result;
+    }
+
+    public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac, List<UUID> taps) {
+        Optional<DateTime> firstSeenConnected = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT MAX(b.created_at) " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>)")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .mapTo(DateTime.class)
+                        .findOne()
+        );
+
+        List<ConnectedBSSID> connectedBSSIDs = Lists.newArrayList();
+        if (firstSeenConnected.isPresent()) {
+            // We have found this client as connected client.
+            for (String bssid : findBSSIDsClientWasConnectedTo(clientMac, taps)) {
+                List<String> advertisedSSIDs = findSSIDsAdvertisedByBSSID(bssid, taps);
+
+                connectedBSSIDs.add(ConnectedBSSID.create(
+                        bssid,
+                        nzyme.getOUIManager().lookupMac(bssid),
+                        advertisedSSIDs
+                ));
+            }
+        } else {
+            connectedBSSIDs = Collections.emptyList();
+        }
+
+        Optional<DateTime> firstSeenDisconnected = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT MAX(c.created_at) FROM dot11_clients AS c " +
+                                "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>)")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .mapTo(DateTime.class)
+                        .findOne()
+        );
+
+        List<String> probeRequests;
+        if (firstSeenDisconnected.isPresent()) {
+            probeRequests = findProbeRequestsOfClient(clientMac, taps);
+        } else {
+            probeRequests = Collections.emptyList();
+        }
+
+        if (firstSeenConnected.isEmpty() && firstSeenDisconnected.isEmpty()) {
+            // Client not found.
+            return Optional.empty();
+        }
+
+        // Decide which last seen is more recent.
+        DateTime lastSeen;
+        if (firstSeenConnected.isPresent() && firstSeenDisconnected.isPresent()) {
+            if (firstSeenConnected.get().isAfter(firstSeenDisconnected.get())) {
+                lastSeen = firstSeenConnected.get();
+            } else {
+                lastSeen = firstSeenDisconnected.get();
+            }
+        } else lastSeen = firstSeenConnected.orElseGet(firstSeenDisconnected::get);
+
+        return Optional.of(ClientDetails.create(
+                clientMac,
+                nzyme.getOUIManager().lookupMac(clientMac),
+                connectedBSSIDs,
+                lastSeen,
+                probeRequests
+        ));
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

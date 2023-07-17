@@ -3,7 +3,7 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.db.BSSIDAndSSIDCountHistogramEntry;
+import app.nzyme.core.dot11.db.ClientDetails;
 import app.nzyme.core.dot11.db.ClientHistogramEntry;
 import app.nzyme.core.dot11.db.ConnectedClientDetails;
 import app.nzyme.core.dot11.db.DisconnectedClientDetails;
@@ -16,10 +16,8 @@ import com.google.common.collect.Lists;
 
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,6 +26,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/dot11/clients")
@@ -90,13 +89,13 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
     }
 
     @GET
-    public Response disconnectedClients(@Context SecurityContext sc,
-                                        @QueryParam("minutes") int minutes,
-                                        @QueryParam("taps") String taps,
-                                        @QueryParam("connectedLimit") int connectedLimit,
-                                        @QueryParam("connectedOffset") int connectedOffset,
-                                        @QueryParam("disconnectedLimit") int disconnectedLimit,
-                                        @QueryParam("disconnectedOffset") int disconnectedOffset) {
+    public Response allClients(@Context SecurityContext sc,
+                               @QueryParam("minutes") int minutes,
+                               @QueryParam("taps") String taps,
+                               @QueryParam("connectedLimit") int connectedLimit,
+                               @QueryParam("connectedOffset") int connectedOffset,
+                               @QueryParam("disconnectedLimit") int disconnectedLimit,
+                               @QueryParam("disconnectedOffset") int disconnectedOffset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
@@ -167,6 +166,31 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         return Response.ok(ClientListResponse.create(
                 ConnectedClientListResponse.create(connectedCount, connectedClients),
                 DisconnectedClientListResponse.create(disconnectedCount, disconnectedClients)
+        )).build();
+    }
+
+    @GET
+    @Path("/show/{clientMac}")
+    public Response histograms(@Context SecurityContext sc,
+                               @PathParam("clientMac") @NotEmpty String clientMac,
+                               @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
+                clientMac, tapUuids);
+
+        if (client.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        ClientDetails c = client.get();
+        return Response.ok(ClientDetailsResponse.create(
+                c.mac(),
+                c.macOui(),
+                c.connectedBSSIDs(),
+                c.lastSeen(),
+                c.probeRequests()
         )).build();
     }
 

@@ -4,6 +4,7 @@ import Paginator from "../../misc/Paginator";
 import moment from "moment";
 import SSIDsList from "../util/SSIDsList";
 import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function DisconnectedClientsTable(props) {
 
@@ -44,7 +45,7 @@ function DisconnectedClientsTable(props) {
           {clients.clients.map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href="">{client.mac}</a></td>
+                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                   <td>{client.oui ? client.oui : <span className="text-muted">Unknown</span>}</td>
                   <td><ClientBSSIDHistory bssids={client.bssid_history} /></td>
                   <td>

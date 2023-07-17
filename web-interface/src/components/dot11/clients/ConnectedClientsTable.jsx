@@ -4,6 +4,7 @@ import Paginator from "../../misc/Paginator";
 import moment from "moment";
 import SSIDsList from "../util/SSIDsList";
 import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 
 function ConnectedClientsTable(props) {
@@ -36,8 +37,8 @@ function ConnectedClientsTable(props) {
           <tr>
             <th>Client MAC</th>
             <th>Client OUI</th>
-            <th>BSSID</th>
-            <th>BSSID OUI</th>
+            <th>Connected BSSID</th>
+            <th>Connected BSSID OUI</th>
             <th>BSSID Connection History</th>
             <th>Probe Requests</th>
             <th>Last Seen</th>
@@ -47,7 +48,7 @@ function ConnectedClientsTable(props) {
           {clients.clients.map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href="">{client.mac}</a></td>
+                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                   <td>{client.oui ? client.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>{client.connected_bssid}</td>

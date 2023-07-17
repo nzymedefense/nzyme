@@ -89,6 +89,7 @@ import SSIDDetailsPage from "./components/dot11/bssids/ssids/SSIDDetailsPage";
 import ClientsPage from "./components/dot11/clients/ClientsPage";
 import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
 import ReportingPage from "./components/reporting/ReportingPage";
+import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -328,6 +329,7 @@ function App() {
 
                           { /* 802.11/Clients. */}
                           <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
+                          <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

@@ -85,6 +85,14 @@ class Dot11Service {
     })
   }
 
+  findMergedConnectedOrDisconnectedClient(clientMac, taps, setClient) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/clients/show/" + clientMac, { taps: tapsList }, function (response) {
+      setClient(response.data);
+    })
+  }
+
 }
 
 export default Dot11Service
