@@ -17,7 +17,7 @@ function ClientsPage() {
   const [disconnectedClients, setDisconnectedClients] = useState(null);
   const [histograms, setHistograms] = useState(null);
 
-  const perPage = 10;
+  const perPage = 25;
   const [connectedClientsPage, setConnectedClientsPage] = useState(1);
   const [disconnectedClientsPage, setDisconnectedClientsPage] = useState(1);
 

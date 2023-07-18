@@ -3,7 +3,6 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import moment from "moment";
 import SSIDsList from "../util/SSIDsList";
-import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
 import ApiRoutes from "../../../util/ApiRoutes";
 
 
@@ -39,7 +38,7 @@ function ConnectedClientsTable(props) {
             <th>Client OUI</th>
             <th>Connected BSSID</th>
             <th>Connected BSSID OUI</th>
-            <th>BSSID Connection History</th>
+            <th>BSSIDs</th>
             <th>Probe Requests</th>
             <th>Last Seen</th>
           </tr>
@@ -51,10 +50,12 @@ function ConnectedClientsTable(props) {
                   <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                   <td>{client.oui ? client.oui :
                       <span className="text-muted">Unknown</span>}</td>
-                  <td>{client.connected_bssid}</td>
+                  <td>
+                    <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid)}>{client.connected_bssid}</a>
+                  </td>
                   <td>{client.connected_bssid_oui ? client.connected_bssid_oui :
                       <span className="text-muted">Unknown</span>}</td>
-                  <td><ClientBSSIDHistory bssids={client.bssid_history} connectedBSSID={client.connected_bssid} /></td>
+                  <td>{client.bssid_history.length}</td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
                         <SSIDsList ssids={client.probe_request_ssids} /> : <span className="text-muted">None</span> }

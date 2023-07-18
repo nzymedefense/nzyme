@@ -90,6 +90,7 @@ import ClientsPage from "./components/dot11/clients/ClientsPage";
 import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
 import ReportingPage from "./components/reporting/ReportingPage";
 import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
+import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -325,6 +326,7 @@ function App() {
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
+                          <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />
 
                           { /* 802.11/Clients. */}

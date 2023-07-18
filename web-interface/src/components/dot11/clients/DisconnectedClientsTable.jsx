@@ -3,7 +3,6 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Paginator from "../../misc/Paginator";
 import moment from "moment";
 import SSIDsList from "../util/SSIDsList";
-import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
 import ApiRoutes from "../../../util/ApiRoutes";
 
 function DisconnectedClientsTable(props) {
@@ -36,7 +35,7 @@ function DisconnectedClientsTable(props) {
           <tr>
             <th>Client MAC</th>
             <th>Client OUI</th>
-            <th>BSSID Connection History</th>
+            <th>BSSIDs</th>
             <th>Probe Requests</th>
             <th>Last Seen</th>
           </tr>
@@ -47,7 +46,7 @@ function DisconnectedClientsTable(props) {
                 <tr key={"client-" + i}>
                   <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                   <td>{client.oui ? client.oui : <span className="text-muted">Unknown</span>}</td>
-                  <td><ClientBSSIDHistory bssids={client.bssid_history} /></td>
+                  <td>{client.bssid_history.length}</td>
                   <td>
                     { client.probe_request_ssids && client.probe_request_ssids.length > 0 ?
                         <SSIDsList ssids={client.probe_request_ssids} /> : <span className="text-muted">None</span> }

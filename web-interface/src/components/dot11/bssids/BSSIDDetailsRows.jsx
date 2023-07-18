@@ -77,6 +77,11 @@ function BSSIDDetailsRows(props) {
                   </tr>
                 )
               })}
+              <tr>
+                <td colSpan={COLSPAN} style={{textAlign: "center"}}>
+                  <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)}>Show BSSID Details</a>
+                </td>
+              </tr>
             </tbody>
           </table>
         </td>

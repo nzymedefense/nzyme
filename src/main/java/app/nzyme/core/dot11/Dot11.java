@@ -16,6 +16,15 @@ public class Dot11 {
 
     private static final Logger LOG = LogManager.getLogger(Dot11.class);
 
+    /*
+     * JDBI bindList() does not work with empty lists. In some cases, we must expect an empty list and will pass
+     * this list instead to avoid maintaining multiple queries. The random value in this list will not match, just
+     * like an empty list. Computers!
+     */
+    private static final List<String> noValuesBindList = new ArrayList<>(){{
+        add("GYGzDTnSDLgJs9rMY8ZXj0EVwDBw2lZl");
+    }};
+
     private final NzymeNode nzyme;
 
     public enum ClientOrderColumn {
@@ -295,7 +304,8 @@ public class Dot11 {
                                 "LIMIT :limit OFFSET :offset")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
-                        .bindList("exclude_client_macs", excludeClientMacs)
+                        .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
+                                noValuesBindList : excludeClientMacs)
                         .define("order_column", orderColumn.getColumnName())
                         .define("order_direction", orderDirection)
                         .bind("limit", limit)
@@ -316,7 +326,8 @@ public class Dot11 {
                                 "ORDER BY bucket DESC")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
-                        .bindList("exclude_client_macs", excludeClientMacs)
+                        .bindList("exclude_client_macs", excludeClientMacs == null || excludeClientMacs.isEmpty() ?
+                                noValuesBindList : excludeClientMacs)
                         .mapTo(ClientHistogramEntry.class)
                         .list()
         );
