@@ -378,19 +378,39 @@ public class Dot11 {
     }
 
     public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac, List<UUID> taps) {
-        Optional<DateTime> firstSeenConnected = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT MAX(b.created_at) " +
+        Optional<FirstLastSeenTuple> connected = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT MAX(b.created_at) AS last_seen, MIN(b.created_at) AS first_seen " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>)")
                         .bind("client_mac", clientMac)
                         .bindList("taps", taps)
-                        .mapTo(DateTime.class)
+                        .mapTo(FirstLastSeenTuple.class)
+                        .findOne()
+        );
+
+        // Aggregations might return NULL.
+        if (connected.isPresent()
+                && connected.get().firstSeen() == null && connected.get().lastSeen() == null) {
+            connected = Optional.empty();
+        }
+
+        Optional<String> currentlyConnectedBSSID = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>) " +
+                                "ORDER BY b.created_at DESC " +
+                                "LIMIT 1")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
                         .findOne()
         );
 
         List<ConnectedBSSID> connectedBSSIDs = Lists.newArrayList();
-        if (firstSeenConnected.isPresent()) {
+        List<ClientActivityHistogramEntry> connectedHistogram;
+        if (connected.isPresent()) {
             // We have found this client as connected client.
             for (String bssid : findBSSIDsClientWasConnectedTo(clientMac, taps)) {
                 List<String> advertisedSSIDs = findSSIDsAdvertisedByBSSID(bssid, taps);
@@ -401,47 +421,107 @@ public class Dot11 {
                         advertisedSSIDs
                 ));
             }
+            connectedHistogram = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) as bucket, " +
+                                    "COALESCE(SUM(c.rx_frames) + SUM(c.tx_frames), 0) AS frames " +
+                                    "FROM dot11_bssids AS b " +
+                                    "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                    "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                    "AND c.client_mac = :client_mac " +
+                                    "GROUP BY bucket " +
+                                    "ORDER BY bucket DESC")
+                            .bind("cutoff", DateTime.now().minusMinutes(24*60))
+                            .bind("client_mac", clientMac)
+                            .bindList("taps", taps)
+                            .mapTo(ClientActivityHistogramEntry.class)
+                            .list()
+            );
         } else {
             connectedBSSIDs = Collections.emptyList();
+            connectedHistogram = Collections.emptyList();
         }
 
-        Optional<DateTime> firstSeenDisconnected = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT MAX(c.created_at) FROM dot11_clients AS c " +
+        Optional<FirstLastSeenTuple> disconnected = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT MAX(c.created_at) AS last_seen, MIN(c.created_at) AS first_seen " +
+                                "FROM dot11_clients AS c " +
                                 "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>)")
                         .bind("client_mac", clientMac)
                         .bindList("taps", taps)
-                        .mapTo(DateTime.class)
+                        .mapTo(FirstLastSeenTuple.class)
                         .findOne()
         );
 
-        List<String> probeRequests;
-        if (firstSeenDisconnected.isPresent()) {
-            probeRequests = findProbeRequestsOfClient(clientMac, taps);
-        } else {
-            probeRequests = Collections.emptyList();
+        // Aggregations might return NULL.
+        if (disconnected.isPresent()
+                && disconnected.get().firstSeen() == null && disconnected.get().lastSeen() == null) {
+            disconnected = Optional.empty();
         }
 
-        if (firstSeenConnected.isEmpty() && firstSeenDisconnected.isEmpty()) {
+        List<String> probeRequests;
+        List<ClientActivityHistogramEntry> disconnectedHistogram;
+        if (disconnected.isPresent()) {
+            probeRequests = findProbeRequestsOfClient(clientMac, taps);
+            disconnectedHistogram = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT DATE_TRUNC('minute', c.created_at) as bucket, " +
+                                    "COALESCE(SUM(wildcard_probe_requests), 0) " +
+                                    "+ COALESCE(SUM(pr.frame_count), 0) AS frames " +
+                                    "FROM dot11_clients AS c " +
+                                    "LEFT JOIN dot11_client_probereq_ssids AS pr on c.id = pr.client_id " +
+                                    "WHERE c.created_at > :cutoff AND c.tap_uuid IN (<taps>) " +
+                                    "AND client_mac = :client_mac " +
+                                    "GROUP BY bucket " +
+                                    "ORDER BY bucket DESC")
+                            .bind("cutoff", DateTime.now().minusMinutes(24*60))
+                            .bind("client_mac", clientMac)
+                            .bindList("taps", taps)
+                            .mapTo(ClientActivityHistogramEntry.class)
+                            .list()
+            );
+        } else {
+            probeRequests = Collections.emptyList();
+            disconnectedHistogram = Collections.emptyList();
+        }
+
+        if (connected.isEmpty() && disconnected.isEmpty()) {
             // Client not found.
             return Optional.empty();
         }
 
         // Decide which last seen is more recent.
         DateTime lastSeen;
-        if (firstSeenConnected.isPresent() && firstSeenDisconnected.isPresent()) {
-            if (firstSeenConnected.get().isAfter(firstSeenDisconnected.get())) {
-                lastSeen = firstSeenConnected.get();
+        DateTime firstSeen;
+        if (connected.isPresent() && disconnected.isPresent()) {
+            if (connected.get().lastSeen().isAfter(disconnected.get().lastSeen())) {
+                lastSeen = connected.get().lastSeen();
             } else {
-                lastSeen = firstSeenDisconnected.get();
+                lastSeen = disconnected.get().lastSeen();
             }
-        } else lastSeen = firstSeenConnected.orElseGet(firstSeenDisconnected::get);
+
+            if (connected.get().firstSeen().isBefore(disconnected.get().firstSeen())) {
+                firstSeen = connected.get().lastSeen();
+            } else {
+                firstSeen = disconnected.get().lastSeen();
+            }
+        } else if (connected.isPresent()) {
+            lastSeen = connected.get().lastSeen();
+            firstSeen = connected.get().firstSeen();
+        } else {
+            lastSeen = disconnected.get().lastSeen();
+            firstSeen = disconnected.get().firstSeen();
+        }
 
         return Optional.of(ClientDetails.create(
                 clientMac,
                 nzyme.getOUIManager().lookupMac(clientMac),
+                currentlyConnectedBSSID.map(
+                        s -> ConnectedBSSID.create(s, nzyme.getOUIManager().lookupMac(s), Lists.newArrayList()
+                )).orElse(null),
                 connectedBSSIDs,
+                firstSeen,
                 lastSeen,
-                probeRequests
+                probeRequests,
+                connectedHistogram,
+                disconnectedHistogram
         ));
     }
 

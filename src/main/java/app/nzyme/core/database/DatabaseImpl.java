@@ -96,7 +96,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new ActiveChannelMapper())
                 .registerRowMapper(new ConnectedClientDetailsMapper())
                 .registerRowMapper(new DisconnectedClientDetailsMapper())
-                .registerRowMapper(new ClientHistogramEntryMapper());
+                .registerRowMapper(new ClientHistogramEntryMapper())
+                .registerRowMapper(new ClientActivityHistogramEntryMapper())
+                .registerRowMapper(new FirstLastSeenTupleMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

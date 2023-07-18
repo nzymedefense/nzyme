@@ -50,12 +50,13 @@ public class Dot11Table implements DataTable {
                             .one()
             );
 
-            for (String ssid : report.probeRequestSSIDs()) {
+            for (Map.Entry<String, Long> pr : report.probeRequestSSIDs().entrySet()) {
                 tablesService.getNzyme().getDatabase().withHandle(handle ->
-                        handle.createUpdate("INSERT INTO dot11_client_probereq_ssids(client_id, ssid, tap_uuid) " +
-                                        "VALUES(:client_id, :ssid, :tap_uuid)")
+                        handle.createUpdate("INSERT INTO dot11_client_probereq_ssids(client_id, ssid, frame_count, " +
+                                        "tap_uuid) VALUES(:client_id, :ssid, :frame_count, :tap_uuid)")
                                 .bind("client_id", clientDatabaseId)
-                                .bind("ssid", ssid)
+                                .bind("ssid", pr.getKey())
+                                .bind("frame_count", pr.getValue())
                                 .bind("tap_uuid", tapUuid)
                                 .execute()
                 );

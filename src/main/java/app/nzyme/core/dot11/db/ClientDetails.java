@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class ClientDetails {
@@ -13,17 +14,26 @@ public abstract class ClientDetails {
     public abstract String mac();
     @Nullable
     public abstract String macOui();
-    public abstract List<ConnectedBSSID> connectedBSSIDs();
+    @Nullable
+    public abstract ConnectedBSSID connectedBSSID();
+    public abstract List<ConnectedBSSID> connectedBSSIDHistory();
+    public abstract DateTime firstSeen();
     public abstract DateTime lastSeen();
     public abstract List<String> probeRequests();
+    public abstract List<ClientActivityHistogramEntry> connectedFramesHistogram();
+    public abstract List<ClientActivityHistogramEntry> disconnectedFramesHistogram();
 
-    public static ClientDetails create(String mac, String macOui, List<ConnectedBSSID> connectedBSSIDs, DateTime lastSeen, List<String> probeRequests) {
+    public static ClientDetails create(String mac, String macOui, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<String> probeRequests, List<ClientActivityHistogramEntry> connectedFramesHistogram, List<ClientActivityHistogramEntry> disconnectedFramesHistogram) {
         return builder()
                 .mac(mac)
                 .macOui(macOui)
-                .connectedBSSIDs(connectedBSSIDs)
+                .connectedBSSID(connectedBSSID)
+                .connectedBSSIDHistory(connectedBSSIDHistory)
+                .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .probeRequests(probeRequests)
+                .connectedFramesHistogram(connectedFramesHistogram)
+                .disconnectedFramesHistogram(disconnectedFramesHistogram)
                 .build();
     }
 
@@ -37,11 +47,19 @@ public abstract class ClientDetails {
 
         public abstract Builder macOui(String macOui);
 
-        public abstract Builder connectedBSSIDs(List<ConnectedBSSID> connectedBSSIDs);
+        public abstract Builder connectedBSSID(ConnectedBSSID connectedBSSID);
+
+        public abstract Builder connectedBSSIDHistory(List<ConnectedBSSID> connectedBSSIDHistory);
+
+        public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder probeRequests(List<String> probeRequests);
+
+        public abstract Builder connectedFramesHistogram(List<ClientActivityHistogramEntry> connectedFramesHistogram);
+
+        public abstract Builder disconnectedFramesHistogram(List<ClientActivityHistogramEntry> disconnectedFramesHistogram);
 
         public abstract ClientDetails build();
     }

@@ -156,7 +156,7 @@ pub struct BssidReport {
 
 #[derive(Serialize)]
 pub struct Dot11ClientReport {
-    pub probe_request_ssids: Vec<String>,
+    pub probe_request_ssids: HashMap<String, u128>,
     pub wildcard_probe_requests: u128
 }
 

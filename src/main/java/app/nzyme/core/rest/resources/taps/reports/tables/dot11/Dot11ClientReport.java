@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
-import java.util.List;
+import java.util.Map;
 
 @AutoValue
 public abstract class Dot11ClientReport {
 
-    public abstract List<String> probeRequestSSIDs();
+    public abstract Map<String, Long> probeRequestSSIDs();
     public abstract long wildcardProbeRequests();
 
     @JsonCreator
-    public static Dot11ClientReport create(@JsonProperty("probe_request_ssids") List<String> probeRequestSSIDs,
+    public static Dot11ClientReport create(@JsonProperty("probe_request_ssids") Map<String, Long> probeRequestSSIDs,
                                            @JsonProperty("wildcard_probe_requests") long wildcardProbeRequests) {
         return builder()
                 .probeRequestSSIDs(probeRequestSSIDs)
@@ -27,7 +27,7 @@ public abstract class Dot11ClientReport {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder probeRequestSSIDs(List<String> probeRequestSSIDs);
+        public abstract Builder probeRequestSSIDs(Map<String, Long> probeRequestSSIDs);
 
         public abstract Builder wildcardProbeRequests(long wildcardProbeRequests);
 

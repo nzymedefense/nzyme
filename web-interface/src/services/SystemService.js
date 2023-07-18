@@ -54,6 +54,10 @@ class SystemService {
     })
   }
 
+  updateRetentionTimes(newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/database/retention', { change: newConfig }, successCallback, errorCallback)
+  }
+
 }
 
 export default SystemService

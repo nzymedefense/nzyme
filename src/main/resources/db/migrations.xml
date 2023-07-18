@@ -3221,4 +3221,10 @@
             <column name="tap_uuid" />
         </createIndex>
     </changeSet>
+
+    <changeSet id="add_frame_count_to_probe_requests" author="lennartkoopmann">
+        <addColumn tableName="dot11_client_probereq_ssids">
+            <column name="frame_count" type="bigint" defaultValue="0" />
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

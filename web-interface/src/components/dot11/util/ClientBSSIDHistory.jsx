@@ -15,10 +15,12 @@ function ClientBSSIDHistory(props) {
         {bssids.map(function (bssid, i) {
           return (
               <li key={"clientbssid-" + i}>
+                {bssid.bssid}{' '}
+                {bssid.oui ? <span className="text-muted">({bssid.oui})</span> : null}{' '}
+
                 {connectedBSSID && connectedBSSID === bssid.bssid ?
-                    <span className="text-decoration-underline" title="Currently connected BSSID">{bssid.bssid}</span>
-                    : bssid.bssid}{' '}
-                {bssid.oui ? <span className="text-muted">({bssid.oui})</span> : null}
+                    <i className="fa-solid fa-check text-success" title={"Currently Connected"}></i> : null}
+
                 <ul>
                   {bssid.possible_ssids.map(function (ssid, x) {
                     return <li key={"clientbssidssid-" + x}>Advertised SSID: {ssid ? ssid :  <span className="text-muted">Hidden</span>}</li>

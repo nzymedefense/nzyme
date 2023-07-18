@@ -28,7 +28,7 @@ pub struct Bssid {
 
 #[derive(Debug)]
 pub struct Client {
-    pub probe_request_ssids: Vec<String>,
+    pub probe_request_ssids: HashMap<String, u128>,
     pub wildcard_probe_requests: u128
     // TODO add signal strength like BSSID
 }
@@ -267,8 +267,15 @@ impl Dot11Table {
                         match frame.ssid {
                             Some(ssid) => {
                                 // Specific/SSID request.
-                                if !client.probe_request_ssids.contains(&ssid) {
-                                    client.probe_request_ssids.push(ssid);
+                                match client.probe_request_ssids.get_mut(&ssid) {
+                                    None => {
+                                        // First time this client is seeing this SSID.
+                                        client.probe_request_ssids.insert(ssid, 1);
+                                    }
+                                    Some(count) => {
+                                        // Client has previously seen this SSID.
+                                        *count += 1;
+                                    }
                                 }
                             },
                             None => {
@@ -280,8 +287,12 @@ impl Dot11Table {
                     None => {
                         // First time we are seeing this client.
                         let (probe_request_ssids, wildcard_probe_requests) = match frame.ssid {
-                            Some(ssid) => (vec![ssid], 0),
-                            None => (Vec::new(), 1),
+                            Some(ssid) => {
+                                let mut ssids = HashMap::new();
+                                ssids.insert(ssid, 1);
+                                (ssids, 0)
+                            },
+                            None => (HashMap::new(), 1),
                         };
 
                         clients.insert(

@@ -3,10 +3,8 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.db.ClientDetails;
-import app.nzyme.core.dot11.db.ClientHistogramEntry;
-import app.nzyme.core.dot11.db.ConnectedClientDetails;
-import app.nzyme.core.dot11.db.DisconnectedClientDetails;
+import app.nzyme.core.dot11.Dot11RegistryKeys;
+import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.dot11.clients.*;
@@ -171,9 +169,9 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
     @GET
     @Path("/show/{clientMac}")
-    public Response histograms(@Context SecurityContext sc,
-                               @PathParam("clientMac") @NotEmpty String clientMac,
-                               @QueryParam("taps") String taps) {
+    public Response client(@Context SecurityContext sc,
+                           @PathParam("clientMac") @NotEmpty String clientMac,
+                           @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
@@ -185,12 +183,62 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         }
 
         ClientDetails c = client.get();
+
+        Map<DateTime, ClientActivityHistogramEntry> connectedHistogram = Maps.newHashMap();
+        Map<DateTime, ClientActivityHistogramEntry> disconnectedHistogram = Maps.newHashMap();
+
+        for (ClientActivityHistogramEntry ce : c.connectedFramesHistogram()) {
+            connectedHistogram.put(ce.bucket(), ce);
+        }
+
+        for (ClientActivityHistogramEntry ce : c.disconnectedFramesHistogram()) {
+            disconnectedHistogram.put(ce.bucket(), ce);
+        }
+
+        Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram = Maps.newTreeMap();
+        for (int x = 24*60; x != 0; x--) {
+            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
+
+            ClientActivityHistogramEntry connected = connectedHistogram.get(bucket);
+            ClientActivityHistogramEntry disconnected = disconnectedHistogram.get(bucket);
+
+            Long connectedFrames;
+            if (connected != null) {
+                connectedFrames = connected.frames();
+            } else {
+                connectedFrames = 0L;
+            }
+
+            Long disconnectedFrames;
+            if (disconnected != null) {
+                disconnectedFrames = disconnected.frames();
+            } else {
+                disconnectedFrames = 0L;
+            }
+
+            activityHistogram.put(bucket, ClientActivityHistogramValueResponse.create(
+                    bucket,
+                    connectedFrames+disconnectedFrames,
+                    connectedFrames,
+                    disconnectedFrames
+            ));
+        }
+
+        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
+                .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
         return Response.ok(ClientDetailsResponse.create(
                 c.mac(),
                 c.macOui(),
-                c.connectedBSSIDs(),
+                c.connectedBSSID(),
+                c.connectedBSSIDHistory(),
+                c.firstSeen(),
                 c.lastSeen(),
-                c.probeRequests()
+                c.probeRequests(),
+                activityHistogram,
+                dataRetentionDays
         )).build();
     }
 
