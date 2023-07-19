@@ -91,6 +91,8 @@ import BeaconsPage from "./components/ethernet/beacons/BeaconsPage";
 import ReportingPage from "./components/reporting/ReportingPage";
 import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
 import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
+import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
+import SearchResultPage from "./components/search/SearchResultPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -253,6 +255,9 @@ function App() {
                           <Route path={ApiRoutes.USERPROFILE.PROFILE} element={<UserProfilePage />}/>
                           <Route path={ApiRoutes.USERPROFILE.PASSWORD} element={<ChangeOwnPasswordPage />}/>
 
+                          { /* Search. */}
+                          <Route path={ApiRoutes.SEARCH.RESULTS} element={<SearchResultPage />}/>
+
                           { /* System/Misc. */}
                           <Route path={ApiRoutes.SYSTEM.VERSION} element={<VersionPage />}/>
 
@@ -325,6 +330,7 @@ function App() {
                           <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
 
                           { /* 802.11/Networks. */}
+                          <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSIDS} element={<BSSIDsPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.BSSID(':bssidParam')} element={<BSSIDDetailsPage />}/>
                           <Route path={ApiRoutes.DOT11.NETWORKS.SSID(':bssidParam', ':ssidParam', ':frequencyParam')} element={<SSIDDetailsPage />} />

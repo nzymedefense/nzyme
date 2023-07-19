@@ -82,7 +82,9 @@ function SSIDDetailsPage() {
                 <dt>Name</dt>
                 <dd>{ssid.ssid}</dd>
                 <dt>Signal Strength</dt>
-                <dd><SignalStrength strength={ssid.signal_strength_average} /></dd>
+                <dd>
+                  <SignalStrength strength={ssid.signal_strength_average} selectedTapCount={selectedTaps.length} />
+                </dd>
                 <dt>Type</dt>
                 <dd><InfrastructureTypes types={ssid.infrastructure_types} /></dd>
                 <dt>Rates</dt>

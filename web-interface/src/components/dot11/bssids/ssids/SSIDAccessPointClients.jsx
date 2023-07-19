@@ -1,4 +1,5 @@
 import React from "react";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 function SSIDAccessPointClients(props) {
 
@@ -27,7 +28,7 @@ function SSIDAccessPointClients(props) {
           {clients.slice(0,5).map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td>{client.mac}</td>
+                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                   <td>{client.oui ? client.oui : "Unknown"}</td>
                 </tr>
                 )
@@ -58,7 +59,7 @@ function SSIDAccessPointClients(props) {
                   {clients.map(function (client, i) {
                     return (
                         <tr key={"client-" + i}>
-                          <td>{client.mac}</td>
+                          <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
                           <td>{client.oui ? client.oui : "Unknown"}</td>
                         </tr>
                     )

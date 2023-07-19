@@ -3,6 +3,7 @@ import React from "react";
 function SignalStrength(props) {
 
   const strength = parseFloat(props.strength);
+  const selectedTapCount = props.selectedTapCount;
 
   let strengthClassName;
   if (strength > -50) {
@@ -13,11 +14,19 @@ function SignalStrength(props) {
     strengthClassName = "signal-strength-bad";
   }
 
+  if (selectedTapCount > 1) {
+    return (
+        <span title="Not available when multiple taps are selected." style={{cursor: "help"}}>
+          <i className="fa-solid fa-signal text-muted"></i> N/A
+        </span>
+    )
+  }
+
   return (
-      <span>
+      <React.Fragment>
         <i className={"fa-solid fa-signal " + strengthClassName }></i>{' '}
         {Math.round(strength)} dBm
-      </span>
+      </React.Fragment>
   )
 
 }

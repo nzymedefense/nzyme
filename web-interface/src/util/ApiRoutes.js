@@ -106,6 +106,9 @@ const ApiRoutes = {
       }
     }
   },
+  SEARCH: {
+    RESULTS: '/search/results'
+  },
   REPORTING: {
     INDEX: '/reporting',
     SCHEDULE: '/reporting/schedule',

@@ -48,7 +48,7 @@ function BSSIDRow(props) {
           <td>
             <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>
           </td>
-          <td><SignalStrength strength={bssid.signal_strength_average} /></td>
+          <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>
           <td>
             { bssid.has_hidden_ssid_advertisements || bssid.advertised_ssid_names.length === 0 ? <span className="hidden-ssid">&lt;hidden&gt;</span> : null }{ bssid.has_hidden_ssid_advertisements && bssid.advertised_ssid_names.length > 0 ? ", " : null }

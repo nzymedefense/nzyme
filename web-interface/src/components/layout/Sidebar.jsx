@@ -45,7 +45,7 @@ function Sidebar() {
                       icon={<i className="sidebar-icon fa-solid fa-wifi" />}
                       show={true}>
         <NavigationLink
-            href="#"
+            href={ApiRoutes.DOT11.OVERVIEW}
             title="Overview"
             icon={<i className="sidebar-icon fa-solid fa-ranking-star" />} />
 
