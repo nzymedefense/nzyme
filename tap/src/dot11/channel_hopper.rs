@@ -4,7 +4,7 @@ use anyhow::{Error, bail};
 use log::{error, info, debug};
 use systemstat::Duration;
 use crate::configuration::WifiInterface;
-use crate::helpers::network::{dot11_channel_to_frequency, dot11_frequency_to_channel};
+use crate::helpers::network::{dot11_channel_to_frequency};
 
 use super::nl::Nl;
 
@@ -48,6 +48,7 @@ impl ChannelHopper {
         let mut device_assignments: HashMap<String, Vec<u32>> = HashMap::new();
         for (device_name, device_configuration) in devices {
             if !device_configuration.active {
+                info!("Skipping disabled WiFi interface [{}].", device_name);
                 continue;
             }
 
@@ -69,7 +70,6 @@ impl ChannelHopper {
                 }
             }
 
-            info!("Skipping disabled WiFi interface [{}].", device_name);
             device_assignments.insert(device_name, device_configuration.channels);
         }
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use anyhow::{bail, Error};
 use byteorder::{ByteOrder, LittleEndian};
-use crate::dot11::frames::{Dot11Frame, Dot11ProbeResponseFrame, EncryptionProtocol, SecurityInformation};
+use crate::dot11::frames::{Dot11Frame, Dot11ProbeResponseFrame};
 use crate::dot11::parsers::management::advertising_frame_parser_tools::{calculate_fingerprint, decide_encryption_protocol, parse_capabilities, parse_tagged_parameters};
 use crate::helpers::network::to_mac_address_string;
 
