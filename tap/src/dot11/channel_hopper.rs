@@ -70,7 +70,16 @@ impl ChannelHopper {
                 }
             }
 
-            device_assignments.insert(device_name, device_configuration.channels);
+            let mut frequencies: Vec<u32> = Vec::new();
+            for channel in device_configuration.channels {
+                frequencies.push(match dot11_channel_to_frequency(channel as u16) {
+                    Ok(frequency) => frequency as u32,
+                    Err(e) => bail!("Could not get frequency for channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                });
+            }
+
+            device_assignments.insert(device_name, frequencies);
         }
 
         Ok(ChannelHopper { device_assignments })
