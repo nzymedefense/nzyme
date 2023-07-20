@@ -105,6 +105,10 @@ pub fn dot11_frequency_to_channel(f: u16) -> Result<u16, Error> {
         5865 => Ok(173),
         5875 => Ok(175),
         5885 => Ok(177),
+        4920 => Ok(184),
+        4940 => Ok(188),
+        4960 => Ok(192),
+        4980 => Ok(196),
         _ => bail!("Unknown channel for frequency <{}>", f)
     }
 }
@@ -180,6 +184,10 @@ pub fn dot11_channel_to_frequency(f: u16) -> Result<u16, Error> {
         173 => Ok(5865),
         175 => Ok(5875),
         177 => Ok(5885),
+        184 => Ok(4920),
+        188 => Ok(4940),
+        192 => Ok(4960),
+        196 => Ok(4980),
         _ => bail!("Unknown frequency for channel <{}>", f)
     }
 }
