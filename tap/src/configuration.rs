@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::read_to_string;
 
 use anyhow::{Result, bail};
@@ -7,8 +8,8 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
     pub general: General,
-    pub wifi: Wifi,
-    pub ethernet: Ethernet,
+    pub wifi_interfaces: HashMap<String, WifiInterface>,
+    pub ethernet_interfaces: HashMap<String, EthernetInterface>,
     pub performance: Performance,
     pub misc: Misc
 }
@@ -21,15 +22,14 @@ pub struct General {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Ethernet {
-    pub ethernet_listen_interfaces: Vec<String>
+pub struct EthernetInterface {
+    pub active: bool
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Wifi {
-    pub wifi_listen_interfaces: Vec<String>,
-    pub ip_path: String,
-    pub iw_path: String
+pub struct WifiInterface {
+    pub active: bool,
+    pub channels: Vec<u32>
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -68,6 +68,19 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
 
     if doc.performance.wifi_brokers <= 0 {
         bail!("Configuration variable `wifi_brokers` must be set to a value greater than 0.");
+    }
+
+    // Make sure every channel is only assigned once.
+    let mut assigned_channels: Vec<u32> = Vec::new();
+    for interface in doc.wifi_interfaces.values() {
+        for channel in &*interface.channels {
+            if assigned_channels.contains(channel) {
+                bail!("WiFi channel <{}> already assigned to another interface. Channels can only \
+                        be assigned once.", &channel);
+            }
+
+            assigned_channels.push(*channel);
+        }
     }
 
     // Test if URL can be parsed.

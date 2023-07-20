@@ -2,8 +2,9 @@ use std::{collections::HashMap, thread::{sleep, self}};
 
 use anyhow::{Error, bail};
 use log::{error, info, debug};
-use rand::seq::SliceRandom;
 use systemstat::Duration;
+use crate::configuration::WifiInterface;
+use crate::helpers::network::{dot11_channel_to_frequency, dot11_frequency_to_channel};
 
 use super::nl::Nl;
 
@@ -13,7 +14,7 @@ pub struct ChannelHopper {
 
 impl ChannelHopper {
 
-    pub fn new(device_names: Vec<String>) -> Result<Self, Error> {
+    pub fn new(devices: HashMap<String, WifiInterface>) -> Result<Self, Error> {
         // Define adapters with their channels
         let mut adapters: HashMap<String, Vec<u32>> = HashMap::new();
 
@@ -24,8 +25,8 @@ impl ChannelHopper {
             }
         };
 
-        for device_name in device_names {
-            match nl.fetch_device(&device_name) {
+        for device_name in devices.keys() {
+            match nl.fetch_device(device_name) {
                 Ok(device) => { adapters.insert(device_name.clone(), device.supported_frequencies); },
                 Err(e) => { error!("Could not fetch information of device [{}]. Not assigning to channels: {}", device_name, e); }
             }
@@ -34,7 +35,7 @@ impl ChannelHopper {
         let mut channels: HashMap<u32, Vec<String>> = HashMap::new();
         for (adapter, adapter_channels) in &adapters {
             for adapter_channel in adapter_channels {
-                match channels.get_mut(&adapter_channel) {
+                match channels.get_mut(adapter_channel) {
                     Some(channel) => { channel.push(adapter.clone()); },
                     None => { channels.insert(*adapter_channel, vec![adapter.clone()]); }
                 }
@@ -43,15 +44,33 @@ impl ChannelHopper {
 
         info!("Available adapters and channels: {:?}", adapters);
 
+        // Map channels to config.
         let mut device_assignments: HashMap<String, Vec<u32>> = HashMap::new();
-
-        for (channel, adapters) in channels {
-            let adapter = Self::choose_weighted(&device_assignments, adapters);
-
-            match device_assignments.get_mut(&adapter.clone()) {
-                Some(channels) => { channels.push(channel) },
-                None => { device_assignments.insert(adapter, vec![channel]); }
+        for (device_name, device_configuration) in devices {
+            if !device_configuration.active {
+                continue;
             }
+
+            match adapters.get(&device_name) {
+                None => bail!("WiFi adapter [{}] not found.", device_name),
+                Some(adapter) => {
+                    for channel in &*device_configuration.channels {
+                        let frequency = match dot11_channel_to_frequency(*channel as u16) {
+                            Ok(frequency) => frequency,
+                            Err(e) => bail!("Could not get frequency for channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                        };
+
+                        if !adapter.contains(&(frequency as u32)) {
+                            bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
+                                device_name, channel, frequency);
+                        }
+                    }
+                }
+            }
+
+            info!("Skipping disabled WiFi interface [{}].", device_name);
+            device_assignments.insert(device_name, device_configuration.channels);
         }
 
         Ok(ChannelHopper { device_assignments })
@@ -98,30 +117,6 @@ impl ChannelHopper {
                 sleep(Duration::from_millis(1000));
             }
         });
-    }
-
-    // This is dumb. Depends on order of calls. TODO build a proper balacing algorithm. (group by channel, split into even chunks?)
-    fn choose_weighted(assignments: &HashMap<String, Vec<u32>>, eligible_adapters: Vec<String>) -> String {
-        let mut channel_counts: HashMap<String, u16> = HashMap::new();
-        for (assignment, channels) in assignments {
-            match channel_counts.get_mut(assignment) {
-                Some(count) => { *count += 1; },
-                None => { channel_counts.insert(assignment.clone(), channels.len() as u16); }
-            };
-        }
-
-        for eligible_adapter in eligible_adapters.clone() {
-            let count = match channel_counts.get(&eligible_adapter) {
-                Some(count) => *count,
-                None => 0
-            };
-
-            if count == 0 {
-                return eligible_adapter
-            }
-        }
-
-        eligible_adapters.choose(&mut rand::thread_rng()).unwrap().clone()
     }
 
 }

@@ -79,9 +79,9 @@ fn main() {
         brokers::dot11_broker::Dot11Broker::new(wifi_handlerbus, configuration.performance.wifi_brokers as usize).run();
     });
 
-
     // Ethernet Capture.
-    for interface_name in configuration.clone().ethernet.ethernet_listen_interfaces {
+    let ethernet_capture_conf = configuration.clone();
+    for (interface_name, _) in ethernet_capture_conf.ethernet_interfaces {
         let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
         thread::spawn(move || {
@@ -92,7 +92,7 @@ fn main() {
 
             match capture_metrics.lock() {
                 Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::Ethernet),
-                Err(e) => error!("Could not aquire mutex of metrics: {}", e)
+                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
             }
 
             loop {
@@ -101,7 +101,7 @@ fn main() {
                 error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface_name);
                 match capture_metrics.lock() {
                     Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
-                    Err(e) => error!("Could not aquire mutex of metrics: {}", e)
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                 }
                 thread::sleep(time::Duration::from_secs(5));
             }
@@ -109,10 +109,15 @@ fn main() {
     }
 
     // WiFi capture.
-    for interface_name in configuration.clone().wifi.wifi_listen_interfaces {
+    let wifi_capture_conf = configuration.clone();
+    for (interface_name, interface_config) in wifi_capture_conf.wifi_interfaces {
+        if !interface_config.active {
+            info!("Skipping disabled WiFi interface [{}].", interface_name);
+            continue;
+        }
+
         let capture_metrics = metrics.clone();
         let capture_bus = bus.clone();
-        let capture_conf = configuration.clone();
         thread::spawn(move || {
             let mut dot11_capture = dot11::capture::Capture {
                 metrics: capture_metrics.clone(),
@@ -121,23 +126,23 @@ fn main() {
 
             match capture_metrics.lock() {
                 Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
-                Err(e) => error!("Could not aquire mutex of metrics: {}", e)
+                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
             }
     
             loop {
-                dot11_capture.run(&interface_name, &capture_conf.wifi.ip_path, &capture_conf.wifi.iw_path);
+                dot11_capture.run(&interface_name, "/usr/sbin/ip", "/usr/sbin/iw");
 
-                error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", interface_name); 
+                error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
                 match capture_metrics.lock() {
                     Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
-                    Err(e) => error!("Could not aquire mutex of metrics: {}", e)
+                    Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                 }
                 thread::sleep(time::Duration::from_secs(5));
             }
         });
     }
 
-    let ch = match ChannelHopper::new(configuration.clone().wifi.wifi_listen_interfaces) {
+    let ch = match ChannelHopper::new(configuration.clone().wifi_interfaces) {
         Ok(ch) => ch,
         Err(e) => {
             error!("Could not initialize ChannelHopper: {}", e);

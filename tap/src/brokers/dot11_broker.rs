@@ -6,6 +6,7 @@ use byteorder::{ByteOrder, LittleEndian};
 use log::{info, warn, trace, error};
 
 use crate::{messagebus::{bus::Bus, channel_names::ChannelName}, dot11::frames::{Dot11Frame, RadiotapHeader, RadiotapHeaderPresentFlags, RadiotapHeaderFlags, FrameType, FrameTypeInformation, FrameSubType, Dot11RawFrame}, to_pipeline};
+use crate::helpers::network::dot11_frequency_to_channel;
 
 pub struct Dot11Broker {
     num_threads: usize,
@@ -205,7 +206,7 @@ impl Dot11Broker {
         };
         
         let channel = if frequency.is_some() {
-            let channel = match Self::frequency_to_channel(frequency.unwrap()) {
+            let channel = match dot11_frequency_to_channel(frequency.unwrap()) {
                 Ok(c) => c,
                 Err(e) => {
                     warn!("Could not parse channel number from frequency: {}. Present Flags: {:?}", e, present_flags);
@@ -331,82 +332,6 @@ impl Dot11Broker {
             data_pad: *bmask.get(5).unwrap(),
             bad_fcs: *bmask.get(6).unwrap(),
             short_gi: *bmask.get(7).unwrap(),
-        }
-    }
-
-    fn frequency_to_channel(f: u16) -> Result<u16, Error> {
-        match f {
-            2412 => Ok(1),
-            2417 => Ok(2),
-            2422 => Ok(3),
-            2427 => Ok(4),
-            2432 => Ok(5),
-            2437 => Ok(6),
-            2442 => Ok(7),
-            2447 => Ok(8),
-            2452 => Ok(9),
-            2457 => Ok(10),
-            2462 => Ok(11),
-            2467 => Ok(12),
-            2472 => Ok(13),
-            2484 => Ok(14),
-            
-            5160 => Ok(32),
-            5180 => Ok(36),
-            5190 => Ok(38),
-            5200 => Ok(40),
-            5210 => Ok(42),
-            5220 => Ok(44),
-            5230 => Ok(46),
-            5240 => Ok(48),
-            5250 => Ok(50),
-            5260 => Ok(52),
-            5270 => Ok(54),
-            5280 => Ok(56),
-            5290 => Ok(58),
-            5300 => Ok(60),
-            5310 => Ok(62),
-            5320 => Ok(64),
-            5340 => Ok(68),
-            5480 => Ok(96),
-            5500 => Ok(100),
-            5510 => Ok(102),
-            5520 => Ok(104),
-            5530 => Ok(106),
-            5540 => Ok(108),
-            5550 => Ok(110),
-            5560 => Ok(112),
-            5570 => Ok(114),
-            5580 => Ok(116),
-            5590 => Ok(118),
-            5600 => Ok(120),
-            5610 => Ok(122),
-            5620 => Ok(124),
-            5630 => Ok(126),
-            5640 => Ok(128),
-            5660 => Ok(132),
-            5670 => Ok(134),
-            5680 => Ok(136),
-            5690 => Ok(138),
-            5700 => Ok(140),
-            5710 => Ok(142),
-            5720 => Ok(144),
-            5745 => Ok(149),
-            5755 => Ok(151),
-            5765 => Ok(153),
-            5775 => Ok(155),
-            5785 => Ok(157),
-            5795 => Ok(159),
-            5805 => Ok(161),
-            5815 => Ok(163),
-            5825 => Ok(165),
-            5835 => Ok(167),
-            5845 => Ok(169),
-            5855 => Ok(171),
-            5865 => Ok(173),
-            5875 => Ok(175),
-            5885 => Ok(177),
-            _ => bail!("Unknown channel for frequency <{}>", f)
         }
     }
 

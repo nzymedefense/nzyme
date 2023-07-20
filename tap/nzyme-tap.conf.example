@@ -3,13 +3,16 @@ leader_secret = "your_key_copied_from_nzyme_web_interface"
 leader_uri = "https://nzyme.example.org:22900/"
 accept_insecure_certs = false
 
-[ethernet]
-ethernet_listen_interfaces = [ "eth0" ]
+[ethernet_interfaces.enp6s0]
+active = true
 
-[wifi]
-wifi_listen_interfaces = [ ]
-ip_path = "/usr/sbin/ip"
-iw_path = "/usr/sbin/iw"
+[wifi_interfaces.wlx00c0ca000000]
+active = true
+channels = [1, 6, 11]
+
+[wifi_interfaces.wlx00c0ca000000]
+active = true
+channels = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
 
 [performance]
 ethernet_brokers = 1
