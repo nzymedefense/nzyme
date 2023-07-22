@@ -1,4 +1,4 @@
-use std::{sync::{Arc, Mutex}, process::Command};
+use std::{sync::{Arc, Mutex}};
 
 use caps::{CapSet, Capability};
 use log::{error, info, debug};
@@ -7,6 +7,8 @@ use crate::{
     messagebus::bus::Bus,
     metrics::Metrics, dot11::frames::Dot11RawFrame,
 };
+use crate::dot11::nl::InterfaceState::{Down, Up};
+use crate::dot11::nl::Nl;
 
 pub struct Capture {
     pub metrics: Arc<Mutex<Metrics>>,
@@ -15,7 +17,7 @@ pub struct Capture {
 
 impl Capture {
 
-    pub fn run(&mut self, device_name: &str, cmd_ip: &str, cmd_iw: &str) {
+    pub fn run(&mut self, device_name: &str) {
         info!("Starting WiFi capture on [{}]", device_name);
 
         // Check if `net_admin` permission is set on this program.
@@ -28,125 +30,45 @@ impl Capture {
                 }
             }
             Err(e) => {
-                error!("Could not check program capabitilies: {}", e);
+                error!("Could not check program capabilities: {}", e);
                 return;
             }
         }
 
-        // Raise ambient permissions to make spawned processes work with program capabilities.
-        match caps::raise(None, caps::CapSet::Inheritable, caps::Capability::CAP_NET_ADMIN) {
-            Ok(_) => {},
+        let mut nl = match Nl::new() {
+            Ok(nl) => nl,
             Err(e) => {
-                error!("Could not raise ambient program capabitilies: {}", e);
-                return;
+                error!("Could not establish Netlink connection: {}", e);
+                return
             }
-        }
-        match caps::raise(None, caps::CapSet::Ambient, caps::Capability::CAP_NET_ADMIN) {
-            Ok(_) => {},
-            Err(e) => {
-                error!("Could not raise ambient program capabitilies: {}", e);
-                return;
-            }
-        }
+        };
 
         info!("Temporarily disabling interface [{}] ...", device_name);
-
-        let cmd_device_down = Command::new(cmd_ip)
-            .arg("link")
-            .arg("set")
-            .arg(device_name)
-            .arg("down")
-            .spawn();
-
-        match cmd_device_down {
-            Ok(mut child) => {
-                match child.wait() {
-                    Ok(res) => {
-                        if res.success() {
-                            info!("Device [{}] is now down.", device_name);
-                        } else {
-                            error!("Could not temporarily disable interface [{}]. Check output.", device_name);
-                            return;
-                        }
-                    },
-                    Err(e) => {
-                        error!("Could not temporarily disable interface [{}]: {}", device_name, e);
-                        return;
-                    }
-                }
-            }
+        match nl.change_80211_interface_state(&device_name.to_string(), Down) {
+            Ok(_) => info!("Device [{}] is now down.", device_name),
             Err(e) => {
-                error!("Could not temporarily disable interface [{}]: {}", device_name, e);
+                error!("Could not disable device [{}]: {}", device_name, e);
                 return;
             }
         }
 
         info!("Enabling monitor mode on interface [{}] ...", device_name);
-
-        let cmd_set_monitor = Command::new(cmd_iw)
-            .arg("dev")
-            .arg(device_name)
-            .arg("set")
-            .arg("monitor")
-            .arg("control")
-            .arg("otherbss")
-            .spawn();
-
-        match cmd_set_monitor {
-            Ok(mut child) => {
-                match child.wait() {
-                    Ok(res) => {
-                        if res.success() {
-                            info!("Device [{}] is now in monitor mode.", device_name);
-                        } else {
-                            error!("Could not set interface [{}] monitor mode. Check output.", device_name);
-                            return;
-                        }
-                    },
-                    Err(e) => {
-                        error!("Could not set interface [{}] monitor mode: {}", device_name, e);
-                        return;
-                    }
-                }
-            }
+        match nl.enable_monitor_mode(&device_name.to_string()) {
+            Ok(_) => info!("Device [{}] is now in monitor mode.", device_name),
             Err(e) => {
-                error!("Could not set interface [{}] monitor mode: {}", device_name, e);
+                error!("Could not set device [{}] to monitor mode: {}", device_name, e);
                 return;
             }
         }
 
         info!("Enabling interface [{}] ...", device_name);
-
-        let cmd_device_up = Command::new(cmd_ip)
-            .arg("link")
-            .arg("set")
-            .arg(device_name)
-            .arg("up")
-            .spawn();
-
-        match cmd_device_up {
-            Ok(mut child) => {
-                match child.wait() {
-                    Ok(res) => {
-                        if res.success() {
-                            info!("Device [{}] is now up.", device_name);
-                        } else {
-                            error!("Could not enable interface [{}]. Check output.", device_name);
-                            return;
-                        }
-                    },
-                    Err(e) => {
-                        error!("Could not enable interface [{}]: {}", device_name, e);
-                        return;
-                    }
-                }
-            }
+        match nl.change_80211_interface_state(&device_name.to_string(), Up) {
+            Ok(_) => info!("Device [{}] is now up.", device_name),
             Err(e) => {
-                error!("Could not enable interface [{}]: {}", device_name, e);
+                error!("Could not enable device [{}]: {}", device_name, e);
                 return;
             }
         }
-
 
         let device = match pcap::Capture::from_device(device_name) {
             Ok(device) => {

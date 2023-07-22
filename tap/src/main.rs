@@ -130,7 +130,7 @@ fn main() {
             }
     
             loop {
-                dot11_capture.run(&interface_name, "/usr/sbin/ip", "/usr/sbin/iw");
+                dot11_capture.run(&interface_name);
 
                 error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
                 match capture_metrics.lock() {

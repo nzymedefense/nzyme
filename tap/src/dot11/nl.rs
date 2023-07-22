@@ -15,12 +15,16 @@ use neli::{
     nl::{NlPayload, Nlmsghdr},
     utils::Groups,
 };
+use neli::consts::rtnl::{Arphrd, RtAddrFamily, Rtm};
+use neli::rtnl::{Ifinfomsg, IfinfomsgBuilder};
+use neli::types::Buffer;
 
 #[neli::neli_enum(serialized_type = "u8")]
 pub enum Nl80211Command {
     Unspecified = 0,
     GetWiPhy = 1,
     GetIf = 5,
+    SetIf = 6,
     SetChannel = 65
 }
 impl neli::consts::genl::Cmd for Nl80211Command {}
@@ -33,18 +37,24 @@ pub enum Nl80211Attribute {
     IfName = 4,
     IfType = 5,
     WiPhyBands = 22,
+    MntrFlags = 23,
     WiPhyFreq = 38,
     SplitWiphyDump = 174
-
 }
 impl neli::consts::genl::NlAttrType for Nl80211Attribute {}
+
+#[neli::neli_enum(serialized_type = "u16")]
+pub enum Nl80211MntrFlags {
+    Control = 3,
+    OtherBss = 4
+}
+impl neli::consts::genl::NlAttrType for Nl80211MntrFlags {}
 
 #[derive(Debug)]
 struct InterfaceResponse {
     pub name: String,
     pub phy_index: u32,
     pub if_index: u32,
-    pub dev_type: u32
 }
 
 #[derive(Debug)]
@@ -60,11 +70,14 @@ pub struct DeviceSummary {
     pub supported_frequencies: Vec<u32>
 }
 
+pub enum InterfaceState {
+    Up, Down
+}
+
 fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> InterfaceResponse {
     let mut name: String = "".to_string();
     let mut phy_index: u32 = 0;
     let mut if_index: u32 = 0;
-    let mut dev_type: u32 = 0;
 
     for attr in msg.get_payload().unwrap().attrs().iter() {
         if attr.nla_type().nla_type().eq(&Nl80211Attribute::WiPhy) {
@@ -80,13 +93,9 @@ fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl
             bts.pop();
             name = String::from_utf8(bts).unwrap();
         }
-
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::IfType) {
-            dev_type = LittleEndian::read_u32(attr.nla_payload().as_ref());
-        }
     }
 
-    InterfaceResponse { name, phy_index, dev_type, if_index }
+    InterfaceResponse { name, phy_index, if_index }
 }
 
 fn handle_phy_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> PhyResponse {
@@ -216,32 +225,38 @@ fn parse_frequency_from_attributes(attr: &[u8]) -> Option<u32> {
     }
 }
 
-// We might need member variables at some point in the future for metrics or stuff.
 pub struct Nl {
-    socket: NlRouter,
-    family_id: u16,
+    dot11_socket: NlRouter,
+    dot11_family_id: u16,
+    rt_socket: NlRouter,
     devices: HashMap<String, DeviceSummary>
 }
 
 impl Nl {
 
     pub fn new() -> Result<Self, Error> {
-        let (socket, _) = match NlRouter::connect(NlFamily::Generic, Some(0), Groups::empty()) {
+        let (dot11_socket, _) = match NlRouter::connect(NlFamily::Generic, Some(0), Groups::empty()) {
             Ok(sock) => sock,
-            Err(e) => bail!("Could not open Netlink socket: {}", e)
+            Err(e) => bail!("Could not open Netlink 802.11 socket: {}", e)
         };
 
-        let family_id = match socket.resolve_genl_family("nl80211") {
+        let dot11_family_id = match dot11_socket.resolve_genl_family("nl80211") {
             Ok(family_id) => family_id,
             Err(e) => bail!("Could not resolve Netlink family: {}", e)
+        };
+
+        let (rt_socket, _) = match NlRouter::connect(NlFamily::Route, None, Groups::empty()) {
+            Ok(sock) => sock,
+            Err(e) => bail!("Could not open Netlink route socket: {}", e)
         };
 
         let devices = HashMap::new();
 
         Ok(Self {
-            socket,
+            dot11_socket,
+            dot11_family_id,
             devices,
-            family_id
+            rt_socket
         })
     }
 
@@ -258,7 +273,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
         };
 
-        let recv_if = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
+        let recv_if = match self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetIf Netlink command: {}", e)
         };
@@ -299,7 +314,7 @@ impl Nl {
                 Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
         };
 
-        let recv_phy = match self.socket.send(self.family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
+        let recv_phy = match self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
             Ok(recv) => recv,
             Err(e) => bail!("Could not send GetWiPhy Netlink command: {}", e)
         };
@@ -369,10 +384,121 @@ impl Nl {
         };
 
         let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
-                                    match self.socket.send(self.family_id, NlmF::empty(), NlPayload::Payload(payload)){
+                                    match self.dot11_socket.send(self.dot11_family_id, NlmF::empty(), NlPayload::Payload(payload)){
             Ok(recv) => recv,
             Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
         };
+
+        Ok(())
+    }
+
+    pub fn enable_monitor_mode(&mut self, device_name: &String) -> Result<(), Error> {
+        let device = match self.fetch_device(device_name) {
+            Ok(device) => device,
+            Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)
+        };
+
+        let attr_if_index_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::IfIndex).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct IfIndex Netlink attribute type: {}", e)
+        };
+
+        let attr_if_index = match NlattrBuilder::default().nla_type(attr_if_index_type)
+            .nla_payload(device.if_index).build() {
+            Ok(attr) => attr,
+            Err(e) => bail!("Could not construct IfIndex Netlink attribute: {}", e)
+        };
+
+        let attr_if_type_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::IfType).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct IfType Netlink attribute type: {}", e)
+        };
+
+        let attr_if_type = match NlattrBuilder::default().nla_type(attr_if_type_type)
+            .nla_payload(6).build() { // Monitor type.
+            Ok(attr) => attr,
+            Err(e) => bail!("Could not construct IfType Netlink attribute: {}", e)
+        };
+
+        let attr_monitor_flag_control_type = match AttrTypeBuilder::default().nla_type(Nl80211MntrFlags::Control).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct Nl80211MntrFlags::Control Netlink attribute type: {}", e)
+        };
+
+        let attr_monitor_flag_control = match NlattrBuilder::default().nla_type(attr_monitor_flag_control_type)
+            .nla_payload(Buffer::new()).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct Nl80211MntrFlags::Control Netlink attribute: {}", e)
+        };
+
+        let attr_monitor_flag_otherbss_type = match AttrTypeBuilder::default().nla_type(Nl80211MntrFlags::OtherBss).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct Nl80211MntrFlags::OtherBss Netlink attribute type: {}", e)
+        };
+
+        let attr_monitor_flag_otherbss = match NlattrBuilder::default().nla_type(attr_monitor_flag_otherbss_type)
+            .nla_payload(Buffer::new()).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct Nl80211MntrFlags::OtherBss Netlink attribute: {}", e)
+        };
+
+        let attr_monitor_flags_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::MntrFlags).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct MntrFlags Netlink attribute type: {}", e)
+        };
+
+        let attr_monitor_flags = NlattrBuilder::default().nla_type(attr_monitor_flags_type)
+            .nla_payload(vec![attr_monitor_flag_otherbss, attr_monitor_flag_control])
+            .build()?;
+
+        let payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
+            .cmd(Nl80211Command::SetIf)
+            .version(0)
+            .attrs(vec![attr_if_index, attr_if_type, attr_monitor_flags].into_iter().collect())
+            .build() {
+            Ok(p) => p,
+            Err(e) => bail!("Could not construct monitor mode Netlink command payload: {}", e)
+        };
+
+        let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> =
+            match self.dot11_socket.send(self.dot11_family_id, NlmF::REQUEST | NlmF::ACK, NlPayload::Payload(payload)){
+                Ok(recv) => recv,
+                Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
+            };
+
+        Ok(())
+    }
+
+    pub fn change_80211_interface_state(&mut self, device_name: &String, state: InterfaceState)
+            -> Result<(), Error>  {
+        let device = match self.fetch_device(device_name) {
+            Ok(device) => device,
+            Err(e) => bail!("Could not load device with name [{}] for changing state: {}",
+                device_name, e)
+        };
+
+        /*
+         * Setting interface family to 802.11 with radiotap header (value 803) in this call. This
+         * would have to be different if we ever wanted to control standard ethernet links.
+         */
+        let msg_builder = IfinfomsgBuilder::default()
+            .ifi_index(device.if_index as i32)
+            .ifi_family(RtAddrFamily::Inet)
+            .ifi_type(Arphrd::UnrecognizedConst(803));
+
+        let msg = match state {
+            InterfaceState::Up => msg_builder.up().build()?,
+            InterfaceState::Down => msg_builder.down().build()?
+        };
+
+        let _: NlRouterReceiverHandle<GenlId, Nlmsghdr<Rtm, Ifinfomsg>> =
+            match self.rt_socket.send(
+                Rtm::Setlink,
+                NlmF::ROOT | NlmF::ECHO,
+                NlPayload::Payload(msg)) {
+                Ok(recv) => recv,
+                Err(e) => { bail!("Could not send request: {}", e); }
+            };
 
         Ok(())
     }
