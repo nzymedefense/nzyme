@@ -96,6 +96,7 @@ impl Dot11Table {
         );
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn register_advertisement(&mut self,
                               frame_type: FrameSubType,
                               length: usize,
@@ -107,10 +108,7 @@ impl Dot11Table {
                               fingerprint: String,
                               capabilities: Dot11Capabilities
     ) {
-        let signal_strength: i8 = match header.antenna_signal {
-            Some(s) => s,
-            None => 0,
-        };
+        let signal_strength: i8 = header.antenna_signal.unwrap_or(0);
 
         match self.bssids.lock() {
             Ok(mut bssids) => {
@@ -131,11 +129,11 @@ impl Dot11Table {
                                         }
 
                                         if let Some(rates) = &tagged_parameters.supported_rates {
-                                            Self::update_existing_ssid_rates(ssid, &rates);
+                                            Self::update_existing_ssid_rates(ssid, rates);
                                         }
 
                                         if let Some(rates) = &tagged_parameters.extended_supported_rates {
-                                            Self::update_existing_ssid_rates(ssid, &rates);
+                                            Self::update_existing_ssid_rates(ssid, rates);
                                         }
 
                                         if !ssid.infrastructure_types.contains(&capabilities.infrastructure_type) {
@@ -333,31 +331,28 @@ impl Dot11Table {
 
         match self.bssids.lock() {
             Ok(mut bssids) => {
-                match bssids.get_mut(&frame.ds.bssid) {
-                    Some(bssid) => {
-                        match bssid.clients.get_mut(&sta) {
-                            Some(client) => {
-                                // Update existing client.
-                                client.tx_frames += tx_frames;
-                                client.tx_bytes += tx_bytes as u128;
-                                client.rx_frames += rx_frames;
-                                client.rx_bytes += rx_bytes as u128;
-                            },
-                            None => {
-                                // First time seeing this client.
-                                bssid.clients.insert(sta, Dot11ClientStatistics {
-                                    tx_frames,
-                                    tx_bytes: tx_bytes as u128,
-                                    rx_frames,
-                                    rx_bytes: rx_bytes as u128
-                                });
-                            },
-                        }
-                    },
-                    None => {/* Ignore data frames for so far unknown BSSIDs. */},
+                if let Some(bssid) = bssids.get_mut(&frame.ds.bssid) {
+                    match bssid.clients.get_mut(&sta) {
+                        Some(client) => {
+                            // Update existing client.
+                            client.tx_frames += tx_frames;
+                            client.tx_bytes += tx_bytes as u128;
+                            client.rx_frames += rx_frames;
+                            client.rx_bytes += rx_bytes as u128;
+                        },
+                        None => {
+                            // First time seeing this client.
+                            bssid.clients.insert(sta, Dot11ClientStatistics {
+                                tx_frames,
+                                tx_bytes: tx_bytes as u128,
+                                rx_frames,
+                                rx_bytes: rx_bytes as u128
+                            });
+                        },
+                    }
                 }
             },
-            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
     }
 
@@ -417,13 +412,13 @@ impl Dot11Table {
         let mut result = Vec::new();
         if let Some(rates) = rates {
             for rate in rates {
-                result.push(rate.clone())
+                result.push(*rate)
             }
         }
 
         if let Some(rates) = extended_rates {
             for rate in rates {
-                result.push(rate.clone())
+                result.push(*rate)
             }
         }
 
@@ -433,7 +428,7 @@ impl Dot11Table {
     pub fn update_existing_ssid_rates(ssid: &mut AdvertisedNetwork, rates: &Vec<f32>) {
         for rate in rates {
             if !ssid.rates.contains(rate) {
-                ssid.rates.push(rate.clone());
+                ssid.rates.push(*rate);
             }
         }
     }
@@ -460,7 +455,7 @@ impl Dot11Table {
         }
     }
 
-    pub fn to_report(&self) -> Dot11TableReport {
+    pub fn generate_report(&self) -> Dot11TableReport {
         let mut bssid_report: HashMap<String, BssidReport> = HashMap::new();
 
         match self.bssids.lock() {

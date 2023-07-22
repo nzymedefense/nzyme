@@ -96,10 +96,10 @@ impl Dot11Broker {
 
             cursor += 1;
 
-            Option::Some(frame_flags)
+            Some(frame_flags)
         } else {
             cursor += 1;
-            Option::None
+            None
         };
         
         // Data Rate.
@@ -108,13 +108,13 @@ impl Dot11Broker {
                 return
             }
 
-            let data_rate = ((header_data[cursor] as u16)*500) as u16;
+            let data_rate = (header_data[cursor] as u16)*500;
             cursor += 1;
 
-            Option::Some(data_rate)
+            Some(data_rate)
         } else {
             cursor += 1;
-            Option::None
+            None
         };
 
         // Channel.
@@ -125,10 +125,10 @@ impl Dot11Broker {
             // Skip the channel flags. Not parsing.
             cursor += 2;
 
-            Option::Some(frequency)
+            Some(frequency)
         } else {
             cursor += 4;
-            Option::None
+            None
         };
 
         // FHSS.
@@ -146,10 +146,10 @@ impl Dot11Broker {
             let dbm = header_data[cursor] as i8;
             cursor += 1;
 
-            Option::Some(dbm)
+            Some(dbm)
         } else {
             cursor += 1;
-            Option::None
+            None
         };
 
         // Antenna noise (dBm)
@@ -191,22 +191,17 @@ impl Dot11Broker {
             let antenna = header_data[cursor];
             cursor += 1;
 
-            Option::Some(antenna)
+            Some(antenna)
         } else {
             cursor += 1;
-            Option::None
+            None
         };
 
         // There are more variable fields after this, which we are not currently parsing.
-
-        let is_wep = if flags.is_some() {
-            Option::Some(flags.unwrap().wep)
-        } else {
-            Option::None
-        };
+        let is_wep = flags.map(|flags| flags.wep);
         
-        let channel = if frequency.is_some() {
-            let channel = match dot11_frequency_to_channel(frequency.unwrap()) {
+        let channel = if let Some(frequency) = frequency {
+            let channel = match dot11_frequency_to_channel(frequency) {
                 Ok(c) => c,
                 Err(e) => {
                     warn!("Could not parse channel number from frequency: {}. Present Flags: {:?}", e, present_flags);
@@ -214,9 +209,9 @@ impl Dot11Broker {
                 }
             };
 
-            Option::Some(channel)
+            Some(channel)
         } else {
-            Option::None
+            None
         };
 
         let radiotap_header = RadiotapHeader { 

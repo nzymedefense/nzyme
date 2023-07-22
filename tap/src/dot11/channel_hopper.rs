@@ -101,8 +101,8 @@ impl ChannelHopper {
         thread::spawn(move || {
             let mut positions: HashMap<&String, u16> = HashMap::new();
 
-            for (device, _) in &device_assigments {
-                positions.insert(&device, 0);
+            for device in device_assigments.keys() {
+                positions.insert(device, 0);
             }
     
             loop {

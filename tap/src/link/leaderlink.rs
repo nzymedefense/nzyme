@@ -171,7 +171,7 @@ impl Leaderlink {
         };
 
         let dns = match self.tables.dns.lock() {
-            Ok(dns) => dns.to_report(),
+            Ok(dns) => dns.generate_report(),
             Err(e) => {
                 error!("Could not aquire DNS table mutex. {}", e);
                 DnsTableReport {
@@ -186,7 +186,7 @@ impl Leaderlink {
         };
 
         let l4 = match self.tables.l4.lock() {
-            Ok(mut l4) => l4.to_report(),
+            Ok(mut l4) => l4.generate_report(),
             Err(e) => {
                 error!("Could not acquire L4 table mutex. {}", e);
                 L4TableReport {
@@ -196,7 +196,7 @@ impl Leaderlink {
         };
 
         let dot11 = match self.tables.dot11.lock() {
-            Ok(dot11) => dot11.to_report(),
+            Ok(dot11) => dot11.generate_report(),
             Err(e) => {
                 error!("Could not acquire 802.11 networks table mutex. {}", e);
                 Dot11TableReport {

@@ -297,7 +297,7 @@ impl DnsTable {
     }
 
     #[allow(clippy::too_many_lines)]
-    pub fn to_report(&self) -> DnsTableReport {
+    pub fn generate_report(&self) -> DnsTableReport {
         let mut ips = HashMap::new();
         match self.ips.lock() {
             Ok(x) => {

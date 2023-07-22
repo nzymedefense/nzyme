@@ -112,7 +112,7 @@ impl Metrics {
             let sname = name.to_string();
             self.captures.insert(sname.clone(), Capture {
                 capture_type,
-                interface_name: sname.clone(),
+                interface_name: sname,
                 is_running: false,
                 received: 0,
                 dropped_buffer: 0,

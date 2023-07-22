@@ -184,6 +184,7 @@ pub struct SecurityInformation {
 }
 
 #[derive(Debug, Display, Copy, Clone)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum EncryptionProtocol {
     WEP,
     WPA1,
@@ -199,6 +200,7 @@ pub struct CipherSuites {
 }
 
 #[derive(Debug, Display, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum KeyManagementMode {
     Unknown,
     X802_1,
@@ -210,6 +212,7 @@ pub enum KeyManagementMode {
 }
 
 #[derive(Debug, Display)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum CipherSuite {
     None,
     Unknown,
@@ -290,6 +293,7 @@ pub struct Dot11DSInformation {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Dot11DataFrameDirection {
     Entering,
     Leaving,

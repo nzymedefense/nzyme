@@ -102,7 +102,7 @@ impl L4Table {
         }
     }
 
-    pub fn to_report(&mut self) -> L4TableReport {
+    pub fn generate_report(&mut self) -> L4TableReport {
         let retro_pairs = match self.retro_connections.lock() {
             Ok(connections) => {
                 let mut result = Vec::new();

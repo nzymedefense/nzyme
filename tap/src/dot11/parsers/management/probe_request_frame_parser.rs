@@ -11,7 +11,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11ProbeRequestFrame, Error> {
     }
 
     let transmitter = to_mac_address_string(&frame.payload[10..16]);
-    let mut ssid: Option<String> = Option::None;
+    let mut ssid: Option<String> = None;
 
     let mut cursor: usize = 24;
     if frame.payload.len() > cursor+2 {
@@ -35,9 +35,9 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11ProbeRequestFrame, Error> {
             cursor += length;
 
             if *number == 0 {
-                let ssid_s = String::from_utf8_lossy(&data).to_string();
+                let ssid_s = String::from_utf8_lossy(data).to_string();
                 if !ssid_s.trim().is_empty() {
-                    ssid = Option::Some(ssid_s);
+                    ssid = Some(ssid_s);
                 }
             }
 

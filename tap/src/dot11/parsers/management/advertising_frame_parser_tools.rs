@@ -48,6 +48,7 @@ pub struct TaggedParameterParserData {
     pub has_wps: bool
 }
 
+#[allow(clippy::single_match)]
 pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserData, Error> {
     let mut ssid: Option<String> = Option::None;
     let mut supported_rates: Option<Vec<f32>> = Option::None;
@@ -84,18 +85,18 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
             match number {
                 0 => {
                     // SSID.
-                    let ssid_s = String::from_utf8_lossy(&data).to_string();
+                    let ssid_s = String::from_utf8_lossy(data).to_string();
                     if !ssid_s.trim().is_empty() {
                         ssid = Option::Some(ssid_s);
                     }
                 },
                 1 => {
                     // Supported rates.
-                    supported_rates = Option::Some(parse_supported_rates(&data));
+                    supported_rates = Option::Some(parse_supported_rates(data));
                 }
                 7 => {
                     // Country information.
-                    match parse_country_information(&data) {
+                    match parse_country_information(data) {
                         Ok(ci) => {
                             country_information = Option::Some(ci);
                         },
@@ -108,7 +109,7 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                 },
                 48 => {
                     // RSN. (WPA 2/3)
-                    let suites: CipherSuites = match parse_wpa_security(&data) {
+                    let suites: CipherSuites = match parse_wpa_security(data) {
                         Ok(suites) => suites,
                         Err(e) => {
                             trace!("Could not parse RSN information: {}", e);
@@ -116,20 +117,19 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                         }
                     };
 
-                    let protocols: Vec<EncryptionProtocol>;
-                    if suites.key_management_modes.contains(&KeyManagementMode::SAE)
-                        || suites.key_management_modes.contains(&KeyManagementMode::FTSAE) {
-                        protocols = vec![EncryptionProtocol::WPA2, EncryptionProtocol::WPA3];
+                    let protocols = if suites.key_management_modes.contains(&KeyManagementMode::SAE)
+                            || suites.key_management_modes.contains(&KeyManagementMode::FTSAE) {
+                        vec![EncryptionProtocol::WPA2, EncryptionProtocol::WPA3]
                     } else {
-                        protocols = vec![EncryptionProtocol::WPA2];
-                    }
+                        vec![EncryptionProtocol::WPA2]
+                    };
 
                     security.push(SecurityInformation {protocols, suites: Option::Some(suites)});
                     security_bytes.extend(data);
                 }
                 50 => {
                     // Extended supported rates.
-                    extended_supported_rates = Option::Some(parse_extended_supported_rates(&data));
+                    extended_supported_rates = Option::Some(parse_extended_supported_rates(data));
                 },
                 127 => {
                     // Extended capabilities.
@@ -180,7 +180,7 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
     }
 
     let tagged_parameters = TaggedParameters {
-        ssid: ssid.clone(),
+        ssid,
         supported_rates,
         extended_supported_rates,
         country_information,
@@ -211,9 +211,9 @@ fn parse_country_information(data: &[u8]) -> Result<CountryInformation, Error> {
         _ => RegulatoryEnvironment::Unknown
     };
 
-    let first_channel = *&data[3];
-    let channel_count = *&data[4];
-    let max_transmit_power = *&data[5];
+    let first_channel = data[3];
+    let channel_count = data[4];
+    let max_transmit_power = data[5];
 
     Ok(CountryInformation {
         country_code,
