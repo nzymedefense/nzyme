@@ -1,6 +1,7 @@
 package app.nzyme.core.events;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.events.actions.EventActionFactory;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
 import app.nzyme.core.events.db.SubscriptionEntry;
@@ -40,9 +41,36 @@ public class EventEngineImpl implements EventEngine {
         );
 
         // Find all subscribers of event.
+        List<UUID> actionIds = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                                "WHERE event_type = :event_type AND reference = :reference")
+                        .bind("event_type", EventType.SYSTEM)
+                        .bind("reference", event.type())
+                        .mapTo(UUID.class)
+                        .list()
+        );
 
         // Process.
+        for (UUID actionId : actionIds) {
+            Optional<EventActionEntry> ea = findEventAction(actionId);
+
+            if (ea.isEmpty()) {
+                LOG.warn("Event action [{}] referenced by event [{}] not found.", actionId, event.type());
+                continue;
+            }
+
+            try {
+                EventActionFactory.build(nzyme, ea.get())
+                        .execute(event);
+            } catch (Exception e) {
+                LOG.error("Could not execute event action [{}/{}] referenced by event [{}]",
+                        ea.get().actionType(), ea.get().uuid(), event.type(), e);
+            }
+        }
+
     }
+
+    //void processEvent(DetectionEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId);
 
     public long countAllEventsOfAllOrganizations() {
         return nzyme.getDatabase().withHandle(handle ->

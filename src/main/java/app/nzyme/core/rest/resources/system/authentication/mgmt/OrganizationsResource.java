@@ -1496,7 +1496,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 SystemEventType.AUTHENTICATION_SUPERADMIN_MFA_RESET,
                 DateTime.now(),
                 "MFA method of super administrator [" + superAdmin.get().email() + "] was reset by ["
-                        + sessionUser + "]"
+                        + sessionUser.getEmail() + "]"
         ), null, null);
 
         return Response.ok().build();
