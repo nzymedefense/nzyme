@@ -35,7 +35,12 @@ function TapSelector(props) {
       } else {
         setSelectedTaps(lsTaps);
         setPreSelectedTaps(lsTaps);
-        setButtonText(lsTaps.length + " Taps Selected");
+
+        if (lsTaps.length > 1) {
+          setButtonText(lsTaps.length + " Taps Selected");
+        } else {
+          setButtonText("1 Tap Selected");
+        }
       }
     });
   }, [])
