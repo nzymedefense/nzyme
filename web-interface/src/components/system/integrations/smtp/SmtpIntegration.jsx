@@ -117,6 +117,21 @@ function SmtpIntegration() {
                                 dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
           </td>
         </tr>
+        <tr>
+          <td>URL of nzyme Web Interface</td>
+          <td>
+            <ConfigurationValue value={configuration.web_interface_url.value
+                ? configuration.web_interface_url.value : configuration.web_interface_url.default_value}
+                                configKey={configuration.web_interface_url.key}
+                                required={true} />
+          </td>
+          <td>
+            <ConfigurationModal config={configuration.web_interface_url}
+                                setGlobalConfig={setConfiguration}
+                                setLocalRevision={setLocalRevision}
+                                dbUpdateCallback={integrationsService.updateSmtpConfiguration} />
+          </td>
+        </tr>
         </tbody>
       </table>
     </React.Fragment>

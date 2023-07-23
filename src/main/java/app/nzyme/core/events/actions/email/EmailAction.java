@@ -26,6 +26,8 @@ import javax.mail.Message;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class EmailAction implements Action {
 
     private final EmailActionConfiguration configuration;
     private final String fromAddress;
+    private final URI webInterfaceUrl;
 
     private final Mailer mailer;
     private final freemarker.template.Configuration templateConfig;
@@ -56,6 +59,10 @@ public class EmailAction implements Action {
         String username = nzyme.getDatabaseCoreRegistry()
                 .getValueOrNull(SMTPConfigurationRegistryKeys.USERNAME.key());
 
+        String webInterfaceUrl = nzyme.getDatabaseCoreRegistry()
+                .getValue(SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.key())
+                .orElse(SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.defaultValue().orElse(null));
+
         String password;
         try {
             password = nzyme.getDatabaseCoreRegistry()
@@ -72,8 +79,16 @@ public class EmailAction implements Action {
                 port == null ||
                 Strings.isNullOrEmpty(username) ||
                 Strings.isNullOrEmpty(password) ||
-                Strings.isNullOrEmpty(this.fromAddress)) {
+                Strings.isNullOrEmpty(this.fromAddress) ||
+                Strings.isNullOrEmpty(webInterfaceUrl)) {
             throw new RuntimeException("Incomplete SMTP configuration. Cannot create Email action.");
+        }
+
+        // Make sure URL is valid.
+        try {
+            this.webInterfaceUrl = new URI(webInterfaceUrl);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid nzyme web interface URL: " + webInterfaceUrl);
         }
 
         TransportStrategy parsedTransportStrategy;
@@ -125,9 +140,8 @@ public class EmailAction implements Action {
                     .withSubject(configuration.subjectPrefix() + " " + buildSubject(eventType))
                     .withPlainText(buildPlainTextBody(event))
                     .withHTMLText(buildHTMLTextBody(event))
-                    .withEmbeddedImage("nzyme_logo", loadResourceFile("email/nzyme.png"), "image/png")
                     .withEmbeddedImage("header_top", loadResourceFile("email/header_top.png"), "image/png")
-                    .withEmbeddedImage("header_top", loadResourceFile("email/header_bottom.png"), "image/png")
+                    .withEmbeddedImage("header_bottom", loadResourceFile("email/header_bottom_system_event.png"), "image/png")
                     .buildEmail();
 
             mailer.sendMail(email);
@@ -162,6 +176,7 @@ public class EmailAction implements Action {
             parameters.put("event_type_name_human_readable", eventType.getHumanReadableName());
             parameters.put("event_details", event.details());
             parameters.put("event_timestamp", event.timestamp());
+            parameters.put("nzyme_url", this.webInterfaceUrl.toString());
 
             StringWriter out = new StringWriter();
             Template template = this.templateConfig.getTemplate("email/system_event.ftl");

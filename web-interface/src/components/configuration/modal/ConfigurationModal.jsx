@@ -54,6 +54,17 @@ function ConfigurationModal (props) {
             case "ENUM_STRINGS":
               setFormDisabled(!cData.strings.includes(inputValue))
               break
+            case "URI":
+              let uriParsed;
+              try {
+                new URL(inputValue);
+                uriParsed = true;
+              } catch (_) {
+                uriParsed = false;
+              }
+
+              setFormDisabled(!uriParsed);
+              break;
             default:
               setFormDisabled(true)
           }

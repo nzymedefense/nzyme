@@ -101,24 +101,6 @@
                                     <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
                                         <tbody>
                                         <tr>
-                                            <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-                                                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
-                                                    <tbody>
-                                                    <tr>
-                                                        <td style="width:150px;">
-                                                            <img alt height="auto" src="cid:nzyme_logo" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="150">
-                                                        </td>
-                                                    </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="center" style="font-size:0px;padding:10px 25px;padding-top:30px;padding-bottom:30px;word-break:break-word;">
-                                                <div style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:23px;font-weight:bold;letter-spacing:1px;line-height:24px;text-align:center;text-transform:uppercase;color:#ffffff;">System Event</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
                                                 <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
                                                     <tbody>
@@ -211,8 +193,8 @@
                                                 <td align="center" vertical-align="middle" style="font-size:0px;padding:10px 25px;padding-top:28px;word-break:break-word;">
                                                     <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:250px;line-height:100%;">
                                                         <tr>
-                                                            <td align="center" bgcolor="#5e6ebf" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#5e6ebf;" valign="middle">
-                                                                <a href="#" style="display:inline-block;width:200px;background:#5e6ebf;color:#ffffff;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:17px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank">Open Web Interface </a>
+                                                            <td align="center" bgcolor="#1f2e78" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#1f2e78;" valign="middle">
+                                                                <a href="${nzyme_url}" style="display:inline-block;width:200px;background:#1f2e78;color:#ffffff;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:17px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank">Open Web Interface </a>
                                                             </td>
                                                         </tr>
                                                     </table>

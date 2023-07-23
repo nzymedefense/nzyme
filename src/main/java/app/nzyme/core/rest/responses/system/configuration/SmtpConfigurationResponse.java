@@ -26,7 +26,10 @@ public abstract class SmtpConfigurationResponse {
     @JsonProperty("smtp_from_address")
     public abstract ConfigurationEntryResponse from();
 
-    public static SmtpConfigurationResponse create(ConfigurationEntryResponse transportStrategy, ConfigurationEntryResponse host, ConfigurationEntryResponse port, ConfigurationEntryResponse username, EncryptedConfigurationEntryResponse password, ConfigurationEntryResponse from) {
+    @JsonProperty("web_interface_url")
+    public abstract ConfigurationEntryResponse webInterfaceUrl();
+
+    public static SmtpConfigurationResponse create(ConfigurationEntryResponse transportStrategy, ConfigurationEntryResponse host, ConfigurationEntryResponse port, ConfigurationEntryResponse username, EncryptedConfigurationEntryResponse password, ConfigurationEntryResponse from, ConfigurationEntryResponse webInterfaceUrl) {
         return builder()
                 .transportStrategy(transportStrategy)
                 .host(host)
@@ -34,6 +37,7 @@ public abstract class SmtpConfigurationResponse {
                 .username(username)
                 .password(password)
                 .from(from)
+                .webInterfaceUrl(webInterfaceUrl)
                 .build();
     }
 
@@ -54,6 +58,8 @@ public abstract class SmtpConfigurationResponse {
         public abstract Builder password(EncryptedConfigurationEntryResponse password);
 
         public abstract Builder from(ConfigurationEntryResponse from);
+
+        public abstract Builder webInterfaceUrl(ConfigurationEntryResponse webInterfaceUrl);
 
         public abstract SmtpConfigurationResponse build();
     }

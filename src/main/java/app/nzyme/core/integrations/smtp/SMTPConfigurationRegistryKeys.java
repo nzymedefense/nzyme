@@ -60,4 +60,13 @@ public class SMTPConfigurationRegistryKeys {
             false
     );
 
+    public static RegistryKey WEB_INTERFACE_URL = RegistryKey.create(
+            "smtp_web_interface_url",
+            Optional.of(new ArrayList<>(){{
+                add(ConfigurationEntryConstraint.createHttpUrlConstraint());
+            }}),
+            Optional.of("https://nzyme.example.org/"),
+            false
+    );
+
 }

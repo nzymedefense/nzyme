@@ -54,6 +54,9 @@ public class SmtpIntegrationResource {
         String fromAddress = nzyme.getDatabaseCoreRegistry()
                 .getValueOrNull(SMTPConfigurationRegistryKeys.FROM_ADDRESS.key());
 
+        String webInterfaceUrl = nzyme.getDatabaseCoreRegistry()
+                .getValueOrNull(SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.key());
+
         boolean passwordIsSet;
         try {
             passwordIsSet = nzyme.getDatabaseCoreRegistry()
@@ -123,6 +126,16 @@ public class SmtpIntegrationResource {
                         SMTPConfigurationRegistryKeys.FROM_ADDRESS.requiresRestart(),
                         SMTPConfigurationRegistryKeys.FROM_ADDRESS.constraints().orElse(Collections.emptyList()),
                         "smtp-config"
+                ),
+                ConfigurationEntryResponse.create(
+                        SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.key(),
+                        "URL of nzyme Web Interface",
+                        webInterfaceUrl,
+                        ConfigurationEntryValueType.STRING,
+                        SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.defaultValue().orElse(null),
+                        SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.requiresRestart(),
+                        SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL.constraints().orElse(Collections.emptyList()),
+                        "smtp-config"
                 )
         );
 
@@ -168,6 +181,11 @@ public class SmtpIntegrationResource {
                     break;
                 case "smtp_from_address":
                     if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.FROM_ADDRESS, c)) {
+                        return Response.status(422).build();
+                    }
+                    break;
+                case "smtp_web_interface_url":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(SMTPConfigurationRegistryKeys.WEB_INTERFACE_URL, c)) {
                         return Response.status(422).build();
                     }
                     break;
