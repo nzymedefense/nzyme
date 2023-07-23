@@ -9,6 +9,7 @@ function TenantUserTaps(props) {
 
   const taps = props.taps;
   const user = props.user;
+  const onTapsPermissionsUpdated = props.onTapPermissionsUpdated;
 
   const [allowAccessAllTaps, setAllowAccessAllTaps] = useState(user.allow_access_all_tenant_taps);
   const [tapPermissions, setTapPermissions] = useState(user.tap_permissions);
@@ -40,6 +41,7 @@ function TenantUserTaps(props) {
         user.tenant_id, user.id, allowAccessAllTaps, tapPermissions, function() {
           setFormSubmitting(false);
           notify.show('Tap permissions of user updated.', 'success');
+          onTapsPermissionsUpdated();
         }, function() {
           setFormSubmitting(false);
           notify.show('Could not update tap permissions of user.', 'error');

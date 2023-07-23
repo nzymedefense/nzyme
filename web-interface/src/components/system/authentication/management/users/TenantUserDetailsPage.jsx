@@ -25,6 +25,8 @@ function TenantUserDetailsPage() {
   const [taps, setTaps] = useState(null);
   const [isDeletable, setIsDeletable] = useState(null);
 
+  const [localRevision, setLocalRevision] = useState(0);
+
   const [allPermissions, setAllPermissions] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
@@ -50,7 +52,14 @@ function TenantUserDetailsPage() {
     });
   }
 
+  const onTapPermissionsUpdated = function () {
+    setLocalRevision(localRevision + 1);
+  }
+
   useEffect(() => {
+    setUser(null);
+    setTaps(null);
+
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findUserOfTenant(organizationId, tenantId, userId, setUser, setIsDeletable);
@@ -58,7 +67,7 @@ function TenantUserDetailsPage() {
     authenticationManagementService.findAllTapPermissions(organizationId, tenantId, setTaps, 250, 0);
 
     authenticationManagementService.findAllExistingPermissions(setAllPermissions);
-  }, [organizationId, tenantId])
+  }, [organizationId, tenantId, localRevision])
 
   if (redirect) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
@@ -162,7 +171,7 @@ function TenantUserDetailsPage() {
                       features &amp; functionality description below, because not all features restrict tap data access.
                     </p>
 
-                    <TenantUserTaps taps={taps} user={user} />
+                    <TenantUserTaps taps={taps} user={user} onTapPermissionsUpdated={onTapPermissionsUpdated} />
 
                     <h4 className="mt-4">Features &amp; Functionality</h4>
 
