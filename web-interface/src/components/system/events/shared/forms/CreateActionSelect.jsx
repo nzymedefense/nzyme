@@ -13,10 +13,6 @@ function CreateActionSelect(props) {
                 value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">Please select an action type</option>
           <option value="email">Send email</option>
-          <option value="splunk_message">Send Splunk message</option>
-          <option value="opensearch_message">Send OpenSearch message</option>
-          <option value="graylog_message">Send Graylog message</option>
-          <option value="wasm_exec">Execute WASM binary</option>
         </select>
       </React.Fragment>
   )
