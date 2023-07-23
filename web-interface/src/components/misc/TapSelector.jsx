@@ -90,7 +90,7 @@ function TapSelector(props) {
             });
           }
 
-          if (selectedTaps.length > 1) {
+          if (selectedTaps && selectedTaps.length > 1) {
             setButtonText(selectedTaps.length + " Taps Selected");
           } else {
             setButtonText("1 Tap Selected");
