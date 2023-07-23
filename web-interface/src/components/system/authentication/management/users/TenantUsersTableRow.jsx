@@ -18,7 +18,10 @@ function TenantUsersTableRow(props) {
         </td>
         <td>{user.email}</td>
         <td>
-          {user.role ? user.role : <span className="text-warning">No Role</span>}
+          {user.tap_permissions && user.tap_permissions.length > 0 ? user.tap_permissions.length : "All"}
+        </td>
+        <td>
+          {user.permissions ? user.permissions.length : "None"}
         </td>
         <td title={user.last_activity ? moment(user.last_activity).format() : "None"}>
           {user.last_activity ? moment(user.last_activity).fromNow() : "None"}

@@ -40,7 +40,8 @@ function TenantUsersTable(props) {
           <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Role</th>
+            <th>Tap Permissions</th>
+            <th>Addtl. Functionality</th>
             <th>Last Activity</th>
           </tr>
           </thead>

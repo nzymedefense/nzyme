@@ -127,9 +127,9 @@
         </tr>
         </tbody>
     </table>
-    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" bgcolor="#1f2e78" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    <div style="background:#1f2e78;background-color:#1f2e78;margin:0px auto;max-width:600px;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#1f2e78;background-color:#1f2e78;width:100%;">
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" bgcolor="#000000" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#000000;background-color:#000000;margin:0px auto;max-width:600px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#000000;background-color:#000000;width:100%;">
             <tbody>
             <tr>
                 <td style="direction:ltr;font-size:0px;padding:20px 0;text-align:center;">
@@ -193,8 +193,8 @@
                                                 <td align="center" vertical-align="middle" style="font-size:0px;padding:10px 25px;padding-top:28px;word-break:break-word;">
                                                     <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:250px;line-height:100%;">
                                                         <tr>
-                                                            <td align="center" bgcolor="#1f2e78" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#1f2e78;" valign="middle">
-                                                                <a href="${nzyme_url}" style="display:inline-block;width:200px;background:#1f2e78;color:#ffffff;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:17px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank">Open Web Interface </a>
+                                                            <td align="center" bgcolor="#2b2d42" role="presentation" style="border:none;border-radius:3px;cursor:auto;mso-padding-alt:10px 25px;background:#2b2d42;" valign="middle">
+                                                                <a href="${nzyme_url}" style="display:inline-block;width:200px;background:#2b2d42;color:#ffffff;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:17px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:10px 25px;mso-padding-alt:0px;border-radius:3px;" target="_blank">Open Web Interface </a>
                                                             </td>
                                                         </tr>
                                                     </table>
