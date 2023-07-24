@@ -1,0 +1,65 @@
+import React, {useEffect, useState} from "react";
+import LoadingSpinner from "../../misc/LoadingSpinner";
+import Dot11Service from "../../../services/Dot11Service";
+
+import moment from "moment";
+import ApiRoutes from "../../../util/ApiRoutes";
+
+const dot11Service = new Dot11Service();
+
+function Dot11MonitoredNetworksTable() {
+
+  const [ssids, setSSIDs] = useState(null);
+
+  useEffect(() => {
+    dot11Service.findAllMonitoredSSIDs(setSSIDs);
+  }, [])
+
+  if (!ssids) {
+    return <LoadingSpinner />
+  }
+
+  if (ssids.length === 0) {
+    return (
+        <div className="alert alert-info">
+          No monitored networks created yet.
+        </div>
+    )
+  }
+
+  return (
+      <React.Fragment>
+        <table className="table table-sm table-hover table-striped">
+          <thead>
+          <tr>
+            <th>SSID</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Updated</th>
+          </tr>
+          </thead>
+          <tbody>
+          {ssids.map(function (ssid, i) {
+            return (
+              <tr key={"monitoredssid-" + i}>
+                <td><a href={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(ssid.uuid)}>{ssid.ssid}</a></td>
+                <td>
+                  {ssid.is_alerted ? <i className="fa-solid fa-triangle-exclamation text-danger"></i>
+                      : <i className="fa-solid fa-thumbs-up text-success"></i>}
+                </td>
+                <td title={moment(ssid.created_at)}>
+                  {moment(ssid.created_at).fromNow()}
+                </td>
+                <td title={moment(ssid.updated_at)}>
+                  {moment(ssid.updated_at).fromNow()}
+                </td>
+              </tr>
+            )
+          })}
+          </tbody>
+        </table>
+      </React.Fragment>
+  )
+}
+
+export default Dot11MonitoredNetworksTable;

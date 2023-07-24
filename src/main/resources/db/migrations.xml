@@ -3227,4 +3227,40 @@
             <column name="frame_count" type="bigint" defaultValue="0" />
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_dot11_monitored_networks" author="lennartkoopmann">
+        <createTable tableName="dot11_monitored_networks">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="organization_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_ssid_to_monitored_networks" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="ssid" type="text">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

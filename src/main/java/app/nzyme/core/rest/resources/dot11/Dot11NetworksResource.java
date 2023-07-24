@@ -351,4 +351,13 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     }
 
 
+    @GET
+    @Path("/ssids/names")
+    public Response allSSIDNamesFromAllAccessibleTaps(@Context SecurityContext sc) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, "*");
+
+        return Response.ok(nzyme.getDot11().findAllSSIDNames(tapUuids)).build();
+    }
+
 }

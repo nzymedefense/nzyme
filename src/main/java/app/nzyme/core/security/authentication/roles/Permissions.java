@@ -38,6 +38,13 @@ public class Permissions {
                 "Allows user to use the Retrospective feature using data from all taps the user has access to.",
                 true
         ));
+        put("dot11_monitoring_manage", Permission.create(
+                "dot11_monitoring_manage",
+                "Manage Monitored WiFi Networks",
+                "Allows user to create, edit and delete configurations of WiFi network monitoring. This can " +
+                        "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
+                false
+        ));
     }};
 
 }

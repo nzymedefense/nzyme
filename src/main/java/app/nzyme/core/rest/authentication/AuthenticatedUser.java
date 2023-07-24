@@ -2,6 +2,7 @@ package app.nzyme.core.rest.authentication;
 
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.security.Principal;
 import java.util.UUID;
 
@@ -13,7 +14,10 @@ public class AuthenticatedUser implements Principal {
 
     private final DateTime sessionCreatedAt;
 
+    @Nullable
     private final UUID organizationId;
+
+    @Nullable
     private final UUID tenantId;
 
     private final boolean isOrganizationAdministrator;
@@ -25,8 +29,8 @@ public class AuthenticatedUser implements Principal {
                              String sessionId,
                              String email,
                              DateTime sessionCreatedAt,
-                             UUID organizationId,
-                             UUID tenantId,
+                             @Nullable UUID organizationId,
+                             @Nullable UUID tenantId,
                              final boolean isOrganizationAdministrator,
                              boolean isSuperAdministrator,
                              boolean accessAllTenantTaps) {
@@ -57,10 +61,12 @@ public class AuthenticatedUser implements Principal {
         return sessionCreatedAt;
     }
 
+    @Nullable
     public UUID getOrganizationId() {
         return organizationId;
     }
 
+    @Nullable
     public UUID getTenantId() {
         return tenantId;
     }

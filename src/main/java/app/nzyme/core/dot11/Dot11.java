@@ -3,13 +3,16 @@ package app.nzyme.core.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class Dot11 {
@@ -45,6 +48,16 @@ public class Dot11 {
 
     public Dot11(NzymeNode nzyme) {
         this.nzyme = nzyme;
+    }
+
+    public List<String> findAllSSIDNames(List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(ssid) FROM dot11_ssids " +
+                                "WHERE tap_uuid IN (<taps>) ORDER BY ssid ASC")
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
     }
 
     public List<BSSIDSummary> findBSSIDs(int minutes, List<UUID> taps) {
@@ -534,6 +547,51 @@ public class Dot11 {
                 connectedHistogram,
                 disconnectedHistogram
         ));
+    }
+
+    public void createMonitoredSSID(String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks(uuid, ssid, organization_id, tenant_id, " +
+                                "created_at, updated_at) VALUES(:uuid, :ssid, :organization_id, :tenant_id, " +
+                                "NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("ssid", ssid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
+    public Optional<MonitoredSSID> findMonitoredSSID(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(MonitoredSSID.class)
+                        .findOne()
+        );
+    }
+
+    public List<MonitoredSSID> findAllMonitoredSSIDs(@Nullable UUID organizationId, @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks");
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(MonitoredSSID.class).list();
+        });
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

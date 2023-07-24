@@ -58,6 +58,11 @@ function Sidebar() {
             href={ApiRoutes.DOT11.CLIENTS.INDEX}
             title="Clients"
             icon={<i className="sidebar-icon fa-solid fa-timeline" />} />
+
+        <NavigationLink
+            href={ApiRoutes.DOT11.MONITORING.INDEX}
+            title="Monitoring"
+            icon={<i className="sidebar-icon fa-solid fa-shield-halved" />} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Retrospective"

@@ -2,6 +2,12 @@ import RESTClient from '../util/RESTClient'
 
 class Dot11Service {
 
+  findAllSSIDNames(setSSIDs) {
+    RESTClient.get("/dot11/networks/ssids/names", {}, function (response) {
+      setSSIDs(response.data)
+    })
+  }
+
   findAllBSSIDs(minutes, taps, setBSSIDs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
@@ -91,6 +97,16 @@ class Dot11Service {
     RESTClient.get("/dot11/clients/show/" + clientMac, { taps: tapsList }, function (response) {
       setClient(response.data);
     })
+  }
+
+  findAllMonitoredSSIDs(setMonitoredSSIDs) {
+    RESTClient.get("/dot11/monitoring/ssids", {}, function (response) {
+      setMonitoredSSIDs(response.data.ssids);
+    })
+  }
+
+  createMonitoredSSID(ssid, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids", {ssid: ssid}, successCallback, errorCallback);
   }
 
 }

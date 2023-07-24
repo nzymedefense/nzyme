@@ -93,6 +93,9 @@ import ClientDetailsPage from "./components/dot11/clients/ClientDetailsPage";
 import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
 import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
 import SearchResultPage from "./components/search/SearchResultPage";
+import Dot11MonitoringPage from "./components/dot11/monitoring/Dot11MonitoringPage";
+import CreateDot11MonitoredNetworkPage from "./components/dot11/monitoring/CreateDot11MonitoredNetworkPage";
+import Dot11MonitoredNetworkPage from "./components/dot11/monitoring/Dot11MonitoredNetworkPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -328,6 +331,11 @@ function App() {
 
                           { /* Ethernet/Beacons. */}
                           <Route path={ApiRoutes.ETHERNET.BEACONS.INDEX} element={<BeaconsPage />}/>
+
+                          { /* 802.11/Monitoring. */ }
+                          <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateDot11MonitoredNetworkPage />} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<Dot11MonitoredNetworkPage/>} />
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

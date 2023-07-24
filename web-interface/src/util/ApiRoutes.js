@@ -125,6 +125,11 @@ const ApiRoutes = {
   },
   DOT11: {
     OVERVIEW: '/dot11/overview',
+    MONITORING: {
+      INDEX: '/dot11/monitoring',
+      CREATE: '/dot11/monitoring/ssids/create',
+      SSID_DETAILS: (uuid) => `/dot11/monitoring/ssids/show/${uuid}`
+    },
     NETWORKS: {
       BSSIDS: '/dot11/bssids',
       BSSID: (bssid) => `/dot11/bssids/show/${bssid}`,
