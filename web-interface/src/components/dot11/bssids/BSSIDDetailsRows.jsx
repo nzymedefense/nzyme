@@ -61,7 +61,9 @@ function BSSIDDetailsRows(props) {
                 return (
                   <tr key={"ssid-" + i}>
                     <td>
-                      <a href={ApiRoutes.DOT11.NETWORKS.SSID(bssid.bssid, ssid.ssid, ssid.frequency)}>{ssid.ssid}</a>
+                      <a href={ApiRoutes.DOT11.NETWORKS.SSID(bssid.bssid, ssid.ssid, ssid.frequency)}>{ssid.ssid}</a>{' '}
+                      {ssid.is_monitored ?  <i className="fa-solid fa-shield-halved text-muted" title={"SSID is monitored."}
+                                                style={{marginLeft: 4, position:"relative", top: 1}}></i> : null }
                     </td>
                     <td><InfrastructureTypes types={ssid.infrastructure_types} /></td>
                     <td>

@@ -725,6 +725,76 @@ public class Dot11 {
         );
     }
 
+    public boolean isBSSIDMonitored(String bssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        long count = nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE b.bssid = :bssid AND s.enabled = true")
+                        .bind("bssid", bssid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE b.bssid = :bssid AND s.enabled = true AND s.organization_id = :organization_id")
+                        .bind("bssid", bssid)
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE b.bssid = :bssid AND s.enabled = true " +
+                                "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
+                        .bind("bssid", bssid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(Long.class).one();
+        });
+
+        return count > 0;
+    }
+
+    public boolean isSSIDMonitored(String bssid, String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        long count = nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true")
+                        .bind("ssid", ssid)
+                        .bind("bssid", bssid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true " +
+                                "AND s.organization_id = :organization_id")
+                        .bind("ssid", ssid)
+                        .bind("bssid", bssid)
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE b.bssid = :bssid s.ssid = :ssid AND s.enabled = true " +
+                                "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
+                        .bind("ssid", ssid)
+                        .bind("bssid", bssid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(Long.class).one();
+        });
+
+        return count > 0;
+    }
+
     public void createMonitoredBSSID(long monitoredNetworkId, String bssid) {
         String uppercaseBSSID = bssid.toUpperCase();
         if (!Tools.isValidMacAddress(uppercaseBSSID)) {

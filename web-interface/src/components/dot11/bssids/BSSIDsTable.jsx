@@ -17,7 +17,7 @@ function BSSIDsTable(props) {
       <table className="table table-sm table-hover table-striped mb-0">
         <thead>
         <tr>
-          <th>BSSID</th>
+          <th style={{width: 145}}>BSSID</th>
           <th>Signal Strength</th>
           <th>Mode</th>
           <th>Advertised SSIDs</th>

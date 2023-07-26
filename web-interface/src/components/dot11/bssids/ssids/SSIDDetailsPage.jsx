@@ -15,6 +15,7 @@ import SSIDAccessPointClients from "./SSIDAccessPointClients";
 import numeral from "numeral";
 import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
+import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -134,6 +135,8 @@ function SSIDDetailsPage() {
           </div>
         </div>
       </div>
+
+      <SSIDMonitoredInformation show={ssid.is_monitored} />
 
       <div className="row mt-3">
         <div className="col-md-12">

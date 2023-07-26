@@ -57,7 +57,10 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
+    @JsonProperty("is_monitored")
+    public abstract boolean isMonitored();
+
+    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen, boolean isMonitored) {
         return builder()
                 .bssid(bssid)
                 .bssidOui(bssidOui)
@@ -74,6 +77,7 @@ public abstract class SSIDDetailsResponse {
                 .securitySuites(securitySuites)
                 .isWps(isWps)
                 .lastSeen(lastSeen)
+                .isMonitored(isMonitored)
                 .build();
     }
 
@@ -112,6 +116,8 @@ public abstract class SSIDDetailsResponse {
         public abstract Builder isWps(List<Boolean> isWps);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder isMonitored(boolean isMonitored);
 
         public abstract SSIDDetailsResponse build();
     }

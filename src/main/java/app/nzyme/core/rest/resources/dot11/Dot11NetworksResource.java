@@ -57,6 +57,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
+            boolean isMonitored = nzyme.getDot11().isBSSIDMonitored(
+                    bssid.bssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     bssid.bssid(),
                     nzyme.getOUIManager().lookupMac(bssid.bssid()),
@@ -67,7 +70,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     bssid.fingerprints(),
                     bssid.ssids(),
                     bssid.hiddenSSIDFrames() > 0,
-                    bssid.infrastructureTypes()
+                    bssid.infrastructureTypes(),
+                    isMonitored
             ));
         }
 
@@ -101,6 +105,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         Map<String, Integer> mostActiveChannels = Maps.newHashMap();
         for (Map.Entry<String, Map<Integer, Long>> channel : activeChannels.entrySet()) {
             String ssid = channel.getKey();
+
             int mostActiveChannel = 0;
             long highestCount = 0;
             for (Map.Entry<Integer, Long> count : channel.getValue().entrySet()) {
@@ -115,6 +120,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<SSIDChannelDetailsResponse> ssidsResult = Lists.newArrayList();
         for (SSIDChannelDetails ssid : ssids) {
+            boolean isMonitored = nzyme.getDot11().isSSIDMonitored(
+                    bssid, ssid.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
             ssidsResult.add(SSIDChannelDetailsResponse.create(
                     ssid.ssid(),
                     ssid.frequency(),
@@ -126,7 +134,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     ssid.securityProtocols(),
                     ssid.infrastructureTypes(),
                     ssid.isWps(),
-                    ssid.lastSeen()
+                    ssid.lastSeen(),
+                    isMonitored
             ));
         }
 
@@ -187,6 +196,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         SSIDDetails ssidDetails = dbResult.get();
 
+        boolean isMonitored = nzyme.getDot11().isSSIDMonitored(
+                bssid, ssidDetails.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
         for (String suite : ssidDetails.securitySuites()) {
@@ -226,7 +238,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 ssidDetails.infrastructureTypes(),
                 securitySuites,
                 ssidDetails.isWps(),
-                ssidDetails.lastSeen()
+                ssidDetails.lastSeen(),
+                isMonitored
         );
 
         return Response.ok(response).build();

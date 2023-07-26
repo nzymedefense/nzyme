@@ -46,7 +46,9 @@ function BSSIDRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>
+            <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
+            {bssid.is_monitored ?  <i className="fa-solid fa-shield-halved text-muted" title={"BSSID is monitored."}
+                                      style={{marginLeft: 4}}></i> : null }
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>
