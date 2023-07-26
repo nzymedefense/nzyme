@@ -116,6 +116,10 @@ class Dot11Service {
     RESTClient.post("/dot11/monitoring/ssids", {ssid: ssid}, successCallback, errorCallback);
   }
 
+  deleteMonitoredSSID(uuid, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + uuid, successCallback);
+  }
+
   createMonitoredBSSID(ssidUUID, bssid, successCallback, errorCallback) {
     RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids",
         {bssid: bssid}, successCallback, errorCallback);

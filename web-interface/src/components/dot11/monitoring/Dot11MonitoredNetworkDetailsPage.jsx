@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Dot11Service from "../../../services/Dot11Service";
 import ApiRoutes from "../../../util/ApiRoutes";
@@ -32,6 +32,19 @@ function Dot11MonitoredNetworkDetailsPage() {
   const [existingSecuritySuites, setExistingSecuritySuites] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [deleted, setDeleted] = useState(false);
+
+  const onDelete = function () {
+    if (!confirm("Really delete monitored network and all it's configuration?")) {
+      return;
+    }
+
+    dot11Service.deleteMonitoredSSID(ssid.uuid, function () {
+      notify.show("Monitored network deleted.", "success");
+      setDeleted(true);
+    });
+  }
 
   const addBSSID = function (bssid) {
     setBSSIDFormSubmitting(true);
@@ -115,6 +128,9 @@ function Dot11MonitoredNetworkDetailsPage() {
     }
   }, [ssid])
 
+  if (deleted) {
+    return <Navigate to={ApiRoutes.DOT11.MONITORING.INDEX} />
+  }
 
   if (!ssid) {
     return <LoadingSpinner />
@@ -139,6 +155,7 @@ function Dot11MonitoredNetworkDetailsPage() {
               <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(ssid.uuid)}>
                 Import Configuration
               </a>{' '}
+              <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>
             </span>
           </div>

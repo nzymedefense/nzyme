@@ -138,6 +138,21 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}")
+    public Response delete(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        nzyme.getDot11().deleteMonitoredSSID(
+                uuid,
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        return Response.ok().build();
+    }
+
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/bssids")
