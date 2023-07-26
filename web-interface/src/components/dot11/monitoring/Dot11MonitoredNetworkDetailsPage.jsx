@@ -9,6 +9,8 @@ import {notify} from "react-notify-toast";
 import RefreshGears from "../../misc/RefreshGears";
 import MonitoredChannelsTable from "./MonitoredChannelsTable";
 import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
+import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
+import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
 
 const dot11Service = new Dot11Service();
 const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
@@ -139,7 +141,7 @@ function Dot11MonitoredNetworkDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-8">
+          <div className="col-md-7">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
@@ -150,11 +152,12 @@ function Dot11MonitoredNetworkDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-md-4">
+          <div className="col-md-5">
             <span className="float-end">
               <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(ssid.uuid)}>
                 Import Configuration
               </a>{' '}
+              <ToggleMonitoringStatusButton ssid={ssid} bumpRevision={bumpRevision} />{' '}
               <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>
             </span>
@@ -166,6 +169,8 @@ function Dot11MonitoredNetworkDetailsPage() {
             </h1>
           </div>
         </div>
+
+        <MonitoringDisabledWarning show={!ssid.is_enabled} />
 
         <div className="row mt-3">
           <div className="col-md-6">

@@ -3381,4 +3381,12 @@
     <changeSet id="rename_monitored_channels_column_to_frequency" author="lennartkoopmann">
         <renameColumn tableName="dot11_monitored_networks_channels" oldColumnName="channel" newColumnName="frequency" />
     </changeSet>
+    
+    <changeSet id="add_enabled_disabled_state_to_monitored_networks" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

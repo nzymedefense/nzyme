@@ -42,6 +42,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             boolean isAlerted = false;
             ssids.add(MonitoredSSIDDetailsResponse.create(
                     ssid.uuid(),
+                    ssid.isEnabled(),
                     ssid.ssid(),
                     ssid.organizationId(),
                     ssid.tenantId(),
@@ -111,6 +112,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
+                ssid.isEnabled(),
                 ssid.ssid(),
                 ssid.organizationId(),
                 ssid.tenantId(),
@@ -344,6 +346,38 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().deleteMonitoredSecuritySuite(ssid.get().id(), suiteUUID);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/enable")
+    public Response enableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        nzyme.getDot11().setMonitoredSSIDEnabledState(
+                uuid,
+                true,
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/disable")
+    public Response disableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        nzyme.getDot11().setMonitoredSSIDEnabledState(
+                uuid,
+                false,
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
 
         return Response.ok().build();
     }

@@ -564,6 +564,36 @@ public class Dot11 {
         );
     }
 
+    public void setMonitoredSSIDEnabledState(UUID uuid, boolean enabled, UUID organizationId, UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle -> {
+            Update update;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
+                                "WHERE uuid = :uuid ")
+                        .bind("enabled", enabled)
+                        .bind("uuid", uuid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id")
+                        .bind("enabled", enabled)
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("enabled", enabled)
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            update.execute();
+        });
+    }
+
     public void deleteMonitoredSSID(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
         nzyme.getDatabase().useHandle(handle -> {
             Update update;

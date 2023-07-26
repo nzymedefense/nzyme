@@ -15,6 +15,7 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
         return MonitoredSSID.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
+                rs.getBoolean("enabled"),
                 rs.getString("ssid"),
                 rs.getString("organization_id") == null ? null
                         : UUID.fromString(rs.getString("organization_id")),

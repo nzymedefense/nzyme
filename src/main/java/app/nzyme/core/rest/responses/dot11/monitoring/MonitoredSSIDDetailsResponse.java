@@ -14,6 +14,9 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("uuid")
     public abstract UUID uuid();
 
+    @JsonProperty("is_enabled")
+    public abstract boolean isEnabled();
+
     @JsonProperty("ssid")
     public abstract String ssid();
 
@@ -46,9 +49,10 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("is_alerted")
     public abstract boolean isAlerted();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted) {
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted) {
         return builder()
                 .uuid(uuid)
+                .isEnabled(isEnabled)
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
@@ -64,10 +68,12 @@ public abstract class MonitoredSSIDDetailsResponse {
     public static Builder builder() {
         return new AutoValue_MonitoredSSIDDetailsResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder isEnabled(boolean isEnabled);
 
         public abstract Builder ssid(String ssid);
 

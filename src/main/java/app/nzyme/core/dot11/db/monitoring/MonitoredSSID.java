@@ -11,6 +11,7 @@ public abstract class MonitoredSSID {
 
     public abstract long id();
     public abstract UUID uuid();
+    public abstract boolean isEnabled();
     public abstract String ssid();
     @Nullable
     public abstract UUID organizationId();
@@ -19,10 +20,11 @@ public abstract class MonitoredSSID {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
+                .isEnabled(isEnabled)
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
@@ -40,6 +42,8 @@ public abstract class MonitoredSSID {
         public abstract Builder id(long id);
 
         public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder isEnabled(boolean isEnabled);
 
         public abstract Builder ssid(String ssid);
 

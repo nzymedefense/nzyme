@@ -4,6 +4,7 @@ import Dot11Service from "../../../services/Dot11Service";
 
 import moment from "moment";
 import ApiRoutes from "../../../util/ApiRoutes";
+import MonitoredNetworkStatus from "./MonitoredNetworkStatus";
 
 const dot11Service = new Dot11Service();
 
@@ -43,10 +44,7 @@ function Dot11MonitoredNetworksTable() {
             return (
               <tr key={"monitoredssid-" + i}>
                 <td><a href={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(ssid.uuid)}>{ssid.ssid}</a></td>
-                <td>
-                  {ssid.is_alerted ? <i className="fa-solid fa-triangle-exclamation text-danger"></i>
-                      : <i className="fa-solid fa-thumbs-up text-success"></i>}
-                </td>
+                <td><MonitoredNetworkStatus ssid={ssid} /></td>
                 <td title={moment(ssid.created_at)}>
                   {moment(ssid.created_at).fromNow()}
                 </td>

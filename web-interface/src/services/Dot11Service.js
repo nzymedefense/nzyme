@@ -156,6 +156,14 @@ class Dot11Service {
     RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/securitysuites/show/" + suiteUUID, successCallback);
   }
 
+  enableMonitoredNetwork(ssidUUID, successCallback, errorCallback) {
+    RESTClient.put("/dot11/monitoring/ssids/show/" + ssidUUID + "/enable", {}, successCallback, errorCallback);
+  }
+
+  disableMonitoredNetwork(ssidUUID, successCallback, errorCallback) {
+    RESTClient.put("/dot11/monitoring/ssids/show/" + ssidUUID + "/disable", {}, successCallback, errorCallback);
+  }
+
 }
 
 export default Dot11Service
