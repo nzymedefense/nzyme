@@ -95,7 +95,9 @@ import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
 import SearchResultPage from "./components/search/SearchResultPage";
 import Dot11MonitoringPage from "./components/dot11/monitoring/Dot11MonitoringPage";
 import CreateDot11MonitoredNetworkPage from "./components/dot11/monitoring/CreateDot11MonitoredNetworkPage";
-import Dot11MonitoredNetworkPage from "./components/dot11/monitoring/Dot11MonitoredNetworkPage";
+import Dot11MonitoredNetworkDetailsPage from "./components/dot11/monitoring/Dot11MonitoredNetworkDetailsPage";
+import Dot11MonitoredBSSIDConfigurationImportPage
+  from "./components/dot11/monitoring/Dot11MonitoredBSSIDConfigurationImportPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -335,7 +337,8 @@ function App() {
                           { /* 802.11/Monitoring. */ }
                           <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateDot11MonitoredNetworkPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<Dot11MonitoredNetworkPage/>} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<Dot11MonitoredNetworkDetailsPage/>} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<Dot11MonitoredBSSIDConfigurationImportPage/>} />
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.UUID;
 
 @AutoValue
@@ -24,6 +25,18 @@ public abstract class MonitoredSSIDDetailsResponse {
     @Nullable
     public abstract UUID tenantId();
 
+    @JsonProperty("bssids")
+    @Nullable
+    public abstract List<MonitoredBSSIDDetailsResponse> bssids();
+
+    @JsonProperty("channels")
+    @Nullable
+    public abstract List<MonitoredChannelResponse> channels();
+
+    @JsonProperty("security_suites")
+    @Nullable
+    public abstract List<MonitoredSecuritySuiteResponse> securitySuites();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
@@ -33,12 +46,15 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("is_alerted")
     public abstract boolean isAlerted();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt, boolean isAlerted) {
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted) {
         return builder()
                 .uuid(uuid)
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .bssids(bssids)
+                .channels(channels)
+                .securitySuites(securitySuites)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .isAlerted(isAlerted)
@@ -58,6 +74,12 @@ public abstract class MonitoredSSIDDetailsResponse {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder bssids(List<MonitoredBSSIDDetailsResponse> bssids);
+
+        public abstract Builder channels(List<MonitoredChannelResponse> channels);
+
+        public abstract Builder securitySuites(List<MonitoredSecuritySuiteResponse> securitySuites);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -3,8 +3,9 @@ package app.nzyme.core.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
-import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
+import app.nzyme.core.util.Tools;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
@@ -562,13 +563,30 @@ public class Dot11 {
         );
     }
 
-    public Optional<MonitoredSSID> findMonitoredSSID(UUID uuid) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM dot11_monitored_networks WHERE uuid = :uuid")
+    public Optional<MonitoredSSID> findMonitoredSSID(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks WHERE uuid = :uuid")
+                        .bind("uuid", uuid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id")
                         .bind("uuid", uuid)
-                        .mapTo(MonitoredSSID.class)
-                        .findOne()
-        );
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(MonitoredSSID.class).findOne();
+        });
     }
 
     public List<MonitoredSSID> findAllMonitoredSSIDs(@Nullable UUID organizationId, @Nullable UUID tenantId) {
@@ -592,6 +610,174 @@ public class Dot11 {
 
             return query.mapTo(MonitoredSSID.class).list();
         });
+    }
+
+    public Optional<Long> findMonitoredBSSIDId(UUID ssidUUID, UUID bssidUUID, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid")
+                        .bind("ssid_uuid", ssidUUID)
+                        .bind("bssid_uuid", bssidUUID);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid " +
+                                "AND s.organization_id = :organization_id")
+                        .bind("ssid_uuid", ssidUUID)
+                        .bind("bssid_uuid", bssidUUID)
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid " +
+                                "AND s.organization_id = :organization_id " +
+                                "AND s.tenant_id = :tenant_id")
+                        .bind("ssid_uuid", ssidUUID)
+                        .bind("bssid_uuid", bssidUUID)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(Long.class).findOne();
+        });
+    }
+
+    public List<MonitoredBSSID> findMonitoredBSSIDsOfSSID(long ssidId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks_bssids " +
+                                "WHERE monitored_network_id = :ssid_id ORDER BY bssid ASC")
+                        .bind("ssid_id", ssidId)
+                        .mapTo(MonitoredBSSID.class)
+                        .list()
+        );
+    }
+
+    public List<MonitoredFingerprint> findMonitoredFingerprintsOfMonitoredBSSID(long bssidId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks_fingerprints " +
+                                "WHERE monitored_network_bssid_id = :bssid_id ORDER BY fingerprint ASC")
+                        .bind("bssid_id", bssidId)
+                        .mapTo(MonitoredFingerprint.class)
+                        .list()
+        );
+    }
+
+    public void createMonitoredBSSID(long monitoredNetworkId, String bssid) {
+        String uppercaseBSSID = bssid.toUpperCase();
+        if (!Tools.isValidMacAddress(uppercaseBSSID)) {
+            throw new RuntimeException("Invalid MAC address: " + uppercaseBSSID);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks_bssids(uuid, monitored_network_id, " +
+                                "bssid) VALUES(:uuid, :monitored_network_id, :bssid)")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("bssid", uppercaseBSSID)
+                        .execute()
+        );
+    }
+
+    public void deleteMonitoredBSSID(long bssidId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_bssids WHERE id = :id")
+                        .bind("id", bssidId)
+                        .execute()
+        );
+    }
+
+    public void createdMonitoredBSSIDFingerprint(long bssidId, String fingerprint) {
+        if (fingerprint == null || fingerprint.length() != 64) {
+            throw new RuntimeException("Invalid fingerprint: " + fingerprint);
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks_fingerprints(uuid, " +
+                                "monitored_network_bssid_id, fingerprint) VALUES(:uuid, :monitored_network_bssid_id, " +
+                                ":fingerprint)")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("monitored_network_bssid_id", bssidId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
+        );
+    }
+
+    public void deleteMonitoredBSSIDFingerprint(long bssidId, UUID fingerprintUUID) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_fingerprints " +
+                                "WHERE monitored_network_bssid_id = :bssidId AND uuid = :uuid")
+                        .bind("bssidId", bssidId)
+                        .bind("uuid", fingerprintUUID)
+                        .execute()
+        );
+    }
+
+    public List<MonitoredChannel> findMonitoredChannelsOfMonitoredNetwork(long ssidId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks_channels " +
+                                "WHERE monitored_network_id = :ssid_id ORDER BY frequency ASC")
+                        .bind("ssid_id", ssidId)
+                        .mapTo(MonitoredChannel.class)
+                        .list()
+        );
+    }
+
+    public void createMonitoredChannel(long monitoredNetworkId, long frequency) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks_channels(uuid, monitored_network_id, " +
+                                "frequency) VALUES(:uuid, :monitored_network_id, :frequency)")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("frequency", frequency)
+                        .execute()
+        );
+    }
+
+    public void deleteMonitoredChannel(long monitoredNetworkId, UUID channelUUID) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_channels " +
+                                "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("uuid", channelUUID)
+                        .execute()
+        );
+    }
+
+    public List<MonitoredSecuritySuite> findMonitoredSecuritySuitesOfMonitoredNetwork(long ssidId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks_security_suites " +
+                                "WHERE monitored_network_id = :ssid_id ORDER BY suite ASC")
+                        .bind("ssid_id", ssidId)
+                        .mapTo(MonitoredSecuritySuite.class)
+                        .list()
+        );
+    }
+
+    public void createMonitoredSecuritySuite(long monitoredNetworkId, String suite) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks_security_suites(uuid, " +
+                                "monitored_network_id, suite) VALUES(:uuid, :monitored_network_id, :suite)")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("suite", suite)
+                        .execute()
+        );
+    }
+
+    public void deleteMonitoredSecuritySuite(long monitoredNetworkId, UUID suiteUUID) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_security_suites " +
+                                "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("uuid", suiteUUID)
+                        .execute()
+        );
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {

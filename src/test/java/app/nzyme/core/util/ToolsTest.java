@@ -7,27 +7,17 @@ import static org.testng.Assert.*;
 public class ToolsTest {
 
     @Test
-    public void testIsSafeParameter() {
-        assertTrue(Tools.isSafeParameter("abc123"));
-        assertTrue(Tools.isSafeParameter("abc_123"));
-        assertTrue(Tools.isSafeParameter("abc-123"));
-        assertTrue(Tools.isSafeParameter("abc.123"));
-        assertTrue(Tools.isSafeParameter("abc/123"));
-        assertTrue(Tools.isSafeParameter("abc 123"));
-        assertTrue(Tools.isSafeParameter("abc-.123"));
-        assertTrue(Tools.isSafeParameter("abc- .123"));
-
-        assertFalse(Tools.isSafeParameter("&"));
-        assertFalse(Tools.isSafeParameter("&&"));
-        assertFalse(Tools.isSafeParameter("\""));
-        assertFalse(Tools.isSafeParameter("'"));
-        assertFalse(Tools.isSafeParameter("|"));
-        assertFalse(Tools.isSafeParameter("abc\\123"));
-        assertFalse(Tools.isSafeParameter("abc\"123"));
-        assertFalse(Tools.isSafeParameter("abc123;"));
-        assertFalse(Tools.isSafeParameter("abc'123"));
-        assertFalse(Tools.isSafeParameter("abc&123"));
-        assertFalse(Tools.isSafeParameter("abc|123"));
+    public void testIsValidMacAddress() {
+        assertTrue(Tools.isValidMacAddress("18:7C:0B:D7:14:38"));
+        assertTrue(Tools.isValidMacAddress("18:7c:0B:D7:14:38"));
+        assertTrue(Tools.isValidMacAddress("18:7c:0b:d7:14:38"));
+        assertFalse(Tools.isValidMacAddress("1x:7c:0b:d7:14:38"));
+        assertFalse(Tools.isValidMacAddress("18:7c:0b:d7:14:38:14"));
+        assertFalse(Tools.isValidMacAddress("18-7C-0B-D7-14-38"));
+        assertFalse(Tools.isValidMacAddress(""));
+        assertFalse(Tools.isValidMacAddress(" "));
+        assertFalse(Tools.isValidMacAddress("abc"));
+        assertFalse(Tools.isValidMacAddress("187C0BD71438"));
     }
 
     @Test

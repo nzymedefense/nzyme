@@ -3263,4 +3263,122 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_dot11_monitored_networks_bssids_and_fps" author="lennartkoopmann">
+        <createTable tableName="dot11_monitored_networks_bssids">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="monitored_network_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="dot11_monitored_networks_fingerprints">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="monitored_network_bssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fingerprints" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_monitoredbssids2ssids"
+                                 baseTableName="dot11_monitored_networks_bssids"
+                                 baseColumnNames="monitored_network_id"
+                                 referencedTableName="dot11_monitored_networks"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <addForeignKeyConstraint constraintName="link_monitoredfps2bssids"
+                                 baseTableName="dot11_monitored_networks_fingerprints"
+                                 baseColumnNames="monitored_network_bssid_id"
+                                 referencedTableName="dot11_monitored_networks_bssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="rename_monitored_fingerprints_fingerprint_column" author="lennartkoopmann">
+        <renameColumn tableName="dot11_monitored_networks_fingerprints"
+                      oldColumnName="fingerprints"
+                      newColumnName="fingerprint" />
+    </changeSet>
+
+    <changeSet id="create_dot11_monitored_networks_channels" author="lennartkoopmann">
+        <createTable tableName="dot11_monitored_networks_channels">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="monitored_network_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="dot11_monitored_networks_security_suites">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="monitored_network_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="suite" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_monitoredchannels2ssids"
+                                 baseTableName="dot11_monitored_networks_channels"
+                                 baseColumnNames="monitored_network_id"
+                                 referencedTableName="dot11_monitored_networks"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+
+        <addForeignKeyConstraint constraintName="link_monitoredsuites2ssids"
+                                 baseTableName="dot11_monitored_networks_security_suites"
+                                 baseColumnNames="monitored_network_id"
+                                 referencedTableName="dot11_monitored_networks"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="rename_monitored_channels_column_to_frequency" author="lennartkoopmann">
+        <renameColumn tableName="dot11_monitored_networks_channels" oldColumnName="channel" newColumnName="frequency" />
+    </changeSet>
 </databaseChangeLog>

@@ -105,8 +105,51 @@ class Dot11Service {
     })
   }
 
+  findMonitoredSSID(uuid, setMonitoredSSID, successCallback) {
+    RESTClient.get("/dot11/monitoring/ssids/show/" + uuid, {}, function (response) {
+      setMonitoredSSID(response.data);
+      successCallback();
+    })
+  }
+
   createMonitoredSSID(ssid, successCallback, errorCallback) {
     RESTClient.post("/dot11/monitoring/ssids", {ssid: ssid}, successCallback, errorCallback);
+  }
+
+  createMonitoredBSSID(ssidUUID, bssid, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids",
+        {bssid: bssid}, successCallback, errorCallback);
+  }
+
+  deleteMonitoredBSSID(ssidUUID, bssidUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids/show/" + bssidUUID, successCallback);
+  }
+
+  createMonitoredBSSIDFingerprint(ssidUUID, bssidUUID, fingerprint, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids/show/" + bssidUUID + "/fingerprints",
+        {fingerprint: fingerprint}, successCallback, errorCallback);
+  }
+
+  deleteMonitoredBSSIDFingerprint(ssidUUID, bssidUUID, fingerprintUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/bssids/show/" + bssidUUID + "/fingerprints/show/" + fingerprintUUID, successCallback);
+  }
+
+  createMonitoredChannel(ssidUUID, frequency, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/channels",
+        {frequency: frequency}, successCallback, errorCallback);
+  }
+
+  deleteMonitoredChannel(ssidUUID, channelUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/channels/show/" + channelUUID, successCallback);
+  }
+
+  createMonitoredSecuritySuite(ssidUUID, suite, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/securitysuites",
+        {suite: suite}, successCallback, errorCallback);
+  }
+
+  deleteMonitoredSecuritySuite(ssidUUID, suiteUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + ssidUUID + "/securitysuites/show/" + suiteUUID, successCallback);
   }
 
 }

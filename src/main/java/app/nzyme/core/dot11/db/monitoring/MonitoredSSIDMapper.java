@@ -13,6 +13,7 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
     @Override
     public MonitoredSSID map(ResultSet rs, StatementContext ctx) throws SQLException {
         return MonitoredSSID.create(
+                rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("ssid"),
                 rs.getString("organization_id") == null ? null

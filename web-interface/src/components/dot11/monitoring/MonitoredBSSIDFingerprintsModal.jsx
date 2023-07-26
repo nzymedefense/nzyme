@@ -1,0 +1,76 @@
+import React, {useState} from "react";
+import Dot11MonitoredFingerprintsTable from "./Dot11MonitoredFingerprintsTable";
+import Dot11Service from "../../../services/Dot11Service";
+import {notify} from "react-notify-toast";
+import RefreshGears from "../../misc/RefreshGears";
+
+const dot11Service = new Dot11Service();
+
+function MonitoredBSSIDFingerprintsModal(props) {
+  const bssid = props.bssid;
+  const bumpRevision = props.bumpRevision;
+  const parentIsLoading = props.parentIsLoading;
+
+  const [newFingerprint, setNewFingerprint] = useState("");
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  const addFingerprint = function (fingerprint) {
+    setFormSubmitting(true);
+
+    dot11Service.createMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprint, function () {
+      bumpRevision();
+      notify.show("Fingerprint added.", "success");
+      setFormSubmitting(false);
+      setNewFingerprint("");
+    }, function () {
+      notify.show("Could not add fingerprint. Please check nzyme log file.", "error");
+      setFormSubmitting(false);
+    })
+  }
+
+  const deleteFingerprint = function (fingerprintUUID) {
+    if (!confirm("Really delete fingerprint?")) {
+      return;
+    }
+
+    dot11Service.deleteMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprintUUID, function() {
+      bumpRevision();
+      notify.show("Fingerprint deleted.", "success");
+    })
+  }
+
+  return (
+      <div className="modal configuration-dialog"
+           id={"bssid-fingerprints-" + bssid.bssid.replaceAll(":", "")}
+           data-bs-keyboard="true" data-bs-backdrop="static" tabIndex="-1"
+           aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="modal-title">Monitored Fingerprints {parentIsLoading ? <RefreshGears /> : null}</h3>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div className="modal-body">
+              <Dot11MonitoredFingerprintsTable fingerprints={bssid.fingerprints} onDelete={deleteFingerprint} />
+
+              <div className="input-group mb-3">
+                <input type="text"
+                       className="form-control"
+                       placeholder="e54f990fd67dcb754163ee9f663622d769caee9f864662101a8682506199573a"
+                       value={newFingerprint}
+                       onChange={(e) => setNewFingerprint(e.target.value)} />
+                <button className="btn btn-secondary"
+                        disabled={newFingerprint.trim().length !== 64}
+                        onClick={() => { addFingerprint(newFingerprint) }}>
+                  {formSubmitting ? "Please wait..." : "Add Fingerprint"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  )
+}
+
+export default MonitoredBSSIDFingerprintsModal;

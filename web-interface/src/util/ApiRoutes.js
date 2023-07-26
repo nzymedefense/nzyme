@@ -128,7 +128,8 @@ const ApiRoutes = {
     MONITORING: {
       INDEX: '/dot11/monitoring',
       CREATE: '/dot11/monitoring/ssids/create',
-      SSID_DETAILS: (uuid) => `/dot11/monitoring/ssids/show/${uuid}`
+      SSID_DETAILS: (uuid) => `/dot11/monitoring/ssids/show/${uuid}`,
+      CONFIGURATION_IMPORT: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/import`,
     },
     NETWORKS: {
       BSSIDS: '/dot11/bssids',

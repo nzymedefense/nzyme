@@ -9,6 +9,7 @@ import java.util.UUID;
 @AutoValue
 public abstract class MonitoredSSID {
 
+    public abstract long id();
     public abstract UUID uuid();
     public abstract String ssid();
     @Nullable
@@ -18,8 +19,9 @@ public abstract class MonitoredSSID {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(UUID uuid, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
         return builder()
+                .id(id)
                 .uuid(uuid)
                 .ssid(ssid)
                 .organizationId(organizationId)
@@ -35,6 +37,8 @@ public abstract class MonitoredSSID {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(long id);
+
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder ssid(String ssid);
