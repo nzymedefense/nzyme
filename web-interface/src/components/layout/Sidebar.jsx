@@ -62,7 +62,10 @@ function Sidebar() {
         <NavigationLink
             href={ApiRoutes.DOT11.MONITORING.INDEX}
             title="Monitoring"
-            icon={<i className="sidebar-icon fa-solid fa-shield-halved" />} />
+            icon={<i className="sidebar-icon fa-solid fa-shield-halved" />}
+            show={user.is_orgadmin
+                || user.is_superadmin
+                || user.feature_permissions.includes("dot11_monitoring_manage") } />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Retrospective"
