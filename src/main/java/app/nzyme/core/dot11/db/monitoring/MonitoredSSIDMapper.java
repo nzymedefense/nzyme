@@ -21,6 +21,10 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
                         : UUID.fromString(rs.getString("organization_id")),
                 rs.getString("tenant_id") == null ? null
                         : UUID.fromString(rs.getString("tenant_id")),
+                rs.getBoolean("status_unexpected_bssid"),
+                rs.getBoolean("status_unexpected_channel"),
+                rs.getBoolean("status_unexpected_security_suites"),
+                rs.getBoolean("status_unexpected_fingerprint"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

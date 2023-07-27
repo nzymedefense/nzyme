@@ -13,6 +13,7 @@ import app.nzyme.core.rest.resources.taps.reports.CapturesReport;
 import app.nzyme.core.rest.resources.taps.reports.ChannelReport;
 import app.nzyme.core.rest.resources.taps.reports.StatusReport;
 import app.nzyme.core.taps.metrics.TapMetricsGaugeAggregation;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -247,6 +248,26 @@ public class TapManager {
         );
     }
 
+    public List<Tap> findAllTapsOfOrganization(UUID organizationUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid")
+                        .bind("organization_uuid", organizationUUID)
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
+    public List<Tap> findAllTapsOfTenant(UUID organizationUUID, UUID tenantUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                                "AND tenant_id = :tenant_uuid")
+                        .bind("organization_uuid", organizationUUID)
+                        .bind("tenant_uuid", tenantUUID)
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
     public List<UUID> allTapUUIDsAccessibleByUser(AuthenticatedUser user) {
         List<UUID> allTaps = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid FROM taps")
@@ -305,6 +326,27 @@ public class TapManager {
 
             return validatedTaps;
         }
+    }
+
+    public List<UUID> allTapUUIDsAccessibleByScope(@Nullable UUID organizationId, @Nullable UUID tenantId) {
+        List<Tap> taps = Lists.newArrayList();
+        if (organizationId == null && tenantId == null) {
+            // Super Admin.
+            taps = findAllTapsOfAllUsers();
+        } else if (organizationId != null && tenantId == null) {
+            // Organization Admin.
+            taps = findAllTapsOfOrganization(organizationId);
+        } else {
+            // Tenant User.
+            taps = findAllTapsOfTenant(organizationId, tenantId);
+        }
+
+        List<UUID> tapUUIDs = Lists.newArrayList();
+        for (Tap tap : taps) {
+            tapUUIDs.add(tap.uuid());
+        }
+
+        return tapUUIDs;
     }
 
     public Optional<Tap> findTap(UUID uuid) {

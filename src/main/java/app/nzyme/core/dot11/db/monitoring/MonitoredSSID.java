@@ -17,10 +17,14 @@ public abstract class MonitoredSSID {
     public abstract UUID organizationId();
     @Nullable
     public abstract UUID tenantId();
+    public abstract boolean statusUnexpectedBSSID();
+    public abstract boolean statusUnexpectedChannel();
+    public abstract boolean statusUnexpectedSecurity();
+    public abstract boolean statusUnexpectedFingerprint();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -28,6 +32,10 @@ public abstract class MonitoredSSID {
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .statusUnexpectedBSSID(statusUnexpectedBSSID)
+                .statusUnexpectedChannel(statusUnexpectedChannel)
+                .statusUnexpectedSecurity(statusUnexpectedSecurity)
+                .statusUnexpectedFingerprint(statusUnexpectedFingerprint)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -50,6 +58,14 @@ public abstract class MonitoredSSID {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder statusUnexpectedBSSID(boolean statusUnexpectedBSSID);
+
+        public abstract Builder statusUnexpectedChannel(boolean statusUnexpectedChannel);
+
+        public abstract Builder statusUnexpectedSecurity(boolean statusUnexpectedSecurity);
+
+        public abstract Builder statusUnexpectedFingerprint(boolean statusUnexpectedFingerprint);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -38,8 +38,7 @@ function Dot11MonitoredBSSIDs(props) {
             <th>BSSID</th>
             <th>BSSID Vendor</th>
             <th>Expected Fingerprints</th>
-            <th>Status</th>
-            <th>Online</th>
+            <th>Online in last 15 Minutes</th>
             <th>&nbsp;</th>
           </tr>
           </thead>
@@ -55,10 +54,6 @@ function Dot11MonitoredBSSIDs(props) {
                 </td>
                 <td>{bssid.bssid_oui ? bssid.bssid_oui : "Unknown Vendor"}</td>
                 <td>{bssid.fingerprints.length}</td>
-                <td>
-                  {bssid.is_alerted ? <i className="fa-solid fa-triangle-exclamation text-danger"></i>
-                      : <i className="fa-solid fa-thumbs-up text-success"></i>}
-                </td>
                 <td>
                   {bssid.is_online ? <i className="fa-solid fa-circle-check text-success"></i>
                       : <i className="fa-solid fa-triangle-exclamation text-danger"></i>}

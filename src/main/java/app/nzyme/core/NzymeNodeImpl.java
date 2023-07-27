@@ -22,6 +22,7 @@ import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -67,6 +68,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -230,7 +232,6 @@ public class NzymeNodeImpl implements NzymeNode {
             LOG.info("Versionchecks are disabled.");
         }
 
-
         healthMonitor.initialize();
 
         // Load plugins.
@@ -254,6 +255,10 @@ public class NzymeNodeImpl implements NzymeNode {
         java.util.logging.Logger.getLogger("org.glassfish.jersey.internal.inject.Providers").setLevel(Level.SEVERE);
         this.httpServer.initialize();
 
+        // Start 802.11 network monitor.
+        Executors.newSingleThreadScheduledExecutor()
+                .scheduleWithFixedDelay(() -> new Dot11NetworkMonitor(this).run(),
+                        0, 30, TimeUnit.SECONDS);
     }
 
     public void shutdown() {

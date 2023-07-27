@@ -11,6 +11,7 @@ import MonitoredChannelsTable from "./MonitoredChannelsTable";
 import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
 import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
+import MonitoredNetworkSingleAlertStatus from "./MonitoredNetworkSingleAlertStatus";
 
 const dot11Service = new Dot11Service();
 const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
@@ -176,6 +177,46 @@ function Dot11MonitoredNetworkDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
+                <h3>Alert Status <small>Last 15 minutes</small></h3>
+
+                <p className="text-muted">
+                  The alert status is evaluated every 30 seconds, taking into account the previous 15 minutes of data.
+                  Consequently, it may take up to 15 minutes for an alert to be cleared following its resolution.
+                </p>
+
+                <table className="table table-sm table-hover table-striped mb-0">
+                  <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Status</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>Expected BSSIDs / Access Points</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_bssid} /></td>
+                  </tr>
+                  <tr>
+                    <td>Expected Fingerprints</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_fingerprint} /></td>
+                  </tr>
+                  <tr>
+                    <td>Expected Channels</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_channel} /></td>
+                  </tr>
+                  <tr>
+                    <td>Expected Security Suites</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_security} /></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
                 <h3>Metadata</h3>
 
                 <dl className="mb-0">
@@ -191,7 +232,7 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-12">
-            <div className="card">
+            <div className={"card " + (ssid.status_unexpected_bssid || ssid.status_unexpected_fingerprint ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
 
@@ -216,7 +257,7 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className="card">
+            <div className={"card " + (ssid.status_unexpected_channel ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
 
@@ -240,7 +281,7 @@ function Dot11MonitoredNetworkDetailsPage() {
           </div>
 
           <div className="col-md-6">
-            <div className="card">
+            <div className={"card " + (ssid.status_unexpected_security ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
 

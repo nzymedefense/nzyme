@@ -26,20 +26,16 @@ public abstract class MonitoredBSSIDDetailsResponse {
     @JsonProperty("is_online")
     public abstract boolean isOnline();
 
-    @JsonProperty("is_alerted")
-    public abstract boolean isAlerted();
-
     @JsonProperty("fingerprints")
     public abstract List<MonitoredFingerprintResponse> fingerprints();
 
-    public static MonitoredBSSIDDetailsResponse create(UUID ssidUUID, UUID uuid, String bssid, String bssidOui, boolean isOnline, boolean isAlerted, List<MonitoredFingerprintResponse> fingerprints) {
+    public static MonitoredBSSIDDetailsResponse create(UUID ssidUUID, UUID uuid, String bssid, String bssidOui, boolean isOnline, List<MonitoredFingerprintResponse> fingerprints) {
         return builder()
                 .ssidUUID(ssidUUID)
                 .uuid(uuid)
                 .bssid(bssid)
                 .bssidOui(bssidOui)
                 .isOnline(isOnline)
-                .isAlerted(isAlerted)
                 .fingerprints(fingerprints)
                 .build();
     }
@@ -59,8 +55,6 @@ public abstract class MonitoredBSSIDDetailsResponse {
         public abstract Builder bssidOui(String bssidOui);
 
         public abstract Builder isOnline(boolean isOnline);
-
-        public abstract Builder isAlerted(boolean isAlerted);
 
         public abstract Builder fingerprints(List<MonitoredFingerprintResponse> fingerprints);
 

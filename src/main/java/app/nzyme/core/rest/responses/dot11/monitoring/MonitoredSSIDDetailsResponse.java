@@ -49,7 +49,19 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("is_alerted")
     public abstract boolean isAlerted();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted) {
+    @JsonProperty("status_unexpected_bssid")
+    public abstract boolean statusUnexpectedBSSID();
+
+    @JsonProperty("status_unexpected_channel")
+    public abstract boolean statusUnexpectedChannel();
+
+    @JsonProperty("status_unexpected_security")
+    public abstract boolean statusUnexpectedSecurity();
+
+    @JsonProperty("status_unexpected_fingerprint")
+    public abstract boolean statusUnexpectedFingerprint();
+
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint) {
         return builder()
                 .uuid(uuid)
                 .isEnabled(isEnabled)
@@ -62,13 +74,17 @@ public abstract class MonitoredSSIDDetailsResponse {
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .isAlerted(isAlerted)
+                .statusUnexpectedBSSID(statusUnexpectedBSSID)
+                .statusUnexpectedChannel(statusUnexpectedChannel)
+                .statusUnexpectedSecurity(statusUnexpectedSecurity)
+                .statusUnexpectedFingerprint(statusUnexpectedFingerprint)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_MonitoredSSIDDetailsResponse.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
@@ -92,6 +108,14 @@ public abstract class MonitoredSSIDDetailsResponse {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder isAlerted(boolean isAlerted);
+
+        public abstract Builder statusUnexpectedBSSID(boolean statusUnexpectedBSSID);
+
+        public abstract Builder statusUnexpectedChannel(boolean statusUnexpectedChannel);
+
+        public abstract Builder statusUnexpectedSecurity(boolean statusUnexpectedSecurity);
+
+        public abstract Builder statusUnexpectedFingerprint(boolean statusUnexpectedFingerprint);
 
         public abstract MonitoredSSIDDetailsResponse build();
     }

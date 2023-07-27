@@ -39,7 +39,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         List<MonitoredSSIDDetailsResponse> ssids = Lists.newArrayList();
         for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
-            boolean isAlerted = false;
+
+            boolean isAlerted = isSSIDAlerted(ssid);
+
             ssids.add(MonitoredSSIDDetailsResponse.create(
                     ssid.uuid(),
                     ssid.isEnabled(),
@@ -51,7 +53,11 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     null,
                     ssid.createdAt(),
                     ssid.updatedAt(),
-                    isAlerted
+                    isAlerted,
+                    ssid.statusUnexpectedBSSID(),
+                    ssid.statusUnexpectedChannel(),
+                    ssid.statusUnexpectedSecurity(),
+                    ssid.statusUnexpectedFingerprint()
             ));
         }
 
@@ -73,7 +79,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         MonitoredSSID ssid = result.get();
-        boolean isAlerted = false;
 
         // Find all monitored BSSIDs.
         List<MonitoredBSSIDDetailsResponse> bssids = Lists.newArrayList();
@@ -84,7 +89,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             }
 
             boolean isOnline = nzyme.getDot11().bssidExist(bssid.bssid(), 15, allAccessibleTapUUIDs);
-            boolean bssidIsAlerted = true;
 
             bssids.add(MonitoredBSSIDDetailsResponse.create(
                     ssid.uuid(),
@@ -92,7 +96,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     bssid.bssid(),
                     nzyme.getOUIManager().lookupMac(bssid.bssid()),
                     isOnline,
-                    bssidIsAlerted,
                     fingerprints
             ));
         }
@@ -110,6 +113,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             securitySuites.add(MonitoredSecuritySuiteResponse.create(suite.uuid(), suite.securitySuite()));
         }
 
+        boolean isAlerted = isSSIDAlerted(ssid);
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
                 ssid.isEnabled(),
@@ -121,7 +125,11 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 securitySuites,
                 ssid.createdAt(),
                 ssid.updatedAt(),
-                isAlerted
+                isAlerted,
+                ssid.statusUnexpectedBSSID(),
+                ssid.statusUnexpectedChannel(),
+                ssid.statusUnexpectedSecurity(),
+                ssid.statusUnexpectedFingerprint()
         )).build();
     }
 
@@ -380,6 +388,14 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         );
 
         return Response.ok().build();
+    }
+
+
+    private boolean isSSIDAlerted(MonitoredSSID ssid) {
+        return ssid.statusUnexpectedBSSID()
+                || ssid.statusUnexpectedChannel()
+                || ssid.statusUnexpectedSecurity()
+                || ssid.statusUnexpectedFingerprint();
     }
 
 }

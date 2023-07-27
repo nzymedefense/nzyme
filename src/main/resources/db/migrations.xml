@@ -3389,4 +3389,52 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_dot11_monitored_networks_detection_fields" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_bssid" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_ssid" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_channel" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_security" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_fingerprint" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="remove_not_needed_dot11_monitored_networks_column_20230726" author="lennartkoopmann">
+        <dropColumn tableName="dot11_monitored_networks" columnName="status_unexpected_ssid" />
+    </changeSet>
+
+    <changeSet id="add_monitoring_for_802_11_security_protocol" author="lennartkoopmann">
+        <renameColumn tableName="dot11_monitored_networks"
+                      oldColumnName="status_unexpected_security"
+                      newColumnName="status_unexpected_security_suites" />
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="status_unexpected_security_protocol" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

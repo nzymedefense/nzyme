@@ -19,8 +19,6 @@ import java.util.*;
 
 public class Dot11 {
 
-    private static final Logger LOG = LogManager.getLogger(Dot11.class);
-
     /*
      * JDBI bindList() does not work with empty lists. In some cases, we must expect an empty list and will pass
      * this list instead to avoid maintaining multiple queries. The random value in this list will not match, just
@@ -46,6 +44,26 @@ public class Dot11 {
             return columnName;
         }
 
+    }
+
+    public enum MonitoredNetworkAlertStatusColumn {
+
+        UNEXPECTED_BSSID("status_unexpected_bssid"),
+        UNEXPECTED_SSID("status_unexpected_ssid"),
+        UNEXPECTED_CHANNEL("status_unexpected_channel"),
+        UNEXPECTED_SECURITY_SUITES("status_unexpected_security_suites"),
+        UNEXPECTED_SECURITY_PROTOCOL("status_unexpected_security_protocol"),
+        UNEXPECTED_FINGERPRINT("status_unexpected_fingerprint");
+
+        private final String columnName;
+
+        MonitoredNetworkAlertStatusColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
     }
 
     public Dot11(NzymeNode nzyme) {
@@ -903,6 +921,17 @@ public class Dot11 {
                                 "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
                         .bind("monitored_network_id", monitoredNetworkId)
                         .bind("uuid", suiteUUID)
+                        .execute()
+        );
+    }
+
+    public void setMonitoredSSIDAlarmStatus(long monitoredNetworkId, MonitoredNetworkAlertStatusColumn column, boolean status) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_monitored_networks SET <column> = :status " +
+                                "WHERE id = :monitored_network_id")
+                        .define("column", column.getColumnName())
+                        .bind("status", status)
+                        .bind("monitored_network_id", monitoredNetworkId)
                         .execute()
         );
     }
