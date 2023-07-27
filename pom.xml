@@ -601,14 +601,10 @@
                                 </data>
 
                                 <data>
-                                    <src>src/deb/systemd/nzyme-tracker</src>
-                                    <type>file</type>
+                                    <type>directory</type>
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>/usr/bin</prefix>
-                                        <filemode>755</filemode>
-                                        <user>root</user>
-                                        <group>root</group>
+                                        <prefix>/usr/share/nzyme/plugins</prefix>
                                     </mapper>
                                 </data>
 
