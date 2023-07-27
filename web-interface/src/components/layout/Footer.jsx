@@ -8,9 +8,6 @@ class Footer extends React.Component {
                 <hr />
 
                 <p>
-                    Made in Texas and Europe by <a href="https://go.nzyme.org/lennart" target="_blank" rel="noopener noreferrer">@_lennart </a>
-                    and all <a href="https://go.nzyme.org/contributors" target="_blank" rel="noopener noreferrer">contributors</a>.
-
                     pugnantis latus defensantes
                 </p>
             </div>
