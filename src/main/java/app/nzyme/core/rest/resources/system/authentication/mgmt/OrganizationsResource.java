@@ -1058,12 +1058,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     }
 
     @GET
-    @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/taps")
-    public Response findAllTaps(@PathParam("organizationId") UUID organizationId,
+    public Response findAllTapsOfTenant(@Context SecurityContext sc,
+                                @PathParam("organizationId") UUID organizationId,
                                 @PathParam("tenantId") UUID tenantId,
                                 @QueryParam("limit") int limit,
                                 @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -1071,6 +1074,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         List<TapPermissionDetailsResponse> taps = Lists.newArrayList();

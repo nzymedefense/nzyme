@@ -3437,4 +3437,39 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="fix_dot11_monitored_networks_org_information_column_types" author="lennartkoopmann">
+        <dropColumn tableName="dot11_monitored_networks" columnName="organization_id" />
+        <dropColumn tableName="dot11_monitored_networks" columnName="tenant_id" />
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="organization_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+        <column name="tenant_id" type="bigint">
+            <constraints nullable="true" />
+        </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="actually_fix_dot11_monitored_networks_org_information_column_types" author="lennartkoopmann">
+        <dropColumn tableName="dot11_monitored_networks" columnName="organization_id" />
+        <dropColumn tableName="dot11_monitored_networks" columnName="tenant_id" />
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

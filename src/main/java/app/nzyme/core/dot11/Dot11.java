@@ -8,8 +8,6 @@ import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 import org.jdbi.v3.core.statement.Update;
 import org.joda.time.DateTime;
@@ -71,6 +69,10 @@ public class Dot11 {
     }
 
     public List<String> findAllSSIDNames(List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(ssid) FROM dot11_ssids " +
                                 "WHERE tap_uuid IN (<taps>) ORDER BY ssid ASC")
@@ -81,6 +83,10 @@ public class Dot11 {
     }
 
     public List<BSSIDSummary> findBSSIDs(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MAX(b.created_at) AS last_seen, SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
@@ -104,6 +110,10 @@ public class Dot11 {
     }
 
     public boolean bssidExist(String bssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return false;
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dot11_bssids " +
                                 "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
@@ -117,6 +127,10 @@ public class Dot11 {
     }
 
     public List<SSIDChannelDetails> findSSIDsOfBSSID(int minutes, String bssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
@@ -138,6 +152,10 @@ public class Dot11 {
     }
 
     public Optional<SSIDDetails> findSSIDDetails(int minutes, String bssid, String ssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, MAX(s.created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
@@ -169,6 +187,10 @@ public class Dot11 {
     }
 
     public List<BSSIDAndSSIDCountHistogramEntry> getBSSIDAndSSIDCountHistogram(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(b.bssid)) as bssid_count, " +
                                 "COUNT(DISTINCT(s.ssid)) as ssid_count, DATE_TRUNC('minute', b.created_at) as bucket " +
@@ -184,6 +206,10 @@ public class Dot11 {
     }
 
     public List<SSIDAdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
@@ -201,6 +227,10 @@ public class Dot11 {
     }
 
     public List<ActiveChannel> getSSIDChannelUsageHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.frequency, sum(c.stats_frames) AS frames, sum(c.stats_bytes) AS bytes " +
                                 "FROM dot11_ssids AS s " +
@@ -221,6 +251,10 @@ public class Dot11 {
                                                                       int frequency,
                                                                       int minutes,
                                                                       List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
                                 "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
@@ -239,6 +273,10 @@ public class Dot11 {
     }
 
     public long countBSSIDClients(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_bssids AS b " +
@@ -257,6 +295,10 @@ public class Dot11 {
                                                          int offset,
                                                          ClientOrderColumn orderColumn,
                                                          OrderDirection orderDirection) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
                                 "MAX(b.created_at) AS last_seen " +
@@ -279,6 +321,10 @@ public class Dot11 {
     }
 
     public List<String> findMacAddressesOfAllBSSIDClients(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(b.bssid) AS bssid " +
                                 "FROM dot11_bssids AS b " +
@@ -292,6 +338,10 @@ public class Dot11 {
 
     public List<String> findProbeRequestsOfClient(String clientMac,
                                                   List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(s.ssid) " +
                                 "FROM dot11_clients AS c " +
@@ -306,6 +356,10 @@ public class Dot11 {
     }
 
     public long countClients(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return 0;
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) " +
                                 "FROM dot11_clients AS c " +
@@ -325,6 +379,10 @@ public class Dot11 {
                                                        int offset,
                                                        ClientOrderColumn orderColumn,
                                                        OrderDirection orderDirection) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.client_mac, MAX(created_at) AS last_seen, " +
                                 "ARRAY_AGG(DISTINCT(pr.ssid)) AS probe_requests " +
@@ -349,6 +407,10 @@ public class Dot11 {
     }
 
     public List<ClientHistogramEntry> getClientHistogram(int minutes, List<UUID> taps, List<String> excludeClientMacs) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "DATE_TRUNC('minute', c.created_at) as bucket " +
@@ -367,6 +429,10 @@ public class Dot11 {
     }
 
     public List<ClientHistogramEntry> getConnectedClientHistogram(int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(DISTINCT(c.client_mac)) AS client_count, " +
                                 "DATE_TRUNC('minute', b.created_at) as bucket " +
@@ -383,6 +449,10 @@ public class Dot11 {
     }
 
     public List<String> findBSSIDsClientWasConnectedTo(String clientMac, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid " +
                                 "FROM dot11_bssids AS b " +
@@ -398,6 +468,10 @@ public class Dot11 {
     }
 
     public List<String> findSSIDsAdvertisedByBSSID(String bssid, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         Optional<String[]> x = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT ARRAY_AGG(DISTINCT(s.ssid)) " +
                                 "FROM dot11_ssids AS s " +
@@ -422,6 +496,10 @@ public class Dot11 {
     }
 
     public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Optional.empty();
+        }
+
         Optional<FirstLastSeenTuple> connected = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT MAX(b.created_at) AS last_seen, MIN(b.created_at) AS first_seen " +
                                 "FROM dot11_bssids AS b " +
@@ -799,7 +877,7 @@ public class Dot11 {
                 // Tenant User.
                 query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE b.bssid = :bssid s.ssid = :ssid AND s.enabled = true " +
+                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND s.enabled = true " +
                                 "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
                         .bind("ssid", ssid)
                         .bind("bssid", bssid)
