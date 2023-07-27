@@ -98,6 +98,7 @@ import CreateDot11MonitoredNetworkPage from "./components/dot11/monitoring/Creat
 import Dot11MonitoredNetworkDetailsPage from "./components/dot11/monitoring/Dot11MonitoredNetworkDetailsPage";
 import Dot11MonitoredBSSIDConfigurationImportPage
   from "./components/dot11/monitoring/Dot11MonitoredBSSIDConfigurationImportPage";
+import AlertsPage from "./components/alerts/AlertsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -349,6 +350,9 @@ function App() {
                           { /* 802.11/Clients. */}
                           <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
                           <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
+
+                          { /* Alerts. */}
+                          <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

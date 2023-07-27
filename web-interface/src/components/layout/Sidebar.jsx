@@ -68,6 +68,23 @@ function Sidebar() {
                 || user.feature_permissions.includes("dot11_monitoring_manage") } />
       </SidebarSubmenu>
 
+      <SidebarSubmenu title="Alerts"
+                      subhref="/alerts"
+                      icon={<i class="sidebar-icon fa-solid fa-bell"></i>}
+                      show={user.is_orgadmin
+                          || user.is_superadmin
+                          || user.feature_permissions.includes("alerts_view")
+                          || user.feature_permissions.includes("alerts_manage") }>
+        <NavigationLink
+            href={ApiRoutes.ALERTS.INDEX}
+            title="Overview"
+            icon={<i className="sidebar-icon fa-solid fa-ranking-star" />}
+            show={user.is_orgadmin
+                || user.is_superadmin
+                || user.feature_permissions.includes("alerts_view")
+                || user.feature_permissions.includes("alerts_manage") } />
+      </SidebarSubmenu>
+
       <SidebarSubmenu title="Retrospective"
                       subhref="/retro"
                       icon={<i className="sidebar-icon fa-solid fa-box-archive" />}
