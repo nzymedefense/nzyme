@@ -613,6 +613,18 @@
                                 </data>
 
                                 <data>
+                                    <src>src/deb/crypto</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/nzyme/crypto</prefix>
+                                        <filemode>755</filemode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
+                                <data>
                                     <type>template</type>
                                     <paths>
                                         <path>var/log/nzyme</path>
