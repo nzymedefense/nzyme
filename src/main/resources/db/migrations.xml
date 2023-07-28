@@ -1186,7 +1186,7 @@
 
     <changeSet id="52" author="lennartkoopmann">
         <addColumn tableName="nodes">
-            <column name="version" type="varchar(50)" afterColumn="transport_address" defaultValue="0.0.0">
+            <column name="version" type="varchar(50)" defaultValue="0.0.0">
                 <constraints nullable="false" />
             </column>
         </addColumn>
@@ -1421,7 +1421,7 @@
         <renameColumn tableName="crypto_keys" oldColumnName="node" newColumnName="node_name" />
 
         <addColumn tableName="crypto_keys">
-            <column name="node_id" type="uuid" defaultValueComputed="gen_random_uuid()" afterColumn="node_name">
+            <column name="node_id" type="uuid" defaultValueComputed="gen_random_uuid()">
                 <constraints nullable="false" />
             </column>
         </addColumn>
