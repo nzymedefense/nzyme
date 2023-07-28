@@ -539,7 +539,7 @@
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/usr/share/nzyme/bin</prefix>
-                                        <dirmode>740</dirmode>
+                                        <filemode>740</filemode>
                                         <user>root</user>
                                         <group>root</group>
                                     </mapper>
