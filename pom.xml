@@ -526,7 +526,7 @@
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/usr/share/nzyme</prefix>
-                                        <dirmode>740</dirmode>
+                                        <dirmode>640</dirmode>
                                         <user>root</user>
                                         <group>root</group>
                                     </mapper>
