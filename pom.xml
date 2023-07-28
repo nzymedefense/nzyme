@@ -558,6 +558,7 @@
                                     <mapper>
                                         <type>perm</type>
                                         <prefix>/etc/nzyme</prefix>
+                                        <filemode>640</filemode>
                                         <user>root</user>
                                         <group>root</group>
                                     </mapper>
