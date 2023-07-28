@@ -81,75 +81,81 @@ fn main() {
 
     // Ethernet Capture.
     let ethernet_capture_conf = configuration.clone();
-    for (interface_name, _) in ethernet_capture_conf.ethernet_interfaces {
-        let capture_metrics = metrics.clone();
-        let capture_bus = bus.clone();
-        thread::spawn(move || {
-            let mut ethernet_capture = ethernet::capture::Capture {
-                metrics: capture_metrics.clone(),
-                bus: capture_bus
-            };
+    if let Some(ethernet_interfaces) = ethernet_capture_conf.ethernet_interfaces {
+        for (interface_name, _) in ethernet_interfaces {
+            let capture_metrics = metrics.clone();
+            let capture_bus = bus.clone();
+            thread::spawn(move || {
+                let mut ethernet_capture = ethernet::capture::Capture {
+                    metrics: capture_metrics.clone(),
+                    bus: capture_bus
+                };
 
-            match capture_metrics.lock() {
-                Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::Ethernet),
-                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
-            }
-
-            loop {
-                ethernet_capture.run(&interface_name);
-
-                error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface_name);
                 match capture_metrics.lock() {
-                    Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                    Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::Ethernet),
                     Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                 }
-                thread::sleep(time::Duration::from_secs(5));
-            }
-        });
+
+                loop {
+                    ethernet_capture.run(&interface_name);
+
+                    error!("Ethernet capture [{}] disconnected. Retrying in 5 seconds.", interface_name);
+                    match capture_metrics.lock() {
+                        Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                    }
+                    thread::sleep(time::Duration::from_secs(5));
+                }
+            });
+        }
     }
 
     // WiFi capture.
     let wifi_capture_conf = configuration.clone();
-    for (interface_name, interface_config) in wifi_capture_conf.wifi_interfaces {
-        if !interface_config.active {
-            info!("Skipping disabled WiFi interface [{}].", interface_name);
-            continue;
-        }
-
-        let capture_metrics = metrics.clone();
-        let capture_bus = bus.clone();
-        thread::spawn(move || {
-            let mut dot11_capture = dot11::capture::Capture {
-                metrics: capture_metrics.clone(),
-                bus: capture_bus.clone()
-            };
-
-            match capture_metrics.lock() {
-                Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
-                Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+    if let Some(wifi_interfaces) = wifi_capture_conf.wifi_interfaces {
+        for (interface_name, interface_config) in wifi_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled WiFi interface [{}].", interface_name);
+                continue;
             }
-    
-            loop {
-                dot11_capture.run(&interface_name);
 
-                error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+            let capture_metrics = metrics.clone();
+            let capture_bus = bus.clone();
+            thread::spawn(move || {
+                let mut dot11_capture = dot11::capture::Capture {
+                    metrics: capture_metrics.clone(),
+                    bus: capture_bus.clone()
+                };
+
                 match capture_metrics.lock() {
-                    Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                    Ok(mut metrics) => metrics.register_new_capture(&interface_name, metrics::CaptureType::WiFi),
                     Err(e) => error!("Could not acquire mutex of metrics: {}", e)
                 }
-                thread::sleep(time::Duration::from_secs(5));
-            }
-        });
+
+                loop {
+                    dot11_capture.run(&interface_name);
+
+                    error!("WiFi capture [{}] disconnected. Retrying in 5 seconds.", &interface_name);
+                    match capture_metrics.lock() {
+                        Ok(mut metrics) => metrics.mark_capture_as_failed(&interface_name),
+                        Err(e) => error!("Could not acquire mutex of metrics: {}", e)
+                    }
+                    thread::sleep(time::Duration::from_secs(5));
+                }
+            });
+        }
     }
 
-    let ch = match ChannelHopper::new(configuration.clone().wifi_interfaces) {
-        Ok(ch) => ch,
-        Err(e) => {
-            error!("Could not initialize ChannelHopper: {}", e);
-            exit(exit_code::EX_OSERR);
-        }
-    };
-    ch.spawn_loop();
+    if let Some(wifi_interfaces) = configuration.clone().wifi_interfaces {
+        let ch = match ChannelHopper::new(wifi_interfaces) {
+            Ok(ch) => ch,
+            Err(e) => {
+                error!("Could not initialize ChannelHopper: {}", e);
+                exit(exit_code::EX_OSERR);
+            }
+        };
+        ch.spawn_loop();
+    }
 
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());

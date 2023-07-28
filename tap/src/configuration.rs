@@ -8,8 +8,8 @@ use serde::Deserialize;
 #[derive(Debug, Clone, Deserialize)]
 pub struct Configuration {
     pub general: General,
-    pub wifi_interfaces: HashMap<String, WifiInterface>,
-    pub ethernet_interfaces: HashMap<String, EthernetInterface>,
+    pub wifi_interfaces: Option<HashMap<String, WifiInterface>>,
+    pub ethernet_interfaces: Option<HashMap<String, EthernetInterface>>,
     pub performance: Performance,
     pub misc: Misc
 }
@@ -71,15 +71,17 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
     }
 
     // Make sure every channel is only assigned once.
-    let mut assigned_channels: Vec<u32> = Vec::new();
-    for interface in doc.wifi_interfaces.values() {
-        for channel in &*interface.channels {
-            if assigned_channels.contains(channel) {
-                bail!("WiFi channel <{}> already assigned to another interface. Channels can only \
+    if let Some(wifi_interfaces) = doc.clone().wifi_interfaces {
+        let mut assigned_channels: Vec<u32> = Vec::new();
+        for interface in wifi_interfaces.values() {
+            for channel in &*interface.channels {
+                if assigned_channels.contains(channel) {
+                    bail!("WiFi channel <{}> already assigned to another interface. Channels can only \
                         be assigned once.", &channel);
-            }
+                }
 
-            assigned_channels.push(*channel);
+                assigned_channels.push(*channel);
+            }
         }
     }
 
