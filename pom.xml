@@ -532,6 +532,19 @@
                                     </mapper>
                                 </data>
 
+                                <!-- Moving this one manually to set +x permission. -->
+                                <data>
+                                    <src>src/deb/bin/nzyme</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/nzyme/bin</prefix>
+                                        <dirmode>740</dirmode>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+
                                 <data>
                                     <src>${project.build.directory}/${project.build.finalName}.jar</src>
                                     <type>file</type>
