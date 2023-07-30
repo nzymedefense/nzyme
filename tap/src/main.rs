@@ -82,7 +82,11 @@ fn main() {
     // Ethernet Capture.
     let ethernet_capture_conf = configuration.clone();
     if let Some(ethernet_interfaces) = ethernet_capture_conf.ethernet_interfaces {
-        for (interface_name, _) in ethernet_interfaces {
+        for (interface_name, interface_config) in ethernet_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled Ethernet interface [{}].", interface_name);
+                continue;
+            }
             let capture_metrics = metrics.clone();
             let capture_bus = bus.clone();
             thread::spawn(move || {
