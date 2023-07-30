@@ -127,6 +127,11 @@ public class IpInfoFreeGeoIpAdapter implements GeoIpAdapter {
             } catch (InterruptedException e) { /* noop */ }
         }
 
+        if (mmdbReader == null) {
+            LOG.error("MMDB reader not initialized. Cannot run GeoIP lookup.");
+            return Optional.empty();
+        }
+
         try {
             FreeCountryAsnLookupResult lookup = mmdbReader.get(address, FreeCountryAsnLookupResult.class);
 
