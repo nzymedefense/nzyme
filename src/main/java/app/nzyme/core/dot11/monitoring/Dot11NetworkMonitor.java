@@ -178,49 +178,6 @@ public class Dot11NetworkMonitor {
         );
     }
 
-    /*
-        private void detectUnexpectedSecurity(MonitoredSSID monitoredSSID,
-                                          List<UUID> tapUUIDs) {
-        List<String> expectedSecurity = Lists.newArrayList();
-        for (MonitoredSecuritySuite suite : nzyme.getDot11().findMonitoredSecuritySuitesOfMonitoredNetwork(monitoredSSID.id())) {
-            expectedSecurity.add(suite.securitySuite());
-        }
-
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
-            if (bssid.ssids().contains(monitoredSSID.ssid())) {
-                // This is a BSSID advertising our network.
-
-                for (SSIDChannelDetails ssid : nzyme.getDot11().findSSIDsOfBSSID(MINUTES, bssid.bssid(), tapUUIDs)) {
-                    // Go through all channel/SSID combinations of the BSSID.
-                    if (ssid.ssid().equals(monitoredSSID.ssid())) {
-                        for (String suite : ssid.securityProtocols()) {
-                            if (!expectedSecurity.contains(suite)) {
-                                LOG.info("BSSID [{}] advertising SSID [{}] is using unexpected security [{}]",
-                                        bssid.bssid().toUpperCase(), monitoredSSID.ssid(), suite);
-
-                                // Alert.
-                                nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                                        monitoredSSID.id(),
-                                        Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SECURITY,
-                                        true
-                                );
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SECURITY,
-                false
-        );
-    }
-     */
-
     private void detectUnexpectedFingerprints(MonitoredSSID monitoredSSID,
                                               List<UUID> tapUUIDs) {
         Map<String, List<String>> expectedFingerprints = Maps.newHashMap();
