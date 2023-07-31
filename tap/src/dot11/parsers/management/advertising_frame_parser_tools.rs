@@ -65,7 +65,8 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
     let mut cursor: usize = 36;
     if payload.len() > cursor+2 {
         loop {
-            if cursor >= payload.len() {
+            // we need at least 2 bytes for the tag number and length. current and next byte.
+            if cursor + 1 >= payload.len() {
                 break;
             }
 
