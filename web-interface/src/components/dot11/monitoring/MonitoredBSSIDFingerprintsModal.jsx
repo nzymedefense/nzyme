@@ -47,7 +47,9 @@ function MonitoredBSSIDFingerprintsModal(props) {
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
-              <h3 className="modal-title">Monitored Fingerprints {parentIsLoading ? <RefreshGears /> : null}</h3>
+              <h3 className="modal-title">
+                Monitored Fingerprints of BSSID &quot;{bssid.bssid}&quot; {parentIsLoading ? <RefreshGears /> : null}
+              </h3>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
