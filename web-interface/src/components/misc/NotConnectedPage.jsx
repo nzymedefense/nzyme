@@ -31,7 +31,7 @@ function NotConnectedPage() {
                         </div>
 
                         <div className="mt-4">
-                          <a href="https://go.nzyme.org/help" className="btn btn-sm btn-dark" target="_blank" rel="noreferrer">
+                          <a href="https://go.nzyme.org/not-connected" className="btn btn-sm btn-dark" target="_blank" rel="noreferrer">
                             Get Help in the Documentation
                           </a>
                         </div>

@@ -16,6 +16,7 @@ import numeral from "numeral";
 import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
+import HelpBubble from "../../../misc/HelpBubble";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -121,7 +122,7 @@ function SSIDDetailsPage() {
               <div className="card">
                 <div className="card-body">
                   <h3>
-                    Fingerprints <small>Last 15 minutes</small>
+                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
                   </h3>
 
                   <ul className="mb-0">
