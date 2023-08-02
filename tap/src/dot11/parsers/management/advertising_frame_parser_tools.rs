@@ -263,6 +263,10 @@ fn parse_extended_supported_rates(data: &[u8]) -> Vec<f32> {
 }
 
 fn parse_wpa_security(data: &[u8]) -> Result<CipherSuites, Error> {
+    if data.len() < 2 {
+        bail!("Not enough data to read RSN/WPA version.")
+    }
+
     if LittleEndian::read_u16(&data[0..2]) != 1 {
         bail!("Unsupported RSN/WPA version <{:?}>.", &data)
     }
