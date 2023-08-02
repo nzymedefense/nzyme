@@ -39,6 +39,7 @@ function Dot11MonitoredBSSIDs(props) {
             <th>BSSID Vendor</th>
             <th>Expected Fingerprints</th>
             <th>Online in last 15 Minutes</th>
+            <th>Fingerprints</th>
             <th>&nbsp;</th>
           </tr>
           </thead>
@@ -47,16 +48,20 @@ function Dot11MonitoredBSSIDs(props) {
             return (
               <tr key={"bssid-" + i}>
                 <td>
-                  <a href="#"
-                     data-bs-toggle="modal"
-                     data-bs-target={"#bssid-fingerprints-" + bssid.bssid.replaceAll(":", "")}>
-                    {bssid.bssid}</a>
+                  {bssid.bssid}
                 </td>
                 <td>{bssid.bssid_oui ? bssid.bssid_oui : "Unknown Vendor"}</td>
                 <td>{bssid.fingerprints.length}</td>
                 <td>
                   {bssid.is_online ? <i className="fa-solid fa-circle-check text-success"></i>
                       : <i className="fa-solid fa-triangle-exclamation text-danger"></i>}
+                </td>
+                <td>
+                  <a href="#"
+                     data-bs-toggle="modal"
+                     data-bs-target={"#bssid-fingerprints-" + bssid.bssid.replaceAll(":", "")}>
+                    Manage Monitored Fingerprints
+                  </a>
                 </td>
                 <td>
                   <a href="#" onClick={() => deleteBSSID(bssid)}>Delete</a>

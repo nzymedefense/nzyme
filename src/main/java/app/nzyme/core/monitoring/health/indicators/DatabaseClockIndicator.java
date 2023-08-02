@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.net.InetAddress;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DatabaseClockIndicator extends Indicator {
 
@@ -19,9 +20,17 @@ public class DatabaseClockIndicator extends Indicator {
     private final Database database;
     private final String ntpHost;
 
+    /*
+     * Used to count how many errors were not logged to avoid logging every timeout error, which can occur fairly
+     * frequently. Is reset to 0 after a log message was written.
+     */
+    private final AtomicInteger tempErrorCount;
+
     public DatabaseClockIndicator(Database database, String ntpHost) {
         this.database = database;
         this.ntpHost = ntpHost;
+
+        this.tempErrorCount = new AtomicInteger(0);
     }
 
     @Override
@@ -50,7 +59,13 @@ public class DatabaseClockIndicator extends Indicator {
                 return IndicatorStatus.green(this);
             }
         } catch(Exception e) {
-            LOG.warn("Error running [{}] indicator. Marking as unavailable.", getId(), e);
+            if (this.tempErrorCount.get() < 3) {
+                this.tempErrorCount.incrementAndGet();
+            } else {
+                LOG.warn("Error running [{}] indicator. Marking as unavailable.", getId(), e);
+                this.tempErrorCount.set(0);
+            }
+
             return IndicatorStatus.unavailable(this);
         } finally {
             c.close();

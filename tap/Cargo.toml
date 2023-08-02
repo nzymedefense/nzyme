@@ -31,9 +31,13 @@ section = "net"
 priority = "optional"
 assets = [
     ["target/release/nzyme-tap", "usr/bin/nzyme-tap", "755"],
+    ["nzyme-tap.conf.example", "etc/nzyme/nzyme-tap.conf.example", "640"],
     ["nzyme-tap.conf.example", "etc/nzyme/nzyme-tap.conf", "640"],
     ["README.md", "usr/share/doc/nzyme-tap/README", "644"],
     ["packaging/debian/systemd/nzyme-tap.service", "usr/lib/systemd/system/nzyme-tap.service", "644"]
+]
+conf-files = [
+    "etc/nzyme/nzyme-tap.conf"
 ]
 
 [dependencies]
