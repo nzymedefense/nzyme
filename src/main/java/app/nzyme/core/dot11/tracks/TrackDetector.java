@@ -1,5 +1,6 @@
 package app.nzyme.core.dot11.tracks;
 
+import app.nzyme.core.dot11.db.ChannelHistogramEntry;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -134,6 +135,59 @@ public class TrackDetector {
         }
 
         return tracks.build();
+    }
+
+    public static TrackDetectorHeatmapData toChartAxisMaps(List<ChannelHistogramEntry> signals) {
+        Map<DateTime, Map<Integer, Long>> aggregated = Maps.newTreeMap();
+        for (ChannelHistogramEntry signal : signals) {
+            if (!aggregated.containsKey(signal.bucket())) {
+                aggregated.put(signal.bucket(), Maps.newHashMap());
+            }
+
+            aggregated.get(signal.bucket()).put(signal.signalStrength(), signal.frameCount());
+        }
+
+        List<List<Long>> z = Lists.newArrayList();
+        List<DateTime> y = Lists.newArrayList();
+
+        for (Map.Entry<DateTime, Map<Integer, Long>> entry : aggregated.entrySet()) {
+            List<Long> bucketSignals = Lists.newArrayList();
+            for(int cnt = -100; cnt < 0; cnt++) {
+                bucketSignals.add(entry.getValue().getOrDefault(cnt, 0L));
+            }
+
+            z.add(bucketSignals);
+            y.add(entry.getKey());
+        }
+
+        return TrackDetectorHeatmapData.create(z, y);
+    }
+
+    @AutoValue
+    public static abstract class TrackDetectorHeatmapData {
+
+        public abstract List<List<Long>> z();
+        public abstract List<DateTime> y();
+
+        public static TrackDetectorHeatmapData create(List<List<Long>> z, List<DateTime> y) {
+            return builder()
+                    .z(z)
+                    .y(y)
+                    .build();
+        }
+
+        public static Builder builder() {
+            return new AutoValue_TrackDetector_TrackDetectorHeatmapData.Builder();
+        }
+
+        @AutoValue.Builder
+        public abstract static class Builder {
+            public abstract Builder z(List<List<Long>> z);
+
+            public abstract Builder y(List<DateTime> y);
+
+            public abstract TrackDetectorHeatmapData build();
+        }
     }
 
     @AutoValue

@@ -2,11 +2,10 @@ package app.nzyme.core.dot11.monitoring;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.db.BSSIDSummary;
-import app.nzyme.core.dot11.db.Dot11SecuritySuiteJson;
-import app.nzyme.core.dot11.db.SSIDChannelDetails;
-import app.nzyme.core.dot11.db.SSIDDetails;
+import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.tracks.Track;
+import app.nzyme.core.dot11.tracks.TrackDetector;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -47,6 +46,7 @@ public class Dot11NetworkMonitor {
             detectUnexpectedChannels(monitoredSSID, tapUUIDs);
             detectUnexpectedSecuritySuites(monitoredSSID, tapUUIDs);
             detectUnexpectedFingerprints(monitoredSSID, tapUUIDs);
+            detectUnexpectedSignalTracks(monitoredSSID, tapUUIDs);
         }
 
     }
@@ -217,6 +217,38 @@ public class Dot11NetworkMonitor {
         nzyme.getDot11().setMonitoredSSIDAlarmStatus(
                 monitoredSSID.id(),
                 Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_FINGERPRINT,
+                false
+        );
+    }
+
+    private void detectUnexpectedSignalTracks(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
+        for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+            for (MonitoredChannel monitoredChannel : nzyme.getDot11()
+                    .findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
+                List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                        monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) monitoredChannel.frequency(), MINUTES, tapUUIDs);
+
+                TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+
+                TrackDetector td = new TrackDetector();
+                List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG);
+
+                // Alert if >1 track.
+                if (tracks.size() > 1) {
+                    nzyme.getDot11().setMonitoredSSIDAlarmStatus(
+                            monitoredSSID.id(),
+                            Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SIGNAL_TRACKS,
+                            true
+                    );
+                    return;
+                }
+            }
+        }
+
+        // No alert.
+        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
+                monitoredSSID.id(),
+                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SIGNAL_TRACKS,
                 false
         );
     }

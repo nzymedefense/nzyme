@@ -57,7 +57,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     ssid.statusUnexpectedBSSID(),
                     ssid.statusUnexpectedChannel(),
                     ssid.statusUnexpectedSecurity(),
-                    ssid.statusUnexpectedFingerprint()
+                    ssid.statusUnexpectedFingerprint(),
+                    ssid.statusUnexpectedSignalTracks()
             ));
         }
 
@@ -129,7 +130,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 ssid.statusUnexpectedBSSID(),
                 ssid.statusUnexpectedChannel(),
                 ssid.statusUnexpectedSecurity(),
-                ssid.statusUnexpectedFingerprint()
+                ssid.statusUnexpectedFingerprint(),
+                ssid.statusUnexpectedSignalTracks()
         )).build();
     }
 
@@ -395,7 +397,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return ssid.statusUnexpectedBSSID()
                 || ssid.statusUnexpectedChannel()
                 || ssid.statusUnexpectedSecurity()
-                || ssid.statusUnexpectedFingerprint();
+                || ssid.statusUnexpectedFingerprint()
+                || ssid.statusUnexpectedSignalTracks();
     }
 
 }

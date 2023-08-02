@@ -325,32 +325,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                 bssid, ssid, frequency, minutes, tapUuids);
 
-
-        Map<DateTime, Map<Integer, Long>> aggregated = Maps.newTreeMap();
-        for (ChannelHistogramEntry signal : signals) {
-            if (!aggregated.containsKey(signal.bucket())) {
-                aggregated.put(signal.bucket(), Maps.newHashMap());
-            }
-
-            aggregated.get(signal.bucket()).put(signal.signalStrength(), signal.frameCount());
-        }
-
-        List<List<Long>> z = Lists.newArrayList();
-        List<DateTime> y = Lists.newArrayList();
-
-        for (Map.Entry<DateTime, Map<Integer, Long>> entry : aggregated.entrySet()) {
-            List<Long> bucketSignals = Lists.newArrayList();
-            for(int cnt = -100; cnt < 0; cnt++) {
-                bucketSignals.add(entry.getValue().getOrDefault(cnt, 0L));
-            }
-
-            z.add(bucketSignals);
-            y.add(entry.getKey());
-        }
+        TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
 
         TrackDetector td = new TrackDetector();
         List<SignalWaterfallTrackResponse> tracks = Lists.newArrayList();
-        for (Track track : td.detect(z, y, TrackDetector.DEFAULT_CONFIG)) {
+        for (Track track : td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG)) {
             tracks.add(SignalWaterfallTrackResponse.create(
                     track.start(),
                     track.end(),
@@ -360,7 +339,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             ));
         }
 
-        return Response.ok(SignalWaterfallResponse.create(z, DEFAULT_X_VALUES, y, tracks)).build();
+        return Response.ok(
+                SignalWaterfallResponse.create(heatmap.z(), DEFAULT_X_VALUES, heatmap.y(), tracks)
+        ).build();
     }
 
 
