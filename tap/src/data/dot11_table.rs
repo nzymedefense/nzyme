@@ -252,7 +252,7 @@ impl Dot11Table {
                     }
                 };
             }
-            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
     }
 
@@ -303,7 +303,7 @@ impl Dot11Table {
                     }
                 }
             },
-            Err(e) => error!("Could not acqure clients table mutex: {}", e)
+            Err(e) => error!("Could not acquire clients table mutex: {}", e)
         }
     }
 
@@ -563,7 +563,7 @@ impl Dot11Table {
                     );
                 }
             }
-            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
 
         let mut clients_report: HashMap<String, Dot11ClientReport> = HashMap::new();
@@ -580,7 +580,7 @@ impl Dot11Table {
                     );
                 }
             },
-            Err(e) => error!("Could not acqure BSSIDs table mutex: {}", e),
+            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
 
         Dot11TableReport {
