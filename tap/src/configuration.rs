@@ -18,7 +18,9 @@ pub struct Configuration {
 pub struct General {
     pub leader_secret: String,
     pub leader_uri: String,
-    pub accept_insecure_certs: bool
+    pub accept_insecure_certs: bool,
+    pub wifi_pkt_buffer_capacity: usize,
+    pub ethernet_pkt_buffer_capacity: usize
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -70,10 +72,19 @@ pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
         bail!("Configuration variable `wifi_brokers` must be set to a value greater than 0.");
     }
 
-    // Make sure every channel is only assigned once.
+    if doc.general.wifi_pkt_buffer_capacity <= 0 {
+        bail!("Configuration variable `wifi_pkt_buffer_capacity` must be set to a value greater than 0.");
+    }
+
+    if doc.general.ethernet_pkt_buffer_capacity <= 0 {
+        bail!("Configuration variable `ethernet_pkt_buffer_capacity` must be set to a value greater than 0.");
+    }
+
+    // Validate WiFi interfaces configuration
     if let Some(wifi_interfaces) = doc.clone().wifi_interfaces {
         let mut assigned_channels: Vec<u32> = Vec::new();
         for interface in wifi_interfaces.values() {
+            // Make sure every channel is only assigned once.
             for channel in &*interface.channels {
                 if assigned_channels.contains(channel) {
                     bail!("WiFi channel <{}> already assigned to another interface. Channels can only \
