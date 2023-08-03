@@ -185,8 +185,9 @@ function Dot11MonitoredNetworkDetailsPage() {
                 <h3>Alert Status <small>Last 15 minutes</small></h3>
 
                 <p className="text-muted">
-                  The alert status is evaluated every 30 seconds, taking into account the previous 15 minutes of data.
-                  Consequently, it may take up to 15 minutes for an alert to be cleared following its resolution.
+                  The alert status is evaluated on each page refresh. A background job runs the same logic every 30
+                  seconds to trigger detection alerts and associated actions. Consequently, it might take up to 30
+                  seconds for an alert shown on this page to result in a detection alert.
                 </p>
 
                 <table className="table table-sm table-hover table-striped mb-0">
