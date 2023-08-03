@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.print.attribute.IntegerSyntax;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class Dot11NetworkMonitor {
 
     private static final Logger LOG = LogManager.getLogger(Dot11NetworkMonitor.class);
 
-    private static final int MINUTES = 15;
+    private static final int MINUTES = 5;
 
     private final NzymeNode nzyme;
 
@@ -30,66 +31,66 @@ public class Dot11NetworkMonitor {
         this.nzyme = nzyme;
     }
 
-    public void run() {
-        for (MonitoredSSID monitoredSSID : nzyme.getDot11().findAllMonitoredSSIDs(null, null)) {
-            if (!monitoredSSID.isEnabled()) {
-                LOG.debug("Skipping network monitor run for ssid [{}] because it is disabled.",
-                        monitoredSSID.ssid());
-                continue;
-            }
-
-            List<UUID> tapUUIDs = nzyme.getTapManager()
-                    .allTapUUIDsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
-
-            // Detections.
-            detectUnexpectedBSSIDs(monitoredSSID, tapUUIDs);
-            detectUnexpectedChannels(monitoredSSID, tapUUIDs);
-            detectUnexpectedSecuritySuites(monitoredSSID, tapUUIDs);
-            detectUnexpectedFingerprints(monitoredSSID, tapUUIDs);
-            detectUnexpectedSignalTracks(monitoredSSID, tapUUIDs);
-        }
-
+    public void runMonitorCycle() {
+        // TODO this is called periodically, implement alerting hooks here by working on results of getAlertStatus()
     }
 
-    private void detectUnexpectedBSSIDs(MonitoredSSID monitoredSSID,
-                                        List<UUID> tapUUIDs) {
+    public Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> getAlertStatus(MonitoredSSID monitoredSSID) {
+        Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> result = Maps.newHashMap();
+
+        if (!monitoredSSID.isEnabled()) {
+            LOG.debug("Skipping network monitor run for ssid [{}] because it is disabled.",
+                    monitoredSSID.ssid());
+            return result;
+        }
+
+        List<UUID> tapUUIDs = nzyme.getTapManager()
+                .allTapUUIDsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
+
+        // Detections.
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_BSSID, detectUnexpectedBSSIDs(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_CHANNEL, detectUnexpectedChannels(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES,detectUnexpectedSecuritySuites(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT,detectUnexpectedFingerprints(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS,detectUnexpectedSignalTracks(monitoredSSID, tapUUIDs));
+
+        return result;
+    }
+
+    private Dot11NetworkMonitorResult detectUnexpectedBSSIDs(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
         List<String> expectedBSSIDs = Lists.newArrayList();
         for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
             expectedBSSIDs.add(monitoredBSSID.bssid());
         }
 
+        List<Object> unexpectedBSSIDs = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
                 if (!expectedBSSIDs.contains(bssid.bssid().toUpperCase())) {
                     // Alert.
-                    LOG.info("BSSID [{}] advertising SSID [{}] is not in list of expected BSSIDs.",
+                    LOG.debug("BSSID [{}] advertising SSID [{}] is not in list of expected BSSIDs.",
                             bssid.bssid().toUpperCase(), monitoredSSID.ssid());
-                    nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                            monitoredSSID.id(),
-                            Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_BSSID,
-                            true
-                    );
-                    return;
+
+                    unexpectedBSSIDs.add(bssid.bssid());
                 }
             }
         }
 
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_BSSID,
-                false
+        return Dot11NetworkMonitorResult.create(
+                Dot11NetworkMonitorType.UNEXPECTED_BSSID,
+                !unexpectedBSSIDs.isEmpty(),
+                unexpectedBSSIDs
         );
     }
 
-    private void detectUnexpectedChannels(MonitoredSSID monitoredSSID,
-                                          List<UUID> tapUUIDs) {
+    private Dot11NetworkMonitorResult detectUnexpectedChannels(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
         List<Integer> expectedFrequencies = Lists.newArrayList();
         for (MonitoredChannel channel : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
             expectedFrequencies.add((int) channel.frequency());
         }
 
+        List<Object> unexpectedChannels = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
@@ -98,39 +99,33 @@ public class Dot11NetworkMonitor {
                     // Go through all channel/SSID combinations of the BSSID.
                     if (ssid.ssid().equals(monitoredSSID.ssid())) {
                         if (!expectedFrequencies.contains(ssid.frequency())) {
-                            LOG.info("BSSID [{}] advertising SSID [{}] is using unexpected frequency [{}]",
+                            LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected frequency [{}]",
                                     bssid.bssid().toUpperCase(), monitoredSSID.ssid(), ssid.frequency());
 
                             // Alert.
-                            nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                                    monitoredSSID.id(),
-                                    Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_CHANNEL,
-                                    true
-                            );
-                            return;
+                            unexpectedChannels.add(ssid.frequency());
                         }
                     }
                 }
             }
         }
 
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_CHANNEL,
-                false
+        return Dot11NetworkMonitorResult.create(
+                Dot11NetworkMonitorType.UNEXPECTED_CHANNEL,
+                !unexpectedChannels.isEmpty(),
+                unexpectedChannels
         );
     }
 
-    private void detectUnexpectedSecuritySuites(MonitoredSSID monitoredSSID,
-                                                List<UUID> tapUUIDs) {
+    private Dot11NetworkMonitorResult detectUnexpectedSecuritySuites(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
+        ObjectMapper om = new ObjectMapper();
+
         List<String> expectedSecurity = Lists.newArrayList();
         for (MonitoredSecuritySuite suite : nzyme.getDot11().findMonitoredSecuritySuitesOfMonitoredNetwork(monitoredSSID.id())) {
             expectedSecurity.add(suite.securitySuite());
         }
 
-        ObjectMapper om = new ObjectMapper();
-
+        List<Object> unexpectedSecuritySuites = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
@@ -153,16 +148,10 @@ public class Dot11NetworkMonitor {
                                 continue;
                             }
                             if (!expectedSecurity.contains(Dot11.securitySuitesToIdentifier(info))) {
-                                LOG.info("BSSID [{}] advertising SSID [{}] is using unexpected security suites [{}]",
+                                LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected security suites [{}]",
                                         bssid.bssid().toUpperCase(), monitoredSSID.ssid(), suite);
 
-                                // Alert.
-                                nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                                        monitoredSSID.id(),
-                                        Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SECURITY_SUITES,
-                                        true
-                                );
-                                return;
+                                unexpectedSecuritySuites.add(Dot11.securitySuitesToIdentifier(info));
                             }
                         }
                     }
@@ -170,16 +159,14 @@ public class Dot11NetworkMonitor {
             }
         }
 
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SECURITY_SUITES,
-                false
+        return Dot11NetworkMonitorResult.create(
+                Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES,
+                !unexpectedSecuritySuites.isEmpty(),
+                unexpectedSecuritySuites
         );
     }
 
-    private void detectUnexpectedFingerprints(MonitoredSSID monitoredSSID,
-                                              List<UUID> tapUUIDs) {
+    private Dot11NetworkMonitorResult detectUnexpectedFingerprints(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
         Map<String, List<String>> expectedFingerprints = Maps.newHashMap();
         for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
             List<String> fps = Lists.newArrayList();
@@ -190,6 +177,7 @@ public class Dot11NetworkMonitor {
             expectedFingerprints.put(monitoredBSSID.bssid(), fps);
         }
 
+        List<Object> unexpectedFingerprints = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
@@ -197,60 +185,94 @@ public class Dot11NetworkMonitor {
                 if (fps != null) {
                     for (String fingerprint : bssid.fingerprints()) {
                         if (!fps.contains(fingerprint)) {
-                            LOG.info("BSSID [{}] advertising SSID [{}] has unexpected fingerprint [{}]",
+                            LOG.debug("BSSID [{}] advertising SSID [{}] has unexpected fingerprint [{}]",
                                     bssid.bssid().toUpperCase(), monitoredSSID.ssid(), fingerprint);
 
-                            // Alert.
-                            nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                                    monitoredSSID.id(),
-                                    Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_FINGERPRINT,
-                                    true
-                            );
-                            return;
+                            unexpectedFingerprints.add(fingerprint);
                         }
                     }
                 }
             }
         }
 
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_FINGERPRINT,
-                false
+        return Dot11NetworkMonitorResult.create(
+                Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT,
+                !unexpectedFingerprints.isEmpty(),
+                unexpectedFingerprints
         );
     }
 
-    private void detectUnexpectedSignalTracks(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
-        for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
-            for (MonitoredChannel monitoredChannel : nzyme.getDot11()
-                    .findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
-                List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                        monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) monitoredChannel.frequency(), MINUTES, tapUUIDs);
+    private Dot11NetworkMonitorResult detectUnexpectedSignalTracks(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
+        List<Long> channels = Lists.newArrayList();
+        for (MonitoredChannel channel : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
+            channels.add(channel.frequency());
+        }
 
-                TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+        Map<String, List<Integer>> affectedBSSIDs = Maps.newHashMap();
+        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
+            if (bssid.ssids().contains(monitoredSSID.ssid())) {
+                // This is a BSSID advertising our network.
 
-                TrackDetector td = new TrackDetector();
-                List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG);
+                // Get all channels of this BSSID.
+                for (SSIDChannelDetails channel : nzyme.getDot11().findSSIDsOfBSSID(MINUTES, bssid.bssid(), tapUUIDs)) {
+                    if(channels.contains((long) channel.frequency())) {
+                        // This is a monitored frequency.
+                        List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                                bssid.bssid(), monitoredSSID.ssid(), channel.frequency(), MINUTES, tapUUIDs);
 
-                // Alert if >1 track.
-                if (tracks.size() > 1) {
-                    nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                            monitoredSSID.id(),
-                            Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SIGNAL_TRACKS,
-                            true
-                    );
-                    return;
+                        TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+
+                        TrackDetector td = new TrackDetector();
+                        List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG);
+
+                        // Alert if >1 track.
+                        if (tracks.size() > 1) {
+                            LOG.debug("Frequency [{}] of BSSID [{}] advertising SSID [{}] has <{}> signal tracks.",
+                                    channel.frequency(),
+                                    bssid.bssid().toUpperCase(),
+                                    monitoredSSID.ssid(),
+                                    tracks.size());
+
+                            if (affectedBSSIDs.containsKey(bssid.bssid())) {
+                                affectedBSSIDs.get(bssid.bssid()).add(channel.frequency());
+                            } else {
+                                List<Integer> newChannels = Lists.newArrayList();
+                                newChannels.add(channel.frequency());
+                                affectedBSSIDs.put(bssid.bssid(), newChannels);
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // No alert.
-        nzyme.getDot11().setMonitoredSSIDAlarmStatus(
-                monitoredSSID.id(),
-                Dot11.MonitoredNetworkAlertStatusColumn.UNEXPECTED_SIGNAL_TRACKS,
-                false
+        return Dot11NetworkMonitorResult.create(
+                Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS,
+                !affectedBSSIDs.isEmpty(),
+                affectedBSSIDs
         );
+    }
+
+    public static boolean isSSIDAlerted(Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status) {
+        if (status.isEmpty()) {
+            // Disabled monitor.
+            return false;
+        }
+
+        for (Dot11NetworkMonitorType type : Dot11NetworkMonitorType.values()) {
+            Dot11NetworkMonitorResult result = status.get(type);
+            if (result == null) {
+                throw new RuntimeException("802.11 Network Monitor did not return result for " +
+                        "type [" + type.toString() + "].");
+            }
+
+            if (result.triggered()) {
+                return true;
+            }
+        }
+
+
+        return false;
     }
 
 }

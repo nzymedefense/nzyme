@@ -50,21 +50,26 @@ public abstract class MonitoredSSIDDetailsResponse {
     public abstract boolean isAlerted();
 
     @JsonProperty("status_unexpected_bssid")
-    public abstract boolean statusUnexpectedBSSID();
+    @Nullable
+    public abstract MonitoredAttributeResult statusUnexpectedBSSID();
 
     @JsonProperty("status_unexpected_channel")
-    public abstract boolean statusUnexpectedChannel();
+    @Nullable
+    public abstract MonitoredAttributeResult statusUnexpectedChannel();
 
     @JsonProperty("status_unexpected_security")
-    public abstract boolean statusUnexpectedSecurity();
+    @Nullable
+    public abstract MonitoredAttributeResult statusUnexpectedSecurity();
 
     @JsonProperty("status_unexpected_fingerprint")
-    public abstract boolean statusUnexpectedFingerprint();
+    @Nullable
+    public abstract MonitoredAttributeResult statusUnexpectedFingerprint();
 
     @JsonProperty("status_unexpected_signal_tracks")
-    public abstract boolean statusUnexpectedSignalTracks();
+    @Nullable
+    public abstract MonitoredAttributeResult statusUnexpectedSignalTracks();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks) {
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, MonitoredAttributeResult statusUnexpectedBSSID, MonitoredAttributeResult statusUnexpectedChannel, MonitoredAttributeResult statusUnexpectedSecurity, MonitoredAttributeResult statusUnexpectedFingerprint, MonitoredAttributeResult statusUnexpectedSignalTracks) {
         return builder()
                 .uuid(uuid)
                 .isEnabled(isEnabled)
@@ -113,15 +118,15 @@ public abstract class MonitoredSSIDDetailsResponse {
 
         public abstract Builder isAlerted(boolean isAlerted);
 
-        public abstract Builder statusUnexpectedBSSID(boolean statusUnexpectedBSSID);
+        public abstract Builder statusUnexpectedBSSID(MonitoredAttributeResult statusUnexpectedBSSID);
 
-        public abstract Builder statusUnexpectedChannel(boolean statusUnexpectedChannel);
+        public abstract Builder statusUnexpectedChannel(MonitoredAttributeResult statusUnexpectedChannel);
 
-        public abstract Builder statusUnexpectedSecurity(boolean statusUnexpectedSecurity);
+        public abstract Builder statusUnexpectedSecurity(MonitoredAttributeResult statusUnexpectedSecurity);
 
-        public abstract Builder statusUnexpectedFingerprint(boolean statusUnexpectedFingerprint);
+        public abstract Builder statusUnexpectedFingerprint(MonitoredAttributeResult statusUnexpectedFingerprint);
 
-        public abstract Builder statusUnexpectedSignalTracks(boolean statusUnexpectedSignalTracks);
+        public abstract Builder statusUnexpectedSignalTracks(MonitoredAttributeResult statusUnexpectedSignalTracks);
 
         public abstract MonitoredSSIDDetailsResponse build();
     }

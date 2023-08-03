@@ -137,7 +137,7 @@ function SSIDDetailsPage() {
         </div>
       </div>
 
-      <SSIDMonitoredInformation show={ssid.is_monitored} />
+      <SSIDMonitoredInformation ssid={ssid} />
 
       <div className="row mt-3">
         <div className="col-md-12">
