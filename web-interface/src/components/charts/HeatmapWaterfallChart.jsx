@@ -23,7 +23,7 @@ class HeatmapWaterfallChart extends React.Component {
     if (Store.get('dark_mode')) {
       colors.background = '#2B2D42'
       colors.text = '#ffffff'
-      colors.lines = '#8D99AE'
+      colors.lines = '#2B2D42'
       colors.grid = '#8D99AE'
       colors.scale = [
         [0, 'rgb(43, 45, 66)'], [0.35, 'rgb(13, 110, 253)'],
@@ -33,7 +33,7 @@ class HeatmapWaterfallChart extends React.Component {
     } else {
       colors.background = '#ffffff'
       colors.text = '#212529'
-      colors.lines = '#212529'
+      colors.lines = '#ffffff'
       colors.grid = '#e3e3e3'
       colors.scale =  [
         [0, 'rgb(255,255,255)'], [0.35, 'rgb(13, 110, 253)'],
