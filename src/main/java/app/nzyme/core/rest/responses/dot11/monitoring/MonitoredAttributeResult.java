@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 @AutoValue
 public abstract class MonitoredAttributeResult {
 
-    @JsonProperty
+    @JsonProperty("triggered")
     public abstract boolean triggered();
 
-    @JsonProperty
+    @JsonProperty("deviated_values")
     @Nullable
     public abstract Object deviatedValues();
 

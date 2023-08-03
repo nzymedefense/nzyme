@@ -12,6 +12,11 @@ import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
 import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
 import MonitoredNetworkSingleAlertStatus from "./MonitoredNetworkSingleAlertStatus";
+import ChannelDeviations from "./deviations/ChannelDeviations";
+import SecuritySuiteDeviations from "./deviations/SecuritySuiteDeviations";
+import FingerprintDeviations from "./deviations/FingerprintDeviations";
+import BSSIDDeviations from "./deviations/BSSIDDeviations";
+import HelpBubble from "../../misc/HelpBubble";
 
 const dot11Service = new Dot11Service();
 const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
@@ -209,8 +214,8 @@ function Dot11MonitoredNetworkDetailsPage() {
                     <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security} /></td>
                   </tr>
                   <tr>
-                    <td>Expected Signal Track</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} /></td>
+                    <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring" /></td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} />{' '}</td>
                   </tr>
                   </tbody>
                 </table>
@@ -240,6 +245,9 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
 
+                <BSSIDDeviations deviations={ssid.status_unexpected_bssid.deviated_values} />
+                <FingerprintDeviations deviations={ssid.status_unexpected_fingerprint.deviated_values} />
+
                 <Dot11MonitoredBSSIDs bssids={ssid.bssids} bumpRevision={bumpRevision} parentIsLoading={isLoading} />
 
                 <div className="input-group mb-3">
@@ -265,6 +273,8 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
 
+                <ChannelDeviations deviations={ssid.status_unexpected_channel.deviated_values} />
+
                 <MonitoredChannelsTable ssid={ssid} bumpRevision={bumpRevision} />
 
                 <div className="input-group mb-3">
@@ -288,6 +298,8 @@ function Dot11MonitoredNetworkDetailsPage() {
             <div className={"card " + (ssid.status_unexpected_security.triggered ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
+
+                <SecuritySuiteDeviations deviations={ssid.status_unexpected_security.deviated_values} />
 
                 <MonitoredSecuritySuitesTable ssid={ssid} bumpRevision={bumpRevision} />
 
