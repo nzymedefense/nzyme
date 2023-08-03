@@ -208,6 +208,10 @@ function Dot11MonitoredNetworkDetailsPage() {
                     <td>Expected Security Suites</td>
                     <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_security} /></td>
                   </tr>
+                  <tr>
+                    <td>Expected Signal Track</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_signal_tracks} /></td>
+                  </tr>
                   </tbody>
                 </table>
               </div>

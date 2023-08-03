@@ -51,7 +51,8 @@ public class Dot11 {
         UNEXPECTED_CHANNEL("status_unexpected_channel"),
         UNEXPECTED_SECURITY_SUITES("status_unexpected_security_suites"),
         UNEXPECTED_SECURITY_PROTOCOL("status_unexpected_security_protocol"),
-        UNEXPECTED_FINGERPRINT("status_unexpected_fingerprint");
+        UNEXPECTED_FINGERPRINT("status_unexpected_fingerprint"),
+        UNEXPECTED_SIGNAL_TRACKS("status_unexpected_signal_tracks");
 
         private final String columnName;
 

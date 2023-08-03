@@ -61,7 +61,10 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("status_unexpected_fingerprint")
     public abstract boolean statusUnexpectedFingerprint();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint) {
+    @JsonProperty("status_unexpected_signal_tracks")
+    public abstract boolean statusUnexpectedSignalTracks();
+
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks) {
         return builder()
                 .uuid(uuid)
                 .isEnabled(isEnabled)
@@ -78,6 +81,7 @@ public abstract class MonitoredSSIDDetailsResponse {
                 .statusUnexpectedChannel(statusUnexpectedChannel)
                 .statusUnexpectedSecurity(statusUnexpectedSecurity)
                 .statusUnexpectedFingerprint(statusUnexpectedFingerprint)
+                .statusUnexpectedSignalTracks(statusUnexpectedSignalTracks)
                 .build();
     }
 
@@ -116,6 +120,8 @@ public abstract class MonitoredSSIDDetailsResponse {
         public abstract Builder statusUnexpectedSecurity(boolean statusUnexpectedSecurity);
 
         public abstract Builder statusUnexpectedFingerprint(boolean statusUnexpectedFingerprint);
+
+        public abstract Builder statusUnexpectedSignalTracks(boolean statusUnexpectedSignalTracks);
 
         public abstract MonitoredSSIDDetailsResponse build();
     }

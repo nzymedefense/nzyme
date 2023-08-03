@@ -21,10 +21,11 @@ public abstract class MonitoredSSID {
     public abstract boolean statusUnexpectedChannel();
     public abstract boolean statusUnexpectedSecurity();
     public abstract boolean statusUnexpectedFingerprint();
+    public abstract boolean statusUnexpectedSignalTracks();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecurity, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -36,6 +37,7 @@ public abstract class MonitoredSSID {
                 .statusUnexpectedChannel(statusUnexpectedChannel)
                 .statusUnexpectedSecurity(statusUnexpectedSecurity)
                 .statusUnexpectedFingerprint(statusUnexpectedFingerprint)
+                .statusUnexpectedSignalTracks(statusUnexpectedSignalTracks)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -66,6 +68,8 @@ public abstract class MonitoredSSID {
         public abstract Builder statusUnexpectedSecurity(boolean statusUnexpectedSecurity);
 
         public abstract Builder statusUnexpectedFingerprint(boolean statusUnexpectedFingerprint);
+
+        public abstract Builder statusUnexpectedSignalTracks(boolean statusUnexpectedSignalTracks);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -25,6 +25,7 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
                 rs.getBoolean("status_unexpected_channel"),
                 rs.getBoolean("status_unexpected_security_suites"),
                 rs.getBoolean("status_unexpected_fingerprint"),
+                rs.getBoolean("status_unexpected_signal_tracks"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );
