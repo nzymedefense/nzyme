@@ -45,7 +45,10 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes, boolean isMonitored) {
+    @JsonProperty("is_monitor_alerted")
+    public abstract boolean isMonitorAlerted();
+
+    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes, boolean isMonitored, boolean isMonitorAlerted) {
         return builder()
                 .bssid(bssid)
                 .oui(oui)
@@ -58,6 +61,7 @@ public abstract class BSSIDSummaryDetailsResponse {
                 .hasHiddenSSIDAdvertisements(hasHiddenSSIDAdvertisements)
                 .infrastructureTypes(infrastructureTypes)
                 .isMonitored(isMonitored)
+                .isMonitorAlerted(isMonitorAlerted)
                 .build();
     }
 
@@ -88,6 +92,8 @@ public abstract class BSSIDSummaryDetailsResponse {
         public abstract Builder infrastructureTypes(List<String> infrastructureTypes);
 
         public abstract Builder isMonitored(boolean isMonitored);
+
+        public abstract Builder isMonitorAlerted(boolean isMonitorAlerted);
 
         public abstract BSSIDSummaryDetailsResponse build();
     }

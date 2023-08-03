@@ -698,3 +698,7 @@ div.timerange-selector-options ul li a {
 div.card-alerted {
     box-shadow: 0 0 7px 1px #EF233C;
 }
+
+.blink {
+    animation: blinker 1s linear infinite;
+}

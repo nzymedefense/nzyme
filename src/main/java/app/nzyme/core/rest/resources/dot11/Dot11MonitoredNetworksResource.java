@@ -3,6 +3,9 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -20,6 +23,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,12 +40,16 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     public Response findAll(@Context SecurityContext sc, @Valid CreateDot11MonitoredNetworkRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
+
         List<MonitoredSSIDDetailsResponse> ssids = Lists.newArrayList();
         for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
 
-            boolean isAlerted = isSSIDAlerted(ssid);
+            Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status = monitor.getAlertStatus(ssid);
+            boolean isAlerted = Dot11NetworkMonitor.isSSIDAlerted(status);
 
+            // TODO we probably want a different response type without all the NULLs here.
             ssids.add(MonitoredSSIDDetailsResponse.create(
                     ssid.uuid(),
                     ssid.isEnabled(),
@@ -54,11 +62,11 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     ssid.createdAt(),
                     ssid.updatedAt(),
                     isAlerted,
-                    ssid.statusUnexpectedBSSID(),
-                    ssid.statusUnexpectedChannel(),
-                    ssid.statusUnexpectedSecurity(),
-                    ssid.statusUnexpectedFingerprint(),
-                    ssid.statusUnexpectedSignalTracks()
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
             ));
         }
 
@@ -114,7 +122,10 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             securitySuites.add(MonitoredSecuritySuiteResponse.create(suite.uuid(), suite.securitySuite()));
         }
 
-        boolean isAlerted = isSSIDAlerted(ssid);
+        Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
+        Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status = monitor.getAlertStatus(ssid);
+        boolean isAlerted = Dot11NetworkMonitor.isSSIDAlerted(status);
+
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
                 ssid.isEnabled(),
@@ -127,11 +138,11 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 ssid.createdAt(),
                 ssid.updatedAt(),
                 isAlerted,
-                ssid.statusUnexpectedBSSID(),
-                ssid.statusUnexpectedChannel(),
-                ssid.statusUnexpectedSecurity(),
-                ssid.statusUnexpectedFingerprint(),
-                ssid.statusUnexpectedSignalTracks()
+                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_BSSID)),
+                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_CHANNEL)),
+                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES)),
+                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT)),
+                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS))
         )).build();
     }
 
@@ -392,13 +403,15 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
+    private MonitoredAttributeResult monitorResultToResponse(Dot11NetworkMonitorResult result) {
+        if (result == null) {
+            return MonitoredAttributeResult.create(false, null);
+        }
 
-    private boolean isSSIDAlerted(MonitoredSSID ssid) {
-        return ssid.statusUnexpectedBSSID()
-                || ssid.statusUnexpectedChannel()
-                || ssid.statusUnexpectedSecurity()
-                || ssid.statusUnexpectedFingerprint()
-                || ssid.statusUnexpectedSignalTracks();
+        return MonitoredAttributeResult.create(
+                result.triggered(),
+                result.deviatedValues()
+        );
     }
 
 }

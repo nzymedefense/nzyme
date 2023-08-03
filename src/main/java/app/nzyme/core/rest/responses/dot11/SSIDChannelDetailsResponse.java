@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 @AutoValue
 public abstract class SSIDChannelDetailsResponse {
@@ -45,7 +47,11 @@ public abstract class SSIDChannelDetailsResponse {
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    public static SSIDChannelDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<String> infrastructureTypes, List<Boolean> isWps, DateTime lastSeen, boolean isMonitored) {
+    @JsonProperty("monitor_uuid")
+    @Nullable
+    public abstract UUID monitorUUID();
+
+    public static SSIDChannelDetailsResponse create(String ssid, long frequency, long channel, float signalStrengthAverage, long totalFrames, long totalBytes, boolean isMainActive, List<String> securityProtocols, List<String> infrastructureTypes, List<Boolean> isWps, DateTime lastSeen, boolean isMonitored, UUID monitorUUID) {
         return builder()
                 .ssid(ssid)
                 .frequency(frequency)
@@ -59,6 +65,7 @@ public abstract class SSIDChannelDetailsResponse {
                 .isWps(isWps)
                 .lastSeen(lastSeen)
                 .isMonitored(isMonitored)
+                .monitorUUID(monitorUUID)
                 .build();
     }
 
@@ -91,6 +98,8 @@ public abstract class SSIDChannelDetailsResponse {
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder isMonitored(boolean isMonitored);
+
+        public abstract Builder monitorUUID(UUID monitorUUID);
 
         public abstract SSIDChannelDetailsResponse build();
     }

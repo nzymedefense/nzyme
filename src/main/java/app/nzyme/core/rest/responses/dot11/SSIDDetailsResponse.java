@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 @AutoValue
 public abstract class SSIDDetailsResponse {
@@ -60,7 +61,14 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("is_monitored")
     public abstract boolean isMonitored();
 
-    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen, boolean isMonitored) {
+    @JsonProperty("is_monitor_alerted")
+    public abstract boolean isMonitorAlerted();
+
+    @JsonProperty("monitor_uuid")
+    @Nullable
+    public abstract UUID monitorUUID();
+
+    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen, boolean isMonitored, boolean isMonitorAlerted, UUID monitorUUID) {
         return builder()
                 .bssid(bssid)
                 .bssidOui(bssidOui)
@@ -78,6 +86,8 @@ public abstract class SSIDDetailsResponse {
                 .isWps(isWps)
                 .lastSeen(lastSeen)
                 .isMonitored(isMonitored)
+                .isMonitorAlerted(isMonitorAlerted)
+                .monitorUUID(monitorUUID)
                 .build();
     }
 
@@ -118,6 +128,10 @@ public abstract class SSIDDetailsResponse {
         public abstract Builder lastSeen(DateTime lastSeen);
 
         public abstract Builder isMonitored(boolean isMonitored);
+
+        public abstract Builder isMonitorAlerted(boolean isMonitorAlerted);
+
+        public abstract Builder monitorUUID(UUID monitorUUID);
 
         public abstract SSIDDetailsResponse build();
     }
