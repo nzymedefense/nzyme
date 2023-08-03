@@ -215,7 +215,7 @@ function Dot11MonitoredNetworkDetailsPage() {
                     <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security} /></td>
                   </tr>
                   <tr>
-                    <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring" /></td>
+                    <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" /></td>
                     <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} />{' '}</td>
                   </tr>
                   </tbody>
