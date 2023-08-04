@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.configuration.base.BaseConfiguration;
+import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
@@ -312,6 +313,11 @@ public class MockNzyme implements NzymeNode {
     @Override
     public RegistryChangeMonitor getRegistryChangeMonitor() {
         return registryChangeMonitor;
+    }
+
+    @Override
+    public DetectionAlertService getDetectionAlertService() {
+        return null;
     }
 
     @Override

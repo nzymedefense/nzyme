@@ -3480,4 +3480,104 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="create_detection_alerts_tables" author="lennartkoopmann">
+        <createTable tableName="detection_alerts">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="organization_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="dot11_monitored_network_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="tap_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="detection_type" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="subsystem" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="last_seen" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="detection_alert_attributes">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="detection_alert_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="attribute_key" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="attribute_value" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_detectionalertattrs2alerts"
+                                 baseTableName="detection_alert_attributes"
+                                 baseColumnNames="detection_alert_id"
+                                 referencedTableName="detection_alerts"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="add_comparison_checksum_to_detection_alerts" author="lennartkoopmann">
+        <addColumn tableName="detection_alerts">
+            <column name="comparison_checksum" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_detection_alert_comparison_checksum_unique" author="lennartkoopmann">
+        <addUniqueConstraint tableName="detection_alerts" columnNames="comparison_checksum" />
+    </changeSet>
+
+    <changeSet id="add_detection_alert_indices" author="lennartkoopmann">
+        <createIndex tableName="detection_alerts" indexName="detectionalerts_org">
+            <column name="organization_id" />
+        </createIndex>
+
+        <createIndex tableName="detection_alerts" indexName="detectionalerts_tenant">
+            <column name="tenant_id" />
+        </createIndex>
+
+        <createIndex tableName="detection_alerts" indexName="detectionalerts_type">
+            <column name="detection_type" />
+        </createIndex>
+
+        <createIndex tableName="detection_alerts" indexName="detectionalerts_cs_compare">
+            <column name="comparison_checksum" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

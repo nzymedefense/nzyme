@@ -31,10 +31,6 @@ public class Dot11NetworkMonitor {
         this.nzyme = nzyme;
     }
 
-    public void runMonitorCycle() {
-        // TODO this is called periodically, implement alerting hooks here by working on results of getAlertStatus()
-    }
-
     public Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> getAlertStatus(MonitoredSSID monitoredSSID) {
         Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> result = Maps.newHashMap();
 
@@ -177,7 +173,7 @@ public class Dot11NetworkMonitor {
             expectedFingerprints.put(monitoredBSSID.bssid(), fps);
         }
 
-        List<Object> unexpectedFingerprints = Lists.newArrayList();
+        Map<String, List<String>> unexpectedFingerprints = Maps.newHashMap();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
@@ -188,7 +184,14 @@ public class Dot11NetworkMonitor {
                             LOG.debug("BSSID [{}] advertising SSID [{}] has unexpected fingerprint [{}]",
                                     bssid.bssid().toUpperCase(), monitoredSSID.ssid(), fingerprint);
 
-                            unexpectedFingerprints.add(fingerprint);
+                            if (unexpectedFingerprints.containsKey(bssid.bssid())) {
+                                unexpectedFingerprints.get(bssid.bssid()).add(fingerprint);
+                            } else {
+                                List<String> fingerprints = Lists.newArrayList();
+                                fingerprints.add(fingerprint);
+                                unexpectedFingerprints.put(bssid.bssid(), fingerprints);
+                            }
+
                         }
                     }
                 }
