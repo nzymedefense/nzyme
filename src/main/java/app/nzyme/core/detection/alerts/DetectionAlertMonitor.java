@@ -88,6 +88,22 @@ public class DetectionAlertMonitor {
                             }
                             break;
                         case UNEXPECTED_SECURITY_SUITES:
+                            List<String> suites = (List<String>) alert.getValue().deviatedValues();
+                            for (String suite : suites) {
+                                Map<String, String> attributes = Maps.newHashMap();
+                                attributes.put("suite", suite);
+
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        monitoredSSID.organizationId(),
+                                        monitoredSSID.tenantId(),
+                                        monitoredSSID.uuid(),
+                                        null,
+                                        DetectionType.DOT11_MONITOR_SECURITY_SUITE,
+                                        Subsystem.DOT11,
+                                        attributes,
+                                        new String[]{"suite"}
+                                );
+                            }
                             break;
                         case UNEXPECTED_FINGERPRINT:
                             break;
