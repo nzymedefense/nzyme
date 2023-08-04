@@ -5,6 +5,7 @@ import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -49,6 +50,8 @@ public class DetectionAlertMonitor {
                     if (!alert.getValue().triggered()) {
                         continue;
                     }
+
+                    ObjectMapper om = new ObjectMapper();
 
                     switch (alert.getKey()) {
                         case UNEXPECTED_BSSID:
@@ -106,8 +109,46 @@ public class DetectionAlertMonitor {
                             }
                             break;
                         case UNEXPECTED_FINGERPRINT:
+                            Map<String, List<String>> bssidFingerprints =
+                                    (Map<String, List<String>> ) alert.getValue().deviatedValues();
+
+                            for (Map.Entry<String, List<String>> bssidFp : bssidFingerprints.entrySet()) {
+                                Map<String, String> attributes = Maps.newHashMap();
+                                attributes.put("bssid", bssidFp.getKey());
+                                attributes.put("fingerprints", om.writeValueAsString(bssidFp.getValue()));
+
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        monitoredSSID.organizationId(),
+                                        monitoredSSID.tenantId(),
+                                        monitoredSSID.uuid(),
+                                        null,
+                                        DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                        Subsystem.DOT11,
+                                        attributes,
+                                        new String[]{"bssid", "fingerprints"}
+                                );
+                            }
                             break;
                         case UNEXPECTED_SIGNAL_TRACKS:
+                            Map<String, List<Integer>> bssidChannels =
+                                    (Map<String, List<Integer>> ) alert.getValue().deviatedValues();
+
+                            for (Map.Entry<String, List<Integer>> bssidChannel : bssidChannels.entrySet()) {
+                                Map<String, String> attributes = Maps.newHashMap();
+                                attributes.put("bssid", bssidChannel.getKey());
+                                attributes.put("channels", om.writeValueAsString(bssidChannel.getValue()));
+
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        monitoredSSID.organizationId(),
+                                        monitoredSSID.tenantId(),
+                                        monitoredSSID.uuid(),
+                                        null,
+                                        DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                        Subsystem.DOT11,
+                                        attributes,
+                                        new String[]{"bssid", "channels"}
+                                );
+                            }
                             break;
                     }
                 }
