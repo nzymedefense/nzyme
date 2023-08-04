@@ -59,7 +59,7 @@ fn main() {
     ethernet::capture::print_devices();
     
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
-    let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string()));
+    let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
     let tables = Arc::new(Tables::new(metrics.clone()));
 
     let tables_bg = tables.clone();
@@ -82,7 +82,11 @@ fn main() {
     // Ethernet Capture.
     let ethernet_capture_conf = configuration.clone();
     if let Some(ethernet_interfaces) = ethernet_capture_conf.ethernet_interfaces {
-        for (interface_name, _) in ethernet_interfaces {
+        for (interface_name, interface_config) in ethernet_interfaces {
+            if !interface_config.active {
+                info!("Skipping disabled Ethernet interface [{}].", interface_name);
+                continue;
+            }
             let capture_metrics = metrics.clone();
             let capture_bus = bus.clone();
             thread::spawn(move || {
