@@ -2,8 +2,6 @@
 leader_secret = "your_key_copied_from_nzyme_web_interface"
 leader_uri = "https://nzyme.example.org:22900/"
 accept_insecure_certs = false
-wifi_pkt_buffer_capacity = 65535
-ethernet_pkt_buffer_capacity = 65535
 
 [ethernet_interfaces.enp6s0]
 active = true
@@ -19,6 +17,8 @@ channels = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
 [performance]
 ethernet_brokers = 1
 wifi_brokers = 1
+wifi_broker_buffer_capacity = 65535
+ethernet_broker_buffer_capacity = 65535
 
 [misc]
 training_period_minutes = 5

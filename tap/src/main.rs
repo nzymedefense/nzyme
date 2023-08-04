@@ -59,7 +59,7 @@ fn main() {
     ethernet::capture::print_devices();
     
     let metrics = Arc::new(Mutex::new(metrics::Metrics::new()));
-    let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.general.wifi_pkt_buffer_capacity, configuration.general.ethernet_pkt_buffer_capacity));
+    let bus = Arc::new(Bus::new(metrics.clone(), "ethernet_packets".to_string(), configuration.clone()));
     let tables = Arc::new(Tables::new(metrics.clone()));
 
     let tables_bg = tables.clone();
