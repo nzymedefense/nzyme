@@ -17,12 +17,13 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.detection.alerts.DetectionAlertMonitor;
+import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -41,7 +42,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import app.nzyme.core.configuration.base.BaseConfiguration;
 import app.nzyme.core.configuration.node.NodeConfiguration;
@@ -60,7 +60,6 @@ import app.nzyme.core.util.MetricNames;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.quartz.SchedulerException;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +67,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -111,6 +109,8 @@ public class NzymeNodeImpl implements NzymeNode {
 
     private final ObjectMapper objectMapper;
 
+    private final DetectionAlertService detectionAlertService;
+    private final DetectionAlertMonitor detectionAlertMonitor;
     private final EventEngine eventEngine;
 
     private final HealthMonitor healthMonitor;
@@ -177,6 +177,8 @@ public class NzymeNodeImpl implements NzymeNode {
 
         this.ouiManager = new OUIManager(this);
 
+        this.detectionAlertService = new DetectionAlertService(this);
+        this.detectionAlertMonitor = new DetectionAlertMonitor(this);
         this.eventEngine = new EventEngineImpl(this);
 
         this.tablesService = new TablesService(this);
@@ -232,6 +234,8 @@ public class NzymeNodeImpl implements NzymeNode {
             LOG.info("Versionchecks are disabled.");
         }
 
+        detectionAlertMonitor.initialize();
+
         healthMonitor.initialize();
 
         // Load plugins.
@@ -254,11 +258,6 @@ public class NzymeNodeImpl implements NzymeNode {
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);
         java.util.logging.Logger.getLogger("org.glassfish.jersey.internal.inject.Providers").setLevel(Level.SEVERE);
         this.httpServer.initialize();
-
-        // Start 802.11 network monitor.
-        Executors.newSingleThreadScheduledExecutor()
-                .scheduleWithFixedDelay(() -> new Dot11NetworkMonitor(this).runMonitorCycle(),
-                        0, 30, TimeUnit.SECONDS);
     }
 
     public void shutdown() {
@@ -426,6 +425,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public RegistryChangeMonitor getRegistryChangeMonitor() {
         return registryChangeMonitor;
+    }
+
+    @Override
+    public DetectionAlertService getDetectionAlertService() {
+        return detectionAlertService;
     }
 
     @Override

@@ -31,10 +31,6 @@ public class Dot11NetworkMonitor {
         this.nzyme = nzyme;
     }
 
-    public void runMonitorCycle() {
-        // TODO this is called periodically, implement alerting hooks here by working on results of getAlertStatus()
-    }
-
     public Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> getAlertStatus(MonitoredSSID monitoredSSID) {
         Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> result = Maps.newHashMap();
 
