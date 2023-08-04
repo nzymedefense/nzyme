@@ -104,7 +104,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new MonitoredBSSIDMapper())
                 .registerRowMapper(new MonitoredFingerprintMapper())
                 .registerRowMapper(new MonitoredChannelMapper())
-                .registerRowMapper(new MonitoredSecuritySuiteMapper());
+                .registerRowMapper(new MonitoredSecuritySuiteMapper())
+                .registerRowMapper(new BSSIDWithTapMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());

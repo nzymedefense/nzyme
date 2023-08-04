@@ -21,6 +21,12 @@ public class TapMapper implements RowMapper<Tap>  {
         DateTime lastReport = rs.getTimestamp("last_report") == null
                 ? null : new DateTime(rs.getTimestamp("last_report"));
 
+        UUID organizationId = rs.getString("organization_id") == null ?
+                null : UUID.fromString(rs.getString("organization_id"));
+
+        UUID tenantId = rs.getString("tenant_id") == null ?
+                null : UUID.fromString(rs.getString("tenant_id"));
+
         return Tap.create(
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
@@ -35,7 +41,9 @@ public class TapMapper implements RowMapper<Tap>  {
                 (long) new Period(lastReport, clock, PeriodType.millis()).getMillis(),
                 new DateTime(rs.getTimestamp("created_at")),
                 updatedAt,
-                lastReport
+                lastReport,
+                organizationId,
+                tenantId
         );
     }
 

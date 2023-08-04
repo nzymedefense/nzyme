@@ -2,6 +2,7 @@ package app.nzyme.core.detection.alerts;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.dot11.monitoring.Dot11BanditDetector;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
 import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
@@ -155,6 +156,13 @@ public class DetectionAlertMonitor {
             }
         } catch(Exception e) {
             LOG.error("Could not complete detection alert monitor run.", e);
+        }
+
+        // Run bandit detection.
+        try {
+            new Dot11BanditDetector(nzyme).run();
+        } catch(Exception e) {
+            LOG.error("Could not complete bandit detector run.", e);
         }
     }
 

@@ -3580,4 +3580,21 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="change_alert_org_and_tenant_id_types_to_uuid" author="lennartkoopmann">
+        <dropColumn tableName="detection_alerts" columnName="organization_id" />
+        <dropColumn tableName="detection_alerts" columnName="tenant_id" />
+
+        <addColumn tableName="detection_alerts">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="detection_alerts">
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

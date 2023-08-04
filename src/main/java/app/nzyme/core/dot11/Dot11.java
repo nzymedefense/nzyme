@@ -89,6 +89,21 @@ public class Dot11 {
         );
     }
 
+    public List<BSSIDWithTap> findAllBSSIDSOfAllTenantsWithFingerprint(int minutes, String fingerprint) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid AS bssid, b.tap_uuid AS tap_uuid " +
+                                "FROM dot11_fingerprints fp " +
+                                "LEFT JOIN dot11_bssids AS b ON b.id = fp.bssid_id " +
+                                "WHERE b.created_at > :cutoff AND fp.fingerprint = :fingerprint " +
+                                "AND b.bssid IS NOT NULL " +
+                                "GROUP BY b.bssid, b.tap_uuid")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("fingerprint", fingerprint)
+                        .mapTo(BSSIDWithTap.class)
+                        .list()
+        );
+    }
+
     public boolean bssidExist(String bssid, int minutes, List<UUID> taps) {
         if (taps.isEmpty()) {
             return false;
