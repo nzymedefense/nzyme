@@ -44,26 +44,6 @@ public class Dot11 {
 
     }
 
-    public enum MonitoredNetworkAlertStatusColumn {
-
-        UNEXPECTED_BSSID("status_unexpected_bssid"),
-        UNEXPECTED_SSID("status_unexpected_ssid"),
-        UNEXPECTED_CHANNEL("status_unexpected_channel"),
-        UNEXPECTED_SECURITY_SUITES("status_unexpected_security_suites"),
-        UNEXPECTED_SECURITY_PROTOCOL("status_unexpected_security_protocol"),
-        UNEXPECTED_FINGERPRINT("status_unexpected_fingerprint");
-
-        private final String columnName;
-
-        MonitoredNetworkAlertStatusColumn(String columnName) {
-            this.columnName = columnName;
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-    }
-
     public Dot11(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
@@ -821,25 +801,25 @@ public class Dot11 {
         );
     }
 
-    public boolean isBSSIDMonitored(String bssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        long count = nzyme.getDatabase().withHandle(handle -> {
+    public Optional<UUID> findSSIDMonitorUUID(String bssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE b.bssid = :bssid AND s.enabled = true")
                         .bind("bssid", bssid);
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE b.bssid = :bssid AND s.enabled = true AND s.organization_id = :organization_id")
                         .bind("bssid", bssid)
                         .bind("organization_id", organizationId);
             } else {
                 // Tenant User.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE b.bssid = :bssid AND s.enabled = true " +
                                 "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
@@ -848,25 +828,23 @@ public class Dot11 {
                         .bind("tenant_id", tenantId);
             }
 
-            return query.mapTo(Long.class).one();
+            return query.mapTo(UUID.class).findOne();
         });
-
-        return count > 0;
     }
 
-    public boolean isSSIDMonitored(String bssid, String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        long count = nzyme.getDatabase().withHandle(handle -> {
+    public Optional<UUID> findSSIDMonitorUUID(String bssid, String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true")
                         .bind("ssid", ssid)
                         .bind("bssid", bssid);
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true " +
                                 "AND s.organization_id = :organization_id")
@@ -875,7 +853,7 @@ public class Dot11 {
                         .bind("organization_id", organizationId);
             } else {
                 // Tenant User.
-                query = handle.createQuery("SELECT COUNT(*) FROM dot11_monitored_networks AS s " +
+                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
                                 "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
                                 "WHERE b.bssid = :bssid AND s.ssid = :ssid AND s.enabled = true " +
                                 "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
@@ -885,10 +863,8 @@ public class Dot11 {
                         .bind("tenant_id", tenantId);
             }
 
-            return query.mapTo(Long.class).one();
+            return query.mapTo(UUID.class).findOne();
         });
-
-        return count > 0;
     }
 
     public void createMonitoredBSSID(long monitoredNetworkId, String bssid) {
@@ -999,17 +975,6 @@ public class Dot11 {
                                 "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
                         .bind("monitored_network_id", monitoredNetworkId)
                         .bind("uuid", suiteUUID)
-                        .execute()
-        );
-    }
-
-    public void setMonitoredSSIDAlarmStatus(long monitoredNetworkId, MonitoredNetworkAlertStatusColumn column, boolean status) {
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE dot11_monitored_networks SET <column> = :status " +
-                                "WHERE id = :monitored_network_id")
-                        .define("column", column.getColumnName())
-                        .bind("status", status)
-                        .bind("monitored_network_id", monitoredNetworkId)
                         .execute()
         );
     }

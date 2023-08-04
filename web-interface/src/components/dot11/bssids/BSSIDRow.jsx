@@ -8,6 +8,7 @@ import {TapContext} from "../../../App";
 import BSSIDDetailsRows from "./BSSIDDetailsRows";
 import BSSIDSecurityProtocols from "./BSSIDSecurityProtocols";
 import InfrastructureTypes from "../util/InfrastructureTypes";
+import MonitorIcon from "./MonitorIcon";
 
 const dot11Service = new Dot11Service();
 
@@ -47,8 +48,7 @@ function BSSIDRow(props) {
         <tr>
           <td>
             <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
-            {bssid.is_monitored ?  <i className="fa-solid fa-shield-halved text-muted" title={"BSSID is monitored."}
-                                      style={{marginLeft: 4}}></i> : null }
+            <MonitorIcon is_monitored={bssid.is_monitored} is_monitor_alerted={bssid.is_monitor_alerted} />
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>

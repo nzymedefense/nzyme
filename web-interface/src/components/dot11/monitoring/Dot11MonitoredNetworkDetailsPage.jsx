@@ -194,19 +194,23 @@ function Dot11MonitoredNetworkDetailsPage() {
                   <tbody>
                   <tr>
                     <td>Expected BSSIDs / Access Points</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_bssid} /></td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_bssid} /></td>
                   </tr>
                   <tr>
                     <td>Expected Fingerprints</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_fingerprint} /></td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_fingerprint} /></td>
                   </tr>
                   <tr>
                     <td>Expected Channels</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_channel} /></td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_channel} /></td>
                   </tr>
                   <tr>
                     <td>Expected Security Suites</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid={ssid} alerted={ssid.status_unexpected_security} /></td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security} /></td>
+                  </tr>
+                  <tr>
+                    <td>Expected Signal Track</td>
+                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} /></td>
                   </tr>
                   </tbody>
                 </table>
@@ -232,7 +236,7 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-12">
-            <div className={"card " + (ssid.status_unexpected_bssid || ssid.status_unexpected_fingerprint ? "card-alerted" : "")}>
+            <div className={"card " + (ssid.status_unexpected_bssid.triggered || ssid.status_unexpected_fingerprint.triggered ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
 
@@ -257,7 +261,7 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className={"card " + (ssid.status_unexpected_channel ? "card-alerted" : "")}>
+            <div className={"card " + (ssid.status_unexpected_channel.triggered ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
 
@@ -281,7 +285,7 @@ function Dot11MonitoredNetworkDetailsPage() {
           </div>
 
           <div className="col-md-6">
-            <div className={"card " + (ssid.status_unexpected_security ? "card-alerted" : "")}>
+            <div className={"card " + (ssid.status_unexpected_security.triggered ? "card-alerted" : "")}>
               <div className="card-body">
                 <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
 

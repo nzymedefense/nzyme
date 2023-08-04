@@ -3,6 +3,10 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.*;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.rest.TapDataHandlingResource;
@@ -57,8 +61,10 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
-            boolean isMonitored = nzyme.getDot11().isBSSIDMonitored(
+            Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
                     bssid.bssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+            boolean isMonitorAlerted = isMonitorAlerted(monitorUUID, authenticatedUser);
 
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     bssid.bssid(),
@@ -71,7 +77,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     bssid.ssids(),
                     bssid.hiddenSSIDFrames() > 0,
                     bssid.infrastructureTypes(),
-                    isMonitored
+                    monitorUUID.isPresent(),
+                    isMonitorAlerted
             ));
         }
 
@@ -120,7 +127,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<SSIDChannelDetailsResponse> ssidsResult = Lists.newArrayList();
         for (SSIDChannelDetails ssid : ssids) {
-            boolean isMonitored = nzyme.getDot11().isSSIDMonitored(
+            Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
                     bssid, ssid.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
             ssidsResult.add(SSIDChannelDetailsResponse.create(
@@ -135,7 +142,8 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     ssid.infrastructureTypes(),
                     ssid.isWps(),
                     ssid.lastSeen(),
-                    isMonitored
+                    monitorUUID.isPresent(),
+                    monitorUUID.orElse(null)
             ));
         }
 
@@ -196,8 +204,10 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         SSIDDetails ssidDetails = dbResult.get();
 
-        boolean isMonitored = nzyme.getDot11().isSSIDMonitored(
+        Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
                 bssid, ssidDetails.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        boolean isMonitorAlerted = isMonitorAlerted(monitorUUID, authenticatedUser);
 
         ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
@@ -239,7 +249,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 securitySuites,
                 ssidDetails.isWps(),
                 ssidDetails.lastSeen(),
-                isMonitored
+                monitorUUID.isPresent(),
+                isMonitorAlerted,
+                monitorUUID.orElse(null)
         );
 
         return Response.ok(response).build();
@@ -325,32 +337,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                 bssid, ssid, frequency, minutes, tapUuids);
 
-
-        Map<DateTime, Map<Integer, Long>> aggregated = Maps.newTreeMap();
-        for (ChannelHistogramEntry signal : signals) {
-            if (!aggregated.containsKey(signal.bucket())) {
-                aggregated.put(signal.bucket(), Maps.newHashMap());
-            }
-
-            aggregated.get(signal.bucket()).put(signal.signalStrength(), signal.frameCount());
-        }
-
-        List<List<Long>> z = Lists.newArrayList();
-        List<DateTime> y = Lists.newArrayList();
-
-        for (Map.Entry<DateTime, Map<Integer, Long>> entry : aggregated.entrySet()) {
-            List<Long> bucketSignals = Lists.newArrayList();
-            for(int cnt = -100; cnt < 0; cnt++) {
-                bucketSignals.add(entry.getValue().getOrDefault(cnt, 0L));
-            }
-
-            z.add(bucketSignals);
-            y.add(entry.getKey());
-        }
+        TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
 
         TrackDetector td = new TrackDetector();
         List<SignalWaterfallTrackResponse> tracks = Lists.newArrayList();
-        for (Track track : td.detect(z, y, TrackDetector.DEFAULT_CONFIG)) {
+        for (Track track : td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG)) {
             tracks.add(SignalWaterfallTrackResponse.create(
                     track.start(),
                     track.end(),
@@ -360,7 +351,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             ));
         }
 
-        return Response.ok(SignalWaterfallResponse.create(z, DEFAULT_X_VALUES, y, tracks)).build();
+        return Response.ok(
+                SignalWaterfallResponse.create(heatmap.z(), DEFAULT_X_VALUES, heatmap.y(), tracks)
+        ).build();
     }
 
 
@@ -371,6 +364,23 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, "*");
 
         return Response.ok(nzyme.getDot11().findAllSSIDNames(tapUuids)).build();
+    }
+
+    private boolean isMonitorAlerted(Optional<UUID> monitorUUID, AuthenticatedUser authenticatedUser) {
+        if (monitorUUID.isPresent()) {
+            Optional<MonitoredSSID> monitoredSSID = nzyme.getDot11().findMonitoredSSID(
+                    monitorUUID.get(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+            Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
+
+            if (monitoredSSID.isPresent()) {
+                Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status =
+                        monitor.getAlertStatus(monitoredSSID.get());
+
+                return Dot11NetworkMonitor.isSSIDAlerted(status);
+            }
+        }
+
+        return false;
     }
 
 }

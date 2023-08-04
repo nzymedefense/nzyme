@@ -70,7 +70,7 @@ function Sidebar() {
 
       <SidebarSubmenu title="Alerts"
                       subhref="/alerts"
-                      icon={<i class="sidebar-icon fa-solid fa-bell"></i>}
+                      icon={<i className="sidebar-icon fa-solid fa-bell"></i>}
                       show={user.is_orgadmin
                           || user.is_superadmin
                           || user.feature_permissions.includes("alerts_view")

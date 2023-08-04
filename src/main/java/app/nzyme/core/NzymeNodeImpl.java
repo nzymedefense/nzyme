@@ -257,7 +257,7 @@ public class NzymeNodeImpl implements NzymeNode {
 
         // Start 802.11 network monitor.
         Executors.newSingleThreadScheduledExecutor()
-                .scheduleWithFixedDelay(() -> new Dot11NetworkMonitor(this).run(),
+                .scheduleWithFixedDelay(() -> new Dot11NetworkMonitor(this).runMonitorCycle(),
                         0, 30, TimeUnit.SECONDS);
     }
 
