@@ -76,9 +76,9 @@ impl Bus<> {
 
     pub fn new(metrics: Arc<Mutex<Metrics>>, name: String, configuration: Configuration) -> Self {
         let (ethernet_broker_sender, ethernet_broker_receiver) = bounded(configuration.performance.ethernet_broker_buffer_capacity); // TODO configurable
-        let (dot11_broker_sender, dot11_broker_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity); // TODO configurable
+        let (dot11_broker_sender, dot11_broker_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
-        let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity); // TODO configurable
+        let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
         let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
