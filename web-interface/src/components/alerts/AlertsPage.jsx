@@ -1,11 +1,11 @@
 import React from "react";
+import AlertsTable from "./AlertsTable";
+
 
 function AlertsPage() {
 
   return (
-      <div className="alert alert-danger">
-        Under construction.
-      </div>
+      <AlertsTable />
   )
 
 }

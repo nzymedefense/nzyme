@@ -35,7 +35,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids")
-    public Response findAll(@Context SecurityContext sc, @Valid CreateDot11MonitoredNetworkRequest req) {
+    public Response findAll(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);

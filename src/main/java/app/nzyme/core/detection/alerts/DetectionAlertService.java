@@ -1,13 +1,18 @@
 package app.nzyme.core.detection.alerts;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -92,6 +97,50 @@ public class DetectionAlertService {
                             .execute()
             );
         }
+    }
+
+    public List<DetectionAlertEntry> findAllAlerts(@Nullable UUID organizationId,
+                                                   @Nullable UUID tenantId,
+                                                   int limit,
+                                                   int offset) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT * FROM detection_alerts LIMIT :limit OFFSET :offset")
+                        .bind("limit", limit)
+                        .bind("offset", offset);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("limit", limit)
+                        .bind("offset", offset);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset);
+            }
+
+            return query.mapTo(DetectionAlertEntry.class).list();
+        });
+    }
+
+    public List<DetectionAlertAttributeEntry> findAlertAttributes(long alertId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM detection_alert_attributes " +
+                                "WHERE detection_alert_id = :detection_alert_id")
+                        .bind("detection_alert_id", alertId)
+                        .mapTo(DetectionAlertAttributeEntry.class)
+                        .list()
+        );
     }
 
     public boolean alertWithComparisonChecksumExists(String comparisonChecksum) {

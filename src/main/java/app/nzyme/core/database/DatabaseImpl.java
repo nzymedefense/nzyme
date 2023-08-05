@@ -3,6 +3,8 @@ package app.nzyme.core.database;
 import app.nzyme.core.configuration.node.NodeConfiguration;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
+import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntryMapper;
 import app.nzyme.core.distributed.database.NodeEntryMapper;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucketMapper;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshotMapper;
@@ -105,7 +107,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new MonitoredFingerprintMapper())
                 .registerRowMapper(new MonitoredChannelMapper())
                 .registerRowMapper(new MonitoredSecuritySuiteMapper())
-                .registerRowMapper(new BSSIDWithTapMapper());
+                .registerRowMapper(new BSSIDWithTapMapper())
+                .registerRowMapper(new DetectionAlertEntryMapper())
+                .registerRowMapper(new DetectionAlertAttributeEntryMapper());
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
