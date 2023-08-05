@@ -3,6 +3,7 @@ package app.nzyme.core.dot11.monitoring;
 import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @AutoValue
 public abstract class Dot11BanditDescription {
@@ -12,13 +13,13 @@ public abstract class Dot11BanditDescription {
 
     // Nullable for bandits that are not detected by fingerprint, like the Pwnagotchi.
     @Nullable
-    public abstract String fingerprint();
+    public abstract List<String> fingerprints();
 
-    public static Dot11BanditDescription create(String name, String description, String fingerprint) {
+    public static Dot11BanditDescription create(String name, String description, List<String> fingerprints) {
         return builder()
                 .name(name)
                 .description(description)
-                .fingerprint(fingerprint)
+                .fingerprints(fingerprints)
                 .build();
     }
 
@@ -32,7 +33,7 @@ public abstract class Dot11BanditDescription {
 
         public abstract Builder description(String description);
 
-        public abstract Builder fingerprint(String fingerprint);
+        public abstract Builder fingerprints(List<String> fingerprints);
 
         public abstract Dot11BanditDescription build();
     }

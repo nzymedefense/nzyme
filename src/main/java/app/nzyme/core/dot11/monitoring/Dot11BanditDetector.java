@@ -24,39 +24,41 @@ public class Dot11BanditDetector {
 
     public void run() {
         for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
-            if (bandit.fingerprint() == null) {
+            if (bandit.fingerprints() == null) {
                 // Some bandits, like the Pwnagotchi, are not detected by fingerprint matching.
                 continue;
             }
 
-            for (BSSIDWithTap match : nzyme.getDot11().findAllBSSIDSOfAllTenantsWithFingerprint(1, bandit.fingerprint())) {
-                LOG.debug("Detected bandit [{}] at [{}].", bandit, match);
+            for (String fingerprint : bandit.fingerprints()) {
+                for (BSSIDWithTap match : nzyme.getDot11().findAllBSSIDSOfAllTenantsWithFingerprint(1, fingerprint)) {
+                    LOG.debug("Detected bandit [{}] at [{}].", bandit, match);
 
-                Optional<Tap> tap = nzyme.getTapManager().findTap(match.tapUUID());
+                    Optional<Tap> tap = nzyme.getTapManager().findTap(match.tapUUID());
 
-                if (tap.isEmpty()) {
-                    LOG.error("Detected bandit [{}] but could not find associated tap [{}]. Skipping.",
-                            bandit.name(), match.tapUUID());
-                    continue;
+                    if (tap.isEmpty()) {
+                        LOG.error("Detected bandit [{}] but could not find associated tap [{}]. Skipping.",
+                                bandit.name(), match.tapUUID());
+                        continue;
+                    }
+
+                    Map<String, String> attributes = Maps.newHashMap();
+                    attributes.put("fingerprint", fingerprint);
+                    attributes.put("bssid", match.bssid());
+                    attributes.put("tap_uuid", match.tapUUID().toString());
+                    attributes.put("bandit_name", bandit.name());
+                    attributes.put("bandit_description", bandit.description());
+
+                    nzyme.getDetectionAlertService().raiseAlert(
+                            tap.get().organizationId(),
+                            tap.get().tenantId(),
+                            null,
+                            tap.get().uuid(),
+                            DetectionType.DOT11_BANDIT_CONTACT,
+                            Subsystem.DOT11,
+                            attributes,
+                            new String[]{"bssid", "fingerprint", "tap_uuid"}
+                    );
                 }
-
-                Map<String, String> attributes = Maps.newHashMap();
-                attributes.put("fingerprint", bandit.fingerprint());
-                attributes.put("bssid", match.bssid());
-                attributes.put("tap_uuid", match.tapUUID().toString());
-                attributes.put("bandit_name", bandit.name());
-                attributes.put("bandit_description", bandit.description());
-
-                nzyme.getDetectionAlertService().raiseAlert(
-                        tap.get().organizationId(),
-                        tap.get().tenantId(),
-                        null,
-                        tap.get().uuid(),
-                        DetectionType.DOT11_BANDIT_CONTACT,
-                        Subsystem.DOT11,
-                        attributes,
-                        new String[]{"bssid", "fingerprint", "tap_uuid"}
-                );
             }
         }
     }
