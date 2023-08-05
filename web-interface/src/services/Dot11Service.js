@@ -164,6 +164,12 @@ class Dot11Service {
     RESTClient.put("/dot11/monitoring/ssids/show/" + ssidUUID + "/disable", {}, successCallback, errorCallback);
   }
 
+  findSupportedBandits(setBandits) {
+    RESTClient.get("/dot11/monitoring/bandits/supported", {}, function (response) {
+      setBandits(response.data);
+    })
+  }
+
 }
 
 export default Dot11Service

@@ -1,10 +1,12 @@
+use std::collections::HashMap;
 use std::panic;
 use std::sync::{Arc, Mutex};
 
 use log::{trace, error, info};
 
 use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11ProbeRequestFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser, probe_request_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
-use crate::dot11::frames::Dot11ProbeResponseFrame;
+use crate::alerting::alert_types::{Dot11Alert, Dot11AlertAttribute, Dot11AlertType};
+use crate::dot11::frames::{Dot11ProbeResponseFrame, PwnagotchiData};
 use crate::dot11::parsers::management::probe_response_frame_parser;
 
 pub struct Dot11FrameProcessor {
@@ -102,8 +104,19 @@ impl Dot11FrameProcessor {
 
     fn handle_beacon_frame(&self, frame: Dot11BeaconFrame) {
         match self.dot11_table.lock() {
-            Ok(mut table) => table.register_beacon_frame(frame),
-            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
+            Ok(mut table) => {
+                if let Some(pwnagotchi) = &frame.tagged_parameters.pwnagotchi_data {
+                    // Pwnagotchi payload detected in tagged parameters. Raise alert.
+
+                    table.register_alert(Dot11Alert {
+                        alert_type: Dot11AlertType::PwnagotchiDetected,
+                        attributes: build_pwnagotchi_alert_attributes(pwnagotchi)
+                    })
+                }
+
+                table.register_beacon_frame(frame);
+            },
+            Err(e) => { error!("Could not acquire 802.11 table lock: {}", e); }
         }
     }
 
@@ -132,4 +145,17 @@ impl Dot11FrameProcessor {
 
     }
 
+}
+
+fn build_pwnagotchi_alert_attributes(data: &PwnagotchiData) -> HashMap<String, Dot11AlertAttribute> {
+    let mut attributes = HashMap::new();
+
+    attributes.insert("identity".to_string(), Dot11AlertAttribute::String(data.identity.clone()));
+    attributes.insert("name".to_string(), Dot11AlertAttribute::String(data.name.clone()));
+    attributes.insert("uptime".to_string(), Dot11AlertAttribute::Number(data.uptime));
+    attributes.insert("pwnd_run".to_string(), Dot11AlertAttribute::Number(data.pwnd_run));
+    attributes.insert("pwnd_tot".to_string(), Dot11AlertAttribute::Number(data.pwnd_tot));
+    attributes.insert("version".to_string(), Dot11AlertAttribute::String(data.version.clone()));
+
+    attributes
 }

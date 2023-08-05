@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
+use crate::alerting::alert_types::{Dot11AlertAttribute, Dot11AlertType};
 
 pub struct StatusReport {
     pub version: String,
@@ -142,7 +143,8 @@ pub struct L4RetroPairReport {
 #[derive(Serialize)]
 pub struct Dot11TableReport {
     pub bssids: HashMap<String, BssidReport>,
-    pub clients: HashMap<String, Dot11ClientReport>
+    pub clients: HashMap<String, Dot11ClientReport>,
+    pub alerts: Vec<Dot11AlertReport>
 }
 
 #[derive(Serialize)]
@@ -158,6 +160,12 @@ pub struct BssidReport {
 pub struct Dot11ClientReport {
     pub probe_request_ssids: HashMap<String, u128>,
     pub wildcard_probe_requests: u128
+}
+
+#[derive(Serialize)]
+pub struct Dot11AlertReport {
+    pub alert_type: Dot11AlertType,
+    pub attributes: HashMap<String, Dot11AlertAttribute>
 }
 
 #[derive(Serialize)]

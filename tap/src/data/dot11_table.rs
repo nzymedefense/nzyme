@@ -9,12 +9,15 @@ use crate::{
         SecurityInformationReport, SignalStrengthReport, Dot11ChannelStatisticsReport, Dot11ClientStatisticsReport, Dot11ClientReport,
     }, helpers::network::is_mac_address_multicast,
 };
+use crate::alerting::alert_types::Dot11Alert;
 use crate::dot11::frames::{Dot11Capabilities, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
+use crate::link::payloads::Dot11AlertReport;
 
 #[derive(Debug)]
 pub struct Dot11Table {
     pub bssids: Mutex<HashMap<String, Bssid>>,
-    pub clients: Mutex<HashMap<String, Client>>
+    pub clients: Mutex<HashMap<String, Client>>,
+    pub alerts: Mutex<Vec<Dot11Alert>>
 }
 
 #[derive(Debug)]
@@ -64,7 +67,17 @@ impl Dot11Table {
     pub fn new() -> Self {
         Self {
             bssids: Mutex::new(HashMap::new()),
-            clients: Mutex::new(HashMap::new())
+            clients: Mutex::new(HashMap::new()),
+            alerts: Mutex::new(Vec::new())
+        }
+    }
+
+    pub fn register_alert(&mut self, alert: Dot11Alert) {
+        match self.alerts.lock() {
+            Ok(mut alerts) => {
+                alerts.push(alert);
+            },
+            Err(e) => error!("Could not acquire alerts table mutex: {}", e)
         }
     }
 
@@ -453,6 +466,11 @@ impl Dot11Table {
             Ok(mut clients) => clients.clear(),
             Err(e) => error!("Could not acquire clients table mutex: {}", e)
         }
+
+        match self.alerts.lock() {
+            Ok(mut alerts) => alerts.clear(),
+            Err(e) => error!("Could not acquire alerts table mutex: {}", e)
+        }
     }
 
     pub fn generate_report(&self) -> Dot11TableReport {
@@ -567,7 +585,6 @@ impl Dot11Table {
         }
 
         let mut clients_report: HashMap<String, Dot11ClientReport> = HashMap::new();
-
         match self.clients.lock() {
             Ok(clients) => {
                 for (client, info) in &*clients {
@@ -583,9 +600,25 @@ impl Dot11Table {
             Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
 
+        let mut alerts_report: Vec<Dot11AlertReport> = Vec::new();
+        match self.alerts.lock() {
+            Ok(alerts) => {
+                for alert in &*alerts {
+                    alerts_report.push(
+                        Dot11AlertReport {
+                            alert_type: alert.alert_type.clone(),
+                            attributes: alert.attributes.clone()
+                        }
+                    );
+                }
+            },
+            Err(e) => error!("Could not acquire alerts table mutex: {}", e),
+        }
+
         Dot11TableReport {
             bssids: bssid_report,
-            clients: clients_report
+            clients: clients_report,
+            alerts: alerts_report
         }
     }
 }

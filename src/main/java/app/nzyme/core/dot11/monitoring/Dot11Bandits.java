@@ -49,5 +49,16 @@ public class Dot11Bandits {
                 "The open access point of the popular WiFi Pineapple Tetra attack platform.",
                 "d79c5908617b92670f73f45b4094c4b15fa0b1a71e536959e43d865ab8ed589f"
         ));
+
+        add(Dot11BanditDescription.create(
+                CUSTOM_PWNAGOTCHI_NAME,
+                CUSTOM_PWNAGOTCHI_DESCRIPTION,
+                null
+        ));
     }};
+
+    public static final String CUSTOM_PWNAGOTCHI_NAME = "Pwnagotchi";
+    public static final String CUSTOM_PWNAGOTCHI_DESCRIPTION = "The Pwnagotchi attack platform. This detection " +
+            "includes additional details about the identity of the detected Pwnagotchi.";
+
 }

@@ -11,6 +11,7 @@ mod data;
 mod system_state;
 mod logging;
 mod dot11;
+mod alerting;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 

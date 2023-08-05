@@ -3,9 +3,7 @@ package app.nzyme.core.rest.resources.dot11;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.monitoring.*;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
+import app.nzyme.core.dot11.monitoring.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -401,6 +399,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         );
 
         return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/bandits/supported")
+    public Response findAllSupportedBandits() {
+        List<SupportedBanditResponse> bandits = Lists.newArrayList();
+
+        for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
+            bandits.add(SupportedBanditResponse.create(bandit.name(), bandit.description()));
+        }
+
+        return Response.ok(bandits).build();
     }
 
     private MonitoredAttributeResult monitorResultToResponse(Dot11NetworkMonitorResult result) {

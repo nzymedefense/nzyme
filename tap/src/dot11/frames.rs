@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use strum_macros::Display;
 
 #[derive(Debug)]
@@ -147,10 +148,21 @@ pub struct TaggedParameters {
     pub supported_rates: Option<Vec<f32>>,
     pub extended_supported_rates: Option<Vec<f32>>,
     pub country_information: Option<CountryInformation>,
+    pub pwnagotchi_data: Option<PwnagotchiData>,
     
     // Not parsing, only keeping for fingerprint calculation.
     pub ht_capabilities: Option<Vec<u8>>,
     pub extended_capabilities: Option<Vec<u8>>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct PwnagotchiData {
+    pub identity: String,
+    pub name: String,
+    pub pwnd_run: u128,
+    pub pwnd_tot: u128,
+    pub uptime: u128,
+    pub version: String
 }
 
 #[derive(Debug)]

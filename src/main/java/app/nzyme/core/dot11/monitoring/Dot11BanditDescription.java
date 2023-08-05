@@ -2,11 +2,16 @@ package app.nzyme.core.dot11.monitoring;
 
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
+
 @AutoValue
 public abstract class Dot11BanditDescription {
 
     public abstract String name();
     public abstract String description();
+
+    // Nullable for bandits that are not detected by fingerprint, like the Pwnagotchi.
+    @Nullable
     public abstract String fingerprint();
 
     public static Dot11BanditDescription create(String name, String description, String fingerprint) {

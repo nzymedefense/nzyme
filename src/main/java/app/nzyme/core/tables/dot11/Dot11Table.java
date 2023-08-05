@@ -1,8 +1,12 @@
 package app.nzyme.core.tables.dot11;
 
+import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.detection.alerts.Subsystem;
+import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.*;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.taps.Tap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
@@ -14,6 +18,7 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Dot11Table implements DataTable {
@@ -31,6 +36,8 @@ public class Dot11Table implements DataTable {
     public void handleReport(UUID tapUuid, DateTime timestamp, Dot11TablesReport report) {
         writeBSSIDs(tapUuid, timestamp, report.bssids());
         writeClients(tapUuid, timestamp, report.clients());
+
+        handleAlerts(tapUuid, report.alerts());
     }
 
     private void writeClients(UUID tapUuid, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
@@ -246,7 +253,66 @@ public class Dot11Table implements DataTable {
                 }
             }
         }
+    }
 
+    private void handleAlerts(UUID tapUuid, List<Dot11AlertReport> alerts) {
+        Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
+
+        if (tap.isEmpty()) {
+            LOG.error("Could not find reporting tap [{}].", tapUuid);
+            return;
+        }
+
+        for (Dot11AlertReport alert : alerts) {
+            switch (alert.alertType()) {
+                case PwnagotchiDetected:
+                    Map<String, String> attributes = reportAlertAttributesToAlertAttributes(alert.attributes());
+                    attributes.put("bandit_name", Dot11Bandits.CUSTOM_PWNAGOTCHI_NAME);
+                    attributes.put("bandit_description", Dot11Bandits.CUSTOM_PWNAGOTCHI_DESCRIPTION);
+
+                    tablesService.getNzyme().getDetectionAlertService().raiseAlert(
+                            tap.get().organizationId(),
+                            tap.get().tenantId(),
+                            null,
+                            tap.get().uuid(),
+                            DetectionType.DOT11_BANDIT_CONTACT,
+                            Subsystem.DOT11,
+                            attributes,
+                            new String[]{"identity"}
+                    );
+
+                    break;
+                default:
+                    LOG.warn("Unknown tap alert type: [{}]. Skipping.", alert.alertType());
+            }
+        }
+
+    }
+
+    /*
+     * This is somewhat over-complicated to allow Rust to populate maps with different types of values.
+     * We are just calling .toString(), but that may change if we ever report more complex attributes.
+     */
+    private Map<String, String> reportAlertAttributesToAlertAttributes(
+            Map<String, Map<Dot11AlertReport.AlertAttributeType, Object>> attributes) {
+        Map<String, String> alertAttributes = Maps.newHashMap();
+
+        for (Map.Entry<String, Map<Dot11AlertReport.AlertAttributeType, Object>> attr : attributes.entrySet()) {
+            String key = attr.getKey();
+            String value = null;
+            for (Map.Entry<Dot11AlertReport.AlertAttributeType, Object> attrValue : attr.getValue().entrySet()) {
+                switch (attrValue.getKey()) {
+                    case Number:
+                    case String:
+                        value = attrValue.getValue().toString();
+                        break;
+                }
+            }
+
+            alertAttributes.put(key, value);
+        }
+
+        return alertAttributes;
     }
 
     @Override

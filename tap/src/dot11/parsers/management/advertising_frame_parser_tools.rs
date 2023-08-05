@@ -1,8 +1,8 @@
 use anyhow::{bail, Error};
-use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
+use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::trace;
+use log::{trace, warn};
 use sha2::{Digest, Sha256};
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
@@ -58,6 +58,7 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
     let mut extended_capabilities: Option<Vec<u8>> = Option::None;
     let mut security: Vec<SecurityInformation> = Vec::new();
     let mut security_bytes: Vec<u8> = Vec::new(); // Raw bytes for quick fingerprint calculation.
+    let mut pwnagotchi_parts: Vec<String> = vec![];
 
     // WPS.
     let mut has_wps = false;
@@ -172,6 +173,10 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                         },
                         _ => {}
                     }
+                },
+                222 => {
+                    // Pwnagotchi announcement parasite protocol.
+                    pwnagotchi_parts.push(String::from_utf8_lossy(data).to_string());
                 }
                 _ => {}
             };
@@ -180,23 +185,36 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
         trace!("Tagged parameters are too short. Not calculating for this frame.");
     }
 
+    let pwnagotchi_data = match pwnagotchi_parts.is_empty() {
+        false => {
+            match serde_json::from_str::<PwnagotchiData>(&pwnagotchi_parts.join("")) {
+                Ok(json) => Some(json),
+                Err(e) => {
+                    warn!("Could not deserialize Pwnagotchi payload: {}", e);
+                    None
+                }
+            }
+        }
+        true => None
+    };
+
     let tagged_parameters = TaggedParameters {
         ssid,
         supported_rates,
         extended_supported_rates,
         country_information,
         ht_capabilities,
-        extended_capabilities
+        extended_capabilities,
+        pwnagotchi_data
     };
 
     Ok(TaggedParameterParserData {
         tagged_parameters,
         security,
         security_bytes,
-        has_wps,
+        has_wps
     })
 }
-
 
 fn parse_country_information(data: &[u8]) -> Result<CountryInformation, Error> {
     if !data.len() != 6 {

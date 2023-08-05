@@ -201,7 +201,8 @@ impl Leaderlink {
                 error!("Could not acquire 802.11 networks table mutex. {}", e);
                 Dot11TableReport {
                     bssids: HashMap::new(),
-                    clients: HashMap::new()
+                    clients: HashMap::new(),
+                    alerts: Vec::new()
                 }
             }
         };

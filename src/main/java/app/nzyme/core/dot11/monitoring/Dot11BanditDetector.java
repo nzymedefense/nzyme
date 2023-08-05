@@ -24,6 +24,11 @@ public class Dot11BanditDetector {
 
     public void run() {
         for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
+            if (bandit.fingerprint() == null) {
+                // Some bandits, like the Pwnagotchi, are not detected by fingerprint matching.
+                continue;
+            }
+
             for (BSSIDWithTap match : nzyme.getDot11().findAllBSSIDSOfAllTenantsWithFingerprint(1, bandit.fingerprint())) {
                 LOG.debug("Detected bandit [{}] at [{}].", bandit, match);
 
