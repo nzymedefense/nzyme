@@ -128,7 +128,7 @@ impl Capture {
                 Err(e) => error!("Could not acquire metrics mutex: {}", e)
             }
 
-            if frame.len() < 4{ 
+            if length < 4 {
                 debug!("Packet too small. Wouldn't even fit radiotap length information. Skipping.");
                 continue;
             }
