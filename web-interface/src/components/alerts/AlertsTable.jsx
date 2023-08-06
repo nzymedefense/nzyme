@@ -17,9 +17,27 @@ function AlertsTable() {
     return <LoadingSpinner />
   }
 
+  if (alerts.length === 0) {
+    return (
+        <div className="alert alert-info mb-0">
+          No alerts recorded yet.
+        </div>
+    )
+  }
+
   return (
       <React.Fragment>
-        alerts
+        <table>
+          <thead>
+          <tr>
+            <th>Type</th>
+            <th>Subsystem</th>
+            <th>Details</th>
+            <th>First seen</th>
+            <th>Last seen</th>
+          </tr>
+          </thead>
+        </table>
       </React.Fragment>
   )
 
