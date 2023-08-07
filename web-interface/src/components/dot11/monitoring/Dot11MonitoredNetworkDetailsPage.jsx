@@ -106,8 +106,7 @@ function Dot11MonitoredNetworkDetailsPage() {
   }
 
   const addSecuritySuiteFormEnabled = function () {
-    return newSecuritySuite.includes("-")
-        && newSecuritySuite.includes("/")
+    return (newSecuritySuite === "NONE" || (newSecuritySuite.includes("-") && newSecuritySuite.includes("/")))
         && !existingSecuritySuites.includes(newSecuritySuite);
   }
 

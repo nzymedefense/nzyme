@@ -28,6 +28,9 @@ public abstract class DetectionAlertDetailsResponse {
     @JsonProperty("subsystem")
     public abstract String subsystem();
 
+    @JsonProperty("details")
+    public abstract String details();
+
     @JsonProperty("attributes")
     public abstract Map<String, String> attributes();
 
@@ -37,6 +40,9 @@ public abstract class DetectionAlertDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
+    @JsonProperty("is_active")
+    public abstract boolean isActive();
+
     @Nullable
     @JsonProperty("organization_id")
     public abstract UUID organizationId();
@@ -45,16 +51,18 @@ public abstract class DetectionAlertDetailsResponse {
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
 
-    public static DetectionAlertDetailsResponse create(UUID id, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, Map<String, String> attributes, DateTime createdAt, DateTime lastSeen, UUID organizationId, UUID tenantId) {
+    public static DetectionAlertDetailsResponse create(UUID id, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, String details, Map<String, String> attributes, DateTime createdAt, DateTime lastSeen, boolean isActive, UUID organizationId, UUID tenantId) {
         return builder()
                 .id(id)
                 .dot11MonitoredNetworkId(dot11MonitoredNetworkId)
                 .tapId(tapId)
                 .detectionType(detectionType)
                 .subsystem(subsystem)
+                .details(details)
                 .attributes(attributes)
                 .createdAt(createdAt)
                 .lastSeen(lastSeen)
+                .isActive(isActive)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
                 .build();
@@ -76,11 +84,15 @@ public abstract class DetectionAlertDetailsResponse {
 
         public abstract Builder subsystem(String subsystem);
 
+        public abstract Builder details(String details);
+
         public abstract Builder attributes(Map<String, String> attributes);
 
         public abstract Builder createdAt(DateTime createdAt);
 
         public abstract Builder lastSeen(DateTime lastSeen);
+
+        public abstract Builder isActive(boolean isActive);
 
         public abstract Builder organizationId(UUID organizationId);
 

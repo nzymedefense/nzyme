@@ -28,6 +28,7 @@ public class DetectionAlertEntryMapper implements RowMapper<DetectionAlertEntry>
                 tapId,
                 rs.getString("detection_type"),
                 rs.getString("subsystem"),
+                rs.getString("details"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("last_seen")),
                 rs.getString("comparison_checksum"),

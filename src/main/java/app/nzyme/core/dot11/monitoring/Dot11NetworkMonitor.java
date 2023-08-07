@@ -46,9 +46,9 @@ public class Dot11NetworkMonitor {
         // Detections.
         result.put(Dot11NetworkMonitorType.UNEXPECTED_BSSID, detectUnexpectedBSSIDs(monitoredSSID, tapUUIDs));
         result.put(Dot11NetworkMonitorType.UNEXPECTED_CHANNEL, detectUnexpectedChannels(monitoredSSID, tapUUIDs));
-        result.put(Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES,detectUnexpectedSecuritySuites(monitoredSSID, tapUUIDs));
-        result.put(Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT,detectUnexpectedFingerprints(monitoredSSID, tapUUIDs));
-        result.put(Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS,detectUnexpectedSignalTracks(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES, detectUnexpectedSecuritySuites(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT, detectUnexpectedFingerprints(monitoredSSID, tapUUIDs));
+        result.put(Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS, detectUnexpectedSignalTracks(monitoredSSID, tapUUIDs));
 
         return result;
     }
@@ -147,7 +147,10 @@ public class Dot11NetworkMonitor {
                                 LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected security suites [{}]",
                                         bssid.bssid().toUpperCase(), monitoredSSID.ssid(), suite);
 
-                                unexpectedSecuritySuites.add(Dot11.securitySuitesToIdentifier(info));
+                                String ssi = Dot11.securitySuitesToIdentifier(info);
+                                if (!unexpectedSecuritySuites.contains(ssi)) {
+                                    unexpectedSecuritySuites.add(ssi);
+                                }
                             }
                         }
                     }

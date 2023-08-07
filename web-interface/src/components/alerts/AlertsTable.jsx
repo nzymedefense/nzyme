@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
+import AlertsTableRow from "./AlertsTableRow";
 
 const detectionAlertsService = new DetectionAlertsService();
 
@@ -27,16 +28,22 @@ function AlertsTable() {
 
   return (
       <React.Fragment>
-        <table>
+        <table className="table table-sm table-hover table-striped mb-0">
           <thead>
           <tr>
+            <th>&nbsp;</th>
+            <th>Details</th>
             <th>Type</th>
             <th>Subsystem</th>
-            <th>Details</th>
             <th>First seen</th>
             <th>Last seen</th>
           </tr>
           </thead>
+          <tbody>
+          {alerts.map(function(alert, i){
+            return <AlertsTableRow key={"alert-" + i} alert={alert} />
+          })}
+          </tbody>
         </table>
       </React.Fragment>
   )

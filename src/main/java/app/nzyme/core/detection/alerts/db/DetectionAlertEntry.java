@@ -20,6 +20,7 @@ public abstract class DetectionAlertEntry {
 
     public abstract String detectionType();
     public abstract String subsystem();
+    public abstract String details();
     public abstract DateTime createdAt();
     public abstract DateTime lastSeen();
     public abstract String comparisonChecksum();
@@ -30,7 +31,7 @@ public abstract class DetectionAlertEntry {
     @Nullable
     public abstract UUID tenantId();
 
-    public static DetectionAlertEntry create(long id, UUID uuid, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, DateTime createdAt, DateTime lastSeen, String comparisonChecksum, UUID organizationId, UUID tenantId) {
+    public static DetectionAlertEntry create(long id, UUID uuid, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, String details, DateTime createdAt, DateTime lastSeen, String comparisonChecksum, UUID organizationId, UUID tenantId) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -38,6 +39,7 @@ public abstract class DetectionAlertEntry {
                 .tapId(tapId)
                 .detectionType(detectionType)
                 .subsystem(subsystem)
+                .details(details)
                 .createdAt(createdAt)
                 .lastSeen(lastSeen)
                 .comparisonChecksum(comparisonChecksum)
@@ -63,6 +65,8 @@ public abstract class DetectionAlertEntry {
         public abstract Builder detectionType(String detectionType);
 
         public abstract Builder subsystem(String subsystem);
+
+        public abstract Builder details(String details);
 
         public abstract Builder createdAt(DateTime createdAt);
 

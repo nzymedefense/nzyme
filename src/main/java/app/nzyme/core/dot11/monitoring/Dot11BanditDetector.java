@@ -55,6 +55,8 @@ public class Dot11BanditDetector {
                             tap.get().uuid(),
                             DetectionType.DOT11_BANDIT_CONTACT,
                             Subsystem.DOT11,
+                            "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + match.bssid() + "\" " +
+                                    "detected in range.",
                             attributes,
                             new String[]{"bssid", "fingerprint", "tap_uuid"}
                     );

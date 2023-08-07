@@ -332,7 +332,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         // TODO we might want to tighten this down in the future.
-        if (!req.suite().contains("-") || !req.suite().contains("/")) {
+        if (!req.suite().equals("NONE") && (!req.suite().contains("-") || !req.suite().contains("/"))) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 

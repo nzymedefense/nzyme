@@ -277,6 +277,7 @@ public class Dot11Table implements DataTable {
                             tap.get().uuid(),
                             DetectionType.DOT11_BANDIT_CONTACT,
                             Subsystem.DOT11,
+                            "Bandit \"Pwnagotchi\" detected in range.",
                             attributes,
                             new String[]{"identity"}
                     );

@@ -26,14 +26,14 @@ public class EventEngineImpl implements EventEngine {
     }
 
     @Override
-    public void processEvent(SystemEvent event, @Nullable UUID eventOwnerOrganizationId, @Nullable UUID eventOwnerTenantId) {
+    public void processEvent(SystemEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId) {
         // Store in database.
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO events(organization_id, tenant_id, event_type, reference, " +
                                 "details, created_at) VALUES(:organization_id, :tenant_id, :event_type, :reference, " +
                                 ":details, NOW())")
-                        .bind("organization_id", eventOwnerOrganizationId)
-                        .bind("tenant_id", eventOwnerTenantId)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .bind("event_type", EventType.SYSTEM)
                         .bind("reference", event.type())
                         .bind("details", event.details())
@@ -70,7 +70,47 @@ public class EventEngineImpl implements EventEngine {
 
     }
 
-    //void processEvent(DetectionEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId);
+    @Override
+    public void processEvent(DetectionEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        // Store in database.
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO events(organization_id, tenant_id, event_type, reference, " +
+                                "created_at) VALUES(:organization_id, :tenant_id, :event_type, :reference, NOW())")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("event_type", EventType.DETECTION)
+                        .bind("reference", event.alertId())
+                        .execute()
+        );
+
+        // Find all subscribers of event.
+        List<UUID> actionIds = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                                "WHERE event_type = :event_type AND reference = :reference")
+                        .bind("event_type", EventType.DETECTION)
+                        .bind("reference", event.detectionType())
+                        .mapTo(UUID.class)
+                        .list()
+        );
+
+        // Process.
+        for (UUID actionId : actionIds) {
+            Optional<EventActionEntry> ea = findEventAction(actionId);
+
+            if (ea.isEmpty()) {
+                LOG.warn("Event action [{}] referenced by event [{}/{}] not found.",
+                        actionId, event.detectionType(), event.alertId());
+                continue;
+            }
+
+            /*try {
+                EventActionFactory.build(nzyme, ea.get()).execute(event);
+            } catch (Exception e) {
+                LOG.error("Could not execute event action [{}/{}] referenced by event [{}/{}]",
+                        ea.get().actionType(), ea.get().uuid(), event.detectionType(), event.alertId(), e);
+            }*/
+        }
+    }
 
     public long countAllEventsOfAllOrganizations() {
         return nzyme.getDatabase().withHandle(handle ->

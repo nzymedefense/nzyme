@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -57,9 +58,11 @@ public class AlertsResource extends UserAuthenticatedResource {
                     alert.tapId(),
                     alert.detectionType(),
                     alert.subsystem(),
+                    alert.details(),
                     responseAttributes,
                     alert.createdAt(),
                     alert.lastSeen(),
+                    alert.lastSeen().isAfter(DateTime.now().minusMinutes(1)),
                     alert.organizationId(),
                     alert.tenantId()
             ));

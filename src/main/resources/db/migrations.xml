@@ -3597,4 +3597,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_details_to_detection_alerts" author="lennartkoopmann">
+        <addColumn tableName="detection_alerts">
+            <column name="details" type="text" defaultValue="No Details.">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

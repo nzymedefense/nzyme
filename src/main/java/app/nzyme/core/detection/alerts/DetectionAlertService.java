@@ -33,6 +33,7 @@ public class DetectionAlertService {
                            @Nullable UUID tapId,
                            DetectionType detectionType,
                            Subsystem subsystem,
+                           String details,
                            Map<String, String> attributes,
                            String[] comparisonAttributeKeys) {
         TreeMap<String, String> comparisonAttributes = Maps.newTreeMap();
@@ -71,9 +72,9 @@ public class DetectionAlertService {
         long alertId = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO detection_alerts(uuid, organization_id, tenant_id, " +
                                 "dot11_monitored_network_id, tap_id, detection_type, subsystem, comparison_checksum, " +
-                                "created_at, last_seen) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                "details, created_at, last_seen) VALUES(:uuid, :organization_id, :tenant_id, " +
                                 ":dot11_monitored_network_id, :tap_id, :detection_type, :subsystem, " +
-                                ":comparison_checksum, NOW(), NOW()) RETURNING id")
+                                ":comparison_checksum, :details, NOW(), NOW()) RETURNING id")
                         .bind("uuid", UUID.randomUUID())
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
@@ -82,6 +83,7 @@ public class DetectionAlertService {
                         .bind("detection_type", detectionType)
                         .bind("subsystem", subsystem)
                         .bind("comparison_checksum", comparisonChecksum)
+                        .bind("details", details)
                         .mapTo(Long.class)
                         .one()
         );
@@ -107,14 +109,15 @@ public class DetectionAlertService {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT * FROM detection_alerts LIMIT :limit OFFSET :offset")
+                query = handle.createQuery("SELECT * FROM detection_alerts ORDER BY last_seen DESC " +
+                                "LIMIT :limit OFFSET :offset")
                         .bind("limit", limit)
                         .bind("offset", offset);
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
                 query = handle.createQuery("SELECT * FROM detection_alerts " +
                                 "WHERE organization_id = :organization_id " +
-                                "LIMIT :limit OFFSET :offset")
+                                "ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("limit", limit)
                         .bind("offset", offset);
@@ -122,7 +125,7 @@ public class DetectionAlertService {
                 // Tenant User.
                 query = handle.createQuery("SELECT * FROM detection_alerts " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "LIMIT :limit OFFSET :offset")
+                                "ORDER BY last_seen DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("limit", limit)
