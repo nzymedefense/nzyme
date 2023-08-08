@@ -61,10 +61,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
-            Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
+            /*Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
                     bssid.bssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
-            boolean isMonitorAlerted = isMonitorAlerted(monitorUUID, authenticatedUser);
+            boolean isMonitorAlerted = isMonitorAlerted(monitorUUID, authenticatedUser);*/
+            boolean isMonitorAlerted = false;
 
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     bssid.bssid(),
@@ -77,7 +78,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     bssid.ssids(),
                     bssid.hiddenSSIDFrames() > 0,
                     bssid.infrastructureTypes(),
-                    monitorUUID.isPresent(),
+                    false, ///XXX TODO
                     isMonitorAlerted
             ));
         }
