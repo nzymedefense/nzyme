@@ -3,16 +3,33 @@ import React, {useEffect, useState} from "react";
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsTableRow from "./AlertsTableRow";
+import AutoRefreshSelector from "../misc/AutoRefreshSelector";
 
 const detectionAlertsService = new DetectionAlertsService();
+
+const loadData = function(setAlerts) {
+  detectionAlertsService.findAllAlerts(setAlerts);
+}
 
 function AlertsTable() {
 
   const [alerts, setAlerts] = useState(null);
+  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    detectionAlertsService.findAllAlerts(setAlerts);
-  }, [])
+    loadData(setAlerts);
+
+    const timer = setInterval(() => {
+      if (isAutoRefresh) {
+        loadData(setAlerts);
+      }
+    }, 15000);
+
+    return () => clearInterval(timer);
+  }, [isAutoRefresh])
+
+
 
   if (!alerts) {
     return <LoadingSpinner />
@@ -28,6 +45,12 @@ function AlertsTable() {
 
   return (
       <React.Fragment>
+        <div className="float-end">
+          <AutoRefreshSelector isAutoRefresh={isAutoRefresh}
+                               setIsAutoRefresh={setIsAutoRefresh}
+                               lastUpdated={lastUpdated} />
+        </div>
+
         <table className="table table-sm table-hover table-striped mb-0">
           <thead>
           <tr>
