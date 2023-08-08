@@ -92,6 +92,10 @@ public class Dot11NetworkMonitor {
                 // This is a BSSID advertising our network.
 
                 for (SSIDChannelDetails ssid : nzyme.getDot11().findSSIDsOfBSSID(MINUTES, bssid.bssid(), tapUUIDs)) {
+                    if (ssid.frequency() == 0) {
+                        continue;
+                    }
+
                     // Go through all channel/SSID combinations of the BSSID.
                     if (ssid.ssid().equals(monitoredSSID.ssid())) {
                         if (!expectedFrequencies.contains(ssid.frequency())) {
