@@ -58,7 +58,7 @@ public class Dot11BanditDetector {
                             "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + match.bssid() + "\" " +
                                     "detected in range.",
                             attributes,
-                            new String[]{"bssid", "fingerprint", "tap_uuid"}
+                            new String[]{"bssid", "fingerprint"}
                     );
                 }
             }
