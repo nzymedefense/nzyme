@@ -150,7 +150,8 @@ const ApiRoutes = {
   },
   NOT_FOUND: '/notfound',
   ALERTS: {
-    INDEX: '/alerts'
+    INDEX: '/alerts',
+    DETAILS: (uuid) => `/alerts/show/${uuid}`
   }
 }
 

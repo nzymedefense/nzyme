@@ -8,7 +8,7 @@ function AlertsPage() {
       <React.Fragment>
         <div className="row">
           <div className="col-md-10">
-            <h1>Monitored Networks</h1>
+            <h1>Alerts</h1>
           </div>
 
           <div className="col-md-2">
@@ -21,6 +21,11 @@ function AlertsPage() {
             <div className="card">
               <div className="card-body">
                 <h3>All Alerts</h3>
+
+                <p className="text-muted">
+                  Alerts are marked as active if they have been seen in the previous 60 seconds. Existing alerts can
+                  re-activate if they are considered to be triggered from the same source or for the same reason.
+                </p>
 
                 <AlertsTable />
               </div>

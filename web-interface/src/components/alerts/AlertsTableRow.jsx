@@ -3,6 +3,7 @@ import React from "react";
 import moment from "moment";
 import Subsystem from "../misc/Subsystem";
 import AlertActiveIndicator from "./AlertActiveIndicator";
+import ApiRoutes from "../../util/ApiRoutes";
 
 function AlertsTableRow(props) {
 
@@ -13,7 +14,7 @@ function AlertsTableRow(props) {
         <td>
           <AlertActiveIndicator active={alert.is_active} />
         </td>
-        <td><a href="">{alert.details}</a></td>
+        <td><a href={ApiRoutes.ALERTS.DETAILS(alert.id)}>{alert.details}</a></td>
         <td>{alert.detection_type}</td>
         <td><Subsystem subsystem={alert.subsystem} /></td>
         <td>{moment(alert.created_at).format()}</td>

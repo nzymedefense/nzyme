@@ -99,6 +99,7 @@ import Dot11MonitoredNetworkDetailsPage from "./components/dot11/monitoring/Dot1
 import Dot11MonitoredBSSIDConfigurationImportPage
   from "./components/dot11/monitoring/Dot11MonitoredBSSIDConfigurationImportPage";
 import AlertsPage from "./components/alerts/AlertsPage";
+import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -353,6 +354,7 @@ function App() {
 
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
+                          <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>
