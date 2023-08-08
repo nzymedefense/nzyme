@@ -215,7 +215,7 @@ public class Dot11NetworkMonitor {
         }
 
         Map<String, List<Integer>> affectedBSSIDs = Maps.newHashMap();
-        for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
+        /*for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
             if (bssid.ssids().contains(monitoredSSID.ssid())) {
                 // This is a BSSID advertising our network.
 
@@ -250,7 +250,7 @@ public class Dot11NetworkMonitor {
                     }
                 }
             }
-        }
+        }*/
 
         return Dot11NetworkMonitorResult.create(
                 Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS,
