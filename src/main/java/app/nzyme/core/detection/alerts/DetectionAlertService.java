@@ -12,10 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
+import java.util.*;
 
 public class DetectionAlertService {
 
@@ -133,6 +130,35 @@ public class DetectionAlertService {
             }
 
             return query.mapTo(DetectionAlertEntry.class).list();
+        });
+    }
+
+    public Optional<DetectionAlertEntry> findAlert(UUID uuid,
+                                                   @Nullable UUID organizationId,
+                                                   @Nullable UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT * FROM detection_alerts WHERE uuid = :uuid")
+                        .bind("uuid", uuid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("uuid", uuid);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", uuid);
+            }
+
+            return query.mapTo(DetectionAlertEntry.class).findOne();
         });
     }
 

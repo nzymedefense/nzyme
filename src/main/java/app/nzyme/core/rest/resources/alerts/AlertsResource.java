@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -22,6 +23,8 @@ import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Path("/api/alerts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -47,28 +50,52 @@ public class AlertsResource extends UserAuthenticatedResource {
             List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
                     .findAlertAttributes(alert.id());
 
-            Map<String, String> responseAttributes = Maps.newTreeMap();
-            for (DetectionAlertAttributeEntry attribute : attributes) {
-                responseAttributes.put(attribute.key(), attribute.value());
-            }
-
-            response.add(DetectionAlertDetailsResponse.create(
-                    alert.uuid(),
-                    alert.dot11MonitoredNetworkId(),
-                    alert.tapId(),
-                    alert.detectionType(),
-                    alert.subsystem(),
-                    alert.details(),
-                    responseAttributes,
-                    alert.createdAt(),
-                    alert.lastSeen(),
-                    alert.lastSeen().isAfter(DateTime.now().minusMinutes(1)),
-                    alert.organizationId(),
-                    alert.tenantId()
-            ));
+            response.add(buildDetailsResponse(alert, attributes));
         }
 
         return Response.ok(response).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
+    @Path("/show/{uuid}")
+    public Response findOne(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<DetectionAlertEntry> alert = nzyme.getDetectionAlertService().findAlert(uuid,
+                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        if (alert.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
+                .findAlertAttributes(alert.get().id());
+
+        return Response.ok(buildDetailsResponse(alert.get(), attributes)).build();
+    }
+
+    private DetectionAlertDetailsResponse buildDetailsResponse(DetectionAlertEntry alert,
+                                                               List<DetectionAlertAttributeEntry> attributes) {
+        Map<String, String> responseAttributes = Maps.newTreeMap();
+        for (DetectionAlertAttributeEntry attribute : attributes) {
+            responseAttributes.put(attribute.key(), attribute.value());
+        }
+
+        return DetectionAlertDetailsResponse.create(
+                alert.uuid(),
+                alert.dot11MonitoredNetworkId(),
+                alert.tapId(),
+                alert.detectionType(),
+                alert.subsystem(),
+                alert.details(),
+                responseAttributes,
+                alert.createdAt(),
+                alert.lastSeen(),
+                alert.lastSeen().isAfter(DateTime.now().minusMinutes(1)),
+                alert.organizationId(),
+                alert.tenantId()
+        );
     }
 
 }
