@@ -14,10 +14,18 @@ function MonitoredBSSIDFingerprintsModal(props) {
   const [newFingerprint, setNewFingerprint] = useState("");
   const [formSubmitting, setFormSubmitting] = useState(false);
 
+  const formReady = function() {
+    const existingFingerprints = bssid.fingerprints.map(function(fp) {
+      return fp.fingerprint;
+    });
+
+    return newFingerprint.trim().length === 64 && !existingFingerprints.includes(newFingerprint.trim().toLowerCase())
+  }
+
   const addFingerprint = function (fingerprint) {
     setFormSubmitting(true);
 
-    dot11Service.createMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprint, function () {
+    dot11Service.createMonitoredBSSIDFingerprint(bssid.ssid_uuid, bssid.uuid, fingerprint.trim(), function () {
       bumpRevision();
       notify.show("Fingerprint added.", "success");
       setFormSubmitting(false);
@@ -63,7 +71,7 @@ function MonitoredBSSIDFingerprintsModal(props) {
                        value={newFingerprint}
                        onChange={(e) => setNewFingerprint(e.target.value)} />
                 <button className="btn btn-secondary"
-                        disabled={newFingerprint.trim().length !== 64}
+                        disabled={!formReady()}
                         onClick={() => { addFingerprint(newFingerprint) }}>
                   {formSubmitting ? "Please wait..." : "Add Fingerprint"}
                 </button>

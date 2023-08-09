@@ -193,6 +193,15 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        List<String> existingBSSIDs = Lists.newArrayList();
+        for (MonitoredBSSID monitored : nzyme.getDot11().findMonitoredBSSIDsOfSSID(ssid.get().id())) {
+            existingBSSIDs.add(monitored.bssid());
+        }
+
+        if (existingBSSIDs.contains(req.bssid().toUpperCase())) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         nzyme.getDot11().createMonitoredBSSID(ssid.get().id(), req.bssid());
 
         return Response.status(Response.Status.CREATED).build();
@@ -227,14 +236,26 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                     @Valid CreateDot11MonitoredBSSIDFingerprintRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        Optional<MonitoredSSID> ssid = nzyme.getDot11()
+                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssidUUID, bssidUUID,
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
-        if (bssidId.isEmpty()) {
+        if (ssid.isEmpty() || bssidId.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         if (req.fingerprint().length() != 64) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        List<String> existingFingerprints = Lists.newArrayList();
+        for (MonitoredFingerprint fp : nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(bssidId.get())) {
+            existingFingerprints.add(fp.fingerprint());
+        }
+
+        if (existingFingerprints.contains(req.fingerprint())) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 

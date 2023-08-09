@@ -98,7 +98,11 @@ function Dot11MonitoredNetworkDetailsPage() {
   }
 
   const addBSSIDFormEnabled = function () {
-    return MAC_ADDRESS_REGEX.test(newBSSID);
+    const existingBSSIDs = ssid.bssids.map(function(bssid){
+      return bssid.bssid
+    });
+
+    return MAC_ADDRESS_REGEX.test(newBSSID) && !existingBSSIDs.includes(newBSSID.toUpperCase());
   }
 
   const addChannelFormEnabled = function () {
