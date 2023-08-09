@@ -3,6 +3,7 @@ package app.nzyme.core.configuration.node;
 import com.google.auto.value.AutoValue;
 
 import java.net.URI;
+import java.util.Optional;
 
 
 @AutoValue
@@ -20,9 +21,11 @@ public abstract class NodeConfiguration {
 
     public abstract String cryptoDirectory();
 
+    public abstract Optional<Integer> slowQueryLogThreshold();
+
     public abstract String ntpServer();
 
-    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, String ntpServer) {
+    public static NodeConfiguration create(boolean versionchecksEnabled, boolean fetchOuis, String databasePath, URI restListenUri, URI httpExternalUri, String pluginDirectory, String cryptoDirectory, Optional<Integer> slowQueryLogThreshold, String ntpServer) {
         return builder()
                 .versionchecksEnabled(versionchecksEnabled)
                 .fetchOuis(fetchOuis)
@@ -31,6 +34,7 @@ public abstract class NodeConfiguration {
                 .httpExternalUri(httpExternalUri)
                 .pluginDirectory(pluginDirectory)
                 .cryptoDirectory(cryptoDirectory)
+                .slowQueryLogThreshold(slowQueryLogThreshold)
                 .ntpServer(ntpServer)
                 .build();
     }
@@ -55,9 +59,10 @@ public abstract class NodeConfiguration {
 
         public abstract Builder cryptoDirectory(String cryptoDirectory);
 
+        public abstract Builder slowQueryLogThreshold(Optional<Integer> slowQueryLogThreshold);
+
         public abstract Builder ntpServer(String ntpServer);
 
         public abstract NodeConfiguration build();
     }
-
 }

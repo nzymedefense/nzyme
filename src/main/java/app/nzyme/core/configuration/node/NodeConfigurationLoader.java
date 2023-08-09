@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.Optional;
 
 public class NodeConfigurationLoader {
 
@@ -65,8 +66,17 @@ public class NodeConfigurationLoader {
                 parseHttpExternalUri(),
                 parsePluginDirectory(),
                 parseCryptoDirectory(),
+                parseSlowQueryLogThreshold(),
                 parseNtpServer()
         );
+    }
+
+    private Optional<Integer> parseSlowQueryLogThreshold() {
+        try {
+            return Optional.of(general.getInt(ConfigurationKeys.SLOW_QUERY_LOG_THRESHOLD));
+        } catch(ConfigException.Missing ignored) {
+            return Optional.empty();
+        }
     }
 
     private String parseDatabasePath() {

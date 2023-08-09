@@ -38,16 +38,23 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.SqlLogger;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.jodatime2.JodaTimePlugin;
 import org.jdbi.v3.postgres.PostgresPlugin;
 import org.joda.time.DateTime;
 
 import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 
 public class DatabaseImpl implements Database {
+
+    private static final Logger LOG = LogManager.getLogger(DatabaseImpl.class);
 
     private final NodeConfiguration configuration;
 
@@ -110,6 +117,20 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BSSIDWithTapMapper())
                 .registerRowMapper(new DetectionAlertEntryMapper())
                 .registerRowMapper(new DetectionAlertAttributeEntryMapper());
+
+        if (configuration.slowQueryLogThreshold().isPresent()) {
+            LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());
+
+            this.jdbi.setSqlLogger(new SqlLogger() {
+                @Override
+                public void logAfterExecution(StatementContext context) {
+                    if (context.getElapsedTime(ChronoUnit.MILLIS) > configuration.slowQueryLogThreshold().get()) {
+                        LOG.info("Slow query: <{}ms> [{}]",
+                                context.getElapsedTime(ChronoUnit.MILLIS), context.getParsedSql().getSql());
+                    }
+                }
+            });
+        }
 
         // Run migrations against underlying JDBC connection.
         JdbcConnection connection = new JdbcConnection(jdbi.open().getConnection());
