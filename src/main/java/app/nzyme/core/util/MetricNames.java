@@ -19,6 +19,7 @@ package app.nzyme.core.util;
 
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
+import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
 import app.nzyme.core.integrations.geoip.GeoIpService;
 import app.nzyme.core.ouis.OUIManager;
 import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
@@ -35,5 +36,10 @@ public class MetricNames {
     public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");
     public static final String PASSWORD_HASHING_TIMER = name(PasswordHasher.class, "hashing-timer");
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
+    public static final String DOT11_MONITOR_BSSID = name(Dot11NetworkMonitor.class, "bssid-timing");
+    public static final String DOT11_MONITOR_CHANNEL = name(Dot11NetworkMonitor.class, "channel-timing");
+    public static final String DOT11_MONITOR_SECURITY_SUITES = name(Dot11NetworkMonitor.class, "securitysuites-timing");
+    public static final String DOT11_MONITOR_FINGERPRINT = name(Dot11NetworkMonitor.class, "fingerprint-timing");
+    public static final String DOT11_MONITOR_SIGNAL_TRACKS = name(Dot11NetworkMonitor.class, "signaltracks-timing");
 
 }

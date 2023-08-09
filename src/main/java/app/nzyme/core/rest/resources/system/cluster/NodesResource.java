@@ -196,18 +196,19 @@ public class NodesResource {
     private NodeResponse buildNodeResponse(Node node, TLSKeyAndCertificate tls) {
         Map<String, TimerResponse> timers = Maps.newHashMap();
 
-        Timer pwHashing = nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER);
-        if (pwHashing != null) {
-            Snapshot s = pwHashing.getSnapshot();
-            timers.put("password_hashing", TimerResponse.create(
-                    s.getMean(),
-                    s.getMax(),
-                    s.getMin(),
-                    s.getStdDev(),
-                    s.get99thPercentile(),
-                    pwHashing.getCount()
-            ));
-        }
+        timers.put("password_hashing",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER), timers));
+
+        timers.put("dot11_network_monitor_bssid",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_BSSID), timers));
+        timers.put("dot11_network_monitor_channel",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_CHANNEL), timers));
+        timers.put("dot11_network_monitor_security_suites",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_SECURITY_SUITES), timers));
+        timers.put("dot11_network_monitor_fingerprint",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_FINGERPRINT), timers));
+        timers.put("dot11_network_monitor_signal_tracks",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_SIGNAL_TRACKS), timers));
 
         Map<String, GaugeResponse> gauges = Maps.newHashMap();
         Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
@@ -245,6 +246,22 @@ public class NodesResource {
                 timers,
                 gauges
         );
+    }
+
+    private static TimerResponse buildTimerResponse(Timer pwHashing, Map<String, TimerResponse> timers) {
+        if (pwHashing != null) {
+            Snapshot s = pwHashing.getSnapshot();
+            return TimerResponse.create(
+                    s.getMean(),
+                    s.getMax(),
+                    s.getMin(),
+                    s.getStdDev(),
+                    s.get99thPercentile(),
+                    pwHashing.getCount()
+            );
+        }
+
+        return TimerResponse.create(0, 0, 0, 0, 0, 0);
     }
 
 }
