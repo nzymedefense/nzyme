@@ -111,7 +111,9 @@ public class Dot11NetworkMonitor {
                                 bssid.toUpperCase(), monitoredSSID.ssid(), frequency);
 
                         // Alert.
-                        unexpectedChannels.add(frequency);
+                        if (!unexpectedChannels.contains(frequency)) {
+                            unexpectedChannels.add(frequency);
+                        }
                     }
                 }
             }
