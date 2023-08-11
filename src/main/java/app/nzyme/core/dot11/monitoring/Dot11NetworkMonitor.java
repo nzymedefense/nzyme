@@ -94,13 +94,18 @@ public class Dot11NetworkMonitor {
 
     private Dot11NetworkMonitorResult detectUnexpectedChannels(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
         try (Timer.Context ignored = channelMonitorTimer.time()) {
+            List<String> monitoredBSSIDs = Lists.newArrayList();
+            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+                monitoredBSSIDs.add(monitoredBSSID.bssid());
+            }
+
             List<Integer> expectedFrequencies = Lists.newArrayList();
             for (MonitoredChannel channel : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
                 expectedFrequencies.add((int) channel.frequency());
             }
 
             List<Object> unexpectedChannels = Lists.newArrayList();
-            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+            for (String bssid : monitoredBSSIDs) {
                 for (int frequency : nzyme.getDot11().findChannelsOfSSIDOfBSSID(MINUTES, bssid, monitoredSSID.ssid(), tapUUIDs)) {
                     if (frequency == 0) {
                         continue;
@@ -128,6 +133,11 @@ public class Dot11NetworkMonitor {
 
     private Dot11NetworkMonitorResult detectUnexpectedSecuritySuites(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
         try (Timer.Context ignored = securitySuitesMonitorTimer.time()) {
+            List<String> monitoredBSSIDs = Lists.newArrayList();
+            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+                monitoredBSSIDs.add(monitoredBSSID.bssid());
+            }
+
             ObjectMapper om = new ObjectMapper();
 
             List<String> expectedSecurity = Lists.newArrayList();
@@ -136,7 +146,7 @@ public class Dot11NetworkMonitor {
             }
 
             List<Object> unexpectedSecuritySuites = Lists.newArrayList();
-            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+            for (String bssid : monitoredBSSIDs) {
                 List<String> securitySuites = nzyme.getDot11().findSecuritySuitesOfSSIDOfBSSID(MINUTES, bssid, monitoredSSID.ssid(), tapUUIDs);
 
                 for (String suite : securitySuites) {
@@ -168,9 +178,13 @@ public class Dot11NetworkMonitor {
     }
 
     private Dot11NetworkMonitorResult detectUnexpectedFingerprints(MonitoredSSID monitoredSSID, List<UUID> tapUUIDs) {
+        List<MonitoredBSSID> monitoredBSSIDs = nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id());
+        List<String> monitoredBSSIDsBSSIDs = Lists.newArrayList();
         try (Timer.Context ignored = fingerprintMonitorTimer.time()) {
             Map<String, List<String>> expectedFingerprints = Maps.newHashMap();
-            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+            for (MonitoredBSSID monitoredBSSID : monitoredBSSIDs) {
+                monitoredBSSIDsBSSIDs.add(monitoredBSSID.bssid());
+
                 List<String> fps = Lists.newArrayList();
                 for (MonitoredFingerprint fingerprint : nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(monitoredBSSID.id())) {
                     fps.add(fingerprint.fingerprint());
@@ -180,7 +194,7 @@ public class Dot11NetworkMonitor {
             }
 
             Map<String, List<String>> unexpectedFingerprints = Maps.newHashMap();
-            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+            for (String bssid : monitoredBSSIDsBSSIDs) {
                 List<String> fps = expectedFingerprints.get(bssid);
                 if (fps != null) {
                     for (String fingerprint : nzyme.getDot11().findFingerprintsOfBSSID(MINUTES, bssid, tapUUIDs)) {
