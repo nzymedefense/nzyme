@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.print.attribute.IntegerSyntax;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,16 +74,13 @@ public class Dot11NetworkMonitor {
             }
 
             List<Object> unexpectedBSSIDs = Lists.newArrayList();
-            for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
-                if (bssid.ssids().contains(monitoredSSID.ssid())) {
-                    // This is a BSSID advertising our network.
-                    if (!expectedBSSIDs.contains(bssid.bssid().toUpperCase())) {
-                        // Alert.
-                        LOG.debug("BSSID [{}] advertising SSID [{}] is not in list of expected BSSIDs.",
-                                bssid.bssid().toUpperCase(), monitoredSSID.ssid());
+            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+                if (!expectedBSSIDs.contains(bssid.toUpperCase())) {
+                    // Alert.
+                    LOG.debug("BSSID [{}] advertising SSID [{}] is not in list of expected BSSIDs.",
+                            bssid.toUpperCase(), monitoredSSID.ssid());
 
-                        unexpectedBSSIDs.add(bssid.bssid());
-                    }
+                    unexpectedBSSIDs.add(bssid);
                 }
             }
 
@@ -104,25 +100,18 @@ public class Dot11NetworkMonitor {
             }
 
             List<Object> unexpectedChannels = Lists.newArrayList();
-            for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
-                if (bssid.ssids().contains(monitoredSSID.ssid())) {
-                    // This is a BSSID advertising our network.
+            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+                for (int frequency : nzyme.getDot11().findChannelsOfSSIDOfBSSID(MINUTES, bssid, monitoredSSID.ssid(), tapUUIDs)) {
+                    if (frequency == 0) {
+                        continue;
+                    }
 
-                    for (SSIDChannelDetails ssid : nzyme.getDot11().findSSIDsOfBSSID(MINUTES, bssid.bssid(), tapUUIDs)) {
-                        if (ssid.frequency() == 0) {
-                            continue;
-                        }
+                    if (!expectedFrequencies.contains(frequency)) {
+                        LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected frequency [{}]",
+                                bssid.toUpperCase(), monitoredSSID.ssid(), frequency);
 
-                        // Go through all channel/SSID combinations of the BSSID.
-                        if (ssid.ssid().equals(monitoredSSID.ssid())) {
-                            if (!expectedFrequencies.contains(ssid.frequency())) {
-                                LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected frequency [{}]",
-                                        bssid.bssid().toUpperCase(), monitoredSSID.ssid(), ssid.frequency());
-
-                                // Alert.
-                                unexpectedChannels.add(ssid.frequency());
-                            }
-                        }
+                        // Alert.
+                        unexpectedChannels.add(frequency);
                     }
                 }
             }
@@ -145,37 +134,24 @@ public class Dot11NetworkMonitor {
             }
 
             List<Object> unexpectedSecuritySuites = Lists.newArrayList();
-            for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
-                if (bssid.ssids().contains(monitoredSSID.ssid())) {
-                    // This is a BSSID advertising our network.
+            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+                List<String> securitySuites = nzyme.getDot11().findSecuritySuitesOfSSIDOfBSSID(MINUTES, bssid, monitoredSSID.ssid(), tapUUIDs);
 
-                    for (SSIDChannelDetails ssid : nzyme.getDot11().findSSIDsOfBSSID(MINUTES, bssid.bssid(), tapUUIDs)) {
-                        // Go through all channel/SSID combinations of the BSSID.
-                        if (ssid.ssid().equals(monitoredSSID.ssid())) {
-                            Optional<SSIDDetails> ssidDetails = nzyme.getDot11().findSSIDDetails(MINUTES, bssid.bssid(), ssid.ssid(), tapUUIDs);
+                for (String suite : securitySuites) {
+                    Dot11SecuritySuiteJson info;
+                    try {
+                        info = om.readValue(suite, Dot11SecuritySuiteJson.class);
+                    } catch (JsonProcessingException e) {
+                        LOG.error("Could not read SSID [{}] security suites.", monitoredSSID.ssid(), e);
+                        continue;
+                    }
+                    if (!expectedSecurity.contains(Dot11.securitySuitesToIdentifier(info))) {
+                        LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected security suites [{}]",
+                                bssid.toUpperCase(), monitoredSSID.ssid(), suite);
 
-                            if (ssidDetails.isEmpty()) {
-                                continue;
-                            }
-
-                            for (String suite : ssidDetails.get().securitySuites()) {
-                                Dot11SecuritySuiteJson info;
-                                try {
-                                    info = om.readValue(suite, Dot11SecuritySuiteJson.class);
-                                } catch (JsonProcessingException e) {
-                                    LOG.error("Could not read SSID [{}] security suites.", ssid.ssid(), e);
-                                    continue;
-                                }
-                                if (!expectedSecurity.contains(Dot11.securitySuitesToIdentifier(info))) {
-                                    LOG.debug("BSSID [{}] advertising SSID [{}] is using unexpected security suites [{}]",
-                                            bssid.bssid().toUpperCase(), monitoredSSID.ssid(), suite);
-
-                                    String ssi = Dot11.securitySuitesToIdentifier(info);
-                                    if (!unexpectedSecuritySuites.contains(ssi)) {
-                                        unexpectedSecuritySuites.add(ssi);
-                                    }
-                                }
-                            }
+                        String ssi = Dot11.securitySuitesToIdentifier(info);
+                        if (!unexpectedSecuritySuites.contains(ssi)) {
+                            unexpectedSecuritySuites.add(ssi);
                         }
                     }
                 }
@@ -202,25 +178,22 @@ public class Dot11NetworkMonitor {
             }
 
             Map<String, List<String>> unexpectedFingerprints = Maps.newHashMap();
-            for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(MINUTES, tapUUIDs)) {
-                if (bssid.ssids().contains(monitoredSSID.ssid())) {
-                    // This is a BSSID advertising our network.
-                    List<String> fps = expectedFingerprints.get(bssid.bssid());
-                    if (fps != null) {
-                        for (String fingerprint : bssid.fingerprints()) {
-                            if (!fps.contains(fingerprint)) {
-                                LOG.debug("BSSID [{}] advertising SSID [{}] has unexpected fingerprint [{}]",
-                                        bssid.bssid().toUpperCase(), monitoredSSID.ssid(), fingerprint);
+            for (String bssid : nzyme.getDot11().findAllBSSIDsAdvertisingSSID(MINUTES, monitoredSSID.ssid(), tapUUIDs)) {
+                List<String> fps = expectedFingerprints.get(bssid);
+                if (fps != null) {
+                    for (String fingerprint : nzyme.getDot11().findFingerprintsOfBSSID(MINUTES, bssid, tapUUIDs)) {
+                        if (!fps.contains(fingerprint)) {
+                            LOG.debug("BSSID [{}] advertising SSID [{}] has unexpected fingerprint [{}]",
+                                    bssid.toUpperCase(), monitoredSSID.ssid(), fingerprint);
 
-                                if (unexpectedFingerprints.containsKey(bssid.bssid())) {
-                                    unexpectedFingerprints.get(bssid.bssid()).add(fingerprint);
-                                } else {
-                                    List<String> fingerprints = Lists.newArrayList();
-                                    fingerprints.add(fingerprint);
-                                    unexpectedFingerprints.put(bssid.bssid(), fingerprints);
-                                }
-
+                            if (unexpectedFingerprints.containsKey(bssid)) {
+                                unexpectedFingerprints.get(bssid).add(fingerprint);
+                            } else {
+                                List<String> fingerprints = Lists.newArrayList();
+                                fingerprints.add(fingerprint);
+                                unexpectedFingerprints.put(bssid, fingerprints);
                             }
+
                         }
                     }
                 }

@@ -89,6 +89,63 @@ public class Dot11 {
         );
     }
 
+    public List<String> findAllBSSIDsAdvertisingSSID(int minutes, String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(b.bssid) FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "WHERE s.ssid = :ssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
+                        .bind("ssid", ssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<String> findFingerprintsOfBSSID(int minutes, String bssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(f.fingerprint) FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
+                        .bind("bssid", bssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<String> findSecuritySuitesOfSSIDOfBSSID(int minutes, String bssid, String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(s.security_suites) FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND b.created_at > :cutoff " +
+                                "AND b.tap_uuid IN (<taps>)")
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<Integer> findChannelsOfSSIDOfBSSID(int minutes, String bssid, String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(c.frequency) FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "LEFT JOIN dot11_channels AS c ON s.id = c.ssid_id " +
+                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND b.created_at > :cutoff " +
+                                "AND b.tap_uuid IN (<taps>) AND c.frequency IS NOT NULL")
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(Integer.class)
+                        .list()
+        );
+    }
+
     public List<BSSIDWithTap> findAllBSSIDSOfAllTenantsWithFingerprint(int minutes, String fingerprint) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid AS bssid, b.tap_uuid AS tap_uuid " +
