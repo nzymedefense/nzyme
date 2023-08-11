@@ -712,6 +712,33 @@ public class Dot11 {
         );
     }
 
+    public void bumpMonitoredSSIDUpdatedAt(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle -> {
+            Update update;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
+                                "WHERE uuid = :uuid ")
+                        .bind("uuid", uuid);
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
+                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            update.execute();
+        });
+    }
+
     public void setMonitoredSSIDEnabledState(UUID uuid, boolean enabled, UUID organizationId, UUID tenantId) {
         nzyme.getDatabase().useHandle(handle -> {
             Update update;
@@ -799,16 +826,16 @@ public class Dot11 {
             Query query;
             if (organizationId == null && tenantId == null) {
                 // Super Admin.
-                query = handle.createQuery("SELECT * FROM dot11_monitored_networks");
+                query = handle.createQuery("SELECT * FROM dot11_monitored_networks ORDER BY ssid ASC");
             } else if (organizationId != null && tenantId == null) {
                 // Organization Admin.
                 query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
-                                "WHERE organization_id = :organization_id")
+                                "WHERE organization_id = :organization_id ORDER BY ssid ASC")
                         .bind("organization_id", organizationId);
             } else {
                 // Tenant User.
                 query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id ORDER BY ssid ASC")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId);
             }
@@ -871,37 +898,6 @@ public class Dot11 {
                         .mapTo(MonitoredFingerprint.class)
                         .list()
         );
-    }
-
-    public Optional<UUID> findSSIDMonitorUUID(String bssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle -> {
-            Query query;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE b.bssid = :bssid AND s.enabled = true")
-                        .bind("bssid", bssid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE b.bssid = :bssid AND s.enabled = true AND s.organization_id = :organization_id")
-                        .bind("bssid", bssid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE b.bssid = :bssid AND s.enabled = true " +
-                                "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
-                        .bind("bssid", bssid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            return query.mapTo(UUID.class).findOne();
-        });
     }
 
     public Optional<UUID> findSSIDMonitorUUID(String bssid, String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {

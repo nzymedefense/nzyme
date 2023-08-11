@@ -204,6 +204,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredBSSID(ssid.get().id(), req.bssid());
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -223,6 +226,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().deleteMonitoredBSSID(bssidId.get());
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
         return Response.ok().build();
     }
@@ -261,6 +267,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createdMonitoredBSSIDFingerprint(bssidId.get(), req.fingerprint());
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -281,6 +290,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().deleteMonitoredBSSIDFingerprint(bssidId.get(), fingerprintUUID);
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
         return Response.ok().build();
     }
@@ -314,6 +326,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredChannel(ssid.get().id(), req.frequency());
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -333,6 +348,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().deleteMonitoredChannel(ssid.get().id(), channelUUID);
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
         return Response.ok().build();
     }
@@ -367,6 +385,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredSecuritySuite(ssid.get().id(), req.suite());
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -387,6 +408,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().deleteMonitoredSecuritySuite(ssid.get().id(), suiteUUID);
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.ok().build();
     }
 
@@ -403,6 +427,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 authenticatedUser.getTenantId()
         );
 
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                uuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
         return Response.ok().build();
     }
 
@@ -418,6 +445,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 authenticatedUser.getOrganizationId(),
                 authenticatedUser.getTenantId()
         );
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
+                uuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
         return Response.ok().build();
     }
