@@ -133,6 +133,29 @@ public class DetectionAlertService {
         });
     }
 
+    public long countAlerts(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle -> {
+            Query query;
+            if (organizationId == null && tenantId == null) {
+                // Super Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts");
+            } else if (organizationId != null && tenantId == null) {
+                // Organization Admin.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id")
+                        .bind("organization_id", organizationId);
+            } else {
+                // Tenant User.
+                query = handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId);
+            }
+
+            return query.mapTo(Long.class).one();
+        });
+    }
+
     public Optional<DetectionAlertEntry> findAlert(UUID uuid,
                                                    @Nullable UUID organizationId,
                                                    @Nullable UUID tenantId) {

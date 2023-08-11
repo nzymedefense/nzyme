@@ -4,11 +4,12 @@ import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import AlertsTableRow from "./AlertsTableRow";
 import AutoRefreshSelector from "../misc/AutoRefreshSelector";
+import Paginator from "../misc/Paginator";
 
 const detectionAlertsService = new DetectionAlertsService();
 
-const loadData = function(setAlerts) {
-  detectionAlertsService.findAllAlerts(setAlerts);
+const loadData = function(setAlerts, page, perPage) {
+  detectionAlertsService.findAllAlerts(setAlerts, perPage, (page-1)*perPage);
 }
 
 function AlertsTable() {
@@ -17,25 +18,27 @@ function AlertsTable() {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
+  const perPage = 25;
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    loadData(setAlerts);
+    setAlerts(null);
+    loadData(setAlerts, page, perPage);
 
     const timer = setInterval(() => {
       if (isAutoRefresh) {
-        loadData(setAlerts);
+        loadData(setAlerts, page, perPage);
       }
     }, 15000);
 
     return () => clearInterval(timer);
-  }, [isAutoRefresh])
-
-
+  }, [isAutoRefresh, page])
 
   if (!alerts) {
     return <LoadingSpinner />
   }
 
-  if (alerts.length === 0) {
+  if (alerts.alerts.length === 0) {
     return (
         <div className="alert alert-info mb-0">
           No alerts recorded yet.
@@ -51,7 +54,7 @@ function AlertsTable() {
                                lastUpdated={lastUpdated} />
         </div>
 
-        <table className="table table-sm table-hover table-striped mb-0">
+        <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
             <th>&nbsp;</th>
@@ -63,11 +66,13 @@ function AlertsTable() {
           </tr>
           </thead>
           <tbody>
-          {alerts.map(function(alert, i){
+          {alerts.alerts.map(function(alert, i){
             return <AlertsTableRow key={"alert-" + i} alert={alert} />
           })}
           </tbody>
         </table>
+
+        <Paginator itemCount={alerts.total} perPage={perPage} setPage={setPage} page={page} />
       </React.Fragment>
   )
 

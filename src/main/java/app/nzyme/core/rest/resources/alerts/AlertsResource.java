@@ -6,19 +6,19 @@ import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
+import app.nzyme.core.rest.responses.alerts.DetectionAlertListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -30,30 +30,44 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class AlertsResource extends UserAuthenticatedResource {
 
+    private static final Logger LOG = LogManager.getLogger(UserAuthenticatedResource.class);
+
     @Inject
     private NzymeNode nzyme;
 
     @GET
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_view" })
-    public Response findAll(@Context SecurityContext sc) {
+    public Response findAll(@Context SecurityContext sc,
+                            @QueryParam("limit") int limit,
+                            @QueryParam("offset") int offset) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
 
         List<DetectionAlertEntry> alerts = nzyme.getDetectionAlertService().findAllAlerts(
                 authenticatedUser.getOrganizationId(),
                 authenticatedUser.getTenantId(),
-                25,
-                0
+                limit,
+                offset
         );
 
-        List<DetectionAlertDetailsResponse> response = Lists.newArrayList();
+        long total = nzyme.getDetectionAlertService().countAlerts(
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        List<DetectionAlertDetailsResponse> responsesList = Lists.newArrayList();
         for (DetectionAlertEntry alert : alerts) {
             List<DetectionAlertAttributeEntry> attributes = nzyme.getDetectionAlertService()
                     .findAlertAttributes(alert.id());
 
-            response.add(buildDetailsResponse(alert, attributes));
+            responsesList.add(buildDetailsResponse(alert, attributes));
         }
 
-        return Response.ok(response).build();
+        return Response.ok(DetectionAlertListResponse.create(total, responsesList)).build();
     }
 
     @GET
