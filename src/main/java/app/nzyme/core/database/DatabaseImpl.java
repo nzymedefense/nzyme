@@ -5,6 +5,7 @@ import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntryMapper;
+import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntryMapper;
 import app.nzyme.core.distributed.database.NodeEntryMapper;
 import app.nzyme.core.distributed.database.metrics.GaugeHistogramBucketMapper;
 import app.nzyme.core.distributed.database.metrics.TimerSnapshotMapper;
@@ -116,7 +117,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new MonitoredSecuritySuiteMapper())
                 .registerRowMapper(new BSSIDWithTapMapper())
                 .registerRowMapper(new DetectionAlertEntryMapper())
-                .registerRowMapper(new DetectionAlertAttributeEntryMapper());
+                .registerRowMapper(new DetectionAlertAttributeEntryMapper())
+                .registerRowMapper(new DetectionAlertTimelineEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

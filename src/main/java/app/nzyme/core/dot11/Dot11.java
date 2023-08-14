@@ -148,7 +148,8 @@ public class Dot11 {
 
     public List<BSSIDWithTap> findAllBSSIDSOfAllTenantsWithFingerprint(int minutes, String fingerprint) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT b.bssid AS bssid, b.tap_uuid AS tap_uuid " +
+                handle.createQuery("SELECT b.bssid AS bssid, b.tap_uuid AS tap_uuid, " +
+                                "AVG(b.signal_strength_average) AS signal_strength " +
                                 "FROM dot11_fingerprints fp " +
                                 "LEFT JOIN dot11_bssids AS b ON b.id = fp.bssid_id " +
                                 "WHERE b.created_at > :cutoff AND fp.fingerprint = :fingerprint " +

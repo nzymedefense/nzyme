@@ -3,6 +3,7 @@ package app.nzyme.core.detection.alerts;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
+import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
@@ -10,6 +11,7 @@ import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
+import org.joda.time.DateTime;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -17,6 +19,8 @@ import java.util.*;
 public class DetectionAlertService {
 
     private static final Logger LOG = LogManager.getLogger(DetectionAlertService.class);
+
+    public static final int ACTIVE_THRESHOLD_MINUTES = 5;
 
     private final NzymeNode nzyme;
 
@@ -32,7 +36,8 @@ public class DetectionAlertService {
                            Subsystem subsystem,
                            String details,
                            Map<String, String> attributes,
-                           String[] comparisonAttributeKeys) {
+                           String[] comparisonAttributeKeys,
+                           @Nullable Float signalStrength) {
         TreeMap<String, String> comparisonAttributes = Maps.newTreeMap();
         for (String key : comparisonAttributeKeys) {
             String value = attributes.get(key);
@@ -51,17 +56,54 @@ public class DetectionAlertService {
                 comparisonAttributes
         );
 
-        if (alertWithComparisonChecksumExists(comparisonChecksum)) {
+        Optional<DetectionAlertEntry> existingAlert = findAlertWithComparisonChecksum(comparisonChecksum);
+        if (existingAlert.isPresent()) {
             // This alert has been raised in the past.
-            LOG.debug("Alert of type [{}] with checksum [{}] is not new. Updating last_seen.",
+            LOG.debug("Alert of type [{}] with checksum [{}] is not new. Updating.",
                     detectionType, comparisonChecksum);
 
             nzyme.getDatabase().withHandle(handle ->
                     handle.createUpdate("UPDATE detection_alerts SET last_seen = NOW() " +
-                                    "WHERE comparison_checksum = :comparison_checksum")
-                            .bind("comparison_checksum", comparisonChecksum)
+                                    "WHERE id = :id")
+                            .bind("id", existingAlert.get().id())
                             .execute()
             );
+
+            // Update alert attributes.
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+                nzyme.getDatabase().useHandle(handle ->
+                        handle.createUpdate("UPDATE detection_alert_attributes " +
+                                        "SET attribute_value = :attribute_value " +
+                                        "WHERE detection_alert_id = :detection_alert_id " +
+                                        "AND attribute_key = :attribute_key")
+                                .bind("detection_alert_id", existingAlert.get().id())
+                                .bind("attribute_key", attribute.getKey())
+                                .bind("attribute_value", attribute.getValue())
+                                .execute()
+                );
+            }
+
+            /*
+             * Write alert timeline.
+             *
+             * To show when a potentially re-activated alert was seen, we store a timeline of alerts. A new timeline
+             * entry starts when the alert is not currently active. If the alert is currently active, the current
+             * timeline entry is extended. This allows for very easy querying.
+             */
+            if (existingAlert.get().lastSeen()
+                    .isAfter(DateTime.now().minusMinutes(DetectionAlertService.ACTIVE_THRESHOLD_MINUTES))) {
+                // Active alert. Extend existing timeline entry.
+                nzyme.getDatabase().useHandle(handle ->
+                        handle.createUpdate("UPDATE detection_alert_timeline SET seen_to = NOW() " +
+                                        "WHERE id = (SELECT MAX(id) FROM detection_alert_timeline " +
+                                        "WHERE detection_alert_id = :detection_alert_id)")
+                                .bind("detection_alert_id", existingAlert.get().id())
+                                .execute()
+                );
+            } else {
+                // Inactive alert. Create new timeline entry.
+                createAlertTimelineEntry(existingAlert.get().id());
+            }
 
             return;
         }
@@ -96,7 +138,11 @@ public class DetectionAlertService {
                             .execute()
             );
         }
+
+        // Write initial alert timeline entry. See comment in re-raised alert update above.
+        createAlertTimelineEntry(alertId);
     }
+
 
     public List<DetectionAlertEntry> findAllAlerts(@Nullable UUID organizationId,
                                                    @Nullable UUID tenantId,
@@ -195,14 +241,49 @@ public class DetectionAlertService {
         );
     }
 
-    public boolean alertWithComparisonChecksumExists(String comparisonChecksum) {
+    public List<DetectionAlertTimelineEntry> findAlertTimeline(long alertId,
+                                                               int limit,
+                                                               int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM detection_alerts " +
-                                "WHERE comparison_checksum = :comparison_checksum")
-                        .bind("comparison_checksum", comparisonChecksum)
+                handle.createQuery("SELECT * FROM detection_alert_timeline " +
+                                "WHERE detection_alert_id = :detection_alert_id " +
+                                "ORDER BY seen_to DESC " +
+                                "LIMIT :limit OFFSET :offset")
+                        .bind("detection_alert_id", alertId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(DetectionAlertTimelineEntry.class)
+                        .list()
+        );
+    }
+
+    public long countAlertTimelineEntries(long alertId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM detection_alert_timeline " +
+                                "WHERE detection_alert_id = :detection_alert_id")
+                        .bind("detection_alert_id", alertId)
                         .mapTo(Long.class)
                         .one()
-        ) > 0;
+        );
+    }
+
+    private Optional<DetectionAlertEntry> findAlertWithComparisonChecksum(String comparisonChecksum) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE comparison_checksum = :comparison_checksum")
+                        .bind("comparison_checksum", comparisonChecksum)
+                        .mapTo(DetectionAlertEntry.class)
+                        .findOne()
+        );
+    }
+
+    private void createAlertTimelineEntry(long alertId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO detection_alert_timeline(detection_alert_id, seen_from, " +
+                                "seen_to) VALUES(:detection_alert_id, NOW(), NOW())")
+                        .bind("detection_alert_id", alertId)
+                        .execute()
+        );
     }
 
     private String buildChecksum(@Nullable UUID organizationId,

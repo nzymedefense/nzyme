@@ -165,6 +165,7 @@ pub struct Dot11ClientReport {
 #[derive(Serialize)]
 pub struct Dot11AlertReport {
     pub alert_type: Dot11AlertType,
+    pub signal_strength: i8,
     pub attributes: HashMap<String, Dot11AlertAttribute>
 }
 

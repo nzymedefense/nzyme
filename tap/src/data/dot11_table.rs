@@ -607,6 +607,7 @@ impl Dot11Table {
                     alerts_report.push(
                         Dot11AlertReport {
                             alert_type: alert.alert_type.clone(),
+                            signal_strength: alert.signal_strength,
                             attributes: alert.attributes.clone()
                         }
                     );

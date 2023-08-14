@@ -279,7 +279,8 @@ public class Dot11Table implements DataTable {
                             Subsystem.DOT11,
                             "Bandit \"Pwnagotchi\" detected in range.",
                             attributes,
-                            new String[]{"identity"}
+                            new String[]{"identity"},
+                            alert.signalStrength().floatValue()
                     );
 
                     break;

@@ -3,11 +3,11 @@ import {useParams} from "react-router-dom";
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ApiRoutes from "../../util/ApiRoutes";
-import ToggleMonitoringStatusButton from "../dot11/monitoring/ToggleMonitoringStatusButton";
-import RefreshGears from "../misc/RefreshGears";
 import moment from "moment/moment";
 import Subsystem from "../misc/Subsystem";
 import AlertActiveIndicator from "./AlertActiveIndicator";
+import AlertDetails from "./alertdetails/AlertDetails";
+import AlertTimeline from "./AlertTimeline";
 
 const alertsService = new DetectionAlertsService();
 
@@ -55,7 +55,7 @@ function AlertDetailsPage() {
             <div className="card">
               <div className="card-body">
                 <AlertActiveIndicator active={alert.is_active} />{' '}&nbsp;
-                {alert.details}
+                <strong>{alert.details}</strong>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@ function AlertDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Alert Details</h3>
+                <h3>Alert Type</h3>
 
                 <dl className="mb-0">
                   <dt>Detection Type</dt>
@@ -93,19 +93,20 @@ function AlertDetailsPage() {
           </div>
         </div>
 
+        <AlertDetails alert={alert} />
+
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Parameters</h3>
+                <h3>Timeline</h3>
 
-                <pre>
-                  {JSON.stringify(alert.attributes, null, 2)}
-                </pre>
+                <AlertTimeline alertUUID={alert.id} />
               </div>
             </div>
           </div>
         </div>
+
       </React.Fragment>
   )
 

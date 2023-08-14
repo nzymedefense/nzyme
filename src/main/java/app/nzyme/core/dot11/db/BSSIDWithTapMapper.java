@@ -13,7 +13,8 @@ public class BSSIDWithTapMapper implements RowMapper<BSSIDWithTap> {
     public BSSIDWithTap map(ResultSet rs, StatementContext ctx) throws SQLException {
         return BSSIDWithTap.create(
                 rs.getString("bssid"),
-                UUID.fromString(rs.getString("tap_uuid"))
+                UUID.fromString(rs.getString("tap_uuid")),
+                rs.getFloat("signal_strength")
         );
     }
 

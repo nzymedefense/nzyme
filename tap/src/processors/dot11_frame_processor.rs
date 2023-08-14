@@ -108,9 +108,15 @@ impl Dot11FrameProcessor {
                 if let Some(pwnagotchi) = &frame.tagged_parameters.pwnagotchi_data {
                     // Pwnagotchi payload detected in tagged parameters. Raise alert.
 
+                    let signal_strength = match frame.header.antenna_signal {
+                        Some(s) => s,
+                        None => -1
+                    };
+
                     table.register_alert(Dot11Alert {
                         alert_type: Dot11AlertType::PwnagotchiDetected,
-                        attributes: build_pwnagotchi_alert_attributes(pwnagotchi)
+                        attributes: build_pwnagotchi_alert_attributes(pwnagotchi),
+                        signal_strength
                     })
                 }
 

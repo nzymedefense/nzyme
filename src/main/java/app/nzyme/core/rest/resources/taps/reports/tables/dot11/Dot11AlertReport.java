@@ -20,13 +20,16 @@ public abstract class Dot11AlertReport {
 
     public abstract AlertType alertType();
     public abstract Map<String, Map<AlertAttributeType, Object>> attributes();
+    public abstract Long signalStrength();
 
     @JsonCreator
     public static Dot11AlertReport create(@JsonProperty("alert_type") AlertType alertType,
-                                          @JsonProperty("attributes") Map<String, Map<AlertAttributeType, Object>> attributes) {
+                                          @JsonProperty("attributes") Map<String, Map<AlertAttributeType, Object>> attributes,
+                                          @JsonProperty("signal_strength") Long signalStrength) {
         return builder()
                 .alertType(alertType)
                 .attributes(attributes)
+                .signalStrength(signalStrength)
                 .build();
     }
 
@@ -39,6 +42,8 @@ public abstract class Dot11AlertReport {
         public abstract Builder alertType(AlertType alertType);
 
         public abstract Builder attributes(Map<String, Map<AlertAttributeType, Object>> attributes);
+
+        public abstract Builder signalStrength(Long signalStrength);
 
         public abstract Dot11AlertReport build();
     }

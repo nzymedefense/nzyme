@@ -15,5 +15,6 @@ pub enum Dot11AlertAttribute {
 #[derive(Debug)]
 pub struct Dot11Alert {
     pub alert_type: Dot11AlertType,
+    pub signal_strength: i8,
     pub attributes: HashMap<String, Dot11AlertAttribute>
 }

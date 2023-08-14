@@ -70,7 +70,8 @@ public class DetectionAlertMonitor {
                                         "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
                                                 "unexpected BSSID \"" + bssid + "\"",
                                         attributes,
-                                        new String[]{"bssid"}
+                                        new String[]{"bssid"},
+                                        null
                                 );
                             }
                             break;
@@ -90,7 +91,8 @@ public class DetectionAlertMonitor {
                                         "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
                                                 "unexpected frequency " + frequency + "MHz",
                                         attributes,
-                                        new String[]{"frequency"}
+                                        new String[]{"frequency"},
+                                        null
                                 );
                             }
                             break;
@@ -110,7 +112,8 @@ public class DetectionAlertMonitor {
                                         "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
                                                 "unexpected security suites \"" + suite + "\"",
                                         attributes,
-                                        new String[]{"suite"}
+                                        new String[]{"suite"},
+                                        null
                                 );
                             }
                             break;
@@ -133,7 +136,8 @@ public class DetectionAlertMonitor {
                                             "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                                     "with unexpected fingerprint \"" + fingerprint + "\".",
                                             attributes,
-                                            new String[]{"bssid", "fingerprint"}
+                                            new String[]{"bssid", "fingerprint"},
+                                            null
                                     );
                                 }
                             }
@@ -157,7 +161,8 @@ public class DetectionAlertMonitor {
                                             "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                                     "with multiple signal tracks on channel \"" + channel + "\".",
                                             attributes,
-                                            new String[]{"bssid", "channel"}
+                                            new String[]{"bssid", "channel"},
+                                            null
                                     );
                                 }
                                 }

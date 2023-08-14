@@ -17,6 +17,8 @@
 
 package app.nzyme.core.util;
 
+import org.joda.time.Duration;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,5 +44,16 @@ public class Tools {
         return m.find();
     }
 
+    public static String durationToHumanReadable(Duration duration) {
+        if (duration.getStandardHours() < 2) {
+            return duration.getStandardMinutes() + " minutes";
+        }
+
+        if (duration.getStandardDays() <= 3) {
+            return duration.getStandardHours() + " hours";
+        }
+
+        return duration.getStandardDays() + " days";
+    }
 
 }

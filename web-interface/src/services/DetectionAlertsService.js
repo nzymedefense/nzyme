@@ -14,6 +14,12 @@ class DetectionAlertsService {
     })
   }
 
+  findAlertTimeline(uuid, setTimeline, limit, offset) {
+    RESTClient.get('/alerts/show/' + uuid + '/timeline', {limit: limit, offset: offset}, function (response) {
+      setTimeline(response.data)
+    })
+  }
+
 }
 
 export default DetectionAlertsService;

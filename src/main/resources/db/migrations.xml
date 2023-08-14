@@ -3605,4 +3605,24 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_detection_alert_timeline" author="lennartkoopmann">
+        <createTable tableName="detection_alert_timeline">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="detection_alert_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="seen_from" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="seen_to" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
