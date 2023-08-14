@@ -8,6 +8,7 @@ import Subsystem from "../misc/Subsystem";
 import AlertActiveIndicator from "./AlertActiveIndicator";
 import AlertDetails from "./alertdetails/AlertDetails";
 import AlertTimeline from "./AlertTimeline";
+import RelatedMonitoredNetwork from "./RelatedMonitoredNetwork";
 
 const alertsService = new DetectionAlertsService();
 
@@ -95,8 +96,10 @@ function AlertDetailsPage() {
 
         <AlertDetails alert={alert} />
 
+        <RelatedMonitoredNetwork networkId={alert.dot11_monitored_network_id} />
+
         <div className="row mt-3">
-          <div className="col-md-6">
+          <div className="col-md-12">
             <div className="card">
               <div className="card-body">
                 <h3>Timeline</h3>

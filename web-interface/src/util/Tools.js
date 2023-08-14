@@ -29,3 +29,9 @@ export function dot11FrequencyToChannel(frequency) {
 export function singleTapSelected(selectedTaps) {
   return selectedTaps !== "*" && (Array.isArray(selectedTaps) && selectedTaps.length === 1)
 }
+
+export function userHasPermission(user, permission) {
+  return user.is_orgadmin
+      || user.is_superadmin
+      || user.feature_permissions.includes(permission)
+}

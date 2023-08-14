@@ -105,11 +105,11 @@ class Dot11Service {
     })
   }
 
-  findMonitoredSSID(uuid, setMonitoredSSID, successCallback) {
+  findMonitoredSSID(uuid, setMonitoredSSID, successCallback, errorCallback = undefined) {
     RESTClient.get("/dot11/monitoring/ssids/show/" + uuid, {}, function (response) {
       setMonitoredSSID(response.data);
       successCallback();
-    })
+    }, errorCallback)
   }
 
   createMonitoredSSID(ssid, successCallback, errorCallback) {

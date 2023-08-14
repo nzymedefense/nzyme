@@ -5,6 +5,7 @@ import SidebarSubmenu from './SidebarSubmenu'
 import UserProfileBlock from "./UserProfileBlock";
 
 import {UserContext} from "../../App";
+import {userHasPermission} from "../../util/Tools";
 
 function Sidebar() {
 
@@ -63,34 +64,26 @@ function Sidebar() {
             href={ApiRoutes.DOT11.MONITORING.INDEX}
             title="Monitoring"
             icon={<i className="sidebar-icon fa-solid fa-shield-halved" />}
-            show={user.is_orgadmin
-                || user.is_superadmin
-                || user.feature_permissions.includes("dot11_monitoring_manage") } />
+            show={userHasPermission(user, "dot11_monitoring_manage")} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Alerts"
                       subhref="/alerts"
                       icon={<i className="sidebar-icon fa-solid fa-bell"></i>}
-                      show={user.is_orgadmin
-                          || user.is_superadmin
-                          || user.feature_permissions.includes("alerts_view")
-                          || user.feature_permissions.includes("alerts_manage") }>
+                      show={userHasPermission(user, "alerts_view")
+                          || userHasPermission(user, "alerts_manage")}>
         <NavigationLink
             href={ApiRoutes.ALERTS.INDEX}
             title="Overview"
             icon={<i className="sidebar-icon fa-solid fa-ranking-star" />}
-            show={user.is_orgadmin
-                || user.is_superadmin
-                || user.feature_permissions.includes("alerts_view")
-                || user.feature_permissions.includes("alerts_manage") } />
+            show={userHasPermission(user, "alerts_view")
+                || userHasPermission(user, "alerts_manage")} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Retrospective"
                       subhref="/retro"
                       icon={<i className="sidebar-icon fa-solid fa-box-archive" />}
-                      show={user.is_orgadmin
-                          || user.is_superadmin
-                          || user.feature_permissions.includes("retrospective_view") }>
+                      show={userHasPermission(user, "retrospective_view")}>
         <NavigationLink
             href={ApiRoutes.RETRO.SEARCH.INDEX}
             title="Search"
@@ -110,10 +103,8 @@ function Sidebar() {
       <SidebarSubmenu title="Reporting"
                       subhref="/reporting"
                       icon={<i className="sidebar-icon fa-solid fa-file-circle-check" />}
-                      show={user.is_orgadmin
-                          || user.is_superadmin
-                          || user.feature_permissions.includes("reports_manage")
-                          || user.feature_permissions.includes("reports_view")}>
+                      show={userHasPermission(user, "reports_manage")
+                          || userHasPermission(user, "reports_view")} >
         <NavigationLink
             href={ApiRoutes.REPORTING.INDEX}
             title="Reporting"

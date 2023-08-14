@@ -11,12 +11,11 @@ import MonitoredChannelsTable from "./MonitoredChannelsTable";
 import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
 import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
-import MonitoredNetworkSingleAlertStatus from "./MonitoredNetworkSingleAlertStatus";
 import ChannelDeviations from "./deviations/ChannelDeviations";
 import SecuritySuiteDeviations from "./deviations/SecuritySuiteDeviations";
 import FingerprintDeviations from "./deviations/FingerprintDeviations";
 import BSSIDDeviations from "./deviations/BSSIDDeviations";
-import HelpBubble from "../../misc/HelpBubble";
+import MonitoredNetworkAlertStatusTable from "./MonitoredNetworkAlertStatusTable";
 
 const dot11Service = new Dot11Service();
 const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
@@ -193,36 +192,7 @@ function Dot11MonitoredNetworkDetailsPage() {
                   seconds for an alert shown on this page to result in a detection alert.
                 </p>
 
-                <table className="table table-sm table-hover table-striped mb-0">
-                  <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Status</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr>
-                    <td>Expected BSSIDs / Access Points</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_bssid} /></td>
-                  </tr>
-                  <tr>
-                    <td>Expected Fingerprints</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_fingerprint} /></td>
-                  </tr>
-                  <tr>
-                    <td>Expected Channels</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_channel} /></td>
-                  </tr>
-                  <tr>
-                    <td>Expected Security Suites</td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security} /></td>
-                  </tr>
-                  <tr>
-                    <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" /></td>
-                    <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} />{' '}</td>
-                  </tr>
-                  </tbody>
-                </table>
+                <MonitoredNetworkAlertStatusTable ssid={ssid} />
               </div>
             </div>
           </div>
