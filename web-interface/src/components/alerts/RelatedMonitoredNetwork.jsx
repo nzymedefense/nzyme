@@ -18,7 +18,7 @@ function RelatedMonitoredNetwork(props) {
   const [ssidDeleted, setSSIDDeleted] = useState(false); // In case the monitored network doesn't exist.
 
   useEffect(() => {
-    if (userHasPermission(user, "dot11_monitoring_manage")) {
+    if (userHasPermission(user, "dot11_monitoring_manage") && networkId) {
       dot11Service.findMonitoredSSID(networkId, setSSID, function() {
         /* noop */
       }, function(error) {
