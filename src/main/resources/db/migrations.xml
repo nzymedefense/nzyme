@@ -3625,4 +3625,14 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="link_detection_alert_timeline_to_alerts" author="lennartkoopmann">
+        <addForeignKeyConstraint constraintName="link_detectionalerttl2alerts"
+                                 baseTableName="detection_alert_timeline"
+                                 baseColumnNames="detection_alert_id"
+                                 referencedTableName="detection_alerts"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
 </databaseChangeLog>

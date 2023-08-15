@@ -38,14 +38,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     public Response findAll(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
-
         List<MonitoredSSIDDetailsResponse> ssids = Lists.newArrayList();
         for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
-
-            Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status = monitor.getAlertStatus(ssid);
-            boolean isAlerted = Dot11NetworkMonitor.isSSIDAlerted(status);
 
             // TODO we probably want a different response type without all the NULLs here.
             ssids.add(MonitoredSSIDDetailsResponse.create(
@@ -59,7 +54,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     null,
                     ssid.createdAt(),
                     ssid.updatedAt(),
-                    isAlerted,
+                    false, // TODO ALERTING
                     null,
                     null,
                     null,
@@ -120,10 +115,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             securitySuites.add(MonitoredSecuritySuiteResponse.create(suite.uuid(), suite.securitySuite()));
         }
 
-        Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
-        Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status = monitor.getAlertStatus(ssid);
-        boolean isAlerted = Dot11NetworkMonitor.isSSIDAlerted(status);
-
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
                 ssid.isEnabled(),
@@ -135,12 +126,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 securitySuites,
                 ssid.createdAt(),
                 ssid.updatedAt(),
-                isAlerted,
-                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_BSSID)),
-                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_CHANNEL)),
-                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_SECURITY_SUITES)),
-                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_FINGERPRINT)),
-                monitorResultToResponse(status.get(Dot11NetworkMonitorType.UNEXPECTED_SIGNAL_TRACKS))
+                false, null, null, null, null, null // TODO ALERTING
         )).build();
     }
 
@@ -463,17 +449,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(bandits).build();
-    }
-
-    private MonitoredAttributeResult monitorResultToResponse(Dot11NetworkMonitorResult result) {
-        if (result == null) {
-            return MonitoredAttributeResult.create(false, null);
-        }
-
-        return MonitoredAttributeResult.create(
-                result.triggered(),
-                result.deviatedValues()
-        );
     }
 
 }

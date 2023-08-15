@@ -17,7 +17,6 @@
 
 package app.nzyme.core;
 
-import app.nzyme.core.detection.alerts.DetectionAlertMonitor;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
@@ -110,7 +109,6 @@ public class NzymeNodeImpl implements NzymeNode {
     private final ObjectMapper objectMapper;
 
     private final DetectionAlertService detectionAlertService;
-    private final DetectionAlertMonitor detectionAlertMonitor;
     private final EventEngine eventEngine;
 
     private final HealthMonitor healthMonitor;
@@ -178,7 +176,6 @@ public class NzymeNodeImpl implements NzymeNode {
         this.ouiManager = new OUIManager(this);
 
         this.detectionAlertService = new DetectionAlertService(this);
-        this.detectionAlertMonitor = new DetectionAlertMonitor(this);
         this.eventEngine = new EventEngineImpl(this);
 
         this.tablesService = new TablesService(this);
@@ -233,8 +230,6 @@ public class NzymeNodeImpl implements NzymeNode {
         } else {
             LOG.info("Versionchecks are disabled.");
         }
-
-        detectionAlertMonitor.initialize();
 
         healthMonitor.initialize();
 

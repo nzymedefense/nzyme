@@ -2,6 +2,7 @@ package app.nzyme.core.tables.dot11;
 
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.Subsystem;
+import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
 import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.*;
 import app.nzyme.core.tables.DataTable;
@@ -34,13 +35,22 @@ public class Dot11Table implements DataTable {
     }
 
     public void handleReport(UUID tapUuid, DateTime timestamp, Dot11TablesReport report) {
-        writeBSSIDs(tapUuid, timestamp, report.bssids());
-        writeClients(tapUuid, timestamp, report.clients());
+        Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
 
-        handleAlerts(tapUuid, report.alerts());
+        if (tap.isEmpty()) {
+            LOG.warn("Not handling report of unknown tap [{}].", tapUuid);
+            return;
+        }
+
+        writeBSSIDs(tap.get(), timestamp, report.bssids());
+        writeClients(tap.get(), timestamp, report.clients());
+
+        handleAlerts(tap.get(), report.alerts());
+
+
     }
 
-    private void writeClients(UUID tapUuid, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
+    private void writeClients(Tap tap, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
         for (Map.Entry<String, Dot11ClientReport> entry : clients.entrySet()) {
             String clientMac = entry.getKey();
             Dot11ClientReport report = entry.getValue();
@@ -49,7 +59,7 @@ public class Dot11Table implements DataTable {
                     handle.createQuery("INSERT INTO dot11_clients(tap_uuid, client_mac, wildcard_probe_requests, " +
                                     "created_at) VALUES(:tap_uuid, :client_mac, :wildcard_probe_requests, " +
                                     ":created_at) RETURNING id")
-                            .bind("tap_uuid", tapUuid)
+                            .bind("tap_uuid", tap.uuid())
                             .bind("client_mac", clientMac)
                             .bind("wildcard_probe_requests", report.wildcardProbeRequests())
                             .bind("created_at", timestamp)
@@ -64,7 +74,7 @@ public class Dot11Table implements DataTable {
                                 .bind("client_id", clientDatabaseId)
                                 .bind("ssid", pr.getKey())
                                 .bind("frame_count", pr.getValue())
-                                .bind("tap_uuid", tapUuid)
+                                .bind("tap_uuid", tap.uuid())
                                 .execute()
                 );
             }
@@ -73,7 +83,7 @@ public class Dot11Table implements DataTable {
 
     }
 
-    public void writeBSSIDs(UUID tapUuid, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
+    public void writeBSSIDs(Tap tap, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -84,7 +94,7 @@ public class Dot11Table implements DataTable {
                                     "hidden_ssid_frames, created_at) VALUES(:tap_uuid, :bssid, NULL, " +
                                     ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
                                     ":hidden_ssid_frames, :created_at) RETURNING id")
-                            .bind("tap_uuid", tapUuid)
+                            .bind("tap_uuid", tap.uuid())
                             .bind("bssid", bssid)
                             .bind("signal_strength_average", report.signalStrength().average())
                             .bind("signal_strength_max", report.signalStrength().max())
@@ -104,6 +114,32 @@ public class Dot11Table implements DataTable {
                                 .bind("bssid_id", bssidDatabaseId)
                                 .execute()
                 );
+
+                // Is this a known bandit fingerprint?
+                for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
+                    if (bandit.fingerprints() != null && bandit.fingerprints().contains(fingerprint)) {
+                        Map<String, String> attributes = Maps.newHashMap();
+                        attributes.put("fingerprint", fingerprint);
+                        attributes.put("bssid", bssid);
+                        attributes.put("tap_uuid", tap.uuid().toString());
+                        attributes.put("bandit_name", bandit.name());
+                        attributes.put("bandit_description", bandit.description());
+
+                        tablesService.getNzyme().getDetectionAlertService().raiseAlert(
+                                tap.organizationId(),
+                                tap.tenantId(),
+                                null,
+                                tap.uuid(),
+                                DetectionType.DOT11_BANDIT_CONTACT,
+                                Subsystem.DOT11,
+                                "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + bssid + "\" " +
+                                        "detected in range.",
+                                attributes,
+                                new String[]{"bssid", "fingerprint"},
+                                report.signalStrength().average()
+                        );
+                    }
+                }
             }
 
             // BSSID Clients.
@@ -161,7 +197,7 @@ public class Dot11Table implements DataTable {
                                             ":beacon_advertisements, :proberesp_advertisements, :created_at) " +
                                             "RETURNING *")
                                     .bind("bssid_id", bssidDatabaseId)
-                                    .bind("tap_uuid", tapUuid)
+                                    .bind("tap_uuid", tap.uuid())
                                     .bind("ssid", ssid)
                                     .bind("bssid", bssid)
                                     .bind("security_protocol", Joiner.on("/").join(securityProtocols))
@@ -255,14 +291,7 @@ public class Dot11Table implements DataTable {
         }
     }
 
-    private void handleAlerts(UUID tapUuid, List<Dot11AlertReport> alerts) {
-        Optional<Tap> tap = tablesService.getNzyme().getTapManager().findTap(tapUuid);
-
-        if (tap.isEmpty()) {
-            LOG.error("Could not find reporting tap [{}].", tapUuid);
-            return;
-        }
-
+    private void handleAlerts(Tap tap, List<Dot11AlertReport> alerts) {
         for (Dot11AlertReport alert : alerts) {
             switch (alert.alertType()) {
                 case PwnagotchiDetected:
@@ -271,10 +300,10 @@ public class Dot11Table implements DataTable {
                     attributes.put("bandit_description", Dot11Bandits.CUSTOM_PWNAGOTCHI_DESCRIPTION);
 
                     tablesService.getNzyme().getDetectionAlertService().raiseAlert(
-                            tap.get().organizationId(),
-                            tap.get().tenantId(),
+                            tap.organizationId(),
+                            tap.tenantId(),
                             null,
-                            tap.get().uuid(),
+                            tap.uuid(),
                             DetectionType.DOT11_BANDIT_CONTACT,
                             Subsystem.DOT11,
                             "Bandit \"Pwnagotchi\" detected in range.",

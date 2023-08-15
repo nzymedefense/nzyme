@@ -4,9 +4,6 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitor;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorResult;
-import app.nzyme.core.dot11.monitoring.Dot11NetworkMonitorType;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.rest.TapDataHandlingResource;
@@ -208,8 +205,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
                 bssid, ssidDetails.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
 
-        boolean isMonitorAlerted = isMonitorAlerted(monitorUUID, authenticatedUser);
-
         ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
         for (String suite : ssidDetails.securitySuites()) {
@@ -251,7 +246,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 ssidDetails.isWps(),
                 ssidDetails.lastSeen(),
                 monitorUUID.isPresent(),
-                isMonitorAlerted,
+                false, // ALERTING TODO
                 monitorUUID.orElse(null)
         );
 
@@ -366,22 +361,4 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         return Response.ok(nzyme.getDot11().findAllSSIDNames(tapUuids)).build();
     }
-
-    private boolean isMonitorAlerted(Optional<UUID> monitorUUID, AuthenticatedUser authenticatedUser) {
-        if (monitorUUID.isPresent()) {
-            Optional<MonitoredSSID> monitoredSSID = nzyme.getDot11().findMonitoredSSID(
-                    monitorUUID.get(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
-            Dot11NetworkMonitor monitor = new Dot11NetworkMonitor(nzyme);
-
-            if (monitoredSSID.isPresent()) {
-                Map<Dot11NetworkMonitorType, Dot11NetworkMonitorResult> status =
-                        monitor.getAlertStatus(monitoredSSID.get());
-
-                return Dot11NetworkMonitor.isSSIDAlerted(status);
-            }
-        }
-
-        return false;
-    }
-
 }

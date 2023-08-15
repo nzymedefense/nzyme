@@ -199,17 +199,6 @@ public class NodesResource {
         timers.put("password_hashing",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER), timers));
 
-        timers.put("dot11_network_monitor_bssid",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_BSSID), timers));
-        timers.put("dot11_network_monitor_channel",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_CHANNEL), timers));
-        timers.put("dot11_network_monitor_security_suites",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_SECURITY_SUITES), timers));
-        timers.put("dot11_network_monitor_fingerprint",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_FINGERPRINT), timers));
-        timers.put("dot11_network_monitor_signal_tracks",
-                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.DOT11_MONITOR_SIGNAL_TRACKS), timers));
-
         Map<String, GaugeResponse> gauges = Maps.newHashMap();
         Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
         if (geoIpCacheSize != null) {
