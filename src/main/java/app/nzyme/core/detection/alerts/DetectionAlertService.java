@@ -179,6 +179,17 @@ public class DetectionAlertService {
         });
     }
 
+    public List<DetectionAlertEntry> findAllActiveAlertsOfMonitoredNetwork(UUID monitoredNetworkId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM detection_alerts " +
+                                "WHERE dot11_monitored_network_id = :network_id AND last_seen > :cutoff")
+                        .bind("network_id", monitoredNetworkId)
+                        .bind("cutoff", DateTime.now().minusMinutes(ACTIVE_THRESHOLD_MINUTES))
+                        .mapTo(DetectionAlertEntry.class)
+                        .list()
+        );
+    }
+
     public long countAlerts(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle -> {
             Query query;

@@ -34,7 +34,7 @@ function MonitoredNetworkAlertStatusTable(props) {
         </tr>
         <tr>
           <td>Expected Security Suites</td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security} /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security_suites} /></td>
         </tr>
         <tr>
           <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" /></td>

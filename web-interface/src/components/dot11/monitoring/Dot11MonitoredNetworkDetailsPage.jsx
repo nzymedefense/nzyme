@@ -183,9 +183,8 @@ function Dot11MonitoredNetworkDetailsPage() {
                 <h3>Alert Status <small>Last 15 minutes</small></h3>
 
                 <p className="text-muted">
-                  The alert status is evaluated on each page refresh. A background job runs the same logic every 30
-                  seconds to trigger detection alerts and associated actions. Consequently, it might take up to 30
-                  seconds for an alert shown on this page to result in a detection alert.
+                  It can take up to 5 minutes for an alert to automatically resolve after resolution. Manually mark an
+                  alert as resolved on the alert details page if you want to speed this up.
                 </p>
 
                 <MonitoredNetworkAlertStatusTable ssid={ssid} />

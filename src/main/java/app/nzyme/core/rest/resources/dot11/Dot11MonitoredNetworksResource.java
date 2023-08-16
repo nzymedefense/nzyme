@@ -1,6 +1,8 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.DetectionType;
+import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.monitoring.*;
@@ -19,6 +21,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +33,8 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
+    private static final Logger LOG = LogManager.getLogger(Dot11MonitoredNetworksResource.class);
+
     @Inject
     private NzymeNode nzyme;
 
@@ -38,12 +44,14 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     public Response findAll(@Context SecurityContext sc) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        List<MonitoredSSIDDetailsResponse> ssids = Lists.newArrayList();
+        List<MonitoredSSIDSummaryResponse> ssids = Lists.newArrayList();
         for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
 
-            // TODO we probably want a different response type without all the NULLs here.
-            ssids.add(MonitoredSSIDDetailsResponse.create(
+            boolean isAlerted = !nzyme.getDetectionAlertService()
+                    .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid()).isEmpty();
+
+            ssids.add(MonitoredSSIDSummaryResponse.create(
                     ssid.uuid(),
                     ssid.isEnabled(),
                     ssid.ssid(),
@@ -54,12 +62,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     null,
                     ssid.createdAt(),
                     ssid.updatedAt(),
-                    false, // TODO ALERTING
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
+                    isAlerted
             ));
         }
 
@@ -118,6 +121,43 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             securitySuites.add(MonitoredSecuritySuiteResponse.create(suite.uuid(), suite.securitySuite()));
         }
 
+        boolean isAlerted = false;
+        boolean bssidAlerted = false;
+        boolean channelAlerted = false;
+        boolean securitySuitesAlerted = false;
+        boolean fingerprintAlerted = false;
+        boolean signalTracksAlerted = false;
+        for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
+                .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid())) {
+            DetectionType detectionType;
+            try {
+                detectionType = DetectionType.valueOf(alert.detectionType());
+            } catch(IllegalArgumentException e) {
+                LOG.error("Invalid detection type [{}]. Skipping.", alert.detectionType());
+                continue;
+            }
+
+            isAlerted = true;
+
+            switch (detectionType) {
+                case DOT11_MONITOR_BSSID:
+                    bssidAlerted = true;
+                    break;
+                case DOT11_MONITOR_CHANNEL:
+                    channelAlerted = true;
+                    break;
+                case DOT11_MONITOR_SECURITY_SUITE:
+                    securitySuitesAlerted = true;
+                    break;
+                case DOT11_MONITOR_FINGERPRINT:
+                    fingerprintAlerted = true;
+                    break;
+                case DOT11_MONITOR_SIGNAL_TRACK:
+                    signalTracksAlerted = true;
+                    break;
+            }
+        }
+
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
                 ssid.isEnabled(),
@@ -129,7 +169,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 securitySuites,
                 ssid.createdAt(),
                 ssid.updatedAt(),
-                false, null, null, null, null, null // TODO ALERTING
+                isAlerted,
+                bssidAlerted,
+                channelAlerted,
+                securitySuitesAlerted,
+                fingerprintAlerted,
+                signalTracksAlerted
         )).build();
     }
 

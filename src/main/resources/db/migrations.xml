@@ -3644,4 +3644,11 @@
         <addNotNullConstraint tableName="dot11_monitored_networks" columnName="organization_id" />
     </changeSet>
 
+    <changeSet id="add_detection_alert_compound_active_lookup_index" author="lennartkoopmann">
+        <createIndex tableName="detection_alerts" indexName="compound_active_uuid_lookup">
+            <column name="uuid" />
+            <column name="last_seen" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

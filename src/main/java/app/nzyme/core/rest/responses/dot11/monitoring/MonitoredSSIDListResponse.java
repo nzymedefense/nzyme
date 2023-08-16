@@ -9,9 +9,9 @@ import java.util.List;
 public abstract class MonitoredSSIDListResponse {
 
     @JsonProperty("ssids")
-    public abstract List<MonitoredSSIDDetailsResponse> ssids();
+    public abstract List<MonitoredSSIDSummaryResponse> ssids();
 
-    public static MonitoredSSIDListResponse create(List<MonitoredSSIDDetailsResponse> ssids) {
+    public static MonitoredSSIDListResponse create(List<MonitoredSSIDSummaryResponse> ssids) {
         return builder()
                 .ssids(ssids)
                 .build();
@@ -23,7 +23,7 @@ public abstract class MonitoredSSIDListResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder ssids(List<MonitoredSSIDDetailsResponse> ssids);
+        public abstract Builder ssids(List<MonitoredSSIDSummaryResponse> ssids);
 
         public abstract MonitoredSSIDListResponse build();
     }
