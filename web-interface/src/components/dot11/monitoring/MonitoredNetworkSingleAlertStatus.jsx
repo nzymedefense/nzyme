@@ -6,7 +6,7 @@ function MonitoredNetworkSingleAlertStatus(props) {
   const status = props.status;
 
   if (ssid_is_enabled) {
-    if (status.triggered) {
+    if (status && status.triggered) {
       return <i className="fa-solid fa-triangle-exclamation text-danger" title="Active alerts."></i>
     } else {
       return <i className="fa-solid fa-thumbs-up text-success" title="No active alerts."></i>

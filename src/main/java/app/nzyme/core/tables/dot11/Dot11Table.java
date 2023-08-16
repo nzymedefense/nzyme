@@ -1,12 +1,16 @@
 package app.nzyme.core.tables.dot11;
 
+import app.nzyme.core.NzymeNode;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.Subsystem;
+import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
 import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.*;
 import app.nzyme.core.tables.DataTable;
 import app.nzyme.core.tables.TablesService;
+import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredBSSID;
+import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredSSID;
 import app.nzyme.core.taps.Tap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,8 +50,6 @@ public class Dot11Table implements DataTable {
         writeClients(tap.get(), timestamp, report.clients());
 
         handleAlerts(tap.get(), report.alerts());
-
-
     }
 
     private void writeClients(Tap tap, DateTime timestamp, Map<String, Dot11ClientReport> clients) {
@@ -78,12 +80,38 @@ public class Dot11Table implements DataTable {
                                 .execute()
                 );
             }
-
         }
-
     }
 
     public void writeBSSIDs(Tap tap, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
+        // Collect all monitored SSIDs and their attributes.
+        Map<String, PreLoadedMonitoredSSID> monitoredSSIDs = Maps.newHashMap();
+        NzymeNode nzyme = tablesService.getNzyme();;
+        for (MonitoredSSID s : nzyme.getDot11().findAllMonitoredSSIDs(tap.organizationId(), tap.tenantId())) {
+            Map<String, PreLoadedMonitoredBSSID> preLoadedBSSIDs = Maps.newHashMap();
+            for (MonitoredBSSID b : nzyme.getDot11().findMonitoredBSSIDsOfSSID(s.id())) {
+                List<String> fingerprints = Lists.newArrayList();
+                for (MonitoredFingerprint f : nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(b.id())) {
+                    fingerprints.add(f.fingerprint());
+                }
+
+                preLoadedBSSIDs.put(b.bssid(), PreLoadedMonitoredBSSID.create(b.bssid(), fingerprints));
+            }
+
+            List<Integer> preLoadedChannels = Lists.newArrayList();
+            for (MonitoredChannel c : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(s.id())) {
+                preLoadedChannels.add((int) c.frequency());
+            }
+
+            List<String> preLoadedSecuritySuites = Lists.newArrayList();
+            for (MonitoredSecuritySuite ss : nzyme.getDot11().findMonitoredSecuritySuitesOfMonitoredNetwork(s.id())) {
+                preLoadedSecuritySuites.add(ss.securitySuite());
+            }
+
+            monitoredSSIDs.put(s.ssid(), PreLoadedMonitoredSSID.create(
+                    s.uuid(), s.ssid(), preLoadedBSSIDs, preLoadedChannels, preLoadedSecuritySuites));
+        }
+
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -282,6 +310,32 @@ public class Dot11Table implements DataTable {
                                         .bind("ssid_id", ssidDatabaseId)
                                         .execute()
                         );
+                    }
+
+                    // Network Monitoring / Alerting.
+                    PreLoadedMonitoredSSID monitoredSSID = monitoredSSIDs.get(ssid);
+                    if (monitoredSSID != null) {
+                        if (!monitoredSSID.bssids().containsKey(bssid)) {
+                            // Unexpected BSSID.
+                            Map<String, String> attributes = Maps.newHashMap();
+                            attributes.put("bssid", bssid);
+
+                            nzyme.getDetectionAlertService().raiseAlert(
+                                    tap.organizationId(),
+                                    tap.tenantId(),
+                                    monitoredSSID.id(),
+                                    tap.uuid(),
+                                    DetectionType.DOT11_MONITOR_BSSID,
+                                    Subsystem.DOT11,
+                                    "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
+                                            "unexpected BSSID \"" + bssid + "\"",
+                                    attributes,
+                                    new String[]{"bssid"},
+                                    report.signalStrength().average()
+                            );
+                        }
+
+
                     }
                 } catch(Exception e) {
                     LOG.error("Could not write SSID.", e);

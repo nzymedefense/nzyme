@@ -125,9 +125,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<SSIDChannelDetailsResponse> ssidsResult = Lists.newArrayList();
         for (SSIDChannelDetails ssid : ssids) {
-            Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
-                    bssid, ssid.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
-
             ssidsResult.add(SSIDChannelDetailsResponse.create(
                     ssid.ssid(),
                     ssid.frequency(),
@@ -139,9 +136,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     ssid.securityProtocols(),
                     ssid.infrastructureTypes(),
                     ssid.isWps(),
-                    ssid.lastSeen(),
-                    monitorUUID.isPresent(),
-                    monitorUUID.orElse(null)
+                    ssid.lastSeen()
             ));
         }
 
@@ -202,9 +197,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         SSIDDetails ssidDetails = dbResult.get();
 
-        Optional<UUID> monitorUUID = nzyme.getDot11().findSSIDMonitorUUID(
-                bssid, ssidDetails.ssid(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
-
         ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
         for (String suite : ssidDetails.securitySuites()) {
@@ -244,10 +236,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 ssidDetails.infrastructureTypes(),
                 securitySuites,
                 ssidDetails.isWps(),
-                ssidDetails.lastSeen(),
-                monitorUUID.isPresent(),
-                false, // ALERTING TODO
-                monitorUUID.orElse(null)
+                ssidDetails.lastSeen()
         );
 
         return Response.ok(response).build();

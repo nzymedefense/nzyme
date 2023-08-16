@@ -11,10 +11,6 @@ import MonitoredChannelsTable from "./MonitoredChannelsTable";
 import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
 import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
-import ChannelDeviations from "./deviations/ChannelDeviations";
-import SecuritySuiteDeviations from "./deviations/SecuritySuiteDeviations";
-import FingerprintDeviations from "./deviations/FingerprintDeviations";
-import BSSIDDeviations from "./deviations/BSSIDDeviations";
 import MonitoredNetworkAlertStatusTable from "./MonitoredNetworkAlertStatusTable";
 
 const dot11Service = new Dot11Service();
@@ -215,12 +211,9 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-12">
-            <div className={"card " + (ssid.status_unexpected_bssid.triggered || ssid.status_unexpected_fingerprint.triggered ? "card-alerted" : "")}>
+            <div className="card">
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
-
-                <BSSIDDeviations deviations={ssid.status_unexpected_bssid.deviated_values} />
-                <FingerprintDeviations deviations={ssid.status_unexpected_fingerprint.deviated_values} />
 
                 <Dot11MonitoredBSSIDs bssids={ssid.bssids} bumpRevision={bumpRevision} parentIsLoading={isLoading} />
 
@@ -243,11 +236,9 @@ function Dot11MonitoredNetworkDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className={"card " + (ssid.status_unexpected_channel.triggered ? "card-alerted" : "")}>
+            <div className="card">
               <div className="card-body">
                 <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
-
-                <ChannelDeviations deviations={ssid.status_unexpected_channel.deviated_values} />
 
                 <MonitoredChannelsTable ssid={ssid} bumpRevision={bumpRevision} />
 
@@ -269,11 +260,9 @@ function Dot11MonitoredNetworkDetailsPage() {
           </div>
 
           <div className="col-md-6">
-            <div className={"card " + (ssid.status_unexpected_security.triggered ? "card-alerted" : "")}>
+            <div className="card">
               <div className="card-body">
                 <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
-
-                <SecuritySuiteDeviations deviations={ssid.status_unexpected_security.deviated_values} />
 
                 <MonitoredSecuritySuitesTable ssid={ssid} bumpRevision={bumpRevision} />
 

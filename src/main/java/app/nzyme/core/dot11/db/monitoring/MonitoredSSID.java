@@ -13,9 +13,7 @@ public abstract class MonitoredSSID {
     public abstract UUID uuid();
     public abstract boolean isEnabled();
     public abstract String ssid();
-    @Nullable
     public abstract UUID organizationId();
-    @Nullable
     public abstract UUID tenantId();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();

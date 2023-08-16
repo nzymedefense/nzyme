@@ -73,14 +73,17 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> allAccessibleTapUUIDs = parseAndValidateTapIds(authenticatedUser, nzyme, "*");
 
-        Optional<MonitoredSSID> result = nzyme.getDot11()
-                .findMonitoredSSID(uuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> result = nzyme.getDot11().findMonitoredSSID(uuid);
 
         if (result.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         MonitoredSSID ssid = result.get();
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid)){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
         // Find all monitored BSSIDs.
         List<MonitoredBSSIDDetailsResponse> bssids = Lists.newArrayList();
@@ -136,10 +139,25 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     public Response createMonitoredSSID(@Context SecurityContext sc, @Valid CreateDot11MonitoredNetworkRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (authenticatedUser.isOrganizationAdministrator()) {
+                // Org admin.
+                if (!authenticatedUser.getOrganizationId().equals(req.organizationId())) {
+                    return Response.status(Response.Status.UNAUTHORIZED).build();
+                }
+            } else {
+                // Tenant user.
+                if (!authenticatedUser.getOrganizationId().equals(req.organizationId())
+                        || !authenticatedUser.getTenantId().equals(req.tenantId())) {
+                    return Response.status(Response.Status.UNAUTHORIZED).build();
+                }
+            }
+        }
+
         nzyme.getDot11().createMonitoredSSID(
                 req.ssid(),
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
+                req.organizationId(),
+                req.tenantId()
         );
 
         return Response.status(Response.Status.CREATED).build();
@@ -151,11 +169,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     public Response delete(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        nzyme.getDot11().deleteMonitoredSSID(
-                uuid,
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
-        );
+        Optional<MonitoredSSID> result = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        MonitoredSSID ssid = result.get();
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid)){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteMonitoredSSID(ssid.id());
 
         return Response.ok().build();
     }
@@ -168,10 +194,13 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                          @Valid CreateDot11MonitoredBSSIDRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
         if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -190,8 +219,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredBSSID(ssid.get().id(), req.bssid());
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -204,8 +232,17 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                          @PathParam("bssid_uuid") UUID bssidUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssidUUID, bssidUUID,
-                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssid.get().id(), bssidUUID);
 
         if (bssidId.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -213,8 +250,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().deleteMonitoredBSSID(bssidId.get());
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -228,13 +264,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                     @Valid CreateDot11MonitoredBSSIDFingerprintRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
-        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssidUUID, bssidUUID,
-                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
-        if (ssid.isEmpty() || bssidId.isEmpty()) {
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssid.get().id(), bssidUUID);
+
+        if (bssidId.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -253,8 +295,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createdMonitoredBSSIDFingerprint(bssidId.get(), req.fingerprint());
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -268,8 +309,17 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                     @PathParam("fingerprint_uuid") UUID fingerprintUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssidUUID, bssidUUID,
-                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Long> bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssid.get().id(), bssidUUID);
 
         if (bssidId.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -277,8 +327,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().deleteMonitoredBSSIDFingerprint(bssidId.get(), fingerprintUUID);
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -291,10 +340,13 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                @Valid CreateDot11MonitoredChannelRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
         if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -312,8 +364,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredChannel(ssid.get().id(), req.frequency());
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -326,17 +377,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                @PathParam("channel_uuid") UUID channelUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
         if (ssid.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         nzyme.getDot11().deleteMonitoredChannel(ssid.get().id(), channelUUID);
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -349,10 +402,13 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                      @Valid CreateDot11MonitoredSecuritySuiteRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
         if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -371,8 +427,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         nzyme.getDot11().createMonitoredSecuritySuite(ssid.get().id(), req.suite());
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -385,17 +440,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                                                      @PathParam("suite_uuid") UUID suiteUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        Optional<MonitoredSSID> ssid = nzyme.getDot11()
-                .findMonitoredSSID(ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
         if (ssid.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         nzyme.getDot11().deleteMonitoredSecuritySuite(ssid.get().id(), suiteUUID);
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                ssidUUID, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -403,18 +460,22 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/enable")
-    public Response enableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+    public Response enableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID ssidUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        nzyme.getDot11().setMonitoredSSIDEnabledState(
-                uuid,
-                true,
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
-        );
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                uuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().setMonitoredSSIDEnabledState(ssid.get().id(), true);
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -422,18 +483,22 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/disable")
-    public Response disableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+    public Response disableMonitoredNetwork(@Context SecurityContext sc, @PathParam("uuid") UUID ssidUUID) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        nzyme.getDot11().setMonitoredSSIDEnabledState(
-                uuid,
-                false,
-                authenticatedUser.getOrganizationId(),
-                authenticatedUser.getTenantId()
-        );
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
 
-        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(
-                uuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().setMonitoredSSIDEnabledState(ssid.get().id(), false);
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
 
         return Response.ok().build();
     }
@@ -450,5 +515,22 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         return Response.ok(bandits).build();
     }
+
+    private boolean userHasAccessToMonitoredNetwork(AuthenticatedUser user, MonitoredSSID ssid) {
+        if (user.isSuperAdministrator()) {
+            return true;
+        }
+
+        if (user.isOrganizationAdministrator() && ssid.organizationId().equals(user.getOrganizationId())) {
+            return true;
+        }
+
+        if (ssid.organizationId().equals(user.getOrganizationId()) && ssid.tenantId().equals(user.getTenantId())) {
+            return true;
+        }
+
+        return false;
+    }
+
 
 }

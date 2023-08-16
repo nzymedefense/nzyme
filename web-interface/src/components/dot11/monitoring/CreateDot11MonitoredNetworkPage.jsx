@@ -4,6 +4,7 @@ import Dot11Service from "../../../services/Dot11Service";
 import SSIDSuggestions from "./SSIDSuggestions";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {Navigate} from "react-router-dom";
+import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -11,6 +12,8 @@ function CreateDot11MonitoredNetworkPage() {
 
   const [ssidNames, setSSIDNames] = useState(null);
   const [ssid, setSSID] = useState("");
+  const [organization, setOrganization] = useState(null);
+  const [tenant, setTenant] = useState(null);
 
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [submittedSuccessfully, setSubmittedSuccessfully] = useState(false);
@@ -19,14 +22,26 @@ function CreateDot11MonitoredNetworkPage() {
     setSSID(ssid);
   }
 
+  const onOrganizationChange = function (organizationUUID) {
+    setOrganization(organizationUUID);
+  }
+
+  const onTenantChange = function (tenantUUID) {
+    setTenant(tenantUUID);
+  }
+
   const onSubmitForm = function () {
     setFormSubmitting(true);
 
-    dot11Service.createMonitoredSSID(ssid, function (){
+    dot11Service.createMonitoredSSID(ssid, tenant, organization,function (){
       setSubmittedSuccessfully(true);
     }, function () {
       setFormSubmitting(false);
     })
+  }
+
+  const formIsReady = function() {
+    return organization && tenant && ssid;
   }
 
   useEffect(() => {
@@ -66,6 +81,9 @@ function CreateDot11MonitoredNetworkPage() {
 
                   <form className="mt-3">
                     <div className="mb-3">
+                      <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange}
+                                                     onTenantChange={onTenantChange} />
+
                       <label htmlFor="ssid" className="form-label">
                         SSID{' '}
                         <span className="badge bg-warning" style={{position: "relative", top: -2, right: -3}}>
@@ -87,7 +105,7 @@ function CreateDot11MonitoredNetworkPage() {
                                      ssidNames={ssidNames}
                                      onSuggestionSelected={onSuggestionSelected} />
 
-                    <button type="button" className="btn btn-primary" onClick={onSubmitForm}>
+                    <button type="button" className="btn btn-primary" onClick={onSubmitForm} disabled={!formIsReady()}>
                       {formSubmitting ? "Please wait ..." : "Create Monitored Network"}
                     </button>
                   </form>

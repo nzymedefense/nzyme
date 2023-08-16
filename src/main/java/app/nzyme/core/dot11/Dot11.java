@@ -700,126 +700,51 @@ public class Dot11 {
         ));
     }
 
-    public void createMonitoredSSID(String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+    public void createMonitoredSSID(String ssid, UUID organizationId, UUID tenantId) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dot11_monitored_networks(uuid, ssid, organization_id, tenant_id, " +
-                                "created_at, updated_at) VALUES(:uuid, :ssid, :organization_id, :tenant_id, " +
-                                "NOW(), NOW())")
-                        .bind("uuid", UUID.randomUUID())
-                        .bind("ssid", ssid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .execute()
+            handle.createUpdate("INSERT INTO dot11_monitored_networks(uuid, ssid, organization_id, tenant_id, " +
+                            "created_at, updated_at) VALUES(:uuid, :ssid, :organization_id, :tenant_id, " +
+                            "NOW(), NOW())")
+                    .bind("uuid", UUID.randomUUID())
+                    .bind("ssid", ssid)
+                    .bind("organization_id", organizationId)
+                    .bind("tenant_id", tenantId)
+                    .execute()
         );
     }
 
-    public void bumpMonitoredSSIDUpdatedAt(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+    public void bumpMonitoredSSIDUpdatedAt(long networkId) {
         nzyme.getDatabase().useHandle(handle -> {
-            Update update;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
-                                "WHERE uuid = :uuid ")
-                        .bind("uuid", uuid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            update.execute();
+            handle.createUpdate("UPDATE dot11_monitored_networks SET updated_at = NOW() WHERE id = :id")
+                    .bind("id", networkId)
+                    .execute();
         });
     }
 
-    public void setMonitoredSSIDEnabledState(UUID uuid, boolean enabled, UUID organizationId, UUID tenantId) {
+    public void setMonitoredSSIDEnabledState(long networkId, boolean enabled) {
         nzyme.getDatabase().useHandle(handle -> {
-            Update update;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
-                                "WHERE uuid = :uuid ")
-                        .bind("enabled", enabled)
-                        .bind("uuid", uuid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id")
-                        .bind("enabled", enabled)
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                update = handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
-                        .bind("enabled", enabled)
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            update.execute();
+            handle.createUpdate("UPDATE dot11_monitored_networks SET enabled = :enabled WHERE id = :id")
+                    .bind("enabled", enabled)
+                    .bind("id", networkId)
+                    .execute();
         });
     }
 
-    public void deleteMonitoredSSID(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+    public void deleteMonitoredSSID(long networkId) {
         nzyme.getDatabase().useHandle(handle -> {
-            Update update;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                update = handle.createUpdate("DELETE FROM dot11_monitored_networks WHERE uuid = :uuid ")
-                        .bind("uuid", uuid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                update = handle.createUpdate("DELETE FROM dot11_monitored_networks " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                update = handle.createUpdate("DELETE FROM dot11_monitored_networks " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            update.execute();
+            handle.createUpdate("DELETE FROM dot11_monitored_networks WHERE id = :id")
+                    .bind("id", networkId)
+                    .execute();
         });
     }
 
-    public Optional<MonitoredSSID> findMonitoredSSID(UUID uuid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle -> {
-            Query query;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                query = handle.createQuery("SELECT * FROM dot11_monitored_networks WHERE uuid = :uuid")
-                        .bind("uuid", uuid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                query = handle.createQuery("SELECT * FROM dot11_monitored_networks " +
-                                "WHERE uuid = :uuid AND organization_id = :organization_id AND tenant_id = :tenant_id")
-                        .bind("uuid", uuid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            return query.mapTo(MonitoredSSID.class).findOne();
-        });
+    public Optional<MonitoredSSID> findMonitoredSSID(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT * FROM dot11_monitored_networks WHERE uuid = :uuid LIMIT 1")
+                    .bind("uuid", uuid)
+                    .mapTo(MonitoredSSID.class)
+                    .findOne()
+        );
     }
 
     public List<MonitoredSSID> findAllMonitoredSSIDs(@Nullable UUID organizationId, @Nullable UUID tenantId) {
@@ -845,40 +770,16 @@ public class Dot11 {
         });
     }
 
-    public Optional<Long> findMonitoredBSSIDId(UUID ssidUUID, UUID bssidUUID, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle -> {
-            Query query;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid")
-                        .bind("ssid_uuid", ssidUUID)
-                        .bind("bssid_uuid", bssidUUID);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid " +
-                                "AND s.organization_id = :organization_id")
-                        .bind("ssid_uuid", ssidUUID)
-                        .bind("bssid_uuid", bssidUUID)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                query = handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE s.uuid = :ssid_uuid AND b.uuid = :bssid_uuid " +
-                                "AND s.organization_id = :organization_id " +
-                                "AND s.tenant_id = :tenant_id")
-                        .bind("ssid_uuid", ssidUUID)
-                        .bind("bssid_uuid", bssidUUID)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            return query.mapTo(Long.class).findOne();
-        });
+    public Optional<Long> findMonitoredBSSIDId(long networkId, UUID bssidUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
+                            "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                            "WHERE s.id = :network_id AND b.uuid = :bssid_uuid LIMIT 1")
+                    .bind("network_id", networkId)
+                    .bind("bssid_uuid", bssidUUID)
+                    .mapTo(Long.class)
+                    .findOne()
+        );
     }
 
     public List<MonitoredBSSID> findMonitoredBSSIDsOfSSID(long ssidId) {
@@ -901,41 +802,6 @@ public class Dot11 {
         );
     }
 
-    public Optional<UUID> findSSIDMonitorUUID(String bssid, String ssid, @Nullable UUID organizationId, @Nullable UUID tenantId) {
-        return nzyme.getDatabase().withHandle(handle -> {
-            Query query;
-            if (organizationId == null && tenantId == null) {
-                // Super Admin.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true")
-                        .bind("ssid", ssid)
-                        .bind("bssid", bssid);
-            } else if (organizationId != null && tenantId == null) {
-                // Organization Admin.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE s.ssid = :ssid AND b.bssid = :bssid AND s.enabled = true " +
-                                "AND s.organization_id = :organization_id")
-                        .bind("ssid", ssid)
-                        .bind("bssid", bssid)
-                        .bind("organization_id", organizationId);
-            } else {
-                // Tenant User.
-                query = handle.createQuery("SELECT s.uuid FROM dot11_monitored_networks AS s " +
-                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
-                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND s.enabled = true " +
-                                "AND s.organization_id = :organization_id AND s.tenant_id = :tenant_id")
-                        .bind("ssid", ssid)
-                        .bind("bssid", bssid)
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId);
-            }
-
-            return query.mapTo(UUID.class).findOne();
-        });
-    }
-
     public void createMonitoredBSSID(long monitoredNetworkId, String bssid) {
         String uppercaseBSSID = bssid.toUpperCase();
         if (!Tools.isValidMacAddress(uppercaseBSSID)) {
@@ -952,10 +818,10 @@ public class Dot11 {
         );
     }
 
-    public void deleteMonitoredBSSID(long bssidId) {
+    public void deleteMonitoredBSSID(long id) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM dot11_monitored_networks_bssids WHERE id = :id")
-                        .bind("id", bssidId)
+                        .bind("id", id)
                         .execute()
         );
     }

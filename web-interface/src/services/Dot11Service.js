@@ -112,8 +112,9 @@ class Dot11Service {
     }, errorCallback)
   }
 
-  createMonitoredSSID(ssid, successCallback, errorCallback) {
-    RESTClient.post("/dot11/monitoring/ssids", {ssid: ssid}, successCallback, errorCallback);
+  createMonitoredSSID(ssid, tenantId, organizationId, successCallback, errorCallback) {
+    RESTClient.post("/dot11/monitoring/ssids",
+        {ssid: ssid, tenant_id: tenantId, organization_id: organizationId}, successCallback, errorCallback);
   }
 
   deleteMonitoredSSID(uuid, successCallback) {
