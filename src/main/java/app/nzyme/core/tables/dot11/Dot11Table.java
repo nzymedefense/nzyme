@@ -89,6 +89,10 @@ public class Dot11Table implements DataTable {
         Map<String, PreLoadedMonitoredSSID> monitoredSSIDs = Maps.newHashMap();
         NzymeNode nzyme = tablesService.getNzyme();;
         for (MonitoredSSID s : nzyme.getDot11().findAllMonitoredSSIDs(tap.organizationId(), tap.tenantId())) {
+            if (!s.isEnabled()) {
+                continue;
+            }
+
             Map<String, PreLoadedMonitoredBSSID> preLoadedBSSIDs = Maps.newHashMap();
             for (MonitoredBSSID b : nzyme.getDot11().findMonitoredBSSIDsOfSSID(s.id())) {
                 List<String> fingerprints = Lists.newArrayList();
