@@ -23,6 +23,7 @@ import app.nzyme.core.distributed.NodeManager;
 import app.nzyme.core.distributed.messaging.postgres.PostgresMessageBusImpl;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueImpl;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.monitoring.Dot11SignalTrackMonitor;
 import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -225,6 +226,7 @@ public class NzymeNodeImpl implements NzymeNode {
         periodicalManager.scheduleAtFixedRate(new NodeUpdater(this), 0, 5, TimeUnit.SECONDS);
         periodicalManager.scheduleAtFixedRate(new OUIUpdater(this), 12, 12, TimeUnit.HOURS);
         periodicalManager.scheduleAtFixedRate(new RetentionCleaner(this), 0, 1, TimeUnit.HOURS);
+        periodicalManager.scheduleAtFixedRate(new Dot11SignalTrackMonitor(this), 1, 1, TimeUnit.MINUTES);
         if(configuration.versionchecksEnabled()) {
             periodicalManager.scheduleAtFixedRate(new VersioncheckThread(version, this), 0, 60, TimeUnit.MINUTES);
         } else {

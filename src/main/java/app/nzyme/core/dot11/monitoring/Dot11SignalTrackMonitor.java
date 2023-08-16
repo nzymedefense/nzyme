@@ -3,67 +3,76 @@ package app.nzyme.core.dot11.monitoring;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.Subsystem;
-import app.nzyme.core.dot11.db.BSSIDWithTap;
-import app.nzyme.core.taps.Tap;
+import app.nzyme.core.dot11.db.ChannelHistogramEntry;
+import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
+import app.nzyme.core.dot11.db.monitoring.MonitoredChannel;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.dot11.tracks.Track;
+import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.periodicals.Periodical;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 
-public class Dot11BanditDetector {
+public class Dot11SignalTrackMonitor extends Periodical {
 
-    private static final Logger LOG = LogManager.getLogger(Dot11BanditDetector.class);
+    private static final Logger LOG = LogManager.getLogger(Dot11SignalTrackMonitor.class);
 
     private final NzymeNode nzyme;
 
-    public Dot11BanditDetector(NzymeNode nzyme) {
+    public Dot11SignalTrackMonitor(NzymeNode nzyme) {
         this.nzyme = nzyme;
     }
 
-    public void run() {
-        for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
-            if (bandit.fingerprints() == null) {
-                // Some bandits, like the Pwnagotchi, are not detected by fingerprint matching.
-                continue;
-            }
+    @Override
+    protected void execute() {
+        LOG.debug("Starting 802.11 signal track monitor run.");
 
-            for (String fingerprint : bandit.fingerprints()) {
-                for (BSSIDWithTap match : nzyme.getDot11().findAllBSSIDSOfAllTenantsWithFingerprint(1, fingerprint)) {
-                    LOG.debug("Detected bandit [{}] at [{}].", bandit, match);
+        for (MonitoredSSID monitoredSSID : nzyme.getDot11().findAllMonitoredSSIDs(null, null)) {
+            List<UUID> tapUUIDs = nzyme.getTapManager()
+                    .allTapUUIDsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
 
-                    Optional<Tap> tap = nzyme.getTapManager().findTap(match.tapUUID());
+            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+                for (MonitoredChannel frequency : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
+                    List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                            monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), 8*60, tapUUIDs);
 
-                    if (tap.isEmpty()) {
-                        LOG.error("Detected bandit [{}] but could not find associated tap [{}]. Skipping.",
-                                bandit.name(), match.tapUUID());
-                        continue;
+                    TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+                    TrackDetector td = new TrackDetector();
+                    List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG);
+
+                    if (tracks.size() > 1) {
+                        // Multiple tracks detected.
+                        Map<String, String> attributes = Maps.newHashMap();
+                        attributes.put("bssid", monitoredBSSID.bssid());
+                        attributes.put("channel", String.valueOf(frequency.frequency()));
+
+                        nzyme.getDetectionAlertService().raiseAlert(
+                                monitoredSSID.organizationId(),
+                                monitoredSSID.tenantId(),
+                                monitoredSSID.uuid(),
+                                null,
+                                DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                Subsystem.DOT11,
+                                "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
+                                        "with multiple signal tracks on channel \"" + frequency.frequency() + "\".",
+                                attributes,
+                                new String[]{"bssid", "channel"},
+                                null
+                        );
                     }
-
-                    Map<String, String> attributes = Maps.newHashMap();
-                    attributes.put("fingerprint", fingerprint);
-                    attributes.put("bssid", match.bssid());
-                    attributes.put("tap_uuid", match.tapUUID().toString());
-                    attributes.put("bandit_name", bandit.name());
-                    attributes.put("bandit_description", bandit.description());
-
-                    nzyme.getDetectionAlertService().raiseAlert(
-                            tap.get().organizationId(),
-                            tap.get().tenantId(),
-                            null,
-                            tap.get().uuid(),
-                            DetectionType.DOT11_BANDIT_CONTACT,
-                            Subsystem.DOT11,
-                            "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + match.bssid() + "\" " +
-                                    "detected in range.",
-                            attributes,
-                            new String[]{"bssid", "fingerprint"},
-                            match.signalStrength()
-                    );
                 }
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return "802.11 Signal Track Monitor";
     }
 
 }
