@@ -4,8 +4,11 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.jdbi.v3.core.statement.Query;
@@ -919,6 +922,18 @@ public class Dot11 {
             return "NONE";
         }
         return suite.groupCipher() + "-" + suite.pairwiseCiphers() + "/" + suite.keyManagementModes();
+    }
+
+    public static String securitySuitesToIdentifier(Dot11SecurityInformationReport suite) {
+        if (Strings.isNullOrEmpty(suite.suites().groupCipher())
+                && suite.suites().pairwiseCiphers().isEmpty()
+                && suite.suites().keyManagementModes().isEmpty()) {
+            return "NONE";
+        }
+
+        return suite.suites().groupCipher() + "-"
+                + Joiner.on(",").join(suite.suites().pairwiseCiphers()) + "/"
+                + Joiner.on(",").join(suite.suites().keyManagementModes());
     }
 
     private static Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
