@@ -24,6 +24,7 @@ public class DetectionAlertEntryMapper implements RowMapper<DetectionAlertEntry>
         return DetectionAlertEntry.create(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
+                rs.getBoolean("is_resolved"),
                 dot11MonitoredNetworkId,
                 tapId,
                 rs.getString("detection_type"),

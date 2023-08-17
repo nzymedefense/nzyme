@@ -3651,4 +3651,10 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_is_resolved_field_to_detection_alerts" author="lennartkoopmann">
+        <addColumn tableName="detection_alerts">
+            <column name="is_resolved" type="boolean" defaultValue="false" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

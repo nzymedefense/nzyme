@@ -63,7 +63,7 @@ public class DetectionAlertService {
                     detectionType, comparisonChecksum);
 
             nzyme.getDatabase().withHandle(handle ->
-                    handle.createUpdate("UPDATE detection_alerts SET last_seen = NOW() " +
+                    handle.createUpdate("UPDATE detection_alerts SET last_seen = NOW(), is_resolved = false " +
                                     "WHERE id = :id")
                             .bind("id", existingAlert.get().id())
                             .execute()
@@ -249,6 +249,14 @@ public class DetectionAlertService {
                         .bind("detection_alert_id", alertId)
                         .mapTo(DetectionAlertAttributeEntry.class)
                         .list()
+        );
+    }
+
+    public void markAlertAsResolved(UUID uuid) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE detection_alerts SET is_resolved = true WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .execute()
         );
     }
 

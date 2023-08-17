@@ -12,6 +12,8 @@ public abstract class DetectionAlertEntry {
     public abstract long id();
     public abstract UUID uuid();
 
+    public abstract boolean isResolved();
+
     @Nullable
     public abstract UUID dot11MonitoredNetworkId();
 
@@ -31,10 +33,11 @@ public abstract class DetectionAlertEntry {
     @Nullable
     public abstract UUID tenantId();
 
-    public static DetectionAlertEntry create(long id, UUID uuid, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, String details, DateTime createdAt, DateTime lastSeen, String comparisonChecksum, UUID organizationId, UUID tenantId) {
+    public static DetectionAlertEntry create(long id, UUID uuid, boolean isResolved, UUID dot11MonitoredNetworkId, UUID tapId, String detectionType, String subsystem, String details, DateTime createdAt, DateTime lastSeen, String comparisonChecksum, UUID organizationId, UUID tenantId) {
         return builder()
                 .id(id)
                 .uuid(uuid)
+                .isResolved(isResolved)
                 .dot11MonitoredNetworkId(dot11MonitoredNetworkId)
                 .tapId(tapId)
                 .detectionType(detectionType)
@@ -57,6 +60,8 @@ public abstract class DetectionAlertEntry {
         public abstract Builder id(long id);
 
         public abstract Builder uuid(UUID uuid);
+
+        public abstract Builder isResolved(boolean isResolved);
 
         public abstract Builder dot11MonitoredNetworkId(UUID dot11MonitoredNetworkId);
 

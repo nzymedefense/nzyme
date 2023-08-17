@@ -48,7 +48,6 @@ function BSSIDRow(props) {
         <tr>
           <td>
             <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
-            <MonitorIcon is_monitored={bssid.is_monitored} is_monitor_alerted={bssid.is_monitor_alerted} />
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>

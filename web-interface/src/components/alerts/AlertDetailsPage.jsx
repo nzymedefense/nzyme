@@ -9,6 +9,7 @@ import AlertActiveIndicator from "./AlertActiveIndicator";
 import AlertDetails from "./alertdetails/AlertDetails";
 import AlertTimeline from "./AlertTimeline";
 import RelatedMonitoredNetwork from "./RelatedMonitoredNetwork";
+import {notify} from "react-notify-toast";
 
 const alertsService = new DetectionAlertsService();
 
@@ -21,6 +22,16 @@ function AlertDetailsPage() {
   useEffect(() => {
     alertsService.findAlert(uuid, setAlert);
   }, [uuid]);
+
+  const markAsResolved = () => {
+    if (!confirm("Really mark alert as resolved? It will be re-triggered if the underlying cause is not resolved.")) {
+      return;
+    }
+
+    alertsService.markAlertAsResolved(uuid, () => {
+      notify.show('Alert marked as resolved.', 'success');
+    })
+  }
 
   if (!alert) {
     return <LoadingSpinner />
@@ -40,6 +51,7 @@ function AlertDetailsPage() {
 
           <div className="col-md-3">
             <span className="float-end">
+              <a className="btn btn-secondary" href="" onClick={markAsResolved}>Mark as Resolved</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.ALERTS.INDEX}>Back</a>
             </span>
           </div>

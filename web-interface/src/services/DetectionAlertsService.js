@@ -14,6 +14,10 @@ class DetectionAlertsService {
     })
   }
 
+  markAlertAsResolved(uuid, successCallback) {
+    RESTClient.put('/alerts/show/' + uuid + '/resolve', {}, successCallback);
+  }
+
   findAlertTimeline(uuid, setTimeline, limit, offset) {
     RESTClient.get('/alerts/show/' + uuid + '/timeline', {limit: limit, offset: offset}, function (response) {
       setTimeline(response.data)

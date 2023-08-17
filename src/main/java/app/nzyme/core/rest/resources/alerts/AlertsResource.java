@@ -130,12 +130,33 @@ public class AlertsResource extends UserAuthenticatedResource {
         return Response.ok(DetectionAlertTimelineListResponse.create(total, entries)).build();
     }
 
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
+    @Path("/show/{uuid}/resolve")
+    public Response markAsResolved(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<DetectionAlertEntry> alert = nzyme.getDetectionAlertService().findAlert(uuid,
+                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        if (alert.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDetectionAlertService().markAlertAsResolved(uuid);
+
+        return Response.ok().build();
+    }
+
     private DetectionAlertDetailsResponse buildDetailsResponse(DetectionAlertEntry alert,
                                                                List<DetectionAlertAttributeEntry> attributes) {
         Map<String, String> responseAttributes = Maps.newTreeMap();
         for (DetectionAlertAttributeEntry attribute : attributes) {
             responseAttributes.put(attribute.key(), attribute.value());
         }
+
+        boolean isActive = !alert.isResolved() &&
+                alert.lastSeen().isAfter(DateTime.now().minusMinutes(DetectionAlertService.ACTIVE_THRESHOLD_MINUTES));
 
         return DetectionAlertDetailsResponse.create(
                 alert.uuid(),
@@ -147,7 +168,7 @@ public class AlertsResource extends UserAuthenticatedResource {
                 responseAttributes,
                 alert.createdAt(),
                 alert.lastSeen(),
-                alert.lastSeen().isAfter(DateTime.now().minusMinutes(DetectionAlertService.ACTIVE_THRESHOLD_MINUTES)),
+                isActive,
                 alert.organizationId(),
                 alert.tenantId()
         );
