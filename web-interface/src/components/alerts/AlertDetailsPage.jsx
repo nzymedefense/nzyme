@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import ApiRoutes from "../../util/ApiRoutes";
@@ -10,6 +10,7 @@ import AlertDetails from "./alertdetails/AlertDetails";
 import AlertTimeline from "./AlertTimeline";
 import RelatedMonitoredNetwork from "./RelatedMonitoredNetwork";
 import {notify} from "react-notify-toast";
+import WithPermission from "../misc/WithPermission";
 
 const alertsService = new DetectionAlertsService();
 
@@ -18,19 +19,43 @@ function AlertDetailsPage() {
   const {uuid} = useParams();
 
   const [alert, setAlert] = useState(null);
+  const [isDeleted, setIsDeleted] = useState(false);
+
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
+    setAlert(null);
     alertsService.findAlert(uuid, setAlert);
-  }, [uuid]);
+  }, [uuid, revision]);
 
-  const markAsResolved = () => {
+  const markAsResolved = (e) => {
+    e.preventDefault();
+
     if (!confirm("Really mark alert as resolved? It will be re-triggered if the underlying cause is not resolved.")) {
       return;
     }
 
     alertsService.markAlertAsResolved(uuid, () => {
       notify.show('Alert marked as resolved.', 'success');
+      setRevision(oldRev => oldRev+1);
     })
+  }
+
+  const deleteAlert = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete alert?")) {
+      return;
+    }
+
+    alertsService.deleteAlert(uuid, () => {
+      notify.show('Alert deleted.', 'success');
+      setIsDeleted(true);
+    });
+  }
+
+  if (isDeleted) {
+    return <Navigate to={ApiRoutes.ALERTS.INDEX} />
   }
 
   if (!alert) {
@@ -40,7 +65,7 @@ function AlertDetailsPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-9">
+          <div className="col-md-8">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.ALERTS.INDEX}>Alerts</a></li>
@@ -49,9 +74,12 @@ function AlertDetailsPage() {
             </nav>
           </div>
 
-          <div className="col-md-3">
+          <div className="col-md-4">
             <span className="float-end">
-              <a className="btn btn-secondary" href="" onClick={markAsResolved}>Mark as Resolved</a>{' '}
+              <WithPermission permission="alerts_manage">
+                <a className="btn btn-secondary" href="" onClick={markAsResolved}>Mark as Resolved</a>{' '}
+                <a className="btn btn-danger" href="" onClick={deleteAlert}>Delete</a>{' '}
+              </WithPermission>
               <a className="btn btn-primary" href={ApiRoutes.ALERTS.INDEX}>Back</a>
             </span>
           </div>

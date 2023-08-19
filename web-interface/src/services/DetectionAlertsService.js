@@ -15,7 +15,7 @@ class DetectionAlertsService {
   }
 
   deleteAlert(uuid, successCallback) {
-    RESTClient.delete('/alerts/show/' + uuid + '/resolve', successCallback);
+    RESTClient.delete('/alerts/show/' + uuid, successCallback);
   }
 
   deleteAlerts(uuids, successCallback) {
