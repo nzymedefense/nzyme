@@ -14,8 +14,20 @@ class DetectionAlertsService {
     })
   }
 
+  deleteAlert(uuid, successCallback) {
+    RESTClient.delete('/alerts/show/' + uuid + '/resolve', successCallback);
+  }
+
+  deleteAlerts(uuids, successCallback) {
+    RESTClient.put('/alerts/many/delete', {uuids: uuids}, successCallback);
+  }
+
   markAlertAsResolved(uuid, successCallback) {
     RESTClient.put('/alerts/show/' + uuid + '/resolve', {}, successCallback);
+  }
+
+  markAlertsAsResolved(uuids, successCallback) {
+    RESTClient.put('/alerts/many/resolve', {uuids: uuids}, successCallback);
   }
 
   findAlertTimeline(uuid, setTimeline, limit, offset) {

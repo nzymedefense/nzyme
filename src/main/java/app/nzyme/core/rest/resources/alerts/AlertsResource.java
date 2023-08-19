@@ -7,6 +7,7 @@ import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.UUIDListRequest;
 import app.nzyme.core.rest.responses.alerts.DetectionAlertDetailsResponse;
 import app.nzyme.core.rest.responses.alerts.DetectionAlertListResponse;
 import app.nzyme.core.rest.responses.alerts.DetectionAlertTimelineDetailsResponse;
@@ -130,6 +131,24 @@ public class AlertsResource extends UserAuthenticatedResource {
         return Response.ok(DetectionAlertTimelineListResponse.create(total, entries)).build();
     }
 
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
+    @Path("/show/{uuid}")
+    public Response delete(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<DetectionAlertEntry> alert = nzyme.getDetectionAlertService().findAlert(uuid,
+                authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        if (alert.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDetectionAlertService().delete(uuid);
+
+        return Response.ok().build();
+    }
+
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
     @Path("/show/{uuid}/resolve")
@@ -144,6 +163,46 @@ public class AlertsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getDetectionAlertService().markAlertAsResolved(uuid);
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
+    @Path("/many/resolve")
+    public Response markListAsResolved(@Context SecurityContext sc, UUIDListRequest uuids) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        for (UUID uuid : uuids.uuids()) {
+            Optional<DetectionAlertEntry> alert = nzyme.getDetectionAlertService().findAlert(uuid,
+                    authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+            if (alert.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            nzyme.getDetectionAlertService().markAlertAsResolved(uuid);
+        }
+
+        return Response.ok().build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "alerts_manage" })
+    @Path("/many/delete")
+    public Response deleteList(@Context SecurityContext sc, UUIDListRequest uuids) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        for (UUID uuid : uuids.uuids()) {
+            Optional<DetectionAlertEntry> alert = nzyme.getDetectionAlertService().findAlert(uuid,
+                    authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+            if (alert.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            nzyme.getDetectionAlertService().delete(uuid);
+        }
 
         return Response.ok().build();
     }

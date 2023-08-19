@@ -8,9 +8,17 @@ import ApiRoutes from "../../util/ApiRoutes";
 function AlertsTableRow(props) {
 
   const alert = props.alert;
+  const onSelect = props.onSelect;
+  const isSelected = props.isSelected;
 
   return (
       <tr>
+        <td>
+          <input className="form-check-input"
+                 type="checkbox"
+                 checked={isSelected}
+                 onChange={() => onSelect(alert.id)} />
+        </td>
         <td>
           <AlertActiveIndicator active={alert.is_active} />
         </td>

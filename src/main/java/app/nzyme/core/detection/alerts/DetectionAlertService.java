@@ -252,6 +252,14 @@ public class DetectionAlertService {
         );
     }
 
+    public void delete(UUID uuid) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM detection_alerts WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .execute()
+        );
+    }
+
     public void markAlertAsResolved(UUID uuid) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE detection_alerts SET is_resolved = true WHERE uuid = :uuid")
