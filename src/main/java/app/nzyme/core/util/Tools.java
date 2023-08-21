@@ -45,6 +45,14 @@ public class Tools {
     }
 
     public static String durationToHumanReadable(Duration duration) {
+        if (duration.getStandardSeconds() == 0) {
+            return "n/a";
+        }
+
+        if (duration.getStandardSeconds() < 60) {
+            return duration.getStandardSeconds() + " seconds";
+        }
+
         if (duration.getStandardHours() < 2) {
             return duration.getStandardMinutes() + " minutes";
         }
