@@ -40,7 +40,7 @@ function MonitorChannelAlertDetails(props) {
                   These circumstances can lead to false-positive alerts of this type:
                 </p>
 
-                <ul>
+                <ul className="mb-0">
                   <li>The access point configuration was legitimately altered, and the nzyme network monitoring
                     configuration hasn't been updated accordingly.</li>
                   <li>Many access points may automatically select new channels based on RF spectrum congestion. Ensure

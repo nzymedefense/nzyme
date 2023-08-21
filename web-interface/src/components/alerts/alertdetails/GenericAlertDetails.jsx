@@ -11,7 +11,7 @@ function GenericAlertDetails(props) {
             <div className="card-body">
               <h3>Details</h3>
 
-              <pre>
+              <pre className="mb-0">
                 {JSON.stringify(alert.attributes, null, 2)}
               </pre>
             </div>
