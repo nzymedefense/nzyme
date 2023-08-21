@@ -60,7 +60,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                                 monitoredSSID.tenantId(),
                                 monitoredSSID.uuid(),
                                 null,
-                                DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                DetectionType.DOT11_MONITOR_SIGNAL_TRACK,
                                 Subsystem.DOT11,
                                 "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
                                         "with multiple signal tracks on channel \"" + frequency.frequency() + "\".",
