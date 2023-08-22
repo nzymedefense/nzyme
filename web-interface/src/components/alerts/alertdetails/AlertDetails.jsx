@@ -5,6 +5,8 @@ import MonitorBSSIDAlertDetails from "./dot11/MonitorBSSIDAlertDetails";
 import MonitorFingerprintAlertDetails from "./dot11/MonitorFingerprintAlertDetails";
 import MonitorSecuritySuiteAlertDetails from "./dot11/MonitorSecuritySuiteAlertDetails";
 import MonitorSignalTrackAlertDetails from "./dot11/MonitorSignalTrackAlertDetails";
+import BanditContactAlertDetails from "./dot11/BanditContactAlertDetails";
+import BanditContactPwnagotchiAlertDetails from "./dot11/BanditContactPwnagotchiAlertDetails";
 
 function AlertDetails(props) {
 
@@ -21,6 +23,12 @@ function AlertDetails(props) {
       return <MonitorSecuritySuiteAlertDetails alert={alert} />
     case "DOT11_MONITOR_SIGNAL_TRACK":
       return <MonitorSignalTrackAlertDetails alert={alert} />
+    case "DOT11_BANDIT_CONTACT":
+      if (alert.attributes.bandit_name === "Pwnagotchi") {
+        return <BanditContactPwnagotchiAlertDetails alert={alert} />
+      } else {
+        return <BanditContactAlertDetails alert={alert} />
+      }
     default:
       return <GenericAlertDetails alert={alert} />
   }
