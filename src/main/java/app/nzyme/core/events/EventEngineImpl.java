@@ -71,14 +71,16 @@ public class EventEngineImpl implements EventEngine {
     }
 
     @Override
-    public void processEvent(DetectionEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId) {
+    public void processEvent(DetectionEvent event, UUID organizationId, UUID tenantId) {
         // Store in database.
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO events(organization_id, tenant_id, event_type, reference, " +
-                                "created_at) VALUES(:organization_id, :tenant_id, :event_type, :reference, NOW())")
+                handle.createUpdate("INSERT INTO events(organization_id, tenant_id, event_type, details, " +
+                                "reference, created_at) VALUES(:organization_id, :tenant_id, :event_type, " +
+                                ":details, :reference, NOW())")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("event_type", EventType.DETECTION)
+                        .bind("details", event.details())
                         .bind("reference", event.alertId())
                         .execute()
         );

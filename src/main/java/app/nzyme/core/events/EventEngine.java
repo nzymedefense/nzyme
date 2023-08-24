@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface EventEngine {
 
     void processEvent(SystemEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId);
-    void processEvent(DetectionEvent event, @Nullable UUID organizationId, @Nullable UUID tenantId);
+    void processEvent(DetectionEvent event, UUID organizationId, UUID tenantId);
 
 }

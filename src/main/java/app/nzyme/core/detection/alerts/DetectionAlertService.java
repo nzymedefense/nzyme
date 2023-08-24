@@ -5,6 +5,8 @@ import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.events.types.DetectionEvent;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import jakarta.annotation.Nullable;
@@ -15,6 +17,7 @@ import org.joda.time.DateTime;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DetectionAlertService {
 
@@ -28,8 +31,35 @@ public class DetectionAlertService {
         this.nzyme = nzyme;
     }
 
-    public void raiseAlert(@Nullable UUID organizationId,
-                           @Nullable UUID tenantId,
+    public int countAllDetectionTypes(@Nullable Subsystem subsystem) {
+        int count = 0;
+        for (DetectionType t : DetectionType.values()) {
+            if (subsystem == null || t.getSubsystem().equals(subsystem)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public List<DetectionType> findAllDetectionTypes(@Nullable Subsystem subsystem,
+                                                     int limit,
+                                                     int offset) {
+        List<DetectionType> result = Lists.newArrayList();
+        for (DetectionType t : DetectionType.values()) {
+            if (subsystem == null || t.getSubsystem().equals(subsystem)) {
+                result.add(t);
+            }
+        }
+
+        return result.stream()
+                .skip(offset)
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    public void raiseAlert(UUID organizationId,
+                           UUID tenantId,
                            @Nullable UUID dot11MonitoredNetworkId,
                            @Nullable UUID tapId,
                            DetectionType detectionType,
@@ -38,6 +68,11 @@ public class DetectionAlertService {
                            Map<String, String> attributes,
                            String[] comparisonAttributeKeys,
                            @Nullable Float signalStrength) {
+
+        if (organizationId == null || tenantId == null) {
+            throw new RuntimeException("Detection alerts must have organization and tenant UUID set.");
+        }
+
         TreeMap<String, String> comparisonAttributes = Maps.newTreeMap();
         for (String key : comparisonAttributeKeys) {
             String value = attributes.get(key);
@@ -60,7 +95,7 @@ public class DetectionAlertService {
         if (existingAlert.isPresent()) {
             // This alert has been raised in the past.
             LOG.debug("Alert of type [{}] with checksum [{}] is not new. Updating.",
-                    detectionType, comparisonChecksum);
+                    detectionType.name(), comparisonChecksum);
 
             nzyme.getDatabase().withHandle(handle ->
                     handle.createUpdate("UPDATE detection_alerts SET last_seen = NOW(), is_resolved = false " +
@@ -108,18 +143,20 @@ public class DetectionAlertService {
             return;
         }
 
+        // New alert / not re-triggered.
+        UUID alertUUID = UUID.randomUUID();
         long alertId = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("INSERT INTO detection_alerts(uuid, organization_id, tenant_id, " +
                                 "dot11_monitored_network_id, tap_id, detection_type, subsystem, comparison_checksum, " +
                                 "details, created_at, last_seen) VALUES(:uuid, :organization_id, :tenant_id, " +
                                 ":dot11_monitored_network_id, :tap_id, :detection_type, :subsystem, " +
                                 ":comparison_checksum, :details, NOW(), NOW()) RETURNING id")
-                        .bind("uuid", UUID.randomUUID())
+                        .bind("uuid", alertUUID)
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("dot11_monitored_network_id", dot11MonitoredNetworkId)
                         .bind("tap_id", tapId)
-                        .bind("detection_type", detectionType)
+                        .bind("detection_type", detectionType.name())
                         .bind("subsystem", subsystem)
                         .bind("comparison_checksum", comparisonChecksum)
                         .bind("details", details)
@@ -141,6 +178,13 @@ public class DetectionAlertService {
 
         // Write initial alert timeline entry. See comment in re-raised alert update above.
         createAlertTimelineEntry(alertId);
+
+        // Create event.
+        nzyme.getEventEngine().processEvent(
+                DetectionEvent.create(alertUUID, detectionType, details, DateTime.now()),
+                organizationId,
+                tenantId
+        );
     }
 
 
@@ -334,7 +378,7 @@ public class DetectionAlertService {
             source.append(dot11MonitoredNetworkId);
         }
 
-        source.append(detectionType)
+        source.append(detectionType.name())
                 .append(subsystem);
 
         for (Map.Entry<String, String> attr : checksumAttributes.entrySet()) {

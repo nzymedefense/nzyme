@@ -100,6 +100,8 @@ import Dot11MonitoredBSSIDConfigurationImportPage
   from "./components/dot11/monitoring/Dot11MonitoredBSSIDConfigurationImportPage";
 import AlertsPage from "./components/alerts/AlertsPage";
 import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
+import AlertSubscriptionsPage from "./components/alerts/subscriptions/AlertSubscriptionsPage";
+import AlertSubscriptionDetailsPage from "./components/alerts/subscriptions/AlertSubscriptionDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -355,6 +357,8 @@ function App() {
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>
                           <Route path={ApiRoutes.ALERTS.DETAILS(':uuid')} element={<AlertDetailsPage />}/>
+                          <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX} element={<AlertSubscriptionsPage />}/>
+                          <Route path={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(':organizationId', ':detectionName')} element={<AlertSubscriptionDetailsPage />}/>
 
                           { /* Retro. */ }
                           <Route path={ApiRoutes.RETRO.SEARCH.INDEX} element={plugins.includes('retroplugin') ? <SearchPage /> : <MissingRetroPluginPage /> }/>

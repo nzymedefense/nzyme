@@ -11,12 +11,14 @@ public abstract class DetectionEvent {
 
     public abstract UUID alertId();
     public abstract DetectionType detectionType();
+    public abstract String details();
     public abstract DateTime timestamp();
 
-    public static DetectionEvent create(UUID alertId, DetectionType detectionType, DateTime timestamp) {
+    public static DetectionEvent create(UUID alertId, DetectionType detectionType, String details, DateTime timestamp) {
         return builder()
                 .alertId(alertId)
                 .detectionType(detectionType)
+                .details(details)
                 .timestamp(timestamp)
                 .build();
     }
@@ -30,6 +32,8 @@ public abstract class DetectionEvent {
         public abstract Builder alertId(UUID alertId);
 
         public abstract Builder detectionType(DetectionType detectionType);
+
+        public abstract Builder details(String details);
 
         public abstract Builder timestamp(DateTime timestamp);
 

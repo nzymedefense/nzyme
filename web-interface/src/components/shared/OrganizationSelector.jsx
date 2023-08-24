@@ -8,7 +8,7 @@ function OrganizationSelector(props) {
 
   return (
       <select className="form-select mb-3"
-              value={organization}
+              value={organization ? organization : ""}
               onChange={(e) => setOrganization(e.target.value)}
       >
         <option value="">Select an organization</option>

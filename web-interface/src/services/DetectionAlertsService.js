@@ -2,6 +2,13 @@ import RESTClient from "../util/RESTClient";
 
 class DetectionAlertsService {
 
+  findAllAlertTypes(setAlertTypes, organizationUUID, limit, offset) {
+    RESTClient.get('/alerts/detections/types',
+        {limit: limit, offset: offset, organization_uuid: organizationUUID}, function (response) {
+      setAlertTypes(response.data)
+    })
+  }
+
   findAllAlerts(setAlerts, limit, offset) {
     RESTClient.get('/alerts', {limit: limit, offset: offset}, function (response) {
       setAlerts(response.data)

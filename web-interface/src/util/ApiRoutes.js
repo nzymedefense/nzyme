@@ -150,8 +150,12 @@ const ApiRoutes = {
   },
   NOT_FOUND: '/notfound',
   ALERTS: {
-    INDEX: '/alerts',
-    DETAILS: (uuid) => `/alerts/show/${uuid}`
+    INDEX: '/alerts/overview',
+    DETAILS: (uuid) => `/alerts/show/${uuid}`,
+    SUBSCRIPTIONS: {
+      INDEX: '/alerts/subscriptions',
+      DETAILS: (organizationId, detectionName) => `/alerts/subscriptions/organizations/show/${organizationId}/types/show/${detectionName}`
+    }
   }
 }
 

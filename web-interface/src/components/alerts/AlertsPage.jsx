@@ -12,7 +12,7 @@ function AlertsPage() {
           </div>
 
           <div className="col-md-2">
-            <a href="https://go.nzyme.org/wifi-network-monitoring" className="btn btn-secondary float-end">Help</a>
+            <a href="https://go.nzyme.org/detection-alerts" className="btn btn-secondary float-end">Help</a>
           </div>
         </div>
 

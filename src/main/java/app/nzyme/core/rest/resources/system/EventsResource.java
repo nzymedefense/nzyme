@@ -252,7 +252,7 @@ public class EventsResource extends UserAuthenticatedResource {
 
         // Check if this event already has this action ID subscribed to it.
         for (SubscriptionEntry sub : eventEngine
-                .findAllActionsOfSubscription(req.organizationId(), eventTypeName)) {
+                .findAllActionsOfSubscription(req.organizationId(), eventType.name())) {
             if (sub.actionId().equals(action.get().uuid())) {
                 return Response
                         .status(Response.Status.UNAUTHORIZED)
@@ -261,7 +261,8 @@ public class EventsResource extends UserAuthenticatedResource {
             }
         }
 
-        eventEngine.subscribeActionToEvent(action.get().organizationId(), EventType.SYSTEM, eventType.name(), action.get().uuid());
+        eventEngine.subscribeActionToEvent(
+                action.get().organizationId(), EventType.SYSTEM, eventType.name(), action.get().uuid());
 
         return Response.ok().build();
     }

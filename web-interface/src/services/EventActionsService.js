@@ -9,6 +9,13 @@ class EventActionsService {
     })
   }
 
+  findDetectionType(detectionName, setDetectionType, organizationId) {
+    RESTClient.get("/alerts/detections/types/show/" + detectionName,
+        {organization_uuid: organizationId}, function(response) {
+      setDetectionType(response.data);
+    })
+  }
+
   findAllActions(setActions, limit, offset) {
     RESTClient.get("/system/events/actions",
         {limit: limit, offset: offset}, function(response) {
@@ -38,6 +45,16 @@ class EventActionsService {
 
   deleteAction(actionId, successCallback) {
     RESTClient.delete("/system/events/actions/show/" + actionId, successCallback);
+  }
+
+  subscribeActionToDetectionEvent(detectionName, actionId, organizationId, successCallback, errorCallback) {
+    RESTClient.post("/alerts/detections/types/show/" + detectionName + "/subscriptions",
+        {organization_id: organizationId, action_id: actionId}, successCallback, errorCallback);
+  }
+
+  unsubscribeActionFromDetectionEvent(detectionName, subscriptionId, successCallback) {
+    RESTClient.delete("/alerts/detections/types/show/ " + detectionName + " /subscriptions/show/" + subscriptionId,
+        successCallback);
   }
 
   subscribeActionToEvent(eventTypeName, actionId, organizationId, successCallback, errorCallback) {

@@ -78,6 +78,12 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-ranking-star" />}
             show={userHasPermission(user, "alerts_view")
                 || userHasPermission(user, "alerts_manage")} />
+
+        <NavigationLink
+            href={ApiRoutes.ALERTS.SUBSCRIPTIONS.INDEX}
+            title="Subscriptions"
+            icon={<i className="sidebar-icon fa-solid fa-bolt" />}
+            show={user.is_orgadmin || user.is_superadmin} />
       </SidebarSubmenu>
 
       <SidebarSubmenu title="Retrospective"
