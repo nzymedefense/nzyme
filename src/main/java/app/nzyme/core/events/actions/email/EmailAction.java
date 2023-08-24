@@ -3,6 +3,7 @@ package app.nzyme.core.events.actions.email;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.events.actions.Action;
 import app.nzyme.core.events.actions.ActionExecutionResult;
+import app.nzyme.core.events.types.DetectionEvent;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.integrations.smtp.SMTPConfigurationRegistryKeys;
@@ -147,8 +148,14 @@ public class EmailAction implements Action {
             mailer.sendMail(email);
         } catch(Exception e) {
             LOG.error("Could not send Email.", e);
+            return ActionExecutionResult.FAILURE;
         }
 
+        return ActionExecutionResult.SUCCESS;
+    }
+
+    @Override
+    public ActionExecutionResult execute(DetectionEvent event) {
         return ActionExecutionResult.SUCCESS;
     }
 

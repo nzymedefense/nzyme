@@ -88,29 +88,32 @@ public class EventEngineImpl implements EventEngine {
         // Find all subscribers of event.
         List<UUID> actionIds = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT action_id FROM event_subscriptions " +
-                                "WHERE event_type = :event_type AND reference = :reference")
+                                "WHERE event_type = :event_type " +
+                                "AND (reference = :reference OR reference = '*')")
                         .bind("event_type", EventType.DETECTION)
                         .bind("reference", event.detectionType())
                         .mapTo(UUID.class)
                         .list()
         );
 
+        LOG.info("ACTIONS {}: {}", event.detectionType(), actionIds);
+
         // Process.
         for (UUID actionId : actionIds) {
             Optional<EventActionEntry> ea = findEventAction(actionId);
 
             if (ea.isEmpty()) {
-                LOG.warn("Event action [{}] referenced by event [{}/{}] not found.",
+                LOG.warn("Event action [{}] referenced by detection event [{}/{}] not found.",
                         actionId, event.detectionType(), event.alertId());
                 continue;
             }
 
-            /*try {
+            try {
                 EventActionFactory.build(nzyme, ea.get()).execute(event);
             } catch (Exception e) {
-                LOG.error("Could not execute event action [{}/{}] referenced by event [{}/{}]",
+                LOG.error("Could not execute event action [{}/{}] referenced by detection event [{}/{}]",
                         ea.get().actionType(), ea.get().uuid(), event.detectionType(), event.alertId(), e);
-            }*/
+            }
         }
     }
 
