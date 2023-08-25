@@ -96,8 +96,6 @@ public class EventEngineImpl implements EventEngine {
                         .list()
         );
 
-        LOG.info("ACTIONS {}: {}", event.detectionType(), actionIds);
-
         // Process.
         for (UUID actionId : actionIds) {
             Optional<EventActionEntry> ea = findEventAction(actionId);

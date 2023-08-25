@@ -227,7 +227,7 @@ public class AlertsResource extends UserAuthenticatedResource {
     public Response findAllDetectionTypes(@Context SecurityContext sc,
                                           @QueryParam("limit") int limit,
                                           @QueryParam("offset") int offset,
-                                          @QueryParam("organization_uuid") @Nullable UUID filterOrganizationId,
+                                          @QueryParam("organization_uuid") @NotNull UUID filterOrganizationId,
                                           @QueryParam("filter_subsystem") @Nullable String filterSubsystem) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
@@ -281,9 +281,113 @@ public class AlertsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(value = PermissionLevel.ORGADMINISTRATOR)
+    @Path("/detections/subscriptions/wildcard")
+    public Response findAllWildcardSubscription(@Context SecurityContext sc,
+                                                @QueryParam("organization_uuid") @NotNull UUID filterOrganizationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        UUID organizationId;
+        if (authenticatedUser.isSuperAdministrator()) {
+            if (filterOrganizationId != null) {
+                organizationId = filterOrganizationId;
+            } else {
+                // Super admins have to select an org.
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        } else {
+            organizationId = authenticatedUser.getOrganizationId();
+        }
+
+        EventEngineImpl eventEngine = (EventEngineImpl) nzyme.getEventEngine();
+        List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
+        for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(organizationId, "*")) {
+            eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->
+                    subscriptions.add(buildSubscriptionDetailsResponse(sub, eventActionEntry))
+            );
+        }
+
+        return Response.ok(subscriptions).build();
+    }
+
+    @POST
+    @RESTSecured(value = PermissionLevel.ORGADMINISTRATOR)
+    @Path("/detections/subscriptions/wildcard")
+    public Response subscribeWildcardAction(@Context SecurityContext sc,
+                                            @Valid DetectionEventSubscriptionRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!authenticatedUser.isSuperAdministrator()
+                && !req.organizationId().equals(authenticatedUser.getOrganizationId())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+
+        // Pull action.
+        Optional<EventActionEntry> action = eventEngine.findEventAction(req.actionId());
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if this event already has this action ID subscribed to it.
+        for (SubscriptionEntry sub : eventEngine
+                .findAllActionsOfSubscription(req.organizationId(), "*")) {
+            if (sub.actionId().equals(action.get().uuid())) {
+                return Response
+                        .status(Response.Status.UNAUTHORIZED)
+                        .entity(ErrorResponse.create("Action is already subscribed."))
+                        .build();
+            }
+        }
+
+        eventEngine.subscribeActionToEvent(req.organizationId(), EventType.DETECTION, "*", action.get().uuid());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ORGADMINISTRATOR)
+    @Path("/detections/subscriptions/wildcard/show/{subscriptionId}")
+    public Response unsubscribeWildcardAction(@Context SecurityContext sc,
+                                              @PathParam("subscriptionId") @NotNull UUID subscriptionId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
+
+        // Fetch action UUID from subscription.
+        Optional<UUID> actionUuid = eventEngine.findActionOfSubscription(subscriptionId);
+
+        if (actionUuid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Fetch action.
+        Optional<EventActionEntry> action = eventEngine.findEventAction(actionUuid.get());
+
+        if (action.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if superadmin or event is subscription of org.
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (action.get().organizationId() == null
+                    || !(action.get().organizationId().equals(authenticatedUser.getOrganizationId()))) {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        }
+
+        // Delete subscription.
+        eventEngine.unsubscribeActionFromEvent(subscriptionId);
+
+        return Response.ok().build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ORGADMINISTRATOR)
     @Path("/detections/types/show/{name}")
     public Response findDetectionType(@Context SecurityContext sc,
-                                      @QueryParam("organization_uuid") @Nullable UUID filterOrganizationId,
+                                      @QueryParam("organization_uuid") @NotNull UUID filterOrganizationId,
                                       @PathParam("name") @NotEmpty String name) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
@@ -378,9 +482,7 @@ public class AlertsResource extends UserAuthenticatedResource {
     @RESTSecured(value = PermissionLevel.ORGADMINISTRATOR)
     @Path("/detections/types/show/{detectionTypeName}/subscriptions/show/{subscriptionId}")
     public Response unsubscribeActionFromDetectionEvent(@Context SecurityContext sc,
-                                                        @PathParam("detectionTypeName") @NotEmpty String detectionTypeName,
-                                                        @PathParam("subscriptionId") @NotNull UUID subscriptionId,
-                                                        @Valid DetectionEventSubscriptionRequest req) {
+                                                        @PathParam("subscriptionId") @NotNull UUID subscriptionId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());

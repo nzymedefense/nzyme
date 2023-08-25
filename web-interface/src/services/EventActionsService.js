@@ -57,6 +57,22 @@ class EventActionsService {
         successCallback);
   }
 
+  findAllDetectionAlertWildcardSubscriptions(organizationUUID, setSubscriptions) {
+    RESTClient.get("/alerts/detections/subscriptions/wildcard", {organization_uuid: organizationUUID},
+        (response) => {
+          setSubscriptions(response.data)
+        })
+  }
+
+  subscribeWildcardAction(actionId, organizationId, successCallback, errorCallback) {
+    RESTClient.post("/alerts/detections/subscriptions/wildcard",
+        {organization_id: organizationId, action_id: actionId}, successCallback, errorCallback);
+  }
+
+  unsubscribeWildcardAction(subscriptionId, successCallback) {
+    RESTClient.delete("/alerts/detections/subscriptions/wildcard/show/" + subscriptionId, successCallback);
+  }
+
   subscribeActionToEvent(eventTypeName, actionId, organizationId, successCallback, errorCallback) {
     const data = organizationId ? {organization_id: organizationId, action_id: actionId} : {action_id: actionId};
 

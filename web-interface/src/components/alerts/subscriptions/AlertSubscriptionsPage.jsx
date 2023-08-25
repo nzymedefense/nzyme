@@ -1,5 +1,6 @@
 import React from "react";
 import AlertSubscriptionsTable from "./AlertSubscriptionsTable";
+import WildcardAlertSubscriptions from "./WildcardAlertSubscriptions";
 
 function AlertSubscriptionsPage() {
 
@@ -24,6 +25,23 @@ function AlertSubscriptionsPage() {
                 <h3>Alert Subscriptions</h3>
 
                 <AlertSubscriptionsTable />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Wildcard Alert Subscriptions</h3>
+
+                <p className="text-muted">
+                  You can use <i>Wildcard Alert Subscriptions</i> to subscribe an action to all detection alert
+                  types. By using this method, you don't have to manually assign the action to all alert types.
+                </p>
+
+                <WildcardAlertSubscriptions />
               </div>
             </div>
           </div>
