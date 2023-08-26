@@ -62,24 +62,34 @@ function OrganizationAndTenantSelector(props) {
   }, []);
 
   useEffect(() => {
+    if (loaded) {
+      onTenantChange(null);
+      setTenants(null);
+    }
+
     if (organization) {
       setTenantsLoading(true);
       authenticationManagementService.findAllTenantsOfOrganization(organization, setTenants,
           250, 0, function () {
         setTenantsLoading(false);
       });
-    } else {
-      onTenantChange(null);
-      setTenants(null);
     }
   }, [organization]);
 
   useEffect(() => {
-    onTenantChange(tenant);
+    if (tenant) {
+      onTenantChange(tenant);
+    } else {
+      if (loaded) {
+        onTenantChange(null);
+      }
+    }
   }, [tenant]);
 
   useEffect(() => {
-    onOrganizationChange(organization);
+    if (organization) {
+      onOrganizationChange(organization);
+    }
   }, [organization]);
 
   if (!loaded) {

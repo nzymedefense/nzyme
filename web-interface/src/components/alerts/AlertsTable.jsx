@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 
 import DetectionAlertsService from "../../services/DetectionAlertsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
@@ -6,6 +6,9 @@ import AlertsTableRow from "./AlertsTableRow";
 import AutoRefreshSelector from "../misc/AutoRefreshSelector";
 import Paginator from "../misc/Paginator";
 import {notify} from "react-notify-toast";
+import AlertActionMultiSelector from "./AlertActionMultiSelector";
+import {userHasPermission} from "../../util/Tools";
+import {UserContext} from "../../App";
 
 const detectionAlertsService = new DetectionAlertsService();
 
@@ -14,6 +17,8 @@ const loadData = function(setAlerts, page, perPage) {
 }
 
 function AlertsTable() {
+
+  const user = useContext(UserContext);
 
   const [alerts, setAlerts] = useState(null);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
@@ -93,28 +98,11 @@ function AlertsTable() {
       <React.Fragment>
         <div className="mb-2">
           <div className="float-start">
-            <div className="dropdown ">
-              <a className="btn btn-sm btn-outline-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {selectedRows.length} Selected ...
-              </a>
-
-              <ul className="dropdown-menu">
-                <li>
-                  <a className={"dropdown-item" + (selectedRows.length === 0 ? " disabled" : "")}
-                     onClick={deleteSelected}
-                     href="#">
-                    Delete
-                  </a>
-                </li>
-                <li>
-                  <a className={"dropdown-item" + (selectedRows.length === 0 ? " disabled" : "")}
-                     onClick={resolveSelected}
-                     href="#">
-                    Mark as Resolved
-                  </a>
-                </li>
-              </ul>
-            </div>
+            <AlertActionMultiSelector
+                show={userHasPermission(user, "alerts_manage")}
+                selectedRows={selectedRows}
+                onDeleteSelected={deleteSelected}
+                onResolveSelected={resolveSelected} />
           </div>
 
           <div className="float-end">

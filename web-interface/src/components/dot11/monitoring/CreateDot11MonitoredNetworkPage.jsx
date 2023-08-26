@@ -23,10 +23,12 @@ function CreateDot11MonitoredNetworkPage() {
   }
 
   const onOrganizationChange = function (organizationUUID) {
+    console.log("ORG " + organizationUUID);
     setOrganization(organizationUUID);
   }
 
   const onTenantChange = function (tenantUUID) {
+    console.log("TENANT " + tenantUUID);
     setTenant(tenantUUID);
   }
 
