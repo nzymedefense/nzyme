@@ -63,7 +63,7 @@ function AlertSubscriptionsTable() {
 
   return (
       <React.Fragment>
-        {organization ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
+        {user.is_superadmin ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
 
         <table className="table table-sm table-hover table-striped">
           <thead>

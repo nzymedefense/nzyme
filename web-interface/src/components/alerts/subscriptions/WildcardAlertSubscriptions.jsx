@@ -85,7 +85,7 @@ function WildcardAlertSubscriptions() {
 
   return (
       <React.Fragment>
-        {organization ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
+        {user.is_superadmin ? <div className="mb-2"><strong>Organization:</strong> {organization.name} <a href="#" onClick={resetOrganization}>Change</a></div> : null}
 
         <EventSubscriptionsTable organizationId={organizationUUID}
                                  subscriptions={subscriptions}
