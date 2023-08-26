@@ -136,7 +136,7 @@ function AlertDetailsPage() {
 
         <AlertDetails alert={alert} />
 
-        <RelatedMonitoredNetwork networkId={alert.dot11_monitored_network_id} />
+        <RelatedMonitoredNetwork networkId={alert.dot11_monitored_network_id} alert={alert} />
 
         <div className="row mt-3">
           <div className="col-md-12">

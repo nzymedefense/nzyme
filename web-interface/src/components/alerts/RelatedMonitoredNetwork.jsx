@@ -11,6 +11,7 @@ const dot11Service = new Dot11Service();
 function RelatedMonitoredNetwork(props) {
 
   const networkId = props.networkId;
+  const alert = props.alert;
 
   const user = useContext(UserContext);
 
@@ -80,7 +81,8 @@ function RelatedMonitoredNetwork(props) {
 
               <RelatedMonitoredNetworkData ssid={ssid} />
 
-              <MonitoredNetworkAlertStatusTable ssid={ssid} />
+              {alert.is_active ? <MonitoredNetworkAlertStatusTable ssid={ssid} />
+                  : "Real-time network monitoring information is only displayed for currently active alerts." }
             </div>
           </div>
         </div>
