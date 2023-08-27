@@ -41,14 +41,31 @@ public class EventEngineImpl implements EventEngine {
         );
 
         // Find all subscribers of event.
-        List<UUID> actionIds = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT action_id FROM event_subscriptions " +
-                                "WHERE event_type = :event_type AND reference = :reference")
-                        .bind("event_type", EventType.SYSTEM)
-                        .bind("reference", event.type())
-                        .mapTo(UUID.class)
-                        .list()
-        );
+        List<UUID> actionIds;
+        if (organizationId == null && tenantId == null) {
+            // Superadmin System Event.
+            actionIds = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                                    "WHERE event_type = :event_type AND reference = :reference " +
+                                    "AND organization_id IS NULL")
+                            .bind("event_type", EventType.SYSTEM)
+                            .bind("reference", event.type())
+                            .mapTo(UUID.class)
+                            .list()
+            );
+        } else {
+            // Organization System Event.
+            actionIds = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT action_id FROM event_subscriptions " +
+                                    "WHERE event_type = :event_type AND reference = :reference " +
+                                    "AND organization_id = :organization_id")
+                            .bind("organization_id", organizationId)
+                            .bind("event_type", EventType.SYSTEM)
+                            .bind("reference", event.type())
+                            .mapTo(UUID.class)
+                            .list()
+            );
+        }
 
         // Process.
         for (UUID actionId : actionIds) {
@@ -89,9 +106,11 @@ public class EventEngineImpl implements EventEngine {
         List<UUID> actionIds = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT action_id FROM event_subscriptions " +
                                 "WHERE event_type = :event_type " +
-                                "AND (reference = :reference OR reference = '*')")
+                                "AND (reference = :reference OR reference = '*') " +
+                                "AND organization_id = :organization_id")
                         .bind("event_type", EventType.DETECTION)
                         .bind("reference", event.detectionType())
+                        .bind("organization_id", organizationId)
                         .mapTo(UUID.class)
                         .list()
         );
@@ -105,6 +124,8 @@ public class EventEngineImpl implements EventEngine {
                         actionId, event.detectionType(), event.alertId());
                 continue;
             }
+
+            LOG.info(ea);
 
             try {
                 EventActionFactory.build(nzyme, ea.get()).execute(event);

@@ -68,7 +68,6 @@ public class DetectionAlertService {
                            Map<String, String> attributes,
                            String[] comparisonAttributeKeys,
                            @Nullable Float signalStrength) {
-
         if (organizationId == null || tenantId == null) {
             throw new RuntimeException("Detection alerts must have organization and tenant UUID set.");
         }
@@ -138,6 +137,13 @@ public class DetectionAlertService {
             } else {
                 // Inactive alert. Create new timeline entry.
                 createAlertTimelineEntry(existingAlert.get().id());
+
+                // Create event.
+                nzyme.getEventEngine().processEvent(
+                        DetectionEvent.create(existingAlert.get().uuid(), detectionType, details, DateTime.now()),
+                        organizationId,
+                        tenantId
+                );
             }
 
             return;

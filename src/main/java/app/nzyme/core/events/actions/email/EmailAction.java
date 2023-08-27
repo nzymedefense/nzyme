@@ -1,6 +1,7 @@
 package app.nzyme.core.events.actions.email;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.actions.Action;
 import app.nzyme.core.events.actions.ActionExecutionResult;
 import app.nzyme.core.events.types.DetectionEvent;
@@ -156,7 +157,39 @@ public class EmailAction implements Action {
 
     @Override
     public ActionExecutionResult execute(DetectionEvent event) {
+        LOG.info("Executing [{}] for event type [{}].", this.getClass().getCanonicalName(), event.detectionType());
+
+        try {
+            List<Recipient> recipients = Lists.newArrayList();
+            for (String receiverAddress : configuration.receivers()) {
+                recipients.add(new Recipient(receiverAddress, receiverAddress, Message.RecipientType.TO));
+            }
+
+            if (recipients.isEmpty()) {
+                return ActionExecutionResult.SUCCESS;
+            }
+
+            Email email = EmailBuilder.startingBlank()
+                    .to(recipients)
+                    .from(this.fromAddress)
+                    .withSubject(configuration.subjectPrefix() + " " + buildSubject(event.detectionType()))
+                    .withPlainText(buildPlainTextBody(event))
+                    .withHTMLText(buildHTMLTextBody(event))
+                    .withEmbeddedImage("header_top", loadResourceFile("email/header_top.png"), "image/png")
+                    .withEmbeddedImage("header_bottom", loadResourceFile("email/header_bottom_detection_event.png"), "image/png")
+                    .buildEmail();
+
+            mailer.sendMail(email);
+        } catch(Exception e) {
+            LOG.error("Could not send Email.", e);
+            return ActionExecutionResult.FAILURE;
+        }
+
         return ActionExecutionResult.SUCCESS;
+    }
+
+    private String buildSubject(DetectionType detectionType) {
+        return "Detection Event: " + detectionType.getTitle();
     }
 
     private String buildSubject(SystemEventType eventType) {
@@ -167,6 +200,16 @@ public class EmailAction implements Action {
         SystemEventType eventType = event.type();
 
         String b = "System Event: " + eventType.getHumanReadableName() + " [" + eventType.name() + "]\n\n"
+                + event.details() + "\n\n"
+                + "Event Timestamp: " + event.timestamp();
+
+        return b;
+    }
+
+    private String buildPlainTextBody(DetectionEvent event) {
+        DetectionType detectionType = event.detectionType();
+
+        String b = "Detection Event: " + detectionType.getTitle() + " [" + detectionType.name() + "]\n\n"
                 + event.details() + "\n\n"
                 + "Event Timestamp: " + event.timestamp();
 
@@ -187,6 +230,28 @@ public class EmailAction implements Action {
 
             StringWriter out = new StringWriter();
             Template template = this.templateConfig.getTemplate("email/system_event.ftl");
+            template.process(parameters, out);
+            return out.toString();
+        } catch(Exception e) {
+            LOG.error("Could not build HTML text body.", e);
+            return null;
+        }
+    }
+
+    @Nullable
+    private String buildHTMLTextBody(DetectionEvent event) {
+        try {
+            DetectionType detectionType = event.detectionType();
+
+            Map<String, Object> parameters = Maps.newHashMap();
+            parameters.put("event_type_name", detectionType.name());
+            parameters.put("event_type_name_human_readable", detectionType.getTitle());
+            parameters.put("event_details", event.details());
+            parameters.put("event_timestamp", event.timestamp());
+            parameters.put("nzyme_url", this.webInterfaceUrl.toString());
+
+            StringWriter out = new StringWriter();
+            Template template = this.templateConfig.getTemplate("email/detection_event.ftl");
             template.process(parameters, out);
             return out.toString();
         } catch(Exception e) {

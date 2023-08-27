@@ -32,7 +32,7 @@ function MonitoredSecuritySuitesTable(props) {
   return (
       <React.Fragment>
         {alertingEnabled ? null : <div className="alert alert-warning">Alerting for unexpected security suites is disabled.</div>}
-        
+
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
