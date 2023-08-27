@@ -8,6 +8,9 @@ const dot11Service = new Dot11Service();
 function Dot11MonitoredBSSIDs(props) {
 
   const bssids = props.bssids;
+  const bssidAlertingEnabled = props.bssidAlertingEnabled;
+  const fingerprintAlertingEnabled = props.fingerprintAlertingEnabled;
+
   const bumpRevision = props.bumpRevision;
   const parentIsLoading = props.parentIsLoading;
 
@@ -32,6 +35,9 @@ function Dot11MonitoredBSSIDs(props) {
 
   return (
       <React.Fragment>
+        {bssidAlertingEnabled ? null : <div className="alert alert-warning">Alerting for unexpected BSSIDs is disabled.</div>}
+        {fingerprintAlertingEnabled ? null : <div className="alert alert-warning">Alerting for unexpected fingerprints is disabled.</div>}
+
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>

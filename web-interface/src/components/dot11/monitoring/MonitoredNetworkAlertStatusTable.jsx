@@ -2,10 +2,13 @@ import React from "react";
 import MonitoredNetworkSingleAlertStatus from "./MonitoredNetworkSingleAlertStatus";
 import HelpBubble from "../../misc/HelpBubble";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import AlertEnabledTrigger from "./AlertEnabledTrigger";
 
 function MonitoredNetworkAlertStatusTable(props) {
 
   const ssid = props.ssid;
+  const renderControls = props.renderControls;
+  const bumpRevision = props.bumpRevision;
 
   if (!ssid) {
     return <LoadingSpinner />
@@ -17,28 +20,34 @@ function MonitoredNetworkAlertStatusTable(props) {
         <tr>
           <th>Type</th>
           <th>Status</th>
+          { renderControls ? <th>&nbsp;</th> : null }
         </tr>
         </thead>
         <tbody>
         <tr>
           <td>Expected BSSIDs / Access Points</td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_bssid} /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_bssid" /></td>
+          { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_bssid" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
         <tr>
           <td>Expected Fingerprints</td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_fingerprint} /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_fingerprint" /></td>
+          { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_fingerprint" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
         <tr>
           <td>Expected Channels</td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_channel} /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_channel" /></td>
+          { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_channel" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
         <tr>
           <td>Expected Security Suites</td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_security_suites} /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_security_suites" /></td>
+          { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_security_suites" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
         <tr>
           <td>Expected Signal Track <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" /></td>
-          <td><MonitoredNetworkSingleAlertStatus ssid_is_enabled={ssid.is_enabled} status={ssid.status_unexpected_signal_tracks} />{' '}</td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_signal_tracks" />{' '}</td>
+          { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_signal_tracks" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
         </tbody>
       </table>

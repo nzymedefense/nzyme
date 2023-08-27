@@ -15,20 +15,31 @@ public abstract class PreLoadedMonitoredSSID {
     public abstract List<Integer> channels();
     public abstract List<String> securitySuites();
 
-    public static PreLoadedMonitoredSSID create(UUID id, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites) {
+    public abstract boolean enabledUnexpectedBSSID();
+    public abstract boolean enabledUnexpectedChannel();
+    public abstract boolean enabledUnexpectedSecuritySuites();
+    public abstract boolean enabledUnexpectedFingerprint();
+    public abstract boolean enabledUnexpectedSignalTracks();
+
+    public static PreLoadedMonitoredSSID create(UUID id, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks) {
         return builder()
                 .id(id)
                 .ssid(ssid)
                 .bssids(bssids)
                 .channels(channels)
                 .securitySuites(securitySuites)
+                .enabledUnexpectedBSSID(enabledUnexpectedBSSID)
+                .enabledUnexpectedChannel(enabledUnexpectedChannel)
+                .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
+                .enabledUnexpectedFingerprint(enabledUnexpectedFingerprint)
+                .enabledUnexpectedSignalTracks(enabledUnexpectedSignalTracks)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_PreLoadedMonitoredSSID.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(UUID id);
@@ -40,6 +51,16 @@ public abstract class PreLoadedMonitoredSSID {
         public abstract Builder channels(List<Integer> channels);
 
         public abstract Builder securitySuites(List<String> securitySuites);
+
+        public abstract Builder enabledUnexpectedBSSID(boolean enabledUnexpectedBSSID);
+
+        public abstract Builder enabledUnexpectedChannel(boolean enabledUnexpectedChannel);
+
+        public abstract Builder enabledUnexpectedSecuritySuites(boolean enabledUnexpectedSecuritySuites);
+
+        public abstract Builder enabledUnexpectedFingerprint(boolean enabledUnexpectedFingerprint);
+
+        public abstract Builder enabledUnexpectedSignalTracks(boolean enabledUnexpectedSignalTracks);
 
         public abstract PreLoadedMonitoredSSID build();
     }

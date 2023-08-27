@@ -33,7 +33,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
         LOG.debug("Starting 802.11 signal track monitor run.");
 
         for (MonitoredSSID monitoredSSID : nzyme.getDot11().findAllMonitoredSSIDs(null, null)) {
-            if (!monitoredSSID.isEnabled()) {
+            if (!monitoredSSID.isEnabled() || !monitoredSSID.enabledUnexpectedSignalTracks()) {
                 continue;
             }
             

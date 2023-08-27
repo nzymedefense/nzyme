@@ -59,8 +59,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
 
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
-
-
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     bssid.bssid(),
                     nzyme.getOUIManager().lookupMac(bssid.bssid()),

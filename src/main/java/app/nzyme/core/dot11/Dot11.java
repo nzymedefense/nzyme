@@ -12,7 +12,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.jdbi.v3.core.statement.Query;
-import org.jdbi.v3.core.statement.Update;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
@@ -38,6 +37,26 @@ public class Dot11 {
         private final String columnName;
 
         ClientOrderColumn(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+    }
+
+    public enum MonitorActiveStatusTypeColumn {
+
+        UNEXPECTED_BSSID("enabled_unexpected_bssid"),
+        UNEXPECTED_CHANNEL("enabled_unexpected_channel"),
+        UNEXPECTED_SECURITY_SUITES("enabled_unexpected_security_suites"),
+        UNEXPECTED_FINGERPRINT("enabled_unexpected_fingerprint"),
+        UNEXPECTED_SIGNAL_TRACKS("enabled_unexpected_signal_tracks");
+
+        private final String columnName;
+
+        MonitorActiveStatusTypeColumn(String columnName) {
             this.columnName = columnName;
         }
 
@@ -913,6 +932,16 @@ public class Dot11 {
                                 "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
                         .bind("monitored_network_id", monitoredNetworkId)
                         .bind("uuid", suiteUUID)
+                        .execute()
+        );
+    }
+
+    public void setMonitorAlertStatus(long monitoredNetworkId, MonitorActiveStatusTypeColumn type, boolean status) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_monitored_networks SET <column> = :status WHERE id = :id")
+                        .bind("id", monitoredNetworkId)
+                        .define("column", type.getColumnName())
+                        .bind("status", status)
                         .execute()
         );
     }

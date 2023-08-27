@@ -165,6 +165,11 @@ class Dot11Service {
     RESTClient.put("/dot11/monitoring/ssids/show/" + ssidUUID + "/disable", {}, successCallback, errorCallback);
   }
 
+  setMonitoredNetworkAlertEnabledStatus(ssidUUID, alert, status, successCallback) {
+    RESTClient.put("/dot11/monitoring/ssids/show/" + ssidUUID + "/alertenabledstatus/" + alert + "/set/" + status,
+        {}, successCallback);
+  }
+
   findSupportedBandits(setBandits) {
     RESTClient.get("/dot11/monitoring/bandits/supported", {}, function (response) {
       setBandits(response.data);

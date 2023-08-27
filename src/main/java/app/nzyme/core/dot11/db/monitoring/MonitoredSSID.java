@@ -15,10 +15,15 @@ public abstract class MonitoredSSID {
     public abstract String ssid();
     public abstract UUID organizationId();
     public abstract UUID tenantId();
+    public abstract boolean enabledUnexpectedBSSID();
+    public abstract boolean enabledUnexpectedChannel();
+    public abstract boolean enabledUnexpectedSecuritySuites();
+    public abstract boolean enabledUnexpectedFingerprint();
+    public abstract boolean enabledUnexpectedSignalTracks();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -26,6 +31,11 @@ public abstract class MonitoredSSID {
                 .ssid(ssid)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .enabledUnexpectedBSSID(enabledUnexpectedBSSID)
+                .enabledUnexpectedChannel(enabledUnexpectedChannel)
+                .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
+                .enabledUnexpectedFingerprint(enabledUnexpectedFingerprint)
+                .enabledUnexpectedSignalTracks(enabledUnexpectedSignalTracks)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -48,6 +58,16 @@ public abstract class MonitoredSSID {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder enabledUnexpectedBSSID(boolean enabledUnexpectedBSSID);
+
+        public abstract Builder enabledUnexpectedChannel(boolean enabledUnexpectedChannel);
+
+        public abstract Builder enabledUnexpectedSecuritySuites(boolean enabledUnexpectedSecuritySuites);
+
+        public abstract Builder enabledUnexpectedFingerprint(boolean enabledUnexpectedFingerprint);
+
+        public abstract Builder enabledUnexpectedSignalTracks(boolean enabledUnexpectedSignalTracks);
 
         public abstract Builder createdAt(DateTime createdAt);
 

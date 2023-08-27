@@ -114,7 +114,17 @@ public class Dot11Table implements DataTable {
             }
 
             monitoredSSIDs.put(s.ssid(), PreLoadedMonitoredSSID.create(
-                    s.uuid(), s.ssid(), preLoadedBSSIDs, preLoadedChannels, preLoadedSecuritySuites));
+                    s.uuid(),
+                    s.ssid(),
+                    preLoadedBSSIDs,
+                    preLoadedChannels,
+                    preLoadedSecuritySuites,
+                    s.enabledUnexpectedBSSID(),
+                    s.enabledUnexpectedChannel(),
+                    s.enabledUnexpectedSecuritySuites(),
+                    s.enabledUnexpectedFingerprint(),
+                    s.enabledUnexpectedSignalTracks()
+            ));
         }
 
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
@@ -322,90 +332,98 @@ public class Dot11Table implements DataTable {
                     if (monitoredSSID != null) {
                         PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(bssid);
                         if (monitoredBSSID == null) {
-                            // Unexpected BSSID.
-                            Map<String, String> attributes = Maps.newHashMap();
-                            attributes.put("bssid", bssid);
+                            if (monitoredSSID.enabledUnexpectedBSSID()) {
+                                // Unexpected BSSID.
+                                Map<String, String> attributes = Maps.newHashMap();
+                                attributes.put("bssid", bssid);
 
-                            nzyme.getDetectionAlertService().raiseAlert(
-                                    tap.organizationId(),
-                                    tap.tenantId(),
-                                    monitoredSSID.id(),
-                                    tap.uuid(),
-                                    DetectionType.DOT11_MONITOR_BSSID,
-                                    Subsystem.DOT11,
-                                    "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
-                                            "unexpected BSSID \"" + bssid + "\"",
-                                    attributes,
-                                    new String[]{"bssid"},
-                                    report.signalStrength().average()
-                            );
+                                nzyme.getDetectionAlertService().raiseAlert(
+                                        tap.organizationId(),
+                                        tap.tenantId(),
+                                        monitoredSSID.id(),
+                                        tap.uuid(),
+                                        DetectionType.DOT11_MONITOR_BSSID,
+                                        Subsystem.DOT11,
+                                        "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
+                                                "unexpected BSSID \"" + bssid + "\"",
+                                        attributes,
+                                        new String[]{"bssid"},
+                                        report.signalStrength().average()
+                                );
+                            }
                         } else {
                             // Expected BSSID. Compare fingerprints.
-                            for (String observedFingerprint : ssidReport.fingerprints()) {
-                                if (!monitoredBSSID.fingerprints().contains(observedFingerprint)) {
-                                    // Unexpected fingerprint.
+                            if (monitoredSSID.enabledUnexpectedFingerprint()) {
+                                for (String observedFingerprint : ssidReport.fingerprints()) {
+                                    if (!monitoredBSSID.fingerprints().contains(observedFingerprint)) {
+                                        // Unexpected fingerprint.
+                                        Map<String, String> attributes = Maps.newHashMap();
+                                        attributes.put("bssid", bssid);
+                                        attributes.put("fingerprint", observedFingerprint);
+
+                                        nzyme.getDetectionAlertService().raiseAlert(
+                                                tap.organizationId(),
+                                                tap.tenantId(),
+                                                monitoredSSID.id(),
+                                                tap.uuid(),
+                                                DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                                Subsystem.DOT11,
+                                                "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
+                                                        "with unexpected fingerprint \"" + observedFingerprint + "\".",
+                                                attributes,
+                                                new String[]{"bssid", "fingerprint"},
+                                                report.signalStrength().average()
+                                        );
+                                    }
+                                }
+                            }
+                        }
+
+                        if (monitoredSSID.enabledUnexpectedChannel()) {
+                            for (Long frequency : ssidReport.channelStatistics().keySet()) {
+                                if (!monitoredSSID.channels().contains(frequency.intValue())) {
+                                    // Unexpected channel.
                                     Map<String, String> attributes = Maps.newHashMap();
-                                    attributes.put("bssid", bssid);
-                                    attributes.put("fingerprint", observedFingerprint);
+                                    attributes.put("frequency", String.valueOf(frequency));
 
                                     nzyme.getDetectionAlertService().raiseAlert(
                                             tap.organizationId(),
                                             tap.tenantId(),
                                             monitoredSSID.id(),
                                             tap.uuid(),
-                                            DetectionType.DOT11_MONITOR_FINGERPRINT,
+                                            DetectionType.DOT11_MONITOR_CHANNEL,
                                             Subsystem.DOT11,
-                                            "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
-                                                    "with unexpected fingerprint \"" + observedFingerprint + "\".",
+                                            "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
+                                                    "unexpected frequency " + frequency + "MHz",
                                             attributes,
-                                            new String[]{"bssid", "fingerprint"},
+                                            new String[]{"frequency"},
                                             report.signalStrength().average()
                                     );
                                 }
                             }
                         }
 
-                        for (Long frequency : ssidReport.channelStatistics().keySet()) {
-                            if (!monitoredSSID.channels().contains(frequency.intValue())) {
-                                // Unexpected channel.
-                                Map<String, String> attributes = Maps.newHashMap();
-                                attributes.put("frequency", String.valueOf(frequency));
+                        if (monitoredSSID.enabledUnexpectedSecuritySuites()) {
+                            for (Dot11SecurityInformationReport security : ssidReport.security()) {
+                                String suite = Dot11.securitySuitesToIdentifier(security);
+                                if (!monitoredSSID.securitySuites().contains(suite)) {
+                                    Map<String, String> attributes = Maps.newHashMap();
+                                    attributes.put("suite", suite);
 
-                                nzyme.getDetectionAlertService().raiseAlert(
-                                        tap.organizationId(),
-                                        tap.tenantId(),
-                                        monitoredSSID.id(),
-                                        tap.uuid(),
-                                        DetectionType.DOT11_MONITOR_CHANNEL,
-                                        Subsystem.DOT11,
-                                        "Monitored network \"" + monitoredSSID.ssid() + "\" advertised on " +
-                                                "unexpected frequency " + frequency + "MHz",
-                                        attributes,
-                                        new String[]{"frequency"},
-                                        report.signalStrength().average()
-                                );
-                            }
-                        }
-
-                        for (Dot11SecurityInformationReport security : ssidReport.security()) {
-                            String suite = Dot11.securitySuitesToIdentifier(security);
-                            if (!monitoredSSID.securitySuites().contains(suite)) {
-                                Map<String, String> attributes = Maps.newHashMap();
-                                attributes.put("suite", suite);
-
-                                nzyme.getDetectionAlertService().raiseAlert(
-                                        tap.organizationId(),
-                                        tap.tenantId(),
-                                        monitoredSSID.id(),
-                                        tap.uuid(),
-                                        DetectionType.DOT11_MONITOR_SECURITY_SUITE,
-                                        Subsystem.DOT11,
-                                        "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
-                                                "unexpected security suites \"" + suite + "\"",
-                                        attributes,
-                                        new String[]{"suite"},
-                                        report.signalStrength().average()
-                                );
+                                    nzyme.getDetectionAlertService().raiseAlert(
+                                            tap.organizationId(),
+                                            tap.tenantId(),
+                                            monitoredSSID.id(),
+                                            tap.uuid(),
+                                            DetectionType.DOT11_MONITOR_SECURITY_SUITE,
+                                            Subsystem.DOT11,
+                                            "Monitored network \"" + monitoredSSID.ssid() + "\" advertised with " +
+                                                    "unexpected security suites \"" + suite + "\"",
+                                            attributes,
+                                            new String[]{"suite"},
+                                            report.signalStrength().average()
+                                    );
+                                }
                             }
                         }
                     }

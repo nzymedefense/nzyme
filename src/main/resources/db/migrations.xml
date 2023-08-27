@@ -3665,5 +3665,29 @@
         <dropColumn tableName="dot11_monitored_networks" columnName="status_unexpected_security_protocol" />
         <dropColumn tableName="dot11_monitored_networks" columnName="status_unexpected_signal_tracks" />
     </changeSet>
+
+    <changeSet id="add_dot11_monitor_enable_disable_trigger_fields" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled_unexpected_bssid" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled_unexpected_channel" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled_unexpected_security_suites" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled_unexpected_fingerprint" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="enabled_unexpected_signal_tracks" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>

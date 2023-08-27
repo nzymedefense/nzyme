@@ -81,7 +81,7 @@ function RelatedMonitoredNetwork(props) {
 
               <RelatedMonitoredNetworkData ssid={ssid} />
 
-              {alert.is_active ? <MonitoredNetworkAlertStatusTable ssid={ssid} />
+              {alert.is_active ? <MonitoredNetworkAlertStatusTable ssid={ssid} renderControls={false} />
                   : "Real-time network monitoring information is only displayed for currently active alerts." }
             </div>
           </div>

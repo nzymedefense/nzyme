@@ -187,7 +187,7 @@ function Dot11MonitoredNetworkDetailsPage() {
                   alert as resolved on the alert details page if you want to speed this up.
                 </p>
 
-                <MonitoredNetworkAlertStatusTable ssid={ssid} />
+                <MonitoredNetworkAlertStatusTable ssid={ssid} renderControls={true} bumpRevision={bumpRevision} />
               </div>
             </div>
           </div>
@@ -214,7 +214,11 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
 
-                <Dot11MonitoredBSSIDs bssids={ssid.bssids} bumpRevision={bumpRevision} parentIsLoading={isLoading} />
+                <Dot11MonitoredBSSIDs bssids={ssid.bssids}
+                                      bssidAlertingEnabled={ssid.enabled_unexpected_bssid}
+                                      fingerprintAlertingEnabled={ssid.enabled_unexpected_fingerprint}
+                                      bumpRevision={bumpRevision}
+                                      parentIsLoading={isLoading} />
 
                 <div className="input-group mb-3">
                   <input type="text"
@@ -239,7 +243,9 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
 
-                <MonitoredChannelsTable ssid={ssid} bumpRevision={bumpRevision} />
+                <MonitoredChannelsTable ssid={ssid}
+                                        alertingEnabled={ssid.enabled_unexpected_channel}
+                                        bumpRevision={bumpRevision} />
 
                 <div className="input-group mb-3">
                   <input type="number"
@@ -263,7 +269,9 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
 
-                <MonitoredSecuritySuitesTable ssid={ssid} bumpRevision={bumpRevision} />
+                <MonitoredSecuritySuitesTable ssid={ssid}
+                                              alertingEnabled={ssid.enabled_unexpected_security_suites}
+                                              bumpRevision={bumpRevision} />
 
                 <div className="input-group mb-3">
                   <input type="text"

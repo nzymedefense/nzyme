@@ -16,6 +16,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -48,8 +49,54 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         for (MonitoredSSID ssid : nzyme.getDot11().findAllMonitoredSSIDs(
                 authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
 
-            boolean isAlerted = !nzyme.getDetectionAlertService()
-                    .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid()).isEmpty();
+            boolean isAlerted = false;
+            for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
+                    .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid())) {
+                DetectionType detectionType;
+                try {
+                    detectionType = DetectionType.valueOf(alert.detectionType());
+                } catch(IllegalArgumentException e) {
+                    LOG.error("Invalid detection type [{}]. Skipping.", alert.detectionType());
+                    continue;
+                }
+
+                switch (detectionType) {
+                    case DOT11_MONITOR_BSSID:
+                        if (!ssid.enabledUnexpectedBSSID()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_CHANNEL:
+                        if (!ssid.enabledUnexpectedChannel()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_SECURITY_SUITE:
+                        if (!ssid.enabledUnexpectedSecuritySuites()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_FINGERPRINT:
+                        if (!ssid.enabledUnexpectedFingerprint()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_SIGNAL_TRACK:
+                        if (!ssid.enabledUnexpectedSignalTracks()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                }
+
+                if (isAlerted) {
+                    break;
+                }
+            }
 
             ssids.add(MonitoredSSIDSummaryResponse.create(
                     ssid.uuid(),
@@ -137,25 +184,40 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 continue;
             }
 
-            isAlerted = true;
-
             switch (detectionType) {
                 case DOT11_MONITOR_BSSID:
+                    if (!ssid.enabledUnexpectedBSSID()) {
+                        continue;
+                    }
                     bssidAlerted = true;
                     break;
                 case DOT11_MONITOR_CHANNEL:
+                    if (!ssid.enabledUnexpectedChannel()) {
+                        continue;
+                    }
                     channelAlerted = true;
                     break;
                 case DOT11_MONITOR_SECURITY_SUITE:
+                    if (!ssid.enabledUnexpectedSecuritySuites()) {
+                        continue;
+                    }
                     securitySuitesAlerted = true;
                     break;
                 case DOT11_MONITOR_FINGERPRINT:
+                    if (!ssid.enabledUnexpectedFingerprint()) {
+                        continue;
+                    }
                     fingerprintAlerted = true;
                     break;
                 case DOT11_MONITOR_SIGNAL_TRACK:
+                    if (!ssid.enabledUnexpectedSignalTracks()) {
+                        continue;
+                    }
                     signalTracksAlerted = true;
                     break;
             }
+
+            isAlerted = true;
         }
 
         return Response.ok(MonitoredSSIDDetailsResponse.create(
@@ -174,7 +236,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 channelAlerted,
                 securitySuitesAlerted,
                 fingerprintAlerted,
-                signalTracksAlerted
+                signalTracksAlerted,
+                ssid.enabledUnexpectedBSSID(),
+                ssid.enabledUnexpectedChannel(),
+                ssid.enabledUnexpectedSecuritySuites(),
+                ssid.enabledUnexpectedFingerprint(),
+                ssid.enabledUnexpectedSignalTracks()
         )).build();
     }
 
@@ -559,6 +626,39 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(bandits).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/alertenabledstatus/{alert}/set/{status}")
+    public Response setAlertEnabledStatus(@Context SecurityContext sc,
+                                          @PathParam("uuid") UUID ssidUUID,
+                                          @PathParam("alert") @NotEmpty String alert,
+                                          @PathParam("status") boolean status) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(ssidUUID);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Dot11.MonitorActiveStatusTypeColumn alertColumn;
+        try {
+            alertColumn = Dot11.MonitorActiveStatusTypeColumn.valueOf(alert.toUpperCase());
+        } catch(IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().setMonitorAlertStatus(ssid.get().id(), alertColumn, status);
+
+        nzyme.getDot11().bumpMonitoredSSIDUpdatedAt(ssid.get().id());
+
+        return Response.ok().build();
     }
 
     private boolean userHasAccessToMonitoredNetwork(AuthenticatedUser user, MonitoredSSID ssid) {
