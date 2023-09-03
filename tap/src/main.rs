@@ -15,34 +15,93 @@ mod alerting;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 
-use clap::Parser;
+use clap::{Parser};
 use configuration::Configuration;
 use data::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
+use toml::map::Map;
 use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
 
-#[derive(Parser,Debug)]
-struct Arguments {
-    #[clap(short, long, forbid_empty_values = true)]
-    configuration_file: String,
+#[derive(Parser)]
 
-    #[clap(short, long, forbid_empty_values = true)]
-    log_level: String
+struct Arguments {
+    #[clap(short, long, required_unless_present("generate_channels"))]
+    configuration_file: Option<String>,
+
+    #[clap(short, long)]
+    log_level: Option<String>,
+
+    #[clap(short, long, required_unless_present("configuration_file"))]
+    generate_channels: bool,
+
 }
 
-fn main() {    
-    let args = Arguments::parse();
 
-    logging::initialize(&args.log_level);
+fn main() {
+
+    let args = Arguments::parse();
+    let log_level = match args.log_level {
+        Some(log_level) => log_level,
+        None => "info".to_string()
+    };
+
+    if args.generate_channels {
+        if log_level != "info" {
+            logging::initialize(&log_level);
+        }
+
+        let nl = dot11::nl::Nl::new();
+        match nl {
+            Ok(mut nl) => {
+                let interfaces = nl.fetch_devices();
+                match interfaces {
+                    Ok(interfaces) => {
+                        for interface in interfaces.iter() {
+                            let interface_info = nl.fetch_device_info(interface.0);
+                            match interface_info {
+                                Ok(interface_info) => {
+                                    let mut iface = Map::new();
+                                    iface.insert("active".to_string(), toml::Value::Boolean(true));
+                                    iface.insert("channels".to_string(), toml::Value::Array(interface_info.supported_frequencies.iter().map(|f| toml::Value::Integer(helpers::network::dot11_frequency_to_channel(*f).unwrap() as i64)).collect()));
+                                    let mut iface_table = Map::new();
+                                    iface_table.insert(interface.0.clone(), toml::Value::Table(iface));
+                                    let mut wifi_ifaces = Map::new();
+                                    wifi_ifaces.insert("wifi_interfaces".to_string(), toml::Value::Table(iface_table));
+                                    let toml_string = toml::to_string(&toml::Value::Table(wifi_ifaces)).unwrap();
+                                    println!("{}", toml_string);
+                                    //println!("{}: {:?}", interface.0, interface_info.supported_frequencies);
+                                },
+                                Err(e) => {
+                                    error!("Could not fetch information of device [{}]: {}", interface.0, e);
+                                }
+                            }
+                        }
+
+                    },
+                    Err(e) => {
+                        error!("Could not fetch interfaces: {}", e);
+                        exit(exit_code::EX_OSERR);
+                    }
+                }
+            },
+            Err(e) => {
+                error!("Could not establish Netlink connection: {}", e);
+                exit(exit_code::EX_OSERR);
+            }
+        }
+        exit(exit_code::EX_OK);
+    }
+
+    logging::initialize(&log_level);
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
     // Load configuration.
-    let configuration: Configuration = match configuration::load(args.configuration_file) {
+    let configuration: Configuration = match configuration::load(args.configuration_file.unwrap()) {
         Ok(configuration) => {
             info!("Parsed and loaded configuration.");
             configuration

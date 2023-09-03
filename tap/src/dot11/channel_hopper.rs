@@ -26,7 +26,7 @@ impl ChannelHopper {
         };
 
         for device_name in devices.keys() {
-            match nl.fetch_device(device_name) {
+            match nl.fetch_device_info(device_name) {
                 Ok(device) => { adapters.insert(device_name.clone(), device.supported_frequencies); },
                 Err(e) => { error!("Could not fetch information of device [{}]. Not assigning to channels: {}", device_name, e); }
             }
