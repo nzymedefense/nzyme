@@ -194,6 +194,8 @@ function SSIDDetailsPage() {
                                          frequencies={ssid.frequencies} />
                       </div>
 
+                      <br style={{"clear": "both"}} />
+
                       <SSIDSignalWaterfallChart bssid={ssid.bssid}
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
