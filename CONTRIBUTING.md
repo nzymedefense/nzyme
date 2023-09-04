@@ -18,11 +18,14 @@ We welcome outside contributions. Here are a few things to know:
 The workflow is the same for external contributors and nzyme team members:
 
 * All changes (except really tiny changes for team members with push access) must be performed through a pull request.
+* [Signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) are required.
 * A pull request must link to an associated issue ticket
+* Commit messages should always include the associated ticket number
+* The pull request branch name should start with the issue ticket number, followed by a dash (`-`) and a short but descriptive name
+* Commit messages should be 
 * Pull requests must be separated up by topic / change. Do not include multiple changes in a single pull request.
 * Pull requests must be reviewed by one other nzyme team member before they can be merged.
 * Pull requests must satisfy the Definition of Done before they can be merged:
   * A reasonable level of test coverage exists
   * Documentation has been updated and/or added
   * The release notes / changelog meta ticket for the corresponding release has been updated if required
-* [Signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) are required.
