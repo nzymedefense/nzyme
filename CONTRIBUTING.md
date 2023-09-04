@@ -12,3 +12,17 @@ We welcome outside contributions. Here are a few things to know:
   before that is done.
 * Please create a PR for each feature, bug fix or improvement. Do not mix multiple types
   of changes into a single PR. This makes reviewing and merging much easier.
+
+# Workflow
+
+The workflow is the same for external contributors and nzyme team members:
+
+* All changes (except really tiny changes for team members with push access) must be performed through a pull request.
+* A pull request must link to an associated issue ticket
+* Pull requests must be separated up by topic / change. Do not include multiple changes in a single pull request.
+* Pull requests must be reviewed by one other nzyme team member before they can be merged.
+* Pull requests must satisfy the Definition of Done before they can be merged:
+  * A reasonable level of test coverage exists
+  * Documentation has been updated and/or added
+  * The release notes / changelog meta ticket for the corresponding release has been updated if required
+* [Signed commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits) are required.
