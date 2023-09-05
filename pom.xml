@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <scm>
-        <url>https://github.com/lennartkoopmann/nzyme</url>
-        <connection>scm:git:git://github.com/lennartkoopmann/nzyme.git</connection>
-        <developerConnection>scm:git:git@github.com:lennartkoopmann/nzyme.git</developerConnection>
-      <tag>1.2.0</tag>
+        <url>https://github.com/nzymedefense/nzyme</url>
+        <connection>scm:git:git://github.com/nzymedefense/nzyme.git</connection>
+        <developerConnection>scm:git:git@github.com/nzymedefense/nzyme.git</developerConnection>
+        <tag>HEAD</tag>
     </scm>
 
     <groupId>app.nzyme.core</groupId>
@@ -51,7 +51,7 @@
         <quartz.version>2.3.2</quartz.version>
         <cronutils.version>9.2.1</cronutils.version>
         <httpcomponents.version>4.5.13</httpcomponents.version>
-        <nzymeplugin.version>2.0.0-SNAPSHOT</nzymeplugin.version>
+        <nzymeplugin.version>2.0.2</nzymeplugin.version>
         <bouncycastle.version>1.75</bouncycastle.version>
         <oshi.version>6.4.0</oshi.version>
         <commonsnet.version>3.9.0</commonsnet.version>
