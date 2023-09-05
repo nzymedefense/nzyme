@@ -35,7 +35,7 @@ function TapMetricsDetailsPage () {
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.TAPS.INDEX}>Taps</a></li>
                             <li className="breadcrumb-item" aria-current="page">
-                                <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>{tap.name}</a>
+                                <a href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.uuid)}>{tap.name}</a>
                             </li>
                             <li className="breadcrumb-item" aria-current="page">Metrics</li>
                             <li className="breadcrumb-item active" aria-current="page">{metricName}</li>
@@ -43,7 +43,7 @@ function TapMetricsDetailsPage () {
                     </nav>
                 </div>
                 <div className="col-md-2">
-                    <a className="btn btn-primary float-end" href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.name)}>Back</a>
+                    <a className="btn btn-primary float-end" href={ApiRoutes.SYSTEM.TAPS.DETAILS(tap.uuid)}>Back</a>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@ function TapMetricsDetailsPage () {
                         <div className="card-body">
                             <h3>Chart</h3>
 
-                            <TapMetricsChartProxy type={metricType} name={metricName} tapName={tapName} />
+                            <TapMetricsChartProxy type={metricType} name={metricName} tapUuid={tap.uuid} />
                         </div>
                     </div>
                 </div>
