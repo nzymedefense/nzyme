@@ -58,7 +58,7 @@ bitreader = "0.3.6"
 bitvec = "1.0.0"
 entropy = "0.4.1"
 clokwerk = "0.3.5"
-clap = { version = "3.2.15", features = ["derive"] }
+clap = { version = "4.3.19", features = ["derive"] }
 toml = "0.7.3"
 caps = "0.5.5"
 sha2 = "0.10"
