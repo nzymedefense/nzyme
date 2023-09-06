@@ -36,7 +36,7 @@ function MFASetupStep1(props) {
                 <h2>TOTP URL</h2>
 
                 <p>
-                  Many TOTP applications allow you to enter the TOTP URL directly f you cannot scan the QR code:
+                  Many TOTP applications allow you to enter the TOTP URL directly if you cannot scan the QR code:
                 </p>
 
                 <pre>
