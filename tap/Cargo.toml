@@ -62,6 +62,6 @@ clap = { version = "3.2.15", features = ["derive"] }
 toml = "0.7.3"
 caps = "0.5.5"
 sha2 = "0.10"
-neli = "0.7.0-rc.1"
+neli = "0.7.0-rc2"
 rand = "0.8.5"
 serde_json = "1.0.104"
