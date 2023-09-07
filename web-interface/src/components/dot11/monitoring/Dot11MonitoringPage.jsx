@@ -2,6 +2,7 @@ import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MonitoredNetworksTable from "./Dot11MonitoredNetworksTable";
 import BuiltinBanditsTable from "./bandits/BuiltinBanditsTable";
+import CustomBanditsTableProxy from "./bandits/CustomBanditsTableProxy";
 
 function Dot11MonitoringPage() {
 
@@ -52,11 +53,13 @@ function Dot11MonitoringPage() {
 
               <BuiltinBanditsTable />
 
-              <h4>Custom Bandits</h4>
+              <h4 className="mt-4">Custom Bandits</h4>
 
               <p className="text-muted">
-                You can define your own bandit definitions.
+                You can define and manage your own bandit definitions.
               </p>
+
+              <CustomBanditsTableProxy />
             </div>
           </div>
         </div>

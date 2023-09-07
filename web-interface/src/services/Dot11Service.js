@@ -182,6 +182,14 @@ class Dot11Service {
     })
   }
 
+  findCustomBandits(organizationUUID, tenantUUID, limit, offset, setBandits) {
+    RESTClient.get("/dot11/bandits/custom",
+        {limit: limit, offset: offset, organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        function (response) {
+      setBandits(response.data);
+    })
+  }
+
 }
 
 export default Dot11Service

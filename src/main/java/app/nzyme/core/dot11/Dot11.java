@@ -946,6 +946,43 @@ public class Dot11 {
         );
     }
 
+    public long countCustomBandits(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
+                                                              UUID tenantId,
+                                                              int limit,
+                                                              int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(CustomBanditDescription.class)
+                        .list()
+        );
+    }
+
+    public List<String> findFingerprintsOfCustomBandit(long banditId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints WHERE id = :id")
+                        .bind("id", banditId)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";

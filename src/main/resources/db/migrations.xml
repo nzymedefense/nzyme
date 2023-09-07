@@ -3748,5 +3748,20 @@
                                  onUpdate="NO ACTION"
                                  onDelete="CASCADE" />
     </changeSet>
+
+    <changeSet id="change_custom_bandit_auth_relation_column_type" author="lennartkoopmann">
+        <dropColumn tableName="dot11_bandits" columnName="organization_id" />
+        <dropColumn tableName="dot11_bandits" columnName="tenant_id" />
+
+        <addColumn tableName="dot11_bandits">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>
