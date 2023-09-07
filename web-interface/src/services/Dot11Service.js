@@ -170,9 +170,15 @@ class Dot11Service {
         {}, successCallback);
   }
 
-  findSupportedBandits(setBandits) {
-    RESTClient.get("/dot11/monitoring/bandits/supported", {}, function (response) {
+  findBuiltinBandits(setBandits) {
+    RESTClient.get("/dot11/bandits/builtin", {}, function (response) {
       setBandits(response.data);
+    })
+  }
+
+  findBuiltinBandit(id, setBandit) {
+    RESTClient.get("/dot11/bandits/builtin/show/" + id, {}, function (response) {
+      setBandit(response.data);
     })
   }
 

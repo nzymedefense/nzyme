@@ -102,6 +102,7 @@ import AlertsPage from "./components/alerts/AlertsPage";
 import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
 import AlertSubscriptionsPage from "./components/alerts/subscriptions/AlertSubscriptionsPage";
 import AlertSubscriptionDetailsPage from "./components/alerts/subscriptions/AlertSubscriptionDetailsPage";
+import BuiltinBanditDetailsPage from "./components/dot11/monitoring/bandits/BuiltinBanditDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -343,6 +344,7 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateDot11MonitoredNetworkPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<Dot11MonitoredNetworkDetailsPage/>} />
                           <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<Dot11MonitoredBSSIDConfigurationImportPage/>} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

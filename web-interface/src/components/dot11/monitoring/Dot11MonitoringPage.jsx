@@ -1,7 +1,7 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import Dot11MonitoredNetworksTable from "./Dot11MonitoredNetworksTable";
-import Dot11BanditsTable from "./Dot11BanditsTable";
+import BuiltinBanditsTable from "./bandits/BuiltinBanditsTable";
 
 function Dot11MonitoringPage() {
 
@@ -40,12 +40,23 @@ function Dot11MonitoringPage() {
               <h3>Bandits</h3>
 
               <p className="text-muted">
-                All nzyme taps are constantly looking for known attack platforms, called <i>bandits</i>. The table below
-                gives you an overview of which types of bandits are detected. Once a bandit is detected, an alarm is
-                raised.
+                All nzyme taps are constantly looking for known attack platforms, called <i>bandits</i>. Once a bandit
+                is detected, an alarm is raised.
               </p>
 
-              <Dot11BanditsTable />
+              <h4>Built-In Bandits</h4>
+
+              <p className="text-muted">
+                The built-in bandits ship with nzyme by default.
+              </p>
+
+              <BuiltinBanditsTable />
+
+              <h4>Custom Bandits</h4>
+
+              <p className="text-muted">
+                You can define your own bandit definitions.
+              </p>
             </div>
           </div>
         </div>
