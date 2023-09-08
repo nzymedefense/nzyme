@@ -6,6 +6,7 @@ import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
 import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.CreateCustomBanditRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.BuiltinBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditListResponse;
@@ -13,6 +14,7 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
@@ -25,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/dot11/bandits")
@@ -93,19 +96,8 @@ public class BanditsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        if (!authenticatedUser.isSuperAdministrator()) {
-            if (authenticatedUser.isOrganizationAdministrator()) {
-                // Org admin. Must be their org.
-                if (!organizationId.equals(authenticatedUser.getOrganizationId())) {
-                    return Response.status(Response.Status.NOT_FOUND).build();
-                }
-            } else {
-                // Tenant user. Must be their org and tenant.
-                if (!organizationId.equals(authenticatedUser.getOrganizationId())
-                        || !tenantId.equals(authenticatedUser.getTenantId())) {
-                    return Response.status(Response.Status.NOT_FOUND).build();
-                }
-            }
+        if (!hasPermissions(authenticatedUser, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         long total = nzyme.getDot11().countCustomBandits(organizationId, tenantId);
@@ -124,6 +116,64 @@ public class BanditsResource extends UserAuthenticatedResource {
         }
 
         return Response.ok(CustomBanditListResponse.create(total, bandits)).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom/show/{id}")
+    public Response findCustom(@Context SecurityContext sc,
+                               @PathParam("id") @NotNull UUID id) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<CustomBanditDescription> bandit = nzyme.getDot11().findCustomBandit(id);
+
+        if (bandit.isEmpty()
+                || !hasPermissions(authenticatedUser, bandit.get().organizationId(), bandit.get().tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<String> fingerprints = nzyme.getDot11().findFingerprintsOfCustomBandit(bandit.get().id());
+
+        return Response.ok(CustomBanditDetailsResponse.create(
+                bandit.get().uuid(),
+                bandit.get().name(),
+                bandit.get().description(),
+                fingerprints
+        )).build();
+    }
+
+    @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom")
+    public Response createCustom(@Context SecurityContext sc, @Valid CreateCustomBanditRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!hasPermissions(authenticatedUser, req.organizationId(), req.tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().createCustomBandit(req.organizationId(), req.tenantId(), req.name(), req.description());
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    private boolean hasPermissions(AuthenticatedUser authenticatedUser, UUID organizationId, UUID tenantId) {
+        if (!authenticatedUser.isSuperAdministrator()) {
+            if (authenticatedUser.isOrganizationAdministrator()) {
+                // Org admin. Must be their org.
+                if (!organizationId.equals(authenticatedUser.getOrganizationId())) {
+                    return false;
+                }
+            } else {
+                // Tenant user. Must be their org and tenant.
+                if (!organizationId.equals(authenticatedUser.getOrganizationId())
+                        || !tenantId.equals(authenticatedUser.getTenantId())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
 }

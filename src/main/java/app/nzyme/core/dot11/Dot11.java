@@ -946,6 +946,11 @@ public class Dot11 {
         );
     }
 
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> 722fc1c3 (Creating and listing custom bandits)
     public long countCustomBandits(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dot11_bandits " +
@@ -957,6 +962,23 @@ public class Dot11 {
         );
     }
 
+<<<<<<< HEAD
+=======
+    public void createCustomBandit(UUID organizationId, UUID tenantId, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandits(uuid, organization_id, tenant_id, name, " +
+                                "description, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":name, :description, NOW(), NOW())")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+>>>>>>> 722fc1c3 (Creating and listing custom bandits)
     public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
                                                               UUID tenantId,
                                                               int limit,
@@ -974,6 +996,18 @@ public class Dot11 {
         );
     }
 
+<<<<<<< HEAD
+=======
+    public Optional<CustomBanditDescription> findCustomBandit(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(CustomBanditDescription.class)
+                        .findOne()
+        );
+    }
+
+>>>>>>> 722fc1c3 (Creating and listing custom bandits)
     public List<String> findFingerprintsOfCustomBandit(long banditId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints WHERE id = :id")
@@ -983,6 +1017,10 @@ public class Dot11 {
         );
     }
 
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> 722fc1c3 (Creating and listing custom bandits)
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";

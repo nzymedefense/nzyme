@@ -5,6 +5,10 @@ import OrganizationAndTenantSelector from "../../../shared/OrganizationAndTenant
 import CustomBanditsTable from "./CustomBanditsTable";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
+<<<<<<< HEAD
+=======
+import ApiRoutes from "../../../../util/ApiRoutes";
+>>>>>>> 722fc1c3 (Creating and listing custom bandits)
 
 const authenticationManagementService = new AuthenticationManagementService();
 const dot11Service = new Dot11Service();
@@ -36,7 +40,9 @@ function CustomBanditsTableProxy() {
     }
   }
 
-  const resetOrganizationAndTenant = () => {
+  const resetOrganizationAndTenant = (e) => {
+    e.preventDefault();
+
     setOrganizationUUID(null);
     setTenantUUID(null);
   }
@@ -67,7 +73,7 @@ function CustomBanditsTableProxy() {
 
         <CustomBanditsTable bandits={bandits} />
 
-        <a href="" className="btn btn-sm btn-secondary">Create Custom Bandit</a>
+        <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
       </React.Fragment>
   )
 

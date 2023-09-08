@@ -14,7 +14,7 @@ function BuiltinBanditDetailsPage() {
   const [bandit, setBandit] = useState();
 
   useEffect(() => {
-    dot11Service.findBuiltinBandit(id, setBandit);
+    dot11Service.findCustomBandit(id, setBandit);
   }, [id]);
 
   if (!bandit) {
@@ -30,7 +30,7 @@ function BuiltinBanditDetailsPage() {
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.MONITORING.INDEX}>Monitoring</a></li>
                 <li className="breadcrumb-item">Bandits</li>
-                <li className="breadcrumb-item">Built-In</li>
+                <li className="breadcrumb-item">Custom</li>
                 <li className="breadcrumb-item active" aria-current="page">{bandit.name}</li>
               </ol>
             </nav>
@@ -46,7 +46,7 @@ function BuiltinBanditDetailsPage() {
         <div className="row">
           <div className="col-md-12">
             <h1>
-              Built-In Bandit &quot;{bandit.name}&quot;
+              Custom Bandit &quot;{bandit.name}&quot;
             </h1>
           </div>
         </div>

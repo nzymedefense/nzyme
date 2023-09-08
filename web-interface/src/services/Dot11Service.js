@@ -190,6 +190,18 @@ class Dot11Service {
     })
   }
 
+  findCustomBandit(banditId, setBandits) {
+    RESTClient.get("/dot11/bandits/custom/show/" + banditId, {}, function (response) {
+      setBandits(response.data);
+    })
+  }
+
+  createCustomBandit(organizationUUID, tenantUUID, name, description, successCallback) {
+    RESTClient.post("/dot11/bandits/custom",
+        { organization_id: organizationUUID, tenant_id: tenantUUID, name: name, description: description },
+        successCallback);
+  }
+
 }
 
 export default Dot11Service
