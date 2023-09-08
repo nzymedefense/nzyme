@@ -6,6 +6,7 @@ import CustomBanditsTable from "./CustomBanditsTable";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import Paginator from "../../../misc/Paginator";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const dot11Service = new Dot11Service();
@@ -22,7 +23,7 @@ function CustomBanditsTableProxy() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
 
-  const perPage = 25;
+  const perPage = 2;
   const [page, setPage] = useState(1);
 
   const onOrganizationChange = (organizationUUID) => {
@@ -69,6 +70,8 @@ function CustomBanditsTableProxy() {
         {user.is_superadmin || user.is_orgadmin ? <div className="mb-2"><strong>Organization:</strong> {organization.name}, <strong>Tenant:</strong> {tenant.name} <a href="#" onClick={resetOrganizationAndTenant}>Change</a></div> : null}
 
         <CustomBanditsTable bandits={bandits} />
+
+        <Paginator itemCount={bandits ? bandits.total : 0} perPage={perPage} setPage={setPage} page={page} />
 
         <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
       </React.Fragment>
