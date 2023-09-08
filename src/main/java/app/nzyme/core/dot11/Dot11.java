@@ -999,10 +999,43 @@ public class Dot11 {
 
     public List<String> findFingerprintsOfCustomBandit(long banditId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints WHERE id = :id")
-                        .bind("id", banditId)
+                handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id")
+                        .bind("bandit_id", banditId)
                         .mapTo(String.class)
                         .list()
+        );
+    }
+
+    public void bumpCustomBanditUpdatedAt(long banditId) {
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("UPDATE dot11_bandits SET updated_at = NOW() WHERE id = :id")
+                    .bind("id", banditId)
+                    .execute();
+        });
+    }
+
+    public void addFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        if (fingerprint.length() != 64) {
+            throw new RuntimeException("Fingerprint must be 64 characters long.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandit_fingerprints(bandit_id, fingerprint) " +
+                                "VALUES(:bandit_id, :fingerprint)")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
+        );
+    }
+
+    public void removeFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id AND fingerprint = :fingerprint")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
         );
     }
 

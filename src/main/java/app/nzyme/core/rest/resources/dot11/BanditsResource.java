@@ -6,6 +6,7 @@ import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
 import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.CreateBanditFingerprintRequest;
 import app.nzyme.core.rest.requests.CreateCustomBanditRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.BuiltinBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditDetailsResponse;
@@ -111,7 +112,9 @@ public class BanditsResource extends UserAuthenticatedResource {
                     b.uuid(),
                     b.name(),
                     b.description(),
-                    fingerprints
+                    fingerprints,
+                    b.createdAt(),
+                    b.updatedAt()
             ));
         }
 
@@ -138,7 +141,9 @@ public class BanditsResource extends UserAuthenticatedResource {
                 bandit.get().uuid(),
                 bandit.get().name(),
                 bandit.get().description(),
-                fingerprints
+                fingerprints,
+                bandit.get().createdAt(),
+                bandit.get().updatedAt()
         )).build();
     }
 
@@ -155,6 +160,59 @@ public class BanditsResource extends UserAuthenticatedResource {
         nzyme.getDot11().createCustomBandit(req.organizationId(), req.tenantId(), req.name(), req.description());
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom/show/{id}/fingerprints")
+    public Response addFingerprint(@Context SecurityContext sc,
+                                   @PathParam("id") @NotNull UUID id,
+                                   @Valid CreateBanditFingerprintRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<CustomBanditDescription> bandit = nzyme.getDot11().findCustomBandit(id);
+
+        if (bandit.isEmpty()
+                || !hasPermissions(authenticatedUser, bandit.get().organizationId(), bandit.get().tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (req.fingerprint().length() != 64) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        List<String> fingerprints = nzyme.getDot11().findFingerprintsOfCustomBandit(bandit.get().id());
+
+        // Check if fingerprint already exists.
+        if (fingerprints.contains(req.fingerprint())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        nzyme.getDot11().addFingerprintOfCustomBandit(bandit.get().id(), req.fingerprint());
+        nzyme.getDot11().bumpCustomBanditUpdatedAt(bandit.get().id());
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom/show/{id}/fingerprints/show/{fingerprint}")
+    public Response removeFingerprint(@Context SecurityContext sc,
+                                      @PathParam("id") @NotNull UUID id,
+                                      @PathParam("fingerprint") @NotEmpty String fingerprint) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<CustomBanditDescription> bandit = nzyme.getDot11().findCustomBandit(id);
+
+        if (bandit.isEmpty()
+                || !hasPermissions(authenticatedUser, bandit.get().organizationId(), bandit.get().tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().removeFingerprintOfCustomBandit(bandit.get().id(), fingerprint);
+        nzyme.getDot11().bumpCustomBanditUpdatedAt(bandit.get().id());
+
+        return Response.ok().build();
     }
 
     private boolean hasPermissions(AuthenticatedUser authenticatedUser, UUID organizationId, UUID tenantId) {

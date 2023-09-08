@@ -3,19 +3,53 @@ import ApiRoutes from "../../../../util/ApiRoutes";
 import {useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import BanditFingerprints from "./BanditFingerprints";
+import {notify} from "react-notify-toast";
+import moment from "moment/moment";
+import CustomBanditFingerprints from "./CustomBanditFingerprints";
 
 const dot11Service = new Dot11Service();
 
-function BuiltinBanditDetailsPage() {
+function CustomBanditDetailsPage() {
 
   const {id} = useParams();
 
   const [bandit, setBandit] = useState();
 
+  const [revision, setRevision] = useState(0);
+
+  const [newFingerprint, setNewFingerprint] = useState("");
+  const [fingerprintFormSubmitting, setFingerprintFormSubmitting] = useState(false);
+
+  const fingerprintFormEnabled = () => {
+    return newFingerprint.trim().length === 64 && !bandit.fingerprints.includes(newFingerprint)
+  }
+
+  const addFingerprint = (fingerprint) => {
+    setFingerprintFormSubmitting(true);
+    dot11Service.addFingerprintToCustomBandit(bandit.id, fingerprint, () => {
+      notify.show('Fingerprint added to bandit.', 'success');
+      setFingerprintFormSubmitting(false);
+      setNewFingerprint("");
+      setRevision(revision+1);
+    })
+  }
+
+  const onDeleteFingerprint = (e, fingerprint) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete bandit fingerprint?")) {
+      return;
+    }
+
+    dot11Service.deleteFingerprintOfCustomBandit(bandit.id, fingerprint, () => {
+      notify.show('Fingerprint deleted.', 'success');
+      setRevision(revision+1);
+    })
+  }
+
   useEffect(() => {
     dot11Service.findCustomBandit(id, setBandit);
-  }, [id]);
+  }, [id, revision]);
 
   if (!bandit) {
     return <LoadingSpinner />
@@ -55,6 +89,21 @@ function BuiltinBanditDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
+                <h3>Metadata</h3>
+
+                <dl className="mb-0">
+                  <dt>Created at</dt>
+                  <dd title={moment(bandit.created_at).format()}>{moment(bandit.created_at).fromNow()}</dd>
+                  <dt>Last changed at</dt>
+                  <dd title={moment(bandit.updated_at).format()}>{moment(bandit.updated_at).fromNow()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
                 <h3>Description</h3>
 
                 <p className="mb-0">
@@ -63,18 +112,33 @@ function BuiltinBanditDetailsPage() {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="col-md-6">
+        <div className="row mt-3">
+          <div className="col-md-12">
             <div className="card">
               <div className="card-body">
                 <h3>Fingerprints</h3>
 
                 <p>
                   You can learn more about fingerprints in
-                  the <a href="https://go.nzyme.org/wifi-fingerprinting">documentation</a>
+                  the <a href="https://go.nzyme.org/wifi-fingerprinting">documentation</a>.
                 </p>
 
-                <BanditFingerprints fingerprints={bandit.fingerprints} />
+                <CustomBanditFingerprints fingerprints={bandit.fingerprints} onDelete={onDeleteFingerprint} />
+
+                <div className="input-group mb-0 mt-3">
+                  <input type="text"
+                         className="form-control"
+                         placeholder="500f6ae3f2724911c6a36da4185992f5f2fb6b51fdfeab1bf7264d12123fbc96"
+                         value={newFingerprint}
+                         onChange={(e) => setNewFingerprint(e.target.value)} />
+                  <button className="btn btn-secondary"
+                          disabled={!fingerprintFormEnabled()}
+                          onClick={() => { addFingerprint(newFingerprint) }}>
+                    {fingerprintFormSubmitting ? "Please wait..." : "Add Fingerprint"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -84,4 +148,4 @@ function BuiltinBanditDetailsPage() {
 
 }
 
-export default BuiltinBanditDetailsPage;
+export default CustomBanditDetailsPage;
