@@ -5,10 +5,7 @@ import OrganizationAndTenantSelector from "../../../shared/OrganizationAndTenant
 import CustomBanditsTable from "./CustomBanditsTable";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../services/AuthenticationManagementService";
-<<<<<<< HEAD
-=======
 import ApiRoutes from "../../../../util/ApiRoutes";
->>>>>>> 722fc1c3 (Creating and listing custom bandits)
 
 const authenticationManagementService = new AuthenticationManagementService();
 const dot11Service = new Dot11Service();
