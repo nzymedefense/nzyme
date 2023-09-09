@@ -23,7 +23,7 @@ function CustomBanditsTableProxy() {
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
 
-  const perPage = 2;
+  const perPage = 25;
   const [page, setPage] = useState(1);
 
   const onOrganizationChange = (organizationUUID) => {

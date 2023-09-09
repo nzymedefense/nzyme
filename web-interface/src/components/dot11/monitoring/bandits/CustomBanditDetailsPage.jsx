@@ -72,7 +72,8 @@ function CustomBanditDetailsPage() {
 
           <div className="col-md-5">
             <span className="float-end">
-              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>
+              <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>{' '}
+              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Edit Bandit</a>
             </span>
           </div>
         </div>
