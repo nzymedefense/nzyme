@@ -47,8 +47,10 @@ function CustomBanditsTableProxy() {
 
   useEffect(() => {
     if (organizationUUID && tenantUUID) {
-      authenticationManagementService.findOrganization(organizationUUID, setOrganization);
-      authenticationManagementService.findTenantOfOrganization(organizationUUID, tenantUUID, setTenant);
+      if (user.is_superadmin || user.is_orgadmin) {
+        authenticationManagementService.findOrganization(organizationUUID, setOrganization);
+        authenticationManagementService.findTenantOfOrganization(organizationUUID, tenantUUID, setTenant);
+      }
 
       setBandits(null);
       dot11Service.findCustomBandits(organizationUUID, tenantUUID, perPage, (page-1)*perPage, setBandits)
@@ -61,7 +63,7 @@ function CustomBanditsTableProxy() {
         onTenantChange={onTenantChange} />
   }
 
-  if (!organization || !tenant) {
+  if ((user.is_superadmin || user.is_orgadmin) && (!organization || !tenant)) {
     return <LoadingSpinner />
   }
 
@@ -73,7 +75,7 @@ function CustomBanditsTableProxy() {
 
         <Paginator itemCount={bandits ? bandits.total : 0} perPage={perPage} setPage={setPage} page={page} />
 
-        <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
+        <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organizationUUID, tenantUUID)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
       </React.Fragment>
   )
 
