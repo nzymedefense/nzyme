@@ -8,6 +8,7 @@ public class Dot11Bandits {
     public static List<Dot11BanditDescription> BUILT_IN = new ArrayList<>() {{
        add(Dot11BanditDescription.create(
                "esp32marauder",
+               false,
                "ESP32 Marauder",
                "A suite of WiFi/Bluetooth offensive and defensive tools for the ESP32 platform.",
                new ArrayList<>() {{ add("560f2134c30d48d80fc7849e911e4057d3a4e32ab3c047f7697cf141e150d182"); }}
@@ -15,6 +16,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "flipperzero_evilportal",
+                false,
                 "Flipper Zero Evil Portal",
                 "A malicious access point for the Flipper Zero (with WiFi Dev Board) that spins up a " +
                         "credential stealing captive portal.",
@@ -23,6 +25,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_nano_tetra_pineap",
+                false,
                 "WiFi Pineapple Nano/Tetra PineAP",
                 "The malicious PineAP access point of the popular WiFi Pineapple Nano or Tetra attack " +
                         "platforms.",
@@ -31,6 +34,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_nano_mgmt",
+                false,
                 "WiFi Pineapple Nano Management Access Point",
                 "The management access point of the popular WiFi Pineapple Nano attack platform.",
                 new ArrayList<>() {{ add("b12836f7f3ec133f163d98a364b2689fe49b2eeddadff7d6b319f5ce441de8f1"); }}
@@ -38,6 +42,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_nano_ap",
+                false,
                 "WiFi Pineapple Nano Open Access Point",
                 "The open access point of the popular WiFi Pineapple Nano attack platform.",
                 new ArrayList<>() {{ add("32d24a2b5907e67350b58480e24486cd50c8dffec6242b7fd952f52b02d9ac69"); }}
@@ -45,6 +50,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_tetra_mgmt",
+                false,
                 "WiFi Pineapple Tetra Management Access Point",
                 "The management access point of the popular WiFi Pineapple Tetra attack platform.",
                 new ArrayList<>() {{ add("a3f0af722f37681235673c658981e74be94024ab6178fd6e99839d198066e483"); }}
@@ -52,6 +58,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_tetra_ap",
+                false,
                 "WiFi Pineapple Tetra Open Access Point",
                 "The open access point of the popular WiFi Pineapple Tetra attack platform.",
                 new ArrayList<>() {{ add("d79c5908617b92670f73f45b4094c4b15fa0b1a71e536959e43d865ab8ed589f"); }}
@@ -60,6 +67,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_markvii_mgmt_pineap",
+                false,
                 "WiFi Pineapple Mark VII Management Access Point or PineAP",
                 "The management access point of the popular WiFi Pineapple Mark VII attack platform. " +
                         "Alternatively, this could be a specific configuration of the Pineapple PineAP.",
@@ -68,6 +76,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_markvii_ap",
+                false,
                 "WiFi Pineapple Mark VII Open Access Point",
                 "The open access point of the popular WiFi Pineapple Mark VII attack platform.",
                 new ArrayList<>() {{ add("ec8eaabbdbb6c2cc43b432f66b903d5a60073b107df6715d7dc9cf846385a368"); }}
@@ -75,6 +84,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_markvii_impap",
+                false,
                 "WiFi Pineapple Mark VII Impersonation Access Point",
                 "The impersonation access point of the popular WiFi Pineapple Mark VII attack platform.",
                 new ArrayList<>() {{ add("7c9fa136d4413fa6173637e883b6998d32e1d675f88cddff9dcbcf331820f4b8"); }}
@@ -82,6 +92,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_markvii_evilwpa",
+                false,
                 "WiFi Pineapple Mark VII Evil WPA Access Point",
                 "The \"Evil WPA\" access point of the popular WiFi Pineapple Mark VII attack platform.",
                 new ArrayList<>() {{
@@ -99,6 +110,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 "pineapple_markvii_evileap",
+                false,
                 "WiFi Pineapple Mark VII Evil Enterprise Access Point",
                 "The \"Evil Enterprise\" access point of the popular WiFi Pineapple Mark VII attack platform.",
                 new ArrayList<>() {{
@@ -114,6 +126,7 @@ public class Dot11Bandits {
 
         add(Dot11BanditDescription.create(
                 CUSTOM_PWNAGTCHI_ID,
+                false,
                 CUSTOM_PWNAGOTCHI_NAME,
                 CUSTOM_PWNAGOTCHI_DESCRIPTION,
                 null
