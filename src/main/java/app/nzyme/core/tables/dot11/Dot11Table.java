@@ -131,7 +131,7 @@ public class Dot11Table implements DataTable {
         }
 
         // Load all bandits.
-        List<Dot11BanditDescription> bandits = Dot11Bandits.BUILT_IN;
+        List<Dot11BanditDescription> bandits = Lists.newArrayList(Dot11Bandits.BUILT_IN);
         for (CustomBanditDescription bandit : nzyme.getDot11()
                 .findAllCustomBandits(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
             List<String> fingerprints = nzyme.getDot11().findFingerprintsOfCustomBandit(bandit.id());
