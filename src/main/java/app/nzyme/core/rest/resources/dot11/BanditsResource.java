@@ -8,6 +8,7 @@ import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateBanditFingerprintRequest;
 import app.nzyme.core.rest.requests.CreateCustomBanditRequest;
+import app.nzyme.core.rest.requests.UpdateCustomBanditRequest;
 import app.nzyme.core.rest.responses.dot11.monitoring.BuiltinBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditListResponse;
@@ -160,6 +161,45 @@ public class BanditsResource extends UserAuthenticatedResource {
         nzyme.getDot11().createCustomBandit(req.organizationId(), req.tenantId(), req.name(), req.description());
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom/show/{id}")
+    public Response editCustom(@Context SecurityContext sc,
+                               @PathParam("id") @NotNull UUID id,
+                               @Valid UpdateCustomBanditRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<CustomBanditDescription> bandit = nzyme.getDot11().findCustomBandit(id);
+
+        if (bandit.isEmpty()
+                || !hasPermissions(authenticatedUser, bandit.get().organizationId(), bandit.get().tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().editCustomBandit(bandit.get().id(), req.name(), req.description());
+        nzyme.getDot11().bumpCustomBanditUpdatedAt(bandit.get().id());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/custom/show/{id}")
+    public Response deleteCustom(@Context SecurityContext sc, @PathParam("id") @NotNull UUID id) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<CustomBanditDescription> bandit = nzyme.getDot11().findCustomBandit(id);
+
+        if (bandit.isEmpty()
+                || !hasPermissions(authenticatedUser, bandit.get().organizationId(), bandit.get().tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteCustomBandit(bandit.get().id());
+
+        return Response.ok().build();
     }
 
     @POST

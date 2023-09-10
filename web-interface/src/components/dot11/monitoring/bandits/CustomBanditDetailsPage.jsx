@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
@@ -19,6 +19,8 @@ function CustomBanditDetailsPage() {
 
   const [newFingerprint, setNewFingerprint] = useState("");
   const [fingerprintFormSubmitting, setFingerprintFormSubmitting] = useState(false);
+
+  const [redirect, setRedirect] = useState(false);
 
   const fingerprintFormEnabled = () => {
     return newFingerprint.trim().length === 64 && !bandit.fingerprints.includes(newFingerprint)
@@ -47,9 +49,26 @@ function CustomBanditDetailsPage() {
     })
   }
 
+  const onDelete = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete bandit?")) {
+      return;
+    }
+
+    dot11Service.deleteCustomBandit(bandit.id,() => {
+      notify.show('Custom bandit deleted.', 'success');
+      setRedirect(true);
+    });
+  }
+
   useEffect(() => {
     dot11Service.findCustomBandit(id, setBandit);
   }, [id, revision]);
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.DOT11.MONITORING.INDEX} />
+  }
 
   if (!bandit) {
     return <LoadingSpinner />
@@ -73,7 +92,8 @@ function CustomBanditDetailsPage() {
           <div className="col-md-5">
             <span className="float-end">
               <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>{' '}
-              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Edit Bandit</a>
+              <a className="btn btn-danger" href="" onClick={onDelete}>Delete</a>{' '}
+              <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(bandit.id)}>Edit</a>
             </span>
           </div>
         </div>

@@ -971,6 +971,25 @@ public class Dot11 {
         );
     }
 
+    public void editCustomBandit(long id, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_bandits SET name = :name, description = :description " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void deleteCustomBandit(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandits WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
     public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
                                                               UUID tenantId,
                                                               int limit,

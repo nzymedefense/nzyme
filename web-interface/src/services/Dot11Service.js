@@ -202,6 +202,15 @@ class Dot11Service {
         successCallback);
   }
 
+  editCustomBandit(banditUUID, name, description, successCallback) {
+    RESTClient.put("/dot11/bandits/custom/show/" + banditUUID,
+        { name: name, description: description }, successCallback);
+  }
+
+  deleteCustomBandit(banditUUID, successCallback) {
+    RESTClient.delete("/dot11/bandits/custom/show/" + banditUUID, successCallback);
+  }
+
   addFingerprintToCustomBandit(banditUUID, fingerprint, successCallback) {
     RESTClient.post("/dot11/bandits/custom/show/" + banditUUID + "/fingerprints",
         {fingerprint: fingerprint}, successCallback);
