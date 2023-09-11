@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use log::error;
+use log::{error, info};
 
 use crate::{
     dot11::frames::{Dot11BeaconFrame, SecurityInformation, FrameSubType, InfraStructureType, Dot11DataFrame, Dot11DataFrameDirection, Dot11ProbeRequestFrame},
@@ -10,7 +10,7 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
-use crate::dot11::frames::{Dot11Capabilities, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
+use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
 use crate::link::payloads::Dot11AlertReport;
 
 #[derive(Debug)]
@@ -367,6 +367,10 @@ impl Dot11Table {
             },
             Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
+    }
+
+    pub fn register_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
+        info!("DEAUTH: {:?}", frame);
     }
 
     pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: &Option<u16>, frame_length: usize) 

@@ -42,6 +42,9 @@ impl Dot11FrameProcessor {
                         Err(e) => trace!("Could not parse deauthentication frame: {}", e)
                     }
                 },
+                FrameSubType::Disassocation => {
+                    info!("DISASSOC")
+                }
                 FrameSubType::ProbeRequest => {
                     match probe_request_frame_parser::parse(frame) {
                         Ok(frame) => self.handle_probe_request_frame(frame),
@@ -68,7 +71,6 @@ impl Dot11FrameProcessor {
                 FrameSubType::ReAssociationResponse |
                 FrameSubType::TimingAdvertisement |
                 FrameSubType::Atim |
-                FrameSubType::Disassocation |
                 FrameSubType::Authentication |
                 FrameSubType::Action |
                 FrameSubType::ActionNoAck |
@@ -147,8 +149,11 @@ impl Dot11FrameProcessor {
         }
     }
 
-    fn handle_deauthentication_frame(&self, _: Dot11DeauthenticationFrame) {
-
+    fn handle_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
+        match self.dot11_table.lock() {
+            Ok(table) => table.register_deauthentication_frame(frame),
+            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
+        }
     }
 
 }
