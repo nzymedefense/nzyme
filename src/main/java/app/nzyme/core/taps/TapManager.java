@@ -2,7 +2,6 @@ package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-import app.nzyme.core.security.authentication.db.UserEntry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -39,7 +38,7 @@ public class TapManager {
         ).scheduleAtFixedRate(this::retentionCleanMetrics, 0, 5, TimeUnit.MINUTES);
     }
 
-    public void registerTapStatus(StatusReport report, UUID tapUUID) {
+    public void registerTapStatus(StatusReport report, String remoteAddress, UUID tapUUID) {
         LOG.debug("Registering report from tap [{}].", tapUUID);
 
         nzyme.getDatabase().useHandle(handle ->
@@ -47,7 +46,7 @@ public class TapManager {
                                 "processed_bytes_total = :processed_bytes_total, " +
                                 "processed_bytes_average = :processed_bytes_average, memory_total = :memory_total, " +
                                 "memory_free = :memory_free, memory_used = :memory_used, cpu_load = :cpu_load, " +
-                                "last_report = NOW() WHERE uuid = :uuid")
+                                "remote_address = :remote_address, last_report = NOW() WHERE uuid = :uuid")
                         .bind("version", report.version())
                         .bind("clock", report.timestamp())
                         .bind("processed_bytes_total", report.processedBytes().total())
@@ -56,6 +55,7 @@ public class TapManager {
                         .bind("memory_free", report.systemMetrics().memoryFree())
                         .bind("memory_used", report.systemMetrics().memoryTotal()-report.systemMetrics().memoryFree())
                         .bind("cpu_load", report.systemMetrics().cpuLoad())
+                        .bind("remote_address", remoteAddress)
                         .bind("uuid", tapUUID)
                         .execute()
         );

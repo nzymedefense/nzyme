@@ -3690,4 +3690,12 @@
         </addColumn>
     </changeSet>
     
+    <changeSet id="add_tap_remote_address" author="lennartkoopmann">
+        <addColumn tableName="taps">
+            <column name="remote_address" type="text" defaultValue="0.0.0.0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
 </databaseChangeLog>
