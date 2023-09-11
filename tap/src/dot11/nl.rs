@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Error, bail};
 
@@ -6,7 +6,7 @@ use neli::{consts::{
     nl::{NlmF},
     socket::NlFamily,
     rtnl::{Arphrd, RtAddrFamily, Rtm},
-}, genl::{Genlmsghdr, GenlmsghdrBuilder, NoUserHeader, NlattrBuilder, AttrTypeBuilder}, nl::{NlPayload, Nlmsghdr}, rtnl::{IfinfomsgBuilder}, types::Buffer};
+}, genl::{Genlmsghdr, GenlmsghdrBuilder, NoUserHeader, NlattrBuilder, AttrTypeBuilder}, nl::{NlPayload}, rtnl::{IfinfomsgBuilder}, types::Buffer};
 use neli::attr::Attribute;
 use neli::consts::nl::{GenlId};
 use neli::err::DeError;
@@ -44,41 +44,70 @@ pub enum InterfaceState {
 // Parse specific attributes from an 802.11 (wireless) related Netlink message
 // and return a structured response with information about a network interface,
 // such as its name, physical layer index, and interface index
-fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<Interface, DeError> {
-    let mut name: Option<String> = None;
-    let mut phy_index: Option<u32> = None;
-    let mut if_index: Option<u32> = None;
+fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<HashMap<String, Interface>, DeError> {
+    let mut phys_found: HashSet<u32> = HashSet::new();
+    let mut names_found: HashMap<u32, String> = HashMap::new();
+    let mut if_indexes: HashMap<u32, u32> = HashMap::new();
 
-    if let NlPayload::Payload(payload) = msg.nl_payload() {
-        for attr in payload.attrs().iter() {
-            match attr.nla_type().nla_type() {
-                &Nl80211Attribute::WiPhy => {
-                    phy_index = Some(attr.get_payload_as()?);
-                },
-                &Nl80211Attribute::IfIndex => {
-                    if_index = Some(attr.get_payload_as()?);
-                },
-                &Nl80211Attribute::IfName => {
-                    name = Some(attr.get_payload_as_with_len::<String>()?);
-                },
-                _ => {}
+    for msg in msgs {
+        if let NlPayload::Payload(payload) = msg.nl_payload() {
+            let mut phy_index: Option<u32> = None;
+            let mut name: Option<String> = None;
+            let mut if_index: Option<u32> = None;
+
+            for attr in payload.attrs().iter() {
+                match attr.nla_type().nla_type() {
+                    &Nl80211Attribute::WiPhy => {
+                        phy_index = Some(attr.get_payload_as()?);
+                    },
+                    &Nl80211Attribute::IfIndex => {
+                        if_index = Some(attr.get_payload_as()?);
+                    },
+                    &Nl80211Attribute::IfName => {
+                        name = Some(attr.get_payload_as_with_len::<String>()?);
+                    },
+                    _ => {}
+                }
+            }
+
+            // we will always see a phy index, but we may not see the other attributes on the same message
+            if phy_index.is_some() {
+                phys_found.insert(phy_index.unwrap());
+
+                // check if we also saw the if_index on this message batch
+                if if_index.is_some() {
+                    if_indexes.insert(phy_index.unwrap(), if_index.unwrap());
+                }
+                // check if we also saw the name on this message batch
+                if name.is_some() {
+                    names_found.insert(phy_index.unwrap(), name.unwrap());
+                }
             }
         }
     }
 
-    // If any of the required attributes is missing, return an error.
-    if name.is_none() || phy_index.is_none() || if_index.is_none() {
-        return Err(DeError::new("Missing necessary attributes"));
+    // now lets compile all the information we found regarding the interfaces, and if we have all attributes we will return them
+    let mut interfaces = HashMap::new();
+
+    for phy_index in phys_found {
+        let name = names_found.get(&phy_index);
+        let if_index = if_indexes.get(&phy_index);
+
+        // If any of the required attributes is missing, return an error.
+        if name.is_none() || if_index.is_none() {
+            return Err(DeError::new("Missing necessary attributes"));
+        }
+
+        interfaces.insert(name.unwrap().clone(), Interface {
+            name: name.unwrap().clone(),
+            phy_index,
+            if_index: if_index.unwrap().clone(),
+        });
     }
 
-    Ok(Interface {
-        name: name.unwrap(),
-        phy_index: phy_index.unwrap(),
-        if_index: if_index.unwrap(),
-    })
+    Ok(interfaces)
 }
 
-//fn handle_phy_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<PhyResponse, DeError> {
 fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<PhyResponse, DeError> {
 
     let mut phy_index: Option<u32> = None;
@@ -173,9 +202,11 @@ impl Nl {
 
     /// Fetch all available 80211 devices, with interface wiphy id and name
     pub fn fetch_devices(&mut self) -> Result<HashMap<String, Interface>, Error> {
+
         let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
             .cmd(Nl80211Command::GetIf)
-            .version(1)
+            .version(0)
+            //.attrs(attrs.into_iter().collect())
             .build() {
             Ok(pl) => pl,
             Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
@@ -190,12 +221,10 @@ impl Nl {
             Some(buf) => {
                 match buf {
                     Ok(b) => {
-                        for msg in b {
-                            let interface = handle_interface_response(msg);
-                            match interface {
-                                Ok(interface) => { interfaces.insert(interface.name.clone(), interface); },
-                                Err(e) => bail!("Could not parse GetIf Netlink response: {}", e)
-                            };
+                        let response = handle_interface_response(b);
+                        match response {
+                            Ok(ifaces) => interfaces.extend(ifaces),
+                            Err(e) => bail!("Could not parse GetIf Netlink response: {}", e)
                         }
                     },
                     Err(e) => {
@@ -272,14 +301,6 @@ impl Nl {
                 match buf {
                     Ok(b) => {
                         let mut phys: HashMap<u32, PhyResponse> = HashMap::new();
-
-                        /*for msg in b {
-                            let phy = handle_phy_response(msg);
-                            match phy {
-                                Ok(phy) => { phys.insert(phy.phy_index, phy); },
-                                Err(e) => bail!("Could not parse GetWiPhy Netlink response: {}", e)
-                            };
-                        }*/
 
                         let phy = handle_phy_response(b);
                         match phy {
