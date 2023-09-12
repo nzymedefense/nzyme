@@ -4,9 +4,7 @@ import GaugeRow from "../../../../misc/metrics/GaugeRow";
 function NodeGauges(props) {
 
   const gauges = props.gauges;
-
-  console.log(gauges);
-
+  
   return (
       <table className="table table-sm table-hover table-striped">
         <thead>
