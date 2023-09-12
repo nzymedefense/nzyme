@@ -37,7 +37,6 @@ function NodesTable(props) {
               <th>CPU Load</th>
               <th>Memory Used</th>
               <th>Heap Used</th>
-              <th>Process Size</th>
               <th>Clock</th>
               <th>Version</th>
             </tr>
