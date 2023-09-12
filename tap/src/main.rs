@@ -14,6 +14,7 @@ mod dot11;
 mod alerting;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
+use anyhow::Error;
 
 use clap::Parser;
 use configuration::Configuration;
@@ -25,6 +26,7 @@ use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
+use crate::helpers::network::Channel;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -62,19 +64,28 @@ fn main() {
                             let interface_info = nl.fetch_device_info(key);
                             match interface_info {
                                 Ok(interface_info) => {
+                                    let channels: Vec<Result<Channel, Error>> = interface_info.supported_frequencies.iter().map(|f| Channel::from_frequency(*f)).collect();
+
                                     let mut iface = Map::new();
                                     iface.insert("active".to_string(), toml::Value::Boolean(true));
-                                    iface.insert("channels".to_string(), toml::Value::Array(interface_info.supported_frequencies.iter().map(|f| toml::Value::Integer(helpers::network::dot11_frequency_to_channel(*f).unwrap() as i64)).collect()));
+                                    iface.insert("channels_2g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_2g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
+                                    iface.insert("channels_5g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_5g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
+                                    iface.insert("channels_6g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_6g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
                                     let mut iface_table = Map::new();
                                     iface_table.insert(key.clone(), toml::Value::Table(iface));
                                     let mut wifi_ifaces = Map::new();
                                     wifi_ifaces.insert("wifi_interfaces".to_string(), toml::Value::Table(iface_table));
                                     let toml_string = toml::to_string(&toml::Value::Table(wifi_ifaces)).unwrap();
                                     println!("{}", toml_string);
-                                    //println!("{}: {:?}", interface.0, interface_info.supported_frequencies);
                                 },
                                 Err(e) => {
-                                    error!("Could not fetch information of device [{}]: {}", key, e);
+                                    error!("Could not fetch information for device [{}]: {}", key, e);
                                 }
                             }
                         }
