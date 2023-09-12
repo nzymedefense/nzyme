@@ -1,12 +1,12 @@
 package app.nzyme.core.events.actions;
 
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.db.EventActionEntry;
-import app.nzyme.core.events.db.EventEntry;
 import app.nzyme.core.events.types.EventActionType;
-import app.nzyme.core.events.types.EventType;
 import app.nzyme.core.events.types.SystemEventType;
+import app.nzyme.core.rest.responses.events.DetectionEventTypeDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
-import app.nzyme.core.rest.responses.events.EventTypeDetailsResponse;
+import app.nzyme.core.rest.responses.events.SystemEventTypeDetailsResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,9 @@ public class EventActionUtilities {
 
     private static final ObjectMapper om = new ObjectMapper();
 
-    public static EventActionDetailsResponse eventActionEntryToResponse(EventActionEntry ea, List<SystemEventType> subscribedToEvents) {
+    public static EventActionDetailsResponse eventActionEntryToResponse(EventActionEntry ea,
+                                                                        List<SystemEventType> subscribedSystemEvents,
+                                                                        List<DetectionType> subscribedDetectionEvents) {
         Map<String, Object> configuration;
 
 
@@ -30,9 +32,9 @@ public class EventActionUtilities {
             throw new RuntimeException("Could not read event action configuration.", e);
         }
 
-        List<EventTypeDetailsResponse> subscriptions = Lists.newArrayList();
-        for (SystemEventType subscription : subscribedToEvents) {
-            subscriptions.add(EventTypeDetailsResponse.create(
+        List<SystemEventTypeDetailsResponse> systemEventSubscriptions = Lists.newArrayList();
+        for (SystemEventType subscription : subscribedSystemEvents) {
+            systemEventSubscriptions.add(SystemEventTypeDetailsResponse.create(
                     subscription.name(),
                     subscription.getCategory().name(),
                     subscription.getCategory().getHumanReadableName(),
@@ -42,6 +44,14 @@ public class EventActionUtilities {
             ));
         }
 
+        List<DetectionEventTypeDetailsResponse> detectionEventSubscriptions = Lists.newArrayList();
+        for (DetectionType subscription : subscribedDetectionEvents) {
+            detectionEventSubscriptions.add(DetectionEventTypeDetailsResponse.create(
+                    subscription.name(),
+                    subscription.getTitle(),
+                    subscription.getSubsystem().name()
+            ));
+        }
 
         EventActionType actionType = EventActionType.valueOf(ea.actionType());
         return EventActionDetailsResponse.create(
@@ -52,7 +62,8 @@ public class EventActionUtilities {
                 ea.name(),
                 ea.description(),
                 configuration,
-                subscriptions,
+                systemEventSubscriptions,
+                detectionEventSubscriptions,
                 ea.createdAt(),
                 ea.updatedAt()
         );

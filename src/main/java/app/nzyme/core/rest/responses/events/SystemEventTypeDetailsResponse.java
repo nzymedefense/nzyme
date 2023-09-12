@@ -6,7 +6,7 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 
 @AutoValue
-public abstract class EventTypeDetailsResponse {
+public abstract class SystemEventTypeDetailsResponse {
 
     @JsonProperty("id")
     public abstract String id();
@@ -26,7 +26,7 @@ public abstract class EventTypeDetailsResponse {
     @JsonProperty("subscriptions")
     public abstract List<SubscriptionDetailsResponse> subscriptions();
 
-    public static EventTypeDetailsResponse create(String id, String categoryId, String categoryName, String name, String description, List<SubscriptionDetailsResponse> subscriptions) {
+    public static SystemEventTypeDetailsResponse create(String id, String categoryId, String categoryName, String name, String description, List<SubscriptionDetailsResponse> subscriptions) {
         return builder()
                 .id(id)
                 .categoryId(categoryId)
@@ -38,7 +38,7 @@ public abstract class EventTypeDetailsResponse {
     }
 
     public static Builder builder() {
-        return new AutoValue_EventTypeDetailsResponse.Builder();
+        return new AutoValue_SystemEventTypeDetailsResponse.Builder();
     }
 
     @AutoValue.Builder
@@ -55,6 +55,6 @@ public abstract class EventTypeDetailsResponse {
 
         public abstract Builder subscriptions(List<SubscriptionDetailsResponse> subscriptions);
 
-        public abstract EventTypeDetailsResponse build();
+        public abstract SystemEventTypeDetailsResponse build();
     }
 }
