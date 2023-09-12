@@ -17,6 +17,7 @@ import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import HelpBubble from "../../../misc/HelpBubble";
+import TrackDetectorConfigModal from "./TrackDetectorConfigModal";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -184,7 +185,7 @@ function SSIDDetailsPage() {
                   <div className="card">
                     <div className="card-body">
                       <h3 style={{display: "inline-block"}}>
-                        Signal Strength Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
+                        Signal Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
                         ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
                       </h3>
 
@@ -200,6 +201,14 @@ function SSIDDetailsPage() {
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
                                                 minutes={24*60} />
+
+                      <TrackDetectorConfigModal />
+
+                      <button className="btn btn-sm btn-outline-secondary"
+                              data-bs-toggle="modal"
+                              data-bs-target="#track-detector-config">
+                        Configure Track Detector
+                      </button>
                     </div>
                   </div>
                 </div>
