@@ -13,6 +13,7 @@ import app.nzyme.core.distributed.messaging.postgres.PostgresMessageEntryMapper;
 import app.nzyme.core.distributed.tasksqueue.postgres.PostgresTasksQueueEntryMapper;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfigMapper;
 import app.nzyme.core.events.db.EventActionEntryMapper;
 import app.nzyme.core.events.db.EventEntryMapper;
 import app.nzyme.core.events.db.SubscriptionEntryMapper;
@@ -118,7 +119,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BSSIDWithTapMapper())
                 .registerRowMapper(new DetectionAlertEntryMapper())
                 .registerRowMapper(new DetectionAlertAttributeEntryMapper())
-                .registerRowMapper(new DetectionAlertTimelineEntryMapper());
+                .registerRowMapper(new DetectionAlertTimelineEntryMapper())
+                .registerRowMapper(new TrackDetectorConfigMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

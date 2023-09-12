@@ -6,6 +6,7 @@ import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.dot11.*;
@@ -312,6 +313,13 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        // Track detector config. Pull related org from tap (access was checked above and count is 1)
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        UUID organizationId = nzyme.getTapManager().findTap(tapUuids.get(0)).get().organizationId();
+        TrackDetectorConfig config = nzyme.getDot11()
+                .findCustomTrackDetectorConfiguration(organizationId, bssid, ssid, frequency)
+                .orElse(TrackDetector.DEFAULT_CONFIG);
+
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                 bssid, ssid, frequency, minutes, tapUuids);
 
@@ -319,7 +327,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         TrackDetector td = new TrackDetector();
         List<SignalWaterfallTrackResponse> tracks = Lists.newArrayList();
-        for (Track track : td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG)) {
+        for (Track track : td.detect(heatmap.z(), heatmap.y(), config)) {
             tracks.add(SignalWaterfallTrackResponse.create(
                     track.start(),
                     track.end(),
@@ -330,10 +338,22 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(
-                SignalWaterfallResponse.create(heatmap.z(), DEFAULT_X_VALUES, heatmap.y(), tracks)
+                SignalWaterfallResponse.create(
+                        heatmap.z(),
+                        DEFAULT_X_VALUES,
+                        heatmap.y(),
+                        tracks,
+                        SignalWaterfallConfigurationResponse.create(
+                                config.frameThreshold(),
+                                TrackDetector.DEFAULT_CONFIG.frameThreshold(),
+                                config.gapThreshold(),
+                                TrackDetector.DEFAULT_CONFIG.gapThreshold(),
+                                config.signalCenterlineJitter(),
+                                TrackDetector.DEFAULT_CONFIG.signalCenterlineJitter()
+                        )
+                )
         ).build();
     }
-
 
     @GET
     @Path("/ssids/names")

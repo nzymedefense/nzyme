@@ -4,6 +4,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
@@ -344,6 +346,24 @@ public class Dot11 {
                         .bind("frequency", frequency)
                         .mapTo(ChannelHistogramEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<TrackDetectorConfig> findCustomTrackDetectorConfiguration(UUID organizationId,
+                                                                              String bssid,
+                                                                              String ssid,
+                                                                              int channel) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT frame_threshold, gap_threshold, signal_centerline_jitter " +
+                                "FROM dot11_track_detector_configuration " +
+                                "WHERE organization_id = :organization_id AND bssid = :bssid AND ssid = :ssid " +
+                                "AND channel = :channel")
+                        .bind("organization_id", organizationId)
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("channel", channel)
+                        .mapTo(TrackDetectorConfig.class)
+                        .findOne()
         );
     }
 

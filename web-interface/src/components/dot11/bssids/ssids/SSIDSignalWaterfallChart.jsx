@@ -5,6 +5,7 @@ import Dot11Service from "../../../../services/Dot11Service";
 import HeatmapWaterfallChart from "../../../charts/HeatmapWaterfallChart";
 import SignalLegendHelper from "../../../charts/SignalLegendHelper";
 import {singleTapSelected} from "../../../../util/Tools";
+import TrackDetectorConfigModal from "./TrackDetectorConfigModal";
 
 const dot11Service = new Dot11Service();
 
@@ -145,14 +146,26 @@ function SSIDSignalWaterfallChart(props) {
     return <div style={{height: HEIGHT}}><LoadingSpinner /></div>
   }
 
-  return <HeatmapWaterfallChart
-      height={HEIGHT}
-      xaxistitle="Signal Strength (dBm)"
-      yaxistitle="Time"
-      hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
-      annotations={SignalLegendHelper.DEFAULT}
-      data={formatData(waterfall)}
-      layers={formatTracks(waterfall, waterfall.tracks)} />
+  return (
+      <React.Fragment>
+        <HeatmapWaterfallChart
+          height={HEIGHT}
+          xaxistitle="Signal Strength (dBm)"
+          yaxistitle="Time"
+          hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
+          annotations={SignalLegendHelper.DEFAULT}
+          data={formatData(waterfall)}
+          layers={formatTracks(waterfall, waterfall.tracks)} />
+
+        <TrackDetectorConfigModal config={waterfall.detector_configuration} />
+
+        <button className="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#track-detector-config">
+          Configure Track Detector
+        </button>
+      </React.Fragment>
+  )
 
 }
 

@@ -17,7 +17,6 @@ import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import HelpBubble from "../../../misc/HelpBubble";
-import TrackDetectorConfigModal from "./TrackDetectorConfigModal";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -201,14 +200,6 @@ function SSIDDetailsPage() {
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
                                                 minutes={24*60} />
-
-                      <TrackDetectorConfigModal />
-
-                      <button className="btn btn-sm btn-outline-secondary"
-                              data-bs-toggle="modal"
-                              data-bs-target="#track-detector-config">
-                        Configure Track Detector
-                      </button>
                     </div>
                   </div>
                 </div>
