@@ -323,7 +323,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 .orElse(TrackDetector.DEFAULT_CONFIG);
 
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                bssid, ssid, frequency, minutes, tapUuids);
+                bssid, ssid, frequency, minutes, tap.uuid());
 
         TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
 
