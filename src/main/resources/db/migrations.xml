@@ -3738,4 +3738,12 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add_tap_uuid_to_track_detector_configs" author="lennartkoopmann">
+        <addColumn tableName="dot11_track_detector_configuration">
+            <column name="tap_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

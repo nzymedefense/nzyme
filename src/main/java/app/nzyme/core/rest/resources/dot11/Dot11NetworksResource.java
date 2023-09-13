@@ -9,7 +9,9 @@ import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.*;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -315,9 +317,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         // Track detector config. Pull related org from tap (access was checked above and count is 1)
         @SuppressWarnings("OptionalGetWithoutIsPresent")
-        UUID organizationId = nzyme.getTapManager().findTap(tapUuids.get(0)).get().organizationId();
+        Tap tap = nzyme.getTapManager().findTap(tapUuids.get(0)).get();
         TrackDetectorConfig config = nzyme.getDot11()
-                .findCustomTrackDetectorConfiguration(organizationId, bssid, ssid, frequency)
+                .findCustomTrackDetectorConfiguration(tap.organizationId(), tap.uuid(), bssid, ssid, frequency)
                 .orElse(TrackDetector.DEFAULT_CONFIG);
 
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
@@ -353,6 +355,40 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                         )
                 )
         ).build();
+    }
+
+    @PUT
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/frequencies/show/{frequency}/signal/trackdetector/configuration")
+    public Response updateTrackDetectorConfig(@Context SecurityContext sc,
+                                              @PathParam("bssid") String bssid,
+                                              @PathParam("ssid") String ssid,
+                                              @PathParam("frequency") int frequency,
+                                              UpdateTrackDetectorConfigurationRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Check if user has access to this tap.
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(req.tapId())) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Known to exist because of permission check.
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        Tap tap = nzyme.getTapManager().findTap(req.tapId()).get();
+
+        LOG.info(req);
+
+        nzyme.getDot11().updateCustomTrackDetectorConfiguration(
+                tap.organizationId(),
+                tap.uuid(),
+                bssid,
+                ssid,
+                frequency,
+                (int) req.frameThreshold(),
+                (int)  req.gapThreshold(),
+                (int) req.signalCenterlineJitter()
+        );
+
+        return Response.ok().build();
     }
 
     @GET

@@ -22,6 +22,7 @@ function SSIDSignalWaterfallChart(props) {
   const selectedTaps = tapContext.taps;
 
   const [waterfall, setWaterfall] = useState(null);
+  const [revision, setRevision] = useState(0);
 
   const formatData = function(data) {
     const yDates = [];
@@ -131,7 +132,7 @@ function SSIDSignalWaterfallChart(props) {
       setWaterfall(null);
       dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
     }
-  }, [bssid, ssid, frequency, minutes, selectedTaps])
+  }, [bssid, ssid, frequency, minutes, selectedTaps, revision])
 
   if (!singleTapSelected(selectedTaps)) {
     return (
@@ -157,7 +158,13 @@ function SSIDSignalWaterfallChart(props) {
           data={formatData(waterfall)}
           layers={formatTracks(waterfall, waterfall.tracks)} />
 
-        <TrackDetectorConfigModal config={waterfall.detector_configuration} />
+        <TrackDetectorConfigModal
+            bssid={bssid}
+            ssid={ssid}
+            frequency={frequency}
+            tapUUID={selectedTaps[0]}
+            config={waterfall.detector_configuration}
+            setRevision={setRevision} />
 
         <button className="btn btn-sm btn-outline-secondary"
                 data-bs-toggle="modal"

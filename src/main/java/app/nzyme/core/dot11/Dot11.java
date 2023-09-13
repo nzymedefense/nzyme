@@ -350,6 +350,7 @@ public class Dot11 {
     }
 
     public Optional<TrackDetectorConfig> findCustomTrackDetectorConfiguration(UUID organizationId,
+                                                                              UUID tapId,
                                                                               String bssid,
                                                                               String ssid,
                                                                               int channel) {
@@ -357,14 +358,63 @@ public class Dot11 {
                 handle.createQuery("SELECT frame_threshold, gap_threshold, signal_centerline_jitter " +
                                 "FROM dot11_track_detector_configuration " +
                                 "WHERE organization_id = :organization_id AND bssid = :bssid AND ssid = :ssid " +
-                                "AND channel = :channel")
+                                "AND channel = :channel AND tap_id = :tap_id")
                         .bind("organization_id", organizationId)
+                        .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .bind("channel", channel)
                         .mapTo(TrackDetectorConfig.class)
                         .findOne()
         );
+    }
+
+    public void updateCustomTrackDetectorConfiguration(UUID organizationId,
+                                                       UUID tapId,
+                                                       String bssid,
+                                                       String ssid,
+                                                       int channel,
+                                                       int frameThreshold,
+                                                       int gapThreshold,
+                                                       int signalCenterlineJitter) {
+        if (findCustomTrackDetectorConfiguration(organizationId, tapId, bssid, ssid, channel).isPresent()) {
+            // Update existing configuration.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("UPDATE dot11_track_detector_configuration " +
+                                    "SET frame_threshold = :frame_threshold, gap_threshold = :gap_threshold, " +
+                                    "signal_centerline_jitter = :signal_centerline_jitter, updated_at = NOW() " +
+                                    "WHERE organization_id = :organization_id AND bssid = :bssid AND ssid = :ssid " +
+                                    "AND channel = :channel AND tap_id = :tap_id")
+                            .bind("organization_id", organizationId)
+                            .bind("tap_id", tapId)
+                            .bind("bssid", bssid)
+                            .bind("ssid", ssid)
+                            .bind("channel", channel)
+                            .bind("frame_threshold", frameThreshold)
+                            .bind("gap_threshold", gapThreshold)
+                            .bind("signal_centerline_jitter", signalCenterlineJitter)
+                            .execute()
+            );
+        } else {
+            // Write new configuration.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO dot11_track_detector_configuration(uuid, organization_id, " +
+                                    "tap_id, bssid, ssid, channel, frame_threshold, gap_threshold, " +
+                                    "signal_centerline_jitter, updated_at, created_at) VALUES(:uuid, :organization_id, " +
+                                    ":tap_id, :bssid, :ssid, :channel, :frame_threshold, :gap_threshold, " +
+                                    ":signal_centerline_jitter, NOW(), NOW())")
+                            .bind("uuid", UUID.randomUUID())
+                            .bind("organization_id", organizationId)
+                            .bind("tap_id", tapId)
+                            .bind("bssid", bssid)
+                            .bind("ssid", ssid)
+                            .bind("channel", channel)
+                            .bind("frame_threshold", frameThreshold)
+                            .bind("gap_threshold", gapThreshold)
+                            .bind("signal_centerline_jitter", signalCenterlineJitter)
+                            .execute()
+            );
+        }
     }
 
     public long countBSSIDClients(int minutes, List<UUID> taps) {
