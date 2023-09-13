@@ -1,11 +1,14 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import Dot11Service from "../../../../services/Dot11Service";
 import {notify} from "react-notify-toast";
 import TrackDetectorConfigModalButton from "./TrackDetectorConfigModalButton";
+import {UserContext} from "../../../../App";
 
 const dot11Service = new Dot11Service();
 
 function TrackDetectorConfigModal(props) {
+
+  const user = useContext(UserContext);
 
   const bssid = props.bssid;
   const ssid = props.ssid;
@@ -69,6 +72,11 @@ function TrackDetectorConfigModal(props) {
                 about signal track configurations in the{' '}
                 <a href="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" target="_blank">documentation</a>.
               </p>
+
+              {user.is_superadmin ?
+                  <div className="alert alert-warning">You are logged in as super administrator and changes you are
+                    making to this track detector configuration will be saved for the organization the currently selected
+                    tap belongs to.</div> : null }
 
               <div className="mb-3">
                 <label htmlFor="wf_config_frame_threshold" className="form-label">Frame Threshold</label>
