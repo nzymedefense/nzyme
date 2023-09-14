@@ -6,8 +6,8 @@ use log::{trace, error, info};
 
 use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11ProbeRequestFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser, probe_request_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
 use crate::alerting::alert_types::{Dot11Alert, Dot11AlertAttribute, Dot11AlertType};
-use crate::dot11::frames::{Dot11ProbeResponseFrame, PwnagotchiData};
-use crate::dot11::parsers::management::probe_response_frame_parser;
+use crate::dot11::frames::{Dot11DisassociationFrame, Dot11ProbeResponseFrame, PwnagotchiData};
+use crate::dot11::parsers::management::{disassociation_frame_parser, probe_response_frame_parser};
 
 pub struct Dot11FrameProcessor {
     dot11_table: Arc<Mutex<Dot11Table>>
@@ -43,7 +43,10 @@ impl Dot11FrameProcessor {
                     }
                 },
                 FrameSubType::Disassocation => {
-                    info!("DISASSOC")
+                    match disassociation_frame_parser::parse(frame) {
+                        Ok(frame) => self.handle_disassociation_frame(frame),
+                        Err(e) => trace!("Could not parse disassociation frame: {}", e)
+                    }
                 }
                 FrameSubType::ProbeRequest => {
                     match probe_request_frame_parser::parse(frame) {
@@ -152,6 +155,13 @@ impl Dot11FrameProcessor {
     fn handle_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
         match self.dot11_table.lock() {
             Ok(table) => table.register_deauthentication_frame(frame),
+            Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
+        }
+    }
+
+    fn handle_disassociation_frame(&self, frame: Dot11DisassociationFrame) {
+        match self.dot11_table.lock() {
+            Ok(table) => table.register_disassociation_frame(frame),
             Err(e) => error!("Could not acquire 802.11 table lock: {}", e)
         }
     }

@@ -10,7 +10,7 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
-use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
+use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
 use crate::link::payloads::Dot11AlertReport;
 
 #[derive(Debug)]
@@ -371,6 +371,10 @@ impl Dot11Table {
 
     pub fn register_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
         info!("DEAUTH: {:?}", frame);
+    }
+
+    pub fn register_disassociation_frame(&self, frame: Dot11DisassociationFrame) {
+        info!("DISSOC: {:?}", frame);
     }
 
     pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: &Option<u16>, frame_length: usize) 
