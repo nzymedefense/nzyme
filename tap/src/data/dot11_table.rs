@@ -17,6 +17,7 @@ use crate::link::payloads::Dot11AlertReport;
 pub struct Dot11Table {
     pub bssids: Mutex<HashMap<String, Bssid>>,
     pub clients: Mutex<HashMap<String, Client>>,
+    pub deauth: DeauthTable,
     pub alerts: Mutex<Vec<Dot11Alert>>
 }
 
@@ -63,11 +64,32 @@ pub struct AdvertisedNetwork {
     pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
 }
 
+#[derive(Debug, Default)]
+pub struct DeauthTable {
+    pub transmitters: Mutex<HashMap<String, DeauthTransmitter>>,
+    pub receivers: Mutex<HashMap<String, DeauthReceiver>>
+}
+
+#[derive(Debug, Default)]
+pub struct DeauthTransmitter {
+    pub bssid: String,
+    pub sent_frames: u128,
+    pub receivers: HashMap<String, u128>
+}
+
+#[derive(Debug, Default)]
+pub struct DeauthReceiver {
+    pub bssid: String,
+    pub received_frames: u128,
+    pub senders: HashMap<String, u128>
+}
+
 impl Dot11Table {
     pub fn new() -> Self {
         Self {
             bssids: Mutex::new(HashMap::new()),
             clients: Mutex::new(HashMap::new()),
+            deauth: DeauthTable::default(),
             alerts: Mutex::new(Vec::new())
         }
     }
@@ -370,7 +392,38 @@ impl Dot11Table {
     }
 
     pub fn register_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
-        info!("DEAUTH: {:?}", frame);
+        info!("Received deauthentication frame: {:?}", frame); // TODO REMOVE. DEBUG ONLY.
+
+        match self.deauth.transmitters.lock() {
+            Ok(mut transmitters) => {
+                match transmitters.get_mut(&frame.transmitter) {
+                    Some(transmitter) => {
+                        // Existing transmitter.
+                        transmitter.sent_frames += 1;
+
+                        match transmitter.receivers.get_mut(&frame.destination) {
+                            Some(destination) => { *destination += 1; },
+                            None => { transmitter.receivers.insert(frame.destination.clone(), 1); }
+                        }
+                    },
+                    None => {
+                        // New transmitter.
+                        let mut receivers = HashMap::new();
+                        receivers.insert(frame.destination, 1);
+
+                        transmitters.insert(
+                            frame.transmitter.clone(),
+                            DeauthTransmitter {
+                                bssid: frame.transmitter,
+                                sent_frames: 1,
+                                receivers
+                            }
+                        );
+                    }
+                }
+            },
+            Err(e) => error!("Could not acquire deauth transmitter table: {}", e)
+        }
     }
 
     pub fn register_disassociation_frame(&self, frame: Dot11DisassociationFrame) {
