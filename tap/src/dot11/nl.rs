@@ -374,18 +374,6 @@ impl Nl {
         };
 
         self.dot11_socket.send(self.dot11_family_id, NlmF::empty(), NlPayload::Payload(payload))?;
-        /*let buffer = self.dot11_socket.recv::<u16, Buffer>();
-        match buffer {
-            Some(Ok(_)) => {},
-            Some(Err(e)) => bail!("Could not set frequency. Netlink response: {}", e),
-            None => {}
-        }*/
-
-        /*let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> =
-            match self.dot11_socket.send(self.dot11_family_id, NlmF::empty(), NlPayload::Payload(payload)){
-                Ok(recv) => recv,
-                Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
-            };*/
 
         Ok(())
     }
