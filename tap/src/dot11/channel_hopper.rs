@@ -4,7 +4,7 @@ use anyhow::{Error, bail};
 use log::{error, info, debug};
 use systemstat::Duration;
 use crate::configuration::WifiInterface;
-use crate::helpers::network::{dot11_channel_to_frequency};
+use crate::helpers::network::{dot11_channel_to_frequency, Nl80211Band};
 
 use super::nl::Nl;
 
@@ -55,10 +55,36 @@ impl ChannelHopper {
             match adapters.get(&device_name) {
                 None => bail!("WiFi adapter [{}] not found.", device_name),
                 Some(adapter) => {
-                    for channel in &*device_configuration.channels {
-                        let frequency = match dot11_channel_to_frequency(*channel as u16) {
+                    for channel in &*device_configuration.channels_2g {
+                        let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band2GHz) {
                             Ok(frequency) => frequency,
-                            Err(e) => bail!("Could not get frequency for channel <{}> of device [{}]: {}",
+                            Err(e) => bail!("Could not get frequency for 2G channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                        };
+
+                        if !adapter.contains(&(frequency as u32)) {
+                            bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
+                                device_name, channel, frequency);
+                        }
+                    }
+
+                    for channel in &*device_configuration.channels_5g {
+                        let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band5GHz) {
+                            Ok(frequency) => frequency,
+                            Err(e) => bail!("Could not get frequency for 5G channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                        };
+
+                        if !adapter.contains(&(frequency as u32)) {
+                            bail!("WiFi adapter [{}] does not support channel <{} / {} MHz>.",
+                                device_name, channel, frequency);
+                        }
+                    }
+
+                    for channel in &*device_configuration.channels_6g {
+                        let frequency: u16 = match dot11_channel_to_frequency(*channel, Nl80211Band::Band6GHz) {
+                            Ok(frequency) => frequency,
+                            Err(e) => bail!("Could not get frequency for 6G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
                         };
 
@@ -71,10 +97,24 @@ impl ChannelHopper {
             }
 
             let mut frequencies: Vec<u32> = Vec::new();
-            for channel in device_configuration.channels {
-                frequencies.push(match dot11_channel_to_frequency(channel as u16) {
+            for channel in device_configuration.channels_2g {
+                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band2GHz) {
                     Ok(frequency) => frequency as u32,
-                    Err(e) => bail!("Could not get frequency for channel <{}> of device [{}]: {}",
+                    Err(e) => bail!("Could not get frequency for 2G channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                });
+            }
+            for channel in device_configuration.channels_5g {
+                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band5GHz) {
+                    Ok(frequency) => frequency as u32,
+                    Err(e) => bail!("Could not get frequency for 5G channel <{}> of device [{}]: {}",
+                                channel, device_name, e)
+                });
+            }
+            for channel in device_configuration.channels_6g {
+                frequencies.push(match dot11_channel_to_frequency(channel, Nl80211Band::Band6GHz) {
+                    Ok(frequency) => frequency as u32,
+                    Err(e) => bail!("Could not get frequency for 6G channel <{}> of device [{}]: {}",
                                 channel, device_name, e)
                 });
             }
