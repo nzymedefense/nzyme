@@ -51,7 +51,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class AlertsResource extends UserAuthenticatedResource {
 
-    private static final Logger LOG = LogManager.getLogger(UserAuthenticatedResource.class);
+    private static final Logger LOG = LogManager.getLogger(AlertsResource.class);
 
     @Inject
     private NzymeNode nzyme;

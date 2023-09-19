@@ -118,7 +118,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BSSIDWithTapMapper())
                 .registerRowMapper(new DetectionAlertEntryMapper())
                 .registerRowMapper(new DetectionAlertAttributeEntryMapper())
-                .registerRowMapper(new DetectionAlertTimelineEntryMapper());
+                .registerRowMapper(new DetectionAlertTimelineEntryMapper())
+                .registerRowMapper(new CustomBanditDescriptionMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

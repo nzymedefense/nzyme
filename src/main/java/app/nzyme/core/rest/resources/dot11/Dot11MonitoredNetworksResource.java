@@ -615,19 +615,6 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         return Response.ok().build();
     }
 
-    @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
-    @Path("/bandits/supported")
-    public Response findAllSupportedBandits() {
-        List<SupportedBanditResponse> bandits = Lists.newArrayList();
-
-        for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
-            bandits.add(SupportedBanditResponse.create(bandit.name(), bandit.description()));
-        }
-
-        return Response.ok(bandits).build();
-    }
-
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/ssids/show/{uuid}/alertenabledstatus/{alert}/set/{status}")

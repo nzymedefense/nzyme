@@ -946,6 +946,118 @@ public class Dot11 {
         );
     }
 
+    public long countCustomBandits(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public void createCustomBandit(UUID organizationId, UUID tenantId, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandits(uuid, organization_id, tenant_id, name, " +
+                                "description, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":name, :description, NOW(), NOW())")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void editCustomBandit(long id, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_bandits SET name = :name, description = :description " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void deleteCustomBandit(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandits WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
+                                                              UUID tenantId,
+                                                              int limit,
+                                                              int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(CustomBanditDescription.class)
+                        .list()
+        );
+    }
+
+    public Optional<CustomBanditDescription> findCustomBandit(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(CustomBanditDescription.class)
+                        .findOne()
+        );
+    }
+
+    public List<String> findFingerprintsOfCustomBandit(long banditId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id")
+                        .bind("bandit_id", banditId)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public void bumpCustomBanditUpdatedAt(long banditId) {
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("UPDATE dot11_bandits SET updated_at = NOW() WHERE id = :id")
+                    .bind("id", banditId)
+                    .execute();
+        });
+    }
+
+    public void addFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        if (fingerprint.length() != 64) {
+            throw new RuntimeException("Fingerprint must be 64 characters long.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandit_fingerprints(bandit_id, fingerprint) " +
+                                "VALUES(:bandit_id, :fingerprint)")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
+        );
+    }
+
+    public void removeFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id AND fingerprint = :fingerprint")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
+        );
+    }
+
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";
