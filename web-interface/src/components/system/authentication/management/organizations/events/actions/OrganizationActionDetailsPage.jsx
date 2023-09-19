@@ -7,7 +7,9 @@ import EventActionsService from "../../../../../../../services/EventActionsServi
 import {notify} from "react-notify-toast";
 import ActionDetailsProxy from "../../../../../events/shared/details/ActionDetailsProxy";
 import ActionDetails from "../../../../../events/shared/ActionDetails";
-import SubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SubscriptionsOfActionTable";
+import SystemSubscriptionsOfActionTable from "../../../../../events/shared/subscriptions/SystemSubscriptionsOfActionTable";
+import DetectionSubscriptionsOfActionTable
+  from "../../../../../events/shared/subscriptions/DetectionSubscriptionsOfActionTable";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -140,8 +142,13 @@ function OrganizationActionDetailsPage() {
 
                     <p>This action is subscribed to the following events:</p>
 
-                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events}
-                                                organizationId={organization.id} />
+                    <h4>System Events</h4>
+                    <SystemSubscriptionsOfActionTable subscriptions={action.subscribed_to_system_events}
+                                                      organizationId={organization.id} />
+
+                    <h4 className="mt-4">Detection Events</h4>
+                    <DetectionSubscriptionsOfActionTable subscriptions={action.subscribed_to_detection_events}
+                                                         organizationId={organization.id} />
                   </div>
                 </div>
               </div>
@@ -163,7 +170,7 @@ function OrganizationActionDetailsPage() {
                     <button type="button"
                             className="btn btn-danger"
                             onClick={onDelete}
-                            disabled={action.subscribed_to_events.length > 0}>
+                            disabled={action.subscribed_to_system_events.length > 0 || action.subscribed_to_detection_events.length > 0}>
                       Delete Action
                     </button>
                   </div>
