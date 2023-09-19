@@ -51,7 +51,9 @@ public abstract class Tap {
     @Nullable
     public abstract UUID tenantId();
 
-    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId) {
+    public abstract String remoteAddress();
+
+    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, String remoteAddress) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -69,6 +71,7 @@ public abstract class Tap {
                 .lastReport(lastReport)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .remoteAddress(remoteAddress)
                 .build();
     }
 
@@ -109,6 +112,8 @@ public abstract class Tap {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder remoteAddress(String remoteAddress);
 
         public abstract Tap build();
     }

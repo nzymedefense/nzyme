@@ -69,7 +69,7 @@ function TapDetailsPage () {
             <div className="card-body">
               <h3>Throughput</h3>
 
-              <dl>
+              <dl className="mb-0">
                 <dt>Throughput</dt>
                 <dd>
                   {tap.active ? byteAverageToMbit(tap.processed_bytes.average) : "n/a" }{' '}
@@ -88,7 +88,7 @@ function TapDetailsPage () {
             <div className="card-body">
               <h3>Metrics</h3>
 
-              <dl>
+              <dl className="mb-0">
                 <dt>CPU Load</dt>
                 <dd>{tap.active ? numeral(tap.cpu_load).format('0.0') + "%" : "n/a"}</dd>
 
@@ -107,11 +107,11 @@ function TapDetailsPage () {
             <div className="card-body">
               <h3>Details</h3>
 
-              <dl>
+              <dl className="mb-0">
                 <dt>Last Report</dt>
                 <dd>
                   {tap.last_report ?
-                      <span title={moment(tap.last_report).format()}> {moment(tap.last_report).fromNow()}</span>
+                      <span title={moment(tap.last_report).format()}> {moment(tap.last_report).fromNow()} (from {tap.remote_address})</span>
                       : "no report yet" }
                 </dd>
 
