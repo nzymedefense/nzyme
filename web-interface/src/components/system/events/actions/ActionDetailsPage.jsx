@@ -6,7 +6,8 @@ import ActionDetails from "../shared/ActionDetails";
 import ActionDetailsProxy from "../shared/details/ActionDetailsProxy";
 import EventActionsService from "../../../../services/EventActionsService";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import SubscriptionsOfActionTable from "../shared/subscriptions/SubscriptionsOfActionTable";
+import SystemSubscriptionsOfActionTable from "../shared/subscriptions/SystemSubscriptionsOfActionTable";
+import DetectionSubscriptionsOfActionTable from "../shared/subscriptions/DetectionSubscriptionsOfActionTable";
 
 const eventActionsService = new EventActionsService();
 
@@ -119,7 +120,14 @@ function ActionDetailsPage() {
 
                     <p>This action is subscribed to the following events:</p>
 
-                    <SubscriptionsOfActionTable subscriptions={action.subscribed_to_events} />
+                    <h4>System Events</h4>
+                    <SystemSubscriptionsOfActionTable subscriptions={action.subscribed_to_system_events} />
+
+                    <h4 className="mt-4">Detection Events</h4>
+                    <div className="alert alert-info mb-0">
+                      Superadministrator actions cannot be subscribed to detection events. Please use organization
+                      actions.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -141,7 +149,7 @@ function ActionDetailsPage() {
                     <button type="button"
                             className="btn btn-danger"
                             onClick={onDelete}
-                            disabled={action.subscribed_to_events.length > 0}>
+                            disabled={action.subscribed_to_system_events.length > 0 || action.subscribed_to_detection_events.length > 0}>
                       Delete Action
                     </button>
                   </div>
