@@ -5,6 +5,7 @@ import Dot11Service from "../../../../services/Dot11Service";
 import HeatmapWaterfallChart from "../../../charts/HeatmapWaterfallChart";
 import SignalLegendHelper from "../../../charts/SignalLegendHelper";
 import {singleTapSelected} from "../../../../util/Tools";
+import TrackDetectorConfigModal from "./TrackDetectorConfigModal";
 
 const dot11Service = new Dot11Service();
 
@@ -21,6 +22,7 @@ function SSIDSignalWaterfallChart(props) {
   const selectedTaps = tapContext.taps;
 
   const [waterfall, setWaterfall] = useState(null);
+  const [revision, setRevision] = useState(0);
 
   const formatData = function(data) {
     const yDates = [];
@@ -130,7 +132,7 @@ function SSIDSignalWaterfallChart(props) {
       setWaterfall(null);
       dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
     }
-  }, [bssid, ssid, frequency, minutes, selectedTaps])
+  }, [bssid, ssid, frequency, minutes, selectedTaps, revision])
 
   if (!singleTapSelected(selectedTaps)) {
     return (
@@ -145,14 +147,32 @@ function SSIDSignalWaterfallChart(props) {
     return <div style={{height: HEIGHT}}><LoadingSpinner /></div>
   }
 
-  return <HeatmapWaterfallChart
-      height={HEIGHT}
-      xaxistitle="Signal Strength (dBm)"
-      yaxistitle="Time"
-      hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
-      annotations={SignalLegendHelper.DEFAULT}
-      data={formatData(waterfall)}
-      layers={formatTracks(waterfall, waterfall.tracks)} />
+  return (
+      <React.Fragment>
+        <HeatmapWaterfallChart
+          height={HEIGHT}
+          xaxistitle="Signal Strength (dBm)"
+          yaxistitle="Time"
+          hovertemplate="Signal Strength: %{x} dBm, %{z} frames at %{y}<extra></extra>"
+          annotations={SignalLegendHelper.DEFAULT}
+          data={formatData(waterfall)}
+          layers={formatTracks(waterfall, waterfall.tracks)} />
+
+        <TrackDetectorConfigModal
+            bssid={bssid}
+            ssid={ssid}
+            frequency={frequency}
+            tapUUID={selectedTaps[0]}
+            config={waterfall.detector_configuration}
+            setRevision={setRevision} />
+
+        <button className="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#track-detector-config">
+          Configure Track Detector
+        </button>
+      </React.Fragment>
+  )
 
 }
 

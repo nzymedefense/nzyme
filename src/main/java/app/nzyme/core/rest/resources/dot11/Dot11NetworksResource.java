@@ -6,9 +6,12 @@ import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.*;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -312,14 +315,21 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        // Track detector config. Pull related org from tap (access was checked above and count is 1)
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        Tap tap = nzyme.getTapManager().findTap(tapUuids.get(0)).get();
+        TrackDetectorConfig config = nzyme.getDot11()
+                .findCustomTrackDetectorConfiguration(tap.organizationId(), tap.uuid(), bssid, ssid, frequency)
+                .orElse(TrackDetector.DEFAULT_CONFIG);
+
         List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                bssid, ssid, frequency, minutes, tapUuids);
+                bssid, ssid, frequency, minutes, tap.uuid());
 
         TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
 
         TrackDetector td = new TrackDetector();
         List<SignalWaterfallTrackResponse> tracks = Lists.newArrayList();
-        for (Track track : td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG)) {
+        for (Track track : td.detect(heatmap.z(), heatmap.y(), config)) {
             tracks.add(SignalWaterfallTrackResponse.create(
                     track.start(),
                     track.end(),
@@ -330,10 +340,56 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(
-                SignalWaterfallResponse.create(heatmap.z(), DEFAULT_X_VALUES, heatmap.y(), tracks)
+                SignalWaterfallResponse.create(
+                        heatmap.z(),
+                        DEFAULT_X_VALUES,
+                        heatmap.y(),
+                        tracks,
+                        SignalWaterfallConfigurationResponse.create(
+                                config.frameThreshold(),
+                                TrackDetector.DEFAULT_CONFIG.frameThreshold(),
+                                config.gapThreshold(),
+                                TrackDetector.DEFAULT_CONFIG.gapThreshold(),
+                                config.signalCenterlineJitter(),
+                                TrackDetector.DEFAULT_CONFIG.signalCenterlineJitter()
+                        )
+                )
         ).build();
     }
 
+    @PUT
+    @Path("/bssids/show/{bssid}/ssids/show/{ssid}/frequencies/show/{frequency}/signal/trackdetector/configuration")
+    public Response updateTrackDetectorConfig(@Context SecurityContext sc,
+                                              @PathParam("bssid") String bssid,
+                                              @PathParam("ssid") String ssid,
+                                              @PathParam("frequency") int frequency,
+                                              UpdateTrackDetectorConfigurationRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Check if user has access to this tap.
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(req.tapId())) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Known to exist because of permission check.
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        Tap tap = nzyme.getTapManager().findTap(req.tapId()).get();
+
+        LOG.info(req);
+
+        nzyme.getDot11().updateCustomTrackDetectorConfiguration(
+                tap.organizationId(),
+                tap.uuid(),
+                bssid,
+                ssid,
+                frequency,
+                (int) req.frameThreshold(),
+                (int)  req.gapThreshold(),
+                (int) req.signalCenterlineJitter()
+        );
+
+        return Response.ok().build();
+    }
 
     @GET
     @Path("/ssids/names")
