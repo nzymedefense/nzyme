@@ -95,7 +95,7 @@ public class BanditsResource extends UserAuthenticatedResource {
 
         if (limit > 250) {
             LOG.warn("Requested limit larger than 250. Not allowed.");
-            return Response.status(Response.Status.UNAUTHORIZED).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         if (!hasPermissions(authenticatedUser, organizationId, tenantId)) {
