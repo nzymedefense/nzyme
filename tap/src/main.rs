@@ -60,6 +60,9 @@ fn main() {
                 let interfaces = nl.fetch_devices();
                 match interfaces {
                     Ok(interfaces) => {
+                        println!();
+                        println!("# IMPORTANT: Remove duplicate channels. Each channel can only be monitored by one adapter.");
+                        println!();
                         for (key, _) in &interfaces {
                             let interface_info = nl.fetch_device_info(key);
                             match interface_info {
