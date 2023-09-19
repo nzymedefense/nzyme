@@ -22,6 +22,8 @@ function MonitorSignalTrackAlertDetails(props) {
                     {dot11FrequencyToChannel(alert.attributes.channel)}{' '}
                     ({numeral(alert.attributes.channel).format("0,0")} MHz)
                   </dd>
+                  <dt>Recorded by Tap</dt>
+                  <dd>{alert.attributes.tap_name}</dd>
 
                   <p className="mb-0 mt-2">
                     One of the monitored access points is transmitting on multiple signal tracks. This might suggest

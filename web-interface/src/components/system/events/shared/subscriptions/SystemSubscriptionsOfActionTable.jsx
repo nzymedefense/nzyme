@@ -1,20 +1,20 @@
 import React from "react";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 
-function SubscriptionsOfActionTable(props) {
+function SystemSubscriptionsOfActionTable(props) {
 
   const subscriptions = props.subscriptions;
   const organizationId = props.organizationId;
 
   if (!subscriptions || subscriptions.length === 0) {
-    return <div className="alert alert-info mt-0 mb-0">Action is not subscribed to any events.</div>
+    return <div className="alert alert-info mt-0 mb-0">Action is not subscribed to any system events.</div>
   }
 
   return (
       <table className="table table-sm table-hover table-striped">
         <thead>
         <tr>
-          <th>Event Name</th>
+          <th>System Event Name</th>
           <th>Category</th>
         </tr>
         </thead>
@@ -39,4 +39,4 @@ function SubscriptionsOfActionTable(props) {
 
 }
 
-export default SubscriptionsOfActionTable;
+export default SystemSubscriptionsOfActionTable;

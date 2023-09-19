@@ -170,10 +170,66 @@ class Dot11Service {
         {}, successCallback);
   }
 
-  findSupportedBandits(setBandits) {
-    RESTClient.get("/dot11/monitoring/bandits/supported", {}, function (response) {
+  findBuiltinBandits(setBandits) {
+    RESTClient.get("/dot11/bandits/builtin", {}, function (response) {
       setBandits(response.data);
     })
+  }
+
+  findBuiltinBandit(id, setBandit) {
+    RESTClient.get("/dot11/bandits/builtin/show/" + id, {}, function (response) {
+      setBandit(response.data);
+    })
+  }
+
+  findCustomBandits(organizationUUID, tenantUUID, limit, offset, setBandits) {
+    RESTClient.get("/dot11/bandits/custom",
+        {limit: limit, offset: offset, organization_uuid: organizationUUID, tenant_uuid: tenantUUID},
+        function (response) {
+      setBandits(response.data);
+    })
+  }
+
+  findCustomBandit(banditId, setBandits) {
+    RESTClient.get("/dot11/bandits/custom/show/" + banditId, {}, function (response) {
+      setBandits(response.data);
+    })
+  }
+
+  createCustomBandit(organizationUUID, tenantUUID, name, description, successCallback) {
+    RESTClient.post("/dot11/bandits/custom",
+        { organization_id: organizationUUID, tenant_id: tenantUUID, name: name, description: description },
+        successCallback);
+  }
+
+  editCustomBandit(banditUUID, name, description, successCallback) {
+    RESTClient.put("/dot11/bandits/custom/show/" + banditUUID,
+        { name: name, description: description }, successCallback);
+  }
+
+  deleteCustomBandit(banditUUID, successCallback) {
+    RESTClient.delete("/dot11/bandits/custom/show/" + banditUUID, successCallback);
+  }
+
+  addFingerprintToCustomBandit(banditUUID, fingerprint, successCallback) {
+    RESTClient.post("/dot11/bandits/custom/show/" + banditUUID + "/fingerprints",
+        {fingerprint: fingerprint}, successCallback);
+  }
+
+  deleteFingerprintOfCustomBandit(banditUUID, fingerprint, successCallback) {
+    RESTClient.delete("/dot11/bandits/custom/show/" + banditUUID + "/fingerprints/show/" + fingerprint,
+        successCallback);
+  }
+
+  updateTrackDetectorConfig(bssid, ssid, frequency, tapUUID, frameThreshold, gapThreshold, signalCenterlineJitter, successCallback) {
+    RESTClient.put("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/show/" + frequency + "/signal/trackdetector/configuration",
+        {
+          tap_id: tapUUID,
+          frame_threshold: frameThreshold,
+          gap_threshold: gapThreshold,
+          signal_centerline_jitter: signalCenterlineJitter
+        },
+        successCallback);
   }
 
 }

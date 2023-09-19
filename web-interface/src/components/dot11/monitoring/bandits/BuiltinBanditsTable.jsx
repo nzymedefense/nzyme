@@ -1,15 +1,16 @@
 import React, {useEffect, useState} from "react";
-import LoadingSpinner from "../../misc/LoadingSpinner";
-import Dot11Service from "../../../services/Dot11Service";
+import LoadingSpinner from "../../../misc/LoadingSpinner";
+import Dot11Service from "../../../../services/Dot11Service";
+import ApiRoutes from "../../../../util/ApiRoutes";
 
 const dot11Service = new Dot11Service();
 
-function Dot11BanditsTable() {
+function BuiltinBanditsTable() {
 
   const [bandits, setBandits] = useState(null);
 
   useEffect(() => {
-    dot11Service.findSupportedBandits(setBandits);
+    dot11Service.findBuiltinBandits(setBandits);
   }, [])
 
   if (!bandits) {
@@ -18,7 +19,7 @@ function Dot11BanditsTable() {
 
   return (
       <React.Fragment>
-        <table className="table table-sm table-hover table-striped mb-0">
+        <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
             <th>Name</th>
@@ -29,7 +30,11 @@ function Dot11BanditsTable() {
           {bandits.map(function(bandit, i) {
             return (
                 <tr key={"banditdef-" + i}>
-                  <td>{bandit.name}</td>
+                  <td>
+                    <a href={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(bandit.id)}>
+                      {bandit.name}
+                    </a>
+                  </td>
                   <td>{bandit.description}</td>
                 </tr>
             )
@@ -41,4 +46,4 @@ function Dot11BanditsTable() {
 
 }
 
-export default Dot11BanditsTable;
+export default BuiltinBanditsTable;

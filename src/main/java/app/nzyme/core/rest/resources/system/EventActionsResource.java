@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.system;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.actions.email.EmailActionConfiguration;
@@ -52,8 +53,13 @@ public class EventActionsResource extends UserAuthenticatedResource {
         List<EventActionDetailsResponse> events = Lists.newArrayList();
         for (EventActionEntry ea : eventEngine.findAllEventActionsOfSuperadministrators(limit, offset)) {
 
-            List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.uuid());
-            events.add(EventActionUtilities.eventActionEntryToResponse(ea, subs));
+            List<SystemEventType> subscribedSystemEvents = eventEngine
+                    .findAllSystemEventTypesActionIsSubscribedTo(ea.uuid());
+            List<DetectionType> subscribedDetectionEvents = eventEngine
+                    .findAllDetectionEventTypesActionIsSubscribedTo(ea.uuid());
+            events.add(EventActionUtilities.eventActionEntryToResponse(
+                    ea, subscribedSystemEvents, subscribedDetectionEvents
+            ));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -71,9 +77,16 @@ public class EventActionsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.get().uuid());
+        List<SystemEventType> subscribedSystemEvents = eventEngine
+                .findAllSystemEventTypesActionIsSubscribedTo(ea.get().uuid());
+        List<DetectionType> subscribedDetectionEvents = eventEngine
+                .findAllDetectionEventTypesActionIsSubscribedTo(ea.get().uuid());
 
-        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get(), subs)).build();
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(
+                ea.get(),
+                subscribedSystemEvents,
+                subscribedDetectionEvents
+        )).build();
     }
 
     @DELETE
@@ -100,8 +113,12 @@ public class EventActionsResource extends UserAuthenticatedResource {
         }
 
         // Check if action has active subscriptions.
-        List<SystemEventType> subscribedEventTypes = eventEngine.findAllEventTypesActionIsSubscribedTo(action.get().uuid());
-        if (!subscribedEventTypes.isEmpty()) {
+        List<SystemEventType> subscribedSystemEvents = eventEngine
+                .findAllSystemEventTypesActionIsSubscribedTo(action.get().uuid());
+        List<DetectionType> subscribedDetectionEvents = eventEngine
+                .findAllDetectionEventTypesActionIsSubscribedTo(action.get().uuid());
+
+        if (!subscribedSystemEvents.isEmpty() || !subscribedDetectionEvents.isEmpty()) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 

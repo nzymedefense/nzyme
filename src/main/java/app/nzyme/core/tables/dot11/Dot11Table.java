@@ -47,7 +47,7 @@ public class Dot11Table implements DataTable {
             return;
         }
 
-        writeBSSIDs(tap.get(), timestamp, report.bssids());
+        writeBSSIDs(tap.get(), timestamp, report.bssids(), tap.get().organizationId(), tap.get().tenantId());
         writeClients(tap.get(), timestamp, report.clients());
 
         handleAlerts(tap.get(), report.alerts());
@@ -84,7 +84,10 @@ public class Dot11Table implements DataTable {
         }
     }
 
-    public void writeBSSIDs(Tap tap, DateTime timestamp, Map<String, Dot11BSSIDReport> bssids) {
+    public void writeBSSIDs(Tap tap, DateTime timestamp,
+                            Map<String, Dot11BSSIDReport> bssids,
+                            UUID organizationId,
+                            UUID tenantId) {
         // Collect all monitored SSIDs and their attributes.
         Map<String, PreLoadedMonitoredSSID> monitoredSSIDs = Maps.newHashMap();
         NzymeNode nzyme = tablesService.getNzyme();;
@@ -127,6 +130,21 @@ public class Dot11Table implements DataTable {
             ));
         }
 
+        // Load all bandits.
+        List<Dot11BanditDescription> bandits = Lists.newArrayList(Dot11Bandits.BUILT_IN);
+        for (CustomBanditDescription bandit : nzyme.getDot11()
+                .findAllCustomBandits(organizationId, tenantId, Integer.MAX_VALUE, 0)) {
+            List<String> fingerprints = nzyme.getDot11().findFingerprintsOfCustomBandit(bandit.id());
+
+            bandits.add(Dot11BanditDescription.create(
+                    bandit.uuid().toString(),
+                    true,
+                    bandit.name(),
+                    bandit.description(),
+                    fingerprints
+            ));
+        }
+
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
             Dot11BSSIDReport report = entry.getValue();
@@ -159,7 +177,7 @@ public class Dot11Table implements DataTable {
                 );
 
                 // Is this a known bandit fingerprint?
-                for (Dot11BanditDescription bandit : Dot11Bandits.BUILT_IN) {
+                for (Dot11BanditDescription bandit : bandits) {
                     if (bandit.fingerprints() != null && bandit.fingerprints().contains(fingerprint)) {
                         Map<String, String> attributes = Maps.newHashMap();
                         attributes.put("fingerprint", fingerprint);
@@ -167,6 +185,7 @@ public class Dot11Table implements DataTable {
                         attributes.put("tap_uuid", tap.uuid().toString());
                         attributes.put("bandit_name", bandit.name());
                         attributes.put("bandit_description", bandit.description());
+                        attributes.put("bandit_is_custom", String.valueOf(bandit.isCustom()));
 
                         tablesService.getNzyme().getDetectionAlertService().raiseAlert(
                                 tap.organizationId(),
@@ -178,7 +197,7 @@ public class Dot11Table implements DataTable {
                                 "Bandit \"" + bandit.name() + "\" advertising BSSID \"" + bssid + "\" " +
                                         "detected in range.",
                                 attributes,
-                                new String[]{"bssid", "fingerprint"},
+                                new String[]{"bssid", "fingerprint", "bandit_is_custom"},
                                 report.signalStrength().average()
                         );
                     }

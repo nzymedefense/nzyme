@@ -203,6 +203,7 @@ impl Dot11Broker {
         let channel = if let Some(frequency) = frequency {
             let channel = match dot11_frequency_to_channel(frequency as u32) {
                 Ok(c) => c.channel,
+
                 Err(e) => {
                     warn!("Could not parse channel number from frequency: {}. Present Flags: {:?}", e, present_flags);
                     return

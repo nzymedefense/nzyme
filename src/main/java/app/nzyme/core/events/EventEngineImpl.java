@@ -1,6 +1,7 @@
 package app.nzyme.core.events;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.actions.EventActionFactory;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.EventEntry;
@@ -331,11 +332,12 @@ public class EventEngineImpl implements EventEngine {
         }
     }
 
-    public List<SystemEventType> findAllEventTypesActionIsSubscribedTo(UUID actionId) {
+    public List<SystemEventType> findAllSystemEventTypesActionIsSubscribedTo(UUID actionId) {
         List<String> systemEventTypes = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT reference FROM event_subscriptions " +
-                                "WHERE action_id = :action_id AND event_type = 'SYSTEM'")
+                                "WHERE action_id = :action_id AND event_type = :event_type")
                         .bind("action_id", actionId)
+                        .bind("event_type", EventType.SYSTEM)
                         .mapTo(String.class)
                         .list()
         );
@@ -344,6 +346,33 @@ public class EventEngineImpl implements EventEngine {
         for (String type : systemEventTypes) {
             try {
                 result.add(SystemEventType.valueOf(type));
+            } catch(IllegalArgumentException e) {
+                LOG.error("Invalid/unknown system event type [{}]. Skipping.", type);
+            }
+        }
+
+        return result;
+    }
+
+    public List<DetectionType> findAllDetectionEventTypesActionIsSubscribedTo(UUID actionId) {
+        List<String> detectionEventTypes = nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT reference FROM event_subscriptions " +
+                                "WHERE action_id = :action_id AND event_type = :event_type")
+                        .bind("action_id", actionId)
+                        .bind("event_type", EventType.DETECTION)
+                        .mapTo(String.class)
+                        .list()
+        );
+
+        List<DetectionType> result = Lists.newArrayList();
+        for (String type : detectionEventTypes) {
+            if (type.equals("*")) {
+                result.add(DetectionType.WILDCARD);
+                continue;
+            }
+
+            try {
+                result.add(DetectionType.valueOf(type));
             } catch(IllegalArgumentException e) {
                 LOG.error("Invalid/unknown system event type [{}]. Skipping.", type);
             }
