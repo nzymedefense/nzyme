@@ -1,57 +1,24 @@
-use std::collections::HashMap;
-use std::iter::once;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::{Error, bail};
-use byteorder::{LittleEndian, ByteOrder};
 
-use neli::genl::{NlattrBuilder, AttrTypeBuilder};
-use neli::router::synchronous::{NlRouter, NlRouterReceiverHandle};
-use neli::{
-    consts::{
-        nl::{GenlId, NlmF},
-        socket::NlFamily,
-    },
-    genl::{Genlmsghdr, GenlmsghdrBuilder, NoUserHeader},
-    nl::{NlPayload, Nlmsghdr},
-    utils::Groups,
-};
-use neli::consts::rtnl::{Arphrd, RtAddrFamily, Rtm};
-use neli::rtnl::{Ifinfomsg, IfinfomsgBuilder};
-use neli::types::Buffer;
+use neli::{consts::{
+    nl::{NlmF},
+    socket::NlFamily,
+    rtnl::{Arphrd, RtAddrFamily, Rtm},
+}, genl::{Genlmsghdr, GenlmsghdrBuilder, NoUserHeader, NlattrBuilder, AttrTypeBuilder}, nl::{NlPayload}, rtnl::{IfinfomsgBuilder}, types::Buffer};
+use neli::attr::Attribute;
+use neli::consts::nl::{GenlId};
+use neli::err::DeError;
+use neli::genl::Nlattr;
+use neli::types::NlBuffer;
+use crate::dot11::nl_consts::{NL_80211_GENL_NAME, NL_80211_GENL_VERSION};
+use crate::dot11::nl_skinny_router::NlSkinnyRouter;
 
-#[neli::neli_enum(serialized_type = "u8")]
-pub enum Nl80211Command {
-    Unspecified = 0,
-    GetWiPhy = 1,
-    GetIf = 5,
-    SetIf = 6,
-    SetChannel = 65
-}
-impl neli::consts::genl::Cmd for Nl80211Command {}
-
-#[neli::neli_enum(serialized_type = "u16")]
-pub enum Nl80211Attribute {
-    Unspecified = 0,
-    WiPhy = 1,
-    IfIndex = 3,
-    IfName = 4,
-    IfType = 5,
-    WiPhyBands = 22,
-    MntrFlags = 23,
-    WiPhyFreq = 38,
-    SplitWiphyDump = 174
-}
-impl neli::consts::genl::NlAttrType for Nl80211Attribute {}
-
-#[neli::neli_enum(serialized_type = "u16")]
-pub enum Nl80211MntrFlags {
-    Control = 3,
-    OtherBss = 4
-}
-impl neli::consts::genl::NlAttrType for Nl80211MntrFlags {}
+use super::nl_consts::{Nl80211Attribute, Nl80211Command, Nl80211BandAttr, Nl80211FrequencyAttr, Nl80211MntrFlags};
 
 #[derive(Debug)]
-struct InterfaceResponse {
+pub struct Interface {
     pub name: String,
     pub phy_index: u32,
     pub if_index: u32,
@@ -64,7 +31,7 @@ struct PhyResponse {
 }
 
 #[derive(Debug, Clone)]
-pub struct DeviceSummary {
+pub struct InterfaceInfo {
     pub name: String,
     pub if_index: u32,
     pub supported_frequencies: Vec<u32>
@@ -74,178 +41,151 @@ pub enum InterfaceState {
     Up, Down
 }
 
-fn handle_interface_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> InterfaceResponse {
-    let mut name: String = "".to_string();
-    let mut phy_index: u32 = 0;
-    let mut if_index: u32 = 0;
+// Parse specific attributes from an 802.11 (wireless) related Netlink message
+// and return a structured response with information about a network interface,
+// such as its name, physical layer index, and interface index
+fn handle_interface_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<HashMap<String, Interface>, DeError> {
+    let mut phys_found: HashSet<u32> = HashSet::new();
+    let mut names_found: HashMap<u32, String> = HashMap::new();
+    let mut if_indexes: HashMap<u32, u32> = HashMap::new();
 
-    for attr in msg.get_payload().unwrap().attrs().iter() {
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::WiPhy) {
-            phy_index = LittleEndian::read_u32(&attr.nla_payload().as_ref()[0..4]);
-        }
+    for msg in msgs {
+        if let NlPayload::Payload(payload) = msg.nl_payload() {
+            let mut phy_index: Option<u32> = None;
+            let mut name: Option<String> = None;
+            let mut if_index: Option<u32> = None;
 
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::IfIndex) {
-            if_index = LittleEndian::read_u32(&attr.nla_payload().as_ref()[0..4]);
-        }
-
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::IfName) {
-            let mut bts = attr.nla_payload().as_ref().to_vec();
-            bts.pop();
-            name = String::from_utf8(bts).unwrap();
-        }
-    }
-
-    InterfaceResponse { name, phy_index, if_index }
-}
-
-fn handle_phy_response(msg: Nlmsghdr<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> PhyResponse {
-    let mut phy_index: u32 = 0;
-    let mut supported_frequencies: Vec<u32> = Vec::new();
-
-    for attr in msg.get_payload().unwrap().attrs().iter() {
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::WiPhy) {
-            phy_index = LittleEndian::read_u32(&attr.nla_payload().as_ref()[0..4]);
-        }
-
-        if attr.nla_type().nla_type().eq(&Nl80211Attribute::WiPhyBands) {
-            let payload = attr.nla_payload().as_ref();
-
-            let mut cursor: usize = 0;
-            loop {
-                if cursor+2 > payload.len() {
-                    break;
+            for attr in payload.attrs().iter() {
+                match attr.nla_type().nla_type() {
+                    &Nl80211Attribute::WiPhy => {
+                        phy_index = Some(attr.get_payload_as()?);
+                    },
+                    &Nl80211Attribute::IfIndex => {
+                        if_index = Some(attr.get_payload_as()?);
+                    },
+                    &Nl80211Attribute::IfName => {
+                        name = Some(attr.get_payload_as_with_len::<String>()?);
+                    },
+                    _ => {}
                 }
+            }
 
-                let element_length: usize = LittleEndian::read_u16(&payload[cursor..cursor+2]) as usize;
-                cursor += 2;
+            // we will always see a phy index, but we may not see the other attributes on the same message
+            if phy_index.is_some() {
+                phys_found.insert(phy_index.unwrap());
 
-                // Skip index attribute.
-                cursor += 2;
-
-                if payload.len() < element_length {
-                    // Some PHYs report this attribute but are empty.
-                    continue;
+                // check if we also saw the if_index on this message batch
+                if if_index.is_some() {
+                    if_indexes.insert(phy_index.unwrap(), if_index.unwrap());
                 }
-
-                let mut element_complete = false;
-                loop {
-                    let start = cursor;
-                    
-                    let length = LittleEndian::read_u16(&payload[cursor..cursor+2]);
-                    cursor += 2;
-                    let attribute_type = LittleEndian::read_u16(&payload[cursor..cursor+2]);
-                    cursor += 2;
-
-                    if attribute_type == 1 {
-                        let freqs = &payload[cursor..cursor-4+length as usize];
-
-                        let mut freq_cursor = 0;
-                        loop {
-                            let start = freq_cursor;
-                            let freq_length = LittleEndian::read_u16(&freqs[freq_cursor..freq_cursor+2]);
-                            freq_cursor = start+freq_length as usize;
-
-                            if let Some(f) = parse_frequency_from_attributes(&freqs[start..start+freq_length as usize]) {
-                                supported_frequencies.push(f);
-                            }
-
-                            if length == (freq_cursor+4) as u16 {
-                                break;
-                            }
-                        }
-                    }
-
-                    cursor = start+length as usize;
-
-                    /*
-                    * Cycle through padding or until you reach end of this attribute.
-                    * Each PHY band (2.4Ghz, 5Ghz, etc.) is in own attribute group.
-                    */ 
-                    loop {
-                        if cursor == element_length || cursor == payload.len() {
-                            element_complete = true;
-                            break;
-                        }
-
-                        if payload[cursor] != 0x00 {
-                            break;
-                        } else {
-                            cursor += 1
-                        }
-                    }
-
-                    if element_complete {
-                        break;
-                    }
+                // check if we also saw the name on this message batch
+                if name.is_some() {
+                    names_found.insert(phy_index.unwrap(), name.unwrap());
                 }
             }
         }
     }
 
-    PhyResponse { phy_index, supported_frequencies }
+    // now lets compile all the information we found regarding the interfaces, and if we have all attributes we will return them
+    let mut interfaces = HashMap::new();
+
+    for phy_index in phys_found {
+        let name = names_found.get(&phy_index);
+        let if_index = if_indexes.get(&phy_index);
+
+        // If any of the required attributes is missing, return an error.
+        if name.is_none() || if_index.is_none() {
+            return Err(DeError::new("Missing necessary attributes"));
+        }
+
+        interfaces.insert(name.unwrap().clone(), Interface {
+            name: name.unwrap().clone(),
+            phy_index,
+            if_index: if_index.unwrap().clone(),
+        });
+    }
+
+    Ok(interfaces)
 }
 
-fn parse_frequency_from_attributes(attr: &[u8]) -> Option<u32> {
-    let mut cursor = 0;
-    let length = LittleEndian::read_u16(&attr[cursor..cursor+2]);
-    cursor += 2;
+fn handle_phy_response(msgs: NlBuffer<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>>) -> Result<PhyResponse, DeError> {
 
-    // Skip index attribute.
-    cursor += 2;
+    let mut phy_index: Option<u32> = None;
+    let mut supported_frequencies: Vec<u32> = Vec::new();
 
-    let mut frequency = 0;
-    loop {
-        let start = cursor;
-        let attr_length = LittleEndian::read_u16(&attr[cursor..cursor+2]);
-        cursor += 2;
-    
-        let attr_type = LittleEndian::read_u16(&attr[cursor..cursor+2]);
-        cursor += 2;
+    for msg in msgs {
+        if let NlPayload::Payload(payload) = msg.nl_payload() {
+            for attr in payload.attrs().iter() {
+                match attr.nla_type().nla_type() {
+                    &Nl80211Attribute::WiPhy => {
+                        phy_index = Some(attr.get_payload_as().map_err(|_| DeError::new("Failed to get payload as u32"))?);
+                    },
+                    &Nl80211Attribute::WiPhyBands => {
+                        // bands is an array, get the handle for the array
+                        let bands_handle = attr.get_attr_handle::<Nl80211BandAttr>().map_err(|_| DeError::new("Failed to get WiPhyBands attribute handle"))?;
+                        for bands in bands_handle.iter() {
+                            // for each element of the array now we get the nested attributes
+                            let band_handle = bands.get_attr_handle().map_err(|_| DeError::new("Failed to get WiPhyBands attribute handle"))?;
 
-        if attr_type == 1 {
-            frequency = LittleEndian::read_u32(&attr[cursor..cursor+4]);
-        }
+                            for band_attr in band_handle.get_attrs() {
+                                match band_attr.nla_type().nla_type() {
+                                    &Nl80211BandAttr::Freqs => {
+                                        // freqs is an array, get the handle for the array
+                                        let freqs_handle = band_attr.get_attr_handle::<Nl80211FrequencyAttr>().map_err(|_| DeError::new("Failed to get WiPhyFreq attribute handle"))?;
+                                        for freq in freqs_handle.iter() {
+                                            // for each element of the array now we get the nested attributes
+                                            let freq_handle = freq.get_attr_handle().map_err(|_| DeError::new("Failed to get WiPhyFreq attribute handle"))?;
+                                            let freq_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::Freq);
+                                            let disabled_attr = freq_handle.get_attribute(Nl80211FrequencyAttr::Disabled);
 
-        if attr_type == 2 {
-            // Frequency has the `disabled` attribute due to current regulatory domain.
-            return None
-        }
-
-        cursor = start+attr_length as usize;
-
-        if cursor == length as usize {
-            break;
+                                            if freq_attr.is_some() && disabled_attr.is_none() {
+                                                supported_frequencies.push(freq_attr.unwrap().get_payload_as()?);
+                                            }
+                                        }
+                                    },
+                                    _ => {}
+                                }
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+            }
         }
     }
 
-    if frequency != 0 {
-        Some(frequency)
-    } else {
-        None
+    if phy_index.is_none() {
+        return Err(DeError::new("Missing necessary attributes"));
     }
+
+    Ok(PhyResponse {
+        phy_index: phy_index.unwrap(),
+        supported_frequencies
+    })
 }
 
 pub struct Nl {
-    dot11_socket: NlRouter,
+    dot11_socket: NlSkinnyRouter,
     dot11_family_id: u16,
-    rt_socket: NlRouter,
-    devices: HashMap<String, DeviceSummary>
+    rt_socket: NlSkinnyRouter,
+    devices: HashMap<String, InterfaceInfo>
 }
 
 impl Nl {
 
     pub fn new() -> Result<Self, Error> {
-        let (dot11_socket, _) = match NlRouter::connect(NlFamily::Generic, Some(0), Groups::empty()) {
+
+        let mut dot11_socket = match NlSkinnyRouter::connect(NlFamily::Generic) {
             Ok(sock) => sock,
             Err(e) => bail!("Could not open Netlink 802.11 socket: {}", e)
         };
 
-        let dot11_family_id = match dot11_socket.resolve_genl_family("nl80211") {
+        let dot11_family_id = match dot11_socket.resolve_genl_family(NL_80211_GENL_NAME) {
             Ok(family_id) => family_id,
             Err(e) => bail!("Could not resolve Netlink family: {}", e)
         };
 
-        let (rt_socket, _) = match NlRouter::connect(NlFamily::Route, None, Groups::empty()) {
+        let rt_socket = match NlSkinnyRouter::connect(NlFamily::Route) {
             Ok(sock) => sock,
             Err(e) => bail!("Could not open Netlink route socket: {}", e)
         };
@@ -260,94 +200,144 @@ impl Nl {
         })
     }
 
-    pub fn fetch_device(&mut self, device_name: &String) -> Result<DeviceSummary, Error> {
+    /// Fetch all available 80211 devices, with interface wiphy id and name
+    pub fn fetch_devices(&mut self) -> Result<HashMap<String, Interface>, Error> {
+
+        let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
+            .cmd(Nl80211Command::GetIf)
+            .version(0)
+            //.attrs(attrs.into_iter().collect())
+            .build() {
+            Ok(pl) => pl,
+            Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
+        };
+
+        self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload))?;
+
+        let mut interfaces: HashMap<String, Interface> = HashMap::new();
+
+        let buffer = self.dot11_socket.recv();
+        match buffer {
+            Some(buf) => {
+                match buf {
+                    Ok(b) => {
+                        let response = handle_interface_response(b);
+                        match response {
+                            Ok(ifaces) => interfaces.extend(ifaces),
+                            Err(e) => bail!("Could not parse GetIf Netlink response: {}", e)
+                        }
+                    },
+                    Err(e) => {
+                        bail!("Could not receive GetIf Netlink response: {}", e);
+                    }
+                }
+            },
+            None => {
+                bail!("Could not receive GetIf Netlink response");
+            }
+        }
+
+        Ok(interfaces)
+    }
+
+    pub fn fetch_device_info(&mut self, device_name: &String) -> Result<InterfaceInfo, Error> {
+        // get the device phy index
         if let Some(device) = self.devices.get(device_name) {
             return Ok(device.clone());
         }
 
-        let get_if_payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
-                    .cmd(Nl80211Command::GetIf)
-                    .version(1)
-                    .build() {
-                Ok(pl) => pl,
-                Err(e) => bail!("Could not build GetIf Netlink payload: {}", e)
+        let interfaces = match self.fetch_devices() {
+            Ok(interfaces) => interfaces,
+            Err(e) => bail!("Could not fetch devices: {}", e)
         };
-
-        let recv_if = match self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP, NlPayload::Payload(get_if_payload)) {
-            Ok(recv) => recv,
-            Err(e) => bail!("Could not send GetIf Netlink command: {}", e)
-        };
-
-        let mut interfaces: HashMap<String, InterfaceResponse> = HashMap::new();
-        for msg in recv_if {
-            match msg {
-                Ok(msg) => {
-                    let interface = handle_interface_response(msg);
-                    interfaces.insert(interface.name.clone(), interface);
-                },
-                Err(e) => bail!("Could not parse GetIf Netlink response: {}", e)
-            };
-        }
 
         let interface_info = match interfaces.get(device_name) {
             Some(interface) => interface,
             None => bail!("Interface [{}] not found.", device_name)
         };
 
+        // build the Nlattr to filter the dump by phy index
+        let mut attrs: Vec<Nlattr<Nl80211Attribute, Buffer>> = vec![];
+
+        // filter by the phy number
         let attr_filter_wiphy_dump_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::WiPhy).build() {
             Ok(t) => t,
             Err(e) => bail!("Could not construct WiPhy Netlink attribute type: {}", e)
         };
 
         let attr_filter_wiphy_dump = match NlattrBuilder::default().nla_type(attr_filter_wiphy_dump_type)
-                                        .nla_payload(interface_info.phy_index).build() {
+            .nla_payload(interface_info.phy_index).build() {
             Ok(attr) => attr,
             Err(e) => bail!("Could not construct WiPhy Netlink attribute: {}", e)
         };
+        attrs.push(attr_filter_wiphy_dump);
+
+        // inform we want a split dump
+        let attr_filter_split_dump_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::SplitWiphyDump).build() {
+            Ok(t) => t,
+            Err(e) => bail!("Could not construct SplitWiphyDump Netlink attribute type: {}", e)
+        };
+        let attr_filter_split_dump = match NlattrBuilder::default().nla_type(attr_filter_split_dump_type)
+            .nla_payload(Buffer::from(vec![])).build() {
+            Ok(attr) => attr,
+            Err(e) => bail!("Could not construct SplitWiphyDump Netlink attribute: {}", e)
+        };
+        attrs.push(attr_filter_split_dump);
 
         let get_wiphy = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
-                    .cmd(Nl80211Command::GetWiPhy)
-                    .version(1)
-                    .attrs(once(attr_filter_wiphy_dump).collect())
-                    .build() {
-                Ok(pl) => pl, 
-                Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
+            .cmd(Nl80211Command::GetWiPhy)
+            .version(0)
+            .attrs(attrs.into_iter().collect())
+            .build() {
+            Ok(pl) => pl,
+            Err(e) => bail!("Could not build GetWiPhy Netlink payload: {}", e)
         };
 
-        let recv_phy = match self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP, NlPayload::Payload(get_wiphy)) {
-            Ok(recv) => recv,
-            Err(e) => bail!("Could not send GetWiPhy Netlink command: {}", e)
-        };
+        self.dot11_socket.send(self.dot11_family_id, NlmF::DUMP | NlmF::ACK, NlPayload::Payload(get_wiphy))?;
 
-        let mut phys: HashMap<u32, PhyResponse> = HashMap::new(); 
-        for msg in recv_phy {
-            match msg {
-                Ok(msg) => {
-                    let phy = handle_phy_response(msg);
-                    phys.insert(phy.phy_index, phy);
-                },
-                Err(e) => bail!("Could not parse GetWiPhy Netlink response: {}", e)
-            };            
+        let buffer = self.dot11_socket.recv();
+        match buffer {
+            Some(buf) => {
+                match buf {
+                    Ok(b) => {
+                        let mut phys: HashMap<u32, PhyResponse> = HashMap::new();
+
+                        let phy = handle_phy_response(b);
+                        match phy {
+                            Ok(phy) => { phys.insert(phy.phy_index, phy); },
+                            Err(e) => bail!("Could not parse GetWiPhy Netlink response: {}", e)
+                        };
+
+                        let phy_info = match phys.get(&interface_info.phy_index) {
+                            Some(phy) => phy,
+                            None => bail!("Phy #[{}] not found.", interface_info.phy_index)
+                        };
+
+                        let device_summary = InterfaceInfo {
+                            name: interface_info.name.clone(),
+                            supported_frequencies: phy_info.supported_frequencies.clone(),
+                            if_index: interface_info.if_index
+                        };
+
+                        self.devices.insert(device_name.clone(), device_summary.clone());
+
+                        Ok(device_summary)
+                    },
+                    Err(e) => {
+                        bail!("Could not receive GetWiPhy Netlink response: {}", e);
+                    }
+                }
+            },
+            None => {
+                bail!("Could not receive GetWiPhy Netlink response");
+            }
         }
 
-        let phy_info = match phys.get(&interface_info.phy_index) {
-            Some(phy) => phy,
-            None => bail!("Phy #[{}] not found.", interface_info.phy_index)
-        };
 
-        let device_summary = DeviceSummary {
-            name: interface_info.name.clone(),
-            supported_frequencies: phy_info.supported_frequencies.clone(),
-            if_index: interface_info.if_index
-        };
-
-        self.devices.insert(device_name.clone(), device_summary.clone());
-
-        Ok(device_summary)
     }
 
     pub fn set_device_frequency(&mut self, device_name: &String, frequency: u32) -> Result<(), Error> {
-        let device = match self.fetch_device(device_name) {
+        let device = match self.fetch_device_info(device_name) {
             Ok(device) => device,
             Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)
         };
@@ -358,9 +348,9 @@ impl Nl {
         };
 
         let attr_if_index = match NlattrBuilder::default().nla_type(attr_if_index_type)
-                                    .nla_payload(device.if_index).build() {
+            .nla_payload(device.if_index).build() {
             Ok(attr) => attr,
-            Err(e) => bail!("Could not construct IfIndex Netlink attribute: {}", e) 
+            Err(e) => bail!("Could not construct IfIndex Netlink attribute: {}", e)
         };
 
         let attr_wiphy_freq_type = match AttrTypeBuilder::default().nla_type(Nl80211Attribute::WiPhyFreq).build() {
@@ -369,31 +359,27 @@ impl Nl {
         };
 
         let attr_iwiphy_freq_index = match NlattrBuilder::default().nla_type(attr_wiphy_freq_type)
-                                        .nla_payload(frequency).build() {
+            .nla_payload(frequency).build() {
             Ok(attr) => attr,
             Err(e) => bail!("Could not construct WiPhyFreq Netlink attribute: {}", e)
         };
 
         let payload = match GenlmsghdrBuilder::<Nl80211Command, Nl80211Attribute, NoUserHeader>::default()
-                            .cmd(Nl80211Command::SetChannel)
-                            .version(1)
-                            .attrs(vec![attr_if_index, attr_iwiphy_freq_index].into_iter().collect())
-                            .build() {
+            .cmd(Nl80211Command::SetChannel)
+            .version(NL_80211_GENL_VERSION)
+            .attrs(vec![attr_if_index, attr_iwiphy_freq_index].into_iter().collect())
+            .build() {
             Ok(p) => p,
             Err(e) => bail!("Could not construct WiPhyFreq Netlink command payload: {}", e)
         };
 
-        let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> = 
-                                    match self.dot11_socket.send(self.dot11_family_id, NlmF::empty(), NlPayload::Payload(payload)){
-            Ok(recv) => recv,
-            Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
-        };
+        self.dot11_socket.send(self.dot11_family_id, NlmF::empty(), NlPayload::Payload(payload))?;
 
         Ok(())
     }
 
     pub fn enable_monitor_mode(&mut self, device_name: &String) -> Result<(), Error> {
-        let device = match self.fetch_device(device_name) {
+        let device = match self.fetch_device_info(device_name) {
             Ok(device) => device,
             Err(e) => bail!("Could not load device with name [{}] for setting frequency: {}", device_name, e)
         };
@@ -460,18 +446,24 @@ impl Nl {
             Err(e) => bail!("Could not construct monitor mode Netlink command payload: {}", e)
         };
 
-        let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> =
+        self.dot11_socket.send(self.dot11_family_id, NlmF::REQUEST | NlmF::ACK, NlPayload::Payload(payload))?;
+        match self.dot11_socket.recv::<u16, Buffer>() {
+            Some(Ok(_)) => {},
+            Some(Err(e)) => bail!("Could not set monitor mode. Netlink response: {}", e),
+            None => {}
+        }
+        /*let _: NlRouterReceiverHandle<GenlId, Genlmsghdr<Nl80211Command, Nl80211Attribute>> =
             match self.dot11_socket.send(self.dot11_family_id, NlmF::REQUEST | NlmF::ACK, NlPayload::Payload(payload)){
                 Ok(recv) => recv,
                 Err(e) => bail!("Could not send WiPhyFreq Netlink command: {}", e)
-            };
+            };*/
 
         Ok(())
     }
 
     pub fn change_80211_interface_state(&mut self, device_name: &String, state: InterfaceState)
-            -> Result<(), Error>  {
-        let device = match self.fetch_device(device_name) {
+                                        -> Result<(), Error>  {
+        let device = match self.fetch_device_info(device_name) {
             Ok(device) => device,
             Err(e) => bail!("Could not load device with name [{}] for changing state: {}",
                 device_name, e)
@@ -491,17 +483,25 @@ impl Nl {
             InterfaceState::Down => msg_builder.down().build()?
         };
 
-        let _: NlRouterReceiverHandle<GenlId, Nlmsghdr<Rtm, Ifinfomsg>> =
+        self.rt_socket.send(
+            Rtm::Setlink,
+            NlmF::ROOT | NlmF::ECHO,
+            NlPayload::Payload(msg))?;
+//        match self.rt_socket.recv::<u16, Buffer>() {
+//            Some(Ok(_)) => {},
+//            Some(Err(e)) => bail!("Could not set monitor mode. Netlink response: {}", e),
+//            None => {}
+//        }
+        /*let _: NlRouterReceiverHandle<GenlId, Nlmsghdr<Rtm, Ifinfomsg>> =
             match self.rt_socket.send(
                 Rtm::Setlink,
                 NlmF::ROOT | NlmF::ECHO,
                 NlPayload::Payload(msg)) {
                 Ok(recv) => recv,
                 Err(e) => { bail!("Could not send request: {}", e); }
-            };
+            };*/
 
         Ok(())
     }
-
 
 }

@@ -33,7 +33,7 @@ pub fn is_mac_address_multicast(mac: &String) -> bool {
     first_octet & 0x01 == 1
 }
 
-pub fn dot11_frequency_to_channel(f: u16) -> Result<u16, Error> {
+pub fn dot11_frequency_to_channel(f: u32) -> Result<u16, Error> {
     match f {
         2412 => Ok(1),
         2417 => Ok(2),
@@ -67,6 +67,12 @@ pub fn dot11_frequency_to_channel(f: u16) -> Result<u16, Error> {
         5310 => Ok(62),
         5320 => Ok(64),
         5340 => Ok(68),
+        5360 => Ok(72),
+        5380 => Ok(76),
+        5400 => Ok(80),
+        5420 => Ok(84),
+        5440 => Ok(88),
+        5460 => Ok(92),
         5480 => Ok(96),
         5500 => Ok(100),
         5510 => Ok(102),
@@ -106,6 +112,8 @@ pub fn dot11_frequency_to_channel(f: u16) -> Result<u16, Error> {
         5865 => Ok(173),
         5875 => Ok(175),
         5885 => Ok(177),
+        5905 => Ok(181), // U-NII-4 band
+        // TODO the channels below are 802.11j, need to be moved to a separate band since the channels are reused on different bands
         4920 => Ok(184),
         4940 => Ok(188),
         4960 => Ok(192),
@@ -147,6 +155,12 @@ pub fn dot11_channel_to_frequency(f: u16) -> Result<u16, Error> {
         62 => Ok(5310),
         64 => Ok(5320),
         68 => Ok(5340),
+        72 => Ok(5360),
+        76 => Ok(5380),
+        80 => Ok(5400),
+        84 => Ok(5420),
+        88 => Ok(5440),
+        92 => Ok(5460),
         96 => Ok(5480),
         100 => Ok(5500),
         102 => Ok(5510),
@@ -186,6 +200,7 @@ pub fn dot11_channel_to_frequency(f: u16) -> Result<u16, Error> {
         173 => Ok(5865),
         175 => Ok(5875),
         177 => Ok(5885),
+        181 => Ok(5905), // U-NII-4 band
         184 => Ok(4920),
         188 => Ok(4940),
         192 => Ok(4960),
