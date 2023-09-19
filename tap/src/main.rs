@@ -14,35 +14,106 @@ mod dot11;
 mod alerting;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
+use anyhow::Error;
 
 use clap::Parser;
 use configuration::Configuration;
 use data::tables::Tables;
 use link::leaderlink::Leaderlink;
 use log::{error, info};
+use toml::map::Map;
 use messagebus::bus::Bus;
 use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
+use crate::helpers::network::Channel;
 
 #[derive(Parser,Debug)]
 struct Arguments {
-    #[clap(short, long, forbid_empty_values = true)]
-    configuration_file: String,
+    #[clap(short, long, required_unless_present("generate_channels"))]
+    configuration_file: Option<String>,
 
-    #[clap(short, long, forbid_empty_values = true)]
-    log_level: String
+    #[clap(short, long)]
+    log_level: Option<String>,
+
+    #[clap(short, long, required_unless_present("configuration_file"))]
+    generate_channels: bool,
+
 }
 
-fn main() {    
+fn main() {
     let args = Arguments::parse();
+    let log_level = match args.log_level {
+        Some(log_level) => log_level,
+        None => "info".to_string()
+    };
 
-    logging::initialize(&args.log_level);
+    if args.generate_channels {
+        // we only initialize logging for the channel toml generation if it is not info, so we don't pollute the output
+        if log_level != "info" {
+            logging::initialize(&log_level);
+        }
+
+        let nl = dot11::nl::Nl::new();
+        match nl {
+            Ok(mut nl) => {
+                let interfaces = nl.fetch_devices();
+                match interfaces {
+                    Ok(interfaces) => {
+                        println!();
+                        println!("# IMPORTANT: Remove duplicate channels. Each channel can only be monitored by one adapter.");
+                        println!();
+                        for (key, _) in &interfaces {
+                            let interface_info = nl.fetch_device_info(key);
+                            match interface_info {
+                                Ok(interface_info) => {
+                                    let channels: Vec<Result<Channel, Error>> = interface_info.supported_frequencies.iter().map(|f| Channel::from_frequency(*f)).collect();
+
+                                    let mut iface = Map::new();
+                                    iface.insert("active".to_string(), toml::Value::Boolean(true));
+                                    iface.insert("channels_2g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_2g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
+                                    iface.insert("channels_5g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_5g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
+                                    iface.insert("channels_6g".to_string(), toml::Value::Array(channels.iter()
+                                        .filter( | f | (**f).is_ok() && (**f).as_ref().unwrap().is_6g())
+                                        .map(|f| toml::Value::Integer((*f).as_ref().unwrap().channel as i64)).collect()));
+                                    let mut iface_table = Map::new();
+                                    iface_table.insert(key.clone(), toml::Value::Table(iface));
+                                    let mut wifi_ifaces = Map::new();
+                                    wifi_ifaces.insert("wifi_interfaces".to_string(), toml::Value::Table(iface_table));
+                                    let toml_string = toml::to_string(&toml::Value::Table(wifi_ifaces)).unwrap();
+                                    println!("{}", toml_string);
+                                },
+                                Err(e) => {
+                                    error!("Could not fetch information for device [{}]: {}", key, e);
+                                }
+                            }
+                        }
+
+                    },
+                    Err(e) => {
+                        error!("Could not fetch interfaces: {}", e);
+                        exit(exit_code::EX_OSERR);
+                    }
+                }
+            },
+            Err(e) => {
+                error!("Could not establish Netlink connection: {}", e);
+                exit(exit_code::EX_OSERR);
+            }
+        }
+        exit(exit_code::EX_OK);
+    }
+
+    logging::initialize(&log_level);
 
     info!("Starting nzyme tap version [{}].", env!("CARGO_PKG_VERSION"));
 
     // Load configuration.
-    let configuration: Configuration = match configuration::load(args.configuration_file) {
+    let configuration: Configuration = match configuration::load(args.configuration_file.unwrap()) { // can unwrap here due to clap requirement
         Ok(configuration) => {
             info!("Parsed and loaded configuration.");
             configuration

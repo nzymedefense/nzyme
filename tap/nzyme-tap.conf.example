@@ -8,11 +8,15 @@ active = true
 
 [wifi_interfaces.wlx00c0ca000000]
 active = true
-channels = [1, 6, 11]
+channels_2g = [1, 6, 11]
+channels_5g = [100, 102, 104, 106, 108, 110, 112, 136, 138, 140, 149, 151, 153, 155, 157, 159, 161, 165]
+channels_6g = []
 
-[wifi_interfaces.wlx00c0ca000000]
+[wifi_interfaces.wlx00c0ca000001]
 active = true
-channels = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
+channels_2g = [2, 3, 4, 5, 7, 8, 9, 10, 12, 13]
+channels_5g = [36, 40, 44, 48, 52, 56, 60, 64, 173]
+channels_6g = [5, 9, 13, 17, 21, 25, 29, 109, 113, 153, 157, 161, 165, 169, 173, 177, 181, 185, 189, 229, 233]
 
 [performance]
 ethernet_brokers = 1
