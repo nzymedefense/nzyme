@@ -126,8 +126,6 @@ public class EventEngineImpl implements EventEngine {
                 continue;
             }
 
-            LOG.info(ea);
-
             try {
                 EventActionFactory.build(nzyme, ea.get()).execute(event);
             } catch (Exception e) {

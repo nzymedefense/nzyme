@@ -47,6 +47,8 @@ public class Dot11Table implements DataTable {
             return;
         }
 
+        LOG.info("DISCO: {}", report.disco());
+
         writeBSSIDs(tap.get(), timestamp, report.bssids(), tap.get().organizationId(), tap.get().tenantId());
         writeClients(tap.get(), timestamp, report.clients());
 
