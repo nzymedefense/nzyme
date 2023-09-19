@@ -43,7 +43,8 @@ public class TapMapper implements RowMapper<Tap>  {
                 updatedAt,
                 lastReport,
                 organizationId,
-                tenantId
+                tenantId,
+                rs.getString("remote_address")
         );
     }
 
