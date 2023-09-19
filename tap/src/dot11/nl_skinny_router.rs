@@ -25,24 +25,6 @@ impl NlSkinnyRouter {
 
     pub fn connect(proto: NlFamily) -> Result<Self, SocketError> {
         let socket = NlSocketHandle::connect(proto, Some(0), Groups::empty())?;
-        /*let socket = NlSocket::new(proto)?;
-        let fd = socket.as_raw_fd();
-        let mut buf_size: libc::c_int = 32768;
-        match unsafe { libc::setsockopt(fd, libc::SOL_SOCKET, libc::SO_SNDBUF,  &buf_size as *const _ as *const libc::c_void, std::mem::size_of_val(&buf_size) as u32) } {
-            0 => (),
-            _ => {
-                return Err(SocketError::from(io::Error::last_os_error()));
-            }
-        }
-        match unsafe { libc::setsockopt(fd, libc::SOL_SOCKET, libc::SO_RCVBUF,  &buf_size as *const _ as *const libc::c_void, std::mem::size_of_val(&buf_size) as u32) } {
-            0 => (),
-            _ => {
-                return Err(SocketError::from(io::Error::last_os_error()));
-            }
-        }
-        socket.bind(Some(0), Groups::empty())?;
-        //let socket = NlSocket::connect(proto, Some(0), Groups::empty())?;
-        //socket.block()?;*/
 
         let fd = socket.as_raw_fd();
         let buf_size: libc::c_int = 8192;
