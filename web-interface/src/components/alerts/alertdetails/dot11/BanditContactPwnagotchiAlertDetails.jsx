@@ -15,7 +15,9 @@ function BanditContactPwnagotchiAlertDetails(props) {
                 <h3>Details</h3>
                 <dl>
                   <dt>Bandit Name</dt>
-                  <dd>{alert.attributes.bandit_name}</dd>
+                  <dd>
+                    {alert.attributes.bandit_name} <span className="text-muted">(Built-In Bandit)</span>
+                  </dd>
                   <dt>Bandit Description</dt>
                   <dd>{alert.attributes.bandit_description}</dd>
                   <dt>Pwnagotchi Identity / UUID</dt>

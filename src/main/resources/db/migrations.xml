@@ -3689,5 +3689,79 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="add_custom_bandits" author="lennartkoopmann">
+        <createTable tableName="dot11_bandits">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="organization_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+
+        <createTable tableName="dot11_bandit_fingerprints">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="bandit_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="fingerprint" type="varchar(64)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_fingerprints2bandits"
+                                 baseTableName="dot11_bandit_fingerprints"
+                                 baseColumnNames="bandit_id"
+                                 referencedTableName="dot11_bandits"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="change_custom_bandit_auth_relation_column_type" author="lennartkoopmann">
+        <dropColumn tableName="dot11_bandits" columnName="organization_id" />
+        <dropColumn tableName="dot11_bandits" columnName="tenant_id" />
+
+        <addColumn tableName="dot11_bandits">
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>
