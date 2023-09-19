@@ -68,22 +68,22 @@ function AlertSubscriptionsTable() {
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>Subsystem</th>
             <th>Detection Name</th>
+            <th>Subsystem</th>
             <th>Subscriptions</th>
-            <th>&nbsp;</th>
           </tr>
           </thead>
           <tbody>
           {types.types.map(function(type, i) {
             return (
                 <tr key={"at-" + i}>
-                  <td><Subsystem subsystem={type.subsystem} /></td>
-                  <td>{type.title}</td>
-                  <td>{type.subscriptions.length}</td>
                   <td>
-                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organization.id, type.name.toLowerCase())}>Manage</a>
+                    <a href={ApiRoutes.ALERTS.SUBSCRIPTIONS.DETAILS(organization.id, type.name.toLowerCase())}>
+                      {type.title}
+                    </a>
                   </td>
+                  <td><Subsystem subsystem={type.subsystem} /></td>
+                  <td>{type.subscriptions.length}</td>
                 </tr>
             )
           })}

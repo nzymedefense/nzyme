@@ -15,6 +15,7 @@ import app.nzyme.core.rest.interceptors.TapTableSizeInterceptor;
 import app.nzyme.core.rest.resources.*;
 import app.nzyme.core.rest.resources.alerts.AlertsResource;
 import app.nzyme.core.rest.resources.assets.WebInterfaceAssetsResource;
+import app.nzyme.core.rest.resources.dot11.BanditsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11ClientsResource;
 import app.nzyme.core.rest.resources.dot11.Dot11MonitoredNetworksResource;
 import app.nzyme.core.rest.resources.dot11.Dot11NetworksResource;
@@ -146,6 +147,7 @@ public class NzymeHttpServer {
         resourceConfig.register(Dot11ClientsResource.class);
         resourceConfig.register(Dot11MonitoredNetworksResource.class);
         resourceConfig.register(AlertsResource.class);
+        resourceConfig.register(BanditsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

@@ -120,7 +120,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DetectionAlertEntryMapper())
                 .registerRowMapper(new DetectionAlertAttributeEntryMapper())
                 .registerRowMapper(new DetectionAlertTimelineEntryMapper())
-                .registerRowMapper(new TrackDetectorConfigMapper());
+                .registerRowMapper(new TrackDetectorConfigMapper())
+                .registerRowMapper(new CustomBanditDescriptionMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

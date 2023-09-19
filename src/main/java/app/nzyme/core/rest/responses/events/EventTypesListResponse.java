@@ -12,9 +12,9 @@ public abstract class EventTypesListResponse {
     public abstract long count();
 
     @JsonProperty("types")
-    public abstract List<EventTypeDetailsResponse> types();
+    public abstract List<SystemEventTypeDetailsResponse> types();
 
-    public static EventTypesListResponse create(long count, List<EventTypeDetailsResponse> types) {
+    public static EventTypesListResponse create(long count, List<SystemEventTypeDetailsResponse> types) {
         return builder()
                 .count(count)
                 .types(types)
@@ -29,7 +29,7 @@ public abstract class EventTypesListResponse {
     public abstract static class Builder {
         public abstract Builder count(long count);
 
-        public abstract Builder types(List<EventTypeDetailsResponse> types);
+        public abstract Builder types(List<SystemEventTypeDetailsResponse> types);
 
         public abstract EventTypesListResponse build();
     }

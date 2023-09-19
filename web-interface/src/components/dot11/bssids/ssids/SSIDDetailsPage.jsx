@@ -122,7 +122,7 @@ function SSIDDetailsPage() {
               <div className="card">
                 <div className="card-body">
                   <h3>
-                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/wifi-fingerprinting" /></small>
                   </h3>
 
                   <ul className="mb-0">

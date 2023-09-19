@@ -32,6 +32,8 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.glassfish.grizzly.http.server.Request;
+
 import java.util.UUID;
 
 @Path("/api/taps/status")
@@ -45,12 +47,12 @@ public class StatusResource {
     private NzymeNode nzyme;
 
     @POST
-    public Response status(@Context SecurityContext sc, StatusReport report) {
+    public Response status(@Context SecurityContext sc, @Context Request request, StatusReport report) {
         UUID tapId = ((AuthenticatedTap) sc.getUserPrincipal()).getUuid();
 
         LOG.debug("Received status from tap [{}]: {}", tapId, report);
 
-        nzyme.getTapManager().registerTapStatus(report, tapId);
+        nzyme.getTapManager().registerTapStatus(report, request.getRemoteAddr(), tapId);
 
         return Response.status(Response.Status.CREATED).build();
     }

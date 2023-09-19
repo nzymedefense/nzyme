@@ -34,8 +34,11 @@ public abstract class EventActionDetailsResponse {
     @JsonProperty("configuration")
     public abstract Map<String, Object> configuration();
 
-    @JsonProperty("subscribed_to_events")
-    public abstract List<EventTypeDetailsResponse> subscribedToEvents();
+    @JsonProperty("subscribed_to_system_events")
+    public abstract List<SystemEventTypeDetailsResponse> subscribedToSystemEvents();
+
+    @JsonProperty("subscribed_to_detection_events")
+    public abstract List<DetectionEventTypeDetailsResponse> subscribedToDetectionEvents();
 
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
@@ -43,7 +46,7 @@ public abstract class EventActionDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static EventActionDetailsResponse create(UUID id, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, List<EventTypeDetailsResponse> subscribedToEvents, DateTime createdAt, DateTime updatedAt) {
+    public static EventActionDetailsResponse create(UUID id, UUID organizationId, String actionType, String actionTypeHumanReadable, String name, String description, Map<String, Object> configuration, List<SystemEventTypeDetailsResponse> subscribedToSystemEvents, List<DetectionEventTypeDetailsResponse> subscribedToDetectionEvents, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -52,7 +55,8 @@ public abstract class EventActionDetailsResponse {
                 .name(name)
                 .description(description)
                 .configuration(configuration)
-                .subscribedToEvents(subscribedToEvents)
+                .subscribedToSystemEvents(subscribedToSystemEvents)
+                .subscribedToDetectionEvents(subscribedToDetectionEvents)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -78,7 +82,9 @@ public abstract class EventActionDetailsResponse {
 
         public abstract Builder configuration(Map<String, Object> configuration);
 
-        public abstract Builder subscribedToEvents(List<EventTypeDetailsResponse> subscribedToEvents);
+        public abstract Builder subscribedToSystemEvents(List<SystemEventTypeDetailsResponse> subscribedToSystemEvents);
+
+        public abstract Builder subscribedToDetectionEvents(List<DetectionEventTypeDetailsResponse> subscribedToDetectionEvents);
 
         public abstract Builder createdAt(DateTime createdAt);
 

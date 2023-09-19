@@ -136,6 +136,11 @@ function Sidebar() {
             title="Events &amp; Actions"
             icon={<i className="sidebar-icon fa-solid fa-bolt" />} />
         <NavigationLink
+            show={user.is_orgadmin}
+            href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.ORGANIZATIONS.EVENTS.INDEX(user.organization_id)}
+            title="Events &amp; Actions"
+            icon={<i className="sidebar-icon fa-solid fa-bolt" />} />
+        <NavigationLink
             href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}
             title={user.is_superadmin ? "Authentication" : "Organization" }
             icon={<i className="sidebar-icon fa-solid fa-users" />} />
