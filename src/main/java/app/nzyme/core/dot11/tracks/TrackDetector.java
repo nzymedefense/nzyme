@@ -1,6 +1,7 @@
 package app.nzyme.core.dot11.tracks;
 
 import app.nzyme.core.dot11.db.ChannelHistogramEntry;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -50,7 +51,7 @@ public class TrackDetector {
                         gapLength++;
 
                         if (gapLength >= config.gapThreshold() || x == 0) {
-                            PartialTrack partialTrack = PartialTrack.create( y, trackStart, x-config.gapThreshold()+2);
+                            PartialTrack partialTrack = PartialTrack.create(y, trackStart, x-config.gapThreshold()+2);
 
                             if (!partialTracks.containsKey(partialTrack.averageSignal())) {
                                 partialTracks.put(partialTrack.averageSignal(), Lists.newArrayList());
@@ -189,37 +190,5 @@ public class TrackDetector {
             public abstract TrackDetectorHeatmapData build();
         }
     }
-
-    @AutoValue
-    public static abstract class TrackDetectorConfig {
-
-        public abstract int frameThreshold();
-        public abstract int gapThreshold();
-        public abstract int signalCenterlineJitter();
-
-        public static TrackDetectorConfig create(int frameThreshold, int gapThreshold, int signalCenterlineJitter) {
-            return builder()
-                    .frameThreshold(frameThreshold)
-                    .gapThreshold(gapThreshold)
-                    .signalCenterlineJitter(signalCenterlineJitter)
-                    .build();
-        }
-
-        public static Builder builder() {
-            return new AutoValue_TrackDetector_TrackDetectorConfig.Builder();
-        }
-
-        @AutoValue.Builder
-        public abstract static class Builder {
-            public abstract Builder frameThreshold(int frameThreshold);
-
-            public abstract Builder gapThreshold(int gapThreshold);
-
-            public abstract Builder signalCenterlineJitter(int signalCenterlineJitter);
-
-            public abstract TrackDetectorConfig build();
-        }
-    }
-
 
 }

@@ -144,7 +144,7 @@ public class EventsResource extends UserAuthenticatedResource {
 
         EventEngineImpl eventEngine = ((EventEngineImpl) nzyme.getEventEngine());
 
-        List<EventTypeDetailsResponse> result = Lists.newArrayList();
+        List<SystemEventTypeDetailsResponse> result = Lists.newArrayList();
         for (SystemEventType entry : page) {
             List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
             for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(organizationId, entry.name())) {
@@ -153,7 +153,7 @@ public class EventsResource extends UserAuthenticatedResource {
                 );
             }
 
-            result.add(EventTypeDetailsResponse.create(
+            result.add(SystemEventTypeDetailsResponse.create(
                     entry.name(),
                     entry.getCategory().name(),
                     entry.getCategory().getHumanReadableName(),
@@ -200,7 +200,7 @@ public class EventsResource extends UserAuthenticatedResource {
             );
         }
 
-        return Response.ok(EventTypeDetailsResponse.create(
+        return Response.ok(SystemEventTypeDetailsResponse.create(
                 eventType.name(),
                 eventType.getCategory().name(),
                 eventType.getCategory().getHumanReadableName(),

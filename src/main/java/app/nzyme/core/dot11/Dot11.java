@@ -4,6 +4,8 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
@@ -325,26 +327,90 @@ public class Dot11 {
                                                                       String ssid,
                                                                       int frequency,
                                                                       int minutes,
-                                                                      List<UUID> taps) {
-        if (taps.isEmpty()) {
-            return Collections.emptyList();
-        }
-
+                                                                      UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
                                 "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
-                                "WHERE created_at > :cutoff AND s.tap_uuid IN (<taps>) AND bssid = :bssid " +
+                                "WHERE created_at > :cutoff AND s.tap_uuid = :tap_id AND bssid = :bssid " +
                                 "AND ssid = :ssid AND h.frequency = :frequency " +
                                 "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
+                        .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .bind("frequency", frequency)
                         .mapTo(ChannelHistogramEntry.class)
                         .list()
         );
+    }
+
+    public Optional<TrackDetectorConfig> findCustomTrackDetectorConfiguration(UUID organizationId,
+                                                                              UUID tapId,
+                                                                              String bssid,
+                                                                              String ssid,
+                                                                              int channel) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT frame_threshold, gap_threshold, signal_centerline_jitter " +
+                                "FROM dot11_track_detector_configuration " +
+                                "WHERE organization_id = :organization_id AND bssid = :bssid AND ssid = :ssid " +
+                                "AND channel = :channel AND tap_id = :tap_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tap_id", tapId)
+                        .bind("bssid", bssid)
+                        .bind("ssid", ssid)
+                        .bind("channel", channel)
+                        .mapTo(TrackDetectorConfig.class)
+                        .findOne()
+        );
+    }
+
+    public void updateCustomTrackDetectorConfiguration(UUID organizationId,
+                                                       UUID tapId,
+                                                       String bssid,
+                                                       String ssid,
+                                                       int channel,
+                                                       int frameThreshold,
+                                                       int gapThreshold,
+                                                       int signalCenterlineJitter) {
+        if (findCustomTrackDetectorConfiguration(organizationId, tapId, bssid, ssid, channel).isPresent()) {
+            // Update existing configuration.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("UPDATE dot11_track_detector_configuration " +
+                                    "SET frame_threshold = :frame_threshold, gap_threshold = :gap_threshold, " +
+                                    "signal_centerline_jitter = :signal_centerline_jitter, updated_at = NOW() " +
+                                    "WHERE organization_id = :organization_id AND bssid = :bssid AND ssid = :ssid " +
+                                    "AND channel = :channel AND tap_id = :tap_id")
+                            .bind("organization_id", organizationId)
+                            .bind("tap_id", tapId)
+                            .bind("bssid", bssid)
+                            .bind("ssid", ssid)
+                            .bind("channel", channel)
+                            .bind("frame_threshold", frameThreshold)
+                            .bind("gap_threshold", gapThreshold)
+                            .bind("signal_centerline_jitter", signalCenterlineJitter)
+                            .execute()
+            );
+        } else {
+            // Write new configuration.
+            nzyme.getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO dot11_track_detector_configuration(uuid, organization_id, " +
+                                    "tap_id, bssid, ssid, channel, frame_threshold, gap_threshold, " +
+                                    "signal_centerline_jitter, updated_at, created_at) VALUES(:uuid, :organization_id, " +
+                                    ":tap_id, :bssid, :ssid, :channel, :frame_threshold, :gap_threshold, " +
+                                    ":signal_centerline_jitter, NOW(), NOW())")
+                            .bind("uuid", UUID.randomUUID())
+                            .bind("organization_id", organizationId)
+                            .bind("tap_id", tapId)
+                            .bind("bssid", bssid)
+                            .bind("ssid", ssid)
+                            .bind("channel", channel)
+                            .bind("frame_threshold", frameThreshold)
+                            .bind("gap_threshold", gapThreshold)
+                            .bind("signal_centerline_jitter", signalCenterlineJitter)
+                            .execute()
+            );
+        }
     }
 
     public long countBSSIDClients(int minutes, List<UUID> taps) {
@@ -942,6 +1008,118 @@ public class Dot11 {
                         .bind("id", monitoredNetworkId)
                         .define("column", type.getColumnName())
                         .bind("status", status)
+                        .execute()
+        );
+    }
+
+    public long countCustomBandits(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public void createCustomBandit(UUID organizationId, UUID tenantId, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandits(uuid, organization_id, tenant_id, name, " +
+                                "description, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":name, :description, NOW(), NOW())")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void editCustomBandit(long id, String name, String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_bandits SET name = :name, description = :description " +
+                                "WHERE id = :id")
+                        .bind("id", id)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void deleteCustomBandit(long id) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandits WHERE id = :id")
+                        .bind("id", id)
+                        .execute()
+        );
+    }
+
+    public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
+                                                              UUID tenantId,
+                                                              int limit,
+                                                              int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(CustomBanditDescription.class)
+                        .list()
+        );
+    }
+
+    public Optional<CustomBanditDescription> findCustomBandit(UUID uuid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_bandits WHERE uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .mapTo(CustomBanditDescription.class)
+                        .findOne()
+        );
+    }
+
+    public List<String> findFingerprintsOfCustomBandit(long banditId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT fingerprint FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id")
+                        .bind("bandit_id", banditId)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public void bumpCustomBanditUpdatedAt(long banditId) {
+        nzyme.getDatabase().useHandle(handle -> {
+            handle.createUpdate("UPDATE dot11_bandits SET updated_at = NOW() WHERE id = :id")
+                    .bind("id", banditId)
+                    .execute();
+        });
+    }
+
+    public void addFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        if (fingerprint.length() != 64) {
+            throw new RuntimeException("Fingerprint must be 64 characters long.");
+        }
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_bandit_fingerprints(bandit_id, fingerprint) " +
+                                "VALUES(:bandit_id, :fingerprint)")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
+                        .execute()
+        );
+    }
+
+    public void removeFingerprintOfCustomBandit(long banditId, String fingerprint) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_bandit_fingerprints " +
+                                "WHERE bandit_id = :bandit_id AND fingerprint = :fingerprint")
+                        .bind("bandit_id", banditId)
+                        .bind("fingerprint", fingerprint)
                         .execute()
         );
     }

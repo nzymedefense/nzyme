@@ -122,7 +122,7 @@ function SSIDDetailsPage() {
               <div className="card">
                 <div className="card-body">
                   <h3>
-                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/fingerprinting" /></small>
+                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/wifi-fingerprinting" /></small>
                   </h3>
 
                   <ul className="mb-0">
@@ -184,7 +184,7 @@ function SSIDDetailsPage() {
                   <div className="card">
                     <div className="card-body">
                       <h3 style={{display: "inline-block"}}>
-                        Signal Strength Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
+                        Signal Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
                         ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
                       </h3>
 

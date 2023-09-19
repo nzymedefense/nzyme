@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.system.authentication.mgmt;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.db.EventActionEntry;
@@ -1267,8 +1268,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         long total = eventEngine.countAllEventActionsOfOrganization(organizationId);
         List<EventActionDetailsResponse> events = Lists.newArrayList();
         for (EventActionEntry ea : eventEngine.findAllEventActionsOfOrganization(organizationId, limit, offset)) {
-            List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.uuid());
-            events.add(EventActionUtilities.eventActionEntryToResponse(ea, subs));
+            List<SystemEventType> subscribedSystemEvents = eventEngine
+                    .findAllSystemEventTypesActionIsSubscribedTo(ea.uuid());
+            List<DetectionType> subscribedDetectionEvents = eventEngine
+                    .findAllDetectionEventTypesActionIsSubscribedTo(ea.uuid());
+
+            events.add(EventActionUtilities.eventActionEntryToResponse(
+                    ea,
+                    subscribedSystemEvents,
+                    subscribedDetectionEvents
+            ));
         }
 
         return Response.ok(EventActionsListResponse.create(total, events)).build();
@@ -1297,9 +1306,16 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<SystemEventType> subs = eventEngine.findAllEventTypesActionIsSubscribedTo(ea.get().uuid());
+        List<SystemEventType> subscribedSystemEvents = eventEngine
+                .findAllSystemEventTypesActionIsSubscribedTo(ea.get().uuid());
+        List<DetectionType> subscribedDetectionEvents = eventEngine
+                .findAllDetectionEventTypesActionIsSubscribedTo(ea.get().uuid());
 
-        return Response.ok(EventActionUtilities.eventActionEntryToResponse(ea.get(), subs)).build();
+        return Response.ok(EventActionUtilities.eventActionEntryToResponse(
+                ea.get(),
+                subscribedSystemEvents,
+                subscribedDetectionEvents
+        )).build();
     }
 
     @GET

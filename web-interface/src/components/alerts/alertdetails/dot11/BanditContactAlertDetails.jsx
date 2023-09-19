@@ -13,7 +13,12 @@ function BanditContactAlertDetails(props) {
                 <h3>Details</h3>
                 <dl>
                   <dt>Bandit Name</dt>
-                  <dd>{alert.attributes.bandit_name}</dd>
+                  <dd>
+                    {alert.attributes.bandit_name}{' '}
+                    <span className="text-muted">
+                      ({ (alert.attributes.bandit_is_custom === "true") ? "Custom Bandit" : "Built-In Bandit" })
+                    </span>
+                  </dd>
                   <dt>Bandit Description</dt>
                   <dd>{alert.attributes.bandit_description}</dd>
                   <dt>BSSID</dt>

@@ -241,7 +241,8 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.lastReport(),
                 tap.description(),
                 busesResponse,
-                capturesResponse
+                capturesResponse,
+                tap.remoteAddress()
         );
     }
 

@@ -8,6 +8,8 @@ import java.util.List;
 @AutoValue
 public abstract class Dot11BanditDescription {
 
+    public abstract String id();
+    public abstract boolean isCustom();
     public abstract String name();
     public abstract String description();
 
@@ -15,8 +17,10 @@ public abstract class Dot11BanditDescription {
     @Nullable
     public abstract List<String> fingerprints();
 
-    public static Dot11BanditDescription create(String name, String description, List<String> fingerprints) {
+    public static Dot11BanditDescription create(String id, boolean isCustom, String name, String description, List<String> fingerprints) {
         return builder()
+                .id(id)
+                .isCustom(isCustom)
                 .name(name)
                 .description(description)
                 .fingerprints(fingerprints)
@@ -29,6 +33,10 @@ public abstract class Dot11BanditDescription {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(String id);
+
+        public abstract Builder isCustom(boolean isCustom);
+
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);

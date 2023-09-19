@@ -71,7 +71,10 @@ public abstract class TapDetailsResponse {
     @JsonProperty("captures")
     public abstract List<CaptureDetailsResponse> captures();
 
-    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures) {
+    @JsonProperty("remote_address")
+    public abstract String remoteAddress();
+
+    public static TapDetailsResponse create(UUID uuid, String name, String version, DateTime clock, TotalWithAverageResponse processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, boolean active, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, String description, List<BusDetailsResponse> buses, List<CaptureDetailsResponse> captures, String remoteAddress) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -90,13 +93,14 @@ public abstract class TapDetailsResponse {
                 .description(description)
                 .buses(buses)
                 .captures(captures)
+                .remoteAddress(remoteAddress)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_TapDetailsResponse.Builder();
     }
-
+    
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder uuid(UUID uuid);
@@ -132,6 +136,8 @@ public abstract class TapDetailsResponse {
         public abstract Builder buses(List<BusDetailsResponse> buses);
 
         public abstract Builder captures(List<CaptureDetailsResponse> captures);
+
+        public abstract Builder remoteAddress(String remoteAddress);
 
         public abstract TapDetailsResponse build();
     }
