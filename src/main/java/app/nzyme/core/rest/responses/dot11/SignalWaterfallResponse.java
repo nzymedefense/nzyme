@@ -21,12 +21,16 @@ public abstract class SignalWaterfallResponse {
     @JsonProperty("tracks")
     public abstract List<SignalWaterfallTrackResponse> tracks();
 
-    public static SignalWaterfallResponse create(List<List<Long>> z, List<Integer> x, List<DateTime> y, List<SignalWaterfallTrackResponse> tracks) {
+    @JsonProperty("detector_configuration")
+    public abstract SignalWaterfallConfigurationResponse detectorConfiguration();
+
+    public static SignalWaterfallResponse create(List<List<Long>> z, List<Integer> x, List<DateTime> y, List<SignalWaterfallTrackResponse> tracks, SignalWaterfallConfigurationResponse detectorConfiguration) {
         return builder()
                 .z(z)
                 .x(x)
                 .y(y)
                 .tracks(tracks)
+                .detectorConfiguration(detectorConfiguration)
                 .build();
     }
 
@@ -43,6 +47,8 @@ public abstract class SignalWaterfallResponse {
         public abstract Builder y(List<DateTime> y);
 
         public abstract Builder tracks(List<SignalWaterfallTrackResponse> tracks);
+
+        public abstract Builder detectorConfiguration(SignalWaterfallConfigurationResponse detectorConfiguration);
 
         public abstract SignalWaterfallResponse build();
     }

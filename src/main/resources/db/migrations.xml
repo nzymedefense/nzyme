@@ -3763,7 +3763,7 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
     <changeSet id="add_tap_remote_address" author="lennartkoopmann">
         <addColumn tableName="taps">
             <column name="remote_address" type="text" defaultValue="0.0.0.0">
@@ -3771,5 +3771,61 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
+    <changeSet id="add_custom_track_detector_config" author="lennartkoopmann">
+        <createTable tableName="dot11_track_detector_configuration">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="ssid" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="channel" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="frame_threshold" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="gap_threshold" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_centerline_jitter" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="add_tap_uuid_to_track_detector_configs" author="lennartkoopmann">
+        <addColumn tableName="dot11_track_detector_configuration">
+            <column name="tap_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

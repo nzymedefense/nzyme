@@ -9,13 +9,16 @@ import app.nzyme.core.dot11.db.monitoring.MonitoredChannel;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
+import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.periodicals.Periodical;
+import app.nzyme.core.taps.Tap;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class Dot11SignalTrackMonitor extends Periodical {
@@ -42,32 +45,49 @@ public class Dot11SignalTrackMonitor extends Periodical {
 
             for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
                 for (MonitoredChannel frequency : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
-                    List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                            monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), 8*60, tapUUIDs);
+                    for (UUID tapId : tapUUIDs) {
+                        Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
 
-                    TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
-                    TrackDetector td = new TrackDetector();
-                    List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), TrackDetector.DEFAULT_CONFIG);
+                        List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                                monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), 8*60, tap.get().uuid());
 
-                    if (tracks.size() > 1) {
-                        // Multiple tracks detected.
-                        Map<String, String> attributes = Maps.newHashMap();
-                        attributes.put("bssid", monitoredBSSID.bssid());
-                        attributes.put("channel", String.valueOf(frequency.frequency()));
+                        TrackDetectorConfig config = nzyme.getDot11()
+                                .findCustomTrackDetectorConfiguration(
+                                        tap.get().organizationId(),
+                                        tap.get().uuid(),
+                                        monitoredBSSID.bssid(),
+                                        monitoredSSID.ssid(),
+                                        (int)frequency.frequency()
+                                )
+                                .orElse(TrackDetector.DEFAULT_CONFIG);
 
-                        nzyme.getDetectionAlertService().raiseAlert(
-                                monitoredSSID.organizationId(),
-                                monitoredSSID.tenantId(),
-                                monitoredSSID.uuid(),
-                                null,
-                                DetectionType.DOT11_MONITOR_SIGNAL_TRACK,
-                                Subsystem.DOT11,
-                                "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
-                                        "with multiple signal tracks on channel \"" + frequency.frequency() + "\".",
-                                attributes,
-                                new String[]{"bssid", "channel"},
-                                null
-                        );
+                        TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+                        TrackDetector td = new TrackDetector();
+                        List<Track> tracks = td.detect(heatmap.z(), heatmap.y(), config);
+
+                        if (tracks.size() > 1) {
+                            // Multiple tracks detected.
+                            Map<String, String> attributes = Maps.newHashMap();
+                            attributes.put("bssid", monitoredBSSID.bssid());
+                            attributes.put("channel", String.valueOf(frequency.frequency()));
+                            attributes.put("tap_id", tap.get().uuid().toString());
+                            attributes.put("tap_name", tap.get().name());
+
+                            nzyme.getDetectionAlertService().raiseAlert(
+                                    monitoredSSID.organizationId(),
+                                    monitoredSSID.tenantId(),
+                                    monitoredSSID.uuid(),
+                                    null,
+                                    DetectionType.DOT11_MONITOR_SIGNAL_TRACK,
+                                    Subsystem.DOT11,
+                                    "Monitored network \"" + monitoredSSID.ssid() + "\" advertised " +
+                                            "with multiple signal tracks on channel \"" + frequency.frequency() + "\". " +
+                                            "(Tap: \"" + tap.get().name() + "\")",
+                                    attributes,
+                                    new String[]{"bssid", "channel", "tap_id"},
+                                    null
+                            );
+                        }
                     }
                 }
             }

@@ -221,6 +221,17 @@ class Dot11Service {
         successCallback);
   }
 
+  updateTrackDetectorConfig(bssid, ssid, frequency, tapUUID, frameThreshold, gapThreshold, signalCenterlineJitter, successCallback) {
+    RESTClient.put("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/show/" + frequency + "/signal/trackdetector/configuration",
+        {
+          tap_id: tapUUID,
+          frame_threshold: frameThreshold,
+          gap_threshold: gapThreshold,
+          signal_centerline_jitter: signalCenterlineJitter
+        },
+        successCallback);
+  }
+
 }
 
 export default Dot11Service
