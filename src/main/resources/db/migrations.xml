@@ -3828,4 +3828,64 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_dot11_disco_activity_table" author="lennartkoopmann">
+        <createTable tableName="dot11_disco_activity">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="tap_uuid" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="disco_type" type="integer">
+                <constraints nullable="false" />
+            </column> <!-- Liquibase is not great with ENUM types for DB compatibility. -->
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="sent_frames" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="dot11_disco_activity" indexName="default_lookup">
+            <column name="tap_uuid" />
+            <column name="bssid" />
+            <column name="created_at" />
+        </createIndex>
+
+        <createTable tableName="dot11_disco_activity_receivers">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="disco_activity_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="bssid" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="received_frames" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_discoact2receivers"
+                                 baseTableName="dot11_disco_activity_receivers"
+                                 baseColumnNames="disco_activity_id"
+                                 referencedTableName="dot11_disco_activity"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+    
 </databaseChangeLog>

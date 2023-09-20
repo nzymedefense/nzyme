@@ -48,7 +48,9 @@ public class DatabaseResource {
                 + db.getTableSize("dot11_rates")
                 + db.getTableSize("dot11_clients")
                 + db.getTableSize("dot11_client_probereq_ssids")
-                + db.getTableSize("dot11_channel_histograms");
+                + db.getTableSize("dot11_channel_histograms")
+                + db.getTableSize("dot11_disco_activity")
+                + db.getTableSize("dot11_disco_activity_receivers");
 
         int retentionTime = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
