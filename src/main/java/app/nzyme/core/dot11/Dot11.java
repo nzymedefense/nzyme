@@ -4,7 +4,6 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
-import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
@@ -67,6 +66,24 @@ public class Dot11 {
         }
 
     }
+
+    public enum DiscoType {
+
+        DEAUTHENTICATION(0),
+        DISASSOCIATION(1);
+
+        private final int number;
+
+        DiscoType(int number) {
+            this.number = number;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+    }
+
 
     public Dot11(NzymeNode nzyme) {
         this.nzyme = nzyme;
@@ -1121,6 +1138,25 @@ public class Dot11 {
                         .bind("bandit_id", banditId)
                         .bind("fingerprint", fingerprint)
                         .execute()
+        );
+    }
+
+    public List<DiscoHistogramEntry> getGlobalDiscoHistogram(DiscoType discoType, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT SUM(sent_frames) AS frame_count, " +
+                                "DATE_TRUNC('minute', created_at) AS bucket " +
+                                "FROM dot11_disco_activity WHERE disco_type = :disco_type " +
+                                "AND created_at > :cutoff AND tap_uuid IN (<taps>)" +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("disco_type", discoType.getNumber())
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(DiscoHistogramEntry.class)
+                        .list()
         );
     }
 

@@ -3887,5 +3887,10 @@
                                  onUpdate="NO ACTION"
                                  onDelete="CASCADE" />
     </changeSet>
-    
+
+    <changeSet id="add_disco_type_index_to_disco_activity" author="lennartkoopmann">
+        <createIndex tableName="dot11_disco_activity" indexName="discotype">
+            <column name="disco_type" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>

@@ -232,6 +232,16 @@ class Dot11Service {
         successCallback);
   }
 
+  getDiscoHistogram(discoType, minutes, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/disco/histogram",
+        { disco_type: discoType, minutes: minutes, taps: tapsList },
+        function (response) {
+          setHistogram(response.data)
+    })
+  }
+
 }
 
 export default Dot11Service
