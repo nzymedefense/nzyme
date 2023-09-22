@@ -15,6 +15,10 @@ function DiscoPage() {
           </div>
         </div>
 
+        <div className="alert alert-warning">
+          This is a preview of deauthentication analysis with extremely limited functionality.
+        </div>
+
         <div className="row mt-3">
           <div className="col-md-6">
             <div className="card">
