@@ -3893,4 +3893,5 @@
             <column name="disco_type" />
         </createIndex>
     </changeSet>
+
 </databaseChangeLog>
