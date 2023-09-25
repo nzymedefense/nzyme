@@ -66,3 +66,4 @@ neli = "0.7.0-rc2"
 rand = "0.8.5"
 serde_json = "1.0.104"
 libc = "0.2.147"
+uuid = { version = "1.4.1", features = ["v4"] }

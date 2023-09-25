@@ -4,20 +4,24 @@ use std::sync::{Arc, Mutex};
 
 use log::{trace, error, info};
 
-use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11ProbeRequestFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser, probe_request_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table};
+use crate::{dot11::{frames::{Dot11Frame, FrameSubType, Dot11BeaconFrame, Dot11DataFrame, Dot11DeauthenticationFrame, Dot11ProbeRequestFrame}, parsers::{management::{beacon_frame_parser, deauthentication_frame_parser, probe_request_frame_parser}, data::data_frame_parser}}, data::dot11_table::Dot11Table, to_pipeline};
 use crate::alerting::alert_types::{Dot11Alert, Dot11AlertAttribute, Dot11AlertType};
 use crate::dot11::frames::{Dot11ProbeResponseFrame, PwnagotchiData};
 use crate::dot11::parsers::management::probe_response_frame_parser;
+use crate::messagebus::bus::Bus;
+use crate::messagebus::channel_names::ChannelName;
 
 pub struct Dot11FrameProcessor {
-    dot11_table: Arc<Mutex<Dot11Table>>
+    dot11_table: Arc<Mutex<Dot11Table>>,
+    bus: Arc<Bus>
 }
 
 impl Dot11FrameProcessor {
 
-    pub fn new(dot11_table: Arc<Mutex<Dot11Table>>) -> Self {
+    pub fn new(dot11_table: Arc<Mutex<Dot11Table>>, bus: Arc<Bus>) -> Self {
         Self {
-            dot11_table
+            dot11_table,
+            bus
         }
     }
 
@@ -103,12 +107,13 @@ impl Dot11FrameProcessor {
     }
 
     fn handle_beacon_frame(&self, frame: Dot11BeaconFrame) {
+        let tableframe = frame.clone();
         match self.dot11_table.lock() {
             Ok(mut table) => {
-                if let Some(pwnagotchi) = &frame.tagged_parameters.pwnagotchi_data {
+                if let Some(pwnagotchi) = &tableframe.tagged_parameters.pwnagotchi_data {
                     // Pwnagotchi payload detected in tagged parameters. Raise alert.
 
-                    let signal_strength = match frame.header.antenna_signal {
+                    let signal_strength = match tableframe.header.antenna_signal {
                         Some(s) => s,
                         None => -1
                     };
@@ -120,10 +125,18 @@ impl Dot11FrameProcessor {
                     })
                 }
 
-                table.register_beacon_frame(frame);
+                table.register_beacon_frame(tableframe);
             },
             Err(e) => { error!("Could not acquire 802.11 table lock: {}", e); }
         }
+
+        let length = frame.length as u32;
+        to_pipeline!(
+            ChannelName::Dot11BeaconPipeline,
+            self.bus.dot11_beacon_pipeline.sender,
+            Arc::new(frame),
+            length
+        );
     }
 
     fn handle_probe_response_frame(&self, frame: Dot11ProbeResponseFrame) {

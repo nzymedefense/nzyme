@@ -12,6 +12,7 @@ mod system_state;
 mod logging;
 mod dot11;
 mod alerting;
+mod outputs;
 
 use std::{time, thread::{self, sleep}, time::Duration, sync::{Arc, Mutex}, process::exit};
 use anyhow::Error;
@@ -27,6 +28,7 @@ use system_state::SystemState;
 
 use crate::dot11::{channel_hopper::ChannelHopper};
 use crate::helpers::network::Channel;
+use crate::outputs::output_manager::OutputManager;
 
 #[derive(Parser,Debug)]
 struct Arguments {
@@ -235,6 +237,10 @@ fn main() {
 
     // Processors. TODO follow impl method like metrics aggr/mon
     processors::distributor::spawn(bus.clone(), &tables, system_state, metrics.clone());
+
+    // Outputs.
+    let output_manager = OutputManager::new(bus.clone());
+    output_manager.spawn();
 
     // Metrics aggregator.
     let aggregatormetrics = metrics.clone();

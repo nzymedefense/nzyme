@@ -1037,6 +1037,7 @@ public class Dot11 {
         );
     }
 
+<<<<<<< Updated upstream
     public void editCustomBandit(long id, String name, String description) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE dot11_bandits SET name = :name, description = :description " +
@@ -1056,6 +1057,8 @@ public class Dot11 {
         );
     }
 
+=======
+>>>>>>> Stashed changes
     public List<CustomBanditDescription> findAllCustomBandits(UUID organizationId,
                                                               UUID tenantId,
                                                               int limit,

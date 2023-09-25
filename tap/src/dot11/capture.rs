@@ -1,6 +1,7 @@
 use std::{sync::{Arc, Mutex}};
 
 use caps::{CapSet, Capability};
+use chrono::Utc;
 use log::{error, info, debug};
 
 use crate::{
@@ -111,6 +112,7 @@ impl Capture {
                 }
             };
 
+            let receive_time = Utc::now();
             let length = frame.data.len();
 
             match self.metrics.lock() {
@@ -134,6 +136,7 @@ impl Capture {
             }
 
             let data = Dot11RawFrame {
+                receive_time,
                 interface_name: device_name.to_string(),
                 data: frame.data.to_vec()
             };

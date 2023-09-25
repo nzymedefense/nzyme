@@ -238,6 +238,7 @@ impl Dot11Broker {
             ChannelName::Dot11FramesPipeline,
             bus.dot11_frames_pipeline.sender,
             Arc::new(Dot11Frame {
+                receive_time: data.receive_time,
                 header: radiotap_header,
                 frame_type: frame_type.frame_subtype,
                 payload: payload.to_vec(),

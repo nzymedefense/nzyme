@@ -15,6 +15,7 @@ use crate::{
     metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
 };
 use crate::configuration::Configuration;
+use crate::dot11::frames::Dot11BeaconFrame;
 
 use super::channel_names::ChannelName;
 
@@ -25,12 +26,14 @@ pub struct Bus {
     pub dot11_broker: NzymeChannel<Dot11RawFrame>,
 
     pub dot11_frames_pipeline: NzymeChannel<Dot11Frame>,
+    pub dot11_beacon_pipeline: NzymeChannel<Dot11BeaconFrame>,
 
     pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
     pub tcp_pipeline: NzymeChannel<TCPPacket>,
     pub udp_pipeline: NzymeChannel<UDPPacket>,
-    pub dns_pipeline: NzymeChannel<DNSPacket>
+    pub dns_pipeline: NzymeChannel<DNSPacket>,
+
 }
 
 pub struct NzymeChannelSender<T> {
@@ -80,6 +83,8 @@ impl Bus<> {
 
         let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
+        let (dot11_beacon_pipeline_sender, dot11_beacon_pipeline_receiver) = bounded(65536); // TODO configurable
+
         let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
@@ -113,6 +118,14 @@ impl Bus<> {
                     name: ChannelName::Dot11FramesPipeline
                 }),
                 receiver: Arc::new(dot11_frames_receiver),
+            },
+            dot11_beacon_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: dot11_beacon_pipeline_sender,
+                    name: ChannelName::Dot11BeaconPipeline
+                }),
+                receiver: Arc::new(dot11_beacon_pipeline_receiver),
             },
             ethernet_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {

@@ -38,7 +38,7 @@ fn spawn_base_ethernet(bus: Arc<Bus>) {
 }
 
 fn spawn_base_dot11_management(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let processor = Dot11FrameProcessor::new(tables.dot11.clone());
+    let processor = Dot11FrameProcessor::new(tables.dot11.clone(), bus.clone());
 
     thread::spawn(move || {
         for frame in bus.dot11_frames_pipeline.receiver.iter() {

@@ -202,6 +202,7 @@ class Dot11Service {
         successCallback);
   }
 
+<<<<<<< Updated upstream
   editCustomBandit(banditUUID, name, description, successCallback) {
     RESTClient.put("/dot11/bandits/custom/show/" + banditUUID,
         { name: name, description: description }, successCallback);
@@ -232,6 +233,8 @@ class Dot11Service {
         successCallback);
   }
 
+=======
+>>>>>>> Stashed changes
 }
 
 export default Dot11Service

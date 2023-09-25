@@ -1,9 +1,13 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use strum_macros::Display;
+use crate::outputs::output_configuration::OutputConfiguration;
+use crate::outputs::output_data::{OutputData, OutputDataType, OutputFilterResult};
 
 #[derive(Debug)]
 pub struct Dot11RawFrame {
     pub interface_name: String,
+    pub receive_time: DateTime<Utc>,
     pub data: Vec<u8>
 }
 
@@ -125,13 +129,14 @@ pub enum FrameSubType {
 
 #[derive(Debug)]
 pub struct Dot11Frame {
+    pub receive_time: DateTime<Utc>,
     pub header: RadiotapHeader,
     pub frame_type: FrameSubType,
     pub payload: Vec<u8>,
     pub length: usize
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dot11Capabilities {
     pub infrastructure_type: InfraStructureType,
     pub privacy: bool,
@@ -142,20 +147,20 @@ pub struct Dot11Capabilities {
     pub dsss_ofdm: bool
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TaggedParameters {
     pub ssid: Option<String>,
     pub supported_rates: Option<Vec<f32>>,
     pub extended_supported_rates: Option<Vec<f32>>,
     pub country_information: Option<CountryInformation>,
     pub pwnagotchi_data: Option<PwnagotchiData>,
-    
+
     // Not parsing, only keeping for fingerprint calculation.
     pub ht_capabilities: Option<Vec<u8>>,
     pub extended_capabilities: Option<Vec<u8>>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct PwnagotchiData {
     pub identity: String,
     pub name: String,
@@ -165,7 +170,7 @@ pub struct PwnagotchiData {
     pub version: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CountryInformation {
     pub country_code: String,
     pub environment: RegulatoryEnvironment,
@@ -174,7 +179,7 @@ pub struct CountryInformation {
     pub max_transmit_power: u8
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display, Clone)]
 pub enum RegulatoryEnvironment {
     All,
     Indoors,
@@ -182,14 +187,14 @@ pub enum RegulatoryEnvironment {
     Unknown
 }
 
-#[derive(Debug, Display, Eq, PartialEq)]
+#[derive(Debug, Display, Eq, PartialEq, Clone)]
 pub enum InfraStructureType {
     Invalid,
     AccessPoint,
     AdHoc
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SecurityInformation {
     pub protocols: Vec<EncryptionProtocol>,
     pub suites: Option<CipherSuites> // Optional in case protocol is WEP
@@ -204,14 +209,14 @@ pub enum EncryptionProtocol {
     WPA3
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CipherSuites {
     pub group_cipher: CipherSuite,
     pub pairwise_ciphers: Vec<CipherSuite>,
     pub key_management_modes: Vec<KeyManagementMode>
 }
 
-#[derive(Debug, Display, PartialEq)]
+#[derive(Debug, Display, PartialEq, Clone)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum KeyManagementMode {
     Unknown,
@@ -223,7 +228,7 @@ pub enum KeyManagementMode {
     FTSAE
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum CipherSuite {
     None,
@@ -241,8 +246,9 @@ pub enum CipherSuite {
     BIPCMAC256
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Dot11BeaconFrame {
+    pub receive_time: DateTime<Utc>,
     pub length: usize,
     pub header: RadiotapHeader,
     pub destination: String,
@@ -254,6 +260,20 @@ pub struct Dot11BeaconFrame {
     pub fingerprint: String,
     pub security: Vec<SecurityInformation>,
     pub has_wps: bool
+}
+
+impl OutputData for Dot11BeaconFrame {
+    fn get_data_type(&self) -> OutputDataType {
+        OutputDataType::Dot11Beacon
+    }
+
+    fn get_message_summary(&self) -> String {
+        format!("Recorded beacon from {}", self.transmitter)
+    }
+
+    fn filter(&self, configuration: &OutputConfiguration) -> OutputFilterResult {
+        OutputFilterResult::Pass
+    }
 }
 
 #[derive(Debug)]

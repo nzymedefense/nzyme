@@ -205,7 +205,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                         Dot11.securitySuitesToIdentifier(info)
                 ));
             } catch (JsonProcessingException e) {
-                LOG.error(e);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         }

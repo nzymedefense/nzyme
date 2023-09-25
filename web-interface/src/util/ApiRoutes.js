@@ -133,8 +133,12 @@ const ApiRoutes = {
       BANDITS: {
         BUILTIN_DETAILS: (id) => `/dot11/monitoring/bandits/builtin/show/${id}`,
         CREATE: (organizationId, tenantId) => `/dot11/monitoring/bandits/custom/organizations/${organizationId}/tenants/${tenantId}/create`,
+<<<<<<< Updated upstream
         CUSTOM_DETAILS: (id) => `/dot11/monitoring/bandits/custom/show/${id}`,
         EDIT: (id) => `/dot11/monitoring/bandits/custom/show/${id}/edit`
+=======
+        CUSTOM_DETAILS: (id) => `/dot11/monitoring/bandits/custom/show/${id}`
+>>>>>>> Stashed changes
       }
     },
     NETWORKS: {

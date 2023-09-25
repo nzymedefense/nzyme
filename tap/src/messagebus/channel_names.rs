@@ -6,10 +6,11 @@ pub enum ChannelName {
     Dot11Broker,
 
     Dot11FramesPipeline,
+    Dot11BeaconPipeline,
 
     EthernetPipeline,
     ArpPipeline,
     TcpPipeline,
     UdpPipeline,
-    DnsPipeline
+    DnsPipeline,
 }
