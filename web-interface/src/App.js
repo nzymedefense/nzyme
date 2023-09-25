@@ -105,10 +105,7 @@ import AlertSubscriptionDetailsPage from "./components/alerts/subscriptions/Aler
 import BuiltinBanditDetailsPage from "./components/dot11/monitoring/bandits/BuiltinBanditDetailsPage";
 import CreateCustomBanditPage from "./components/dot11/monitoring/bandits/CreateCustomBanditPage";
 import CustomBanditDetailsPage from "./components/dot11/monitoring/bandits/CustomBanditDetailsPage";
-<<<<<<< Updated upstream
 import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCustomBanditPage";
-=======
->>>>>>> Stashed changes
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -353,10 +350,7 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
-<<<<<<< Updated upstream
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
-=======
->>>>>>> Stashed changes
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

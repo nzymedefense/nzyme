@@ -6,13 +6,10 @@ import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
 import app.nzyme.core.dot11.monitoring.Dot11Bandits;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
-<<<<<<< Updated upstream
 import app.nzyme.core.rest.requests.CreateBanditFingerprintRequest;
 import app.nzyme.core.rest.requests.CreateCustomBanditRequest;
 import app.nzyme.core.rest.requests.UpdateCustomBanditRequest;
-=======
 import app.nzyme.core.rest.requests.CreateCustomBanditRequest;
->>>>>>> Stashed changes
 import app.nzyme.core.rest.responses.dot11.monitoring.BuiltinBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditDetailsResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.CustomBanditListResponse;
@@ -146,13 +143,9 @@ public class BanditsResource extends UserAuthenticatedResource {
                 bandit.get().uuid(),
                 bandit.get().name(),
                 bandit.get().description(),
-<<<<<<< Updated upstream
                 fingerprints,
                 bandit.get().createdAt(),
                 bandit.get().updatedAt()
-=======
-                fingerprints
->>>>>>> Stashed changes
         )).build();
     }
 
@@ -171,7 +164,6 @@ public class BanditsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
-<<<<<<< Updated upstream
     @PUT
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     @Path("/custom/show/{id}")
@@ -264,8 +256,6 @@ public class BanditsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
-=======
->>>>>>> Stashed changes
     private boolean hasPermissions(AuthenticatedUser authenticatedUser, UUID organizationId, UUID tenantId) {
         if (!authenticatedUser.isSuperAdministrator()) {
             if (authenticatedUser.isOrganizationAdministrator()) {
