@@ -55,7 +55,6 @@ impl OutputManager {
                         Err(e) => error!("Could not acquire output configuration mutex: {}", e)
                     }
                 }
-
             }
         });
     }
