@@ -145,6 +145,9 @@ const ApiRoutes = {
     CLIENTS: {
       INDEX: '/dot11/clients',
       DETAILS: (mac) => `/dot11/clients/show/${mac}`
+    },
+    DISCO: {
+      INDEX: '/dot11/disco'
     }
   },
   RETRO: {

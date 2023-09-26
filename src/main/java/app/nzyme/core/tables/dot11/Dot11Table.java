@@ -22,10 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class Dot11Table implements DataTable {
 
@@ -49,6 +46,7 @@ public class Dot11Table implements DataTable {
 
         writeBSSIDs(tap.get(), timestamp, report.bssids(), tap.get().organizationId(), tap.get().tenantId());
         writeClients(tap.get(), timestamp, report.clients());
+        writeDisco(tap.get(), timestamp, report.disco());
 
         handleAlerts(tap.get(), report.alerts());
     }
@@ -451,6 +449,42 @@ public class Dot11Table implements DataTable {
                     continue;
                 }
             }
+        }
+    }
+
+    private void writeDisco(Tap tap, DateTime timestamp, Dot11DiscoReport disco) {
+        for (Dot11DiscoTransmitterReport report : disco.deauthentication().values()) {
+            writeDiscoReport(tap, timestamp, Dot11.DiscoType.DEAUTHENTICATION, report);
+        }
+
+        for (Dot11DiscoTransmitterReport report : disco.disassociation().values()) {
+            writeDiscoReport(tap, timestamp, Dot11.DiscoType.DISASSOCIATION, report);
+        }
+    }
+
+    private void writeDiscoReport(Tap tap, DateTime timestamp, Dot11.DiscoType discoType, Dot11DiscoTransmitterReport report) {
+        long activityId = tablesService.getNzyme().getDatabase().withHandle(handle ->
+                handle.createQuery("INSERT INTO dot11_disco_activity(tap_uuid, disco_type, bssid, sent_frames, " +
+                                "created_at) VALUES(:tap_uuid, :disco_type, :bssid, :sent_frames, :created_at) " +
+                                "RETURNING id")
+                        .bind("tap_uuid", tap.uuid())
+                        .bind("disco_type", discoType.getNumber())
+                        .bind("bssid", report.bssid())
+                        .bind("sent_frames", report.sentFrames())
+                        .bind("created_at", timestamp)
+                        .mapTo(Long.class)
+                        .one()
+        );
+
+        for (Map.Entry<String, Long> receiver : report.receivers().entrySet()) {
+            tablesService.getNzyme().getDatabase().useHandle(handle ->
+                    handle.createUpdate("INSERT INTO dot11_disco_activity_receivers(disco_activity_id, bssid, " +
+                                    "received_frames) VALUES(:disco_activity_id, :bssid, :received_frames)")
+                            .bind("disco_activity_id", activityId)
+                            .bind("bssid", receiver.getKey())
+                            .bind("received_frames", receiver.getValue())
+                            .execute()
+            );
         }
     }
 

@@ -297,6 +297,16 @@ pub struct Dot11DeauthenticationFrame {
 }
 
 #[derive(Debug)]
+pub struct Dot11DisassociationFrame {
+    pub length: usize,
+    pub header: RadiotapHeader,
+    pub destination: String,
+    pub transmitter: String,
+    pub bssid: String,
+    pub reason_code: u16
+}
+
+#[derive(Debug)]
 pub struct Dot11DSInformation {
     pub destination: String,
     pub source: String,

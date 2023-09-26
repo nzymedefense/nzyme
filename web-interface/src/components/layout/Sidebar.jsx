@@ -61,6 +61,11 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-timeline" />} />
 
         <NavigationLink
+            href={ApiRoutes.DOT11.DISCO.INDEX}
+            title="Deauthentication"
+            icon={<i className="sidebar-icon fa-solid fa-link-slash" />} />
+
+        <NavigationLink
             href={ApiRoutes.DOT11.MONITORING.INDEX}
             title="Monitoring"
             icon={<i className="sidebar-icon fa-solid fa-shield-halved" />}

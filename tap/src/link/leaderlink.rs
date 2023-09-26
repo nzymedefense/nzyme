@@ -10,6 +10,7 @@ use crate::{
     configuration::Configuration,
     metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, L4TableReport, Dot11TableReport}
 };
+use crate::link::payloads::Dot11DiscoReport;
 
 use super::{payloads::{StatusReport, SystemMetricsReport, TablesReport, TotalWithAverage, ChannelReport, CaptureReport}};
 
@@ -202,6 +203,10 @@ impl Leaderlink {
                 Dot11TableReport {
                     bssids: HashMap::new(),
                     clients: HashMap::new(),
+                    disco: Dot11DiscoReport {
+                        deauth: HashMap::new(),
+                        disassoc: HashMap::new(),
+                    },
                     alerts: Vec::new()
                 }
             }

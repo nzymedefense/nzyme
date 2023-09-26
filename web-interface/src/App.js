@@ -106,6 +106,7 @@ import BuiltinBanditDetailsPage from "./components/dot11/monitoring/bandits/Buil
 import CreateCustomBanditPage from "./components/dot11/monitoring/bandits/CreateCustomBanditPage";
 import CustomBanditDetailsPage from "./components/dot11/monitoring/bandits/CustomBanditDetailsPage";
 import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCustomBanditPage";
+import DiscoPage from "./components/dot11/disco/DiscoPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -361,6 +362,9 @@ function App() {
                           { /* 802.11/Clients. */}
                           <Route path={ApiRoutes.DOT11.CLIENTS.INDEX} element={<ClientsPage />}/>
                           <Route path={ApiRoutes.DOT11.CLIENTS.DETAILS(':macParam')} element={<ClientDetailsPage />}/>
+
+                          { /* 802.11/Disco. */}
+                          <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
 
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>

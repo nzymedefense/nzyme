@@ -34,7 +34,7 @@ class SimpleBarChart extends React.Component {
           x: x,
           y: y,
           type: 'bar',
-          line: { width: 1, shape: 'linear', color: '#2983fe' }
+          line: { width: 1, shape: 'linear', color: '#0d6efd' }
         }
       ]
     }
@@ -86,18 +86,20 @@ class SimpleBarChart extends React.Component {
               xaxis: {
                 fixedrange: true,
                 title: this.props.xaxistitle,
-                zerolinecolor: colors.lines,
                 linecolor: colors.lines,
-                gridcolor: colors.grid
+                linewidth: 1,
+                gridcolor: colors.grid,
+                zeroline: false
               },
               yaxis: {
                 ticksuffix: this.props.ticksuffix ? this.props.ticksuffix : undefined,
                 tickformat: this.props.tickformat ? this.props.tickformat : undefined,
                 fixedrange: true,
                 title: this.props.yaxistitle,
-                zerolinecolor: colors.lines,
                 linecolor: colors.lines,
-                gridcolor: colors.grid
+                linewidth: 1,
+                gridcolor: colors.grid,
+                zeroline: false
               },
               annotations: this.props.annotations ? this.props.annotations : [],
               shapes: this.props.shapes
