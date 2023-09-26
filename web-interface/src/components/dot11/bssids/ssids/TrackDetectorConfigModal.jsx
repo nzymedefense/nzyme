@@ -67,12 +67,6 @@ function TrackDetectorConfigModal(props) {
                 combination.
               </p>
 
-              <p>
-                Note that custom configurations are applied for all tenants of your organization. You can learn more
-                about signal track configurations in the{' '}
-                <a href="https://go.nzyme.org/wifi-network-monitoring-signal-tracks" target="_blank">documentation</a>.
-              </p>
-
               {user.is_superadmin ?
                   <div className="alert alert-warning">You are logged in as super administrator and changes you are
                     making to this track detector configuration will be saved for the organization the currently selected
