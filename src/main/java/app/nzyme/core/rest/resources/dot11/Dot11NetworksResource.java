@@ -357,6 +357,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     }
 
     @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/bssids/show/{bssid}/ssids/show/{ssid}/frequencies/show/{frequency}/signal/trackdetector/configuration")
     public Response updateTrackDetectorConfig(@Context SecurityContext sc,
                                               @PathParam("bssid") String bssid,

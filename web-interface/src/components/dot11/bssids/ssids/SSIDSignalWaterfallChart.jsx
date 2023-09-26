@@ -6,6 +6,7 @@ import HeatmapWaterfallChart from "../../../charts/HeatmapWaterfallChart";
 import SignalLegendHelper from "../../../charts/SignalLegendHelper";
 import {singleTapSelected} from "../../../../util/Tools";
 import TrackDetectorConfigModal from "./TrackDetectorConfigModal";
+import WithMinimumRole from "../../../misc/WithMinimumRole";
 
 const dot11Service = new Dot11Service();
 
@@ -158,19 +159,21 @@ function SSIDSignalWaterfallChart(props) {
           data={formatData(waterfall)}
           layers={formatTracks(waterfall, waterfall.tracks)} />
 
-        <TrackDetectorConfigModal
-            bssid={bssid}
-            ssid={ssid}
-            frequency={frequency}
-            tapUUID={selectedTaps[0]}
-            config={waterfall.detector_configuration}
-            setRevision={setRevision} />
+        <WithMinimumRole role="ORGADMIN">
+          <TrackDetectorConfigModal
+              bssid={bssid}
+              ssid={ssid}
+              frequency={frequency}
+              tapUUID={selectedTaps[0]}
+              config={waterfall.detector_configuration}
+              setRevision={setRevision} />
 
-        <button className="btn btn-sm btn-outline-secondary"
-                data-bs-toggle="modal"
-                data-bs-target="#track-detector-config">
-          Configure Track Detector
-        </button>
+          <button className="btn btn-sm btn-outline-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#track-detector-config">
+            Configure Track Detector
+          </button>
+        </WithMinimumRole>
       </React.Fragment>
   )
 
