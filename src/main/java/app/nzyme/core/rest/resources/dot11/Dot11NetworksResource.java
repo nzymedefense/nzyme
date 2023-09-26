@@ -375,8 +375,6 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         Tap tap = nzyme.getTapManager().findTap(req.tapId()).get();
 
-        LOG.info(req);
-
         nzyme.getDot11().updateCustomTrackDetectorConfiguration(
                 tap.organizationId(),
                 tap.uuid(),
