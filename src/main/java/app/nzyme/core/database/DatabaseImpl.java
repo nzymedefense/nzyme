@@ -121,6 +121,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DetectionAlertAttributeEntryMapper())
                 .registerRowMapper(new DetectionAlertTimelineEntryMapper())
                 .registerRowMapper(new TrackDetectorConfigMapper())
+                .registerRowMapper(new CustomBanditDescriptionMapper())
+                .registerRowMapper(new DiscoHistogramEntryMapper())
                 .registerRowMapper(new CustomBanditDescriptionMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {

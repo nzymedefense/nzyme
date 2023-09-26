@@ -12,15 +12,18 @@ public abstract class Dot11TablesReport {
 
     public abstract Map<String, Dot11BSSIDReport> bssids();
     public abstract Map<String, Dot11ClientReport> clients();
+    public abstract Dot11DiscoReport disco();
     public abstract List<Dot11AlertReport> alerts();
 
     @JsonCreator
     public static Dot11TablesReport create(@JsonProperty("bssids") Map<String, Dot11BSSIDReport> bssids,
                                            @JsonProperty("clients") Map<String, Dot11ClientReport> clients,
+                                           @JsonProperty("disco") Dot11DiscoReport disco,
                                            @JsonProperty("alerts") List<Dot11AlertReport> alerts) {
         return builder()
                 .bssids(bssids)
                 .clients(clients)
+                .disco(disco)
                 .alerts(alerts)
                 .build();
     }
@@ -34,6 +37,8 @@ public abstract class Dot11TablesReport {
         public abstract Builder bssids(Map<String, Dot11BSSIDReport> bssids);
 
         public abstract Builder clients(Map<String, Dot11ClientReport> clients);
+
+        public abstract Builder disco(Dot11DiscoReport disco);
 
         public abstract Builder alerts(List<Dot11AlertReport> alerts);
 

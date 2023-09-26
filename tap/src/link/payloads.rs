@@ -144,6 +144,7 @@ pub struct L4RetroPairReport {
 pub struct Dot11TableReport {
     pub bssids: HashMap<String, BssidReport>,
     pub clients: HashMap<String, Dot11ClientReport>,
+    pub disco: Dot11DiscoReport,
     pub alerts: Vec<Dot11AlertReport>
 }
 
@@ -167,6 +168,19 @@ pub struct Dot11AlertReport {
     pub alert_type: Dot11AlertType,
     pub signal_strength: i8,
     pub attributes: HashMap<String, Dot11AlertAttribute>
+}
+
+#[derive(Serialize)]
+pub struct Dot11DiscoReport {
+    pub deauth: HashMap<String, DiscoTransmitterReport>,
+    pub disassoc: HashMap<String, DiscoTransmitterReport>
+}
+
+#[derive(Serialize)]
+pub struct DiscoTransmitterReport {
+    pub bssid: String,
+    pub sent_frames: u128,
+    pub receivers: HashMap<String, u128>
 }
 
 #[derive(Serialize)]

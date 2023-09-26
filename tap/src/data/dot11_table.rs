@@ -10,13 +10,14 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
-use crate::dot11::frames::{Dot11Capabilities, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
-use crate::link::payloads::Dot11AlertReport;
+use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
+use crate::link::payloads::{DiscoTransmitterReport, Dot11AlertReport, Dot11DiscoReport};
 
 #[derive(Debug)]
 pub struct Dot11Table {
     pub bssids: Mutex<HashMap<String, Bssid>>,
     pub clients: Mutex<HashMap<String, Client>>,
+    pub disco: DiscoTable,
     pub alerts: Mutex<Vec<Dot11Alert>>
 }
 
@@ -63,11 +64,25 @@ pub struct AdvertisedNetwork {
     pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
 }
 
+#[derive(Debug, Default)]
+pub struct DiscoTable {
+    pub deauth: Mutex<HashMap<String, DiscoTransmitter>>,
+    pub disassoc: Mutex<HashMap<String, DiscoTransmitter>>,
+}
+
+#[derive(Debug, Default)]
+pub struct DiscoTransmitter {
+    pub bssid: String,
+    pub sent_frames: u128,
+    pub receivers: HashMap<String, u128>
+}
+
 impl Dot11Table {
     pub fn new() -> Self {
         Self {
             bssids: Mutex::new(HashMap::new()),
             clients: Mutex::new(HashMap::new()),
+            disco: DiscoTable::default(),
             alerts: Mutex::new(Vec::new())
         }
     }
@@ -369,6 +384,54 @@ impl Dot11Table {
         }
     }
 
+    pub fn register_deauthentication_frame(&self, frame: Dot11DeauthenticationFrame) {
+        self.register_disco_frame(frame.transmitter,
+                                  frame.destination,
+                                  &self.disco.deauth);
+    }
+
+    pub fn register_disassociation_frame(&self, frame: Dot11DisassociationFrame) {
+        self.register_disco_frame(frame.transmitter,
+                                  frame.destination,
+                                  &self.disco.disassoc);
+    }
+
+    fn register_disco_frame(&self,
+                            transmitter: String,
+                            receiver: String,
+                            table: &Mutex<HashMap<String, DiscoTransmitter>>) {
+        match table.lock() {
+            Ok(mut transmitters) => {
+                match transmitters.get_mut(&transmitter) {
+                    Some(transmitter) => {
+                        // Existing transmitter.
+                        transmitter.sent_frames += 1;
+
+                        match transmitter.receivers.get_mut(&receiver.clone()) {
+                            Some(destination) => { *destination += 1; },
+                            None => { transmitter.receivers.insert(receiver.clone(), 1); }
+                        }
+                    },
+                    None => {
+                        // New transmitter.
+                        let mut receivers = HashMap::new();
+                        receivers.insert(receiver.clone(), 1);
+
+                        transmitters.insert(
+                            receiver.clone(),
+                            DiscoTransmitter {
+                                bssid: transmitter.clone(),
+                                sent_frames: 1,
+                                receivers
+                            }
+                        );
+                    }
+                }
+            },
+            Err(e) => error!("Could not acquire disco table: {}", e)
+        }
+    }
+
     pub fn build_initial_channel_statistics(frame_subtype: FrameSubType, frequency: &Option<u16>, frame_length: usize) 
             -> HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>> {
         let mut channel_statistics = HashMap::new();
@@ -457,20 +520,26 @@ impl Dot11Table {
     }
 
     pub fn clear_ephemeral(&mut self) {
-        match self.bssids.lock() {
-            Ok(mut bssids) => bssids.clear(),
-            Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e)
-        }
+        self.clear_mutex_hashmap(&self.bssids);
+        self.clear_mutex_hashmap(&self.clients);
+        self.clear_mutex_hashmap(&self.disco.deauth);
+        self.clear_mutex_hashmap(&self.disco.disassoc);
 
-        match self.clients.lock() {
-            Ok(mut clients) => clients.clear(),
-            Err(e) => error!("Could not acquire clients table mutex: {}", e)
-        }
+        self.clear_mutex_vector(&self.alerts);
+    }
 
-        match self.alerts.lock() {
-            Ok(mut alerts) => alerts.clear(),
-            Err(e) => error!("Could not acquire alerts table mutex: {}", e)
-        }
+    fn clear_mutex_hashmap<T>(&self, table: &Mutex<HashMap<String, T>>) {
+        match table.lock() {
+            Ok(mut table) => table.clear(),
+            Err(e) =>  error!("Could not acquire table mutex: {}", e)
+        };
+    }
+
+    fn clear_mutex_vector<T>(&self, vec: &Mutex<Vec<T>>) {
+        match vec.lock() {
+            Ok(mut vec) => vec.clear(),
+            Err(e) =>  error!("Could not acquire table mutex: {}", e)
+        };
     }
 
     pub fn generate_report(&self) -> Dot11TableReport {
@@ -600,6 +669,11 @@ impl Dot11Table {
             Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
 
+        let disco_report = Dot11DiscoReport {
+            deauth: Self::disco_table_to_report(&self.disco.deauth),
+            disassoc: Self::disco_table_to_report(&self.disco.disassoc)
+        };
+
         let mut alerts_report: Vec<Dot11AlertReport> = Vec::new();
         match self.alerts.lock() {
             Ok(alerts) => {
@@ -619,8 +693,32 @@ impl Dot11Table {
         Dot11TableReport {
             bssids: bssid_report,
             clients: clients_report,
+            disco: disco_report,
             alerts: alerts_report
         }
+    }
+
+    fn disco_table_to_report(table: &Mutex<HashMap<String, DiscoTransmitter>>)
+            -> HashMap<String, DiscoTransmitterReport> {
+        let mut report = HashMap::new();
+
+        match table.lock() {
+            Ok(deauth) => {
+                for (bssid, info) in &*deauth {
+                    report.insert(
+                        bssid.clone(),
+                        DiscoTransmitterReport {
+                            bssid: info.bssid.clone(),
+                            sent_frames: info.sent_frames,
+                            receivers: info.receivers.clone(),
+                        }
+                    );
+                }
+            },
+            Err(e) => error!("Could not acquire disco deauth table mutex: {}", e)
+        }
+
+        report
     }
 }
 
