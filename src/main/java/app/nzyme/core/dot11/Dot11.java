@@ -1179,9 +1179,9 @@ public class Dot11 {
                 + Joiner.on(",").join(suite.suites().keyManagementModes());
     }
 
-    private static Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
+    private static final Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
 
-    static {
+    /*static {
         // 2.4 GHz band
         for (int i = 1; i <= 14; i++) {
             int frequency = 2407 + i * 5;
@@ -1206,10 +1206,36 @@ public class Dot11 {
         for (int i = 1; i <= 233; i++) {
             frequencyChannelMap.put(5950 + i * 20, i);
         }
-    }
+    }*/
 
     public static int frequencyToChannel(int frequency) {
-        return frequencyChannelMap.getOrDefault(frequency, -1);
+
+        Integer c = frequencyChannelMap.get(frequency);
+        if (c == null) {
+            if (frequency == 2484) {
+                c = 14;
+            } else if (frequency == 5935) {
+                /* see 802.11ax D6.1 27.3.23.2 and Annex E */
+                c = 2;
+            } else if (frequency < 2484) {
+                c = (frequency - 2407) / 5;
+            } else if (frequency >= 4910 && frequency <= 4980) {
+                c = (frequency - 4000) / 5;
+            } else if (frequency < 5950) {
+                c = (frequency - 5000) / 5;
+            } else if (frequency <= 7115) {
+                c = (frequency - 5950) / 5;
+            } else {
+                c = -1;
+            }
+
+            // we cache the conversion, since this will called many times
+            synchronized (frequencyChannelMap) {
+                frequencyChannelMap.put(frequency, c);
+            }
+        }
+
+        return c;
     }
 
 }
