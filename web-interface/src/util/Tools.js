@@ -11,19 +11,25 @@ export function byteAverageToMbit (byte) {
 }
 
 export function dot11FrequencyToChannel(frequency) {
-  let channel;
-  if(frequency >= 2412 && frequency <= 2484) {
-    channel = (frequency - 2412) / 5 + 1;
-  } else if(frequency >= 5170 && frequency <= 5825) {
-    channel = (frequency - 5000) / 5;
-  } else if(frequency >= 3000 && frequency <= 3100) {
-    channel = (frequency - 3000) / 5;
-  } else if(frequency >= 5950 && frequency <= 7125) {
-    channel = (frequency - 5950) / 5 + 1;
+  let c;
+  if (frequency === 2484) {
+    c = 14;
+  } else if (frequency === 5935) {
+    /* see 802.11ax D6.1 27.3.23.2 and Annex E */
+    c = 2;
+  } else if (frequency < 2484) {
+    c = (frequency - 2407) / 5;
+  } else if (frequency >= 4910 && frequency <= 4980) {
+    c = (frequency - 4000) / 5;
+  } else if (frequency < 5950) {
+    c = (frequency - 5000) / 5;
+  } else if (frequency <= 7115) {
+    c = (frequency - 5950) / 5;
   } else {
-    channel = -1;
+    c = -1;
   }
-  return channel;
+
+  return c;
 }
 
 export function singleTapSelected(selectedTaps) {
