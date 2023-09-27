@@ -68,7 +68,7 @@ impl TryFrom<u8> for ProtocolType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display, PartialEq)]
 pub enum DNSType {
     Query,
     QueryResponse
@@ -199,7 +199,7 @@ impl TryFrom<u16> for DNSDataType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum DNSClass {
     IN,
     CS,

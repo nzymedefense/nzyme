@@ -1,4 +1,5 @@
 use std::{sync::Arc, net::{Ipv4Addr, Ipv6Addr}};
+use addr::parse_domain_name;
 use crate::ethernet::{packets::{UDPPacket, DNSPacket, DNSData}, types::{DNSType, DNSDataType, DNSClass}};
 use anyhow::{Result, bail};
 use bitvec::{view::BitView, order::Msb0};
@@ -6,10 +7,10 @@ use byteorder::{BigEndian, ByteOrder};
 use bitreader::BitReader;
 use chrono::Utc;
 use entropy::shannon_entropy;
+use serde::de::Unexpected::Option;
 
 #[allow(clippy::cast_possible_truncation)]
 pub fn parse(udp: &Arc<UDPPacket>) -> Result<DNSPacket> {
-
     if udp.payload.len() < 13 {
         bail!("Payload too short to hold a DNS request or response.");
     }
@@ -48,9 +49,9 @@ pub fn parse(udp: &Arc<UDPPacket>) -> Result<DNSPacket> {
             };
         }
         
-        Option::Some(query_list)
+        Some(query_list)
     } else {
-        Option::None
+        None
     };
 
     // Responses.
@@ -70,9 +71,9 @@ pub fn parse(udp: &Arc<UDPPacket>) -> Result<DNSPacket> {
             };
         }
         
-        Option::Some(response_list)
+        Some(response_list)
     } else {
-        Option::None
+        None
     };
 
     let size = udp.payload.len() as u32;
@@ -90,7 +91,7 @@ pub fn parse(udp: &Arc<UDPPacket>) -> Result<DNSPacket> {
         queries,
         responses,
         size,
-        timestamp: Utc::now()
+        timestamp: udp.timestamp
     })
 
 }
@@ -197,13 +198,32 @@ fn parse_query_element(data: &[u8]) -> Result<(usize, DNSData)> {
 
     let entropy = shannon_entropy(name.as_bytes());
 
+    let (registered_domain, subdomain) = match parse_domain_name(&*name) {
+        Ok(domain) => {
+            let root = match domain.root() {
+                Some(root) => Some(root.to_string()),
+                None => None
+            };
+
+            let prefix = match domain.prefix() {
+                Some(prefix) => Some(prefix.to_string()),
+                None => None
+            };
+
+            (root, prefix)
+        },
+        Err(_) => (None, None)
+    };
+
     Ok((cursor, DNSData {
-       name,
-       dns_type,
-       class,
-       entropy: Option::Some(entropy),
-       value: Option::None,
-       ttl: Option::None
+        name,
+        dns_type,
+        class,
+        entropy: Some(entropy),
+        value: None,
+        ttl: None,
+        registered_domain,
+        subdomain
     }))
 }
 
@@ -247,7 +267,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = false;
             match parse_ipv4(&data[cursor..cursor+data_length]) {
                 Ok(addr) => {
-                    Option::Some(addr)
+                    Some(addr)
                 },
                 Err(e) => bail!("Could not parse A value: {}", e) 
             }
@@ -256,7 +276,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet) {
                 Ok((_, cname)) => {
-                    Option::Some(cname) 
+                    Some(cname)
                 },
                 Err(e) => bail!("Could not parse CNAME value: {}", e)
             }
@@ -265,7 +285,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = false;
             match parse_ipv6(&data[cursor..cursor+data_length]) {
                 Ok(addr) => {
-                    Option::Some(addr)
+                    Some(addr)
                 },
                 Err(e) => bail!("Could not parse AAAA value: {}", e) 
             }
@@ -274,7 +294,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet) {
                 Ok((_, ns)) => {
-                    Option::Some(ns) 
+                    Some(ns)
                 },
                 Err(e) => bail!("Could not parse NS value: {}", e)
             }
@@ -283,7 +303,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet) {
                 Ok((_, ptr)) => {
-                    Option::Some(ptr) 
+                    Some(ptr)
                 },
                 Err(e) => bail!("Could not parse PTR value: {}", e)
             }
@@ -297,7 +317,7 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             // We are skipping two bytes because we don't parse the MX priority.
             match parse_string(&data[cursor+2..cursor+data_length], full_packet) {
                 Ok((_, mx)) => {
-                    Option::Some(mx) 
+                    Some(mx)
                 },
                 Err(e) => bail!("Could not parse MX value: {}", e)
             }
@@ -306,26 +326,26 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
             dns_type_has_entropy = true;
             match parse_string(&data[cursor..cursor+data_length], full_packet) {
                 Ok((_, txt)) => {
-                    Option::Some(txt) 
+                    Some(txt)
                 },
                 Err(e) => bail!("Could not parse TXT value: {}", e)
             }
         },
         _ => {
             dns_type_has_entropy = false;
-            Option::None
+            None
         }
     };
 
     let entropy = match value.clone() {
         Some(v) => {
             if dns_type_has_entropy {
-                Option::Some(shannon_entropy(v.as_bytes()))
+                Some(shannon_entropy(v.as_bytes()))
             } else {
-                Option::None
+                None
             }
         },
-        None => Option::None
+        None => None
     };
 
     cursor += data_length;
@@ -336,7 +356,9 @@ fn parse_answer_element(data: &[u8], full_packet: &[u8]) -> Result<(usize, DNSDa
         dns_type,
         value,
         entropy,
-        ttl: Option::Some(ttl)
+        ttl: Some(ttl),
+        registered_domain: None,
+        subdomain: None
     }))
 }
 

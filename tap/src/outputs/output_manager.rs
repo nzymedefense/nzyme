@@ -3,6 +3,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use log::{error, info};
 use uuid::Uuid;
+use crate::dot11::frames::Dot11BeaconFrame;
+use crate::ethernet::packets::DNSPacket;
 use crate::messagebus::bus::Bus;
 use crate::outputs::targets::opensearch::opensearch_output::OpenSearchOutput;
 use crate::outputs::targets::output_message_receiver::OutputMessageReceiver;
@@ -33,27 +35,17 @@ impl OutputManager {
         thread::spawn(move || {
             loop {
                 // 802.11 Beacon frames.
-                for beacon in bus.dot11_beacon_pipeline.receiver.try_iter() {
-                    match outputs.lock() {
-                        Ok(outputs) => {
-                            for output in outputs.values() {
-                                output.write_dot11_beacon_frame(&beacon);
-                            }
-                        },
-                        Err(e) => error!("Could not acquire output configuration mutex: {}", e)
-                    }
-                }
+                let beacons: Vec<Arc<Dot11BeaconFrame>> = bus.dot11_beacon_output_pipeline.receiver.try_iter().collect();
+                let dns_packets: Vec<Arc<DNSPacket>> = bus.dns_output_pipeline.receiver.try_iter().collect();
 
-                // DNS
-                for dns in bus.dns_pipeline.receiver.try_iter() {
-                    match outputs.lock() {
-                        Ok(outputs) => {
-                            for output in outputs.values() {
-                                output.write_dns_packet(&dns);
-                            }
-                        },
-                        Err(e) => error!("Could not acquire output configuration mutex: {}", e)
-                    }
+                match outputs.lock() {
+                    Ok(outputs) => {
+                        for output in outputs.values() {
+                            output.write_dot11_beacon_frames(&beacons);
+                            output.write_dns_packets(&dns_packets);
+                        }
+                    },
+                    Err(e) => error!("Could not acquire output configuration mutex: {}", e)
                 }
             }
         });

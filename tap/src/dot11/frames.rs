@@ -263,10 +263,6 @@ pub struct Dot11BeaconFrame {
 }
 
 impl OutputData for Dot11BeaconFrame {
-    fn get_data_type(&self) -> OutputDataType {
-        OutputDataType::Dot11Beacon
-    }
-
     fn get_message_summary(&self) -> String {
         format!("Recorded beacon from {}", self.transmitter)
     }

@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
+use log::warn;
 use serde::Serialize;
 use crate::dot11::frames::Dot11BeaconFrame;
+use crate::ethernet::packets::DNSPacket;
+use crate::ethernet::types::DNSType;
 use crate::outputs::output_data::OutputData;
 
 #[derive(Serialize)]
@@ -10,7 +13,8 @@ pub enum FieldValue {
     String(String),
     Long(i128),
     Boolean(bool),
-    ArrayLong(Vec<u128>)
+    ArrayLongs(Vec<u128>),
+    ArrayObjects(Vec<HashMap<&'static str, FieldValue>>)
 }
 
 #[derive(Serialize)]
@@ -82,7 +86,7 @@ impl From<&Arc<Dot11BeaconFrame>> for OpenSearchMessage {
                 extended_rates.into_iter().for_each(|rate| all_rates.push(rate as u128));
             }
 
-            fields.insert("wifi.beacon.tagged.all_supported_rates", FieldValue::ArrayLong(all_rates));
+            fields.insert("wifi.beacon.tagged.all_supported_rates", FieldValue::ArrayLongs(all_rates));
         }
 
         if let Some(country) = f.tagged_parameters.country_information.clone() {
@@ -101,6 +105,83 @@ impl From<&Arc<Dot11BeaconFrame>> for OpenSearchMessage {
             fields.insert("wifi.beacon.tagged.pwnagotchi.pwnd_run", FieldValue::Long(pwnagotchi.pwnd_run as i128));
             fields.insert("wifi.beacon.tagged.pwnagotchi.pwnd_tot", FieldValue::Long(pwnagotchi.pwnd_tot as i128));
         }
+
+        OpenSearchMessage {
+            fields
+        }
+    }
+}
+
+impl From<&Arc<DNSPacket>> for OpenSearchMessage {
+    fn from(p: &Arc<DNSPacket>) -> Self {
+        let mut fields = HashMap::from([
+            ("@timestamp", FieldValue::String(p.timestamp.to_rfc3339())),
+            ("message", FieldValue::String(p.get_message_summary())),
+            ("service.name", FieldValue::String("nzyme".to_string())),
+            ("nzyme.subsystem", FieldValue::String("ethernet".to_string())),
+            ("network.protocol", FieldValue::String("dns".to_string())),
+            ("source.ip", FieldValue::String(p.source_address.clone())),
+            ("source.mac", FieldValue::String(p.source_mac.clone())),
+            ("source.port", FieldValue::Long(p.source_port as i128)),
+            ("destintaion.ip", FieldValue::String(p.destination_address.clone())),
+            ("destination.mac", FieldValue::String(p.destination_mac.clone())),
+            ("destination.port", FieldValue::Long(p.destination_port as i128)),
+            ("dns.type", FieldValue::String(if p.dns_type == DNSType::Query {"query".to_string()} else {"answer".to_string()}))
+        ]);
+
+        match &p.dns_type {
+            DNSType::Query => {
+                if let Some(queries) = &p.queries {
+                    if queries.len() == 1 {
+                        let query = queries.get(0).unwrap();
+                        fields.insert("dns.question.class", FieldValue::String(query.class.to_string()));
+                        fields.insert("dns.question.name", FieldValue::String(query.name.clone()));
+                        fields.insert("dns.question.type", FieldValue::String(query.dns_type.to_string()));
+
+                        if let Some(registered_domain) = query.registered_domain.clone() {
+                            fields.insert("dns.question.registered_domain", FieldValue::String(registered_domain));
+                        }
+
+                        if let Some(subdomain) = query.subdomain.clone() {
+                            fields.insert("dns.question.subdomain", FieldValue::String(subdomain));
+                        }
+                    } else {
+                        /* There should never be any of those. Not over-complicating code for
+                         * something that never happens. The DNS protocol has a section about
+                         * multiple questions in a query but no resolver handles it and no one
+                         * does it.
+                         */
+                        warn!("DNS query with not exactly one question. Not handling.")
+                    }
+                }
+            }
+            DNSType::QueryResponse => {
+                if let Some(responses) = &p.responses {
+                    let mut response_array: Vec<HashMap<&'static str, FieldValue>> = vec![];
+                    for response in responses {
+                        let mut response_fields = HashMap::new();
+
+                        response_fields.insert("class", FieldValue::String(response.class.to_string()));
+                        response_fields.insert("name", FieldValue::String(response.name.clone()));
+                        response_fields.insert("type", FieldValue::String(response.dns_type.to_string()));
+
+                        if let Some(value) = response.value.clone() {
+                            response_fields.insert("value", FieldValue::String(value));
+                        }
+
+                        if let Some(ttl) = response.ttl {
+                            response_fields.insert("ttl", FieldValue::Long(ttl as i128));
+                        }
+
+                        response_array.push(response_fields);
+                    }
+
+                    fields.insert("dns.answers", FieldValue::ArrayObjects(response_array));
+                }
+            }
+        }
+
+        // type, queries, responses
 
         OpenSearchMessage {
             fields

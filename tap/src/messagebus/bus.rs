@@ -26,7 +26,6 @@ pub struct Bus {
     pub dot11_broker: NzymeChannel<Dot11RawFrame>,
 
     pub dot11_frames_pipeline: NzymeChannel<Dot11Frame>,
-    pub dot11_beacon_pipeline: NzymeChannel<Dot11BeaconFrame>,
 
     pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
@@ -34,6 +33,8 @@ pub struct Bus {
     pub udp_pipeline: NzymeChannel<UDPPacket>,
     pub dns_pipeline: NzymeChannel<DNSPacket>,
 
+    pub dot11_beacon_output_pipeline: NzymeChannel<Dot11BeaconFrame>,
+    pub dns_output_pipeline: NzymeChannel<DNSPacket>
 }
 
 pub struct NzymeChannelSender<T> {
@@ -83,8 +84,6 @@ impl Bus<> {
 
         let (dot11_frames_sender, dot11_frames_receiver) = bounded(configuration.performance.wifi_broker_buffer_capacity);
 
-        let (dot11_beacon_pipeline_sender, dot11_beacon_pipeline_receiver) = bounded(65536); // TODO configurable
-
         let (ethernet_pipeline_sender, ethernet_pipeline_receiver) = bounded(65536); // TODO configurable
         let (arp_pipeline_sender, arp_pipeline_receiver) = bounded(512); // TODO configurable
 
@@ -92,6 +91,9 @@ impl Bus<> {
         let (udp_pipeline_sender, udp_pipeline_receiver) = bounded(512); // TODO configurable
 
         let (dns_pipeline_sender, dns_pipeline_receiver) = bounded(512); // TODO configurable
+
+        let (dot11_beacon_output_pipeline_sender, dot11_beacon_output_pipeline_receiver) = bounded(5120); // TODO configurable
+        let (dns_output_pipeline_sender, dns_output_pipeline_receiver) = bounded(512); // TODO configurable
 
         Self {
             name,
@@ -118,14 +120,6 @@ impl Bus<> {
                     name: ChannelName::Dot11FramesPipeline
                 }),
                 receiver: Arc::new(dot11_frames_receiver),
-            },
-            dot11_beacon_pipeline: NzymeChannel {
-                sender: Mutex::new(NzymeChannelSender {
-                    metrics: metrics.clone(),
-                    sender: dot11_beacon_pipeline_sender,
-                    name: ChannelName::Dot11BeaconPipeline
-                }),
-                receiver: Arc::new(dot11_beacon_pipeline_receiver),
             },
             ethernet_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
@@ -161,11 +155,27 @@ impl Bus<> {
             },
             dns_pipeline: NzymeChannel {
                 sender: Mutex::new(NzymeChannelSender {
-                    metrics,
+                    metrics: metrics.clone(),
                     sender: dns_pipeline_sender,
                     name: ChannelName::DnsPipeline 
                 }),
                 receiver: Arc::new(dns_pipeline_receiver),
+            },
+            dot11_beacon_output_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics: metrics.clone(),
+                    sender: dot11_beacon_output_pipeline_sender,
+                    name: ChannelName::Dot11BeaconOutputPipeline,
+                }),
+                receiver: Arc::new(dot11_beacon_output_pipeline_receiver),
+            },
+            dns_output_pipeline: NzymeChannel {
+                sender: Mutex::new(NzymeChannelSender {
+                    metrics,
+                    sender: dns_output_pipeline_sender,
+                    name: ChannelName::DnsOutputPipeline
+                }),
+                receiver: Arc::new(dns_output_pipeline_receiver),
             },
         }
     }

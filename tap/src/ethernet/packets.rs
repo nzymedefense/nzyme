@@ -1,4 +1,6 @@
 use chrono::{DateTime, Utc};
+use crate::outputs::output_configuration::OutputConfiguration;
+use crate::outputs::output_data::{OutputData, OutputFilterResult};
 
 use super::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType};
 
@@ -74,7 +76,6 @@ pub struct UDPPacket {
     pub timestamp: DateTime<Utc>
 }
 
-
 #[derive(Debug)]
 pub struct DNSPacket {
     pub source_mac: String,
@@ -99,7 +100,48 @@ pub struct DNSData {
     pub class: DNSClass,
     pub value: Option<String>,
     pub ttl: Option<u32>,
-    pub entropy: Option<f32>
+    pub entropy: Option<f32>,
+    pub registered_domain: Option<String>,
+    pub subdomain: Option<String>
+}
+
+impl OutputData for DNSPacket {
+    fn get_message_summary(&self) -> String {
+        match &self.dns_type {
+            DNSType::Query => {
+                match &self.queries {
+                    Some(queries) => {
+                        let mut names: Vec<String> = vec![];
+                        for query in queries {
+                            names.push(format!("{} {}", query.dns_type, query.name));
+                        }
+                        format!("DNS query for {} by {}", names.join(", "), self.source_address)
+                    },
+                    None => {
+                        format!("Empty DNS query by {}", self.source_address)
+                    }
+                }
+            },
+            DNSType::QueryResponse => {
+                match &self.responses {
+                    Some(responses) => {
+                        let mut names: Vec<String> = vec![];
+                        for response in responses {
+                            names.push(format!("{} {}", response.dns_type, response.name));
+                        }
+                        format!("DNS response for {} by {}", names.join(", "), self.source_address)
+                    },
+                    None => {
+                        format!("Empty DNS response by {}", self.source_address)
+                    }
+                }
+            }
+        }
+    }
+
+    fn filter(&self, configuration: &OutputConfiguration) -> OutputFilterResult {
+        OutputFilterResult::Pass
+    }
 }
 
 #[derive(Debug)]

@@ -20,7 +20,6 @@ pub enum OutputTarget {
 
 pub trait OutputData {
 
-    fn get_data_type(&self) -> OutputDataType;
     fn get_message_summary(&self) -> String;
     fn filter(&self, output_configuration: &OutputConfiguration) -> OutputFilterResult;
 

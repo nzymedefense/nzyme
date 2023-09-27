@@ -27,18 +27,7 @@ impl OpenSearchOutput {
         }
     }
 
-}
-
-impl OutputMessageReceiver for OpenSearchOutput {
-    fn write_dns_packet(&self, dns: &Arc<DNSPacket>) {
-        info!("DNS: {:?}", dns);
-    }
-
-    fn write_dot11_beacon_frame(&self, frame: &Arc<Dot11BeaconFrame>) {
-        let json: String = serde_json::to_string(&vec![OpenSearchMessage::from(frame).fields])
-            .unwrap();
-
-        // TODO send to a self.send(json: String) thing
+    fn send(&self, json: String) {
         let result = self.http_client
             .post(Url::parse("http://100.81.142.139:2021/log/ingest").unwrap())
             .body(Body::from(json))
@@ -46,6 +35,40 @@ impl OutputMessageReceiver for OpenSearchOutput {
 
         if let Err(e) = result {
             error!("Could not send OpenSearch output message: {}", e);
+        }
+    }
+}
+
+// MAKE BUFFER GLOBAL. WRITE STRING TO VEC
+
+impl OutputMessageReceiver for OpenSearchOutput {
+    fn write_dns_packets(&self, packets: &Vec<Arc<DNSPacket>>) {
+        for slice in packets.chunks(50) {
+            let mut payload = vec![];
+            for message in slice {
+                let x: OpenSearchMessage = message.into();
+                payload.push(x.fields);
+            }
+
+            let json: String = serde_json::to_string(&payload)
+                .unwrap();
+
+            self.send(json);
+        }
+    }
+
+    fn write_dot11_beacon_frames(&self, frames: &Vec<Arc<Dot11BeaconFrame>>) {
+        for slice in frames.chunks(50) {
+            let mut payload = vec![];
+            for message in slice {
+                let x: OpenSearchMessage = message.into();
+                payload.push(x.fields);
+            }
+
+            let json: String = serde_json::to_string(&payload)
+                .unwrap();
+
+            self.send(json);
         }
     }
 }

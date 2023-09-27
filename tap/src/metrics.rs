@@ -41,13 +41,15 @@ pub struct Channels {
     dot11_broker: ChannelUtilization,
 
     dot11_frames_pipeline: ChannelUtilization,
-    dot11_beacon_pipeline: ChannelUtilization,
 
     ethernet_pipeline: ChannelUtilization,
     arp_pipeline: ChannelUtilization,
     tcp_pipeline: ChannelUtilization,
     udp_pipeline: ChannelUtilization,
     dns_pipeline: ChannelUtilization,
+
+    dot11_beacon_output_pipeline: ChannelUtilization,
+    dns_output_pipeline: ChannelUtilization
 }
 
 #[derive(Clone, Display)]
@@ -84,12 +86,13 @@ impl Metrics {
                 ethernet_broker: ChannelUtilization::default(),
                 dot11_broker: ChannelUtilization::default(),
                 dot11_frames_pipeline: ChannelUtilization::default(),
-                dot11_beacon_pipeline: ChannelUtilization::default(),
                 ethernet_pipeline: ChannelUtilization::default(),
                 arp_pipeline: ChannelUtilization::default(),
                 tcp_pipeline: ChannelUtilization::default(),
                 udp_pipeline: ChannelUtilization::default(),
                 dns_pipeline: ChannelUtilization::default(),
+                dot11_beacon_output_pipeline: ChannelUtilization::default(),
+                dns_output_pipeline: ChannelUtilization::default()
             },
             captures: HashMap::new(),
             gauges_long: HashMap::new()
@@ -164,12 +167,13 @@ impl Metrics {
             ChannelName::EthernetBroker => &mut self.channels.ethernet_broker,
             ChannelName::Dot11Broker => &mut self.channels.dot11_broker,
             ChannelName::Dot11FramesPipeline => &mut self.channels.dot11_frames_pipeline,
-            ChannelName::Dot11BeaconPipeline => &mut self.channels.dot11_beacon_pipeline,
             ChannelName::EthernetPipeline => &mut self.channels.ethernet_pipeline,
             ChannelName::ArpPipeline => &mut self.channels.arp_pipeline,
             ChannelName::TcpPipeline => &mut self.channels.tcp_pipeline,
             ChannelName::UdpPipeline => &mut self.channels.udp_pipeline,
             ChannelName::DnsPipeline => &mut self.channels.dns_pipeline,
+            ChannelName::Dot11BeaconOutputPipeline => &mut self.channels.dot11_beacon_output_pipeline,
+            ChannelName::DnsOutputPipeline => &mut self.channels.dns_output_pipeline
         }
     }
 

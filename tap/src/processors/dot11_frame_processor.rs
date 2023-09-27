@@ -135,8 +135,8 @@ impl Dot11FrameProcessor {
 
         let length = frame.length as u32;
         to_pipeline!(
-            ChannelName::Dot11BeaconPipeline,
-            self.bus.dot11_beacon_pipeline.sender,
+            ChannelName::Dot11BeaconOutputPipeline,
+            self.bus.dot11_beacon_output_pipeline.sender,
             Arc::new(frame),
             length
         );

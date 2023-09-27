@@ -2,7 +2,8 @@ use std::{sync::{Arc, Mutex}, thread, process::exit};
 
 use log::error;
 
-use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics};
+use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics, to_pipeline};
+use crate::messagebus::channel_names::ChannelName;
 
 use super::{
     arp_processor::ARPProcessor,
@@ -93,6 +94,14 @@ fn spawn_base_dns(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemS
     thread::spawn(move || {
         for packet in bus.dns_pipeline.receiver.iter() {
             processor.process(&packet);
+
+            let length = packet.size;
+            to_pipeline!(
+                ChannelName::DnsOutputPipeline,
+                bus.dns_output_pipeline.sender,
+                packet,
+                length
+            );
         }
 
         error!("DNS receiver disconnected.");
