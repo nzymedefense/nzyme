@@ -107,6 +107,7 @@ import CreateCustomBanditPage from "./components/dot11/monitoring/bandits/Create
 import CustomBanditDetailsPage from "./components/dot11/monitoring/bandits/CustomBanditDetailsPage";
 import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCustomBanditPage";
 import DiscoPage from "./components/dot11/disco/DiscoPage";
+import OutputsPage from "./components/system/outputs/OutputsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -336,6 +337,9 @@ function App() {
 
                           { /* System/Database */ }
                           <Route path={ApiRoutes.SYSTEM.DATABASE.INDEX} element={<DatabasePage />} />
+
+                          { /* System/Outputs */ }
+                          <Route path={ApiRoutes.SYSTEM.OUTPUTS.INDEX} element={<OutputsPage />} />
 
                           { /* Ethernet/DNS. */}
                           <Route path={ApiRoutes.ETHERNET.DNS.INDEX} element={<DNSOverviewPage />}/>

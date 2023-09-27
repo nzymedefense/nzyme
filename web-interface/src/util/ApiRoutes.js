@@ -94,6 +94,9 @@ const ApiRoutes = {
         IPINFO: '/system/integrations/geoip/ipinfo'
       }
     },
+    OUTPUTS: {
+      INDEX: '/system/outputs'
+    },
     EVENTS: {
       INDEX: '/system/events',
       ACTIONS: {

@@ -161,6 +161,11 @@ function Sidebar() {
             icon={<i className="sidebar-icon fa-solid fa-puzzle-piece" />} />
         <NavigationLink
             show={user.is_superadmin}
+            href={ApiRoutes.SYSTEM.OUTPUTS.INDEX}
+            title="Outputs"
+            icon={<i className="sidebar-icon fa-solid fa-share" />} />
+        <NavigationLink
+            show={user.is_superadmin}
             href={ApiRoutes.SYSTEM.HEALTH.INDEX}
             title="Health Console"
             icon={<i className="sidebar-icon fa-solid fa-laptop-medical" />} />
