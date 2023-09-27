@@ -76,7 +76,6 @@ function CustomBanditsTableProxy() {
         <Paginator itemCount={bandits ? bandits.total : 0} perPage={perPage} setPage={setPage} page={page} />
 
         <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organizationUUID, tenantUUID)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
-        <a href={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(organization.id, tenant.id)} className="btn btn-sm btn-secondary">Create Custom Bandit</a>
       </React.Fragment>
   )
 
