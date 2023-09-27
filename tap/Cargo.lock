@@ -953,7 +953,7 @@ dependencies = [
 
 [[package]]
 name = "nzyme-tap"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5-SNAPSHOT"
 dependencies = [
  "anyhow",
  "bitreader",
