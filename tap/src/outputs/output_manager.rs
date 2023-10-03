@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Duration;
 use log::{error, info};
 use uuid::Uuid;
 use crate::dot11::frames::Dot11BeaconFrame;
@@ -47,6 +48,8 @@ impl OutputManager {
                     },
                     Err(e) => error!("Could not acquire output configuration mutex: {}", e)
                 }
+
+                thread::sleep(Duration::from_millis(500))
             }
         });
     }
