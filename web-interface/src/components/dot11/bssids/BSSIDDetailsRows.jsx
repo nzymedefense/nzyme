@@ -15,6 +15,21 @@ function BSSIDDetailsRows(props) {
   const bssid = props.bssid;
   const ssids = props.ssids;
   const loading = props.loading;
+  const hideBSSIDLink = props.hideBSSIDLink;
+
+  const bssidLinkRow = () => {
+    if (hideBSSIDLink) {
+      return null;
+    } else {
+      return (
+          <tr>
+            <td colSpan={COLSPAN} style={{textAlign: "center"}}>
+              <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)}>Show BSSID Details</a>
+            </td>
+          </tr>
+      )
+    }
+  }
 
   if (loading) {
     return (
@@ -70,7 +85,7 @@ function BSSIDDetailsRows(props) {
                     </td>
                     <td>{numeral(ssid.total_frames).format("0,0")} frames / {numeral(ssid.total_bytes).format("0,0b")}</td>
                     <td><SignalStrength strength={ssid.signal_strength_average} /></td>
-                    <td>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</td>
+                    <td>{ssid.security_protocols.length === 0 || ssid.security_protocols[0] === "" ? "None" : ssid.security_protocols.join(",")}</td>
                     <td>{ssid.is_wps.join(",")}</td>
                     <td title={moment(ssid.last_seen).format()}>
                       {moment(ssid.last_seen).fromNow()}
@@ -78,11 +93,7 @@ function BSSIDDetailsRows(props) {
                   </tr>
                 )
               })}
-              <tr>
-                <td colSpan={COLSPAN} style={{textAlign: "center"}}>
-                  <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)}>Show BSSID Details</a>
-                </td>
-              </tr>
+              {bssidLinkRow()}
             </tbody>
           </table>
         </td>

@@ -134,6 +134,10 @@ public class AuthenticationService {
         );
     }
 
+    public List<OrganizationEntry> findAllOrganizations() {
+        return findAllOrganizations(Integer.MAX_VALUE, 0);
+    }
+
     public List<OrganizationEntry> findAllOrganizations(int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid, name, description, created_at, updated_at FROM auth_organizations " +
@@ -316,10 +320,14 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<List<TenantEntry>> findAllTenantsOfOrganization(UUID organizationId) {
+        return findAllTenantsOfOrganization(organizationId, Integer.MAX_VALUE, 0);
+    }
+
     public Optional<List<TenantEntry>> findAllTenantsOfOrganization(UUID organizationId, int limit, int offset) {
         List<TenantEntry> tenants = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, name, description, created_at, updated_at " +
-                                "FROM auth_tenants WHERE organization_id = :organization_id " +
+                handle.createQuery("SELECT * FROM auth_tenants " +
+                                "WHERE organization_id = :organization_id " +
                                 "ORDER BY name DESC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("limit", limit)
@@ -337,8 +345,7 @@ public class AuthenticationService {
 
     public Optional<TenantEntry> findTenant(UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, name, description, created_at, updated_at " +
-                                "FROM auth_tenants WHERE uuid = :id")
+                handle.createQuery("SELECT * FROM auth_tenants WHERE uuid = :id")
                         .bind("id", tenantId)
                         .mapTo(TenantEntry.class)
                         .findOne()

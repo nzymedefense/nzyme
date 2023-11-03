@@ -4,12 +4,19 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
+import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.jdbi.v3.core.statement.Query;
@@ -17,6 +24,7 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class Dot11 {
 
@@ -69,6 +77,7 @@ public class Dot11 {
 
     public enum DiscoType {
 
+        DISCONNECTION(-1),
         DEAUTHENTICATION(0),
         DISASSOCIATION(1);
 
@@ -81,12 +90,52 @@ public class Dot11 {
         public int getNumber() {
             return number;
         }
-
     }
 
+    LoadingCache<Dot11MacAddressLookupCompositeKey, Dot11MacAddressMetadata> macAddressMetadata = CacheBuilder.newBuilder()
+            .maximumSize(5000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                // TODO MOVE TO PRIVATE FETCH()
+                @Override
+                public Dot11MacAddressMetadata load(Dot11MacAddressLookupCompositeKey lookup){
+                    return fetchMacAddressMetadataNoCache(lookup);
+                }
+            });
 
     public Dot11(NzymeNode nzyme) {
         this.nzyme = nzyme;
+    }
+
+    public Dot11MacAddressMetadata getMacAddressMetadata(String macAddress, List<UUID> taps) {
+        try {
+            return macAddressMetadata.get(Dot11MacAddressLookupCompositeKey.create(macAddress, taps));
+        } catch(Exception e) {
+            throw new RuntimeException("Could not fetch 802.11 MAC address metadata.", e);
+        }
+    }
+
+    private Dot11MacAddressMetadata fetchMacAddressMetadataNoCache(Dot11MacAddressLookupCompositeKey lookup) {
+        // Is this a access point?
+        boolean isAccessPoint = bssidExist(lookup.mac(), Integer.MAX_VALUE, lookup.taps());
+
+        // Is this a client?
+        boolean isClient = clientExist(lookup.mac(), Integer.MAX_VALUE, lookup.taps());
+
+        // Is it both?
+        if (isAccessPoint && isClient) {
+            return Dot11MacAddressMetadata.create(Dot11MacAddressType.MULTIPLE);
+        } else {
+            // Not both. Good.
+            if (isAccessPoint) {
+                return Dot11MacAddressMetadata.create(Dot11MacAddressType.ACCESS_POINT);
+            } else if (isClient) {
+                return Dot11MacAddressMetadata.create(Dot11MacAddressType.CLIENT);
+            } else {
+                // None. Shouldn't happen.
+                return Dot11MacAddressMetadata.create(Dot11MacAddressType.UNKNOWN);
+            }
+        }
     }
 
     public List<String> findAllSSIDNames(List<UUID> taps) {
@@ -103,6 +152,71 @@ public class Dot11 {
         );
     }
 
+    public Optional<BSSIDSummary> findBSSID(String bssid, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
+                                "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
+                                "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
+                                "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
+                                "COUNT(DISTINCT(c.client_mac)) AS client_count " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
+                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
+                                "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
+                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY b.bssid")
+                        .bind("bssid", bssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(BSSIDSummary.class)
+                        .findOne()
+        );
+    }
+
+    public List<Dot11AdvertisementHistogramEntry> getBSSIDAdvertisementHistogram(String bssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
+                                "SUM(proberesp_advertisements) AS proberesponses, " +
+                                "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "AND bssid = :bssid " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("bssid", bssid)
+                        .mapTo(Dot11AdvertisementHistogramEntry.class)
+                        .list()
+        );
+    }
+
+
+    public List<ActiveChannel> getBSSIDChannelUsageHistogram(String bssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.frequency, sum(c.stats_frames) AS frames, sum(c.stats_bytes) AS bytes " +
+                                "FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels c on s.id = c.ssid_id " +
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
+                                "GROUP BY c.frequency")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("bssid", bssid)
+                        .mapTo(ActiveChannel.class)
+                        .list()
+        );
+    }
+
     public List<BSSIDSummary> findBSSIDs(int minutes, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
@@ -110,7 +224,8 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
-                                "MAX(b.created_at) AS last_seen, SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
+                                "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
+                                "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
                                 "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
@@ -130,94 +245,38 @@ public class Dot11 {
         );
     }
 
-    public List<String> findAllBSSIDsAdvertisingSSID(int minutes, String ssid, List<UUID> taps) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(b.bssid) FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "WHERE s.ssid = :ssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
-                        .bind("ssid", ssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(String.class)
-                        .list()
-        );
-    }
-
-    public List<String> findFingerprintsOfBSSID(int minutes, String bssid, List<UUID> taps) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(f.fingerprint) FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
-                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>)")
-                        .bind("bssid", bssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(String.class)
-                        .list()
-        );
-    }
-
-    public List<String> findSecuritySuitesOfSSIDOfBSSID(int minutes, String bssid, String ssid, List<UUID> taps) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(s.security_suites) FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND b.created_at > :cutoff " +
-                                "AND b.tap_uuid IN (<taps>)")
-                        .bind("bssid", bssid)
-                        .bind("ssid", ssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(String.class)
-                        .list()
-        );
-    }
-
-    public List<Integer> findChannelsOfSSIDOfBSSID(int minutes, String bssid, String ssid, List<UUID> taps) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(c.frequency) FROM dot11_bssids AS b " +
-                                "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
-                                "LEFT JOIN dot11_channels AS c ON s.id = c.ssid_id " +
-                                "WHERE b.bssid = :bssid AND s.ssid = :ssid AND b.created_at > :cutoff " +
-                                "AND b.tap_uuid IN (<taps>) AND c.frequency IS NOT NULL")
-                        .bind("bssid", bssid)
-                        .bind("ssid", ssid)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(Integer.class)
-                        .list()
-        );
-    }
-
-    public List<BSSIDWithTap> findAllBSSIDSOfAllTenantsWithFingerprint(int minutes, String fingerprint) {
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT b.bssid AS bssid, b.tap_uuid AS tap_uuid, " +
-                                "AVG(b.signal_strength_average) AS signal_strength " +
-                                "FROM dot11_fingerprints fp " +
-                                "LEFT JOIN dot11_bssids AS b ON b.id = fp.bssid_id " +
-                                "WHERE b.created_at > :cutoff AND fp.fingerprint = :fingerprint " +
-                                "AND b.bssid IS NOT NULL " +
-                                "GROUP BY b.bssid, b.tap_uuid")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bind("fingerprint", fingerprint)
-                        .mapTo(BSSIDWithTap.class)
-                        .list()
-        );
-    }
-
     public boolean bssidExist(String bssid, int minutes, List<UUID> taps) {
         if (taps.isEmpty()) {
             return false;
         }
 
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT COUNT(*) FROM dot11_bssids " +
+                handle.createQuery("SELECT EXISTS (SELECT 1 FROM dot11_bssids " +
                                 "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
-                                "AND bssid = :bssid")
+                                "AND bssid = :bssid)")
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
-                        .mapTo(Long.class)
+                        .mapTo(Boolean.class)
                         .one()
-        ) > 0;
+        );
+    }
+
+    public boolean clientExist(String clientMac, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return false;
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT EXISTS (SELECT 1 FROM dot11_clients " +
+                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "AND client_mac = :client_mac)")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .bind("client_mac", clientMac)
+                        .mapTo(Boolean.class)
+                        .one()
+        );
     }
 
     public List<SSIDChannelDetails> findSSIDsOfBSSID(int minutes, String bssid, List<UUID> taps) {
@@ -299,7 +358,7 @@ public class Dot11 {
         );
     }
 
-    public List<SSIDAdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+    public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -315,7 +374,7 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
-                        .mapTo(SSIDAdvertisementHistogramEntry.class)
+                        .mapTo(Dot11AdvertisementHistogramEntry.class)
                         .list()
         );
     }
@@ -560,6 +619,28 @@ public class Dot11 {
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(DisconnectedClientDetails.class)
+                        .list()
+        );
+    }
+
+    public List<ConnectedClientDetails> findClientsOfBSSID(String bssid, int minutes, List<UUID> taps) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.bssid AS bssid, c.client_mac AS client_mac, " +
+                                "MAX(b.created_at) AS last_seen " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN dot11_bssid_clients c on b.id = c.bssid_id " +
+                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
+                                "GROUP BY c.client_mac, b.bssid " +
+                                "HAVING c.client_mac IS NOT NULL " +
+                                "ORDER BY c.client_mac ASC ")
+                        .bind("bssid", bssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bindList("taps", taps)
+                        .mapTo(ConnectedClientDetails.class)
                         .list()
         );
     }
@@ -1141,22 +1222,423 @@ public class Dot11 {
         );
     }
 
-    public List<DiscoHistogramEntry> getGlobalDiscoHistogram(DiscoType discoType, int minutes, List<UUID> taps) {
+    public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
+                                                       int minutes,
+                                                       UUID tap,
+                                                       @Nullable List<String> bssids) {
+        return getDiscoHistogram(discoType, minutes, List.of(tap), bssids);
+    }
+
+    public List<DiscoHistogramEntry> getDiscoHistogram(DiscoType discoType,
+                                                       int minutes,
+                                                       List<UUID> taps,
+                                                       @Nullable List<String> bssids) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT SUM(sent_frames) AS frame_count, " +
-                                "DATE_TRUNC('minute', created_at) AS bucket " +
-                                "FROM dot11_disco_activity WHERE disco_type = :disco_type " +
-                                "AND created_at > :cutoff AND tap_uuid IN (<taps>)" +
-                                "GROUP BY bucket ORDER BY bucket DESC")
-                        .bind("disco_type", discoType.getNumber())
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bindList("taps", taps)
-                        .mapTo(DiscoHistogramEntry.class)
-                        .list()
+        List<Integer> discoTypes = Lists.newArrayList();
+        switch (discoType) {
+            case DISCONNECTION:
+                discoTypes.add(DiscoType.DISASSOCIATION.getNumber());
+                discoTypes.add(DiscoType.DEAUTHENTICATION.getNumber());
+                break;
+            case DEAUTHENTICATION:
+                discoTypes.add(DiscoType.DEAUTHENTICATION.getNumber());
+                break;
+            case DISASSOCIATION:
+                discoTypes.add(DiscoType.DISASSOCIATION.getNumber());
+                break;
+        }
+
+        List<DiscoHistogramEntry> senders;
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            senders = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT SUM(senders.sent_frames) " +
+                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "WHERE senders.disco_type IN (<disco_types>) " +
+                                    "AND senders.bssid IN (<bssids>) " +
+                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
+                                    "GROUP BY bucket ORDER BY bucket DESC")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("disco_types", discoTypes)
+                            .bindList("bssids", bssids)
+                            .bindList("taps", taps)
+                            .mapTo(DiscoHistogramEntry.class)
+                            .list()
+            );
+        } else {
+            // No BSSID filter.
+            senders = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT SUM(senders.sent_frames) " +
+                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "WHERE senders.disco_type IN (<disco_types>) " +
+                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
+                                    "GROUP BY bucket ORDER BY bucket DESC")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("disco_types", discoTypes)
+                            .bindList("taps", taps)
+                            .mapTo(DiscoHistogramEntry.class)
+                            .list()
+            );
+        }
+
+        List<DiscoHistogramEntry> receivers;
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            receivers = nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT SUM(receivers.received_frames) " +
+                                    "AS frame_count, DATE_TRUNC('minute', senders.created_at) AS bucket " +
+                                    "FROM dot11_disco_activity_receivers AS receivers " +
+                                    "LEFT JOIN dot11_disco_activity AS senders " +
+                                    "ON receivers.disco_activity_id = senders.id " +
+                                    "WHERE senders.disco_type IN (<disco_types>) " +
+                                    "AND receivers.bssid IN (<bssids>) " +
+                                    "AND senders.created_at > :cutoff " +
+                                    "AND senders.tap_uuid IN (<taps>) " +
+                                    "GROUP BY bucket ORDER BY bucket DESC")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("disco_types", discoTypes)
+                            .bindList("bssids", bssids)
+                            .bindList("taps", taps)
+                            .mapTo(DiscoHistogramEntry.class)
+                            .list()
+            );
+        } else {
+            /*
+             * No BSSID filter. We don't care about receivers if there is no filter. It would lead to double-counting
+             * because each sent frame shows up again as a received frame. Just taking sent_frames is enough here.
+             */
+            receivers = Lists.newArrayList();
+        }
+
+        Map<DateTime, DiscoHistogramEntry> sendersMap = Maps.newHashMap();
+        for (DiscoHistogramEntry h : senders) {
+            sendersMap.put(h.bucket(), h);
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            if (!senders.isEmpty() && receivers.isEmpty()) {
+                return senders;
+            }
+
+            if (senders.isEmpty() && !receivers.isEmpty()) {
+                return receivers;
+            }
+
+            // Merge sender and receiver histograms.
+            List<DiscoHistogramEntry> result = Lists.newArrayList(senders);
+            for (DiscoHistogramEntry h : receivers) {
+                DiscoHistogramEntry senderEntry = sendersMap.get(h.bucket());
+                if (senderEntry == null) {
+                    // No sender entry.
+                    result.add(h);
+                } else {
+                    // Sender entry exists. Add receiver.
+                    result.add(DiscoHistogramEntry.create(h.bucket(), h.frameCount() + senderEntry.frameCount()));
+                }
+            }
+
+            return result;
+        } else {
+            // We only have senders.
+            return senders;
+        }
+    }
+
+    public List<Dot11MacFrameCount> getDiscoTopSenders(int minutes,
+                                                       int limit,
+                                                       int offset,
+                                                       List<UUID> taps,
+                                                       @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT senders.bssid, SUM(senders.sent_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (senders.bssid IN (<bssids>) OR receivers.bssid IN (<bssids>)) " +
+                                    "GROUP BY senders.bssid ORDER BY frame_count DESC " +
+                                    "LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(Dot11MacFrameCount.class)
+                            .list()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT bssid, SUM(sent_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity " +
+                                    "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                    "GROUP BY bssid ORDER BY frame_count DESC " +
+                                    "LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(Dot11MacFrameCount.class)
+                            .list()
+            );
+        }
+    }
+
+    public Long countDiscoTopSenders(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(senders.bssid)) " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (senders.bssid IN (<bssids>) OR receivers.bssid IN (<bssids>))")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(bssid)) " +
+                                    "FROM dot11_disco_activity " +
+                                    "WHERE created_at > :cutoff AND tap_uuid IN (<taps>)")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        }
+    }
+
+    public List<Dot11MacFrameCount> getDiscoTopReceivers(int minutes,
+                                                         int limit,
+                                                         int offset,
+                                                         List<UUID> taps,
+                                                         @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT receivers.bssid, SUM(received_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity_receivers AS receivers " +
+                                    "LEFT JOIN dot11_disco_activity AS senders " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>)) " +
+                                    "GROUP BY receivers.bssid ORDER BY frame_count DESC " +
+                                    "LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(Dot11MacFrameCount.class)
+                            .list()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT receivers.bssid, SUM(received_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity_receivers AS receivers " +
+                                    "LEFT JOIN dot11_disco_activity AS senders " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "GROUP BY receivers.bssid ORDER BY frame_count DESC " +
+                                    "LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(Dot11MacFrameCount.class)
+                            .list()
+            );
+        }
+    }
+
+    public Long countDiscoTopReceivers(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(receivers.bssid)) " +
+                                    "FROM dot11_disco_activity_receivers AS receivers " +
+                                    "LEFT JOIN dot11_disco_activity AS senders " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>))")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(receivers.bssid)) " +
+                                    "FROM dot11_disco_activity_receivers AS receivers " +
+                                    "LEFT JOIN dot11_disco_activity AS senders " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>)")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        }
+    }
+
+    public List<BSSIDPairFrameCount> getDiscoTopPairs(int minutes,
+                                                      int limit,
+                                                      int offset,
+                                                      List<UUID> taps,
+                                                      @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT senders.bssid AS sender, receivers.bssid AS receiver, " +
+                                    "SUM(receivers.received_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>)) " +
+                                    "GROUP BY senders.bssid, receivers.bssid " +
+                                    "ORDER BY frame_count " +
+                                    "DESC LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(BSSIDPairFrameCount.class)
+                            .list()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT senders.bssid AS sender, receivers.bssid AS receiver, " +
+                                    "SUM(receivers.received_frames) AS frame_count " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "GROUP BY senders.bssid, receivers.bssid " +
+                                    "ORDER BY frame_count " +
+                                    "DESC LIMIT :limit OFFSET :offset")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bind("limit", limit)
+                            .bind("offset", offset)
+                            .mapTo(BSSIDPairFrameCount.class)
+                            .list()
+            );
+        }
+    }
+
+    public Long countDiscoTopPairs(int minutes, List<UUID> taps, @Nullable List<String> bssids) {
+        if (taps.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null && !bssids.isEmpty()) {
+            // BSSID filter applied.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(senders.bssid, receivers.bssid)) " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>) " +
+                                    "AND (receivers.bssid IN (<bssids>) OR senders.bssid IN (<bssids>))")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .bindList("bssids", bssids)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        } else {
+            // No BSSID filter.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT COUNT(DISTINCT(senders.bssid, receivers.bssid)) " +
+                                    "FROM dot11_disco_activity AS senders " +
+                                    "LEFT JOIN dot11_disco_activity_receivers AS receivers " +
+                                    "ON senders.id = receivers.disco_activity_id " +
+                                    "WHERE senders.created_at > :cutoff AND senders.tap_uuid IN (<taps>)")
+                            .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                            .bindList("taps", taps)
+                            .mapTo(Long.class)
+                            .one()
+            );
+        }
+    }
+
+    public Dot11DiscoMonitorMethodConfiguration getDiscoMonitorMethodConfiguration(long monitoredNetworkId) {
+        Optional<MonitoredSSID> monitoredNetwork = nzyme.getDatabase().withHandle(handle ->
+            handle.createQuery("SELECT * FROM dot11_monitored_networks " +
+                            "WHERE id = :id")
+                    .bind("id", monitoredNetworkId)
+                    .mapTo(MonitoredSSID.class)
+                    .findOne()
+        );
+
+        if (monitoredNetwork.isEmpty()) {
+            throw new RuntimeException("Monitored network with ID <" + monitoredNetworkId + "> not found.");
+        }
+
+        ObjectMapper om = new ObjectMapper();
+        Map<String, Object> configuration;
+
+        try {
+            configuration = om.readValue(monitoredNetwork.get().discoMonitorConfiguration(), new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not parse 802.11 disconnection monitor configuration of " +
+                    "monitored network [" + monitoredNetwork.get().uuid() + "].", e);
+        }
+
+        return Dot11DiscoMonitorMethodConfiguration.create(monitoredNetwork.get().discoMonitorType(), configuration);
+    }
+
+    public void setDiscoMonitorMethodConfiguration(String methodType,
+                                                   String configuration,
+                                                   long monitoredNetworkId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_monitored_networks SET disco_monitor_type = :monitor_type, " +
+                                "disco_monitor_configuration = :configuration WHERE id = :id")
+                        .bind("monitor_type", methodType)
+                        .bind("configuration", configuration)
+                        .bind("id", monitoredNetworkId)
+                        .execute()
         );
     }
 

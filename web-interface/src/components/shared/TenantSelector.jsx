@@ -1,10 +1,16 @@
-import React from "react";
+import React, {useEffect} from "react";
 
 function TenantSelector(props) {
 
   const tenants = props.tenants;
   const tenant = props.tenant;
   const setTenant = props.setTenant;
+
+  useEffect(() => {
+    if (tenants && tenants.tenants.length === 1) {
+      setTenant(tenants.tenants[0].id)
+    }
+  }, [tenants]);
 
   if (!tenants) {
     return (

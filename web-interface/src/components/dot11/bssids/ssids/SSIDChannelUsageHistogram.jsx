@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from "react";
 import {TapContext} from "../../../../App";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
-import SimpleBarChart from "../../../charts/SimpleBarChart";
+import SimpleBarChart from "../../../widgets/charts/SimpleBarChart";
 import numeral from "numeral";
 
 const dot11Service = new Dot11Service();

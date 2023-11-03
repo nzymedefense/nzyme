@@ -1,10 +1,17 @@
-import React from "react";
+import React, {useEffect} from "react";
 
 function OrganizationSelector(props) {
 
   const organizations = props.organizations;
   const organization = props.organization;
   const setOrganization = props.setOrganization;
+
+  useEffect(() => {
+    if (organizations.organizations.length === 1) {
+      // Automatically select org if there is only one.
+      setOrganization(organizations.organizations[0].id);
+    }
+  }, [organizations]);
 
   return (
       <select className="form-select mb-3"

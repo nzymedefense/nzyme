@@ -24,6 +24,9 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("signal_strength_average")
     public abstract float signalStrengthAverage();
 
+    @JsonProperty("first_seen")
+    public abstract DateTime firstSeen();
+
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
@@ -42,12 +45,13 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("infrastructure_types")
     public abstract List<String> infrastructureTypes();
 
-    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
+    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime firstSeen, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
         return builder()
                 .bssid(bssid)
                 .oui(oui)
                 .securityProtocols(securityProtocols)
                 .signalStrengthAverage(signalStrengthAverage)
+                .firstSeen(firstSeen)
                 .lastSeen(lastSeen)
                 .clientCount(clientCount)
                 .fingerprints(fingerprints)
@@ -70,6 +74,8 @@ public abstract class BSSIDSummaryDetailsResponse {
         public abstract Builder securityProtocols(List<String> securityProtocols);
 
         public abstract Builder signalStrengthAverage(float signalStrengthAverage);
+
+        public abstract Builder firstSeen(DateTime firstSeen);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 

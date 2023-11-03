@@ -8,6 +8,33 @@ class Dot11Service {
     })
   }
 
+  findBSSID(bssid, taps, setBSSID) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid, { taps: tapsList },
+        function (response) {
+          setBSSID(response.data)
+    })
+  }
+
+  getBSSIDAdvertisementHistogram(bssid, minutes, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/advertisements/histogram",
+        { minutes: minutes, taps: tapsList }, function (response) {
+          setHistogram(response.data);
+        })
+  }
+
+  getBSSIDActiveChannelHistogram(bssid, minutes, taps, setHistogram) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/frequencies/histogram",
+        { minutes: minutes, taps: tapsList }, function (response) {
+          setHistogram(response.data);
+        })
+  }
+
   findAllBSSIDs(minutes, taps, setBSSIDs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
@@ -232,13 +259,72 @@ class Dot11Service {
         successCallback);
   }
 
-  getDiscoHistogram(discoType, minutes, taps, setHistogram) {
+  getDiscoHistogram(discoType, minutes, taps, bssids, monitoredNetworkId, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const bssidList = bssids ? bssids.join(",") : null
+    const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
 
     RESTClient.get("/dot11/disco/histogram",
-        { disco_type: discoType, minutes: minutes, taps: tapsList },
+        { disco_type: discoType, minutes: minutes, taps: tapsList, bssids: bssidList, monitored_network_id: monitoredNetworkIdParam },
         function (response) {
           setHistogram(response.data)
+    })
+  }
+
+  getDiscoTopSenders(minutes, taps, monitoredNetworkId, limit, offset, setTopSenders) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
+
+    RESTClient.get("/dot11/disco/lists/senders",
+        { minutes: minutes, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        function (response) {
+          setTopSenders(response.data)
+    })
+  }
+
+  getDiscoTopReceivers(minutes, taps, monitoredNetworkId, limit, offset, setTopReceivers) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
+
+    RESTClient.get("/dot11/disco/lists/receivers",
+        { minutes: minutes, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, limit: limit, offset: offset},
+        function (response) {
+          setTopReceivers(response.data)
+        })
+  }
+
+  getDiscoTopPairs(minutes, taps, monitoredNetworkId, bssids, limit, offset, setTopPairs) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    const monitoredNetworkIdParam = monitoredNetworkId ? monitoredNetworkId : null;
+    const bssidsParam = bssids ? bssids.join(",") : null;
+
+    RESTClient.get("/dot11/disco/lists/pairs",
+        { minutes: minutes, taps: tapsList, monitored_network_id: monitoredNetworkIdParam, bssids: bssidsParam, limit: limit, offset: offset},
+        function (response) {
+          setTopPairs(response.data)
+        })
+  }
+
+  getDiscoDetectionConfiguration(monitoredNetworkUUID, setConfiguration) {
+    RESTClient.get("/dot11/disco/config/detection", {monitored_network_id: monitoredNetworkUUID}, function (response) {
+          setConfiguration(response.data);
+    })
+  }
+
+  setDiscoDetectionConfiguration(methodType, configuration, monitoredNetworkUUID, successCallback) {
+    RESTClient.put("/dot11/disco/config/detection",
+        {monitored_network_id: monitoredNetworkUUID, method_type: methodType, configuration: configuration}, successCallback);
+  }
+
+  simulateDiscoDetectionConfiguration(methodType, configuration, monitoredNetworkUUID, tapId, setAnomalies) {
+    RESTClient.post("/dot11/disco/config/detection/simulate",
+        {
+          monitored_network_id: monitoredNetworkUUID,
+          tap_id: tapId,
+          method_type: methodType,
+          configuration: configuration
+        }, function (response) {
+      setAnomalies(response.data);
     })
   }
 

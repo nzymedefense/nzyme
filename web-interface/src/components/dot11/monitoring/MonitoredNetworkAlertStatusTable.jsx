@@ -49,6 +49,13 @@ function MonitoredNetworkAlertStatusTable(props) {
           <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="unexpected_signal_tracks" />{' '}</td>
           { renderControls ? <td><AlertEnabledTrigger ssid={ssid} parameter="unexpected_signal_tracks" bumpRevision={bumpRevision} /> </td> : null }
         </tr>
+
+        <tr>
+          <td>Disconnection Anomalies <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-disco-anomalies" /></td>
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="disco_anomalies" skipEnabledCheck={true} />{' '}</td>
+          { renderControls ? <td><span className="text-muted">n/a</span></td> : null }
+        </tr>
+
         </tbody>
       </table>
   )

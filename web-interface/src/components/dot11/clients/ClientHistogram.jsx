@@ -1,6 +1,6 @@
 import React from "react";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import SimpleLineChart from "../../charts/SimpleLineChart";
+import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
 
 function ClientHistogram(props) {
 

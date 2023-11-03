@@ -1,11 +1,11 @@
 package app.nzyme.core.security.authentication.roles;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Permissions {
 
-    public static final Map<String, Permission> ALL = new HashMap<>(){{
+    public static final Map<String, Permission> ALL = new TreeMap<>(){{
         put("alerts_manage", Permission.create(
                 "alerts_manage",
                 "Manage Alerts",
@@ -44,6 +44,13 @@ public class Permissions {
                 "Allows user to create, edit and delete configurations of WiFi network monitoring. This can " +
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
+        ));
+        put("dot11_deauth_manage", Permission.create(
+                "dot11_deauth_manage",
+                "Manage WiFi Deauthentication Activity Monitoring",
+                "Allows user to configure deauthentication activity monitoring using data from all taps " +
+                        "the user has access to.",
+                true
         ));
     }};
 

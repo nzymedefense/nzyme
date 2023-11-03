@@ -47,11 +47,11 @@ function ConnectedClientsTable(props) {
           {clients.clients.map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
+                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">{client.mac}</a></td>
                   <td>{client.oui ? client.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>
-                    <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid)}>{client.connected_bssid}</a>
+                    <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid)} className="dot11-mac">{client.connected_bssid}</a>
                   </td>
                   <td>{client.connected_bssid_oui ? client.connected_bssid_oui :
                       <span className="text-muted">Unknown</span>}</td>

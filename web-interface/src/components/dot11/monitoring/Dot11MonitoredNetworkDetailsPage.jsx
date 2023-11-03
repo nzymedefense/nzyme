@@ -12,6 +12,10 @@ import MonitoredSecuritySuitesTable from "./MonitoredSecuritySuitesTable";
 import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
 import MonitoredNetworkAlertStatusTable from "./MonitoredNetworkAlertStatusTable";
+import DiscoDetectionDetails from "./disco/DiscoDetectionDetails";
+import WithPermission from "../../misc/WithPermission";
+import MonitoredNetworkDiscoChart from "./disco/MonitoredNetworkDiscoChart";
+import InlineTapSelector from "../../shared/InlineTapSelector";
 
 const dot11Service = new Dot11Service();
 const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
@@ -25,6 +29,8 @@ function Dot11MonitoredNetworkDetailsPage() {
 
   const [newBSSID, setNewBSSID] = useState("");
   const [bssidFormSubmitting, setBSSIDFormSubmitting] = useState(false);
+
+  const [discoSimulationTapUuid, setDiscoSimulationTapUuid] = useState(null);
 
   const [newChannel, setNewChannel] = useState("");
   const [channelFormSubmitting, setChannelFormSubmitting] = useState(false);
@@ -285,6 +291,36 @@ function Dot11MonitoredNetworkDetailsPage() {
                     {securitySuiteFormSubmitting ? "Please wait..." : "Add Security Suite "}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Deauthentication/Disassociation Monitor</h3>
+
+                <div className="mt-3">
+                  <DiscoDetectionDetails monitoredNetwork={ssid} />
+                </div>
+
+                <InlineTapSelector onTapSelected={(tapUuid) => setDiscoSimulationTapUuid(tapUuid)} />
+
+                <MonitoredNetworkDiscoChart selectedTapUuid={discoSimulationTapUuid}
+                                            monitoredNetwork={ssid} />
+
+                <p className="mt-2 mb-0 text-muted">
+                  Anomalies highlighted on chart with red background.
+                </p>
+
+                <WithPermission permission="dot11_deauth_manage">
+                  <a className="btn btn-secondary btn-sm mt-3"
+                     href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>
+                    Configure Anomaly Detection Method
+                  </a>
+                </WithPermission>
               </div>
             </div>
           </div>

@@ -91,6 +91,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                         }
                         isAlerted = true;
                         break;
+                    case DOT11_MONITOR_DISCO_ANOMALIES:
+                        isAlerted = true;
+                        break;
                 }
 
                 if (isAlerted) {
@@ -131,7 +134,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         MonitoredSSID ssid = result.get();
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid)){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid)){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -174,6 +177,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         boolean securitySuitesAlerted = false;
         boolean fingerprintAlerted = false;
         boolean signalTracksAlerted = false;
+        boolean discoAnomaliesAlerted = false;
         for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
                 .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid())) {
             DetectionType detectionType;
@@ -215,6 +219,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     }
                     signalTracksAlerted = true;
                     break;
+                case DOT11_MONITOR_DISCO_ANOMALIES:
+                    discoAnomaliesAlerted = true;
             }
 
             isAlerted = true;
@@ -237,6 +243,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 securitySuitesAlerted,
                 fingerprintAlerted,
                 signalTracksAlerted,
+                discoAnomaliesAlerted,
                 ssid.enabledUnexpectedBSSID(),
                 ssid.enabledUnexpectedChannel(),
                 ssid.enabledUnexpectedSecuritySuites(),
@@ -289,7 +296,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         MonitoredSSID ssid = result.get();
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid)){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid)){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -312,7 +319,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -350,7 +357,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -382,7 +389,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -427,7 +434,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -458,7 +465,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -495,7 +502,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -520,7 +527,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -558,7 +565,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -581,7 +588,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -604,7 +611,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -630,7 +637,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (!userHasAccessToMonitoredNetwork(authenticatedUser, ssid.get())){
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -647,22 +654,5 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         return Response.ok().build();
     }
-
-    private boolean userHasAccessToMonitoredNetwork(AuthenticatedUser user, MonitoredSSID ssid) {
-        if (user.isSuperAdministrator()) {
-            return true;
-        }
-
-        if (user.isOrganizationAdministrator() && ssid.organizationId().equals(user.getOrganizationId())) {
-            return true;
-        }
-
-        if (ssid.organizationId().equals(user.getOrganizationId()) && ssid.tenantId().equals(user.getTenantId())) {
-            return true;
-        }
-
-        return false;
-    }
-
 
 }

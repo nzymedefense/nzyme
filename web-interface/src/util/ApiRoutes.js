@@ -135,6 +135,9 @@ const ApiRoutes = {
         CREATE: (organizationId, tenantId) => `/dot11/monitoring/bandits/custom/organizations/${organizationId}/tenants/${tenantId}/create`,
         CUSTOM_DETAILS: (id) => `/dot11/monitoring/bandits/custom/show/${id}`,
         EDIT: (id) => `/dot11/monitoring/bandits/custom/show/${id}/edit`
+      },
+      DISCO: {
+        CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/disco/configuration`,
       }
     },
     NETWORKS: {

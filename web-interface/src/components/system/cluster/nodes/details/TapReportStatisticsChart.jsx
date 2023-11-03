@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import ClusterService from "../../../../../services/ClusterService";
 import LoadingSpinner from "../../../../misc/LoadingSpinner";
-import SimpleLineChart from "../../../../charts/SimpleLineChart";
+import SimpleLineChart from "../../../../widgets/charts/SimpleLineChart";
 
 const clusterService = new ClusterService()
 

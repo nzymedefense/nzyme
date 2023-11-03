@@ -64,6 +64,9 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("status_unexpected_signal_tracks")
     public abstract boolean statusUnexpectedSignalTracks();
 
+    @JsonProperty("status_disco_anomalies")
+    public abstract boolean statusDiscoAnomalies();
+
     @JsonProperty("enabled_unexpected_bssid")
     public abstract boolean enabledUnexpectedBSSID();
 
@@ -79,7 +82,7 @@ public abstract class MonitoredSSIDDetailsResponse {
     @JsonProperty("enabled_unexpected_signal_tracks")
     public abstract boolean enabledUnexpectedSignalTracks();
 
-    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecuritySuites, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks) {
+    public static MonitoredSSIDDetailsResponse create(UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, List<MonitoredBSSIDDetailsResponse> bssids, List<MonitoredChannelResponse> channels, List<MonitoredSecuritySuiteResponse> securitySuites, DateTime createdAt, DateTime updatedAt, boolean isAlerted, boolean statusUnexpectedBSSID, boolean statusUnexpectedChannel, boolean statusUnexpectedSecuritySuites, boolean statusUnexpectedFingerprint, boolean statusUnexpectedSignalTracks, boolean statusDiscoAnomalies, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks) {
         return builder()
                 .uuid(uuid)
                 .isEnabled(isEnabled)
@@ -97,6 +100,7 @@ public abstract class MonitoredSSIDDetailsResponse {
                 .statusUnexpectedSecuritySuites(statusUnexpectedSecuritySuites)
                 .statusUnexpectedFingerprint(statusUnexpectedFingerprint)
                 .statusUnexpectedSignalTracks(statusUnexpectedSignalTracks)
+                .statusDiscoAnomalies(statusDiscoAnomalies)
                 .enabledUnexpectedBSSID(enabledUnexpectedBSSID)
                 .enabledUnexpectedChannel(enabledUnexpectedChannel)
                 .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
@@ -143,6 +147,8 @@ public abstract class MonitoredSSIDDetailsResponse {
 
         public abstract Builder statusUnexpectedSignalTracks(boolean statusUnexpectedSignalTracks);
 
+        public abstract Builder statusDiscoAnomalies(boolean statusDiscoAnomalies);
+
         public abstract Builder enabledUnexpectedBSSID(boolean enabledUnexpectedBSSID);
 
         public abstract Builder enabledUnexpectedChannel(boolean enabledUnexpectedChannel);
@@ -155,5 +161,4 @@ public abstract class MonitoredSSIDDetailsResponse {
 
         public abstract MonitoredSSIDDetailsResponse build();
     }
-
 }

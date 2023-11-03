@@ -3,6 +3,7 @@ package app.nzyme.core.security.authentication.db;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.UUID;
 
 @AutoValue

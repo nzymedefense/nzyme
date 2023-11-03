@@ -53,9 +53,7 @@ function Dot11MonitoredBSSIDs(props) {
           {bssids.map(function(bssid, i) {
             return (
               <tr key={"bssid-" + i}>
-                <td>
-                  {bssid.bssid}
-                </td>
+                <td><span className="dot11-mac">{bssid.bssid}</span></td>
                 <td>{bssid.bssid_oui ? bssid.bssid_oui : "Unknown Vendor"}</td>
                 <td>{bssid.fingerprints.length}</td>
                 <td>

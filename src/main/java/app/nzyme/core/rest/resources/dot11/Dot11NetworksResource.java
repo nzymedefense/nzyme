@@ -2,8 +2,8 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
-import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -67,6 +68,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                     nzyme.getOUIManager().lookupMac(bssid.bssid()),
                     bssid.securityProtocols(),
                     bssid.signalStrengthAverage(),
+                    bssid.firstSeen(),
                     bssid.lastSeen(),
                     bssid.clientCount(),
                     bssid.fingerprints(),
@@ -77,6 +79,118 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(BSSIDListResponse.create(bssids)).build();
+    }
+
+    @GET
+    @Path("/bssids/show/{bssid}")
+    public Response bssid(@Context SecurityContext sc,
+                          @PathParam("bssid") @NotEmpty String bssidParam,
+                          @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Optional<BSSIDSummary> bssidResult = nzyme.getDot11().findBSSID(bssidParam, Integer.MAX_VALUE, tapUuids);
+
+        if (bssidResult.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        BSSIDSummary bssid = bssidResult.get();
+
+        BSSIDSummaryDetailsResponse summary = BSSIDSummaryDetailsResponse.create(
+                bssid.bssid(),
+                nzyme.getOUIManager().lookupMac(bssid.bssid()),
+                bssid.securityProtocols(),
+                bssid.signalStrengthAverage(),
+                bssid.firstSeen(),
+                bssid.lastSeen(),
+                bssid.clientCount(),
+                bssid.fingerprints(),
+                bssid.ssids(),
+                bssid.hiddenSSIDFrames() > 0,
+                bssid.infrastructureTypes()
+        );
+
+        ;
+
+        List<BSSIDClientDetails> clients = Lists.newArrayList();
+        for (ConnectedClientDetails client : nzyme.getDot11().findClientsOfBSSID(bssid.bssid(), 24*60, tapUuids)) {
+            clients.add(BSSIDClientDetails.create(
+                    client.clientMac(),
+                    nzyme.getOUIManager().lookupMac(client.clientMac()))
+            );
+        }
+
+        int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
+                .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
+        );
+
+        return Response.ok(BSSIDDetailsResponse.create(
+                summary,
+                clients,
+                dataRetentionDays
+        )).build();
+    }
+
+    @GET
+    @Path("/bssids/show/{bssid}/advertisements/histogram")
+    public Response bssidAdvertisementHistogram(@Context SecurityContext sc,
+                                                      @PathParam("bssid") String bssid,
+                                                      @QueryParam("minutes") int minutes,
+                                                      @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        Map<DateTime, Dot11AdvertisementHistogramEntry> histogram = Maps.newHashMap();
+        for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
+                .getBSSIDAdvertisementHistogram(bssid, minutes, tapUuids)) {
+            histogram.put(entry.bucket(), entry);
+        }
+
+        Map<DateTime, AdvertisementHistogramValueResponse> response = Maps.newTreeMap();
+        for (int x = minutes; x != 0; x--) {
+            DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
+            Dot11AdvertisementHistogramEntry entry = histogram.get(bucket);
+            if (entry == null) {
+                response.put(bucket,
+                        AdvertisementHistogramValueResponse.create(bucket, 0, 0)
+                );
+            } else {
+                response.put(
+                        bucket,
+                        AdvertisementHistogramValueResponse.create(
+                                entry.bucket(),
+                                entry.beacons(),
+                                entry.probeResponses()
+                        )
+                );
+            }
+        }
+
+        return Response.ok(AdvertisementHistogramResponse.create(response)).build();
+    }
+
+    @GET
+    @Path("/bssids/show/{bssid}/frequencies/histogram")
+    public Response bssidActiveChannelHistogram(@Context SecurityContext sc,
+                                                      @PathParam("bssid") String bssid,
+                                                      @QueryParam("minutes") int minutes,
+                                                      @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        List<ActiveChannelDetailsResponse> channels = Lists.newArrayList();
+        for (ActiveChannel c : nzyme.getDot11().getBSSIDChannelUsageHistogram(bssid, minutes, tapUuids)) {
+            channels.add(ActiveChannelDetailsResponse.create(
+                    Dot11.frequencyToChannel(c.frequency()),
+                    c.frequency(),
+                    c.frames(),
+                    c.bytes()
+            ));
+        }
+
+        return Response.ok(ActiveChannelListResponse.create(channels)).build();
     }
 
     @GET
@@ -248,24 +362,24 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
-        Map<DateTime, SSIDAdvertisementHistogramEntry> histogram = Maps.newHashMap();
-        for (SSIDAdvertisementHistogramEntry entry : nzyme.getDot11()
+        Map<DateTime, Dot11AdvertisementHistogramEntry> histogram = Maps.newHashMap();
+        for (Dot11AdvertisementHistogramEntry entry : nzyme.getDot11()
                 .getSSIDAdvertisementHistogram(bssid, ssid, minutes, tapUuids)) {
             histogram.put(entry.bucket(), entry);
         }
 
-        Map<DateTime, SSIDAdvertisementHistogramValueResponse> response = Maps.newTreeMap();
+        Map<DateTime, AdvertisementHistogramValueResponse> response = Maps.newTreeMap();
         for (int x = minutes; x != 0; x--) {
             DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
-            SSIDAdvertisementHistogramEntry entry = histogram.get(bucket);
+            Dot11AdvertisementHistogramEntry entry = histogram.get(bucket);
             if (entry == null) {
                 response.put(bucket,
-                        SSIDAdvertisementHistogramValueResponse.create(bucket, 0, 0)
+                        AdvertisementHistogramValueResponse.create(bucket, 0, 0)
                 );
             } else {
                 response.put(
                         bucket,
-                        SSIDAdvertisementHistogramValueResponse.create(
+                        AdvertisementHistogramValueResponse.create(
                                 entry.bucket(),
                                 entry.beacons(),
                                 entry.probeResponses()
@@ -274,7 +388,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             }
         }
 
-        return Response.ok(SSIDAdvertisementHistogramResponse.create(response)).build();
+        return Response.ok(AdvertisementHistogramResponse.create(response)).build();
     }
 
     @GET

@@ -103,7 +103,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new SSIDChannelDetailsMapper())
                 .registerRowMapper(new BSSIDAndSSIDCountHistogramEntryMapper())
                 .registerRowMapper(new SSIDDetailsMapper())
-                .registerRowMapper(new SSIDAdvertisementHistogramEntryMapper())
+                .registerRowMapper(new Dot11AdvertisementHistogramEntryMapper())
                 .registerRowMapper(new ChannelHistogramEntryMapper())
                 .registerRowMapper(new ActiveChannelMapper())
                 .registerRowMapper(new ConnectedClientDetailsMapper())
@@ -123,7 +123,9 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new TrackDetectorConfigMapper())
                 .registerRowMapper(new CustomBanditDescriptionMapper())
                 .registerRowMapper(new DiscoHistogramEntryMapper())
-                .registerRowMapper(new CustomBanditDescriptionMapper());
+                .registerRowMapper(new CustomBanditDescriptionMapper())
+                .registerRowMapper(new BSSIDFrameCountMapper())
+                .registerRowMapper(new BSSIDPairFrameCountMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

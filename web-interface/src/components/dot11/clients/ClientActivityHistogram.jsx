@@ -1,10 +1,12 @@
-import React, {useState} from "react";
-import SimpleLineChart from "../../charts/SimpleLineChart";
+import React from "react";
+import SimpleLineChart from "../../widgets/charts/SimpleLineChart";
+import SimpleBarChart from "../../widgets/charts/SimpleBarChart";
 
 function ClientActivityHistogram(props) {
 
   const histogram = props.histogram;
   const parameter = props.parameter;
+  const type = props.type;
 
   const formatData = function(data) {
     const result = {}
@@ -16,18 +18,23 @@ function ClientActivityHistogram(props) {
     return result
   }
 
-  return (
-      <React.Fragment>
-
-
-        <SimpleLineChart
-            height={200}
-            lineWidth={1}
-            customMarginBottom={35}
-            customMarginRight={20}
-            data={formatData(histogram)} />
-      </React.Fragment>
-  )
+  switch (type) {
+    case "bar":
+      return <SimpleBarChart
+          height={200}
+          lineWidth={1}
+          customMarginBottom={35}
+          customMarginRight={20}
+          data={formatData(histogram)} />
+    case "line":
+    default:
+      return <SimpleLineChart
+          height={200}
+          lineWidth={1}
+          customMarginBottom={35}
+          customMarginRight={20}
+          data={formatData(histogram)} />
+  }
 
 }
 

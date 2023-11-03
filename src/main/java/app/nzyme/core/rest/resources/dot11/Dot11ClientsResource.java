@@ -184,8 +184,17 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         ClientDetails c = client.get();
 
+        // Disconnection frames.
+        List<DiscoHistogramEntry> discos = nzyme.getDot11().getDiscoHistogram(
+                Dot11.DiscoType.DISCONNECTION,
+                24 * 60,
+                tapUuids,
+                List.of(c.mac())
+        );
+
         Map<DateTime, ClientActivityHistogramEntry> connectedHistogram = Maps.newHashMap();
         Map<DateTime, ClientActivityHistogramEntry> disconnectedHistogram = Maps.newHashMap();
+        Map<DateTime, DiscoHistogramEntry> discoActivityHistogram = Maps.newHashMap();
 
         for (ClientActivityHistogramEntry ce : c.connectedFramesHistogram()) {
             connectedHistogram.put(ce.bucket(), ce);
@@ -195,12 +204,17 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             disconnectedHistogram.put(ce.bucket(), ce);
         }
 
+        for (DiscoHistogramEntry disco : discos) {
+            discoActivityHistogram.put(disco.bucket(), disco);
+        }
+
         Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram = Maps.newTreeMap();
         for (int x = 24*60; x != 0; x--) {
             DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
 
             ClientActivityHistogramEntry connected = connectedHistogram.get(bucket);
             ClientActivityHistogramEntry disconnected = disconnectedHistogram.get(bucket);
+            DiscoHistogramEntry disco = discoActivityHistogram.get(bucket);
 
             Long connectedFrames;
             if (connected != null) {
@@ -216,11 +230,19 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 disconnectedFrames = 0L;
             }
 
+            Long discoActivityFrames;
+            if (disco != null) {
+                discoActivityFrames = disco.frameCount();
+            } else {
+                discoActivityFrames = 0L;
+            }
+
             activityHistogram.put(bucket, ClientActivityHistogramValueResponse.create(
                     bucket,
                     connectedFrames+disconnectedFrames,
                     connectedFrames,
-                    disconnectedFrames
+                    disconnectedFrames,
+                    discoActivityFrames
             ));
         }
 

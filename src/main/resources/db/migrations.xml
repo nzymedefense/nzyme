@@ -3894,4 +3894,54 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_disco_monitor_to_tenants" author="lennartkoopmann">
+        <addColumn tableName="auth_tenants">
+            <column name="dot11_disco_monitor_type" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_disco_monitor_config_to_tenants" author="lennartkoopmann">
+        <addColumn tableName="auth_tenants">
+            <column name="dot11_disco_monitor_configuration" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="add_disco_monitor_config_default_value" author="lennartkoopmann">
+        <addDefaultValue tableName="auth_tenants" columnName="dot11_disco_monitor_type" defaultValue="NOOP" />
+        <addDefaultValue tableName="auth_tenants" columnName="dot11_disco_monitor_configuration" defaultValue="{}" />
+
+        <sql>UPDATE auth_tenants SET dot11_disco_monitor_type = 'NOOP'</sql>
+        <sql>UPDATE auth_tenants SET dot11_disco_monitor_configuration = '{}'</sql>
+
+        <addNotNullConstraint tableName="auth_tenants" columnName="dot11_disco_monitor_type" />
+        <addNotNullConstraint tableName="auth_tenants" columnName="dot11_disco_monitor_configuration" />
+    </changeSet>
+
+    <changeSet id="move_disco_monitor_config_from_tenants_to_networks" author="lennartkoopmann">
+        <dropColumn tableName="auth_tenants" columnName="dot11_disco_monitor_type" />
+        <dropColumn tableName="auth_tenants" columnName="dot11_disco_monitor_configuration" />
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="disco_monitor_type" type="varchar(32)" defaultValue="NOOP">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="dot11_disco_monitor_configuration" type="text" defaultValue="{}">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="fix_column_name_20231010" author="lennartkoopmann">
+        <renameColumn tableName="dot11_monitored_networks"
+                      oldColumnName="dot11_disco_monitor_configuration"
+                      newColumnName="disco_monitor_configuration" />
+    </changeSet>
+
 </databaseChangeLog>

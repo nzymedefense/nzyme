@@ -28,7 +28,7 @@ function SSIDAccessPointClients(props) {
           {clients.slice(0,5).map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
+                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">{client.mac}</a></td>
                   <td>{client.oui ? client.oui : "Unknown"}</td>
                 </tr>
                 )
@@ -59,7 +59,11 @@ function SSIDAccessPointClients(props) {
                   {clients.map(function (client, i) {
                     return (
                         <tr key={"client-" + i}>
-                          <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)}>{client.mac}</a></td>
+                          <td>
+                            <a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">
+                              {client.mac}
+                            </a>
+                          </td>
                           <td>{client.oui ? client.oui : "Unknown"}</td>
                         </tr>
                     )

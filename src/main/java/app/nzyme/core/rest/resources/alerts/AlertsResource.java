@@ -260,6 +260,10 @@ public class AlertsResource extends UserAuthenticatedResource {
         EventEngineImpl eventEngine = (EventEngineImpl) nzyme.getEventEngine();
         List<DetectionAlertTypeDetailsResponse> typesList = Lists.newArrayList();
         for (DetectionType type : types) {
+            if (type.equals(DetectionType.WILDCARD)) {
+                continue;
+            }
+
             List<SubscriptionDetailsResponse> subscriptions = Lists.newArrayList();
             for (SubscriptionEntry sub : eventEngine.findAllActionsOfSubscription(organizationId, type.name())) {
                 eventEngine.findEventAction(sub.actionId()).ifPresent(eventActionEntry ->

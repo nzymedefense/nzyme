@@ -43,6 +43,12 @@ public class RetentionCleaner extends Periodical {
                         .bind("cutoff", dot11CutOff)
                         .execute()
         );
+
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_disco_activity WHERE created_at < :cutoff")
+                        .bind("cutoff", dot11CutOff)
+                        .execute()
+        );
     }
 
     @Override

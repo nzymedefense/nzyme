@@ -62,7 +62,7 @@ function Sidebar() {
 
         <NavigationLink
             href={ApiRoutes.DOT11.DISCO.INDEX}
-            title="Deauthentication"
+            title="Disconnections"
             icon={<i className="sidebar-icon fa-solid fa-link-slash" />} />
 
         <NavigationLink

@@ -47,7 +47,7 @@ function BSSIDRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
+            <a href="#" className="dot11-mac" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>

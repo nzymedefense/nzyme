@@ -20,10 +20,12 @@ public abstract class MonitoredSSID {
     public abstract boolean enabledUnexpectedSecuritySuites();
     public abstract boolean enabledUnexpectedFingerprint();
     public abstract boolean enabledUnexpectedSignalTracks();
+    public abstract String discoMonitorType();
+    public abstract String discoMonitorConfiguration();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, String discoMonitorType, String discoMonitorConfiguration, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -36,6 +38,8 @@ public abstract class MonitoredSSID {
                 .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
                 .enabledUnexpectedFingerprint(enabledUnexpectedFingerprint)
                 .enabledUnexpectedSignalTracks(enabledUnexpectedSignalTracks)
+                .discoMonitorType(discoMonitorType)
+                .discoMonitorConfiguration(discoMonitorConfiguration)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -68,6 +72,10 @@ public abstract class MonitoredSSID {
         public abstract Builder enabledUnexpectedFingerprint(boolean enabledUnexpectedFingerprint);
 
         public abstract Builder enabledUnexpectedSignalTracks(boolean enabledUnexpectedSignalTracks);
+
+        public abstract Builder discoMonitorType(String discoMonitorType);
+
+        public abstract Builder discoMonitorConfiguration(String discoMonitorConfiguration);
 
         public abstract Builder createdAt(DateTime createdAt);
 

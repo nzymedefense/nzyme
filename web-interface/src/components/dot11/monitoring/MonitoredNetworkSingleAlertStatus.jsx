@@ -4,8 +4,9 @@ function MonitoredNetworkSingleAlertStatus(props) {
 
   const ssid = props.ssid;
   const parameter = props.parameter;
+  const skipEnabledCheck = props.skipEnabledCheck;
 
-  if (ssid.is_enabled && ssid["enabled_" + parameter]) {
+  if (skipEnabledCheck === true || (ssid.is_enabled && ssid["enabled_" + parameter])) {
     if (ssid["status_" + parameter]) {
       return <i className="fa-solid fa-triangle-exclamation text-danger" title="Active alerts."></i>
     } else {

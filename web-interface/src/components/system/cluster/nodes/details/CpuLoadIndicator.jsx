@@ -1,5 +1,5 @@
 import React from "react";
-import SimpleRangeIndicator from "../../../../charts/SimpleRangeIndicator";
+import SimpleRangeIndicator from "../../../../widgets/charts/SimpleRangeIndicator";
 
 function CpuLoadIndicator(props) {
 

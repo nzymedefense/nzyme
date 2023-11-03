@@ -134,3 +134,16 @@ button.btn-text:focus {
     background-color: transparent;
     color: #71769F;
 }
+
+span.highlighted {
+    background-color: #656543;
+    color: #fff;
+}
+
+span.highlighted a {
+    color: #fff;
+}
+
+span.highlighted i {
+    color: #fff !important;
+}

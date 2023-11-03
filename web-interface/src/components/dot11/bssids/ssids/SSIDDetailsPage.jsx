@@ -17,6 +17,7 @@ import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import HelpBubble from "../../../misc/HelpBubble";
+import DiscoHistogram from "../../disco/DiscoHistogram";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -79,7 +80,8 @@ function SSIDDetailsPage() {
               <dl className="mb-0">
                 <dt>BSSID</dt>
                 <dd>
-                  {ssid.bssid} (Vendor: {ssid.bssid_oui ? ssid.bssid_oui : "Unknown"})
+                  <a href={ApiRoutes.DOT11.NETWORKS.BSSID(ssid.bssid)} className="dot11-mac">{ssid.bssid}</a>{' '}
+                  (Vendor: {ssid.bssid_oui ? ssid.bssid_oui : "Unknown"})
                 </dd>
                 <dt>Name</dt>
                 <dd>{ssid.ssid}</dd>
@@ -144,7 +146,7 @@ function SSIDDetailsPage() {
           <div className="card">
             <div className="card-body">
               <h3 style={{display: "inline-block"}}>
-                SSID Advertisements <small>Last 24 hours maximum</small>
+                SSID Advertisements
               </h3>
 
               <select className="form-select form-select-sm float-end" style={{width: 250}}
@@ -155,6 +157,23 @@ function SSIDDetailsPage() {
               </select>
 
               <SSIDAdvertisementHistogram bssid={ssid.bssid} ssid={ssid.ssid} parameter={advertisementHistogramType} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mt-3">
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h3>Deauthentication Activity</h3>
+
+              <p className="text-muted">
+                All deauthentication and disassociation frames indicating a disconnection from this access point. This
+                includes disconnections initiated by access point as well as clients.
+              </p>
+
+              <DiscoHistogram discoType="disconnection" minutes={24*60} bssids={[ssid.bssid]} />
             </div>
           </div>
         </div>

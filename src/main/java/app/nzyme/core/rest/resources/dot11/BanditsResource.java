@@ -2,8 +2,8 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.monitoring.CustomBanditDescription;
-import app.nzyme.core.dot11.monitoring.Dot11BanditDescription;
-import app.nzyme.core.dot11.monitoring.Dot11Bandits;
+import app.nzyme.core.dot11.bandits.Dot11BanditDescription;
+import app.nzyme.core.dot11.bandits.Dot11Bandits;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateBanditFingerprintRequest;

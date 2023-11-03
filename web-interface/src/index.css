@@ -702,3 +702,38 @@ div.card-alerted {
 .blink {
     animation: blinker 1s linear infinite;
 }
+
+.btn-disabled {
+    cursor: not-allowed;
+}
+
+textarea.histogram-data-export {
+    width: 100%;
+    height: 150px;
+    font-family: 'B612 Mono', monospace;
+    font-size: 12px;
+}
+
+span.dot11-mac-icon-container {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+a.dot11-mac, span.dot11-mac {
+    font-family: 'B612 Mono', monospace;
+    font-size: 12px;
+}
+
+select.monitored-network-selector {
+    width: 400px;
+    display: inline-block;
+    margin-right: 3px;
+    position: relative;
+    top: 2px;
+}
+
+span.highlighted {
+    background-color: #ffff9a;
+}

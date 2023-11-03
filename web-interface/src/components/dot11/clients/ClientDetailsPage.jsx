@@ -8,6 +8,7 @@ import moment from "moment";
 import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
 import ObservedProbeRequestsList from "./ObservedProbeRequestsList";
 import ClientActivityHistogram from "./ClientActivityHistogram";
+import DiscoPairsTable from "../disco/DiscoPairsTable";
 
 const dot11Service = new Dot11Service();
 
@@ -19,7 +20,6 @@ function ClientDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const [client, setClient] = useState(null);
-  const [activityHistogramType, setActivityHistogramType] = useState("total_frames");
 
   useEffect(() => {
     dot11Service.findMergedConnectedOrDisconnectedClient(macParam, selectedTaps, setClient);
@@ -63,11 +63,11 @@ function ClientDetailsPage() {
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
                   <dd>
-                    {client.mac} ({client.mac_oui ? client.mac_oui : "Unknown Vendor"})
+                    <span className="dot11-mac">{client.mac}</span> ({client.mac_oui ? client.mac_oui : "Unknown Vendor"})
                   </dd>
                   <dt>Connected to BSSID</dt>
                   <dd>
-                    {client.connected_bssid ? client.connected_bssid.bssid : "None"}{' '}
+                    {client.connected_bssid ? <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.bssid)} className="dot11-mac">{client.connected_bssid.bssid}</a> : "None"}{' '}
                     {client.connected_bssid ?
                       (client.connected_bssid.oui ? "(" + client.connected_bssid.oui + ")" : "(Unknown Vendor)") : null}
                   </dd>
@@ -96,33 +96,11 @@ function ClientDetailsPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <h3 style={{display: "inline-block"}}>
-                  Recorded Frames <small>Last 24 hours</small>
-                </h3>
-
-                <select className="form-select form-select-sm float-end" style={{width: 150}}
-                        onChange={(e) => { setActivityHistogramType(e.target.value) }}
-                        value={activityHistogramType}>
-                  <option value="total_frames">All Frames</option>
-                  <option value="connected_frames">Data Frames</option>
-                  <option value="disconnected_frames">Probe Requests</option>
-                </select>
-
-                <ClientActivityHistogram histogram={client.activity_histogram} parameter={activityHistogramType} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row mt-3">
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
                 <h3>
-                  Observed Connections BSSIDs <small>All Time</small>
+                  Observed Connections to BSSIDs <small>All Time</small>
                 </h3>
 
                 <ClientBSSIDHistory connectedBSSID={client.connected_bssid ? client.connected_bssid.bssid : null}
@@ -139,6 +117,74 @@ function ClientDetailsPage() {
                 </h3>
 
                 <ObservedProbeRequestsList probeRequests={client.probe_requests} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Data &amp; Control Frames <small>Last 24 hours</small></h3>
+
+                <ClientActivityHistogram histogram={client.activity_histogram}
+                                         parameter="connected_frames"
+                                         type="line"/>
+
+                <p className="text-muted mb-0 mt-3">
+                  <i>Connected</i> means that the client was connected to an access point. The frame types include data and
+                  control frames.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Probe Request Frames <small>Last 24 hours</small></h3>
+
+                <ClientActivityHistogram histogram={client.activity_histogram}
+                                         parameter="disconnected_frames"
+                                         type="bar"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Disconnection Frames <small>Last 24 hours</small></h3>
+
+                <ClientActivityHistogram histogram={client.activity_histogram}
+                                         parameter="disconnection_activity"
+                                         type="bar" />
+
+                <p className="text-muted mb-0 mt-3">
+                  Disconnection activity refers to the sum of deauthentication and disassociation frames.
+
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3 className="mb-0">Top Disconnection Pairs <small>Last 24 hours</small></h3>
+
+                <DiscoPairsTable bssids={[client.mac]} highlightValue={client.mac} />
+
+                <p className="mb-0 mt-3 text-muted">
+                  The MAC address of this client is <span className="highlighted">highlighted.</span>
+                </p>
               </div>
             </div>
           </div>

@@ -19,12 +19,16 @@ public abstract class ClientActivityHistogramValueResponse {
     @JsonProperty("disconnected_frames")
     public abstract long disconnectedFrames();
 
-    public static ClientActivityHistogramValueResponse create(DateTime bucket, long totalFrames, long connectedFrames, long disconnectedFrames) {
+    @JsonProperty("disconnection_activity")
+    public abstract long disconnectionActivity();
+
+    public static ClientActivityHistogramValueResponse create(DateTime bucket, long totalFrames, long connectedFrames, long disconnectedFrames, long disconnectionActivity) {
         return builder()
                 .bucket(bucket)
                 .totalFrames(totalFrames)
                 .connectedFrames(connectedFrames)
                 .disconnectedFrames(disconnectedFrames)
+                .disconnectionActivity(disconnectionActivity)
                 .build();
     }
 
@@ -41,6 +45,8 @@ public abstract class ClientActivityHistogramValueResponse {
         public abstract Builder connectedFrames(long connectedFrames);
 
         public abstract Builder disconnectedFrames(long disconnectedFrames);
+
+        public abstract Builder disconnectionActivity(long disconnectionActivity);
 
         public abstract ClientActivityHistogramValueResponse build();
     }

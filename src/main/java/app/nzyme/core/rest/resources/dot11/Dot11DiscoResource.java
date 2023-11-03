@@ -2,32 +2,63 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.db.Dot11MacFrameCount;
+import app.nzyme.core.dot11.db.BSSIDPairFrameCount;
 import app.nzyme.core.dot11.db.DiscoHistogramEntry;
+import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
+import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
+import app.nzyme.core.dot11.monitoring.disco.monitormethods.DiscoMonitorFactory;
+import app.nzyme.core.dot11.monitoring.disco.monitormethods.DiscoMonitorMethodType;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.SimulateDiscoDetectionConfigRequest;
+import app.nzyme.core.rest.requests.UpdateDiscoDetectionConfigRequest;
+import app.nzyme.core.rest.responses.dot11.Dot11MacLinkMetadataResponse;
 import app.nzyme.core.rest.responses.dot11.disco.DiscoHistogramValueResponse;
+import app.nzyme.core.rest.responses.dot11.disco.DiscoMonitorMethodConfigurationResponse;
+import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyDetailsResponse;
+import app.nzyme.core.rest.responses.dot11.disco.Dot11DiscoMonitorAnomalyListResponse;
+import app.nzyme.core.rest.responses.shared.*;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/dot11/disco")
 @Produces(MediaType.APPLICATION_JSON)
 @RESTSecured(PermissionLevel.ANY)
 public class Dot11DiscoResource extends TapDataHandlingResource {
+
+    private static final Logger LOG = LogManager.getLogger(TapDataHandlingResource.class);
+
+    private enum ListType {
+        SENDERS,
+        RECEIVERS,
+        PAIRS
+    }
 
     @Inject
     private NzymeNode nzyme;
@@ -37,7 +68,9 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
     public Response histogram(@Context SecurityContext sc,
                               @QueryParam("disco_type") String type,
                               @QueryParam("minutes") int minutes,
-                              @QueryParam("taps") String taps) {
+                              @QueryParam("taps") String taps,
+                              @QueryParam("bssids") @Nullable List<String> bssids, // or monitoredNetworkId
+                              @QueryParam("monitored_network_id") @Nullable UUID monitoredNetworkId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
@@ -48,8 +81,29 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
+        List<String> selectedBssids = Lists.newArrayList();
+        if (bssids != null && !bssids.isEmpty()) {
+            selectedBssids = bssids;
+        }
+
+        if (monitoredNetworkId != null) {
+            Optional<MonitoredSSID> monitoredNetwork = nzyme.getDot11().findMonitoredSSID(monitoredNetworkId);
+            if (monitoredNetwork.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+
+            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.get().id())
+                    .stream()
+                    .map(MonitoredBSSID::bssid)
+                    .collect(Collectors.toList());
+        }
+
         Map<DateTime, DiscoHistogramEntry> histogram = Maps.newHashMap();
-        for (DiscoHistogramEntry h : nzyme.getDot11().getGlobalDiscoHistogram(discoType, minutes, tapUuids)) {
+        for (DiscoHistogramEntry h : nzyme.getDot11().getDiscoHistogram(discoType, minutes, tapUuids, selectedBssids)) {
             histogram.put(h.bucket(), h);
         }
 
@@ -65,6 +119,234 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
         }
 
         return Response.ok(response).build();
+    }
+
+    @GET
+    @Path("/lists/{list_type}")
+    public Response list(@Context SecurityContext sc,
+                         @PathParam("list_type") @NotEmpty String listTypeParam,
+                         @QueryParam("minutes") int minutes,
+                         @QueryParam("taps") String taps,
+                         @QueryParam("monitored_network_id") @Nullable UUID monitoredNetworkId,
+                         @QueryParam("bssids") @Nullable String bssidsParam,
+                         @QueryParam("limit") int limit,
+                         @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (limit > 250) {
+            LOG.warn("Requested limit larger than 250. Not allowed.");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        ListType listType;
+        try {
+            listType = ListType.valueOf(listTypeParam.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (monitoredNetworkId != null && bssidsParam != null) {
+            // Not allowed to filter by both monitored network and specific BSSIDs.
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        List<String> selectedBssids = null;
+        if (monitoredNetworkId != null) {
+            Optional<MonitoredSSID> monitoredNetwork = nzyme.getDot11().findMonitoredSSID(monitoredNetworkId);
+            if (monitoredNetwork.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+
+            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.get().id())
+                    .stream()
+                    .map(MonitoredBSSID::bssid)
+                    .collect(Collectors.toList());
+        }
+
+        if (bssidsParam != null) {
+            selectedBssids = Splitter.on(",").splitToList(bssidsParam);
+        }
+
+        long total;
+        switch (listType) {
+            case SENDERS:
+                List<TwoColumnTableHistogramValueResponse> sendersValues = Lists.newArrayList();
+                total = nzyme.getDot11().countDiscoTopSenders(minutes, tapUuids, selectedBssids);
+                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopSenders(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    sendersValues.add(TwoColumnTableHistogramValueResponse.create(
+                            HistogramValueStructureResponse.create(
+                                    s.mac(),
+                                    HistogramValueType.DOT11_MAC,
+                                    Dot11MacLinkMetadataResponse.create(
+                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type()
+                                    )
+                            ),
+                            HistogramValueStructureResponse.create(
+                                    s.frameCount(),
+                                    HistogramValueType.INTEGER,
+                                    null
+                            )
+                    ));
+                }
+                return Response.ok(TwoColumnTableHistogramResponse.create(total, sendersValues)).build();
+            case RECEIVERS:
+                List<TwoColumnTableHistogramValueResponse> receiversValues = Lists.newArrayList();
+                total = nzyme.getDot11().countDiscoTopReceivers(minutes, tapUuids, selectedBssids);
+                for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopReceivers(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    receiversValues.add(TwoColumnTableHistogramValueResponse.create(
+                            HistogramValueStructureResponse.create(
+                                    s.mac(),
+                                    HistogramValueType.DOT11_MAC,
+                                    Dot11MacLinkMetadataResponse.create(
+                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type()
+                                    )
+                            ),
+                            HistogramValueStructureResponse.create(
+                                    s.frameCount(),
+                                    HistogramValueType.INTEGER,
+                                    null
+                            )
+                    ));
+                }
+                return Response.ok(TwoColumnTableHistogramResponse.create(total, receiversValues)).build();
+            case PAIRS:
+                List<ThreeColumnTableHistogramValueResponse> pairsValues = Lists.newArrayList();
+                total = nzyme.getDot11().countDiscoTopPairs(minutes, tapUuids, selectedBssids);
+                for (BSSIDPairFrameCount s : nzyme.getDot11().getDiscoTopPairs(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    pairsValues.add(ThreeColumnTableHistogramValueResponse.create(
+                            HistogramValueStructureResponse.create(
+                                    s.sender(),
+                                    HistogramValueType.DOT11_MAC,
+                                    Dot11MacLinkMetadataResponse.create(
+                                            nzyme.getDot11().getMacAddressMetadata(s.sender(), tapUuids).type()
+                                    )
+                            ),
+                            HistogramValueStructureResponse.create(
+                                    s.receiver(),
+                                    HistogramValueType.DOT11_MAC,
+                                    Dot11MacLinkMetadataResponse.create(
+                                            nzyme.getDot11().getMacAddressMetadata(s.receiver(), tapUuids).type()
+                                    )
+                            ),
+                            HistogramValueStructureResponse.create(
+                                    s.frameCount(),
+                                    HistogramValueType.INTEGER,
+                                    null
+                            ),
+                            s.sender() + " ⇨ " + s.receiver()
+                    ));
+                }
+
+                return Response.ok(ThreeColumnTableHistogramResponse.create(total, pairsValues)).build();
+            default:
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+    @GET
+    @Path("/config/detection")
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    public Response getDetectionConfig(@Context SecurityContext sc,
+                                       @QueryParam("monitored_network_id") @NotNull UUID monitoredNetworkId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> monitoredNetwork = nzyme.getDot11().findMonitoredSSID(monitoredNetworkId);
+
+        if (monitoredNetwork.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Dot11DiscoMonitorMethodConfiguration config = nzyme.getDot11().getDiscoMonitorMethodConfiguration(
+                monitoredNetwork.get().id());
+
+        return Response.ok(DiscoMonitorMethodConfigurationResponse.create(config.type(), config.configuration()))
+                .build();
+    }
+
+    @PUT
+    @Path("/config/detection")
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    public Response setDetectionConfig(@Context SecurityContext sc,
+                                       @Valid UpdateDiscoDetectionConfigRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> monitoredNetwork = nzyme.getDot11().findMonitoredSSID(req.monitoredNetworkId());
+
+        if (monitoredNetwork.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String configurationJson;
+        try {
+            ObjectMapper om = new ObjectMapper();
+            configurationJson = om.writeValueAsString(req.configuration());
+        } catch(Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getDot11().setDiscoMonitorMethodConfiguration(
+                req.methodType(), configurationJson, monitoredNetwork.get().id()
+        );
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/config/detection/simulate")
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    public Response simulateDetectionConfig(@Context SecurityContext sc,
+                                            @Valid SimulateDiscoDetectionConfigRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> monitoredNetwork = nzyme.getDot11().findMonitoredSSID(req.monitoredNetworkId());
+
+        if (monitoredNetwork.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, monitoredNetwork.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<Tap> tap = nzyme.getTapManager().findTap(req.tapId());
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser).contains(tap.get().uuid())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        DiscoMonitorMethodType type;
+        try {
+            type = DiscoMonitorMethodType.valueOf(req.methodType());
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        List<Dot11DiscoMonitorAnomalyDetailsResponse> anomalies = DiscoMonitorFactory
+                .build(nzyme, type, monitoredNetwork.get(), req.configuration())
+                .execute(tap.get())
+                .stream()
+                .map(a -> Dot11DiscoMonitorAnomalyDetailsResponse.create(a.timestamp(), a.frameCount()))
+                .collect(Collectors.toList());
+
+        return Response.ok(Dot11DiscoMonitorAnomalyListResponse.create(anomalies.size(), anomalies)).build();
     }
 
 }

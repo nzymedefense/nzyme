@@ -107,6 +107,8 @@ import CreateCustomBanditPage from "./components/dot11/monitoring/bandits/Create
 import CustomBanditDetailsPage from "./components/dot11/monitoring/bandits/CustomBanditDetailsPage";
 import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCustomBanditPage";
 import DiscoPage from "./components/dot11/disco/DiscoPage";
+import ConfigureDiscoDetectionMethodPage
+  from "./components/dot11/monitoring/disco/configuration/ConfigureDiscoDetectionMethodPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -352,6 +354,7 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

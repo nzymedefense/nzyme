@@ -1,6 +1,6 @@
 import React from 'react'
 import LoadingSpinner from '../../misc/LoadingSpinner'
-import SimpleBarChart from '../../charts/SimpleBarChart'
+import SimpleBarChart from '../../widgets/charts/SimpleBarChart'
 
 function DNSStatisticsChart (props) {
   if (!props.statistics) {

@@ -1,35 +1,51 @@
 import React from "react";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function ClientBSSIDHistory(props) {
 
   const connectedBSSID = props.connectedBSSID;
   const bssids = props.bssids;
 
+  const parsedSSIDs = (ssids) => {
+    return ssids.map((ssid) => {
+      return ssid ? ssid : "Hidden";
+    })
+  }
+
   if (!bssids || bssids.length === 0) {
-    return <span className="text-muted">None</span>
+    return <div className="alert alert-info mb-0">No connections observed.</div>
   }
 
   return (
       <React.Fragment>
-        <ul className="mb-0 client-bssids">
-        {bssids.map(function (bssid, i) {
-          return (
-              <li key={"clientbssid-" + i}>
-                {bssid.bssid}{' '}
-                {bssid.oui ? <span className="text-muted">({bssid.oui})</span> : null}{' '}
+        <table className="table table-sm table-hover table-striped mb-0 mt-3">
+          <thead>
+          <tr>
+            <th>BSSID</th>
+            <th>OUI</th>
+            <th>Advertised SSIDs</th>
+          </tr>
+          </thead>
+          <tbody>
+          {bssids.map(function (bssid, i) {
+            return (
+                <tr key={i}>
+                  <td>
+                    <span className={connectedBSSID && connectedBSSID === bssid.bssid ? "highlighted" : ""}>
+                      <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)} className="dot11-mac">{bssid.bssid}</a>{' '}
+                    </span>
+                  </td>
+                  <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
+                  <td>{parsedSSIDs(bssid.possible_ssids).join(", ")}</td>
+                </tr>
+            )
+          })}
+          </tbody>
+        </table>
 
-                {connectedBSSID && connectedBSSID === bssid.bssid ?
-                    <i className="fa-solid fa-check text-success" title={"Currently Connected"}></i> : null}
-
-                <ul>
-                  {bssid.possible_ssids.map(function (ssid, x) {
-                    return <li key={"clientbssidssid-" + x}>Advertised SSID: {ssid ? ssid :  <span className="text-muted">Hidden</span>}</li>
-                  })}
-                </ul>
-              </li>
-          )
-        })}
-        </ul>
+        <p className="mb-0 mt-3 text-muted">
+          The MAC address of the currently connected BSSID is <span className="highlighted">highlighted.</span>
+        </p>
       </React.Fragment>
   )
 
