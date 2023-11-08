@@ -6,7 +6,6 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Channel from "../util/Channel";
 import ApiRoutes from "../../../util/ApiRoutes";
 import InfrastructureTypes from "../util/InfrastructureTypes";
-import MonitorIcon from "./MonitorIcon";
 
 function BSSIDDetailsRows(props) {
 
@@ -49,7 +48,8 @@ function BSSIDDetailsRows(props) {
     return (
         <tr>
           <td colSpan={COLSPAN}>
-            Only hidden SSIDs.
+            Only hidden SSIDs.{' '}
+            <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)}>Open BSSID Details</a>
           </td>
         </tr>
     )
