@@ -140,9 +140,6 @@ function TenantUserDetailsPage() {
                       <dt>Full Name</dt>
                       <dd>{user.name}</dd>
 
-                      <dt>Role</dt>
-                      <dd>{user.role ? user.role : <span className="text-warning">No Role</span>}</dd>
-
                       <dt>Created At</dt>
                       <dd title={moment(user.created_at).format()}>
                         {moment(user.created_at).fromNow()}

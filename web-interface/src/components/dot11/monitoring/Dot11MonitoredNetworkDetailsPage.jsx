@@ -13,7 +13,6 @@ import MonitoringDisabledWarning from "./MonitoringDisabledWarning";
 import ToggleMonitoringStatusButton from "./ToggleMonitoringStatusButton";
 import MonitoredNetworkAlertStatusTable from "./MonitoredNetworkAlertStatusTable";
 import DiscoDetectionDetails from "./disco/DiscoDetectionDetails";
-import WithPermission from "../../misc/WithPermission";
 import MonitoredNetworkDiscoChart from "./disco/MonitoredNetworkDiscoChart";
 import InlineTapSelector from "../../shared/InlineTapSelector";
 
@@ -315,12 +314,10 @@ function Dot11MonitoredNetworkDetailsPage() {
                   Anomalies highlighted on chart with red background.
                 </p>
 
-                <WithPermission permission="dot11_deauth_manage">
-                  <a className="btn btn-secondary btn-sm mt-3"
-                     href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>
-                    Configure Anomaly Detection Method
-                  </a>
-                </WithPermission>
+                <a className="btn btn-secondary btn-sm mt-3"
+                   href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>
+                  Configure Anomaly Detection Method
+                </a>
               </div>
             </div>
           </div>

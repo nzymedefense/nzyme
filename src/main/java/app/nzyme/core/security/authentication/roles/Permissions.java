@@ -45,13 +45,6 @@ public class Permissions {
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));
-        put("dot11_deauth_manage", Permission.create(
-                "dot11_deauth_manage",
-                "Manage WiFi Deauthentication Activity Monitoring",
-                "Allows user to configure deauthentication activity monitoring using data from all taps " +
-                        "the user has access to.",
-                true
-        ));
     }};
 
 }

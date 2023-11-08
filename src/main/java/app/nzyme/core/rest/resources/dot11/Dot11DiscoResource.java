@@ -252,7 +252,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
 
     @GET
     @Path("/config/detection")
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     public Response getDetectionConfig(@Context SecurityContext sc,
                                        @QueryParam("monitored_network_id") @NotNull UUID monitoredNetworkId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -276,7 +276,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
 
     @PUT
     @Path("/config/detection")
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     public Response setDetectionConfig(@Context SecurityContext sc,
                                        @Valid UpdateDiscoDetectionConfigRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -308,7 +308,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
 
     @POST
     @Path("/config/detection/simulate")
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_deauth_manage" })
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
     public Response simulateDetectionConfig(@Context SecurityContext sc,
                                             @Valid SimulateDiscoDetectionConfigRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
