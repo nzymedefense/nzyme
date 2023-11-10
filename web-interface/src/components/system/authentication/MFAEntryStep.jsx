@@ -38,26 +38,95 @@ function MFAEntryStep(props) {
     refs.code1.current.focus();
   }, [])
 
+  const isValidKeyCode = (code) => {
+    return (code >= 48 && code <= 57) || code === 8 || code === 37 || code === 39 || code === 13;
+  }
+
+  const isValidCodeValue = (value) => {
+    return value >= 0 && value < 10;
+  }
+
   const onKeyUp = function(e, number) {
-    if (e.keyCode === 8 || e.keyCode === 37) {
-      // Jump to previous box if there is one.
-      if (number > 1) {
-        refs["code" + (number - 1)].current.focus();
+    controlCursor(e.keyCode, number);
+  }
+
+  const controlCursor = (keyCode, number) => {
+    if (isValidKeyCode(keyCode)) {
+      if (keyCode === 13) {
+        // Enter pressed.
+        if (formReady()) {
+          onSubmit();
+        }
+
+        return;
       }
-    } else {
-      // Jump to next box if there is one.
-      if (number < 6) {
-        refs["code" + (number + 1)].current.focus();
+
+      if (keyCode === 8 || keyCode === 37) {
+        // Jump to previous box if there is one.
+        if (number > 1) {
+          refs["code" + (number - 1)].current.focus();
+          refs["code" + (number - 1)].current.select();
+        }
+      } else {
+        // Jump to next box if there is one.
+        if (number < 6) {
+          refs["code" + (number + 1)].current.focus();
+          refs["code" + (number + 1)].current.select();
+        }
       }
     }
   }
 
   const onChange = function(e, valueSetter) {
-    if (e.target.value < 0 || e.target.value > 9) {
-      return;
-    }
+    const value = e.target.value;
 
-    valueSetter(e.target.value);
+    if (!value) {
+      // Value was removed, likely via backspace.
+      valueSetter("");
+    }
+    if (isValidCodeValue(value)) {
+      valueSetter(value);
+    }
+  }
+
+  const onPaste = (e) => {
+    e.preventDefault();
+
+    const data = e.clipboardData.getData('text').slice(0, 6);
+    for (const pos in data) {
+      const value = data[pos];
+
+      if (!isValidCodeValue(value)) {
+        continue;
+      }
+
+      switch(pos) {
+        case "0":
+          setCode1(value);
+          controlCursor(39, 1);
+          break;
+        case "1":
+          setCode2(value);
+          controlCursor(39, 2);
+          break;
+        case "2":
+          setCode3(value);
+          controlCursor(39, 3);
+          break;
+        case "3":
+          setCode4(value);
+          controlCursor(39, 4);
+          break;
+        case "4":
+          setCode5(value);
+          controlCursor(39, 5);
+          break;
+        case "5":
+          setCode6(value);
+          controlCursor(39, 6);
+          break;
+      }
+    }
   }
 
   const onSubmit = function() {
@@ -104,26 +173,32 @@ function MFAEntryStep(props) {
       <form className="row align-items-center totp-validation mb-4">
         <input type="number" className="form-control" ref={refs.code1} placeholder={"0"}
                value={code1}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode1)}
                onKeyUp={(e) => onKeyUp(e, 1)} />
         <input type="number" className="form-control" ref={refs.code2} placeholder={"0"}
                value={code2}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode2)}
                onKeyUp={(e) => onKeyUp(e,2)} />
         <input type="number" className="form-control" ref={refs.code3} placeholder={"0"}
                value={code3}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode3)}
                onKeyUp={(e) => onKeyUp(e,3)} />
         <input type="number" className="form-control" ref={refs.code4} placeholder={"0"}
                value={code4}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode4)}
                onKeyUp={(e) => onKeyUp(e,4)} />
         <input type="number" className="form-control" ref={refs.code5} placeholder={"0"}
                value={code5}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode5)}
                onKeyUp={(e) => onKeyUp(e,5)} />
         <input type="number" className="form-control" ref={refs.code6} placeholder={"0"}
                value={code6}
+               onPaste={onPaste}
                onChange={(e) => onChange(e, setCode6)}
                onKeyUp={(e) => onKeyUp(e,6)} />
       </form>
