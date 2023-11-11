@@ -109,6 +109,7 @@ import EditCustomBanditPage from "./components/dot11/monitoring/bandits/EditCust
 import DiscoPage from "./components/dot11/disco/DiscoPage";
 import ConfigureDiscoDetectionMethodPage
   from "./components/dot11/monitoring/disco/configuration/ConfigureDiscoDetectionMethodPage";
+import AddTapProxyPage from "./components/system/taps/AddTapProxyPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -305,6 +306,7 @@ function App() {
 
                           { /* System/Taps. */}
                           <Route path={ApiRoutes.SYSTEM.TAPS.INDEX} element={<TapsPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.TAPS.PROXY_ADD} element={<AddTapProxyPage />} />
                           <Route path={ApiRoutes.SYSTEM.TAPS.DETAILS(':uuid')} element={<TapDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.TAPS.METRICDETAILS(':uuid', ':metricType', ':metricName')} element={<TapMetricsDetailsPage />}/>
 
