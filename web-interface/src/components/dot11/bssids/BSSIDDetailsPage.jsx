@@ -12,6 +12,7 @@ import BSSIDChannelUsageHistogram from "./BSSIDChannelUsageHistogram";
 import DiscoPairsTable from "../disco/DiscoPairsTable";
 import ClientActivityHistogram from "../clients/ClientActivityHistogram";
 import DiscoHistogram from "../disco/DiscoHistogram";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -30,7 +31,15 @@ function BSSIDDetailsPage() {
     dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps,
         (ssids) => setSSIDs(ssids)
     )
-  }, [bssidParam]);
+  }, [bssidParam, selectedTaps]);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   if (!bssid || ssids == null) {
     return <LoadingSpinner />

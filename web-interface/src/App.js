@@ -138,6 +138,7 @@ function App() {
   const [userInformation, setUserInformation] = useState(null);
   const [plugins, setPlugins] = useState([]); // TODO
   const [selectedTaps, setSelectedTaps] = useState(Store.get("selected_taps"));
+  const [tapSelectorEnabled, setTapSelectorEnabled] = useState(false);
 
   const [fullyLoaded, setFullyLoaded] = useState(false);
 
@@ -256,7 +257,7 @@ function App() {
 
             <div className="nzyme d-flex">
               <UserContext.Provider value={userInformation}>
-                <TapContext.Provider value={{set: setSelectedTaps, taps: selectedTaps}}>
+                <TapContext.Provider value={{set: setSelectedTaps, taps: selectedTaps, selectorEnabled: tapSelectorEnabled, setSelectorEnabled: setTapSelectorEnabled}}>
                   <Sidebar />
 
                   <div id="main" className="flex-fill">

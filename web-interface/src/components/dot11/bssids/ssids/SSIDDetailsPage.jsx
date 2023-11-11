@@ -18,6 +18,7 @@ import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import HelpBubble from "../../../misc/HelpBubble";
 import DiscoHistogram from "../../disco/DiscoHistogram";
+import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -38,7 +39,15 @@ function SSIDDetailsPage() {
 
   useEffect(() => {
     dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, DEFAULT_MINUTES, selectedTaps, setSSID);
-  }, [])
+  }, [selectedTaps])
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   if (!ssid) {
     return <LoadingSpinner />

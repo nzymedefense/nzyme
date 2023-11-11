@@ -9,6 +9,7 @@ import ClientBSSIDHistory from "../util/ClientBSSIDHistory";
 import ObservedProbeRequestsList from "./ObservedProbeRequestsList";
 import ClientActivityHistogram from "./ClientActivityHistogram";
 import DiscoPairsTable from "../disco/DiscoPairsTable";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const dot11Service = new Dot11Service();
 
@@ -23,7 +24,15 @@ function ClientDetailsPage() {
 
   useEffect(() => {
     dot11Service.findMergedConnectedOrDisconnectedClient(macParam, selectedTaps, setClient);
-  }, []);
+  }, [selectedTaps]);
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   if (!client) {
     return <LoadingSpinner />

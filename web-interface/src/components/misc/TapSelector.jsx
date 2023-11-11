@@ -3,6 +3,18 @@ import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
 import {TapContext} from "../../App";
 
+export const enableTapSelector = (ctx) => {
+  if(ctx) {
+    ctx.setSelectorEnabled(true);
+  }
+}
+
+export const disableTapSelector = (ctx) => {
+  if(ctx) {
+    ctx.setSelectorEnabled(false);
+  }
+}
+
 const tapsService = new TapsService();
 
 function TapSelector(props) {
@@ -150,6 +162,16 @@ function TapSelector(props) {
     e.preventDefault();
 
     setPreSelectedTaps("*");
+  }
+
+  if (!tapContext.selectorEnabled) {
+    return (
+        <div className="dropdown" title="No tap selection required on this page">
+          <button className="btn btn-outline-secondary" type="button" disabled={true}>
+            No Tap Selection Required
+          </button>
+        </div>
+    )
   }
 
   if (availableTaps === null || selectedTaps === null || preSelectedTaps === null) {

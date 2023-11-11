@@ -4,6 +4,7 @@ import EthernetService from '../../../services/EthernetService'
 import DNSNumbers from './DNSNumbers'
 import DNSContactAttempsSummaryTable from './DNSContactAttempsSummaryTable'
 import {TapContext} from "../../../App";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 function byteConversion (x) {
   return x / 1024
@@ -22,6 +23,15 @@ function DNSOverviewPage () {
     setStatistics(null);
     ethernetService.findDNSStatistics(24, selectedTaps, setStatistics);
   }, [selectedTaps])
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
+
 
   return (
     <div>

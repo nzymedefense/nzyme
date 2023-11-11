@@ -1,10 +1,12 @@
-import React, {createContext, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import DiscoHistogram from "./DiscoHistogram";
 import DiscoSendersTable from "./DiscoSendersTable";
 import DiscoReceiversTable from "./DiscoReceiversTable";
 import DiscoPairsTable from "./DiscoPairsTable";
 import MonitoredNetworkSelector from "../../shared/MonitoredNetworkSelector";
 import {useLocation} from "react-router-dom";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import {TapContext} from "../../../App";
 
 export const MonitoredNetworkContext = createContext(null);
 
@@ -14,11 +16,21 @@ const useQuery = () => {
 
 function DiscoPage() {
 
+  const tapContext = useContext(TapContext);
+
   let urlQuery = useQuery();
 
   const [monitoredNetwork, setMonitoredNetwork] = useState(
       urlQuery.get("monitored-network-id") ? urlQuery.get("monitored-network-id") : ""
   );
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
   
   return (
       <React.Fragment>

@@ -4,6 +4,7 @@ import {TapContext} from "../../../App";
 import Dot11Service from "../../../services/Dot11Service";
 import DisconnectedClientsTable from "./DisconnectedClientsTable";
 import ClientHistogram from "./ClientHistogram";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
@@ -29,6 +30,14 @@ function ClientsPage() {
     dot11Service.findAllClients(MINUTES, selectedTaps, setConnectedClients, setDisconnectedClients, perPage,
         (connectedClientsPage-1)*perPage, perPage,(disconnectedClientsPage-1)*perPage);
   }, [selectedTaps, connectedClientsPage, disconnectedClientsPage])
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   return (
       <React.Fragment>

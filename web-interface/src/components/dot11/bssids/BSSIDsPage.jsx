@@ -5,6 +5,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import BSSIDsTable from "./BSSIDsTable";
 import AutoRefreshSelector from "../../misc/AutoRefreshSelector";
 import BSSIDAndSSIDChart from "./BSSIDAndSSIDChart";
+import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 
 const dot11Service = new Dot11Service();
 const MINUTES = 15;
@@ -36,6 +37,14 @@ function BSSIDsPage() {
 
     return () => clearInterval(timer);
   }, [isAutoRefresh, selectedTaps])
+
+  useEffect(() => {
+    enableTapSelector(tapContext);
+
+    return () => {
+      disableTapSelector(tapContext);
+    }
+  }, [tapContext]);
 
   if (!bssids) {
     return <LoadingSpinner />

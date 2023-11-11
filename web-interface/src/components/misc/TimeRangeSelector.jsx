@@ -11,10 +11,20 @@ function TimeRangeSelector(props) {
     setShow(!show);
   }
 
+  if (disabled) {
+    return (
+        <div className="dropdown" title="No time range selection required on this page">
+          <button className="btn btn-outline-secondary" type="button" disabled={true}>
+            No Time Range Required
+          </button>
+        </div>
+    )
+  }
+
   return (
       <React.Fragment>
         <button type="button" className="btn btn-outline-secondary" onClick={onTrigger} disabled={disabled}>
-          { disabled ? "No Time Range Required" : <span>Last 15 minutes <i className="fa-solid fa-caret-down"></i></span> }
+          <span>Last 15 minutes <i className="fa-solid fa-caret-down"></i></span>
         </button>
 
         <TimeRangeSelectorOptions show={show} />
