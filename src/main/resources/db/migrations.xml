@@ -3944,4 +3944,24 @@
                       newColumnName="disco_monitor_configuration" />
     </changeSet>
 
+    <changeSet id="add_authentication_timeout_columns" author="lennartkoopmann">
+        <addColumn tableName="auth_organizations">
+            <column name="session_timeout_minutes" type="integer" defaultValue="720">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_organizations">
+            <column name="session_inactivity_timeout_minutes" type="integer" defaultValue="15">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_organizations">
+            <column name="mfa_timeout_minutes" type="integer" defaultValue="5">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+    
 </databaseChangeLog>

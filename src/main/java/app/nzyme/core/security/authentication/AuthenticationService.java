@@ -120,13 +120,23 @@ public class AuthenticationService {
         );
     }
 
-    public OrganizationEntry createOrganization(String name, String description) {
+    public OrganizationEntry createOrganization(String name,
+                                                String description,
+                                                int sessionTimeoutMinutes,
+                                                int sessionInactivityTimeoutMinutes,
+                                                int mfaTimeoutMinutes) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_organizations(name, description, created_at, updated_at) " +
-                                "VALUES(:name, :description, :created_at, :updated_at) RETURNING *")
+                handle.createQuery("INSERT INTO auth_organizations(name, description, session_timeout_minutes, " +
+                                "session_inactivity_timeout_minutes, mfa_timeout_minutes. created_at, updated_at) " +
+                                "VALUES(:name, :description, :session_timeout_minutes, " +
+                                ":session_inactivity_timeout_minutes, :mfa_timeout_minutes, :created_at, " +
+                                ":updated_at) RETURNING *")
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
+                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
+                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(OrganizationEntry.class)
@@ -167,7 +177,11 @@ public class AuthenticationService {
         );
     }
 
-    public void updateOrganization(UUID id, String name, String description) {
+    public void updateOrganization(UUID id, String name,
+                                   String description,
+                                   int sessionTimeoutMinutes,
+                                   int sessionInactivityTimeoutMinutes,
+                                   int mfaTimeoutMinutes) {
         Optional<OrganizationEntry> org = findOrganization(id);
 
         if (org.isEmpty()) {
@@ -176,9 +190,15 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_organizations SET name = :name, description = :description, " +
-                                "updated_at = NOW() WHERE uuid = :id")
+                                "session_timeout_minutes = :session_timeout_minutes, " +
+                                "session_inactivity_timeout_minutes = :session_inactivity_timeout_minutes, " +
+                                "mfa_timeout_minutes = :mfa_timeout_minutes updated_at = NOW()" +
+                                "WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
+                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
+                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("id", id)
                         .execute()
         );

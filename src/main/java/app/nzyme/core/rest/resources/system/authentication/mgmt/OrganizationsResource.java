@@ -98,7 +98,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
 
-        nzyme.getAuthenticationService().createOrganization(req.name(), req.description());
+        nzyme.getAuthenticationService().createOrganization(
+                req.name(),
+                req.description(),
+                req.sessionTimeoutMinutes(),
+                req.sessionInactivityTimeoutMinutes(),
+                req.mfaTimeoutMinutes()
+        );
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -121,7 +127,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().updateOrganization(id, req.name(), req.description());
+        nzyme.getAuthenticationService().updateOrganization(
+                id, req.name(),
+                req.description(),
+                req.sessionTimeoutMinutes(),
+                req.sessionInactivityTimeoutMinutes(),
+                req.mfaTimeoutMinutes()
+        );
 
         return Response.ok().build();
     }
