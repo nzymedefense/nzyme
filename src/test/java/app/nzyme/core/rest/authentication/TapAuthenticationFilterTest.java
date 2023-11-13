@@ -2,6 +2,7 @@ package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.MockNzyme;
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
@@ -32,7 +33,12 @@ public class TapAuthenticationFilterTest {
                 .createOrganization("test org", "test org");
 
         TenantEntry tenant = nzyme.getAuthenticationService()
-                .createTenant(org.uuid(), "test tenant", "test tenant");
+                .createTenant(org.uuid(),
+                        "test tenant",
+                        "test tenant",
+                        AuthenticationService.DEFAULT_SESSION_TIMEOUT_MINUTES,
+                        AuthenticationService.DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
+                        AuthenticationService.DEFAULT_MFA_TIMEOUT_MINUTES);
 
         String secret = RandomStringUtils.random(64, true, true);
 

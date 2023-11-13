@@ -19,8 +19,13 @@ function CreateTenantPage() {
     authenticationMgmtService.findOrganization(organizationId, setOrganization);
   }, [organizationId])
 
-  const onFormSubmitted = function (name, description) {
-    authenticationMgmtService.createTenantOfOrganization(organizationId, name, description, function() {
+  const onFormSubmitted = function (name,
+                                    description,
+                                    sessionTimeoutMinutes,
+                                    sessionInactivityTimeoutMinutes,
+                                    mfaTimeoutMinutes) {
+    authenticationMgmtService.createTenantOfOrganization(organizationId, name, description,
+        sessionTimeoutMinutes, sessionInactivityTimeoutMinutes, mfaTimeoutMinutes, function() {
       notify.show('Tenant created.', 'success');
       setRedirect(true);
     })
@@ -68,7 +73,12 @@ function CreateTenantPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <TenantForm onClick={onFormSubmitted} submitText="Create Tenant" />
+                <TenantForm onClick={onFormSubmitted}
+                            sessionTimeoutMinutes="12"
+                            sessionTimeoutMinutesUnit="hours"
+                            sessionInactivityTimeoutMinutes="15"
+                            mfaTimeoutMinutes="5"
+                            submitText="Create Tenant" />
               </div>
             </div>
           </div>

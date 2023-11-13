@@ -33,6 +33,11 @@ public class AuthenticationService {
 
     public static final int MFA_ENTRY_TIME_MINUTES = 5;
 
+    public static final int DEFAULT_SESSION_TIMEOUT_MINUTES = 720;
+    public static final int DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES = 15;
+    public static final int DEFAULT_MFA_TIMEOUT_MINUTES = 5;
+
+
     public final NzymeNode nzyme;
 
     public AuthenticationService(NzymeNode nzyme) {
@@ -62,8 +67,17 @@ public class AuthenticationService {
 
         LOG.info("Creating default organization and tenant.");
 
-        OrganizationEntry organization = createOrganization("Default Organization", "The nzyme default organization");
-        createTenant(organization.uuid(), "Default Tenant", "The nzyme default tenant");
+        OrganizationEntry organization = createOrganization(
+                "Default Organization",
+                "The nzyme default organization"
+        );
+        createTenant(organization.uuid(),
+                "Default Tenant",
+                "The nzyme default tenant",
+                DEFAULT_SESSION_TIMEOUT_MINUTES,
+                DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
+                DEFAULT_MFA_TIMEOUT_MINUTES
+        );
     }
 
     public long countSuperAdministrators() {
@@ -120,23 +134,13 @@ public class AuthenticationService {
         );
     }
 
-    public OrganizationEntry createOrganization(String name,
-                                                String description,
-                                                int sessionTimeoutMinutes,
-                                                int sessionInactivityTimeoutMinutes,
-                                                int mfaTimeoutMinutes) {
+    public OrganizationEntry createOrganization(String name, String description) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_organizations(name, description, session_timeout_minutes, " +
-                                "session_inactivity_timeout_minutes, mfa_timeout_minutes. created_at, updated_at) " +
-                                "VALUES(:name, :description, :session_timeout_minutes, " +
-                                ":session_inactivity_timeout_minutes, :mfa_timeout_minutes, :created_at, " +
-                                ":updated_at) RETURNING *")
+                handle.createQuery("INSERT INTO auth_organizations(name, description, created_at, updated_at) " +
+                                "VALUES(:name, :description, :created_at, :updated_at) RETURNING *")
                         .bind("name", name)
                         .bind("description", description)
-                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
-                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
-                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(OrganizationEntry.class)
@@ -177,11 +181,7 @@ public class AuthenticationService {
         );
     }
 
-    public void updateOrganization(UUID id, String name,
-                                   String description,
-                                   int sessionTimeoutMinutes,
-                                   int sessionInactivityTimeoutMinutes,
-                                   int mfaTimeoutMinutes) {
+    public void updateOrganization(UUID id, String name, String description) {
         Optional<OrganizationEntry> org = findOrganization(id);
 
         if (org.isEmpty()) {
@@ -190,15 +190,9 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_organizations SET name = :name, description = :description, " +
-                                "session_timeout_minutes = :session_timeout_minutes, " +
-                                "session_inactivity_timeout_minutes = :session_inactivity_timeout_minutes, " +
-                                "mfa_timeout_minutes = :mfa_timeout_minutes updated_at = NOW()" +
-                                "WHERE uuid = :id")
+                                "updated_at = NOW() WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
-                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
-                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
-                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("id", id)
                         .execute()
         );
@@ -325,14 +319,25 @@ public class AuthenticationService {
         );
     }
 
-    public TenantEntry createTenant(UUID organizationId, String name, String description) {
+    public TenantEntry createTenant(UUID organizationId,
+                                    String name,
+                                    String description,
+                                    int sessionTimeoutMinutes,
+                                    int sessionInactivityTimeoutMinutes,
+                                    int mfaTimeoutMinutes) {
         DateTime now = DateTime.now();
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("INSERT INTO auth_tenants(organization_id, name, description, created_at, updated_at) " +
-                                "VALUES(:organization_id, :name, :description, :created_at, :updated_at) RETURNING *")
+                handle.createQuery("INSERT INTO auth_tenants(organization_id, name, description, " +
+                                "session_timeout_minutes, session_inactivity_timeout_minutes, mfa_timeout_minutes, " +
+                                "created_at, updated_at) VALUES(:organization_id, :name, :description, " +
+                                ":session_timeout_minutes, :session_inactivity_timeout_minutes, :mfa_timeout_minutes, " +
+                                ":created_at, :updated_at) RETURNING *")
                         .bind("organization_id", organizationId)
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
+                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
+                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("created_at", now)
                         .bind("updated_at", now)
                         .mapTo(TenantEntry.class)
@@ -372,7 +377,12 @@ public class AuthenticationService {
         );
     }
 
-    public void updateTenant(UUID id, String name, String description) {
+    public void updateTenant(UUID id,
+                             String name,
+                             String description,
+                             int sessionTimeoutMinutes,
+                             int sessionInactivityTimeoutMinutes,
+                             int mfaTimeoutMinutes) {
         Optional<TenantEntry> tenant = findTenant(id);
 
         if (tenant.isEmpty()) {
@@ -381,9 +391,14 @@ public class AuthenticationService {
 
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants SET name = :name, description = :description, " +
-                                "updated_at = NOW() WHERE uuid = :id")
+                                "session_timeout_minutes = :session_timeout_minutes, " +
+                                "session_inactivity_timeout_minutes = :session_inactivity_timeout_minutes, " +
+                                "mfa_timeout_minutes = :mfa_timeout_minutes updated_at = NOW() WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
+                        .bind("session_timeout_minutes", sessionTimeoutMinutes)
+                        .bind("session_inactivity_timeout_minutes", sessionInactivityTimeoutMinutes)
+                        .bind("mfa_timeout_minutes", mfaTimeoutMinutes)
                         .bind("id", id)
                         .execute()
         );

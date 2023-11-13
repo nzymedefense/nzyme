@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.authentication;
 
 import app.nzyme.core.MockNzyme;
+import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;
@@ -30,7 +31,14 @@ public class RESTAuthenticationFilterTestBase {
         PasswordHasher.GeneratedHashAndSalt hash = hasher.createHash(password);
 
         OrganizationEntry org = nzyme.getAuthenticationService().createOrganization("test org", "test org");
-        TenantEntry tenant = nzyme.getAuthenticationService().createTenant(org.uuid(), "test tenant", "test tenant");
+        TenantEntry tenant = nzyme.getAuthenticationService().createTenant(
+                org.uuid(),
+                "test tenant",
+                "test tenant",
+                AuthenticationService.DEFAULT_SESSION_TIMEOUT_MINUTES,
+                AuthenticationService.DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
+                AuthenticationService.DEFAULT_MFA_TIMEOUT_MINUTES
+        );
 
         UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.uuid(), tenant.uuid(), "test user", email, hash);
 

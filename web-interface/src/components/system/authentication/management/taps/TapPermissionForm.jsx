@@ -36,7 +36,7 @@ function TapPermissionForm(props) {
           <div className="form-text">A short description of the new tap.</div>
         </div>
 
-        <button className="btn btn-sm btn-primary" onClick={submit} disabled={!formIsReady()}>
+        <button className="btn btn-primary" onClick={submit} disabled={!formIsReady()}>
           {submitText}
         </button>
       </form>

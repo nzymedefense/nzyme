@@ -52,9 +52,15 @@ class AuthenticationManagementService {
     })
   }
 
-  createTenantOfOrganization(organizationId, name, description, successCallback) {
+  createTenantOfOrganization(organizationId, name, description, sessionTimeoutMinutes, sessionInactivityTimeoutMinutes, mfaTimeoutMinutes, successCallback) {
     RESTClient.post('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants',
-        {name: name, description: description}, successCallback);
+        {
+          name: name,
+          description: description,
+          session_timeout_minutes: sessionTimeoutMinutes,
+          session_inactivity_timeout_minutes: sessionInactivityTimeoutMinutes,
+          mfa_timeout_minutes: mfaTimeoutMinutes
+        }, successCallback);
   }
 
   editTenantOfOrganization(organizationId, tenantId, name, description, successCallback) {

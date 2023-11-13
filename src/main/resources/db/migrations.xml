@@ -3963,5 +3963,29 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="move_authentication_timeout_columns_to_tenants" author="lennartkoopmann">
+        <dropColumn tableName="auth_organizations" columnName="session_timeout_minutes" />
+        <dropColumn tableName="auth_organizations" columnName="session_inactivity_timeout_minutes" />
+        <dropColumn tableName="auth_organizations" columnName="mfa_timeout_minutes" />
+
+        <addColumn tableName="auth_tenants">
+            <column name="session_timeout_minutes" type="integer" defaultValue="720">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_tenants">
+            <column name="session_inactivity_timeout_minutes" type="integer" defaultValue="15">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="auth_tenants">
+            <column name="mfa_timeout_minutes" type="integer" defaultValue="5">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
     
 </databaseChangeLog>

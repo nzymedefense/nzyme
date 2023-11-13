@@ -29,6 +29,7 @@ import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,17 +94,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @POST
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
-    public Response create(CreateOrganizationRequest req) {
-        if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
+    public Response create(@Valid CreateOrganizationRequest req) {
         nzyme.getAuthenticationService().createOrganization(
                 req.name(),
-                req.description(),
-                req.sessionTimeoutMinutes(),
-                req.sessionInactivityTimeoutMinutes(),
-                req.mfaTimeoutMinutes()
+                req.description()
         );
 
         return Response.status(Response.Status.CREATED).build();
@@ -114,7 +108,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @Path("/show/{id}")
     public Response update(@Context SecurityContext sc,
                            @PathParam("id") UUID id,
-                           UpdateOrganizationRequest req) {
+                           @Valid UpdateOrganizationRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         Optional<OrganizationEntry> org = nzyme.getAuthenticationService().findOrganization(id);
 
@@ -129,10 +123,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         nzyme.getAuthenticationService().updateOrganization(
                 id, req.name(),
-                req.description(),
-                req.sessionTimeoutMinutes(),
-                req.sessionInactivityTimeoutMinutes(),
-                req.mfaTimeoutMinutes()
+                req.description()
         );
 
         return Response.ok().build();
@@ -265,7 +256,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @Path("/show/{organizationId}/administrators")
     public Response createOrganizationAdministrator(@Context SecurityContext sc,
                                                     @PathParam("organizationId") UUID organizationId,
-                                                    CreateUserRequest req) {
+                                                    @Valid CreateUserRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!validateCreateUserRequest(req)) {
@@ -304,7 +295,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response editOrganizationAdministrator(@Context SecurityContext sc,
                                                   @PathParam("organizationId") UUID organizationId,
                                                   @PathParam("id") UUID userId,
-                                                  UpdateUserRequest req) {
+                                                  @Valid UpdateUserRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
@@ -347,7 +338,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response editOrganizationAdministratorPassword(@Context SecurityContext sc,
                                                           @PathParam("organizationId") UUID organizationId,
                                                           @PathParam("id") UUID userId,
-                                                          UpdatePasswordRequest req) {
+                                                          @Valid UpdatePasswordRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         Optional<UserEntry> orgAdmin = nzyme.getAuthenticationService().findOrganizationAdministrator(
@@ -480,19 +471,22 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @Path("/show/{organizationId}/tenants/")
     public Response createTenant(@Context SecurityContext sc,
                                  @PathParam("organizationId") UUID organizationId,
-                                 CreateTenantRequest req) {
+                                 @Valid CreateTenantRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
 
         // Check if user is org admin for this org.
         if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().createTenant(organizationId, req.name(), req.description());
+        nzyme.getAuthenticationService().createTenant(
+                organizationId,
+                req.name(),
+                req.description(),
+                req.sessionTimeoutMinutes(),
+                req.sessionInactivityTimeoutMinutes(),
+                req.mfaTimeoutMinutes()
+        );
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -503,7 +497,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response updateTenant(@Context SecurityContext sc,
                                  @PathParam("organizationId") UUID organizationId,
                                  @PathParam("tenantId") UUID tenantId,
-                                 UpdateTenantRequest req) {
+                                 @Valid UpdateTenantRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -515,7 +509,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        nzyme.getAuthenticationService().updateTenant(tenantId, req.name(), req.description());
+        nzyme.getAuthenticationService().updateTenant(
+                tenantId,
+                req.name(),
+                req.description(),
+                req.sessionTimeoutMinutes(),
+                req.sessionInactivityTimeoutMinutes(),
+                req.mfaTimeoutMinutes()
+        );
 
         return Response.ok().build();
     }
@@ -626,7 +627,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response createUserOfTenant(@Context SecurityContext sc,
                                        @PathParam("organizationId") UUID organizationId,
                                        @PathParam("tenantId") UUID tenantId,
-                                       CreateUserRequest req) {
+                                       @Valid CreateUserRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -671,7 +672,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                                      @PathParam("organizationId") UUID organizationId,
                                      @PathParam("tenantId") UUID tenantId,
                                      @PathParam("userId") UUID userId,
-                                     UpdateUserRequest req) {
+                                     @Valid UpdateUserRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -1140,12 +1141,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     public Response createTap(@Context SecurityContext sc,
                               @PathParam("organizationId") UUID organizationId,
                               @PathParam("tenantId") UUID tenantId,
-                              CreateTapRequest req) {
+                              @Valid CreateTapRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
-        if (req.name().trim().isEmpty() || req.description().trim().isEmpty()) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -1176,7 +1173,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                             @PathParam("organizationId") UUID organizationId,
                             @PathParam("tenantId") UUID tenantId,
                             @PathParam("tapUuid") UUID tapId,
-                            UpdateTapRequest req) {
+                            @Valid UpdateTapRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -1379,7 +1376,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @POST
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins")
-    public Response createSuperAdministrator(CreateUserRequest req) {
+    public Response createSuperAdministrator(@Valid CreateUserRequest req) {
         if (!validateCreateUserRequest(req)) {
             LOG.info("Invalid parameters in create user request.");
             return Response.status(Response.Status.UNAUTHORIZED).build();
@@ -1415,7 +1412,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
     @Path("/superadmins/show/{userId}")
     public Response editSuperAdministrator(@PathParam("userId") UUID userId,
-                                           UpdateUserRequest req) {
+                                           @Valid UpdateUserRequest req) {
         Optional<UserEntry> superAdmin = nzyme.getAuthenticationService().findSuperAdministrator(userId);
 
         if (superAdmin.isEmpty()) {

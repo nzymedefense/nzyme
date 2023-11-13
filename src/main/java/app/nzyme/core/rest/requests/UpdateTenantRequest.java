@@ -3,18 +3,33 @@ package app.nzyme.core.rest.requests;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.validation.constraints.NotEmpty;
 
 @AutoValue
 public abstract class UpdateTenantRequest {
 
+    @NotEmpty
     public abstract String name();
+
+    @NotEmpty
     public abstract String description();
 
+    public abstract int sessionTimeoutMinutes();
+    public abstract int sessionInactivityTimeoutMinutes();
+    public abstract int mfaTimeoutMinutes();
+
     @JsonCreator
-    public static UpdateTenantRequest create(@JsonProperty("name") String name, @JsonProperty("description") String description) {
+    public static UpdateTenantRequest create(@JsonProperty("name") String name,
+                                             @JsonProperty("description") String description,
+                                             @JsonProperty("session_timeout_minutes") int sessionTimeoutMinutes,
+                                             @JsonProperty("session_inactivity_timeout_minutes") int sessionInactivityTimeoutMinutes,
+                                             @JsonProperty("mfa_timeout_minutes") int mfaTimeoutMinutes) {
         return builder()
                 .name(name)
                 .description(description)
+                .sessionTimeoutMinutes(sessionTimeoutMinutes)
+                .sessionInactivityTimeoutMinutes(sessionInactivityTimeoutMinutes)
+                .mfaTimeoutMinutes(mfaTimeoutMinutes)
                 .build();
     }
 
@@ -27,6 +42,12 @@ public abstract class UpdateTenantRequest {
         public abstract Builder name(String name);
 
         public abstract Builder description(String description);
+
+        public abstract Builder sessionTimeoutMinutes(int sessionTimeoutMinutes);
+
+        public abstract Builder sessionInactivityTimeoutMinutes(int sessionInactivityTimeoutMinutes);
+
+        public abstract Builder mfaTimeoutMinutes(int mfaTimeoutMinutes);
 
         public abstract UpdateTenantRequest build();
     }

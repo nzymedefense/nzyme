@@ -3,11 +3,15 @@ package app.nzyme.core.rest.requests;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.validation.constraints.NotEmpty;
 
 @AutoValue
 public abstract class UpdateTapRequest {
 
+    @NotEmpty
     public abstract String name();
+
+    @NotEmpty
     public abstract String description();
 
     @JsonCreator
