@@ -17,8 +17,20 @@ function EditTenantPage() {
   const [tenant, setTenant] = useState(null);
   const [redirect, setRedirect] = useState(false);
 
-  const onFormSubmitted = function (name, description) {
-    authenticationMgmtService.editTenantOfOrganization(organization.id, tenant.id, name, description, function() {
+  const onFormSubmitted = function (name,
+                                    description,
+                                    sessionTimeoutMinutes,
+                                    sessionInactivityTimeoutMinutes,
+                                    mfaTimeoutMinutes) {
+    authenticationMgmtService.editTenantOfOrganization(
+        organization.id,
+        tenant.id,
+        name,
+        description,
+        sessionTimeoutMinutes,
+        sessionInactivityTimeoutMinutes,
+        mfaTimeoutMinutes,
+        function() {
       setRedirect(true);
       notify.show('Tenant details updated.', 'success');
     })
@@ -86,6 +98,9 @@ function EditTenantPage() {
                 <TenantForm onClick={onFormSubmitted}
                             name={tenant.name}
                             description={tenant.description}
+                            sessionTimeoutMinutes={tenant.session_timeout_minutes.toString()}
+                            sessionInactivityTimeoutMinutes={tenant.session_inactivity_timeout_minutes.toString()}
+                            mfaTimeoutMinutes={tenant.mfa_timeout_minutes.toString()}
                             submitText="Edit Tenant" />
               </div>
             </div>

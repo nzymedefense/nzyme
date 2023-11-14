@@ -33,10 +33,19 @@ public abstract class TenantDetailsResponse {
     @JsonProperty("taps_count")
     public abstract long tapsCount();
 
+    @JsonProperty("session_timeout_minutes")
+    public abstract int sessionTimeoutMinutes();
+
+    @JsonProperty("session_inactivity_timeout_minutes")
+    public abstract int sessionInactivityTimeoutMinutes();
+
+    @JsonProperty("mfa_timeout_minutes")
+    public abstract int mfaTimeoutMinutes();
+
     @JsonProperty("is_deletable")
     public abstract boolean isDeletable();
 
-    public static TenantDetailsResponse create(UUID id, UUID organizationId, String name, String description, DateTime createdAt, DateTime updatedAt, long usersCount, long tapsCount, boolean isDeletable) {
+    public static TenantDetailsResponse create(UUID id, UUID organizationId, String name, String description, DateTime createdAt, DateTime updatedAt, long usersCount, long tapsCount, int sessionTimeoutMinutes, int sessionInactivityTimeoutMinutes, int mfaTimeoutMinutes, boolean isDeletable) {
         return builder()
                 .id(id)
                 .organizationId(organizationId)
@@ -46,6 +55,9 @@ public abstract class TenantDetailsResponse {
                 .updatedAt(updatedAt)
                 .usersCount(usersCount)
                 .tapsCount(tapsCount)
+                .sessionTimeoutMinutes(sessionTimeoutMinutes)
+                .sessionInactivityTimeoutMinutes(sessionInactivityTimeoutMinutes)
+                .mfaTimeoutMinutes(mfaTimeoutMinutes)
                 .isDeletable(isDeletable)
                 .build();
     }
@@ -71,6 +83,12 @@ public abstract class TenantDetailsResponse {
         public abstract Builder usersCount(long usersCount);
 
         public abstract Builder tapsCount(long tapsCount);
+
+        public abstract Builder sessionTimeoutMinutes(int sessionTimeoutMinutes);
+
+        public abstract Builder sessionInactivityTimeoutMinutes(int sessionInactivityTimeoutMinutes);
+
+        public abstract Builder mfaTimeoutMinutes(int mfaTimeoutMinutes);
 
         public abstract Builder isDeletable(boolean isDeletable);
 

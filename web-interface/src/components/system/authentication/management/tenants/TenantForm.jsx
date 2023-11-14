@@ -36,9 +36,9 @@ function TenantForm(props) {
   const formIsReady = function() {
     return name && name.trim().length > 0
         && description && description.trim().length > 0
-        && sessionTimeoutMinutes && sessionTimeoutMinutes.trim().length > 0
-        && sessionInactivityTimeoutMinutes && sessionInactivityTimeoutMinutes.trim().length > 0
-        && mfaTimeoutMinutes && mfaTimeoutMinutes.trim().length > 0
+        && sessionTimeoutMinutes && parseInt(sessionTimeoutMinutes, 10) > 0
+        && sessionInactivityTimeoutMinutes && parseInt(sessionInactivityTimeoutMinutes, 10) > 0
+        && mfaTimeoutMinutes && parseInt(mfaTimeoutMinutes, 10) > 0
   }
 
   const submit = function(e) {
@@ -95,7 +95,7 @@ function TenantForm(props) {
             <div className="mb-3">
               <label htmlFor="session-timeout-minutes" className="form-label">Session Timeout</label>
               <div className="input-group">
-                <input type="text" className="form-control" id="session-timeout-minutes"
+                <input type="number" className="form-control" id="session-timeout-minutes"
                        value={sessionTimeoutMinutes} onChange={(e) => { updateValue(e, setSessionTimeoutMinutes) }} />
                 <select className="form-select"
                         value={sessionTimeoutMinutesUnit}
@@ -112,7 +112,7 @@ function TenantForm(props) {
             <div className="mb-3">
               <label htmlFor="session-inactivity-timeout-minutes" className="form-label">Session Inactivity Timeout</label>
               <div className="input-group">
-                <input type="text" className="form-control" id="session-inactivity-timeout-minutes"
+                <input type="number" className="form-control" id="session-inactivity-timeout-minutes"
                        value={sessionInactivityTimeoutMinutes} onChange={(e) => { updateValue(e, setSessionInactivityTimeoutMinutes) }} />
                 <select className="form-select"
                         value={sessionInactivityTimeoutMinutesUnit}
@@ -129,7 +129,7 @@ function TenantForm(props) {
             <div className="mb-3">
               <label htmlFor="mfa-timeout-minutes" className="form-label">Multi-Factor Entry Timeout</label>
               <div className="input-group">
-                <input type="text" className="form-control" id="mfa-timeout-minutes"
+                <input type="number" className="form-control" id="mfa-timeout-minutes"
                        value={mfaTimeoutMinutes} onChange={(e) => { updateValue(e, setMfaTimeoutMinutes) }} />
                 <select className="form-select"
                         value={mfaTimeoutMinutesUnit}

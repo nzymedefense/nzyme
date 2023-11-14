@@ -54,6 +54,10 @@ function AuthenticationPage() {
                     <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE}
                        className="btn btn-sm btn-secondary">
                       Create Super Administrator
+                    </a>{' '}
+
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.SETTINGS} className="btn btn-sm btn-outline-secondary">
+                      Authentication Settings
                     </a>
                   </div>
                 </div>

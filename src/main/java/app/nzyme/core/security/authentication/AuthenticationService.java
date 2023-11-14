@@ -393,7 +393,7 @@ public class AuthenticationService {
                 handle.createUpdate("UPDATE auth_tenants SET name = :name, description = :description, " +
                                 "session_timeout_minutes = :session_timeout_minutes, " +
                                 "session_inactivity_timeout_minutes = :session_inactivity_timeout_minutes, " +
-                                "mfa_timeout_minutes = :mfa_timeout_minutes updated_at = NOW() WHERE uuid = :id")
+                                "mfa_timeout_minutes = :mfa_timeout_minutes, updated_at = NOW() WHERE uuid = :id")
                         .bind("name", name)
                         .bind("description", description)
                         .bind("session_timeout_minutes", sessionTimeoutMinutes)

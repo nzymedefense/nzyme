@@ -3,6 +3,7 @@ package app.nzyme.core.rest.requests;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 
 @AutoValue
@@ -14,8 +15,13 @@ public abstract class UpdateTenantRequest {
     @NotEmpty
     public abstract String description();
 
+    @Min(1)
     public abstract int sessionTimeoutMinutes();
+
+    @Min(1)
     public abstract int sessionInactivityTimeoutMinutes();
+
+    @Min(1)
     public abstract int mfaTimeoutMinutes();
 
     @JsonCreator

@@ -17,6 +17,9 @@ public class TenantEntryMapper implements RowMapper<TenantEntry> {
                 UUID.fromString(rs.getString("organization_id")),
                 rs.getString("name"),
                 rs.getString("description"),
+                rs.getInt("session_timeout_minutes"),
+                rs.getInt("session_inactivity_timeout_minutes"),
+                rs.getInt("mfa_timeout_minutes"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

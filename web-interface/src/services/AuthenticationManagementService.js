@@ -63,9 +63,15 @@ class AuthenticationManagementService {
         }, successCallback);
   }
 
-  editTenantOfOrganization(organizationId, tenantId, name, description, successCallback) {
+  editTenantOfOrganization(organizationId, tenantId, name, description, sessionTimeoutMinutes, sessionInactivityTimeoutMinutes, mfaTimeoutMinutes, successCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId,
-        {name: name, description: description}, successCallback);
+        {
+          name: name,
+          description: description,
+          session_timeout_minutes: sessionTimeoutMinutes,
+          session_inactivity_timeout_minutes: sessionInactivityTimeoutMinutes,
+          mfa_timeout_minutes: mfaTimeoutMinutes
+        }, successCallback);
   }
 
   deleteTenantOfOrganization(organizationId, tenantId, successCallback) {
@@ -226,6 +232,18 @@ class AuthenticationManagementService {
   editTapAuthentication(organizationId, tenantId, tapUuid, name, description, successCallback) {
     RESTClient.put('/system/authentication/mgmt/organizations/show/' + organizationId + '/tenants/show/' + tenantId + '/taps/show/' + tapUuid,
         {name: name, description: description}, successCallback);
+  }
+
+  getGlobalSuperAdminConfiguration(setConfiguration) {
+    RESTClient.get("/system/authentication/mgmt/organizations/superadmins/global/configuration", {},
+        (response) => {
+      setConfiguration(response.data);
+    });
+  }
+
+  setGlobalSuperAdminConfiguration (newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/superadmins/global/configuration',
+        { change: newConfig }, successCallback, errorCallback)
   }
 
   findAllSuperAdmins(setUsers, limit, offset) {

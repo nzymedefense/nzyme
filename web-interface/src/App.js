@@ -110,6 +110,7 @@ import DiscoPage from "./components/dot11/disco/DiscoPage";
 import ConfigureDiscoDetectionMethodPage
   from "./components/dot11/monitoring/disco/configuration/ConfigureDiscoDetectionMethodPage";
 import AddTapProxyPage from "./components/system/taps/AddTapProxyPage";
+import SuperadminSettingsPage from "./components/system/authentication/management/SuperadminSettingsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -281,6 +282,7 @@ function App() {
 
                           { /* System/Authentication */ }
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX} element={<AuthenticationPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.SETTINGS} element={<SuperadminSettingsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE} element={<CreateSuperAdminPage/>}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.DETAILS(':userId')} element={<SuperAdminDetailsPage/>}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.EDIT(':userId')} element={<EditSuperAdminPage/>}/>
