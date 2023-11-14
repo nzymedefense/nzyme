@@ -122,7 +122,8 @@ function TenantForm(props) {
                 </select>
               </div>
               <div className="form-text">
-                How long a user can be inactive before they are logged out automatically.
+                How long a user can be inactive before they are logged out automatically. Note that having the web interface
+                open in a browser counts as activity, even if the user is not performing any actions.
               </div>
             </div>
 
