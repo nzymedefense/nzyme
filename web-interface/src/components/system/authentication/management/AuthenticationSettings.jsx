@@ -6,13 +6,13 @@ import ConfigurationModal from "../../../configuration/modal/ConfigurationModal"
 
 const authenticationManagementService = new AuthenticationManagementService();
 
-function SuperadminSettings() {
+function AuthenticationSettings() {
 
   const [configuration, setConfiguration] = useState(null);
   const [localRevision, setLocalRevision] = useState(0)
 
   useEffect(() => {
-    authenticationManagementService.getGlobalSuperAdminConfiguration(setConfiguration);
+    authenticationManagementService.getGlobalAuthenticationConfiguration(setConfiguration);
   }, [localRevision]);
 
   if (!configuration) {
@@ -41,7 +41,7 @@ function SuperadminSettings() {
               <ConfigurationModal config={configuration.session_timeout_minutes}
                                   setGlobalConfig={setConfiguration}
                                   setLocalRevision={setLocalRevision}
-                                  dbUpdateCallback={authenticationManagementService.setGlobalSuperAdminConfiguration} />
+                                  dbUpdateCallback={authenticationManagementService.setGlobalAuthenticationConfiguration} />
             </td>
           </tr>
           <tr>
@@ -55,7 +55,7 @@ function SuperadminSettings() {
               <ConfigurationModal config={configuration.session_inactivity_timeout_minutes}
                                   setGlobalConfig={setConfiguration}
                                   setLocalRevision={setLocalRevision}
-                                  dbUpdateCallback={authenticationManagementService.setGlobalSuperAdminConfiguration} />
+                                  dbUpdateCallback={authenticationManagementService.setGlobalAuthenticationConfiguration} />
             </td>
           </tr>
           <tr>
@@ -69,7 +69,7 @@ function SuperadminSettings() {
               <ConfigurationModal config={configuration.mfa_timeout_minutes}
                                   setGlobalConfig={setConfiguration}
                                   setLocalRevision={setLocalRevision}
-                                  dbUpdateCallback={authenticationManagementService.setGlobalSuperAdminConfiguration} />
+                                  dbUpdateCallback={authenticationManagementService.setGlobalAuthenticationConfiguration} />
             </td>
           </tr>
           </tbody>
@@ -79,4 +79,4 @@ function SuperadminSettings() {
 
 }
 
-export default SuperadminSettings;
+export default AuthenticationSettings;

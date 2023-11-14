@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public class AuthenticationRegistryKeys {
 
-    public static final RegistryKey SUPERADMIN_SESSION_TIMEOUT_MINUTES = RegistryKey.create(
-            "superadmin_session_timeout_minutes",
+    public static final RegistryKey SESSION_TIMEOUT_MINUTES = RegistryKey.create(
+            "session_timeout_minutes",
             Optional.of(new ArrayList<>(){{
                 add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
             }}),
@@ -17,8 +17,8 @@ public class AuthenticationRegistryKeys {
             false
     );
 
-    public static final RegistryKey SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES = RegistryKey.create(
-            "superadmin_session_inactivity_timeout_minutes",
+    public static final RegistryKey SESSION_INACTIVITY_TIMEOUT_MINUTES = RegistryKey.create(
+            "session_inactivity_timeout_minutes",
             Optional.of(new ArrayList<>(){{
                 add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
             }}),
@@ -26,8 +26,8 @@ public class AuthenticationRegistryKeys {
             false
     );
 
-    public static final RegistryKey SUPERADMIN_MFA_TIMEOUT_MINUTES = RegistryKey.create(
-            "superadmin_mfa_timeout_minutes",
+    public static final RegistryKey MFA_TIMEOUT_MINUTES = RegistryKey.create(
+            "mfa_timeout_minutes",
             Optional.of(new ArrayList<>(){{
                 add(ConfigurationEntryConstraint.createNumberRangeConstraint(1, Integer.MAX_VALUE));
             }}),

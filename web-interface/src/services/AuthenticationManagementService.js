@@ -234,15 +234,15 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
-  getGlobalSuperAdminConfiguration(setConfiguration) {
-    RESTClient.get("/system/authentication/mgmt/organizations/superadmins/global/configuration", {},
+  getGlobalAuthenticationConfiguration(setConfiguration) {
+    RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {
       setConfiguration(response.data);
     });
   }
 
-  setGlobalSuperAdminConfiguration (newConfig, successCallback, errorCallback) {
-    RESTClient.put('/system/authentication/mgmt/organizations/superadmins/global/configuration',
+  setGlobalAuthenticationConfiguration (newConfig, successCallback, errorCallback) {
+    RESTClient.put('/system/authentication/mgmt/organizations/global/configuration',
         { change: newConfig }, successCallback, errorCallback)
   }
 

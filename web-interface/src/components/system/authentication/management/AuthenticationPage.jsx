@@ -19,8 +19,14 @@ function AuthenticationPage() {
   return (
       <React.Fragment>
         <div className="row">
-          <div className="col-md-12">
+          <div className="col-md-10">
             <h1>Authentication &amp; Authorization</h1>
+          </div>
+
+          <div className="col-md-2">
+            <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SETTINGS} className="btn btn-primary float-end">
+              Settings
+            </a>
           </div>
         </div>
 
@@ -54,10 +60,6 @@ function AuthenticationPage() {
                     <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.CREATE}
                        className="btn btn-sm btn-secondary">
                       Create Super Administrator
-                    </a>{' '}
-
-                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.SUPERADMINS.SETTINGS} className="btn btn-sm btn-outline-secondary">
-                      Authentication Settings
                     </a>
                   </div>
                 </div>

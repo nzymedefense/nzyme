@@ -8,7 +8,6 @@ import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
-import app.nzyme.core.monitoring.exporters.prometheus.PrometheusRegistryKeys;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -1334,54 +1333,54 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @GET
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
-    @Path("/superadmins/global/configuration")
+    @Path("/global/configuration")
     public Response getGlobalSuperAdministratorConfiguration() {
 
         int sessionTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.defaultValue()
+                .getValue(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.key())
+                .orElse(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue()
                         .orElse("0")));
 
         int sessionInactivityTimeoutMinutes =  Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue()
+                .getValue(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.key())
+                .orElse(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue()
                         .orElse("0")));
 
         int mfaTimeoutMinutes =  Integer.parseInt(nzyme.getDatabaseCoreRegistry()
-                .getValue(AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.defaultValue()
+                .getValue(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.key())
+                .orElse(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue()
                         .orElse("0")));
 
         SuperadminSettingsResponse response = SuperadminSettingsResponse.create(
                 ConfigurationEntryResponse.create(
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.key(),
+                        AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.key(),
                         "Session Timeout (minutes)",
                         sessionTimeoutMinutes,
                         ConfigurationEntryValueType.NUMBER,
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.defaultValue().orElse(null),
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.requiresRestart(),
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
-                        "superadmin-settings"
+                        AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue().orElse(null),
+                        AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.requiresRestart(),
+                        AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
+                        "authentication-settings"
                 ),
                 ConfigurationEntryResponse.create(
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.key(),
+                        AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.key(),
                         "Session Inactivity Timeout (minutes)",
                         sessionInactivityTimeoutMinutes,
                         ConfigurationEntryValueType.NUMBER,
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue().orElse(null),
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.requiresRestart(),
-                        AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
-                        "superadmin-settings"
+                        AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue().orElse(null),
+                        AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.requiresRestart(),
+                        AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
+                        "authentication-settings"
                 ),
                 ConfigurationEntryResponse.create(
-                        AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.key(),
+                        AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.key(),
                         "MFA Timeout (minutes)",
                         mfaTimeoutMinutes,
                         ConfigurationEntryValueType.NUMBER,
-                        AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.defaultValue().orElse(null),
-                        AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.requiresRestart(),
-                        AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
-                        "superadmin-settings"
+                        AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue().orElse(null),
+                        AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.requiresRestart(),
+                        AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.constraints().orElse(Collections.emptyList()),
+                        "authentication-settings"
                 )
         );
 
@@ -1390,22 +1389,22 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
     @PUT
     @RESTSecured(PermissionLevel.SUPERADMINISTRATOR)
-    @Path("/superadmins/global/configuration")
+    @Path("/global/configuration")
     public Response setGlobalSuperAdministratorConfiguration(@Valid SuperadminSettingsUpdateRequest ur) {
         for (Map.Entry<String, Object> c : ur.change().entrySet()) {
             switch (c.getKey()) {
-                case "superadmin_session_timeout_minutes":
-                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.SUPERADMIN_SESSION_TIMEOUT_MINUTES, c)) {
+                case "session_timeout_minutes":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES, c)) {
                         return Response.status(422).build();
                     }
                     break;
-                case "superadmin_session_inactivity_timeout_minutes":
-                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.SUPERADMIN_SESSION_INACTIVITY_TIMEOUT_MINUTES, c)) {
+                case "session_inactivity_timeout_minutes":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES, c)) {
                         return Response.status(422).build();
                     }
                     break;
-                case "superadmin_mfa_timeout_minutes":
-                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.SUPERADMIN_MFA_TIMEOUT_MINUTES, c)) {
+                case "mfa_timeout_minutes":
+                    if (!ConfigurationEntryConstraintValidator.checkConstraints(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES, c)) {
                         return Response.status(422).build();
                     }
                     break;

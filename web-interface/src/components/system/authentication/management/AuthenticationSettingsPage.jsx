@@ -1,8 +1,8 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
-import SuperadminSettings from "./SuperadminSettings";
+import AuthenticationSettings from "./AuthenticationSettings";
 
-function SuperadminSettingsPage() {
+function AuthenticationSettingsPage() {
 
   return (
       <React.Fragment>
@@ -10,21 +10,21 @@ function SuperadminSettingsPage() {
           <div className="col-md-8">
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.AUTHENTICATION.INDEX}>Authentication</a></li>
-                <li className="breadcrumb-item active" aria-current="page">Global Super Administrator Settings</li>
+                <li className="breadcrumb-item"><a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication</a></li>
+                <li className="breadcrumb-item active" aria-current="page">Settings</li>
               </ol>
             </nav>
           </div>
 
           <div className="col-md-4">
             <span className="float-end">
-              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.INDEX}>Back</a>
+              <a className="btn btn-primary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Back</a>
             </span>
           </div>
 
           <div className="col-md-12">
             <h1>
-              Global Super Administrator Settings
+              Authentication Settings
             </h1>
           </div>
         </div>
@@ -35,7 +35,12 @@ function SuperadminSettingsPage() {
               <div className="card-body">
                 <h3>Configuration</h3>
 
-                <SuperadminSettings />
+                <div className="alert alert-warning">
+                  <strong>These settings apply to super administrators and organization administrators.</strong> Each
+                  tenant has individual authentication settings.
+                </div>
+
+                <AuthenticationSettings />
               </div>
             </div>
           </div>
@@ -45,4 +50,4 @@ function SuperadminSettingsPage() {
 
 }
 
-export default SuperadminSettingsPage;
+export default AuthenticationSettingsPage;
