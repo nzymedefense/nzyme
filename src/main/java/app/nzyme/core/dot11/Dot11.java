@@ -1293,7 +1293,7 @@ public class Dot11 {
         }
 
         List<DiscoHistogramEntry> receivers;
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null) {
             // BSSID filter applied.
             receivers = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT SUM(receivers.received_frames) " +

@@ -81,7 +81,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        List<String> selectedBssids = Lists.newArrayList();
+        List<String> selectedBssids = null;
         if (bssids != null && !bssids.isEmpty()) {
             selectedBssids = bssids;
         }
