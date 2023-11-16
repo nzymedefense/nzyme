@@ -30,6 +30,7 @@ import app.nzyme.core.rest.responses.authentication.MFAInitResponse;
 import app.nzyme.core.rest.responses.authentication.SessionInformationResponse;
 import app.nzyme.core.rest.responses.authentication.SessionTokenResponse;
 import app.nzyme.core.rest.responses.authentication.SessionUserInformationDetailsResponse;
+import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
 import app.nzyme.core.security.authentication.AuthenticationService;
 import app.nzyme.core.security.authentication.PasswordHasher;
 import app.nzyme.core.security.authentication.RecoveryCodes;
@@ -197,9 +198,19 @@ public class AuthenticationResource extends UserAuthenticatedResource {
 
         UserEntry u = user.get();
 
+        int mfaTimeoutMinutes;
+        if (authenticatedUser.isSuperAdministrator() || authenticatedUser.isOrganizationAdministrator()) {
+            mfaTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                    .getValue(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.key())
+                    .orElse(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue().get()));
+        } else {
+            mfaTimeoutMinutes = nzyme.getAuthenticationService().findTenant(user.get().tenantId()).get()
+                    .mfaTimeoutMinutes();
+        }
+
         List<String> featurePermissions = nzyme.getAuthenticationService().findPermissionsOfUser(u.uuid());
         DateTime mfaExpiresAt = session.get().mfaRequestedAt() == null
-                ? null : session.get().mfaRequestedAt().plusMinutes(AuthenticationService.MFA_ENTRY_TIME_MINUTES);
+                ? null : session.get().mfaRequestedAt().plusMinutes(mfaTimeoutMinutes);
 
         return Response.ok(SessionInformationResponse.create(
                 SessionUserInformationDetailsResponse.create(

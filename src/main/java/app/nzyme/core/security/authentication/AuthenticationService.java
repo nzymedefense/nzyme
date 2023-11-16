@@ -12,6 +12,7 @@ import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -31,13 +32,6 @@ public class AuthenticationService {
 
     private static final Logger LOG = LogManager.getLogger(AuthenticationService.class);
 
-    public static final int MFA_ENTRY_TIME_MINUTES = 5;
-
-    public static final int DEFAULT_SESSION_TIMEOUT_MINUTES = 720;
-    public static final int DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES = 15;
-    public static final int DEFAULT_MFA_TIMEOUT_MINUTES = 5;
-
-
     public final NzymeNode nzyme;
 
     public AuthenticationService(NzymeNode nzyme) {
@@ -51,7 +45,7 @@ public class AuthenticationService {
                 new ThreadFactoryBuilder()
                         .setNameFormat("session-cleaner-%d")
                         .build()
-        ).scheduleAtFixedRate(this::runSessionCleaning, 0, 1, TimeUnit.MINUTES);
+        ).scheduleAtFixedRate(this::runSessionCleaning, 0, 30, TimeUnit.SECONDS);
     }
 
     private void seedDatabase() {
@@ -74,9 +68,9 @@ public class AuthenticationService {
         createTenant(organization.uuid(),
                 "Default Tenant",
                 "The nzyme default tenant",
-                DEFAULT_SESSION_TIMEOUT_MINUTES,
-                DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
-                DEFAULT_MFA_TIMEOUT_MINUTES
+                Integer.parseInt(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue().get()),
+                Integer.parseInt(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue().get()),
+                Integer.parseInt(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue().get())
         );
     }
 
@@ -1018,41 +1012,86 @@ public class AuthenticationService {
     }
 
     private void runSessionCleaning() {
+        // We are extremely defensive with exception catching here to make sure it always executes the deletion query.
+
+        List<UUID> sessionsToClean = Lists.newArrayList();
+
+        // Apply global authentication settings to all org admins and super admins.
         try {
-            // Delete all sessions older than 12 hours.
-            nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("DELETE FROM auth_sessions WHERE created_at < :timeout")
-                            .bind("timeout", DateTime.now().minusHours(12))
-                            .execute()
-            );
+            int sessionTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                    .getValue(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.key())
+                    .orElse(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue().get()));
 
-            // Delete all sessions with MFA waiting for longer than 5 minutes.
-            nzyme.getDatabase().useHandle(handle ->
-                    handle.createUpdate("DELETE FROM auth_sessions " +
-                                    "WHERE mfa_valid = false AND mfa_requested_at < :timeout")
-                            .bind("timeout", DateTime.now().minusMinutes(MFA_ENTRY_TIME_MINUTES))
-                            .execute()
-            );
+            int sessionInactivityTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                    .getValue(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.key())
+                    .orElse(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue().get()));
 
-            // Delete all sessions of users that have been inactive for 15 minutes.
-            List<UUID> inactiveUsers = nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
-                                    "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
-                                    "WHERE s.mfa_valid = true AND u.last_activity < :timeout")
-                            .bind("timeout", DateTime.now().minusMinutes(15))
-                            .mapTo(UUID.class)
-                            .list()
-            );
+            int mfaTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
+                    .getValue(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.key())
+                    .orElse(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue().get()));
 
-            if (!inactiveUsers.isEmpty()) {
+            // Find all users with sessions older than 12 hours and sessions with MFA waiting for longer than 5 minutes.
+            sessionsToClean.addAll(
+                    nzyme.getDatabase().withHandle(handle ->
+                            handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
+                                            "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
+                                            "WHERE (u.is_orgadmin = true OR u.is_superadmin = true) " +
+                                            "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
+                                            "AND u.last_activity < :inactivity_timeout) OR (s.mfa_valid = false " +
+                                            "AND s.mfa_requested_at < :mfa_timeout))")
+                                    .bind("session_timeout", DateTime.now().minusMinutes(sessionTimeoutMinutes))
+                                    .bind("inactivity_timeout", DateTime.now().minusMinutes(sessionInactivityTimeoutMinutes))
+                                    .bind("mfa_timeout", DateTime.now().minusMinutes(mfaTimeoutMinutes))
+                                    .mapTo(UUID.class)
+                                    .list()
+                    )
+            );
+        } catch(Exception e) {
+            LOG.error("Could not determine sessions of super admins and org admins to clean.", e);
+        }
+
+        // Apply tenant-specific authentication settings to all tenant users.
+        try {
+            for (OrganizationEntry organization : findAllOrganizations(Integer.MAX_VALUE, 0)) {
+                Optional<List<TenantEntry>> tenants = findAllTenantsOfOrganization(organization.uuid());
+                if (tenants.isPresent()) {
+                    for (TenantEntry tenant : tenants.get()) {
+                        sessionsToClean.addAll(
+                                nzyme.getDatabase().withHandle(handle ->
+                                        handle.createQuery("SELECT u.uuid FROM auth_users AS u " +
+                                                        "LEFT JOIN auth_sessions AS s ON s.user_id = u.uuid " +
+                                                        "WHERE u.organization_id = :organization_id " +
+                                                        "AND u.tenant_id = :tenant_id " +
+                                                        "AND (s.created_at < :session_timeout OR (s.mfa_valid = true " +
+                                                        "AND u.last_activity < :inactivity_timeout) " +
+                                                        "OR (s.mfa_valid = false AND s.mfa_requested_at < :mfa_timeout))")
+                                                .bind("organization_id", organization.uuid())
+                                                .bind("tenant_id", tenant.uuid())
+                                                .bind("session_timeout", DateTime.now().minusMinutes(tenant.sessionTimeoutMinutes()))
+                                                .bind("inactivity_timeout", DateTime.now().minusMinutes(tenant.sessionInactivityTimeoutMinutes()))
+                                                .bind("mfa_timeout", DateTime.now().minusMinutes(tenant.mfaTimeoutMinutes()))
+                                                .mapTo(UUID.class)
+                                                .list()
+                                )
+                        );
+                    }
+                }
+            }
+
+        } catch(Exception e) {
+            LOG.error("Could not determine sessions of tenant users to clean.", e);
+        }
+
+        if (!sessionsToClean.isEmpty()) {
+            try {
                 nzyme.getDatabase().useHandle(handle ->
                         handle.createUpdate("DELETE FROM auth_sessions WHERE user_id IN (<user_ids>)")
-                                .bindList("user_ids", inactiveUsers)
+                                .bindList("user_ids", sessionsToClean)
                                 .execute()
                 );
+            } catch(Exception e) {
+                LOG.error("Could not delete sessions marked for deletion.", e);
             }
-        } catch(Exception e) {
-            LOG.error("Could not run session cleaning.", e);
         }
     }
 

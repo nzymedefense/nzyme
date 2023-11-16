@@ -1338,18 +1338,15 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         int sessionTimeoutMinutes = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue()
-                        .orElse("0")));
+                .orElse(AuthenticationRegistryKeys.SESSION_TIMEOUT_MINUTES.defaultValue().get()));
 
         int sessionInactivityTimeoutMinutes =  Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue()
-                        .orElse("0")));
+                .orElse(AuthenticationRegistryKeys.SESSION_INACTIVITY_TIMEOUT_MINUTES.defaultValue().get()));
 
         int mfaTimeoutMinutes =  Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.key())
-                .orElse(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue()
-                        .orElse("0")));
+                .orElse(AuthenticationRegistryKeys.MFA_TIMEOUT_MINUTES.defaultValue().get()));
 
         SuperadminSettingsResponse response = SuperadminSettingsResponse.create(
                 ConfigurationEntryResponse.create(
