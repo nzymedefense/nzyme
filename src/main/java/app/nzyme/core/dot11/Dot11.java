@@ -1237,6 +1237,10 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
+        if (bssids != null && bssids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<Integer> discoTypes = Lists.newArrayList();
         switch (discoType) {
             case DISCONNECTION:
@@ -1252,7 +1256,7 @@ public class Dot11 {
         }
 
         List<DiscoHistogramEntry> senders;
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null) {
             // BSSID filter applied.
             senders = nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT SUM(senders.sent_frames) " +
@@ -1360,7 +1364,11 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT senders.bssid, SUM(senders.sent_frames) AS frame_count " +
@@ -1402,7 +1410,11 @@ public class Dot11 {
             return 0L;
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT COUNT(DISTINCT(senders.bssid)) " +
@@ -1440,7 +1452,11 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT receivers.bssid, SUM(received_frames) AS frame_count " +
@@ -1484,7 +1500,11 @@ public class Dot11 {
             return 0L;
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT COUNT(DISTINCT(receivers.bssid)) " +
@@ -1524,7 +1544,11 @@ public class Dot11 {
             return Collections.emptyList();
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT senders.bssid AS sender, receivers.bssid AS receiver, " +
@@ -1572,7 +1596,11 @@ public class Dot11 {
             return 0L;
         }
 
-        if (bssids != null && !bssids.isEmpty()) {
+        if (bssids != null && bssids.isEmpty()) {
+            return 0L;
+        }
+
+        if (bssids != null) {
             // BSSID filter applied.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT COUNT(DISTINCT(senders.bssid, receivers.bssid)) " +
