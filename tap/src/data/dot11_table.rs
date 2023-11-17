@@ -745,7 +745,8 @@ fn calculate_signal_strengh_report(signal_strengths: &HashMap<u16, Vec<i8>>) -> 
         }
     }
 
-    let average = (sum / count) as f32;
+    
+    let average = if count > 0 { (sum / count) as f32 } else { 0.0 };
 
     SignalStrengthReport {
         min,
