@@ -45,6 +45,13 @@ public class Permissions {
                         "potentially trigger alerts based on data from all taps of tenant the user belongs to.",
                 false
         ));
+        put("mac_aliases_manage", Permission.create(
+                "mac_aliases_manage",
+                "Manage MAC Address Aliases",
+                "Allows user to create, edit and delete MAC address aliases for all subsystems, " +
+                        "e.g. 802.11/WiFi or Ethernet.",
+                true
+        ));
     }};
 
 }

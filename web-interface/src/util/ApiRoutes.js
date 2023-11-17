@@ -155,6 +155,9 @@ const ApiRoutes = {
       INDEX: '/dot11/disco'
     }
   },
+  CONTEXT: {
+    MAC_ADDRESSES: '/context/macs'
+  },
   RETRO: {
     SEARCH: {
       INDEX: '/retro/search'

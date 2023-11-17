@@ -72,7 +72,19 @@ function Sidebar() {
             show={userHasPermission(user, "dot11_monitoring_manage")} />
       </SidebarSubmenu>
 
-      <SidebarSubmenu title="Alerts"
+      <SidebarSubmenu title="Context"
+                      subhref="/context"
+                      icon={<i className="sidebar-icon fa-solid fa-fingerprint"></i>}
+                      show={userHasPermission(user, "mac_aliases_manage")}>
+        <NavigationLink
+            href={ApiRoutes.CONTEXT.MAC_ADDRESSES}
+            title="MAC Addresses"
+            icon={<i className="sidebar-icon fa-regular fa-address-card" />}
+            show={userHasPermission(user, "mac_aliases_manage")} />
+
+      </SidebarSubmenu>
+
+        <SidebarSubmenu title="Alerts"
                       subhref="/alerts"
                       icon={<i className="sidebar-icon fa-solid fa-bell"></i>}
                       show={userHasPermission(user, "alerts_view")
