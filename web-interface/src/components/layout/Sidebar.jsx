@@ -77,7 +77,7 @@ function Sidebar() {
                       icon={<i className="sidebar-icon fa-solid fa-fingerprint"></i>}
                       show={userHasPermission(user, "mac_aliases_manage")}>
         <NavigationLink
-            href={ApiRoutes.CONTEXT.MAC_ADDRESSES}
+            href={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX}
             title="MAC Addresses"
             icon={<i className="sidebar-icon fa-regular fa-address-card" />}
             show={userHasPermission(user, "mac_aliases_manage")} />

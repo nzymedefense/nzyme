@@ -1,4 +1,5 @@
 import React from "react";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 function MacAddressContextPage() {
 
@@ -24,7 +25,7 @@ function MacAddressContextPage() {
 
           <div className="col-md-4">
             <span className="float-end">
-              <a className="btn btn-primary" href="#">Create Context</a>
+              <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE}>Create Context</a>
             </span>
           </div>
         </div>

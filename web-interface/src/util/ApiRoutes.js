@@ -156,7 +156,10 @@ const ApiRoutes = {
     }
   },
   CONTEXT: {
-    MAC_ADDRESSES: '/context/macs'
+    MAC_ADDRESSES: {
+      INDEX: '/context/macs',
+      CREATE: '/context/macs/create'
+    }
   },
   RETRO: {
     SEARCH: {

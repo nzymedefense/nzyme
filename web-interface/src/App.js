@@ -111,7 +111,8 @@ import ConfigureDiscoDetectionMethodPage
   from "./components/dot11/monitoring/disco/configuration/ConfigureDiscoDetectionMethodPage";
 import AddTapProxyPage from "./components/system/taps/AddTapProxyPage";
 import AuthenticationSettingsPage from "./components/system/authentication/management/AuthenticationSettingsPage";
-import MacAddressContextPage from "./components/context/MacAddressContextPage";
+import MacAddressContextPage from "./components/context/macs/MacAddressContextPage";
+import CreateMacAddressContextPage from "./components/context/macs/CreateMacAddressContextPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -376,7 +377,8 @@ function App() {
                           <Route path={ApiRoutes.DOT11.DISCO.INDEX} element={<DiscoPage />}/>
 
                           { /* Context. */ }
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES} element={<MacAddressContextPage />}/>
+                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
+                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />} />
 
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>

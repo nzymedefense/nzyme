@@ -15,9 +15,9 @@ import MonitoredNetworkAlertStatusTable from "./MonitoredNetworkAlertStatusTable
 import DiscoDetectionDetails from "./disco/DiscoDetectionDetails";
 import MonitoredNetworkDiscoChart from "./disco/MonitoredNetworkDiscoChart";
 import InlineTapSelector from "../../shared/InlineTapSelector";
+import {isValidMACAddress} from "../../../util/Tools";
 
 const dot11Service = new Dot11Service();
-const MAC_ADDRESS_REGEX = /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/;
 
 function Dot11MonitoredNetworkDetailsPage() {
 
@@ -102,7 +102,7 @@ function Dot11MonitoredNetworkDetailsPage() {
       return bssid.bssid
     });
 
-    return MAC_ADDRESS_REGEX.test(newBSSID) && !existingBSSIDs.includes(newBSSID.toUpperCase());
+    return isValidMACAddress(newBSSID) && !existingBSSIDs.includes(newBSSID.toUpperCase());
   }
 
   const addChannelFormEnabled = function () {
