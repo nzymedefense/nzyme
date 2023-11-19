@@ -1,5 +1,7 @@
 package app.nzyme.core.detection.alerts;
 
+import app.nzyme.core.Subsystem;
+
 public enum DetectionType {
 
     // Dot11 Monitor alerts.

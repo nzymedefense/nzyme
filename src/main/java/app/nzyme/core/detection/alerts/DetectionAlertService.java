@@ -1,6 +1,7 @@
 package app.nzyme.core.detection.alerts;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;

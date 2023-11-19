@@ -1,6 +1,7 @@
 package app.nzyme.core.database;
 
 import app.nzyme.core.configuration.node.NodeConfiguration;
+import app.nzyme.core.context.db.MacAddressContextEntryMapper;
 import app.nzyme.core.crypto.database.TLSKeyAndCertificateEntryMapper;
 import app.nzyme.core.crypto.database.TLSWildcardKeyAndCertificateEntryMapper;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntryMapper;
@@ -125,7 +126,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new DiscoHistogramEntryMapper())
                 .registerRowMapper(new CustomBanditDescriptionMapper())
                 .registerRowMapper(new BSSIDFrameCountMapper())
-                .registerRowMapper(new BSSIDPairFrameCountMapper());
+                .registerRowMapper(new BSSIDPairFrameCountMapper())
+                .registerRowMapper(new MacAddressContextEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

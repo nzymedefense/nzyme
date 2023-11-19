@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.context.ContextService;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
@@ -102,6 +103,7 @@ public class NzymeNodeImpl implements NzymeNode {
     private final TasksQueue tasksQueue;
 
     private final GeoIpService geoIpService;
+    private final ContextService contextService;
 
     private final Ethernet ethernet;
     private final Dot11 dot11;
@@ -150,6 +152,7 @@ public class NzymeNodeImpl implements NzymeNode {
         this.tasksQueue = new PostgresTasksQueueImpl(this);
 
         this.geoIpService = new GeoIpService(this);
+        this.contextService = new ContextService(this);
 
         this.pluginRestResources = Lists.newArrayList();
         this.plugins = Lists.newArrayList();
@@ -314,6 +317,11 @@ public class NzymeNodeImpl implements NzymeNode {
     @Override
     public GeoIpService getGeoIpService() {
         return geoIpService;
+    }
+
+    @Override
+    public ContextService getContextService() {
+        return contextService;
     }
 
     @Override

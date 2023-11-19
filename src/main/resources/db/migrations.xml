@@ -3987,5 +3987,69 @@
             </column>
         </addColumn>
     </changeSet>
-    
+
+    <changeSet id="create_mac_context" author="lennartkoopmann">
+        <createTable tableName="context_mac_addresses">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="mac_address" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="subsystem" type="varchar(32)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(12)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="varchar(32)">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="notes" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex tableName="context_mac_addresses" indexName="mac">
+            <column name="mac_address" />
+        </createIndex>
+
+        <createIndex tableName="context_mac_addresses" indexName="subsystem">
+            <column name="subsystem" />
+        </createIndex>
+
+        <createIndex tableName="context_mac_addresses" indexName="organization">
+            <column name="organization_id" />
+        </createIndex>
+
+        <createIndex tableName="context_mac_addresses" indexName="tenant">
+            <column name="tenant_id" />
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="add_mac_context_uniqueness" author="lennartkoopmann">
+        <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address, subsystem" />
+    </changeSet>
+
 </databaseChangeLog>

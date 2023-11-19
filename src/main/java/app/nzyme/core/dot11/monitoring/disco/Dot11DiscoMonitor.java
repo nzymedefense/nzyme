@@ -1,13 +1,11 @@
 package app.nzyme.core.dot11.monitoring.disco;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
-import app.nzyme.core.detection.alerts.Subsystem;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.dot11.monitoring.disco.monitormethods.DiscoMonitorFactory;
 import app.nzyme.core.dot11.monitoring.disco.monitormethods.DiscoMonitorMethodType;
-import app.nzyme.core.dot11.monitoring.disco.monitormethods.manualthreshold.ManualThresholdConfiguration;
-import app.nzyme.core.dot11.monitoring.disco.monitormethods.manualthreshold.ManualThresholdDiscoMonitor;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TenantEntry;

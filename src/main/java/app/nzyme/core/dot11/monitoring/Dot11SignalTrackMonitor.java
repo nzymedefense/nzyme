@@ -1,8 +1,8 @@
 package app.nzyme.core.dot11.monitoring;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
-import app.nzyme.core.detection.alerts.Subsystem;
 import app.nzyme.core.dot11.db.ChannelHistogramEntry;
 import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredChannel;

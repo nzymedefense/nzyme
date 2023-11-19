@@ -18,6 +18,7 @@
 package app.nzyme.core;
 
 import app.nzyme.core.configuration.base.BaseConfiguration;
+import app.nzyme.core.context.ContextService;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
 import app.nzyme.core.distributed.NodeManager;
@@ -62,6 +63,7 @@ public interface NzymeNode extends PluginEntryPoint, DatabaseProvider, NodeIdent
     Dot11 getDot11();
 
     GeoIpService getGeoIpService();
+    ContextService getContextService();
 
     NodeConfiguration getConfiguration();
     BaseConfiguration getBaseConfiguration();

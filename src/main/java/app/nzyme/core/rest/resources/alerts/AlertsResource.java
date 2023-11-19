@@ -1,13 +1,12 @@
 package app.nzyme.core.rest.resources.alerts;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.detection.alerts.DetectionType;
-import app.nzyme.core.detection.alerts.Subsystem;
 import app.nzyme.core.detection.alerts.db.DetectionAlertAttributeEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.detection.alerts.db.DetectionAlertTimelineEntry;
-import app.nzyme.core.events.EventEngine;
 import app.nzyme.core.events.EventEngineImpl;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.db.SubscriptionEntry;
@@ -16,7 +15,6 @@ import app.nzyme.core.events.types.EventType;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.DetectionEventSubscriptionRequest;
-import app.nzyme.core.rest.requests.SystemEventSubscriptionRequest;
 import app.nzyme.core.rest.requests.UUIDListRequest;
 import app.nzyme.core.rest.responses.alerts.*;
 import app.nzyme.core.rest.responses.events.SubscriptionDetailsResponse;

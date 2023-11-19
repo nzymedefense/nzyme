@@ -20,6 +20,8 @@ package app.nzyme.core;
 public enum Subsystem {
 
     NZYME_SYS,
-    DOT_11
+    DOT11,
+    ETHERNET,
+    GENERIC
 
 }
