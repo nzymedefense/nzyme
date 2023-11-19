@@ -35,9 +35,9 @@ public class RESTAuthenticationFilterTestBase {
                 org.uuid(),
                 "test tenant",
                 "test tenant",
-                AuthenticationService.DEFAULT_SESSION_TIMEOUT_MINUTES,
-                AuthenticationService.DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
-                AuthenticationService.DEFAULT_MFA_TIMEOUT_MINUTES
+                720,
+                15,
+                5
         );
 
         UserEntry user = nzyme.getAuthenticationService().createUserOfTenant(org.uuid(), tenant.uuid(), "test user", email, hash);

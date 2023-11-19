@@ -36,9 +36,9 @@ public class TapAuthenticationFilterTest {
                 .createTenant(org.uuid(),
                         "test tenant",
                         "test tenant",
-                        AuthenticationService.DEFAULT_SESSION_TIMEOUT_MINUTES,
-                        AuthenticationService.DEFAULT_SESSION_INACTIVITY_TIMEOUT_MINUTES,
-                        AuthenticationService.DEFAULT_MFA_TIMEOUT_MINUTES);
+                        720,
+                        15,
+                        5);
 
         String secret = RandomStringUtils.random(64, true, true);
 
