@@ -49,5 +49,9 @@ export function truncate(str, n, useWordBoundary){
 }
 
 export function isValidMACAddress(mac) {
+  if (!mac || mac.trim() === "") {
+    return false;
+  }
+
   return /^[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}$/.test(mac);
 }
