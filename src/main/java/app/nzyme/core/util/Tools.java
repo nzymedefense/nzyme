@@ -17,6 +17,7 @@
 
 package app.nzyme.core.util;
 
+import com.google.common.base.Strings;
 import org.joda.time.Duration;
 
 import java.util.regex.Matcher;
@@ -40,6 +41,10 @@ public class Tools {
     }
 
     public static boolean isValidMacAddress(String addr) {
+        if (Strings.isNullOrEmpty(addr)) {
+            return false;
+        }
+
         Matcher m = VALID_MAC.matcher(addr);
         return m.find();
     }

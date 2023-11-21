@@ -1,8 +1,10 @@
 package app.nzyme.core.rest.resources.context;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.Subsystem;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import jakarta.inject.Inject;
@@ -22,10 +24,22 @@ public class AssetContextResource extends UserAuthenticatedResource {
 
     @POST
     @Path("/mac")
-    public Response bssids(@Context SecurityContext sc) {
+    public Response macs(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        // name, notes/description etc, owner?
+        if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getContextService().createMacAddressContext(
+                req.macAddress(),
+                Subsystem.valueOf(req.subsystem().toUpperCase()),
+                req.name(),
+                req.description(),
+                req.notes(),
+                req.organizationId(),
+                req.tenantId()
+        );
 
         return Response.status(Response.Status.CREATED).build();
     }

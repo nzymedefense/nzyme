@@ -4,23 +4,32 @@ import {isValidMACAddress} from "../../../util/Tools";
 function MacAddressContextForm(props) {
 
   const submitText = props.submitText;
+  const onSubmit = props.onSubmit;
+
+  const formatName = (name) => {
+    return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
+  }
 
   const [macAddress, setMacAddress] = useState(props.macAddress ? props.macAddress : "");
-  const [subsystem, setSubsystem] = useState(props.subsystem ? props.subsystem : "");
+  const [subsystem, setSubsystem] = useState(props.subsystem ? props.subsystem : "ETHERNET");
   const [name, setName] = useState(props.name ? formatName(props.name) : "");
+  const [description, setDescription] = useState(props.description ? props.description : "")
+  const [notes, setNotes] = useState(props.notes ? props.notes : "")
 
   const [formSubmitting, setFormSubmitting] = useState(false);
 
   const formIsReady = () => {
     return isValidMACAddress(macAddress)
+        && subsystem && subsystem.trim().length > 0
+        && name && name.trim().length > 0
   }
 
   const submit = () => {
     setFormSubmitting(true);
-  }
 
-  const formatName = (name) => {
-    return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
+    onSubmit(macAddress, subsystem, name, description, notes, () => {
+      setFormSubmitting(false);
+    });
   }
 
   return (
@@ -35,7 +44,7 @@ function MacAddressContextForm(props) {
       <div className="mb-3">
         <label htmlFor="subsystem" className="form-label">Subsystem</label>
         <select className="form-select" id="subsystem"
-               value={subsystem} onChange={(e) => { setSubsystem(e.target.value) }}>
+                value={subsystem} onChange={(e) => { setSubsystem(e.target.value) }}>
           <option value="ETHERNET">Ethernet</option>
           <option value="DOT11">802.11 / WiFi</option>
         </select>
@@ -55,6 +64,26 @@ function MacAddressContextForm(props) {
         <div className="form-text">
           A short name describing the MAC address. This name will appear next to the address. It cannot be longer than
           12 characters, cannot include special characters except underscores and must be uppercase.
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="description" className="form-label">Description <small>Optional</small></label>
+        <input type="text" className="form-control" id="description" maxLength={32}
+               value={description} onChange={(e) => { setDescription(e.target.value) }} />
+        <div className="form-text">
+          A short description of the MAC address, not longer than 32 characters. Longer descriptions should be added
+          to the <i>notes</i> field below.
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="description" className="form-label">Notes <small>Optional</small></label>
+        <textarea type="text" className="form-control" id="description"
+                  style={{height: 200}}
+                  value={notes} onChange={(e) => { setNotes(e.target.value) }} />
+        <div className="form-text">
+          Notes about this MAC address. <strong>Markdown is supported.</strong>
         </div>
       </div>
 

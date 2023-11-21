@@ -27,6 +27,18 @@ public class UserAuthenticatedResource {
     protected boolean passedTenantDataAccessible(SecurityContext sc, UUID organizationId, UUID tenantId) {
         AuthenticatedUser user = getAuthenticatedUser(sc);
 
+        // Super admin?
+        if (user.isSuperAdministrator()) {
+            return true;
+        }
+
+        // Org admin?
+        if (user.isOrganizationAdministrator() && user.getOrganizationId().equals(organizationId)) {
+            return true;
+        }
+
+        // Tenant user.
+
         Optional<OrganizationEntry> dbOrg = nzyme.getAuthenticationService().findOrganization(organizationId);
         if (dbOrg.isEmpty()) {
             return false;
@@ -42,15 +54,6 @@ public class UserAuthenticatedResource {
             return false;
         }
 
-        if (user.isSuperAdministrator()) {
-            return true;
-        }
-
-        if (user.isOrganizationAdministrator() && user.getOrganizationId().equals(organizationId)) {
-            return true;
-        }
-
-        // Tenant User.
         return user.getOrganizationId().equals(organizationId)
                 && user.getTenantId().equals(tenantId);
     }

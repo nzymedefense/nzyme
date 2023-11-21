@@ -1,8 +1,34 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextForm from "./MacAddressContextForm";
+import ContextService from "../../../services/ContextService";
+import {notify} from "react-notify-toast";
+
+const contextService = new ContextService();
 
 function CreateMacAddressContextPage() {
+
+  const onSubmit = (macAddress, subsystem, name, description, notes, onComplete) => {
+    contextService.createMacAddressContext(
+        macAddress,
+        subsystem,
+        name,
+        description,
+        notes,
+        "XXX", // TODO
+        "XXX", // TODO
+        () => {
+          notify.show('Context created.', 'success');
+          // TODO set redirect
+          onComplete();
+        },
+        () => {
+          notify.show('Could not create context.', 'error');
+          onComplete();
+        }
+    )
+
+  }
 
   return (
       <React.Fragment>
@@ -40,7 +66,7 @@ function CreateMacAddressContextPage() {
               <div className="card-body">
                 <h3>Create MAC Address Context</h3>
 
-                <MacAddressContextForm submitText={"Add Context"} />
+                <MacAddressContextForm submitText={"Add Context"} onSubmit={onSubmit} />
               </div>
             </div>
           </div>
