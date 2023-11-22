@@ -3,7 +3,6 @@ package app.nzyme.core.rest.resources.context;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.Subsystem;
 import app.nzyme.core.rest.UserAuthenticatedResource;
-import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -23,10 +22,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac")
     public Response macs(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
-        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
-
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

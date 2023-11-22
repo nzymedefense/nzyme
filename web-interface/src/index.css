@@ -737,3 +737,18 @@ select.monitored-network-selector {
 span.highlighted {
     background-color: #ffff9a;
 }
+
+ul.selected-org-tenant {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 13px;
+}
+
+ul.selected-org-tenant li {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+ul.selected-org-tenant span {
+    font-weight: 800;
+}

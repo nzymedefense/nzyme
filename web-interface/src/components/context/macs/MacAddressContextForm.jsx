@@ -1,10 +1,15 @@
 import React, {useState} from "react";
 import {isValidMACAddress} from "../../../util/Tools";
+import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
+import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
 
 function MacAddressContextForm(props) {
 
   const submitText = props.submitText;
   const onSubmit = props.onSubmit;
+
+  const [organizationId, setOrganizationId] = useState(props.organizationId ? props.organizationId : null);
+  const [tenantId, setTenantId] = useState(props.tenantId ? props.tenantId : null);
 
   const formatName = (name) => {
     return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
@@ -18,6 +23,19 @@ function MacAddressContextForm(props) {
 
   const [formSubmitting, setFormSubmitting] = useState(false);
 
+  const onOrganizationChange = (uuid) => {
+    setOrganizationId(uuid);
+  }
+
+  const onTenantChange = (uuid) => {
+    setTenantId(uuid);
+  }
+
+  const resetTenantAndOrganization = () => {
+    setOrganizationId(null);
+    setTenantId(null);
+  }
+
   const formIsReady = () => {
     return isValidMACAddress(macAddress)
         && subsystem && subsystem.trim().length > 0
@@ -27,22 +45,31 @@ function MacAddressContextForm(props) {
   const submit = () => {
     setFormSubmitting(true);
 
-    onSubmit(macAddress, subsystem, name, description, notes, () => {
+    onSubmit(macAddress, subsystem, name, description, notes, organizationId, tenantId, () => {
       setFormSubmitting(false);
     });
   }
 
+  if (!organizationId || !tenantId) {
+    return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange} onTenantChange={onTenantChange} />
+  }
+
   return (
     <React.Fragment>
+      <SelectedOrganizationAndTenant
+          organizationId={organizationId}
+          tenantId={tenantId}
+          onReset={resetTenantAndOrganization} />
+
       <div className="mb-3">
-        <label htmlFor="macAddress" className="form-label">MAC Address</label>
+        <label htmlFor="macAddress" className="form-label">MAC Address <small>Required</small></label>
         <input type="text" className="form-control" id="macAddress"
                value={macAddress} onChange={(e) => { setMacAddress(e.target.value) }} />
         <div className="form-text">The MAC address you want to add context to.</div>
       </div>
 
       <div className="mb-3">
-        <label htmlFor="subsystem" className="form-label">Subsystem</label>
+        <label htmlFor="subsystem" className="form-label">Subsystem <small>Required</small></label>
         <select className="form-select" id="subsystem"
                 value={subsystem} onChange={(e) => { setSubsystem(e.target.value) }}>
           <option value="ETHERNET">Ethernet</option>
@@ -58,7 +85,7 @@ function MacAddressContextForm(props) {
       <hr />
 
       <div className="mb-3">
-        <label htmlFor="name" className="form-label">Name</label>
+        <label htmlFor="name" className="form-label">Name <small>Required</small></label>
         <input type="text" className="form-control" id="name" maxLength={12}
                value={name} onChange={(e) => { setName(formatName(e.target.value)) }} />
         <div className="form-text">
@@ -87,7 +114,7 @@ function MacAddressContextForm(props) {
         </div>
       </div>
 
-      <button className="btn btn-sm btn-primary" onClick={submit} disabled={!formIsReady() || formSubmitting}>
+      <button className="btn btn-primary" onClick={submit} disabled={!formIsReady() || formSubmitting}>
         {formSubmitting ? "Please wait ..." : submitText}
       </button>
     </React.Fragment>

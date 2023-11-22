@@ -1,33 +1,39 @@
-import React from "react";
+import React, {useState} from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextForm from "./MacAddressContextForm";
 import ContextService from "../../../services/ContextService";
 import {notify} from "react-notify-toast";
+import {Navigate} from "react-router-dom";
 
 const contextService = new ContextService();
 
 function CreateMacAddressContextPage() {
 
-  const onSubmit = (macAddress, subsystem, name, description, notes, onComplete) => {
+  const [complete, setComplete] = useState(false);
+
+  const onSubmit = (macAddress, subsystem, name, description, notes, organizationId, tenantId, onComplete) => {
     contextService.createMacAddressContext(
         macAddress,
         subsystem,
         name,
         description,
         notes,
-        "XXX", // TODO
-        "XXX", // TODO
+        organizationId,
+        tenantId,
         () => {
           notify.show('Context created.', 'success');
-          // TODO set redirect
           onComplete();
+          setComplete(true);
         },
         () => {
           notify.show('Could not create context.', 'error');
           onComplete();
         }
     )
+  }
 
+  if (complete) {
+    return <Navigate to={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} />
   }
 
   return (
