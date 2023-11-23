@@ -16,9 +16,6 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("mac_address")
     public abstract String macAddress();
 
-    @JsonProperty("subsystem")
-    public abstract String subsystem();
-
     @JsonProperty("name")
     public abstract String name();
 
@@ -36,11 +33,10 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String subsystem, String name, String description, String notes, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .macAddress(macAddress)
-                .subsystem(subsystem)
                 .name(name)
                 .description(description)
                 .notes(notes)
@@ -58,8 +54,6 @@ public abstract class MacAddressContextDetailsResponse {
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder macAddress(String macAddress);
-
-        public abstract Builder subsystem(String subsystem);
 
         public abstract Builder name(String name);
 

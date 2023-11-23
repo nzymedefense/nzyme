@@ -1,5 +1,6 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
+import MacAddressContextTable from "./MacAddressContextTable";
 
 function MacAddressContextPage() {
 
@@ -31,10 +32,12 @@ function MacAddressContextPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>All MAC Addresses with Context</h3>
+
+                <MacAddressContextTable />
               </div>
             </div>
           </div>

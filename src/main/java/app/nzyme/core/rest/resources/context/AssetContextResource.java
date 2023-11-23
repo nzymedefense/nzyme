@@ -51,7 +51,6 @@ public class AssetContextResource extends UserAuthenticatedResource {
             addresses.add(MacAddressContextDetailsResponse.create(
                     m.uuid(),
                     m.macAddress(),
-                    m.subsystem(),
                     m.name(),
                     m.description(),
                     m.notes(),
@@ -74,7 +73,6 @@ public class AssetContextResource extends UserAuthenticatedResource {
 
         nzyme.getContextService().createMacAddressContext(
                 req.macAddress(),
-                Subsystem.valueOf(req.subsystem().toUpperCase()),
                 req.name(),
                 req.description(),
                 req.notes(),

@@ -11,10 +11,9 @@ function CreateMacAddressContextPage() {
 
   const [complete, setComplete] = useState(false);
 
-  const onSubmit = (macAddress, subsystem, name, description, notes, organizationId, tenantId, onComplete) => {
+  const onSubmit = (macAddress, name, description, notes, organizationId, tenantId, onComplete) => {
     contextService.createMacAddressContext(
         macAddress,
-        subsystem,
         name,
         description,
         notes,
@@ -67,7 +66,7 @@ function CreateMacAddressContextPage() {
         </div>
 
         <div className="row mt-3">
-          <div className="col-lg-12 col-xl-6">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
                 <h3>Create MAC Address Context</h3>

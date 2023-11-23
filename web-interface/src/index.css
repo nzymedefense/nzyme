@@ -752,3 +752,16 @@ ul.selected-org-tenant li {
 ul.selected-org-tenant span {
     font-weight: 800;
 }
+
+div.context-overlay {
+    position: relative;
+    top: 5px;
+    left: 25px;
+    height: 150px;
+    width: 200px;
+    margin-bottom: -150px;
+    margin-right: -200px;
+    overflow: hidden;
+
+    background-color: #ff0;
+}

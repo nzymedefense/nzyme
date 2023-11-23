@@ -4062,4 +4062,12 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="remove_subsystem_from_mac_address_context" author="lennartkoopmann">
+        <dropColumn tableName="context_mac_addresses" columnName="subsystem" />
+    </changeSet>
+
+    <changeSet id="add_mac_context_uniqueness_without_subsystem" author="lennartkoopmann">
+        <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address" />
+    </changeSet>
+
 </databaseChangeLog>

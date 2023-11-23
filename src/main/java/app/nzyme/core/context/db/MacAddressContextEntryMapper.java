@@ -16,12 +16,11 @@ public class MacAddressContextEntryMapper implements RowMapper<MacAddressContext
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("mac_address"),
-                rs.getString("subsystem"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("notes"),
                 UUID.fromString(rs.getString("organization_id")),
-                UUID.fromString("tenant_id"),
+                UUID.fromString(rs.getString("tenant_id")),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at"))
         );

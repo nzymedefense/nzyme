@@ -16,7 +16,6 @@ function MacAddressContextForm(props) {
   }
 
   const [macAddress, setMacAddress] = useState(props.macAddress ? props.macAddress : "");
-  const [subsystem, setSubsystem] = useState(props.subsystem ? props.subsystem : "ETHERNET");
   const [name, setName] = useState(props.name ? formatName(props.name) : "");
   const [description, setDescription] = useState(props.description ? props.description : "")
   const [notes, setNotes] = useState(props.notes ? props.notes : "")
@@ -37,15 +36,13 @@ function MacAddressContextForm(props) {
   }
 
   const formIsReady = () => {
-    return isValidMACAddress(macAddress)
-        && subsystem && subsystem.trim().length > 0
-        && name && name.trim().length > 0
+    return isValidMACAddress(macAddress) && name && name.trim().length > 0
   }
 
   const submit = () => {
     setFormSubmitting(true);
 
-    onSubmit(macAddress, subsystem, name, description, notes, organizationId, tenantId, () => {
+    onSubmit(macAddress.trim(), name, description, notes, organizationId, tenantId, () => {
       setFormSubmitting(false);
     });
   }
@@ -66,20 +63,6 @@ function MacAddressContextForm(props) {
         <input type="text" className="form-control" id="macAddress"
                value={macAddress} onChange={(e) => { setMacAddress(e.target.value) }} />
         <div className="form-text">The MAC address you want to add context to.</div>
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="subsystem" className="form-label">Subsystem <small>Required</small></label>
-        <select className="form-select" id="subsystem"
-                value={subsystem} onChange={(e) => { setSubsystem(e.target.value) }}>
-          <option value="ETHERNET">Ethernet</option>
-          <option value="DOT11">802.11 / WiFi</option>
-        </select>
-        <div className="form-text">
-          The subsystem the MAC address exists in. You can add context to the same MAC address
-          in different subsystems, but it has to be unique within it's subsystem. For example: A MAC address can have
-          different context in Ethernet data compared to WiFi data.
-        </div>
       </div>
 
       <hr />

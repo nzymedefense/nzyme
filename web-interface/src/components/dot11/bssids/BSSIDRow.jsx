@@ -8,7 +8,7 @@ import {TapContext} from "../../../App";
 import BSSIDDetailsRows from "./BSSIDDetailsRows";
 import BSSIDSecurityProtocols from "./BSSIDSecurityProtocols";
 import InfrastructureTypes from "../util/InfrastructureTypes";
-import MonitorIcon from "./MonitorIcon";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 
@@ -47,7 +47,7 @@ function BSSIDRow(props) {
       <React.Fragment>
         <tr>
           <td>
-            <a href="#" className="dot11-mac" onClick={(e) => onExpandClick(e, bssid.bssid)}>{bssid.bssid}</a>{' '}
+            <Dot11MacAddress address={bssid.bssid} onClick={(e) => onExpandClick(e, bssid.bssid)} />
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>

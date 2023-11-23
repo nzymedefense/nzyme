@@ -9,6 +9,10 @@ function Dot11MacAddressType(props) {
 
   const type = props.type;
 
+  if (!type) {
+    return null;
+  }
+
   switch (type) {
     case ACCESS_POINT:
       return (

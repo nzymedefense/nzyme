@@ -1,7 +1,7 @@
 import React from "react";
 
 import numeral from "numeral";
-import Dot11MacAddressLink from "../../shared/Dot11MacAddressLink";
+import AutomaticDot11MacAddressLink from "../../shared/context/macs/AutomaticDot11MacAddressLink";
 
 function HistogramValue(props) {
 
@@ -13,7 +13,7 @@ function HistogramValue(props) {
   switch(value.type) {
     case "DOT11_MAC":
       if (value.metadata && value.metadata.type) {
-        result = <Dot11MacAddressLink mac={value.value} type={value.metadata.type} />
+        result = <AutomaticDot11MacAddressLink mac={value.value} type={value.metadata.type} />
       } else {
         result = <span>{value.value}</span>
       }

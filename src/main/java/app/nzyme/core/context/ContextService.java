@@ -17,19 +17,17 @@ public class ContextService {
     }
 
     public void createMacAddressContext(String macAddress,
-                                        Subsystem subsystem,
                                         String name,
                                         @Nullable String description,
                                         @Nullable String notes,
                                         UUID organizationId,
                                         UUID tenantId) {
         nzyme.getDatabase().useHandle(handle ->
-            handle.createUpdate("INSERT INTO context_mac_addresses(mac_address, uuid, subsystem, name, description, " +
+            handle.createUpdate("INSERT INTO context_mac_addresses(mac_address, uuid, name, description, " +
                             "notes, organization_id, tenant_id, created_at, updated_at) VALUES(:mac_address, :uuid, " +
-                            ":subsystem, :name, :description, :notes, :organization_id, :tenant_id, NOW(), NOW())")
-                    .bind("mac_address", macAddress)
+                            ":name, :description, :notes, :organization_id, :tenant_id, NOW(), NOW())")
+                    .bind("mac_address", macAddress.toUpperCase())
                     .bind("uuid", UUID.randomUUID())
-                    .bind("subsystem", subsystem.name())
                     .bind("name", name)
                     .bind("description", description)
                     .bind("notes", notes)

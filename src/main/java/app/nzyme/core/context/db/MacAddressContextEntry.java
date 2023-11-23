@@ -11,7 +11,6 @@ public abstract class MacAddressContextEntry {
     public abstract long id();
     public abstract UUID uuid();
     public abstract String macAddress();
-    public abstract String subsystem();
     public abstract String name();
     public abstract String description();
     public abstract String notes();
@@ -20,12 +19,11 @@ public abstract class MacAddressContextEntry {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextEntry create(long id, UUID uuid, String macAddress, String subsystem, String name, String description, String notes, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextEntry create(long id, UUID uuid, String macAddress, String name, String description, String notes, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
                 .macAddress(macAddress)
-                .subsystem(subsystem)
                 .name(name)
                 .description(description)
                 .notes(notes)
@@ -48,7 +46,6 @@ public abstract class MacAddressContextEntry {
 
         public abstract Builder macAddress(String macAddress);
 
-        public abstract Builder subsystem(String subsystem);
 
         public abstract Builder name(String name);
 

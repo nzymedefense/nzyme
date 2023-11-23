@@ -1,7 +1,6 @@
 package app.nzyme.core.rest.requests;
 
 import app.nzyme.core.rest.constraints.MacAddress;
-import app.nzyme.core.rest.constraints.Subsystem;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
@@ -17,9 +16,6 @@ public abstract class CreateMacAddressContextRequest {
 
     @NotEmpty @MacAddress
     public abstract String macAddress();
-
-    @NotEmpty @Subsystem
-    public abstract String subsystem();
 
     @NotEmpty @Size(max = 12)
     public abstract String name();
@@ -38,7 +34,6 @@ public abstract class CreateMacAddressContextRequest {
 
     @JsonCreator
     public static CreateMacAddressContextRequest create(@JsonProperty("mac_address") String macAddress,
-                                                        @JsonProperty("subsystem") String subsystem,
                                                         @JsonProperty("name") String name,
                                                         @JsonProperty("description") String description,
                                                         @JsonProperty("notes") String notes,
@@ -46,7 +41,6 @@ public abstract class CreateMacAddressContextRequest {
                                                         @JsonProperty("tenant_id") UUID tenantId) {
         return builder()
                 .macAddress(macAddress)
-                .subsystem(subsystem)
                 .name(name)
                 .description(description)
                 .notes(notes)
@@ -62,8 +56,6 @@ public abstract class CreateMacAddressContextRequest {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder macAddress(@NotEmpty String macAddress);
-
-        public abstract Builder subsystem(@NotEmpty String subsystem);
 
         public abstract Builder name(@NotEmpty @Size(max = 12) String name);
 
