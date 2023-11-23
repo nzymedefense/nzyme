@@ -4052,4 +4052,14 @@
         <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address, subsystem" />
     </changeSet>
 
+    <changeSet id="add_uuid_to_mac_address_context" author="lennartkoopmann">
+        <addColumn tableName="context_mac_addresses">
+            <column name="uuid" type="uuid" />
+        </addColumn>
+
+        <createIndex tableName="context_mac_addresses" indexName="direct_uuid">
+            <column name="uuid" />
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -14,6 +14,7 @@ public class MacAddressContextEntryMapper implements RowMapper<MacAddressContext
     public MacAddressContextEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
         return MacAddressContextEntry.create(
                 rs.getLong("id"),
+                UUID.fromString(rs.getString("uuid")),
                 rs.getString("mac_address"),
                 rs.getString("subsystem"),
                 rs.getString("name"),
