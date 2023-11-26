@@ -1,18 +1,19 @@
 package app.nzyme.core.rest.resources.context;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.Subsystem;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.MacAddressContextDetailsResponse;
 import app.nzyme.core.rest.responses.context.MacAddressContextListResponse;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
-import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -20,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/context")
@@ -37,8 +39,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
                          @PathParam("organization_id") UUID organizationId,
                          @PathParam("tenant_id") UUID tenantId,
                          @QueryParam("limit") @Max(250) int limit,
-                         @QueryParam("offset") int offset,
-                         @QueryParam("subsystem") @Nullable String subsystem) {
+                         @QueryParam("offset") int offset) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -54,13 +55,43 @@ public class AssetContextResource extends UserAuthenticatedResource {
                     m.name(),
                     m.description(),
                     m.notes(),
+                    m.organizationId(),
+                    m.tenantId(),
                     m.createdAt(),
                     m.updatedAt()
             ));
         }
 
-
         return Response.ok(MacAddressContextListResponse.create(count, addresses)).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
+    @Path("/mac/show/{mac}")
+    public Response macs(@Context SecurityContext sc,
+                         @PathParam("mac") @MacAddress String mac) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(
+                mac, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
+        );
+
+        if (ctx.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        MacAddressContextEntry result = ctx.get();
+        return Response.ok(MacAddressContextDetailsResponse.create(
+                result.uuid(),
+                result.macAddress(),
+                result.name(),
+                result.description(),
+                result.notes(),
+                result.organizationId(),
+                result.tenantId(),
+                result.createdAt(),
+                result.updatedAt()
+        )).build();
     }
 
     @POST

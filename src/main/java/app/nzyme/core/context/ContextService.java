@@ -1,11 +1,11 @@
 package app.nzyme.core.context;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.Subsystem;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import jakarta.annotation.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ContextService {
@@ -51,6 +51,46 @@ public class ContextService {
                         .bind("offset", offset)
                         .mapTo(MacAddressContextEntry.class)
                         .list()
+        );
+    }
+
+    public Optional<MacAddressContextEntry> findMacAddressContext(String mac,
+                                                                  @Nullable UUID organizationId,
+                                                                  @Nullable UUID tenantId) {
+        if (organizationId != null && tenantId != null) {
+            // Tenant data.
+            return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM context_mac_addresses " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND mac_address = :mac_address")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("mac_address", mac)
+                        .mapTo(MacAddressContextEntry.class)
+                        .findOne()
+            );
+        }
+
+        if (organizationId != null) {
+            // Organization data.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM context_mac_addresses " +
+                                    "WHERE organization_id = :organization_id " +
+                                    "AND mac_address = :mac_address")
+                            .bind("organization_id", organizationId)
+                            .bind("mac_address", mac)
+                            .mapTo(MacAddressContextEntry.class)
+                            .findOne()
+            );
+        }
+
+        // Any data.
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM context_mac_addresses " +
+                                "WHERE mac_address = :mac_address")
+                        .bind("mac_address", mac)
+                        .mapTo(MacAddressContextEntry.class)
+                        .findOne()
         );
     }
 

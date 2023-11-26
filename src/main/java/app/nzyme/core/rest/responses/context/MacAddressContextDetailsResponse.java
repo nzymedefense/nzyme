@@ -27,19 +27,27 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("notes")
     public abstract String notes();
 
+    @JsonProperty("organization_id")
+    public abstract UUID organizationId();
+
+    @JsonProperty("tenant_id")
+    public abstract UUID tenantId();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .macAddress(macAddress)
                 .name(name)
                 .description(description)
                 .notes(notes)
+                .organizationId(organizationId)
+                .tenantId(tenantId)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -60,6 +68,10 @@ public abstract class MacAddressContextDetailsResponse {
         public abstract Builder description(String description);
 
         public abstract Builder notes(String notes);
+
+        public abstract Builder organizationId(UUID organizationId);
+
+        public abstract Builder tenantId(UUID tenantId);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -755,11 +755,11 @@ ul.selected-org-tenant span {
 
 div.context-overlay {
     position: relative;
-    top: 5px;
+    top: -25px;
     left: 25px;
     height: 150px;
     width: 200px;
-    margin-bottom: -150px;
+    margin-top: -150px;
     margin-right: -200px;
     overflow: hidden;
 
