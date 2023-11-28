@@ -30,8 +30,16 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("organization_id")
     public abstract UUID organizationId();
 
+    @JsonProperty("organization_name")
+    @Nullable
+    public abstract String organizationName();
+
     @JsonProperty("tenant_id")
     public abstract UUID tenantId();
+
+    @JsonProperty("tenant_name")
+    @Nullable
+    public abstract String tenantName();;
 
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
@@ -39,7 +47,7 @@ public abstract class MacAddressContextDetailsResponse {
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, UUID organizationId, UUID tenantId, DateTime createdAt, DateTime updatedAt) {
+    public static MacAddressContextDetailsResponse create(UUID uuid, String macAddress, String name, String description, String notes, UUID organizationId, String organizationName, UUID tenantId, String tenantName, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .uuid(uuid)
                 .macAddress(macAddress)
@@ -47,7 +55,9 @@ public abstract class MacAddressContextDetailsResponse {
                 .description(description)
                 .notes(notes)
                 .organizationId(organizationId)
+                .organizationName(organizationName)
                 .tenantId(tenantId)
+                .tenantName(tenantName)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -71,7 +81,11 @@ public abstract class MacAddressContextDetailsResponse {
 
         public abstract Builder organizationId(UUID organizationId);
 
+        public abstract Builder organizationName(String organizationName);
+
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder tenantName(String tenantName);
 
         public abstract Builder createdAt(DateTime createdAt);
 

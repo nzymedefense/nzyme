@@ -2,12 +2,14 @@ package app.nzyme.core.rest.resources.context;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.dot11.Dot11MacAddressMetadata;
+import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
+import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
-import app.nzyme.core.rest.responses.context.MacAddressContextDetailsResponse;
-import app.nzyme.core.rest.responses.context.MacAddressContextListResponse;
+import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -33,7 +35,6 @@ public class AssetContextResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
-    @RESTSecured(value = PermissionLevel.ANY)
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}")
     public Response macs(@Context SecurityContext sc,
                          @PathParam("organization_id") UUID organizationId,
@@ -56,7 +57,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
                     m.description(),
                     m.notes(),
                     m.organizationId(),
+                    null,
                     m.tenantId(),
+                    null,
                     m.createdAt(),
                     m.updatedAt()
             ));
@@ -66,10 +69,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac/show/{mac}")
-    public Response macs(@Context SecurityContext sc,
-                         @PathParam("mac") @MacAddress String mac) {
+    public Response mac(@Context SecurityContext sc,
+                        @PathParam("mac") @MacAddress String mac) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(
@@ -80,24 +82,67 @@ public class AssetContextResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        MacAddressContextEntry result = ctx.get();
-        return Response.ok(MacAddressContextDetailsResponse.create(
-                result.uuid(),
-                result.macAddress(),
-                result.name(),
-                result.description(),
-                result.notes(),
-                result.organizationId(),
-                result.tenantId(),
-                result.createdAt(),
-                result.updatedAt()
+        MacAddressContextEntry context = ctx.get();
+        MacAddressContextDetailsResponse contextDetails = MacAddressContextDetailsResponse.create(
+                context.uuid(),
+                context.macAddress(),
+                context.name(),
+                context.description(),
+                context.notes(),
+                context.organizationId(),
+                nzyme.getAuthenticationService().findOrganization(context.organizationId()).get().name(),
+                context.tenantId(),
+                nzyme.getAuthenticationService().findTenant(context.tenantId()).get().name(),
+                context.createdAt(),
+                context.updatedAt()
+        );
+
+        Dot11MacAddressMetadata dot11Metadata = nzyme.getDot11().getMacAddressMetadata(
+                mac,
+                nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser)
+        );
+
+        // This is where will hook in for Ethernet types.
+        MacAddressContextTypeResponse contextType;
+        switch (dot11Metadata.type()) {
+            case ACCESS_POINT:
+                contextType = MacAddressContextTypeResponse.DOT11_AP;
+                break;
+            case CLIENT:
+                contextType = MacAddressContextTypeResponse.DOT11_CLIENT;
+                break;
+            case MULTIPLE:
+                contextType = MacAddressContextTypeResponse.DOT11_MIXED;
+                break;
+            case UNKNOWN:
+            default:
+                contextType = MacAddressContextTypeResponse.UNKNOWN;
+        }
+
+        // Find the first monitored SSID this MAC address may be part of. Unlikely to be more than one.
+        Dot11MonitoredNetworkContextResponse servesMonitoredNetwork = null;
+        for (MonitoredSSID monitoredNetwork : nzyme.getDot11()
+                .findAllMonitoredSSIDs(authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
+            for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.id())) {
+                if (bssid.bssid().equalsIgnoreCase(mac)) {
+                    servesMonitoredNetwork = Dot11MonitoredNetworkContextResponse.create(
+                            monitoredNetwork.uuid(),
+                            monitoredNetwork.isEnabled(),
+                            monitoredNetwork.ssid()
+                    );
+                }
+            }
+        }
+
+        return Response.ok(EnrichedMacAddressContextDetailsResponse.create(
+                contextDetails, contextType, servesMonitoredNetwork
         )).build();
     }
 
     @POST
     @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac")
-    public Response macs(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
+    public Response createMac(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

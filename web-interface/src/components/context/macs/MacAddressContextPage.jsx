@@ -1,6 +1,7 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextTable from "./MacAddressContextTable";
+import WithPermission from "../../misc/WithPermission";
 
 function MacAddressContextPage() {
 
@@ -26,7 +27,9 @@ function MacAddressContextPage() {
 
           <div className="col-md-4">
             <span className="float-end">
-              <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE}>Create Context</a>
+              <WithPermission permission="mac_aliases_manage">
+                <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE}>Create Context</a>
+              </WithPermission>
             </span>
           </div>
         </div>

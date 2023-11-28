@@ -762,10 +762,10 @@ div.context-overlay {
     position: relative;
     top: -16px;
     left: -2px;
-    height: 150px;
-    width: 275px;
-    margin-top: -150px;
-    margin-right: -275px;
+    height: 177px;
+    width: 300px;
+    margin-top: -177px;
+    margin-right: -300px;
     overflow: hidden;
     padding: 10px;
     box-shadow: 0 0 8px 3px #c5c5c5;
@@ -789,7 +789,7 @@ div.context-overlay img.loading-miller-layer2 {
 }
 
 div.context-overlay h6 {
-    font-size: 12px;
+    font-size: 13px;
     display: block;
     font-family: 'B612 Mono', monospace;
     border-bottom: 1px solid #c0c0c0;
@@ -798,8 +798,30 @@ div.context-overlay h6 {
     font-weight: 700;
 }
 
+div.context-overlay p.context-description {
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+div.context-overlay dl {
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+div.context-overlay dt {
+    font-size: 12px;
+    float: left;
+    font-weight: 600;
+    text-transform: none;
+}
+
+div.context-overlay dd {
+    margin-left: 78px;
+    margin-bottom: 1px;
+}
+
 a.context-overlay-add-context {
-    margin-top: 30px;
+    margin-top: 67px;
 }
 
 span.context-name {
@@ -809,4 +831,11 @@ span.context-name {
 div.context-overlay h6 span.context-name {
     display: inline-block;
     float: right;
+}
+
+div.context-overlay i.context-owner-information {
+    cursor: help;
+    position: relative;
+    left: 35px;
+    top: 5px;
 }
