@@ -10,14 +10,13 @@ function InitializingPage(props) {
       <div className="nzyme">
         <DarkMode enabled={darkModeEnabled} />
 
-        <AssetImage filename="initializing.png"
-                    className="initializing"
+        <AssetImage filename="loading-miller.png"
+                    className="loading-miller"
                     alt="nzyme is initializing" />
 
-        <AssetImage filename="initializing_layer2.png"
-                    className="initializing initializing-layer2"
+        <AssetImage filename="loading-miller_layer2.png"
+                    className="loading-miller loading-miller-layer2"
                     alt="nzyme is initializing" />
-
       </div>
   )
 

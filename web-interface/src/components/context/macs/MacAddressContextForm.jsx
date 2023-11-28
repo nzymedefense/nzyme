@@ -15,7 +15,9 @@ function MacAddressContextForm(props) {
     return name.toUpperCase().replace(/[^a-z0-9_]/gi, '');
   }
 
-  const [macAddress, setMacAddress] = useState(props.macAddress ? props.macAddress : "");
+  const [macAddress, setMacAddress] = useState(
+      (props.macAddress && isValidMACAddress(props.macAddress)) ? props.macAddress.toUpperCase() : ""
+  );
   const [name, setName] = useState(props.name ? formatName(props.name) : "");
   const [description, setDescription] = useState(props.description ? props.description : "")
   const [notes, setNotes] = useState(props.notes ? props.notes : "")

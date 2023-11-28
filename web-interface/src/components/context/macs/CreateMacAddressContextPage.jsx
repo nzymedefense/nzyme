@@ -3,13 +3,22 @@ import ApiRoutes from "../../../util/ApiRoutes";
 import MacAddressContextForm from "./MacAddressContextForm";
 import ContextService from "../../../services/ContextService";
 import {notify} from "react-notify-toast";
-import {Navigate} from "react-router-dom";
+import {Navigate, useLocation} from "react-router-dom";
+
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+}
 
 const contextService = new ContextService();
 
 function CreateMacAddressContextPage() {
 
+  let urlQuery = useQuery()
   const [complete, setComplete] = useState(false);
+
+  const [passedUrlMacAddress, setPassedUrlMacAddress] = useState(
+      urlQuery.get("address") ? urlQuery.get("address") : ""
+  );
 
   const onSubmit = (macAddress, name, description, notes, organizationId, tenantId, onComplete) => {
     contextService.createMacAddressContext(
@@ -71,7 +80,7 @@ function CreateMacAddressContextPage() {
               <div className="card-body">
                 <h3>Create MAC Address Context</h3>
 
-                <MacAddressContextForm submitText={"Add Context"} onSubmit={onSubmit} />
+                <MacAddressContextForm submitText={"Add Context"} onSubmit={onSubmit} macAddress={passedUrlMacAddress}/>
               </div>
             </div>
           </div>

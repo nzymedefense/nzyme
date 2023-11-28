@@ -147,3 +147,13 @@ span.highlighted a {
 span.highlighted i {
     color: #fff !important;
 }
+
+div.context-overlay {
+    background-color: #2B2D42;
+    box-shadow: 0 0 8px 3px #12131c;
+    border-color: #12131c;
+}
+
+span.context-name {
+    color: #000;
+}

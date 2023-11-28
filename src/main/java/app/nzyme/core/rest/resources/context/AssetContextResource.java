@@ -33,7 +33,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
     private NzymeNode nzyme;
 
     @GET
-    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
+    @RESTSecured(value = PermissionLevel.ANY)
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}")
     public Response macs(@Context SecurityContext sc,
                          @PathParam("organization_id") UUID organizationId,
