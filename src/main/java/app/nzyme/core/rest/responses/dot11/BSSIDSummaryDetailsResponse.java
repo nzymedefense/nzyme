@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class BSSIDSummaryDetailsResponse {
 
     @JsonProperty("bssid")
-    public abstract String bssid();
+    public abstract Dot11MacAddressResponse bssid();
 
     @JsonProperty("oui")
     @Nullable
@@ -45,7 +45,7 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("infrastructure_types")
     public abstract List<String> infrastructureTypes();
 
-    public static BSSIDSummaryDetailsResponse create(String bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime firstSeen, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
+    public static BSSIDSummaryDetailsResponse create(Dot11MacAddressResponse bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime firstSeen, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
         return builder()
                 .bssid(bssid)
                 .oui(oui)
@@ -67,7 +67,7 @@ public abstract class BSSIDSummaryDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bssid(String bssid);
+        public abstract Builder bssid(Dot11MacAddressResponse bssid);
 
         public abstract Builder oui(String oui);
 

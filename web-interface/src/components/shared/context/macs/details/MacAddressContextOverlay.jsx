@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import ContextService from "../../../../../services/ContextService";
-import {notify} from "react-notify-toast";
 import ApiRoutes from "../../../../../util/ApiRoutes";
 import WithPermission from "../../../../misc/WithPermission";
 import AssetImage from "../../../../misc/AssetImage";
@@ -14,22 +13,11 @@ function MacAddressContextOverlay(props) {
   const address = props.address;
 
   const [ctx, setCtx] = useState(null);
-  const [is404, setIs404] = useState(false);
 
   useEffect(() => {
-    contextService.findMacAddressContext(address, setCtx, (error) => {
-      // Error.
-      if (error.response) {
-        if (error.response.status === 404) {
-          setIs404(true);
-        } else {
-          notify.show('Could not load MAC address context. (HTTP ' + error.response.status + ')', 'error')
-        }
-      } else {
-        notify.show('Could not load MAC address context. No response.', 'error')
-      }
-    });
-  }, []);
+    setCtx(null);
+    contextService.findMacAddressContext(address, setCtx);
+  }, [address]);
 
   const contextType = (type) => {
     switch (type) {
@@ -84,40 +72,52 @@ function MacAddressContextOverlay(props) {
   }
 
   if (!ctx) {
-    if (is404) {
-      return (
-          <React.Fragment>
-            <h6><i className="fa-regular fa-address-card" /> {address}</h6>
+    return (
+        <React.Fragment>
+          <AssetImage filename="loading-miller-notext.png"
+                      className="loading-miller"
+                      alt="loading ..." />
 
-            <p className="context-description">
-              This MAC address has no context.
-            </p>
+          <AssetImage filename="loading-miller_layer2-notext.png"
+                      className="loading-miller loading-miller-layer2"
+                      alt="loading ..." />
+        </React.Fragment>
+    )
+  }
 
+  if (!ctx.context) {
+    return (
+        <React.Fragment>
+          <h6><i className="fa-regular fa-address-card" /> {address}</h6>
+
+          <p className="context-description">
+            <i className="fa-solid fa-circle-info"></i> This MAC address has no context.
+          </p>
+
+          <dl>
+            <dt>Device Type:</dt>
+            <dd>{contextType(ctx.context_type)}</dd>
+            <dt>Is Monitored:</dt>
+            <dd>{monitored(ctx.context_type, ctx.serves_dot11_monitored_network)}</dd>
+          </dl>
+
+          <div className="context-overlay-no-context-controls">
             <WithPermission permission="mac_aliases_manage">
               <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE + "?address=" + encodeURIComponent(address)}
-                 className="btn btn-sm btn-primary context-overlay-add-context">
+                 className="btn btn-sm btn-outline-primary">
                 Add Context
-              </a>
+              </a>{' '}
             </WithPermission>
-          </React.Fragment>
-      )
-    } else {
-      return <React.Fragment>
-        <AssetImage filename="loading-miller-notext.png"
-                    className="loading-miller"
-                    alt="loading ..." />
-
-        <AssetImage filename="loading-miller_layer2-notext.png"
-                    className="loading-miller loading-miller-layer2"
-                    alt="loading ..." />
-      </React.Fragment>
-    }
+            {typeDetailsLink(ctx.context_type, address)}
+          </div>
+        </React.Fragment>
+    )
   }
 
   return (
       <React.Fragment>
         <h6>
-          <i className="sidebar-icon fa-regular fa-address-card" /> {address}{' '}
+          <i className="fa-regular fa-address-card" /> {address}{' '}
           <span className="context-name">{ctx.context.name}</span>
         </h6>
 

@@ -820,8 +820,8 @@ div.context-overlay dd {
     margin-bottom: 1px;
 }
 
-a.context-overlay-add-context {
-    margin-top: 67px;
+div.context-overlay-no-context-controls {
+    margin-top: 30px;
 }
 
 span.context-name {
@@ -838,4 +838,8 @@ div.context-overlay i.context-owner-information {
     position: relative;
     left: 35px;
     top: 5px;
+}
+
+i.additional-context-available {
+    color: #707070;
 }

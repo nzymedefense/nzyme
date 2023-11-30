@@ -5,6 +5,7 @@ import MacAddress from "./MacAddress";
 function Dot11MacAddress(props) {
 
   const address = props.address;
+  const addressWithContext = props.addressWithContext;
   const type = props.type;
 
   // Optional.
@@ -13,7 +14,7 @@ function Dot11MacAddress(props) {
 
   return (
       <span className="dot11-mac">
-        <Dot11MacAddressType type={type} /> <MacAddress address={address} href={href} onClick={onClick} />
+        <Dot11MacAddressType type={type} /> <MacAddress address={address} addressWithContext={addressWithContext} href={href} onClick={onClick} />
       </span>
   )
 

@@ -4,7 +4,8 @@ import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper"
 
 function MacAddress(props) {
 
-  const address = props.address;
+  const address =  props.addressWithContext ? props.addressWithContext.address : props.address;
+  const context = props.addressWithContext ?  props.addressWithContext.context : null;
 
   const href = props.href;
   const onClick = props.onClick;
@@ -18,6 +19,15 @@ function MacAddress(props) {
     } else {
       return address;
     }
+  }
+
+  const contextElement = () => {
+    if (!context) {
+      return null;
+    }
+
+    return <i className="fa-solid fa-fingerprint additional-context-available"
+              title="Additional context available." />
   }
 
   const mouseOver = () => {
@@ -34,7 +44,7 @@ function MacAddress(props) {
 
   return (
       <div onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        {addressElement()}
+        {addressElement()} {contextElement()}
 
         <ContextOverlayVisibilityWrapper
             visible={overlayVisible}

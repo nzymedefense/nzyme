@@ -78,24 +78,25 @@ public class AssetContextResource extends UserAuthenticatedResource {
                 mac, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
         );
 
-        if (ctx.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        MacAddressContextDetailsResponse contextDetails;
+        if (ctx.isPresent()) {
+            MacAddressContextEntry context = ctx.get();
+            contextDetails = MacAddressContextDetailsResponse.create(
+                    context.uuid(),
+                    context.macAddress(),
+                    context.name(),
+                    context.description(),
+                    context.notes(),
+                    context.organizationId(),
+                    nzyme.getAuthenticationService().findOrganization(context.organizationId()).get().name(),
+                    context.tenantId(),
+                    nzyme.getAuthenticationService().findTenant(context.tenantId()).get().name(),
+                    context.createdAt(),
+                    context.updatedAt()
+            );
+        } else {
+            contextDetails = null;
         }
-
-        MacAddressContextEntry context = ctx.get();
-        MacAddressContextDetailsResponse contextDetails = MacAddressContextDetailsResponse.create(
-                context.uuid(),
-                context.macAddress(),
-                context.name(),
-                context.description(),
-                context.notes(),
-                context.organizationId(),
-                nzyme.getAuthenticationService().findOrganization(context.organizationId()).get().name(),
-                context.tenantId(),
-                nzyme.getAuthenticationService().findTenant(context.tenantId()).get().name(),
-                context.createdAt(),
-                context.updatedAt()
-        );
 
         Dot11MacAddressMetadata dot11Metadata = nzyme.getDot11().getMacAddressMetadata(
                 mac,

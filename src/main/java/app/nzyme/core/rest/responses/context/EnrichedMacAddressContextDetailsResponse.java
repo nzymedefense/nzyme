@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 public abstract class EnrichedMacAddressContextDetailsResponse {
 
     @JsonProperty("context")
+    @Nullable
     public abstract MacAddressContextDetailsResponse context();
 
     @JsonProperty("context_type")

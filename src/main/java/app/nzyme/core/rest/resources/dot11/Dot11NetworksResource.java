@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
@@ -63,8 +64,19 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<BSSIDSummaryDetailsResponse> bssids = Lists.newArrayList();
 
         for (BSSIDSummary bssid : nzyme.getDot11().findBSSIDs(minutes, tapUuids)) {
-            bssids.add(BSSIDSummaryDetailsResponse.create(
+            Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                     bssid.bssid(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            bssids.add(BSSIDSummaryDetailsResponse.create(
+                    Dot11MacAddressResponse.create(
+                            bssid.bssid(),
+                            bssidContext.map(macAddressContextEntry ->
+                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ),
                     nzyme.getOUIManager().lookupMac(bssid.bssid()),
                     bssid.securityProtocols(),
                     bssid.signalStrengthAverage(),
@@ -97,8 +109,19 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         BSSIDSummary bssid = bssidResult.get();
 
-        BSSIDSummaryDetailsResponse summary = BSSIDSummaryDetailsResponse.create(
+        Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                 bssid.bssid(),
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        BSSIDSummaryDetailsResponse summary = BSSIDSummaryDetailsResponse.create(
+                Dot11MacAddressResponse.create(
+                        bssid.bssid(),
+                        bssidContext.map(macAddressContextEntry ->
+                                        Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                .orElse(null)
+                ),
                 nzyme.getOUIManager().lookupMac(bssid.bssid()),
                 bssid.securityProtocols(),
                 bssid.signalStrengthAverage(),

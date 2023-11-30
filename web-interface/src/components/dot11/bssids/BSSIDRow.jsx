@@ -46,8 +46,8 @@ function BSSIDRow(props) {
   return (
       <React.Fragment>
         <tr>
-          <td>
-            <Dot11MacAddress address={bssid.bssid} onClick={(e) => onExpandClick(e, bssid.bssid)} />
+          <td style={{width: 165}}>
+            <Dot11MacAddress addressWithContext={bssid.bssid} onClick={(e) => onExpandClick(e, bssid.bssid.address)} />
           </td>
           <td><SignalStrength strength={bssid.signal_strength_average} selectedTapCount={selectedTaps.length} /></td>
           <td><InfrastructureTypes types={bssid.infrastructure_types} /></td>
@@ -62,7 +62,7 @@ function BSSIDRow(props) {
             {isAutoRefresh ? moment(bssid.last_seen).fromNow() : "n/a"}
           </td>
         </tr>
-        <BSSIDDetailsRows bssid={bssid} ssids={ssids} loading={ssidsLoading} />
+        <BSSIDDetailsRows bssid={bssid.bssid} ssids={ssids} loading={ssidsLoading} />
       </React.Fragment>
   )
 

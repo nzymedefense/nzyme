@@ -14,7 +14,7 @@ class ContextService {
     )
   }
 
-  createMacAddressContext(macAddress, name, description, notes, organizationId, tenantId, successCallback, errorCallback) {
+  createMacAddressContext(macAddress, name, description, notes, organizationId, tenantId, successCallback) {
     RESTClient.post(
         "/context/mac",
         {
@@ -25,8 +25,7 @@ class ContextService {
           organization_id: organizationId,
           tenant_id: tenantId
         },
-        successCallback,
-        errorCallback
+        successCallback
     );
   }
 
