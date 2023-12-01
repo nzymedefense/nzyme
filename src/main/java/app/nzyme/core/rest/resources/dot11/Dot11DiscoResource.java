@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.db.Dot11MacFrameCount;
 import app.nzyme.core.dot11.db.BSSIDPairFrameCount;
@@ -14,6 +15,8 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.SimulateDiscoDetectionConfigRequest;
 import app.nzyme.core.rest.requests.UpdateDiscoDetectionConfigRequest;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacLinkMetadataResponse;
 import app.nzyme.core.rest.responses.dot11.disco.DiscoHistogramValueResponse;
 import app.nzyme.core.rest.responses.dot11.disco.DiscoMonitorMethodConfigurationResponse;
@@ -179,12 +182,25 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 List<TwoColumnTableHistogramValueResponse> sendersValues = Lists.newArrayList();
                 total = nzyme.getDot11().countDiscoTopSenders(minutes, tapUuids, selectedBssids);
                 for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopSenders(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
+                            s.mac(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
                     sendersValues.add(TwoColumnTableHistogramValueResponse.create(
                             HistogramValueStructureResponse.create(
                                     s.mac(),
                                     HistogramValueType.DOT11_MAC,
                                     Dot11MacLinkMetadataResponse.create(
-                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type()
+                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type(),
+                                            Dot11MacAddressResponse.create(
+                                                    s.mac(),
+                                                    nzyme.getOUIManager().lookupMac(s.mac()),
+                                                    macContext.map(macAddressContextEntry ->
+                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                            .orElse(null)
+                                            )
                                     )
                             ),
                             HistogramValueStructureResponse.create(
@@ -199,12 +215,25 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 List<TwoColumnTableHistogramValueResponse> receiversValues = Lists.newArrayList();
                 total = nzyme.getDot11().countDiscoTopReceivers(minutes, tapUuids, selectedBssids);
                 for (Dot11MacFrameCount s : nzyme.getDot11().getDiscoTopReceivers(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
+                            s.mac(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
                     receiversValues.add(TwoColumnTableHistogramValueResponse.create(
                             HistogramValueStructureResponse.create(
                                     s.mac(),
                                     HistogramValueType.DOT11_MAC,
                                     Dot11MacLinkMetadataResponse.create(
-                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type()
+                                            nzyme.getDot11().getMacAddressMetadata(s.mac(), tapUuids).type(),
+                                            Dot11MacAddressResponse.create(
+                                                    s.mac(),
+                                                    nzyme.getOUIManager().lookupMac(s.mac()),
+                                                    macContext.map(macAddressContextEntry ->
+                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                            .orElse(null)
+                                            )
                                     )
                             ),
                             HistogramValueStructureResponse.create(
@@ -219,19 +248,45 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 List<ThreeColumnTableHistogramValueResponse> pairsValues = Lists.newArrayList();
                 total = nzyme.getDot11().countDiscoTopPairs(minutes, tapUuids, selectedBssids);
                 for (BSSIDPairFrameCount s : nzyme.getDot11().getDiscoTopPairs(minutes, limit, offset, tapUuids, selectedBssids)) {
+                    Optional<MacAddressContextEntry> senderMacContext = nzyme.getContextService().findMacAddressContext(
+                            s.sender(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
+                    Optional<MacAddressContextEntry> receiverMacContext = nzyme.getContextService().findMacAddressContext(
+                            s.receiver(),
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId()
+                    );
+
                     pairsValues.add(ThreeColumnTableHistogramValueResponse.create(
                             HistogramValueStructureResponse.create(
                                     s.sender(),
                                     HistogramValueType.DOT11_MAC,
                                     Dot11MacLinkMetadataResponse.create(
-                                            nzyme.getDot11().getMacAddressMetadata(s.sender(), tapUuids).type()
+                                            nzyme.getDot11().getMacAddressMetadata(s.sender(), tapUuids).type(),
+                                            Dot11MacAddressResponse.create(
+                                                    s.sender(),
+                                                    nzyme.getOUIManager().lookupMac(s.sender()),
+                                                    senderMacContext.map(macAddressContextEntry ->
+                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                            .orElse(null)
+                                            )
                                     )
                             ),
                             HistogramValueStructureResponse.create(
                                     s.receiver(),
                                     HistogramValueType.DOT11_MAC,
                                     Dot11MacLinkMetadataResponse.create(
-                                            nzyme.getDot11().getMacAddressMetadata(s.receiver(), tapUuids).type()
+                                            nzyme.getDot11().getMacAddressMetadata(s.receiver(), tapUuids).type(),
+                                            Dot11MacAddressResponse.create(
+                                                    s.receiver(),
+                                                    nzyme.getOUIManager().lookupMac(s.receiver()),
+                                                    receiverMacContext.map(macAddressContextEntry ->
+                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                            .orElse(null)
+                                            )
                                     )
                             ),
                             HistogramValueStructureResponse.create(

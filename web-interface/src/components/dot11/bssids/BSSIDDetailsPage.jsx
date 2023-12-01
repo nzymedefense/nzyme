@@ -12,6 +12,7 @@ import BSSIDChannelUsageHistogram from "./BSSIDChannelUsageHistogram";
 import DiscoPairsTable from "../disco/DiscoPairsTable";
 import DiscoHistogram from "../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 
@@ -74,7 +75,7 @@ function BSSIDDetailsPage() {
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
                   <dd>
-                    <span className="dot11-mac">{bssid.summary.bssid.address}</span>
+                    <Dot11MacAddress addressWithContext={bssid.summary.bssid} />
                   </dd>
                   <dt>Vendor</dt>
                   <dd>

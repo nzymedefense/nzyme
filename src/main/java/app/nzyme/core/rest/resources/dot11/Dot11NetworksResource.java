@@ -73,11 +73,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             bssids.add(BSSIDSummaryDetailsResponse.create(
                     Dot11MacAddressResponse.create(
                             bssid.bssid(),
+                            nzyme.getOUIManager().lookupMac(bssid.bssid()),
                             bssidContext.map(macAddressContextEntry ->
                                     Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
                                     .orElse(null)
                     ),
-                    nzyme.getOUIManager().lookupMac(bssid.bssid()),
                     bssid.securityProtocols(),
                     bssid.signalStrengthAverage(),
                     bssid.firstSeen(),
@@ -118,11 +118,11 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         BSSIDSummaryDetailsResponse summary = BSSIDSummaryDetailsResponse.create(
                 Dot11MacAddressResponse.create(
                         bssid.bssid(),
+                        nzyme.getOUIManager().lookupMac(bssid.bssid()),
                         bssidContext.map(macAddressContextEntry ->
                                         Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
                                 .orElse(null)
                 ),
-                nzyme.getOUIManager().lookupMac(bssid.bssid()),
                 bssid.securityProtocols(),
                 bssid.signalStrengthAverage(),
                 bssid.firstSeen(),
@@ -134,14 +134,21 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 bssid.infrastructureTypes()
         );
 
-        ;
-
         List<BSSIDClientDetails> clients = Lists.newArrayList();
         for (ConnectedClientDetails client : nzyme.getDot11().findClientsOfBSSID(bssid.bssid(), 24*60, tapUuids)) {
-            clients.add(BSSIDClientDetails.create(
+            Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
                     client.clientMac(),
-                    nzyme.getOUIManager().lookupMac(client.clientMac()))
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
             );
+
+            clients.add(BSSIDClientDetails.create(Dot11MacAddressResponse.create(
+                    client.clientMac(),
+                    nzyme.getOUIManager().lookupMac(client.clientMac()),
+                    clientContext.map(macAddressContextEntry ->
+                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                            .orElse(null)
+            )));
         }
 
         int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
@@ -350,13 +357,36 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         List<BSSIDClientDetails> accessPointClients = Lists.newArrayList();
         for (String mac : ssidDetails.accessPointClients()) {
             if (mac != null) {
-                accessPointClients.add(BSSIDClientDetails.create(mac, nzyme.getOUIManager().lookupMac(mac)));
+                Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
+                        mac,
+                        authenticatedUser.getOrganizationId(),
+                        authenticatedUser.getTenantId()
+                );
+
+                accessPointClients.add(BSSIDClientDetails.create(Dot11MacAddressResponse.create(
+                        mac,
+                        nzyme.getOUIManager().lookupMac(mac),
+                        clientContext.map(macAddressContextEntry ->
+                                        Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                .orElse(null)
+                )));
             }
         }
 
-        SSIDDetailsResponse response = SSIDDetailsResponse.create(
+        Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                 bssid,
-                nzyme.getOUIManager().lookupMac(bssid),
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        SSIDDetailsResponse response = SSIDDetailsResponse.create(
+                Dot11MacAddressResponse.create(
+                        bssid,
+                        nzyme.getOUIManager().lookupMac(bssid),
+                        bssidContext.map(macAddressContextEntry ->
+                                        Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                .orElse(null)
+                ),
                 ssidDetails.ssid(),
                 ssidDetails.frequencies(),
                 ssidDetails.signalStrengthAverage(),

@@ -57,7 +57,7 @@ function BSSIDRow(props) {
           </td>
           <td>{numeral(bssid.client_count).format("0,0")}</td>
           <td><BSSIDSecurityProtocols bssid={bssid} /></td>
-          <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
+          <td>{bssid.bssid.oui ? bssid.bssid.oui : "Unknown"}</td>
           <td title={moment(bssid.last_seen).format()}>
             {isAutoRefresh ? moment(bssid.last_seen).fromNow() : "n/a"}
           </td>

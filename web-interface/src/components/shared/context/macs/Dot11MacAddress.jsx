@@ -7,14 +7,22 @@ function Dot11MacAddress(props) {
   const address = props.address;
   const addressWithContext = props.addressWithContext;
   const type = props.type;
+  const showOui = props.showOui;
+  const highlighted = props.highlighted;
 
   // Optional.
   const href = props.href;
   const onClick = props.onClick;
 
   return (
-      <span className="dot11-mac">
-        <Dot11MacAddressType type={type} /> <MacAddress address={address} addressWithContext={addressWithContext} href={href} onClick={onClick} />
+      <span className="mac-address">
+        <MacAddress address={address}
+                    addressWithContext={addressWithContext}
+                    type={type}
+                    showOui={showOui}
+                    href={href}
+                    onClick={onClick}
+                    highlighted={highlighted} />
       </span>
   )
 

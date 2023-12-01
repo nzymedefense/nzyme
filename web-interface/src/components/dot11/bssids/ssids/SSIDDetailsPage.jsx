@@ -19,6 +19,7 @@ import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
 import HelpBubble from "../../../misc/HelpBubble";
 import DiscoHistogram from "../../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
+import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -61,7 +62,7 @@ function SSIDDetailsPage() {
             <ol className="breadcrumb">
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
               <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.NETWORKS.BSSIDS}>Access Points</a></li>
-              <li className="breadcrumb-item">{ssid.bssid}</li>
+              <li className="breadcrumb-item">{ssid.bssid.address}</li>
               <li className="breadcrumb-item">SSIDs</li>
               <li className="breadcrumb-item active" aria-current="page">{ssid.ssid}</li>
             </ol>
@@ -89,8 +90,9 @@ function SSIDDetailsPage() {
               <dl className="mb-0">
                 <dt>BSSID</dt>
                 <dd>
-                  <a href={ApiRoutes.DOT11.NETWORKS.BSSID(ssid.bssid)} className="dot11-mac">{ssid.bssid}</a>{' '}
-                  (Vendor: {ssid.bssid_oui ? ssid.bssid_oui : "Unknown"})
+                  <Dot11MacAddress addressWithContext={ssid.bssid}
+                                   href={ApiRoutes.DOT11.NETWORKS.BSSID(ssid.bssid.address)}
+                                   showOui={true} />
                 </dd>
                 <dt>Name</dt>
                 <dd>{ssid.ssid}</dd>
@@ -165,7 +167,7 @@ function SSIDDetailsPage() {
                 <option value="proberesp_count">Probe Response Count</option>
               </select>
 
-              <SSIDAdvertisementHistogram bssid={ssid.bssid} ssid={ssid.ssid} parameter={advertisementHistogramType} />
+              <SSIDAdvertisementHistogram bssid={ssid.bssid.address} ssid={ssid.ssid} parameter={advertisementHistogramType} />
             </div>
           </div>
         </div>
@@ -182,7 +184,7 @@ function SSIDDetailsPage() {
                 includes disconnections initiated by access point as well as clients.
               </p>
 
-              <DiscoHistogram discoType="disconnection" minutes={24*60} bssids={[ssid.bssid]} />
+              <DiscoHistogram discoType="disconnection" minutes={24*60} bssids={[ssid.bssid.address]} />
             </div>
           </div>
         </div>
@@ -200,7 +202,7 @@ function SSIDDetailsPage() {
                         Active Channels <small>Last 15 minutes</small>
                       </h3>
 
-                      <SSIDChannelUsageHistogram bssid={ssid.bssid}
+                      <SSIDChannelUsageHistogram bssid={ssid.bssid.address}
                                                  ssid={ssid.ssid}
                                                  minutes={15} />
                     </div>
@@ -224,7 +226,7 @@ function SSIDDetailsPage() {
 
                       <br style={{"clear": "both"}} />
 
-                      <SSIDSignalWaterfallChart bssid={ssid.bssid}
+                      <SSIDSignalWaterfallChart bssid={ssid.bssid.address}
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
                                                 minutes={24*60} />

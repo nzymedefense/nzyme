@@ -13,10 +13,6 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("bssid")
     public abstract Dot11MacAddressResponse bssid();
 
-    @JsonProperty("oui")
-    @Nullable
-    public abstract String oui();
-
     @JsonProperty("security_protocols")
     @Nullable
     public abstract List<String> securityProtocols();
@@ -45,10 +41,9 @@ public abstract class BSSIDSummaryDetailsResponse {
     @JsonProperty("infrastructure_types")
     public abstract List<String> infrastructureTypes();
 
-    public static BSSIDSummaryDetailsResponse create(Dot11MacAddressResponse bssid, String oui, List<String> securityProtocols, float signalStrengthAverage, DateTime firstSeen, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
+    public static BSSIDSummaryDetailsResponse create(Dot11MacAddressResponse bssid, List<String> securityProtocols, float signalStrengthAverage, DateTime firstSeen, DateTime lastSeen, long clientCount, List<String> fingerprints, List<String> advertisedSSIDNames, boolean hasHiddenSSIDAdvertisements, List<String> infrastructureTypes) {
         return builder()
                 .bssid(bssid)
-                .oui(oui)
                 .securityProtocols(securityProtocols)
                 .signalStrengthAverage(signalStrengthAverage)
                 .firstSeen(firstSeen)
@@ -68,8 +63,6 @@ public abstract class BSSIDSummaryDetailsResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder bssid(Dot11MacAddressResponse bssid);
-
-        public abstract Builder oui(String oui);
 
         public abstract Builder securityProtocols(List<String> securityProtocols);
 

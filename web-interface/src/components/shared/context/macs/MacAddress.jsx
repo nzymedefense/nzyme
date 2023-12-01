@@ -1,6 +1,8 @@
 import React, {useState} from "react";
 import MacAddressContextOverlay from "./details/MacAddressContextOverlay";
 import ContextOverlayVisibilityWrapper from "../ContextOverlayVisibilityWrapper";
+import {span} from "plotly.js/src/traces/violin/attributes";
+import Dot11MacAddressType from "./Dot11MacAddressType";
 
 function MacAddress(props) {
 
@@ -10,14 +12,21 @@ function MacAddress(props) {
   const href = props.href;
   const onClick = props.onClick;
 
+  const type = props.type;
+
+  const showOui = props.showOui;
+  const highlighted = props.highlighted;
+
   const [overlayTimeout, setOverlayTimeout] = React.useState(null);
   const [overlayVisible, setOverlayVisible] = useState(false);
 
   const addressElement = () => {
     if (href || onClick) {
-      return <a href={href ? href : "#"} onClick={onClick ? onClick : () => {}}>{address}</a>
+      return <a href={href ? href : "#"}
+                onClick={onClick ? onClick : () => {}}
+                className={highlighted ? "highlighted" : null}>{address}</a>
     } else {
-      return address;
+      return <span style={{cursor: "help"}} className={highlighted ? "highlighted" : null}>{address}</span>;
     }
   }
 
@@ -26,8 +35,22 @@ function MacAddress(props) {
       return null;
     }
 
-    return <i className="fa-solid fa-fingerprint additional-context-available"
+    return <i className="fa-solid fa-circle-info additional-context-available"
               title="Additional context available." />
+  }
+
+  const ouiElement = () => {
+    if (!context || !showOui) {
+      return null;
+    }
+
+    return <span className="mac-address-oui">(Vendor: {context.oui ? context.oui : "Unknown"})</span>
+  }
+
+  const typeElement = () => {
+    if (type) {
+      return <Dot11MacAddressType type={type}/>
+    }
   }
 
   const mouseOver = () => {
@@ -44,7 +67,7 @@ function MacAddress(props) {
 
   return (
       <div onMouseEnter={mouseOver} onMouseLeave={mouseOut}>
-        {addressElement()} {contextElement()}
+        {typeElement()}{addressElement()}{contextElement()} {ouiElement()}
 
         <ContextOverlayVisibilityWrapper
             visible={overlayVisible}

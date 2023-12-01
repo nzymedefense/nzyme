@@ -7,7 +7,9 @@ import MacAddress from "./MacAddress";
 function AutomaticDot11MacAddressLink(props) {
 
   const address = props.mac;
+  const addressWithContext = props.addressWithContext;
   const type = props.type;
+  const highlighted = props.highlighted;
 
   const link = (bssid, type) => {
     switch (type) {
@@ -20,13 +22,19 @@ function AutomaticDot11MacAddressLink(props) {
 
   if (type === ACCESS_POINT || type === CLIENT) {
     return (
-        <React.Fragment>
-          <Dot11MacAddressType type={type}/>
-          <MacAddress address={address} href={link(address, type)} />
-        </React.Fragment>
+        <span className="mac-address">
+          <MacAddress address={address}
+                      addressWithContext={addressWithContext}
+                      type={type}
+                      href={link(address, type)}
+                      highlighted={highlighted} />
+        </span>
     )
   } else {
-    return <Dot11MacAddress address={address} type={type} />
+    return <Dot11MacAddress address={address}
+                            addressWithContext={addressWithContext}
+                            type={type}
+                            highlighted={highlighted} />
   }
 
 }

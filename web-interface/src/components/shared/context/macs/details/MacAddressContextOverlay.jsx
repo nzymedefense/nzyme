@@ -51,7 +51,7 @@ function MacAddressContextOverlay(props) {
         return "No"
       }
     } else {
-      return "n/a"
+      return "n/a (Type not monitored)"
     }
   }
 

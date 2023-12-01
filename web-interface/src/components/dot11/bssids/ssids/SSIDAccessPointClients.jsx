@@ -1,5 +1,6 @@
 import React from "react";
 import ApiRoutes from "../../../../util/ApiRoutes";
+import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
 
 function SSIDAccessPointClients(props) {
 
@@ -28,8 +29,11 @@ function SSIDAccessPointClients(props) {
           {clients.slice(0,5).map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">{client.mac}</a></td>
-                  <td>{client.oui ? client.oui : "Unknown"}</td>
+                  <td>
+                    <Dot11MacAddress addressWithContext={client.mac}
+                                     href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
+                  </td>
+                  <td>{client.mac.oui ? client.mac.oui : "Unknown"}</td>
                 </tr>
                 )
           })}
@@ -60,11 +64,10 @@ function SSIDAccessPointClients(props) {
                     return (
                         <tr key={"client-" + i}>
                           <td>
-                            <a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">
-                              {client.mac}
-                            </a>
+                            <Dot11MacAddress addressWithContext={client.mac}
+                                             href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
                           </td>
-                          <td>{client.oui ? client.oui : "Unknown"}</td>
+                          <td>{client.mac.oui ? client.mac.oui : "Unknown"}</td>
                         </tr>
                     )
                   })}

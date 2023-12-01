@@ -74,7 +74,7 @@ function Sidebar() {
 
       <SidebarSubmenu title="Context"
                       subhref="/context"
-                      icon={<i className="sidebar-icon fa-solid fa-fingerprint"></i>}
+                      icon={<i className="sidebar-icon fa-solid fa-circle-info"></i>}
                       show={true}>
         <NavigationLink
             href={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX}

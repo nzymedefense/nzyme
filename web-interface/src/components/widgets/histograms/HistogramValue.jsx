@@ -8,28 +8,22 @@ function HistogramValue(props) {
   const highlightValue = props.highlightValue;
   const value = props.value;
 
-  let result;
-
   switch(value.type) {
     case "DOT11_MAC":
       if (value.metadata && value.metadata.type) {
-        result = <AutomaticDot11MacAddressLink mac={value.value} type={value.metadata.type} />
+        return <AutomaticDot11MacAddressLink
+            highlighted={value.value === highlightValue}
+            mac={value.value}
+            type={value.metadata.type}
+            addressWithContext={value.metadata.mac} />
       } else {
-        result = <span>{value.value}</span>
+        return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
       }
-      break;
     case "INTEGER":
-      result = <span>{numeral(value.value).format("0,0")}</span>
-      break;
+      return <span className={value.value === highlightValue ? "highlighted" : null}>{numeral(value.value).format("0,0")}</span>
     case "GENERIC":
     default:
-      result = <span>{value.value}</span>
-  }
-
-  if (value.value === highlightValue) {
-    return <span className="highlighted">{result}</span>
-  } else {
-    return result;
+      return <span className={value.value === highlightValue ? "highlighted" : null}>{value.value}</span>
   }
 
 }

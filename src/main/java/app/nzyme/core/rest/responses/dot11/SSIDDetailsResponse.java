@@ -13,11 +13,7 @@ import java.util.UUID;
 public abstract class SSIDDetailsResponse {
 
     @JsonProperty("bssid")
-    public abstract String bssid();
-
-    @JsonProperty("bssid_oui")
-    @Nullable
-    public abstract String bssidOui();
+    public abstract Dot11MacAddressResponse bssid();
 
     @JsonProperty("ssid")
     public abstract String ssid();
@@ -58,10 +54,9 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDDetailsResponse create(String bssid, String bssidOui, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDDetailsResponse create(Dot11MacAddressResponse bssid, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
         return builder()
                 .bssid(bssid)
-                .bssidOui(bssidOui)
                 .ssid(ssid)
                 .frequencies(frequencies)
                 .signalStrengthAverage(signalStrengthAverage)
@@ -84,9 +79,7 @@ public abstract class SSIDDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bssid(String bssid);
-
-        public abstract Builder bssidOui(String bssidOui);
+        public abstract Builder bssid(Dot11MacAddressResponse bssid);
 
         public abstract Builder ssid(String ssid);
 

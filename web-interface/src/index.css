@@ -714,16 +714,21 @@ textarea.histogram-data-export {
     font-size: 12px;
 }
 
-span.dot11-mac-icon-container {
+span.mac-address-icon-container {
     display: inline-block;
     width: 20px;
     text-align: center;
     margin-right: 3px;
 }
 
-a.dot11-mac, span.dot11-mac {
+a.mac-address, span.mac-address {
     font-family: 'B612 Mono', monospace;
     font-size: 12px;
+}
+
+span.mac-address-oui {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 13px;
 }
 
 select.monitored-network-selector {
@@ -734,7 +739,7 @@ select.monitored-network-selector {
     top: 2px;
 }
 
-span.highlighted {
+.highlighted {
     background-color: #ffff9a;
 }
 
@@ -841,5 +846,6 @@ div.context-overlay i.context-owner-information {
 }
 
 i.additional-context-available {
+    margin-left: 5px;
     color: #707070;
 }

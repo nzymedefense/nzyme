@@ -1,24 +1,19 @@
 package app.nzyme.core.dot11.db;
 
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
-import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class BSSIDClientDetails {
 
-    @JsonProperty
-    public abstract String mac();
+    @JsonProperty("mac")
+    public abstract Dot11MacAddressResponse mac();
 
-    @JsonProperty
-    @Nullable
-    public abstract String oui();
-
-    public static BSSIDClientDetails create(String mac, String oui) {
+    public static BSSIDClientDetails create(Dot11MacAddressResponse mac) {
         return builder()
                 .mac(mac)
-                .oui(oui)
                 .build();
     }
 
@@ -28,9 +23,7 @@ public abstract class BSSIDClientDetails {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder mac(String mac);
-
-        public abstract Builder oui(String oui);
+        public abstract Builder mac(Dot11MacAddressResponse mac);
 
         public abstract BSSIDClientDetails build();
     }
