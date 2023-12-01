@@ -17,6 +17,7 @@
 
 package app.nzyme.core;
 
+import app.nzyme.core.cache.CacheManager;
 import app.nzyme.core.context.ContextService;
 import app.nzyme.core.detection.alerts.DetectionAlertService;
 import app.nzyme.core.distributed.ClusterManager;
@@ -255,6 +256,9 @@ public class NzymeNodeImpl implements NzymeNode {
 
             this.plugins.add(plugin.getId());
         }
+
+        CacheManager cacheManager = new CacheManager(this);
+        cacheManager.initialize();
 
         // Spin up REST API and web interface.
         java.util.logging.Logger.getLogger("org.glassfish.grizzly").setLevel(Level.SEVERE);

@@ -10,6 +10,8 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
+import app.nzyme.plugin.distributed.messaging.ClusterMessage;
+import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
@@ -23,6 +25,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -156,6 +159,13 @@ public class AssetContextResource extends UserAuthenticatedResource {
                 req.organizationId(),
                 req.tenantId()
         );
+
+        // Invalidate caches.
+        nzyme.getMessageBus().sendToAllOnlineNodes(ClusterMessage.create(
+                MessageType.INVALIDATE_CACHE,
+                Map.of("cache_type", "context_macs"),
+                false
+        ));
 
         return Response.status(Response.Status.CREATED).build();
     }

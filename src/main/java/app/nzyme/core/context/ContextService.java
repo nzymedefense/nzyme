@@ -2,11 +2,17 @@ package app.nzyme.core.context;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import jakarta.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class ContextService {
 
@@ -14,6 +20,21 @@ public class ContextService {
 
     public ContextService(NzymeNode nzyme) {
         this.nzyme = nzyme;
+    }
+
+    private LoadingCache<MacAddressContextCacheKey, Optional<MacAddressContextEntry>> macAddressContextCache = CacheBuilder.newBuilder()
+            .maximumSize(2500)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<>() {
+                @NotNull
+                @Override
+                public Optional<MacAddressContextEntry> load(@NotNull MacAddressContextCacheKey key) {
+                    return findMacAddressContextNoCache(key.macAddress(), key.organizationId(), key.tenantId());
+                }
+            });
+
+    public void invalidateMacAddressCache() {
+        macAddressContextCache.invalidateAll();
     }
 
     public void createMacAddressContext(String macAddress,
@@ -55,8 +76,18 @@ public class ContextService {
     }
 
     public Optional<MacAddressContextEntry> findMacAddressContext(String mac,
-                                                                  @Nullable UUID organizationId,
-                                                                  @Nullable UUID tenantId) {
+                                                                   @Nullable UUID organizationId,
+                                                                   @Nullable UUID tenantId) {
+        try {
+            return macAddressContextCache.get(MacAddressContextCacheKey.create(mac, organizationId, tenantId));
+        } catch(ExecutionException e) {
+            throw new RuntimeException("Could not MAC address context from cache.", e);
+        }
+    }
+
+    private Optional<MacAddressContextEntry> findMacAddressContextNoCache(String mac,
+                                                                          @Nullable UUID organizationId,
+                                                                          @Nullable UUID tenantId) {
         if (organizationId != null && tenantId != null) {
             // Tenant data.
             return nzyme.getDatabase().withHandle(handle ->
