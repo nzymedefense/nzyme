@@ -8,6 +8,7 @@ function MacAddress(props) {
 
   const address =  props.addressWithContext ? props.addressWithContext.address : props.address;
   const context = props.addressWithContext ?  props.addressWithContext.context : null;
+  const oui = props.addressWithContext ? props.addressWithContext.oui : null;
 
   const href = props.href;
   const onClick = props.onClick;
@@ -40,11 +41,11 @@ function MacAddress(props) {
   }
 
   const ouiElement = () => {
-    if (!context || !showOui) {
+    if (!oui || !showOui) {
       return null;
     }
 
-    return <span className="mac-address-oui">(Vendor: {context.oui ? context.oui : "Unknown"})</span>
+    return <span className="mac-address-oui">(Vendor: {oui ? oui : "Unknown"})</span>
   }
 
   const typeElement = () => {

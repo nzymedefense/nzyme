@@ -1,12 +1,17 @@
 package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.ContextService;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.db.monitoring.*;
 import app.nzyme.core.dot11.monitoring.disco.db.Dot11DiscoMonitorMethodConfiguration;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
+import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInformationReport;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
 import app.nzyme.core.util.Tools;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -734,7 +739,9 @@ public class Dot11 {
         return result;
     }
 
-    public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac, List<UUID> taps) {
+    public Optional<ClientDetails> findMergedConnectedOrDisconnectedClient(String clientMac,
+                                                                           List<UUID> taps,
+                                                                           AuthenticatedUser authenticatedUser) {
         if (taps.isEmpty()) {
             return Optional.empty();
         }
@@ -774,11 +781,22 @@ public class Dot11 {
         if (connected.isPresent()) {
             // We have found this client as connected client.
             for (String bssid : findBSSIDsClientWasConnectedTo(clientMac, taps)) {
+                Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
+                        bssid,
+                        authenticatedUser.getOrganizationId(),
+                        authenticatedUser.getTenantId()
+                );
+
                 List<String> advertisedSSIDs = findSSIDsAdvertisedByBSSID(bssid, taps);
 
                 connectedBSSIDs.add(ConnectedBSSID.create(
-                        bssid,
-                        nzyme.getOUIManager().lookupMac(bssid),
+                        Dot11MacAddressResponse.create(
+                                bssid,
+                                nzyme.getOUIManager().lookupMac(bssid),
+                                bssidContext.map(macAddressContextEntry ->
+                                                Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                        .orElse(null)
+                        ),
                         advertisedSSIDs
                 ));
             }
@@ -871,12 +889,29 @@ public class Dot11 {
             firstSeen = disconnected.get().firstSeen();
         }
 
+
+        ConnectedBSSID currentlyConnectedBssidResponse = null;
+        if (currentlyConnectedBSSID.isPresent()) {
+            Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
+                    currentlyConnectedBSSID.get(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            currentlyConnectedBssidResponse = ConnectedBSSID.create(
+                    Dot11MacAddressResponse.create(
+                            currentlyConnectedBSSID.get(),
+                            nzyme.getOUIManager().lookupMac(currentlyConnectedBSSID.get()),
+                            bssidContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ), Collections.emptyList());
+        }
+
         return Optional.of(ClientDetails.create(
                 clientMac,
                 nzyme.getOUIManager().lookupMac(clientMac),
-                currentlyConnectedBSSID.map(
-                        s -> ConnectedBSSID.create(s, nzyme.getOUIManager().lookupMac(s), Lists.newArrayList()
-                )).orElse(null),
+                currentlyConnectedBssidResponse,
                 connectedBSSIDs,
                 firstSeen,
                 lastSeen,

@@ -80,7 +80,11 @@ function ClientsPage() {
                   advertised SSIDs of BSSIDs are compiled from the most recent three days of available data.
                 </p>
 
-                <ConnectedClientsTable clients={connectedClients} minutes={MINUTES} perPage={perPage} page={connectedClientsPage} setPage={setConnectedClientsPage} />
+                <ConnectedClientsTable clients={connectedClients}
+                                       minutes={MINUTES}
+                                       perPage={perPage}
+                                       page={connectedClientsPage}
+                                       setPage={setConnectedClientsPage} />
               </div>
             </div>
           </div>
@@ -99,7 +103,11 @@ function ClientsPage() {
                   compiled from the most recent three days of available data.
                 </p>
 
-                <DisconnectedClientsTable clients={disconnectedClients} minutes={MINUTES} perPage={perPage} page={disconnectedClientsPage} setPage={setDisconnectedClientsPage} />
+                <DisconnectedClientsTable clients={disconnectedClients}
+                                          minutes={MINUTES}
+                                          perPage={perPage}
+                                          page={disconnectedClientsPage}
+                                          setPage={setDisconnectedClientsPage} />
               </div>
             </div>
           </div>

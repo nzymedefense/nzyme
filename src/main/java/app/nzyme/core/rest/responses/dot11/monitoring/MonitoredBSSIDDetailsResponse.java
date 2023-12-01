@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.dot11.monitoring;
 
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
@@ -16,12 +17,8 @@ public abstract class MonitoredBSSIDDetailsResponse {
     @JsonProperty("uuid")
     public abstract UUID uuid();
 
-    @JsonProperty("bssid")
-    public abstract String bssid();
-
-    @JsonProperty("bssid_oui")
-    @Nullable
-    public abstract String bssidOui();
+    @JsonProperty("mac")
+    public abstract Dot11MacAddressResponse mac();
 
     @JsonProperty("is_online")
     public abstract boolean isOnline();
@@ -29,12 +26,11 @@ public abstract class MonitoredBSSIDDetailsResponse {
     @JsonProperty("fingerprints")
     public abstract List<MonitoredFingerprintResponse> fingerprints();
 
-    public static MonitoredBSSIDDetailsResponse create(UUID ssidUUID, UUID uuid, String bssid, String bssidOui, boolean isOnline, List<MonitoredFingerprintResponse> fingerprints) {
+    public static MonitoredBSSIDDetailsResponse create(UUID ssidUUID, UUID uuid, Dot11MacAddressResponse mac, boolean isOnline, List<MonitoredFingerprintResponse> fingerprints) {
         return builder()
                 .ssidUUID(ssidUUID)
                 .uuid(uuid)
-                .bssid(bssid)
-                .bssidOui(bssidOui)
+                .mac(mac)
                 .isOnline(isOnline)
                 .fingerprints(fingerprints)
                 .build();
@@ -50,9 +46,7 @@ public abstract class MonitoredBSSIDDetailsResponse {
 
         public abstract Builder uuid(UUID uuid);
 
-        public abstract Builder bssid(String bssid);
-
-        public abstract Builder bssidOui(String bssidOui);
+        public abstract Builder mac(Dot11MacAddressResponse mac);
 
         public abstract Builder isOnline(boolean isOnline);
 

@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
@@ -9,20 +10,15 @@ import java.util.List;
 @AutoValue
 public abstract class ConnectedBSSID {
 
-    @JsonProperty("bssid")
-    public abstract String bssid();
-
-    @JsonProperty("oui")
-    @Nullable
-    public abstract String oui();
+    @JsonProperty("mac")
+    public abstract Dot11MacAddressResponse mac();
 
     @JsonProperty("possible_ssids")
     public abstract List<String> ssids();
 
-    public static ConnectedBSSID create(String bssid, String oui, List<String> ssids) {
+    public static ConnectedBSSID create(Dot11MacAddressResponse mac, List<String> ssids) {
         return builder()
-                .bssid(bssid)
-                .oui(oui)
+                .mac(mac)
                 .ssids(ssids)
                 .build();
     }
@@ -33,9 +29,7 @@ public abstract class ConnectedBSSID {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder bssid(String bssid);
-
-        public abstract Builder oui(String oui);
+        public abstract Builder mac(Dot11MacAddressResponse mac);
 
         public abstract Builder ssids(List<String> ssids);
 

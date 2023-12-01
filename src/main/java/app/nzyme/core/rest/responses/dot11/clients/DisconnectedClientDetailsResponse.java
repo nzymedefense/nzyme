@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
@@ -11,11 +12,7 @@ import java.util.List;
 public abstract class DisconnectedClientDetailsResponse {
 
     @JsonProperty("mac")
-    public abstract String clientMac();
-
-    @JsonProperty("oui")
-    @Nullable
-    public abstract String clientOui();
+    public abstract Dot11MacAddressResponse mac();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
@@ -26,10 +23,9 @@ public abstract class DisconnectedClientDetailsResponse {
     @JsonProperty("bssid_history")
     public abstract List<ConnectedBSSID> bssidHistory();
 
-    public static DisconnectedClientDetailsResponse create(String clientMac, String clientOui, DateTime lastSeen, List<String> probeRequests, List<ConnectedBSSID> bssidHistory) {
+    public static DisconnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, List<String> probeRequests, List<ConnectedBSSID> bssidHistory) {
         return builder()
-                .clientMac(clientMac)
-                .clientOui(clientOui)
+                .mac(mac)
                 .lastSeen(lastSeen)
                 .probeRequests(probeRequests)
                 .bssidHistory(bssidHistory)
@@ -42,9 +38,7 @@ public abstract class DisconnectedClientDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder clientMac(String clientMac);
-
-        public abstract Builder clientOui(String clientOui);
+        public abstract Builder mac(Dot11MacAddressResponse mac);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 

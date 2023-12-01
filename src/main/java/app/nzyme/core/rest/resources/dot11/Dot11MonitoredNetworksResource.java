@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.dot11.Dot11;
@@ -9,6 +10,8 @@ import app.nzyme.core.dot11.monitoring.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -148,11 +151,22 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
             boolean isOnline = nzyme.getDot11().bssidExist(bssid.bssid(), 15, allAccessibleTapUUIDs);
 
+            Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
+                    bssid.bssid(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
             bssids.add(MonitoredBSSIDDetailsResponse.create(
                     ssid.uuid(),
                     bssid.uuid(),
-                    bssid.bssid(),
-                    nzyme.getOUIManager().lookupMac(bssid.bssid()),
+                    Dot11MacAddressResponse.create(
+                            bssid.bssid(),
+                            nzyme.getOUIManager().lookupMac(bssid.bssid()),
+                            bssidContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ),
                     isOnline,
                     fingerprints
             ));

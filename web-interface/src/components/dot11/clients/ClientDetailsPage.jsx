@@ -10,6 +10,7 @@ import ObservedProbeRequestsList from "./ObservedProbeRequestsList";
 import ClientActivityHistogram from "./ClientActivityHistogram";
 import DiscoPairsTable from "../disco/DiscoPairsTable";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 
@@ -46,7 +47,7 @@ function ClientDetailsPage() {
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.OVERVIEW}>WiFi</a></li>
                 <li className="breadcrumb-item"><a href={ApiRoutes.DOT11.CLIENTS.INDEX}>Clients</a></li>
-                <li className="breadcrumb-item active" aria-current="page">{client.mac}</li>
+                <li className="breadcrumb-item active" aria-current="page">{client.mac.address}</li>
               </ol>
             </nav>
           </div>
@@ -57,7 +58,7 @@ function ClientDetailsPage() {
 
           <div className="col-md-12">
             <h1>
-              Client &quot;{client.mac} ({client.mac_oui ? client.mac_oui : "Unknown Vendor"})&quot;
+              Client &quot;{client.mac.address} ({client.mac.oui ? client.mac.oui : "Unknown Vendor"})&quot;
             </h1>
           </div>
         </div>
@@ -72,13 +73,11 @@ function ClientDetailsPage() {
                 <dl className="mb-0">
                   <dt>MAC Address</dt>
                   <dd>
-                    <span className="dot11-mac">{client.mac}</span> ({client.mac_oui ? client.mac_oui : "Unknown Vendor"})
+                    <Dot11MacAddress addressWithContext={client.mac} showOui={true} />
                   </dd>
-                  <dt>Connected to BSSID</dt>
+                  <dt>Last Connected to BSSID</dt>
                   <dd>
-                    {client.connected_bssid ? <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.bssid)} className="dot11-mac">{client.connected_bssid.bssid}</a> : "None"}{' '}
-                    {client.connected_bssid ?
-                      (client.connected_bssid.oui ? "(" + client.connected_bssid.oui + ")" : "(Unknown Vendor)") : null}
+                    {client.connected_bssid ? <Dot11MacAddress addressWithContext={client.connected_bssid.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.connected_bssid.mac.address)} showOui={true} /> : "None"}{' '}
                   </dd>
                 </dl>
               </div>
@@ -112,7 +111,7 @@ function ClientDetailsPage() {
                   Observed Connections to BSSIDs <small>All Time</small>
                 </h3>
 
-                <ClientBSSIDHistory connectedBSSID={client.connected_bssid ? client.connected_bssid.bssid : null}
+                <ClientBSSIDHistory connectedBSSID={client.connected_bssid ? client.connected_bssid : null}
                                     bssids={client.connected_bssid_history} />
               </div>
             </div>

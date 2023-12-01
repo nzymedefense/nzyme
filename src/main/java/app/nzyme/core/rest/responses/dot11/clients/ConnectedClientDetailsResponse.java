@@ -1,5 +1,6 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
@@ -11,21 +12,13 @@ import java.util.List;
 public abstract class ConnectedClientDetailsResponse {
 
     @JsonProperty("mac")
-    public abstract String clientMac();
-
-    @JsonProperty("oui")
-    @Nullable
-    public abstract String clientOui();
+    public abstract Dot11MacAddressResponse mac();
 
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
     @JsonProperty("connected_bssid")
-    public abstract String connectedBssid();
-
-    @JsonProperty("connected_bssid_oui")
-    @Nullable
-    public abstract String connectedBssidOui();
+    public abstract Dot11MacAddressResponse connectedBSSID();
 
     @JsonProperty("probe_request_ssids")
     public abstract List<String> probeRequests();
@@ -33,13 +26,11 @@ public abstract class ConnectedClientDetailsResponse {
     @JsonProperty("bssid_history")
     public abstract List<ConnectedBSSID> bssidHistory();
 
-    public static ConnectedClientDetailsResponse create(String clientMac, String clientOui, DateTime lastSeen, String connectedBssid, String connectedBssidOui, List<String> probeRequests, List<ConnectedBSSID> bssidHistory) {
+    public static ConnectedClientDetailsResponse create(Dot11MacAddressResponse mac, DateTime lastSeen, Dot11MacAddressResponse connectedBSSID, List<String> probeRequests, List<ConnectedBSSID> bssidHistory) {
         return builder()
-                .clientMac(clientMac)
-                .clientOui(clientOui)
+                .mac(mac)
                 .lastSeen(lastSeen)
-                .connectedBssid(connectedBssid)
-                .connectedBssidOui(connectedBssidOui)
+                .connectedBSSID(connectedBSSID)
                 .probeRequests(probeRequests)
                 .bssidHistory(bssidHistory)
                 .build();
@@ -51,15 +42,11 @@ public abstract class ConnectedClientDetailsResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder clientMac(String clientMac);
-
-        public abstract Builder clientOui(String clientOui);
+        public abstract Builder mac(Dot11MacAddressResponse mac);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 
-        public abstract Builder connectedBssid(String connectedBssid);
-
-        public abstract Builder connectedBssidOui(String connectedBssidOui);
+        public abstract Builder connectedBSSID(Dot11MacAddressResponse connectedBSSID);
 
         public abstract Builder probeRequests(List<String> probeRequests);
 

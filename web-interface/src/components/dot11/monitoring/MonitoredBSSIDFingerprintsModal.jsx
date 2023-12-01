@@ -49,14 +49,14 @@ function MonitoredBSSIDFingerprintsModal(props) {
 
   return (
       <div className="modal configuration-dialog"
-           id={"bssid-fingerprints-" + bssid.bssid.replaceAll(":", "")}
+           id={"bssid-fingerprints-" + bssid.mac.address.replaceAll(":", "")}
            data-bs-keyboard="true" data-bs-backdrop="static" tabIndex="-1"
            aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
             <div className="modal-header">
               <h3 className="modal-title">
-                Monitored Fingerprints of BSSID &quot;{bssid.bssid}&quot; {parentIsLoading ? <RefreshGears /> : null}
+                Monitored Fingerprints of BSSID &quot;{bssid.mac.address}&quot; {parentIsLoading ? <RefreshGears /> : null}
               </h3>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 function ClientBSSIDHistory(props) {
 
@@ -31,11 +32,11 @@ function ClientBSSIDHistory(props) {
             return (
                 <tr key={i}>
                   <td>
-                    <span className={connectedBSSID && connectedBSSID === bssid.bssid ? "highlighted" : ""}>
-                      <a href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.bssid)} className="dot11-mac">{bssid.bssid}</a>{' '}
-                    </span>
+                    <Dot11MacAddress addressWithContext={bssid.mac}
+                                     href={ApiRoutes.DOT11.NETWORKS.BSSID(bssid.mac.address)}
+                                     highlighted={connectedBSSID.mac.address && connectedBSSID.mac.address === bssid.mac.address}/>
                   </td>
-                  <td>{bssid.oui ? bssid.oui : "Unknown"}</td>
+                  <td>{bssid.mac.oui ? bssid.mac.oui : "Unknown"}</td>
                   <td>{parsedSSIDs(bssid.possible_ssids).join(", ")}</td>
                 </tr>
             )

@@ -4,6 +4,7 @@ import Paginator from "../../misc/Paginator";
 import moment from "moment";
 import SSIDsList from "../util/SSIDsList";
 import ApiRoutes from "../../../util/ApiRoutes";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 
 function ConnectedClientsTable(props) {
@@ -47,13 +48,15 @@ function ConnectedClientsTable(props) {
           {clients.clients.map(function (client, i) {
             return (
                 <tr key={"client-" + i}>
-                  <td><a href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac)} className="dot11-mac">{client.mac}</a></td>
-                  <td>{client.oui ? client.oui :
+                  <td>
+                    <Dot11MacAddress addressWithContext={client.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.mac.address)} />
+                  </td>
+                  <td>{client.mac.oui ? client.mac.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>
-                    <a href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid)} className="dot11-mac">{client.connected_bssid}</a>
+                    <Dot11MacAddress addressWithContext={client.connected_bssid} href={ApiRoutes.DOT11.NETWORKS.BSSID(client.connected_bssid.address)} />
                   </td>
-                  <td>{client.connected_bssid_oui ? client.connected_bssid_oui :
+                  <td>{client.connected_bssid.oui ? client.connected_bssid.oui :
                       <span className="text-muted">Unknown</span>}</td>
                   <td>{client.bssid_history.length}</td>
                   <td>

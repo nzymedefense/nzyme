@@ -61,7 +61,7 @@ function BSSIDDetailsPage() {
 
           <div className="col-md-12">
             <h1>
-              BSSID &quot;{bssid.summary.bssid.address} ({bssid.summary.oui ? bssid.summary.oui : "Unknown Vendor"})&quot;
+              BSSID &quot;{bssid.summary.bssid.address} ({bssid.summary.bssid.oui ? bssid.summary.bssid.oui : "Unknown Vendor"})&quot;
             </h1>
           </div>
         </div>
@@ -79,7 +79,7 @@ function BSSIDDetailsPage() {
                   </dd>
                   <dt>Vendor</dt>
                   <dd>
-                    {bssid.summary.oui ? bssid.summary.oui : "Unknown"}
+                    {bssid.summary.bssid.oui ? bssid.summary.bssid.oui : "Unknown"}
                   </dd>
                 </dl>
               </div>

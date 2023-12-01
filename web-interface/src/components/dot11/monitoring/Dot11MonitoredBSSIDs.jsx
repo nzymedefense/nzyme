@@ -2,6 +2,7 @@ import React from "react";
 import MonitoredBSSIDFingerprintsModal from "./MonitoredBSSIDFingerprintsModal";
 import Dot11Service from "../../../services/Dot11Service";
 import {notify} from "react-notify-toast";
+import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 
@@ -53,8 +54,8 @@ function Dot11MonitoredBSSIDs(props) {
           {bssids.map(function(bssid, i) {
             return (
               <tr key={"bssid-" + i}>
-                <td><span className="dot11-mac">{bssid.bssid}</span></td>
-                <td>{bssid.bssid_oui ? bssid.bssid_oui : "Unknown Vendor"}</td>
+                <td><Dot11MacAddress addressWithContext={bssid.mac} /></td>
+                <td>{bssid.mac.oui ? bssid.mac.oui : "Unknown Vendor"}</td>
                 <td>{bssid.fingerprints.length}</td>
                 <td>
                   {bssid.is_online ? <i className="fa-solid fa-circle-check text-success"></i>
@@ -63,7 +64,7 @@ function Dot11MonitoredBSSIDs(props) {
                 <td>
                   <a href="#"
                      data-bs-toggle="modal"
-                     data-bs-target={"#bssid-fingerprints-" + bssid.bssid.replaceAll(":", "")}>
+                     data-bs-target={"#bssid-fingerprints-" + bssid.mac.address.replaceAll(":", "")}>
                     Manage Monitored Fingerprints
                   </a>
                 </td>

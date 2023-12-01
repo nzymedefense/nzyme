@@ -6,7 +6,6 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 @AutoValue
 public abstract class ClientDetails {

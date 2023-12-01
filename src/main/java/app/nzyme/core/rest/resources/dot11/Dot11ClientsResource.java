@@ -1,12 +1,15 @@
 package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.Dot11;
 import app.nzyme.core.dot11.Dot11RegistryKeys;
 import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
+import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.clients.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -106,27 +109,62 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         for (ConnectedClientDetails client : nzyme.getDot11().findBSSIDClients(
                 minutes, tapUuids, connectedLimit, connectedOffset,
                 Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+            Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
+                    client.clientMac(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
             List<ConnectedBSSID> bssidHistory = Lists.newArrayList();
             for (String bssid : nzyme.getDot11()
                     .findBSSIDsClientWasConnectedTo(client.clientMac(), tapUuids)) {
+                Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
+                        bssid,
+                        authenticatedUser.getOrganizationId(),
+                        authenticatedUser.getTenantId()
+                );
+
                 // Find all SSIDs this BSSID advertised.
                 List<String> advertisedSSIDs = nzyme.getDot11().findSSIDsAdvertisedByBSSID(
                         bssid, tapUuids);
 
                 bssidHistory.add(ConnectedBSSID.create(
-                        bssid, nzyme.getOUIManager().lookupMac(bssid), advertisedSSIDs
+                        Dot11MacAddressResponse.create(
+                                bssid,
+                                nzyme.getOUIManager().lookupMac(bssid),
+                                bssidContext.map(macAddressContextEntry ->
+                                                Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                        .orElse(null)
+                        ),
+                        advertisedSSIDs
                 ));
             }
 
             List<String> probeRequests = nzyme.getDot11()
                     .findProbeRequestsOfClient(client.clientMac(), tapUuids);
 
-            connectedClients.add(ConnectedClientDetailsResponse.create(
-                    client.clientMac(),
-                    nzyme.getOUIManager().lookupMac(client.clientMac()),
-                    client.lastSeen(),
+            Optional<MacAddressContextEntry> clientBssidContext = nzyme.getContextService().findMacAddressContext(
                     client.bssid(),
-                    nzyme.getOUIManager().lookupMac(client.bssid()),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            connectedClients.add(ConnectedClientDetailsResponse.create(
+                    Dot11MacAddressResponse.create(
+                            client.clientMac(),
+                            nzyme.getOUIManager().lookupMac(client.clientMac()),
+                            clientContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ),
+                    client.lastSeen(),
+                    Dot11MacAddressResponse.create(
+                            client.bssid(),
+                            nzyme.getOUIManager().lookupMac(client.bssid()),
+                            clientBssidContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ),
                     probeRequests,
                     bssidHistory
             ));
@@ -139,22 +177,46 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         for (DisconnectedClientDetails client : nzyme.getDot11().findClients(
                 minutes, tapUuids, macAddressesOfAllConnectedClients, disconnectedLimit, disconnectedOffset,
                 Dot11.ClientOrderColumn.LAST_SEEN, OrderDirection.DESC)) {
+            Optional<MacAddressContextEntry> clientContext = nzyme.getContextService().findMacAddressContext(
+                    client.clientMac(),
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
             List<ConnectedBSSID> bssidHistory = Lists.newArrayList();
 
             for (String bssid : nzyme.getDot11()
                     .findBSSIDsClientWasConnectedTo(client.clientMac(), tapUuids)) {
+                Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
+                        bssid,
+                        authenticatedUser.getOrganizationId(),
+                        authenticatedUser.getTenantId()
+                );
+
                 // Find all SSIDs this BSSID advertised.
                 List<String> advertisedSSIDs = nzyme.getDot11().findSSIDsAdvertisedByBSSID(
                         bssid, tapUuids);
 
                 bssidHistory.add(ConnectedBSSID.create(
-                        bssid, nzyme.getOUIManager().lookupMac(bssid), advertisedSSIDs
+                        Dot11MacAddressResponse.create(
+                                bssid,
+                                nzyme.getOUIManager().lookupMac(bssid),
+                                bssidContext.map(macAddressContextEntry ->
+                                                Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                        .orElse(null)
+                        ),
+                        advertisedSSIDs
                 ));
             }
 
             disconnectedClients.add(DisconnectedClientDetailsResponse.create(
-                    client.clientMac(),
-                    nzyme.getOUIManager().lookupMac(client.clientMac()),
+                    Dot11MacAddressResponse.create(
+                            client.clientMac(),
+                            nzyme.getOUIManager().lookupMac(client.clientMac()),
+                            clientContext.map(macAddressContextEntry ->
+                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                    .orElse(null)
+                    ),
                     client.lastSeen(),
                     client.probeRequests(),
                     bssidHistory
@@ -176,7 +238,7 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
         Optional<ClientDetails> client = nzyme.getDot11().findMergedConnectedOrDisconnectedClient(
-                clientMac, tapUuids);
+                clientMac, tapUuids, authenticatedUser);
 
         if (client.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -251,9 +313,20 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
         );
 
-        return Response.ok(ClientDetailsResponse.create(
+        Optional<MacAddressContextEntry> macContext = nzyme.getContextService().findMacAddressContext(
                 c.mac(),
-                c.macOui(),
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId()
+        );
+
+        return Response.ok(ClientDetailsResponse.create(
+                Dot11MacAddressResponse.create(
+                        c.mac(),
+                        nzyme.getOUIManager().lookupMac(c.mac()),
+                        macContext.map(macAddressContextEntry ->
+                                        Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                .orElse(null)
+                ),
                 c.connectedBSSID(),
                 c.connectedBSSIDHistory(),
                 c.firstSeen(),
