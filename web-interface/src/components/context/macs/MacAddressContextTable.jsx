@@ -5,6 +5,7 @@ import Paginator from "../../misc/Paginator";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Subsystem from "../../misc/Subsystem";
+import ApiRoutes from "../../../util/ApiRoutes";
 
 const contextService = new ContextService();
 
@@ -70,7 +71,7 @@ function MacAddressContextTable() {
           {context.mac_addresses.map((m, i) => {
             return (
                 <tr key={i}>
-                  <td><a href="#">{m.mac_address}</a></td>
+                  <td><a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(m.uuid, organizationId, tenantId)}>{m.mac_address}</a></td>
                   <td>{m.name}</td>
                   <td>{m.description}</td>
                 </tr>

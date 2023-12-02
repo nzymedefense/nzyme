@@ -113,6 +113,7 @@ import AddTapProxyPage from "./components/system/taps/AddTapProxyPage";
 import AuthenticationSettingsPage from "./components/system/authentication/management/AuthenticationSettingsPage";
 import MacAddressContextPage from "./components/context/macs/MacAddressContextPage";
 import CreateMacAddressContextPage from "./components/context/macs/CreateMacAddressContextPage";
+import MacAddressContextDetailsPage from "./components/context/macs/MacAddressContextDetailsPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -378,7 +379,8 @@ function App() {
 
                           { /* Context. */ }
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
-                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />} />
+                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />}/>
+                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid', ':organizationId', ':tenantId')} element={<MacAddressContextDetailsPage />}/>
 
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>

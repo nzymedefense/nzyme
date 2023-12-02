@@ -53,22 +53,25 @@ public class AssetContextResource extends UserAuthenticatedResource {
         List<MacAddressContextDetailsResponse> addresses = Lists.newArrayList();
         for (MacAddressContextEntry m : nzyme.getContextService()
                 .findAllMacAddressContext(organizationId, tenantId, limit, offset)) {
-            addresses.add(MacAddressContextDetailsResponse.create(
-                    m.uuid(),
-                    m.macAddress(),
-                    m.name(),
-                    m.description(),
-                    m.notes(),
-                    m.organizationId(),
-                    null,
-                    m.tenantId(),
-                    null,
-                    m.createdAt(),
-                    m.updatedAt()
-            ));
+            addresses.add(entryToResponse(m));
         }
 
         return Response.ok(MacAddressContextListResponse.create(count, addresses)).build();
+    }
+
+    @GET
+    @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
+    public Response macByUuid(@Context SecurityContext sc,
+                              @PathParam("organization_id") UUID organizationId,
+                              @PathParam("tenant_id") UUID tenantId,
+                              @PathParam("uuid") UUID uuid) {
+        Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(uuid, organizationId, tenantId);
+
+        if (ctx.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return Response.ok(entryToResponse(ctx.get())).build();
     }
 
     @GET
@@ -168,6 +171,22 @@ public class AssetContextResource extends UserAuthenticatedResource {
         ));
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m) {
+        return MacAddressContextDetailsResponse.create(
+                m.uuid(),
+                m.macAddress(),
+                m.name(),
+                m.description(),
+                m.notes(),
+                m.organizationId(),
+                null,
+                m.tenantId(),
+                null,
+                m.createdAt(),
+                m.updatedAt()
+        );
     }
 
 
