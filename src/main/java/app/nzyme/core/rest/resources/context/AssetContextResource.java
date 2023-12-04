@@ -65,7 +65,12 @@ public class AssetContextResource extends UserAuthenticatedResource {
                               @PathParam("organization_id") UUID organizationId,
                               @PathParam("tenant_id") UUID tenantId,
                               @PathParam("uuid") UUID uuid) {
-        Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(uuid, organizationId, tenantId);
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<MacAddressContextEntry> ctx = nzyme.getContextService()
+                .findMacAddressContext(uuid, organizationId, tenantId);
 
         if (ctx.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -171,6 +176,21 @@ public class AssetContextResource extends UserAuthenticatedResource {
         ));
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @DELETE
+    @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
+    public Response delete(@Context SecurityContext sc,
+                           @PathParam("organization_id") UUID organizationId,
+                           @PathParam("tenant_id") UUID tenantId,
+                           @PathParam("uuid") UUID uuid) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getContextService().deleteMacAddressContext(uuid, organizationId, tenantId);
+
+        return Response.status(Response.Status.OK).build();
     }
 
     private MacAddressContextDetailsResponse entryToResponse(MacAddressContextEntry m) {

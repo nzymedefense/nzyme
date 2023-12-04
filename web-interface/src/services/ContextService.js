@@ -34,6 +34,11 @@ class ContextService {
     );
   }
 
+  deleteMacAddressContext(uuid, organizationId, tenantId, successCallback) {
+    RESTClient.delete("/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId + "/uuid/" + uuid,
+        successCallback)
+  }
+
 }
 
 export default ContextService;

@@ -125,40 +125,13 @@ public class ContextService {
         );
     }
 
-    public Optional<MacAddressContextEntry> findMacAddressContext(UUID uuid,
-                                                                  @Nullable UUID organizationId,
-                                                                  @Nullable UUID tenantId) {
-        if (organizationId != null && tenantId != null) {
-            // Tenant data.
-            return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                    "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                    "AND uuid = :uuid")
-                            .bind("organization_id", organizationId)
-                            .bind("tenant_id", tenantId)
-                            .bind("uuid", uuid)
-                            .mapTo(MacAddressContextEntry.class)
-                            .findOne()
-            );
-        }
-
-        if (organizationId != null) {
-            // Organization data.
-            return nzyme.getDatabase().withHandle(handle ->
-                    handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                    "WHERE organization_id = :organization_id " +
-                                    "AND uuid = :uuid")
-                            .bind("organization_id", organizationId)
-                            .bind("uuid", uuid)
-                            .mapTo(MacAddressContextEntry.class)
-                            .findOne()
-            );
-        }
-
-        // Any data.
+    public Optional<MacAddressContextEntry> findMacAddressContext(UUID uuid, UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                "WHERE uuid = :uuid")
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
                         .bind("uuid", uuid)
                         .mapTo(MacAddressContextEntry.class)
                         .findOne()
@@ -173,6 +146,18 @@ public class ContextService {
                         .bind("tenant_id", tenantId)
                         .mapTo(Long.class)
                         .one()
+        );
+    }
+
+    public void deleteMacAddressContext(UUID uuid, UUID organizationId, UUID tenantId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM context_mac_addresses " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND uuid = :uuid")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("uuid", uuid)
+                        .execute()
         );
     }
 

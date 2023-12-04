@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
 import WithPermission from "../../misc/WithPermission";
 import ApiRoutes from "../../../util/ApiRoutes";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import {notify} from "react-notify-toast";
 
 const contextService = new ContextService();
 
@@ -15,9 +16,28 @@ function MacAddressContextDetailsPage() {
 
   const [context, setContext] = useState(null);
 
+  const [deleted, setDeleted] = useState(false);
+
   useEffect(() => {
     contextService.findMacAddressContextByUuid(uuid, organizationId, tenantId, setContext);
   }, [uuid, organizationId, tenantId]);
+
+  const onDelete = (e) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete MAC address context?")) {
+      return;
+    }
+
+    contextService.deleteMacAddressContext(uuid, organizationId, tenantId, () => {
+      notify.show('MAC address context deleted.', 'success');
+      setDeleted(true);
+    });
+  }
+
+  if (deleted) {
+    return <Navigate to={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} />
+  }
 
   if (!context) {
     return <LoadingSpinner />
@@ -47,7 +67,7 @@ function MacAddressContextDetailsPage() {
           <div className="col-md-4">
             <span className="float-end">
               <WithPermission permission="mac_aliases_manage">
-                <a className="btn btn-danger" href="">Delete Context</a>&nbsp;
+                <a className="btn btn-danger" href="#" onClick={onDelete}>Delete Context</a>&nbsp;
               </WithPermission>
               <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX}>Back</a>
             </span>
