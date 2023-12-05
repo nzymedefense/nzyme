@@ -2,11 +2,13 @@ import React, {useState} from "react";
 import {isValidMACAddress} from "../../../util/Tools";
 import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSelector";
 import SelectedOrganizationAndTenant from "../../shared/SelectedOrganizationAndTenant";
+import FormSubmitErrorMessage from "../../misc/FormSubmitErrorMessage";
 
 function MacAddressContextForm(props) {
 
   const submitText = props.submitText;
   const onSubmit = props.onSubmit;
+  const errorMessage = props.errorMessage;
 
   const [organizationId, setOrganizationId] = useState(props.organizationId ? props.organizationId : null);
   const [tenantId, setTenantId] = useState(props.tenantId ? props.tenantId : null);
@@ -102,6 +104,8 @@ function MacAddressContextForm(props) {
       <button className="btn btn-primary" onClick={submit} disabled={!formIsReady() || formSubmitting}>
         {formSubmitting ? "Please wait ..." : submitText}
       </button>
+
+      <FormSubmitErrorMessage message={errorMessage} />
     </React.Fragment>
   )
 

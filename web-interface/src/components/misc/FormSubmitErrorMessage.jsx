@@ -9,7 +9,7 @@ function FormSubmitErrorMessage(props) {
   }
 
   return (
-      <div className="alert alert-danger mt-3">Error: {message}</div>
+      <div className="alert alert-danger mt-3 mb-0">Error: {message}</div>
   )
 
 }

@@ -10,6 +10,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
+import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
@@ -167,6 +168,14 @@ public class AssetContextResource extends UserAuthenticatedResource {
     public Response createMac(@Context SecurityContext sc, CreateMacAddressContextRequest req) {
         if (!passedTenantDataAccessible(sc, req.organizationId(), req.tenantId())) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Does this address exist already?
+        if (nzyme.getContextService()
+                .findMacAddressContext(req.macAddress(), req.organizationId(), req.tenantId()).isPresent()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Context for this MAC address already exists."))
+                    .build();
         }
 
         nzyme.getContextService().createMacAddressContext(

@@ -16,6 +16,8 @@ function CreateMacAddressContextPage() {
   let urlQuery = useQuery()
   const [complete, setComplete] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState(null);
+
   const [passedUrlMacAddress, setPassedUrlMacAddress] = useState(
       urlQuery.get("address") ? urlQuery.get("address") : ""
   );
@@ -33,8 +35,9 @@ function CreateMacAddressContextPage() {
           onComplete();
           setComplete(true);
         },
-        () => {
+        (error) => {
           notify.show('Could not create context.', 'error');
+          setErrorMessage(error.response.data.message);
           onComplete();
         }
     )
@@ -80,7 +83,10 @@ function CreateMacAddressContextPage() {
               <div className="card-body">
                 <h3>Create MAC Address Context</h3>
 
-                <MacAddressContextForm submitText={"Add Context"} onSubmit={onSubmit} macAddress={passedUrlMacAddress}/>
+                <MacAddressContextForm submitText={"Add Context"}
+                                       onSubmit={onSubmit}
+                                       macAddress={passedUrlMacAddress}
+                                       errorMessage={errorMessage} />
               </div>
             </div>
           </div>
