@@ -60,14 +60,17 @@ public class ContextService {
 
     public List<MacAddressContextEntry> findAllMacAddressContext(UUID organizationId,
                                                                  UUID tenantId,
+                                                                 String addressFilter,
                                                                  int limit,
                                                                  int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM context_mac_addresses " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND mac_address LIKE :address_filter " +
                                 "ORDER BY mac_address ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
+                        .bind("address_filter", addressFilter)
                         .bind("limit", limit)
                         .bind("offset", offset)
                         .mapTo(MacAddressContextEntry.class)

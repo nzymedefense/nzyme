@@ -11,10 +11,10 @@ class ContextService {
         {}, (response) => setContext(response.data))
   }
 
-  findAllMacAddressContext(organizationId, tenantId, setContext, limit, offset) {
+  findAllMacAddressContext(organizationId, tenantId, addressFilter, setContext, limit, offset) {
     RESTClient.get(
         "/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId,
-        {limit: limit, offset: offset},
+        {address_filter: addressFilter, limit: limit, offset: offset},
         (response) => setContext(response.data)
     )
   }

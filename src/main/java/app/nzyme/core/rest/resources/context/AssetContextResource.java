@@ -14,6 +14,7 @@ import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Max;
@@ -24,6 +25,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,17 +44,25 @@ public class AssetContextResource extends UserAuthenticatedResource {
     public Response macs(@Context SecurityContext sc,
                          @PathParam("organization_id") UUID organizationId,
                          @PathParam("tenant_id") UUID tenantId,
+                         @QueryParam("address_filter") @Nullable String addressFilter,
                          @QueryParam("limit") @Max(250) int limit,
                          @QueryParam("offset") int offset) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        if (addressFilter == null || addressFilter.trim().isEmpty()) {
+            // Set to SQL wildcard matcher to find all addresses if no filter set.
+            addressFilter = "%";
+        } else {
+            addressFilter = "%" + addressFilter.trim().toUpperCase() + "%";
+        }
+
         long count = nzyme.getContextService().countMacAddressContext(organizationId, tenantId);
 
         List<MacAddressContextDetailsResponse> addresses = Lists.newArrayList();
         for (MacAddressContextEntry m : nzyme.getContextService()
-                .findAllMacAddressContext(organizationId, tenantId, limit, offset)) {
+                .findAllMacAddressContext(organizationId, tenantId, addressFilter, limit, offset)) {
             addresses.add(entryToResponse(m));
         }
 

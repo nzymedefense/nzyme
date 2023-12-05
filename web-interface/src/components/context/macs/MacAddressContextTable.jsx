@@ -15,14 +15,17 @@ function MacAddressContextTable() {
 
   const [context, setContext] = useState(null);
 
+  const [addressFilter, setAddressFilter] = useState("");
+  const [addressFilterRevision, setAddressFilterRevision] = useState(0);
+
   const perPage = 25;
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (organizationId && tenantId) {
-      contextService.findAllMacAddressContext(organizationId, tenantId, setContext, perPage, (page - 1) * perPage);
+      contextService.findAllMacAddressContext(organizationId, tenantId, addressFilter, setContext, perPage, (page - 1) * perPage);
     }
-  }, [page, organizationId, tenantId]);
+  }, [page, organizationId, tenantId, addressFilterRevision]);
 
   const onOrganizationChange = (uuid) => {
     setOrganizationId(uuid);
@@ -57,6 +60,22 @@ function MacAddressContextTable() {
             organizationId={organizationId}
             tenantId={tenantId}
             onReset={resetTenantAndOrganization} />
+
+        <div className="row mb-3">
+          <div className="col-xl-12 col-xxl-8">
+            <div className="input-group">
+              <input type="text" className="form-control" id="macAddress"
+                     autocomplete="off"
+                     value={addressFilter} onChange={(e) => { setAddressFilter(e.target.value.toUpperCase()) }} />
+              <div className="input-group-append">
+                <button className="btn btn-outline-secondary"
+                        onClick={() => setAddressFilterRevision(prevRev => prevRev + 1)}>
+                  Filter MAC Address
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <table className="table table-sm table-hover table-striped">
           <thead>
