@@ -134,7 +134,8 @@ function MacAddressContextOverlay(props) {
           <dd>{ctx.context.notes ? "Yes" : "No"}</dd>
         </dl>
 
-        <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid)} className="btn btn-sm btn-outline-primary">
+        <a href={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(ctx.context.uuid, ctx.context.organization_id, ctx.context.tenant_id)}
+           className="btn btn-sm btn-outline-primary">
           Context Details
         </a>{' '}
         {typeDetailsLink(ctx.context_type, address)}{' '}
