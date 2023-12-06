@@ -100,7 +100,7 @@ function OrganizationAndTenantSelector(props) {
     // Superadmin. Let user select any organization and any tenant.
     return (
         <React.Fragment>
-          <label htmlFor="ssid" className="form-label">
+          <label className="form-label">
             Organization
           </label>
 
@@ -108,7 +108,7 @@ function OrganizationAndTenantSelector(props) {
                                 setOrganization={setOrganization}
                                 organizations={organizations} />
 
-          <label htmlFor="ssid" className="form-label">
+          <label className="form-label">
             Tenant {tenantsLoading ? <RefreshGears /> : null}
           </label>
 
@@ -121,7 +121,7 @@ function OrganizationAndTenantSelector(props) {
     // Org admin. Let user select any tenant of their organization.
     return (
         <React.Fragment>
-          <label htmlFor="ssid" className="form-label">
+          <label className="form-label">
             Tenant
           </label>
 

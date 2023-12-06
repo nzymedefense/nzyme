@@ -34,6 +34,17 @@ class ContextService {
     );
   }
 
+  editMacAddressContext(uuid, name, description, notes, organizationId, tenantId, successCallback, errorCallback) {
+    RESTClient.put("/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId + "/uuid/" + uuid,
+        {
+          name: name,
+          description: description,
+          notes: notes
+        },
+        successCallback, errorCallback
+    )
+  }
+
   deleteMacAddressContext(uuid, organizationId, tenantId, successCallback) {
     RESTClient.delete("/context/mac/organization/show/" + organizationId + "/tenant/show/" + tenantId + "/uuid/" + uuid,
         successCallback)

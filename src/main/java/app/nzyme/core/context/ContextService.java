@@ -152,6 +152,26 @@ public class ContextService {
         );
     }
 
+    public void updateMacAddressContext(UUID uuid,
+                                        UUID organizationId,
+                                        UUID tenantId,
+                                        String name,
+                                        String description,
+                                        String notes) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE context_mac_addresses SET name = :name, description = :description, " +
+                                "notes = :notes WHERE uuid = :uuid AND organization_id = :organization_id " +
+                                "AND tenant_id = :tenant_id")
+                        .bind("name", name)
+                        .bind("description", description)
+                        .bind("notes", notes)
+                        .bind("uuid", uuid)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .execute()
+        );
+    }
+
     public void deleteMacAddressContext(UUID uuid, UUID organizationId, UUID tenantId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM context_mac_addresses " +

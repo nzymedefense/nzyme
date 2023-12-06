@@ -114,6 +114,7 @@ import AuthenticationSettingsPage from "./components/system/authentication/manag
 import MacAddressContextPage from "./components/context/macs/MacAddressContextPage";
 import CreateMacAddressContextPage from "./components/context/macs/CreateMacAddressContextPage";
 import MacAddressContextDetailsPage from "./components/context/macs/MacAddressContextDetailsPage";
+import EditMacAddressContextPage from "./components/context/macs/EditMacAddressContextPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -381,6 +382,7 @@ function App() {
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX} element={<MacAddressContextPage />}/>
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.CREATE} element={<CreateMacAddressContextPage />}/>
                           <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.SHOW(':uuid', ':organizationId', ':tenantId')} element={<MacAddressContextDetailsPage />}/>
+                          <Route path={ApiRoutes.CONTEXT.MAC_ADDRESSES.EDIT(':uuid', ':organizationId', ':tenantId')} element={<EditMacAddressContextPage />}/>
 
                           { /* Alerts. */}
                           <Route path={ApiRoutes.ALERTS.INDEX} element={<AlertsPage />}/>

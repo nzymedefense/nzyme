@@ -9,6 +9,8 @@ function MacAddressContextForm(props) {
   const submitText = props.submitText;
   const onSubmit = props.onSubmit;
   const errorMessage = props.errorMessage;
+  const macAddressDisabled = props.macAddressDisabled;
+  const organizationAndTenantPassed = props.organizationId || props.tenantId;
 
   const [organizationId, setOrganizationId] = useState(props.organizationId ? props.organizationId : null);
   const [tenantId, setTenantId] = useState(props.tenantId ? props.tenantId : null);
@@ -21,8 +23,8 @@ function MacAddressContextForm(props) {
       (props.macAddress && isValidMACAddress(props.macAddress)) ? props.macAddress.toUpperCase() : ""
   );
   const [name, setName] = useState(props.name ? formatName(props.name) : "");
-  const [description, setDescription] = useState(props.description ? props.description : "")
-  const [notes, setNotes] = useState(props.notes ? props.notes : "")
+  const [description, setDescription] = useState(props.description ? props.description : "");
+  const [notes, setNotes] = useState(props.notes ? props.notes : "");
 
   const [formSubmitting, setFormSubmitting] = useState(false);
 
@@ -51,20 +53,30 @@ function MacAddressContextForm(props) {
     });
   }
 
+  const selectedOrganizationAndTenant = () => {
+    if (organizationAndTenantPassed) {
+      // Don't show org and tenant selector if passed in from the outside, like in edit form.
+      return null;
+    }
+
+    return <SelectedOrganizationAndTenant
+        organizationId={organizationId}
+        tenantId={tenantId}
+        onReset={resetTenantAndOrganization} />
+  }
+
   if (!organizationId || !tenantId) {
     return <OrganizationAndTenantSelector onOrganizationChange={onOrganizationChange} onTenantChange={onTenantChange} />
   }
 
   return (
     <React.Fragment>
-      <SelectedOrganizationAndTenant
-          organizationId={organizationId}
-          tenantId={tenantId}
-          onReset={resetTenantAndOrganization} />
+      {selectedOrganizationAndTenant()}
 
       <div className="mb-3">
         <label htmlFor="macAddress" className="form-label">MAC Address <small>Required</small></label>
         <input type="text" className="form-control" id="macAddress"
+               disabled={macAddressDisabled}
                value={macAddress} onChange={(e) => { setMacAddress(e.target.value) }} />
         <div className="form-text">The MAC address you want to add context to.</div>
       </div>

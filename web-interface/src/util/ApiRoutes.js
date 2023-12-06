@@ -159,6 +159,7 @@ const ApiRoutes = {
     MAC_ADDRESSES: {
       INDEX: '/context/macs',
       SHOW: (uuid, organizationId, tenantId) => `/context/macs/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}`,
+      EDIT: (uuid, organizationId, tenantId) => `/context/macs/organizations/show/${organizationId}/tenants/show/${tenantId}/show/${uuid}/edit`,
       CREATE: '/context/macs/create'
     }
   },

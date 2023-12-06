@@ -55,6 +55,11 @@ function SelectedOrganizationAndTenant(props) {
         <React.Fragment>
           <ul className="selected-org-tenant">
             <li><span>Tenant:</span> {tenant.name}</li>
+            <li>
+              <a href="#" onClick={(e) => {e.preventDefault(); onReset()}}>
+                <i className="fa-solid fa-pen-to-square"></i>
+              </a>
+            </li>
           </ul>
         </React.Fragment>
     )

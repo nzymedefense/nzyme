@@ -9,6 +9,7 @@ import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.requests.CreateMacAddressContextRequest;
+import app.nzyme.core.rest.requests.UpdateMacAddressContextRequest;
 import app.nzyme.core.rest.responses.context.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.plugin.distributed.messaging.ClusterMessage;
@@ -18,6 +19,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
@@ -195,6 +197,29 @@ public class AssetContextResource extends UserAuthenticatedResource {
         ));
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
+    public Response macByUuid(@Context SecurityContext sc,
+                              @Valid UpdateMacAddressContextRequest req,
+                              @PathParam("organization_id") UUID organizationId,
+                              @PathParam("tenant_id") UUID tenantId,
+                              @PathParam("uuid") UUID uuid) {
+        if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Does this context exist for org and tenant? Don't allow to change org or tenant on existing context.
+        if (nzyme.getContextService().findMacAddressContext(uuid, organizationId, tenantId).isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getContextService().updateMacAddressContext(
+                uuid, organizationId, tenantId, req.name(), req.description(), req.notes()
+        );
+
+        return Response.ok().build();
     }
 
     @DELETE
