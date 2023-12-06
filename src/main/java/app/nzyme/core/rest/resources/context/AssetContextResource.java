@@ -200,8 +200,9 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
-    public Response macByUuid(@Context SecurityContext sc,
+    public Response updateMac(@Context SecurityContext sc,
                               @Valid UpdateMacAddressContextRequest req,
                               @PathParam("organization_id") UUID organizationId,
                               @PathParam("tenant_id") UUID tenantId,
@@ -223,11 +224,12 @@ public class AssetContextResource extends UserAuthenticatedResource {
     }
 
     @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "mac_aliases_manage" })
     @Path("/mac/organization/show/{organization_id}/tenant/show/{tenant_id}/uuid/{uuid}")
-    public Response delete(@Context SecurityContext sc,
-                           @PathParam("organization_id") UUID organizationId,
-                           @PathParam("tenant_id") UUID tenantId,
-                           @PathParam("uuid") UUID uuid) {
+    public Response deleteMac(@Context SecurityContext sc,
+                              @PathParam("organization_id") UUID organizationId,
+                              @PathParam("tenant_id") UUID tenantId,
+                              @PathParam("uuid") UUID uuid) {
         if (!passedTenantDataAccessible(sc, organizationId, tenantId)) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
