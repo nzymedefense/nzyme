@@ -5,6 +5,8 @@ import {Navigate, useParams} from "react-router-dom";
 import ContextService from "../../../services/ContextService";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {notify} from "react-notify-toast";
+import moment from "moment";
+import ContextNotes from "../ContextNotes";
 
 const contextService = new ContextService();
 
@@ -75,6 +77,50 @@ function MacAddressContextDetailsPage() {
               </WithPermission>
               <a className="btn btn-primary" href={ApiRoutes.CONTEXT.MAC_ADDRESSES.INDEX}>Back</a>
             </span>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-8">
+            <div className="card">
+              <div className="card-body">
+                <h3>Details</h3>
+
+                <dl className="mb-0">
+                  <dt>Name</dt>
+                  <dd><span className="highlighted">{context.name}</span></dd>
+                  <dt>Description</dt>
+                  <dd>{context.description}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-4">
+            <div className="card">
+              <div className="card-body">
+                <h3>Metadata</h3>
+
+                <dl className="mb-0">
+                  <dt>Created at</dt>
+                  <dd title={context.created_at}>{moment(context.created_at).fromNow()}</dd>
+                  <dt>Updated at</dt>
+                  <dd title={context.updated_at}>{moment(context.updated_at).fromNow()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-8">
+            <div className="card">
+              <div className="card-body">
+                <h3>Notes</h3>
+
+                <ContextNotes notes={context.notes} />
+              </div>
+            </div>
           </div>
         </div>
       </React.Fragment>

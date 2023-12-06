@@ -160,8 +160,8 @@ public class ContextService {
                                         String notes) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE context_mac_addresses SET name = :name, description = :description, " +
-                                "notes = :notes WHERE uuid = :uuid AND organization_id = :organization_id " +
-                                "AND tenant_id = :tenant_id")
+                                "notes = :notes, updated_at = NOW() WHERE uuid = :uuid " +
+                                "AND organization_id = :organization_id AND tenant_id = :tenant_id")
                         .bind("name", name)
                         .bind("description", description)
                         .bind("notes", notes)

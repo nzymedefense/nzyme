@@ -849,3 +849,46 @@ i.additional-context-available {
     margin-left: 5px;
     color: #707070;
 }
+
+
+div.rendered-markdown h1 {
+    font-size: 28px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown h2 {
+    font-size: 24px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown h3 {
+    font-size: 22px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown h4 {
+    font-size: 20px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown h5 {
+    font-size: 18px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown h6 {
+    font-size: 16px;
+    text-transform: none;
+    margin-bottom: 10px;
+}
+
+div.rendered-markdown pre {
+    padding: 5px;
+    padding-left: 8px;
+    background-color: #dadada;
+}
