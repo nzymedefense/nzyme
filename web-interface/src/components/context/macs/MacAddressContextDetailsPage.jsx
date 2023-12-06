@@ -88,7 +88,7 @@ function MacAddressContextDetailsPage() {
 
                 <dl className="mb-0">
                   <dt>Name</dt>
-                  <dd><span className="highlighted">{context.name}</span></dd>
+                  <dd><span className="context-name">{context.name}</span></dd>
                   <dt>Description</dt>
                   <dd>{context.description}</dd>
                 </dl>

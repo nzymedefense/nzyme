@@ -9,9 +9,13 @@ public abstract class Dot11MacAddressContextResponse {
     @JsonProperty("name")
     public abstract String name();
 
-    public static Dot11MacAddressContextResponse create(String name) {
+    @JsonProperty("description")
+    public abstract String description();
+
+    public static Dot11MacAddressContextResponse create(String name, String description) {
         return builder()
                 .name(name)
+                .description(description)
                 .build();
     }
 
@@ -22,6 +26,8 @@ public abstract class Dot11MacAddressContextResponse {
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder name(String name);
+
+        public abstract Builder description(String description);
 
         public abstract Dot11MacAddressContextResponse build();
     }

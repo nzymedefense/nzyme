@@ -198,7 +198,10 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                                     s.mac(),
                                                     nzyme.getOUIManager().lookupMac(s.mac()),
                                                     macContext.map(macAddressContextEntry ->
-                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                                    Dot11MacAddressContextResponse.create(
+                                                                            macAddressContextEntry.name(),
+                                                                            macAddressContextEntry.description()
+                                                                    ))
                                                             .orElse(null)
                                             )
                                     )
@@ -231,7 +234,10 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                                     s.mac(),
                                                     nzyme.getOUIManager().lookupMac(s.mac()),
                                                     macContext.map(macAddressContextEntry ->
-                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                                    Dot11MacAddressContextResponse.create(
+                                                                            macAddressContextEntry.name(),
+                                                                            macAddressContextEntry.description()
+                                                                    ))
                                                             .orElse(null)
                                             )
                                     )
@@ -270,7 +276,10 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                                     s.sender(),
                                                     nzyme.getOUIManager().lookupMac(s.sender()),
                                                     senderMacContext.map(macAddressContextEntry ->
-                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                                    Dot11MacAddressContextResponse.create(
+                                                                            macAddressContextEntry.name(),
+                                                                            macAddressContextEntry.description()
+                                                                    ))
                                                             .orElse(null)
                                             )
                                     )
@@ -284,7 +293,10 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                                                     s.receiver(),
                                                     nzyme.getOUIManager().lookupMac(s.receiver()),
                                                     receiverMacContext.map(macAddressContextEntry ->
-                                                                    Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                                    Dot11MacAddressContextResponse.create(
+                                                                            macAddressContextEntry.name(),
+                                                                            macAddressContextEntry.description()
+                                                                    ))
                                                             .orElse(null)
                                             )
                                     )

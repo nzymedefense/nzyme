@@ -1,7 +1,6 @@
 package app.nzyme.core.dot11;
 
 import app.nzyme.core.NzymeNode;
-import app.nzyme.core.context.ContextService;
 import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.database.OrderDirection;
 import app.nzyme.core.dot11.db.*;
@@ -794,7 +793,10 @@ public class Dot11 {
                                 bssid,
                                 nzyme.getOUIManager().lookupMac(bssid),
                                 bssidContext.map(macAddressContextEntry ->
-                                                Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                                Dot11MacAddressContextResponse.create(
+                                                        macAddressContextEntry.name(),
+                                                        macAddressContextEntry.description()
+                                                ))
                                         .orElse(null)
                         ),
                         advertisedSSIDs
@@ -903,7 +905,10 @@ public class Dot11 {
                             currentlyConnectedBSSID.get(),
                             nzyme.getOUIManager().lookupMac(currentlyConnectedBSSID.get()),
                             bssidContext.map(macAddressContextEntry ->
-                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                            Dot11MacAddressContextResponse.create(
+                                                    macAddressContextEntry.name(),
+                                                    macAddressContextEntry.description()
+                                            ))
                                     .orElse(null)
                     ), Collections.emptyList());
         }

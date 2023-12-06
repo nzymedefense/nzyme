@@ -13,6 +13,7 @@ import DiscoPairsTable from "../disco/DiscoPairsTable";
 import DiscoHistogram from "../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
+import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 
 const dot11Service = new Dot11Service();
 
@@ -80,6 +81,10 @@ function BSSIDDetailsPage() {
                   <dt>Vendor</dt>
                   <dd>
                     {bssid.summary.bssid.oui ? bssid.summary.bssid.oui : "Unknown"}
+                  </dd>
+                  <dt>Context</dt>
+                  <dd>
+                    <MacAddressContextLine address={bssid.summary.bssid.address} context={bssid.summary.bssid.context} />
                   </dd>
                 </dl>
               </div>

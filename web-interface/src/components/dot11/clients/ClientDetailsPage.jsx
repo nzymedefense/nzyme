@@ -11,6 +11,7 @@ import ClientActivityHistogram from "./ClientActivityHistogram";
 import DiscoPairsTable from "../disco/DiscoPairsTable";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
+import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 
 const dot11Service = new Dot11Service();
 
@@ -78,6 +79,10 @@ function ClientDetailsPage() {
                   <dt>Last Connected to BSSID</dt>
                   <dd>
                     {client.connected_bssid ? <Dot11MacAddress addressWithContext={client.connected_bssid.mac} href={ApiRoutes.DOT11.CLIENTS.DETAILS(client.connected_bssid.mac.address)} showOui={true} /> : "None"}{' '}
+                  </dd>
+                  <dt>Context</dt>
+                  <dd>
+                    <MacAddressContextLine address={client.mac.address} context={client.mac.context} />
                   </dd>
                 </dl>
               </div>

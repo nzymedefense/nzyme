@@ -164,7 +164,10 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                             bssid.bssid(),
                             nzyme.getOUIManager().lookupMac(bssid.bssid()),
                             bssidContext.map(macAddressContextEntry ->
-                                            Dot11MacAddressContextResponse.create(macAddressContextEntry.name()))
+                                            Dot11MacAddressContextResponse.create(
+                                                    macAddressContextEntry.name(),
+                                                    macAddressContextEntry.description()
+                                            ))
                                     .orElse(null)
                     ),
                     isOnline,

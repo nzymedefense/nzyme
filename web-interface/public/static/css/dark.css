@@ -136,12 +136,16 @@ button.btn-text:focus {
 }
 
 span.highlighted {
-    background-color: #656543;
-    color: #fff;
+    background-color: #ffff9a;
+    color: #000;
+}
+
+a.highlighted {
+    color: #000;
 }
 
 span.highlighted a {
-    color: #fff;
+    color: #000;
 }
 
 span.highlighted i {
@@ -156,8 +160,13 @@ div.context-overlay {
 
 span.context-name {
     color: #000;
+    background-color: #ffff9a;
 }
 
 i.additional-context-available {
     color: #71769F;
+}
+
+div.rendered-markdown pre {
+    background-color: #40435e;
 }

@@ -830,6 +830,7 @@ div.context-overlay-no-context-controls {
 }
 
 span.context-name {
+    font-family: 'B612 Mono', monospace;
     background-color: #fdff32;
 }
 
@@ -849,7 +850,6 @@ i.additional-context-available {
     margin-left: 5px;
     color: #707070;
 }
-
 
 div.rendered-markdown h1 {
     font-size: 28px;

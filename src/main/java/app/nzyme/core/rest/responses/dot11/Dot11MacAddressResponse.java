@@ -16,13 +16,13 @@ public abstract class Dot11MacAddressResponse {
 
     @JsonProperty("context")
     @Nullable
-    public abstract Dot11MacAddressContextResponse name();
+    public abstract Dot11MacAddressContextResponse context();
 
-    public static Dot11MacAddressResponse create(String address, String oui, Dot11MacAddressContextResponse name) {
+    public static Dot11MacAddressResponse create(String address, String oui, Dot11MacAddressContextResponse context) {
         return builder()
                 .address(address)
                 .oui(oui)
-                .name(name)
+                .context(context)
                 .build();
     }
 
@@ -36,7 +36,7 @@ public abstract class Dot11MacAddressResponse {
 
         public abstract Builder oui(String oui);
 
-        public abstract Builder name(Dot11MacAddressContextResponse name);
+        public abstract Builder context(Dot11MacAddressContextResponse context);
 
         public abstract Dot11MacAddressResponse build();
     }
