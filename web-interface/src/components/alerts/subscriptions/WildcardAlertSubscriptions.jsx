@@ -7,6 +7,7 @@ import EventSubscriptionsTable from "../../system/events/shared/subscriptions/Ev
 import {notify} from "react-notify-toast";
 import EventSubscriptionActionSelector from "../../system/events/shared/subscriptions/EventSubscriptionActionSelector";
 import EventActionsService from "../../../services/EventActionsService";
+import WithExactRole from "../../misc/WithExactRole";
 
 const authenticationManagementService = new AuthenticationManagementService();
 const eventActionsService = new EventActionsService();
@@ -92,6 +93,15 @@ function WildcardAlertSubscriptions() {
                                  onUnsubscribeClick={onUnsubscribeClick} />
 
         <h4 className="mt-4 mb-0">Subscribe Action</h4>
+
+        <WithExactRole role="SUPERADMIN">
+          <div className="alert alert-warning mt-2 mb-2">
+            You are logged in as super administrator. Remember that only organization actions can be subscribed to
+            alerts. You will not find super administrator actions here. Create organization actions in the organization
+            settings.
+          </div>
+        </WithExactRole>
+
         <EventSubscriptionActionSelector onSubmit={onActionSelect}
                                          actions={actions.actions}
                                          subscriptionError={subscriptionError} />
