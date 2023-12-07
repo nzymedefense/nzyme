@@ -17,7 +17,7 @@ export const disableTapSelector = (ctx) => {
 
 const tapsService = new TapsService();
 
-function TapSelector(props) {
+function TapSelector() {
 
   const tapContext = useContext(TapContext);
 
@@ -34,35 +34,46 @@ function TapSelector(props) {
   const [buttonText, setButtonText] = useState(null);
 
   useEffect(() => {
-    setAvailableTaps(null);
-
     tapsService.findAllTapsHighLevel(function (response) {
       setAvailableTaps(response.data.taps);
-
-      let lsTaps = Store.get("selected_taps");
-      if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
-        setSelectedTaps("*");
-        setPreSelectedTaps("*");
-        setButtonText("All Taps Selected");
-      } else {
-        setSelectedTaps(lsTaps);
-        setPreSelectedTaps(lsTaps);
-
-        if (lsTaps.length > 1) {
-          setButtonText(lsTaps.length + " Taps Selected");
-        } else {
-          setButtonText("1 Tap Selected");
-        }
-      }
     });
   }, [])
+
+  useEffect(() => {
+    let lsTaps = Store.get("selected_taps");
+
+    // Clean up Store if there are no taps but a previous session still has a Store.
+    if (lsTaps && (availableTaps && availableTaps.length === 0)) {
+      Store.delete("selected_taps");
+    }
+
+    if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
+      setSelectedTaps("*");
+      setPreSelectedTaps("*");
+
+      if (availableTaps && availableTaps.length > 0) {
+        setButtonText("All Taps Selected");
+      } else {
+        setButtonText("No Taps Configured");
+      }
+    } else {
+      setSelectedTaps(lsTaps);
+      setPreSelectedTaps(lsTaps);
+
+      if (lsTaps.length > 1) {
+        setButtonText(lsTaps.length + " Taps Selected");
+      } else {
+        setButtonText("1 Tap Selected");
+      }
+    }
+  }, [availableTaps]);
 
   useEffect(() => {
     setHasSelectedOfflineTap(false); // Reset.
 
     if (selectedTaps !== null && availableTaps !== null) {
       if (availableTaps.length === 0) {
-        setButtonText("No access to any taps.");
+        setButtonText("No Taps Configured");
       } else {
         if (selectedTaps === "*") {
           setButtonText("All Taps Selected");
