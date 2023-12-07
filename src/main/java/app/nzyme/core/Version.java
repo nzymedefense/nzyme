@@ -53,6 +53,17 @@ public class Version {
         }
     }
 
+    public String getShortVersionString() {
+        com.github.zafarkhaja.semver.Version version = getVersion();
+
+        StringBuilder sb = new StringBuilder(version.getNormalVersion());
+        if (!version.getPreReleaseVersion().isEmpty()) {
+            sb.append("-").append(version.getPreReleaseVersion());
+        }
+
+        return sb.toString();
+    }
+
     public com.github.zafarkhaja.semver.Version getVersion() {
         try {
             Properties gitProperties = new Properties();

@@ -73,7 +73,7 @@ public class VersioncheckThread extends Periodical {
             Request request = new Request.Builder()
                     .get()
                     .url(HttpUrl.parse(VERSIONCHECK_API).newBuilder()
-                            .addQueryParameter("version", version.getVersionString())
+                            .addQueryParameter("version", version.getShortVersionString())
                             .build())
                     .addHeader(HttpHeaders.USER_AGENT, USER_AGENT)
                     .build();
