@@ -17,13 +17,13 @@ function SelectedOrganizationAndTenant(props) {
   const [tenant, setTenant] = useState(null);
 
   useEffect(() => {
-    if (organizationId) {
+    if (organizationId && (user.is_superadmin || user.is_orgadmin)) {
       authenticationManagementService.findOrganization(organizationId, setOrganization);
     }
   }, [organizationId]);
 
   useEffect(() => {
-    if (tenantId) {
+    if (tenantId && (user.is_superadmin || user.is_orgadmin)) {
       authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     }
   }, [tenantId]);
