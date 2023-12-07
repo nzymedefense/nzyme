@@ -25,7 +25,17 @@ impl ChannelHopper {
             }
         };
 
-        for device_name in devices.keys() {
+        for (device_name, device_configuration) in &devices {
+            if !device_configuration.active {
+                info!("Skipping disabled WiFi interface [{}].", device_name);
+                continue;
+            }
+
+            if let Some(true) = device_configuration.disable_hopper {
+                info!("Skipping hopper for WiFi interface [{}].", device_name);
+                continue;
+            }
+
             match nl.fetch_device_info(device_name) {
                 Ok(device) => { adapters.insert(device_name.clone(), device.supported_frequencies); },
                 Err(e) => { error!("Could not fetch information of device [{}]. Not assigning to channels: {}", device_name, e); }
@@ -49,6 +59,11 @@ impl ChannelHopper {
         for (device_name, device_configuration) in devices {
             if !device_configuration.active {
                 info!("Skipping disabled WiFi interface [{}].", device_name);
+                continue;
+            }
+
+            if let Some(true) = device_configuration.disable_hopper {
+                info!("Skipping hopper for WiFi interface [{}].", device_name);
                 continue;
             }
 
@@ -144,7 +159,7 @@ impl ChannelHopper {
             for device in device_assigments.keys() {
                 positions.insert(device, 0);
             }
-    
+
             loop {
                 for (device, channels) in &device_assigments {
                     let position = *positions.get(&device).unwrap() as usize;

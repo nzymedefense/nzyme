@@ -29,6 +29,7 @@ pub struct EthernetInterface {
 #[derive(Debug, Clone, Deserialize)]
 pub struct WifiInterface {
     pub active: bool,
+    pub disable_hopper: Option<bool>,
     pub channels_2g: Vec<u16>,
     pub channels_5g: Vec<u16>,
     pub channels_6g: Vec<u16>,
@@ -45,7 +46,7 @@ pub struct Performance {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Misc {
     pub training_period_minutes: i32
-    
+
 }
 
 pub fn load(path: String) -> Result<Configuration, anyhow::Error> {
