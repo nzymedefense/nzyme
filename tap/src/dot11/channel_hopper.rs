@@ -58,12 +58,12 @@ impl ChannelHopper {
         let mut device_assignments: HashMap<String, Vec<u32>> = HashMap::new();
         for (device_name, device_configuration) in devices {
             if !device_configuration.active {
-                info!("Skipping disabled WiFi interface [{}].", device_name);
+                debug!("Skipping disabled WiFi interface [{}].", device_name);
                 continue;
             }
 
             if let Some(true) = device_configuration.disable_hopper {
-                info!("Skipping hopper for WiFi interface [{}].", device_name);
+                debug!("Skipping hopper for WiFi interface [{}].", device_name);
                 continue;
             }
 
