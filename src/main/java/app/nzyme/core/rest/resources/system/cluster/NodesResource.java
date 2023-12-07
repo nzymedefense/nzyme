@@ -198,12 +198,19 @@ public class NodesResource {
 
         timers.put("password_hashing",
                 buildTimerResponse(nzyme.getMetrics().timer(MetricNames.PASSWORD_HASHING_TIMER), timers));
+        timers.put("context_mac_lookup",
+                buildTimerResponse(nzyme.getMetrics().timer(MetricNames.CONTEXT_MAC_LOOKUP_TIMING), timers));
 
         Map<String, GaugeResponse> gauges = Maps.newHashMap();
         Gauge geoIpCacheSize = nzyme.getMetrics().gauge(MetricNames.GEOIP_CACHE_SIZE);
+        Gauge contextMacCacheSize = nzyme.getMetrics().gauge(MetricNames.CONTEXT_MAC_CACHE_SIZE);
         if (geoIpCacheSize != null) {
             gauges.put("geoip_cache_size", GaugeResponse.fromGauge(geoIpCacheSize));
         }
+        if (contextMacCacheSize != null) {
+            gauges.put("context_mac_cache_size", GaugeResponse.fromGauge(contextMacCacheSize));
+        }
+
 
         return NodeResponse.create(
                 node.uuid().toString(),

@@ -7,6 +7,10 @@ function GaugeRow(props) {
   const gauge = props.gauge;
   const numberFormat = props.numberFormat;
 
+  if (!gauge) {
+    return null;
+  }
+
   return (
       <tr>
         <td>{title}</td>

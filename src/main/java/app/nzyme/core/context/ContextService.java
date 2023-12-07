@@ -2,6 +2,9 @@ package app.nzyme.core.context;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.context.db.MacAddressContextEntry;
+import app.nzyme.core.util.MetricNames;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Timer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -18,20 +21,33 @@ public class ContextService {
 
     private final NzymeNode nzyme;
 
+    private final Timer macLookupTimer;
+
+    private final LoadingCache<MacAddressContextCacheKey, Optional<MacAddressContextEntry>> macAddressContextCache;
+
     public ContextService(NzymeNode nzyme) {
         this.nzyme = nzyme;
-    }
 
-    private LoadingCache<MacAddressContextCacheKey, Optional<MacAddressContextEntry>> macAddressContextCache = CacheBuilder.newBuilder()
-            .maximumSize(2500)
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build(new CacheLoader<>() {
-                @NotNull
-                @Override
-                public Optional<MacAddressContextEntry> load(@NotNull MacAddressContextCacheKey key) {
-                    return findMacAddressContextNoCache(key.macAddress(), key.organizationId(), key.tenantId());
-                }
-            });
+        this.macAddressContextCache = CacheBuilder.newBuilder()
+                .maximumSize(2500)
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .build(new CacheLoader<>() {
+                    @NotNull
+                    @Override
+                    public Optional<MacAddressContextEntry> load(@NotNull MacAddressContextCacheKey key) {
+                        return findMacAddressContextNoCache(key.macAddress(), key.organizationId(), key.tenantId());
+                    }
+                });
+
+        nzyme.getMetrics().register(MetricNames.CONTEXT_MAC_CACHE_SIZE, new Gauge<Long>() {
+            @Override
+            public Long getValue() {
+                return macAddressContextCache.size();
+            }
+        });
+
+        this.macLookupTimer = nzyme.getMetrics().timer(MetricNames.CONTEXT_MAC_LOOKUP_TIMING);
+    }
 
     public void invalidateMacAddressCache() {
         macAddressContextCache.invalidateAll();
@@ -91,41 +107,43 @@ public class ContextService {
     private Optional<MacAddressContextEntry> findMacAddressContextNoCache(String mac,
                                                                           @Nullable UUID organizationId,
                                                                           @Nullable UUID tenantId) {
-        if (organizationId != null && tenantId != null) {
-            // Tenant data.
-            return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
-                                "AND mac_address = :mac_address")
-                        .bind("organization_id", organizationId)
-                        .bind("tenant_id", tenantId)
-                        .bind("mac_address", mac)
-                        .mapTo(MacAddressContextEntry.class)
-                        .findOne()
-            );
-        }
+        try(Timer.Context ignored = macLookupTimer.time()) {
+            if (organizationId != null && tenantId != null) {
+                // Tenant data.
+                return nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT * FROM context_mac_addresses " +
+                                        "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                        "AND mac_address = :mac_address")
+                                .bind("organization_id", organizationId)
+                                .bind("tenant_id", tenantId)
+                                .bind("mac_address", mac)
+                                .mapTo(MacAddressContextEntry.class)
+                                .findOne()
+                );
+            }
 
-        if (organizationId != null) {
-            // Organization data.
+            if (organizationId != null) {
+                // Organization data.
+                return nzyme.getDatabase().withHandle(handle ->
+                        handle.createQuery("SELECT * FROM context_mac_addresses " +
+                                        "WHERE organization_id = :organization_id " +
+                                        "AND mac_address = :mac_address")
+                                .bind("organization_id", organizationId)
+                                .bind("mac_address", mac)
+                                .mapTo(MacAddressContextEntry.class)
+                                .findOne()
+                );
+            }
+
+            // Any data.
             return nzyme.getDatabase().withHandle(handle ->
                     handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                    "WHERE organization_id = :organization_id " +
-                                    "AND mac_address = :mac_address")
-                            .bind("organization_id", organizationId)
+                                    "WHERE mac_address = :mac_address")
                             .bind("mac_address", mac)
                             .mapTo(MacAddressContextEntry.class)
                             .findOne()
             );
         }
-
-        // Any data.
-        return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT * FROM context_mac_addresses " +
-                                "WHERE mac_address = :mac_address")
-                        .bind("mac_address", mac)
-                        .mapTo(MacAddressContextEntry.class)
-                        .findOne()
-        );
     }
 
     public Optional<MacAddressContextEntry> findMacAddressContext(UUID uuid, UUID organizationId, UUID tenantId) {

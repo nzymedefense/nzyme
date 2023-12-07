@@ -19,7 +19,8 @@ function NodeTimers(props) {
         </tr>
         </thead>
         <tbody>
-          <TimerRow title="Password Hashing" timer={timers.password_hashing}/>
+          <TimerRow title="Password Hashing" timer={timers.password_hashing} />
+          <TimerRow title="Mac Address Context Lookup" timer={timers.context_mac_lookup} />
         </tbody>
       </table>
   )

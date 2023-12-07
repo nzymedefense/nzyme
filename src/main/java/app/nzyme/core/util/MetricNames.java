@@ -17,6 +17,7 @@
 
 package app.nzyme.core.util;
 
+import app.nzyme.core.context.ContextService;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.database.DatabaseImpl;
 import app.nzyme.core.integrations.geoip.GeoIpService;
@@ -35,5 +36,7 @@ public class MetricNames {
     public static final String PGP_DECRYPTION_TIMING = name(Crypto.class, "decryption-timing");
     public static final String PASSWORD_HASHING_TIMER = name(PasswordHasher.class, "hashing-timer");
     public static final String TAP_TABLE_REQUEST_SIZES = name(TapTableSizeInterceptor.class, "request_size");
+    public static final String CONTEXT_MAC_CACHE_SIZE = name(ContextService.class, "mac-cache-size");
+    public static final String CONTEXT_MAC_LOOKUP_TIMING = name(ContextService.class, "mac-lookup-timing");
 
 }

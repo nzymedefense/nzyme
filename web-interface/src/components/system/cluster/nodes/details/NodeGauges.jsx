@@ -15,6 +15,7 @@ function NodeGauges(props) {
         </thead>
         <tbody>
           <GaugeRow title="GeoIP Cache Size" numberFormat="0,0" gauge={gauges.geoip_cache_size} />
+          <GaugeRow title="Mac Address Context Cache Size" numberFormat="0,0" gauge={gauges.context_mac_cache_size} />
         </tbody>
       </table>
   )
