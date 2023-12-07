@@ -50,7 +50,15 @@ function MacAddressContextTable() {
 
   if (context.total === 0) {
     return (
-        <div className="alert alert-info mb-0">No context has been created yet.</div>
+        <React.Fragment>
+          <SelectedOrganizationAndTenant
+              organizationId={organizationId}
+              tenantId={tenantId}
+              onReset={resetTenantAndOrganization} />
+
+          <div className="alert alert-info mb-0">No context has been created yet.</div>
+        </React.Fragment>
+
     )
   }
 
