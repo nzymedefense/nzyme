@@ -8,7 +8,7 @@ import OrganizationAndTenantSelector from "../../shared/OrganizationAndTenantSel
 
 const dot11Service = new Dot11Service();
 
-function CreateDot11MonitoredNetworkPage() {
+function CreateMonitoredNetworkPage() {
 
   const [ssidNames, setSSIDNames] = useState(null);
   const [ssid, setSSID] = useState("");
@@ -119,4 +119,4 @@ function CreateDot11MonitoredNetworkPage() {
 
 }
 
-export default CreateDot11MonitoredNetworkPage;
+export default CreateMonitoredNetworkPage;

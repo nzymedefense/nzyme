@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import Dot11MonitoredFingerprintsTable from "./Dot11MonitoredFingerprintsTable";
+import MonitoredFingerprintsTable from "./MonitoredFingerprintsTable";
 import Dot11Service from "../../../services/Dot11Service";
 import {notify} from "react-notify-toast";
 import RefreshGears from "../../misc/RefreshGears";
@@ -62,7 +62,7 @@ function MonitoredBSSIDFingerprintsModal(props) {
             </div>
 
             <div className="modal-body">
-              <Dot11MonitoredFingerprintsTable fingerprints={bssid.fingerprints} onDelete={deleteFingerprint} />
+              <MonitoredFingerprintsTable fingerprints={bssid.fingerprints} onDelete={deleteFingerprint} />
 
               <div className="input-group mb-3">
                 <input type="text"

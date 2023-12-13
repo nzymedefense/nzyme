@@ -1,6 +1,6 @@
 import React from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
-import Dot11MonitoredNetworksTable from "./Dot11MonitoredNetworksTable";
+import MonitoredNetworksTable from "./MonitoredNetworksTable";
 import BuiltinBanditsTable from "./bandits/BuiltinBanditsTable";
 import CustomBanditsTableProxy from "./bandits/CustomBanditsTableProxy";
 
@@ -24,7 +24,7 @@ function Dot11MonitoringPage() {
             <div className="card-body">
               <h3>All Monitored Networks</h3>
 
-              <Dot11MonitoredNetworksTable />
+              <MonitoredNetworksTable />
 
               <a href={ApiRoutes.DOT11.MONITORING.CREATE} className="btn btn-secondary btn-sm">
                 Create Monitored Network

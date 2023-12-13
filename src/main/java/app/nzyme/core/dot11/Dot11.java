@@ -1710,6 +1710,52 @@ public class Dot11 {
         );
     }
 
+    public List<String> findBSSIDsAdvertisingSSID(String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(bssid) FROM dot11_ssids " +
+                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>)")
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<String> findFingerprintsOfBSSID(String bssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(fp.fingerprint) FROM dot11_bssids AS b " +
+                                "LEFT JOIN public.dot11_fingerprints fp on b.id = fp.bssid_id " +
+                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>)")
+                        .bind("bssid", bssid)
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<String> findSecuritySuitesOfSSID(String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(security_suites) FROM dot11_ssids " +
+                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>)")
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
+    public List<Long> findChannelsOfSSID(String ssid, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(c.frequency) FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channels AS c ON s.id = c.ssid_id " +
+                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>)")
+                        .bind("ssid", ssid)
+                        .bindList("taps", taps)
+                        .mapTo(Long.class)
+                        .list()
+        );
+    }
+
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";
@@ -1730,33 +1776,6 @@ public class Dot11 {
     }
 
     private static final Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();
-
-    /*static {
-        // 2.4 GHz band
-        for (int i = 1; i <= 14; i++) {
-            int frequency = 2407 + i * 5;
-            if (i == 14) {
-                frequency = 2484;
-            }
-            frequencyChannelMap.put(frequency, i);
-        }
-
-        // 5 GHz band
-        for (int i = 36; i <= 64; i += 4) {
-            frequencyChannelMap.put(5000 + i * 5, i);
-        }
-        for (int i = 100; i <= 140; i += 4) {
-            frequencyChannelMap.put(5000 + i * 5, i);
-        }
-        for (int i = 149; i <= 165; i += 4) {
-            frequencyChannelMap.put(5000 + i * 5, i);
-        }
-
-        // 6 GHz band
-        for (int i = 1; i <= 233; i++) {
-            frequencyChannelMap.put(5950 + i * 20, i);
-        }
-    }*/
 
     public static int frequencyToChannel(int frequency) {
 

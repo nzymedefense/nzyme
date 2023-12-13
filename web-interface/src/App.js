@@ -94,10 +94,10 @@ import BSSIDDetailsPage from "./components/dot11/bssids/BSSIDDetailsPage";
 import Dot11OverviewPage from "./components/dot11/Dot11OverviewPage";
 import SearchResultPage from "./components/search/SearchResultPage";
 import Dot11MonitoringPage from "./components/dot11/monitoring/Dot11MonitoringPage";
-import CreateDot11MonitoredNetworkPage from "./components/dot11/monitoring/CreateDot11MonitoredNetworkPage";
-import Dot11MonitoredNetworkDetailsPage from "./components/dot11/monitoring/Dot11MonitoredNetworkDetailsPage";
-import Dot11MonitoredBSSIDConfigurationImportPage
-  from "./components/dot11/monitoring/Dot11MonitoredBSSIDConfigurationImportPage";
+import CreateMonitoredNetworkPage from "./components/dot11/monitoring/CreateMonitoredNetworkPage";
+import MonitoredNetworkDetailsPage from "./components/dot11/monitoring/MonitoredNetworkDetailsPage";
+import MonitoredNetworkConfigurationImportPage
+  from "./components/dot11/monitoring/import/MonitoredNetworkConfigurationImportPage";
 import AlertsPage from "./components/alerts/AlertsPage";
 import AlertDetailsPage from "./components/alerts/AlertDetailsPage";
 import AlertSubscriptionsPage from "./components/alerts/subscriptions/AlertSubscriptionsPage";
@@ -356,9 +356,9 @@ function App() {
 
                           { /* 802.11/Monitoring. */ }
                           <Route path={ApiRoutes.DOT11.MONITORING.INDEX} element={<Dot11MonitoringPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateDot11MonitoredNetworkPage />} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<Dot11MonitoredNetworkDetailsPage/>} />
-                          <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<Dot11MonitoredBSSIDConfigurationImportPage/>} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.CREATE} element={<CreateMonitoredNetworkPage />} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(':uuid')} element={<MonitoredNetworkDetailsPage/>} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(':uuid')} element={<MonitoredNetworkConfigurationImportPage/>} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.BUILTIN_DETAILS(':id')} element={<BuiltinBanditDetailsPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CREATE(':organizationId', ':tenantId')} element={<CreateCustomBanditPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />

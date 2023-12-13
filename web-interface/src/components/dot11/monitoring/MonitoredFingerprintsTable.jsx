@@ -1,6 +1,6 @@
 import React from "react";
 
-function Dot11MonitoredFingerprintsTable(props) {
+function MonitoredFingerprintsTable(props) {
   const fingerprints = props.fingerprints;
   const onDelete = props.onDelete;
 
@@ -35,4 +35,4 @@ function Dot11MonitoredFingerprintsTable(props) {
 
 }
 
-export default Dot11MonitoredFingerprintsTable;
+export default MonitoredFingerprintsTable;

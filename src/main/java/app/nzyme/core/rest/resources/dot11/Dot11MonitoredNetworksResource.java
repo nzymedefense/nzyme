@@ -5,17 +5,19 @@ import app.nzyme.core.context.db.MacAddressContextEntry;
 import app.nzyme.core.detection.alerts.DetectionType;
 import app.nzyme.core.detection.alerts.db.DetectionAlertEntry;
 import app.nzyme.core.dot11.Dot11;
+import app.nzyme.core.dot11.db.Dot11SecuritySuiteJson;
 import app.nzyme.core.dot11.db.monitoring.*;
-import app.nzyme.core.dot11.monitoring.*;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
+import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -29,9 +31,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/dot11/monitoring")
 @Produces(MediaType.APPLICATION_JSON)
@@ -671,5 +673,97 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         return Response.ok().build();
     }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/import/data")
+    public Response getImportData(@Context SecurityContext sc, @PathParam("uuid") UUID uuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> allAccessibleTapUUIDs = parseAndValidateTapIds(authenticatedUser, nzyme, "*");
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<MonitoredBSSID> monitoredBSSIDs = nzyme.getDot11().findMonitoredBSSIDsOfSSID(ssid.get().id());
+        List<BSSIDImportDataResponse> bssidsResponse = Lists.newArrayList();
+        for (String bssid : nzyme.getDot11().findBSSIDsAdvertisingSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
+            MonitoredBSSID monitoredBSSID = null;
+            List<String> monitoredFingerprints = Lists.newArrayList();
+            for (MonitoredBSSID b : monitoredBSSIDs) {
+                if (b.bssid().equals(bssid)) {
+                    monitoredBSSID = b;
+                    monitoredFingerprints = nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(b.id())
+                            .stream()
+                            .map(MonitoredFingerprint::fingerprint)
+                            .collect(Collectors.toList());
+                    break;
+                }
+            }
+
+            List<FingerprintImportDataResponse> fingerprints = Lists.newArrayList();
+            for (String fingerprint : nzyme.getDot11().findFingerprintsOfBSSID(bssid, allAccessibleTapUUIDs)) {
+                fingerprints.add(FingerprintImportDataResponse.create(
+                        fingerprint,
+                        monitoredFingerprints.contains(fingerprint)
+                ));
+            }
+
+            Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(
+                    bssid,
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId()
+            );
+
+            bssidsResponse.add(BSSIDImportDataResponse.create(
+                    Dot11MacAddressResponse.create(
+                            bssid,
+                            nzyme.getOUIManager().lookupMac(bssid),
+                            ctx.map(c -> Dot11MacAddressContextResponse.create(c.name(), c.description()))
+                                    .orElse(null)
+                    ),
+                    fingerprints,
+                    monitoredBSSID != null
+            ));
+        }
+
+        List<String> monitoredSuites = nzyme.getDot11().findMonitoredSecuritySuitesOfMonitoredNetwork(ssid.get().id())
+                .stream().map(MonitoredSecuritySuite::securitySuite).collect(Collectors.toList());
+        List<SecuritySuiteImportDataResponse> securitySuitesResponse = Lists.newArrayList();
+        for (String ss : nzyme.getDot11().findSecuritySuitesOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
+            try {
+                Dot11SecuritySuiteJson ssj = new ObjectMapper().readValue(ss, Dot11SecuritySuiteJson.class);
+                String ssId = Dot11.securitySuitesToIdentifier(ssj);
+                securitySuitesResponse.add(SecuritySuiteImportDataResponse.create(
+                        ssId, monitoredSuites.contains(ssId)
+                ));
+            } catch(Exception e) {
+                LOG.error("Could not build security suites response.", e);
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+
+
+        List<Long> monitoredChannels = nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(ssid.get().id())
+                .stream().map(MonitoredChannel::frequency).collect(Collectors.toList());
+        List<ChannelImportDataResponse> channelsResponse = Lists.newArrayList();
+        for (Long f : nzyme.getDot11().findChannelsOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
+            channelsResponse.add(ChannelImportDataResponse.create(
+                    f, monitoredChannels.contains(f)
+            ));
+        }
+
+        return Response.ok(MonitoredNetworkImportDataResponse.create(
+                bssidsResponse, channelsResponse, securitySuitesResponse
+        )).build();
+    }
+
+    // POST import data
 
 }

@@ -8,7 +8,7 @@ import MonitoredNetworkStatus from "./MonitoredNetworkStatus";
 
 const dot11Service = new Dot11Service();
 
-function Dot11MonitoredNetworksTable() {
+function MonitoredNetworksTable() {
 
   const [ssids, setSSIDs] = useState(null);
 
@@ -60,4 +60,4 @@ function Dot11MonitoredNetworksTable() {
   )
 }
 
-export default Dot11MonitoredNetworksTable;
+export default MonitoredNetworksTable;

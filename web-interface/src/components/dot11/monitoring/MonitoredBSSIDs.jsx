@@ -6,7 +6,7 @@ import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 
 const dot11Service = new Dot11Service();
 
-function Dot11MonitoredBSSIDs(props) {
+function MonitoredBSSIDs(props) {
 
   const bssids = props.bssids;
   const bssidAlertingEnabled = props.bssidAlertingEnabled;
@@ -88,4 +88,4 @@ function Dot11MonitoredBSSIDs(props) {
 
 }
 
-export default Dot11MonitoredBSSIDs;
+export default MonitoredBSSIDs;

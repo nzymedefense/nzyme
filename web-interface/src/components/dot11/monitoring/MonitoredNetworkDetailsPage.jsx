@@ -4,7 +4,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Dot11Service from "../../../services/Dot11Service";
 import ApiRoutes from "../../../util/ApiRoutes";
 import moment from "moment";
-import Dot11MonitoredBSSIDs from "./Dot11MonitoredBSSIDs";
+import MonitoredBSSIDs from "./MonitoredBSSIDs";
 import {notify} from "react-notify-toast";
 import RefreshGears from "../../misc/RefreshGears";
 import MonitoredChannelsTable from "./MonitoredChannelsTable";
@@ -19,7 +19,7 @@ import {isValidMACAddress} from "../../../util/Tools";
 
 const dot11Service = new Dot11Service();
 
-function Dot11MonitoredNetworkDetailsPage() {
+function MonitoredNetworkDetailsPage() {
 
   const {uuid} = useParams();
 
@@ -219,11 +219,11 @@ function Dot11MonitoredNetworkDetailsPage() {
               <div className="card-body">
                 <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
 
-                <Dot11MonitoredBSSIDs bssids={ssid.bssids}
-                                      bssidAlertingEnabled={ssid.enabled_unexpected_bssid}
-                                      fingerprintAlertingEnabled={ssid.enabled_unexpected_fingerprint}
-                                      bumpRevision={bumpRevision}
-                                      parentIsLoading={isLoading} />
+                <MonitoredBSSIDs bssids={ssid.bssids}
+                                 bssidAlertingEnabled={ssid.enabled_unexpected_bssid}
+                                 fingerprintAlertingEnabled={ssid.enabled_unexpected_fingerprint}
+                                 bumpRevision={bumpRevision}
+                                 parentIsLoading={isLoading} />
 
                 <div className="input-group mb-3">
                   <input type="text"
@@ -327,4 +327,4 @@ function Dot11MonitoredNetworkDetailsPage() {
 
 }
 
-export default Dot11MonitoredNetworkDetailsPage;
+export default MonitoredNetworkDetailsPage;

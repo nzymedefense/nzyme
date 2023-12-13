@@ -197,6 +197,12 @@ class Dot11Service {
         {}, successCallback);
   }
 
+  getMonitoredNetworkImportData(ssidUUID, setImportData) {
+      RESTClient.get("/dot11/monitoring/ssids/show/" + ssidUUID + "/import/data", {}, function (response) {
+        setImportData(response.data);
+      })
+  }
+
   findBuiltinBandits(setBandits) {
     RESTClient.get("/dot11/bandits/builtin", {}, function (response) {
       setBandits(response.data);
