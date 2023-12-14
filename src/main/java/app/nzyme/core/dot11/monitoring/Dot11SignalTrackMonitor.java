@@ -43,7 +43,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
             List<UUID> tapUUIDs = nzyme.getTapManager()
                     .allTapUUIDsAccessibleByScope(monitoredSSID.organizationId(), monitoredSSID.tenantId());
 
-            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredSSID.id())) {
+            for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredSSID.id())) {
                 for (MonitoredChannel frequency : nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(monitoredSSID.id())) {
                     for (UUID tapId : tapUUIDs) {
                         Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);

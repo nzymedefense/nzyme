@@ -80,6 +80,12 @@ function MonitoredNetworkConfigurationImportPage() {
                     The import process is a one-time operation, but you have the freedom to manually modify the
                     information later or repeat the import procedure as frequently as you wish.
                   </li>
+                  <li>
+                    Values currently present in the monitoring configuration can be imported without concern. The import
+                    mechanism is designed to only add new values, ensuring no duplication occurs. If you import a BSSID
+                    that is already being monitored, the process will incorporate new fingerprints, but it will not
+                    eliminate any existing fingerprints.
+                  </li>
                 </ul>
 
                 <hr />

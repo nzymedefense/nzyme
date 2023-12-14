@@ -47,7 +47,7 @@ public abstract class Dot11DiscoMonitorMethod {
     public List<DiscoMonitorAnomaly> execute(Tap tap) {
         List<String> bssidList = Lists.newArrayList();
 
-        for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.id())) {
+        for (MonitoredBSSID monitoredBSSID : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredNetwork.id())) {
             bssidList.add(monitoredBSSID.bssid());
         }
 

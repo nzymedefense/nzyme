@@ -1008,7 +1008,19 @@ public class Dot11 {
         );
     }
 
-    public List<MonitoredBSSID> findMonitoredBSSIDsOfSSID(long ssidId) {
+    public Optional<Long> findMonitoredBSSIDId(long networkId, String bssid) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.id FROM dot11_monitored_networks AS s " +
+                                "LEFT JOIN dot11_monitored_networks_bssids b on s.id = b.monitored_network_id " +
+                                "WHERE s.id = :network_id AND b.bssid = :bssid LIMIT 1")
+                        .bind("network_id", networkId)
+                        .bind("bssid", bssid)
+                        .mapTo(Long.class)
+                        .findOne()
+        );
+    }
+
+    public List<MonitoredBSSID> findMonitoredBSSIDsOfMonitoredNetwork(long ssidId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dot11_monitored_networks_bssids " +
                                 "WHERE monitored_network_id = :ssid_id ORDER BY bssid ASC")
@@ -1028,19 +1040,20 @@ public class Dot11 {
         );
     }
 
-    public void createMonitoredBSSID(long monitoredNetworkId, String bssid) {
+    public long createMonitoredBSSID(long monitoredNetworkId, String bssid) {
         String uppercaseBSSID = bssid.toUpperCase();
         if (!Tools.isValidMacAddress(uppercaseBSSID)) {
             throw new RuntimeException("Invalid MAC address: " + uppercaseBSSID);
         }
 
-        nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("INSERT INTO dot11_monitored_networks_bssids(uuid, monitored_network_id, " +
-                                "bssid) VALUES(:uuid, :monitored_network_id, :bssid)")
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("INSERT INTO dot11_monitored_networks_bssids(uuid, monitored_network_id, " +
+                                "bssid) VALUES(:uuid, :monitored_network_id, :bssid) RETURNING *")
                         .bind("uuid", UUID.randomUUID())
                         .bind("monitored_network_id", monitoredNetworkId)
                         .bind("bssid", uppercaseBSSID)
-                        .execute()
+                        .mapTo(Long.class)
+                        .one()
         );
     }
 
@@ -1748,7 +1761,7 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(c.frequency) FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c ON s.id = c.ssid_id " +
-                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>)")
+                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>) AND c.frequency IS NOT NULL")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(Long.class)

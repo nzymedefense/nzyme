@@ -99,7 +99,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
-            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.get().id())
+            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredNetwork.get().id())
                     .stream()
                     .map(MonitoredBSSID::bssid)
                     .collect(Collectors.toList());
@@ -166,7 +166,7 @@ public class Dot11DiscoResource extends TapDataHandlingResource {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
-            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.get().id())
+            selectedBssids = nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredNetwork.get().id())
                     .stream()
                     .map(MonitoredBSSID::bssid)
                     .collect(Collectors.toList());

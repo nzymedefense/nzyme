@@ -16,12 +16,10 @@ import app.nzyme.plugin.distributed.messaging.ClusterMessage;
 import app.nzyme.plugin.distributed.messaging.MessageType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
@@ -148,7 +146,7 @@ public class AssetContextResource extends UserAuthenticatedResource {
         Dot11MonitoredNetworkContextResponse servesMonitoredNetwork = null;
         for (MonitoredSSID monitoredNetwork : nzyme.getDot11()
                 .findAllMonitoredSSIDs(authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())) {
-            for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfSSID(monitoredNetwork.id())) {
+            for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(monitoredNetwork.id())) {
                 if (bssid.bssid().equalsIgnoreCase(mac)) {
                     servesMonitoredNetwork = Dot11MonitoredNetworkContextResponse.create(
                             monitoredNetwork.uuid(),

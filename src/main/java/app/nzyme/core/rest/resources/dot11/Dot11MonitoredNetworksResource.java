@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/api/dot11/monitoring")
@@ -145,7 +146,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         // Find all monitored BSSIDs.
         List<MonitoredBSSIDDetailsResponse> bssids = Lists.newArrayList();
-        for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfSSID(ssid.id())) {
+        for (MonitoredBSSID bssid : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(ssid.id())) {
             List<MonitoredFingerprintResponse> fingerprints = Lists.newArrayList();
             for (MonitoredFingerprint fp : nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(bssid.id())) {
                 fingerprints.add(MonitoredFingerprintResponse.create(fp.uuid(), fp.fingerprint()));
@@ -347,7 +348,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         List<String> existingBSSIDs = Lists.newArrayList();
-        for (MonitoredBSSID monitored : nzyme.getDot11().findMonitoredBSSIDsOfSSID(ssid.get().id())) {
+        for (MonitoredBSSID monitored : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(ssid.get().id())) {
             existingBSSIDs.add(monitored.bssid());
         }
 
@@ -691,7 +692,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        List<MonitoredBSSID> monitoredBSSIDs = nzyme.getDot11().findMonitoredBSSIDsOfSSID(ssid.get().id());
+        List<MonitoredBSSID> monitoredBSSIDs = nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(ssid.get().id());
         List<BSSIDImportDataResponse> bssidsResponse = Lists.newArrayList();
         for (String bssid : nzyme.getDot11().findBSSIDsAdvertisingSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
             MonitoredBSSID monitoredBSSID = null;
@@ -749,14 +750,11 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             }
         }
 
-
         List<Long> monitoredChannels = nzyme.getDot11().findMonitoredChannelsOfMonitoredNetwork(ssid.get().id())
                 .stream().map(MonitoredChannel::frequency).collect(Collectors.toList());
         List<ChannelImportDataResponse> channelsResponse = Lists.newArrayList();
         for (Long f : nzyme.getDot11().findChannelsOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
-            channelsResponse.add(ChannelImportDataResponse.create(
-                    f, monitoredChannels.contains(f)
-            ));
+            channelsResponse.add(ChannelImportDataResponse.create(f, monitoredChannels.contains(f)));
         }
 
         return Response.ok(MonitoredNetworkImportDataResponse.create(
@@ -764,6 +762,94 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         )).build();
     }
 
-    // POST import data
+    @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/import/data")
+    public Response writeImportData(@Context SecurityContext sc,
+                                    @PathParam("uuid") UUID uuid,
+                                    @Valid ImportMonitoredNetworkDataRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Load currently monitored data.
+        List<String> currentBSSIDs = nzyme.getDot11()
+                .findMonitoredBSSIDsOfMonitoredNetwork(ssid.get().id())
+                .stream()
+                .map(MonitoredBSSID::bssid)
+                .collect(Collectors.toList());
+
+        List<Long> currentChannels = nzyme.getDot11()
+                .findMonitoredChannelsOfMonitoredNetwork(ssid.get().id())
+                .stream()
+                .map(MonitoredChannel::frequency)
+                .collect(Collectors.toList());
+
+        List<String> currentSecSuites = nzyme.getDot11()
+                .findMonitoredSecuritySuitesOfMonitoredNetwork(ssid.get().id())
+                .stream()
+                .map(monitoredSecuritySuite -> {
+                    try {
+                        Dot11SecuritySuiteJson ssj = new ObjectMapper()
+                                .readValue(monitoredSecuritySuite.securitySuite(), Dot11SecuritySuiteJson.class);
+                        return Dot11.securitySuitesToIdentifier(ssj);
+                    } catch(Exception e) {
+                        LOG.error("Could not build security suites response.", e);
+                        throw new RuntimeException();
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // BSSIDS.
+        for (ImportMonitoredNetworkDataBSSIDRequest bssid : req.bssids()) {
+            if (currentBSSIDs.contains(bssid.bssid())) {
+                // Existing BSSID. Check if we need to add fingeprints.
+                @SuppressWarnings("OptionalGetWithoutIsPresent")
+                long bssidId = nzyme.getDot11().findMonitoredBSSIDId(ssid.get().id(), bssid.bssid()).get();
+
+                List<String> existingFingerprints = nzyme.getDot11().findMonitoredFingerprintsOfMonitoredBSSID(bssidId)
+                        .stream()
+                        .map(MonitoredFingerprint::fingerprint)
+                        .collect(Collectors.toList());
+
+                for (String fingerprint : bssid.fingerprints()) {
+                    if (!existingFingerprints.contains(fingerprint)) {
+                        nzyme.getDot11().createdMonitoredBSSIDFingerprint(bssidId, fingerprint);
+                    }
+                }
+            } else {
+                // New BSSID.
+                long bssidId = nzyme.getDot11().createMonitoredBSSID(ssid.get().id(), bssid.bssid());
+
+                for (String fingerprint : bssid.fingerprints()) {
+                    nzyme.getDot11().createdMonitoredBSSIDFingerprint(bssidId, fingerprint);
+                }
+            }
+        }
+
+        // Channels.
+        for (Long channel : req.channels()) {
+            if (!currentChannels.contains(channel)) {
+                nzyme.getDot11().createMonitoredChannel(ssid.get().id(), channel);
+            }
+        }
+
+        // Security Suites.
+        for (String securitySuite : req.securitySuites()) {
+            if (!currentSecSuites.contains(securitySuite)) {
+                nzyme.getDot11().createMonitoredSecuritySuite(ssid.get().id(), securitySuite);
+            }
+        }
+
+        return Response.ok(Response.Status.CREATED).build();
+    }
 
 }
