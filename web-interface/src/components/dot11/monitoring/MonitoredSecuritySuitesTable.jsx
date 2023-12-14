@@ -10,7 +10,9 @@ function MonitoredSecuritySuitesTable(props) {
   const bumpRevision = props.bumpRevision;
   const alertingEnabled = props.alertingEnabled;
 
-  const onDelete = function (uuid) {
+  const onDelete = function (e, uuid) {
+    e.preventDefault();
+
     if (!confirm("Really delete security suite monitoring configuration?")) {
       return;
     }
@@ -45,7 +47,7 @@ function MonitoredSecuritySuitesTable(props) {
             return (
                 <tr key={"suite-" + i}>
                   <td>{suite.suite}</td>
-                  <td><a href="#" onClick={() => onDelete(suite.uuid)}>Delete</a></td>
+                  <td><a href="#" onClick={(e) => onDelete(e, suite.uuid)}>Delete</a></td>
                 </tr>
             )
           })}

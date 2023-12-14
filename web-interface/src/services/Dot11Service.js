@@ -203,6 +203,11 @@ class Dot11Service {
       })
   }
 
+  writeMonitoredNetworkImportData(ssidUUID, bssids, channels, securitySuites, successCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + ssidUUID + "/import/data",
+        {bssids: bssids, channels: channels, security_suites: securitySuites}, successCallback);
+  }
+
   findBuiltinBandits(setBandits) {
     RESTClient.get("/dot11/bandits/builtin", {}, function (response) {
       setBandits(response.data);

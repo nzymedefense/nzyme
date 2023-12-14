@@ -10,6 +10,7 @@ const dot11Service = new Dot11Service();
 function MonitoredNetworkConfigurationImportDialog(props) {
 
   const uuid = props.uuid;
+  const onSubmit = props.onSubmit;
 
   const [previewImport, setPreviewImport] = useState(false);
   const [importData, setImportData] = useState(null);
@@ -45,6 +46,24 @@ function MonitoredNetworkConfigurationImportDialog(props) {
       });
     }
   }, [importData]);
+
+  const formReady = () => {
+    return selectedBSSIDs.length > 0 || selectedChannels.length > 0 || selectedSecSuites.length > 0
+  }
+
+  const submit = () => {
+    const bssidsData = [];
+
+    selectedBSSIDs.forEach((b) => {
+      importData.bssids.forEach((ib) => {
+        if (ib.bssid.address === b) {
+          bssidsData.push({bssid: ib.bssid.address, fingerprints: ib.fingerprints.map((fp) => {return fp.fingerprint})})
+        }
+      });
+    });
+
+    dot11Service.writeMonitoredNetworkImportData(uuid, bssidsData, selectedChannels, selectedSecSuites, onSubmit);
+  }
 
   const currentlyMonitored = (state) => {
     if (state) {
@@ -90,6 +109,52 @@ function MonitoredNetworkConfigurationImportDialog(props) {
     }
   }
 
+  const selectAll = (target) => {
+    switch (target) {
+      case "bssids":
+        setSelectedBSSIDs([]);
+        importData.bssids.forEach((ib) => {
+          setSelectedBSSIDs(prev => [...prev, ib.bssid.address]);
+        })
+        break;
+      case "channels":
+        setSelectedChannels([]);
+        importData.channels.forEach((ic) => {
+          setSelectedChannels(prev => [...prev, ic.channel])
+        })
+        break;
+      case "secsuites":
+        setSelectedSecSuites([]);
+        importData.security_suites.forEach((iss) => {
+          setSelectedSecSuites(prev => [...prev, iss.security_suite])
+        })
+        break;
+    }
+  }
+
+  const unselectAll = (target) => {
+    switch (target) {
+      case "bssids":
+        setSelectedBSSIDs([]);
+        break;
+      case "channels":
+        setSelectedChannels([]);
+        break;
+      case "secsuites":
+        setSelectedSecSuites([]);
+        break;
+    }
+  }
+
+  const noDataWarning = (data) => {
+    if (!data || data.length === 0) {
+      return <div className="alert alert-info">
+        No data was located for the monitored network. Ensure that access points broadcasting this network are present
+        and within the range of the nzyme taps accessible to your user.
+      </div>
+    }
+  }
+
   if (!previewImport) {
     return (
         <button type="button" className="btn btn-primary btn-sm" onClick={() => setPreviewImport(true)}>
@@ -106,7 +171,7 @@ function MonitoredNetworkConfigurationImportDialog(props) {
       <React.Fragment>
         <h4>BSSIDs</h4>
 
-        <table className="table table-sm table-hover table-striped mb-5">
+        <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
             <th style={{width: 55}}>Import</th>
@@ -138,9 +203,18 @@ function MonitoredNetworkConfigurationImportDialog(props) {
           </tbody>
         </table>
 
-        <h4>Channels</h4>
+        {noDataWarning(importData.bssids)}
 
-        <table className="table table-sm table-hover table-striped mb-5">
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => selectAll("bssids")}>
+          Select All BSSIDs
+        </button>{' '}
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => unselectAll("bssids")}>
+          Unselect All BSSIDs
+        </button>
+
+        <h4 className="mt-4">Channels</h4>
+
+        <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
             <th style={{width: 55}}>Import</th>
@@ -166,9 +240,18 @@ function MonitoredNetworkConfigurationImportDialog(props) {
           </tbody>
         </table>
 
-        <h4>Security Suites</h4>
+        {noDataWarning(importData.channels)}
 
-        <table className="table table-sm table-hover table-striped mb-4">
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => selectAll("channels")}>
+          Select All Channels
+        </button>{' '}
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => unselectAll("channels")}>
+          Unselect All Channels
+        </button>
+
+        <h4 className="mt-4">Security Suites</h4>
+
+        <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
             <th style={{width: 55}}>Import</th>
@@ -194,7 +277,20 @@ function MonitoredNetworkConfigurationImportDialog(props) {
           </tbody>
         </table>
 
-        <button type="button" className="btn btn-primary">Perform Data Import</button>
+        {noDataWarning(importData.security_suites)}
+
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => selectAll("secsuites")}>
+          Select All Security Suites
+        </button>{' '}
+        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => unselectAll("secsuites")}>
+          Unselect All Security Suites
+        </button>
+
+        <div className="mt-4">
+          <button type="button" className="btn btn-primary" onClick={submit} disabled={!formReady()}>
+            Perform Data Import
+          </button>
+        </div>
       </React.Fragment>
   )
 

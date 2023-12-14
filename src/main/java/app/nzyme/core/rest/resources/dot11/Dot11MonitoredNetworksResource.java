@@ -796,16 +796,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         List<String> currentSecSuites = nzyme.getDot11()
                 .findMonitoredSecuritySuitesOfMonitoredNetwork(ssid.get().id())
                 .stream()
-                .map(monitoredSecuritySuite -> {
-                    try {
-                        Dot11SecuritySuiteJson ssj = new ObjectMapper()
-                                .readValue(monitoredSecuritySuite.securitySuite(), Dot11SecuritySuiteJson.class);
-                        return Dot11.securitySuitesToIdentifier(ssj);
-                    } catch(Exception e) {
-                        LOG.error("Could not build security suites response.", e);
-                        throw new RuntimeException();
-                    }
-                })
+                .map(MonitoredSecuritySuite::securitySuite)
                 .collect(Collectors.toList());
 
         // BSSIDS.

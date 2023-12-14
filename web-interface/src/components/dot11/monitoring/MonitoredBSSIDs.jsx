@@ -23,7 +23,9 @@ function MonitoredBSSIDs(props) {
     )
   }
 
-  const deleteBSSID = function (bssid) {
+  const deleteBSSID = function (e, bssid) {
+    e.preventDefault();
+
     if (!confirm("Really delete BSSID monitoring configuration?")) {
       return;
     }
@@ -69,7 +71,7 @@ function MonitoredBSSIDs(props) {
                   </a>
                 </td>
                 <td>
-                  <a href="#" onClick={() => deleteBSSID(bssid)}>Delete</a>
+                  <a href="#" onClick={(e) => deleteBSSID(e, bssid)}>Delete</a>
                 </td>
               </tr>
             )

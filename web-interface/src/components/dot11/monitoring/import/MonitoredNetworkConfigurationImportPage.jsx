@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import Dot11Service from "../../../../services/Dot11Service";
 import LoadingSpinner from "../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../util/ApiRoutes";
 import MonitoredNetworkConfigurationImportDialog from "./MonitoredNetworkConfigurationImportDialog";
+import {notify} from "react-notify-toast";
 
 const dot11Service = new Dot11Service();
 function MonitoredNetworkConfigurationImportPage() {
@@ -12,11 +13,22 @@ function MonitoredNetworkConfigurationImportPage() {
 
   const [ssid, setSSID] = useState(null);
 
+  const [submitted, setSubmitted] = useState(false);
+
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, function() {
       // noop
     });
   }, [uuid]);
+
+  const onSubmit = () => {
+    notify.show("Import completed.", "success");
+    setSubmitted(true);
+  }
+
+  if (submitted) {
+    return <Navigate to={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(ssid.uuid)} />
+  }
 
   if (!ssid) {
     return <LoadingSpinner />
@@ -86,11 +98,14 @@ function MonitoredNetworkConfigurationImportPage() {
                     that is already being monitored, the process will incorporate new fingerprints, but it will not
                     eliminate any existing fingerprints.
                   </li>
+                  <li>
+                    The data displayed is based on the information collected by all accessible taps over the past 24 hours.
+                  </li>
                 </ul>
 
                 <hr />
 
-                <MonitoredNetworkConfigurationImportDialog uuid={ssid.uuid} />
+                <MonitoredNetworkConfigurationImportDialog uuid={ssid.uuid} onSubmit={onSubmit} />
               </div>
             </div>
           </div>

@@ -1726,7 +1726,9 @@ public class Dot11 {
     public List<String> findBSSIDsAdvertisingSSID(String ssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(bssid) FROM dot11_ssids " +
-                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>)")
+                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>) " +
+                                "AND created_at >= (NOW() - INTERVAL '24 hours') " +
+                                "ORDER BY bssid ASC")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(String.class)
@@ -1738,7 +1740,9 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(fp.fingerprint) FROM dot11_bssids AS b " +
                                 "LEFT JOIN public.dot11_fingerprints fp on b.id = fp.bssid_id " +
-                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>)")
+                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>) " +
+                                "AND b.created_at >= (NOW() - INTERVAL '24 hours') " +
+                                "ORDER BY fp.fingerprint ASC")
                         .bind("bssid", bssid)
                         .bindList("taps", taps)
                         .mapTo(String.class)
@@ -1749,7 +1753,9 @@ public class Dot11 {
     public List<String> findSecuritySuitesOfSSID(String ssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(security_suites) FROM dot11_ssids " +
-                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>)")
+                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>) " +
+                                "AND created_at >= (NOW() - INTERVAL '24 hours') " +
+                                "ORDER BY security_suites ASC")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(String.class)
@@ -1761,7 +1767,9 @@ public class Dot11 {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DISTINCT(c.frequency) FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c ON s.id = c.ssid_id " +
-                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>) AND c.frequency IS NOT NULL")
+                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>) AND c.frequency IS NOT NULL " +
+                                "AND s.created_at >= (NOW() - INTERVAL '24 hours') " +
+                                "ORDER BY c.frequency ASC")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(Long.class)

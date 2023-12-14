@@ -11,7 +11,9 @@ function MonitoredChannelsTable(props) {
   const bumpRevision = props.bumpRevision;
   const alertingEnabled = props.alertingEnabled;
 
-  const onDelete = function (uuid) {
+  const onDelete = function (e, uuid) {
+    e.preventDefault();
+
     if (!confirm("Really delete channel monitoring configuration?")) {
       return;
     }
@@ -48,7 +50,7 @@ function MonitoredChannelsTable(props) {
                 <tr key={"channel-" + i}>
                   <td>{numeral(channel.frequency).format("0,0")} MHz</td>
                   <td>{channel.channel}</td>
-                  <td><a href="#" onClick={() => onDelete(channel.uuid)}>Delete</a></td>
+                  <td><a href="#" onClick={(e) => onDelete(e, channel.uuid)}>Delete</a></td>
                 </tr>
             )
           })}
