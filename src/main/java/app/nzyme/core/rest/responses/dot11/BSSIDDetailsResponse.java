@@ -15,13 +15,17 @@ public abstract class BSSIDDetailsResponse {
     @JsonProperty("clients")
     public abstract List<BSSIDClientDetails> clients();
 
+    @JsonProperty("signal_strength")
+    public abstract List<TapBasedSignalStrengthResponse> signalStrength();
+
     @JsonProperty("data_retention_days")
     public abstract int dataRetentionDays();
 
-    public static BSSIDDetailsResponse create(BSSIDSummaryDetailsResponse summary, List<BSSIDClientDetails> clients, int dataRetentionDays) {
+    public static BSSIDDetailsResponse create(BSSIDSummaryDetailsResponse summary, List<BSSIDClientDetails> clients, List<TapBasedSignalStrengthResponse> signalStrength, int dataRetentionDays) {
         return builder()
                 .summary(summary)
                 .clients(clients)
+                .signalStrength(signalStrength)
                 .dataRetentionDays(dataRetentionDays)
                 .build();
     }
@@ -35,6 +39,8 @@ public abstract class BSSIDDetailsResponse {
         public abstract Builder summary(BSSIDSummaryDetailsResponse summary);
 
         public abstract Builder clients(List<BSSIDClientDetails> clients);
+
+        public abstract Builder signalStrength(List<TapBasedSignalStrengthResponse> signalStrength);
 
         public abstract Builder dataRetentionDays(int dataRetentionDays);
 

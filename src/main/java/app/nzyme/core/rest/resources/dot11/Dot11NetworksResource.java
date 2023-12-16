@@ -165,9 +165,16 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
         );
 
+        List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
+        for (TapBasedSignalStrengthResult ss : nzyme.getDot11().findBSSIDSignalStrengthPerTap(bssid.bssid(), 15)) {
+            signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
+        }
+
+
         return Response.ok(BSSIDDetailsResponse.create(
                 summary,
                 clients,
+                signalStrength,
                 dataRetentionDays
         )).build();
     }

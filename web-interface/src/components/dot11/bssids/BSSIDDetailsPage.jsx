@@ -14,6 +14,7 @@ import DiscoHistogram from "../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
+import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 
 const dot11Service = new Dot11Service();
 
@@ -148,9 +149,21 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
+                    <h3>Average Signal Strength <small>Last 15 minutes</small></h3>
+
+                    <TapBasedSignalStrengthTable strengths={bssid.signal_strength} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
                     <h3>Beacon Advertisements <small>Last 24 Hours, All SSIDs</small></h3>
 
-                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="beacon_count" />
+                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="beacon_count"/>
                   </div>
                 </div>
               </div>
@@ -162,7 +175,7 @@ function BSSIDDetailsPage() {
                   <div className="card-body">
                     <h3>Probe Response Advertisements <small>Last 24 Hours, All SSIDs</small></h3>
 
-                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="proberesp_count" />
+                    <BSSIDAdvertisementHistogram bssid={bssid.summary.bssid.address} parameter="proberesp_count"/>
                   </div>
                 </div>
               </div>
@@ -174,7 +187,7 @@ function BSSIDDetailsPage() {
                   <div className="card-body">
                     <h3>Active Channels <small>Last 24 Hours, All SSIDs</small></h3>
 
-                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address} minutes={24*60} />
+                    <BSSIDChannelUsageHistogram bssid={bssid.summary.bssid.address} minutes={24 * 60}/>
                   </div>
                 </div>
               </div>

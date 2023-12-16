@@ -127,7 +127,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new CustomBanditDescriptionMapper())
                 .registerRowMapper(new BSSIDFrameCountMapper())
                 .registerRowMapper(new BSSIDPairFrameCountMapper())
-                .registerRowMapper(new MacAddressContextEntryMapper());
+                .registerRowMapper(new MacAddressContextEntryMapper())
+                .registerRowMapper(new TapBasedSignalStrengthResultMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

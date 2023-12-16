@@ -1777,6 +1777,21 @@ public class Dot11 {
         );
     }
 
+    public List<TapBasedSignalStrengthResult> findBSSIDSignalStrengthPerTap(String bssid, int minutes) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
+                                "AVG(b.signal_strength_average) AS signal_strength " +
+                                "FROM dot11_bssids AS b " +
+                                "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
+                                "WHERE b.bssid = :bssid AND b.created_at > :cutoff " +
+                                "GROUP BY b.tap_uuid, t.name")
+                        .bind("bssid", bssid)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(TapBasedSignalStrengthResult.class)
+                        .list()
+        );
+    }
+
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";
