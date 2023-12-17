@@ -166,10 +166,10 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         );
 
         List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
-        for (TapBasedSignalStrengthResult ss : nzyme.getDot11().findBSSIDSignalStrengthPerTap(bssid.bssid(), 15)) {
+        for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
+                .findBSSIDSignalStrengthPerTap(bssid.bssid(), 15, tapUuids)) {
             signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
         }
-
 
         return Response.ok(BSSIDDetailsResponse.create(
                 summary,
@@ -220,9 +220,9 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     @GET
     @Path("/bssids/show/{bssid}/frequencies/histogram")
     public Response bssidActiveChannelHistogram(@Context SecurityContext sc,
-                                                      @PathParam("bssid") String bssid,
-                                                      @QueryParam("minutes") int minutes,
-                                                      @QueryParam("taps") String taps) {
+                                                @PathParam("bssid") String bssid,
+                                                @QueryParam("minutes") int minutes,
+                                                @QueryParam("taps") String taps) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
 
@@ -392,6 +392,12 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
             }
         }
 
+        List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
+        for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
+                .findBSSIDSignalStrengthPerTap(bssid, 15, tapUuids)) {
+            signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
+        }
+
         Optional<MacAddressContextEntry> bssidContext = nzyme.getContextService().findMacAddressContext(
                 bssid,
                 authenticatedUser.getOrganizationId(),
@@ -421,6 +427,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 ssidDetails.infrastructureTypes(),
                 securitySuites,
                 ssidDetails.isWps(),
+                signalStrength,
                 ssidDetails.lastSeen()
         );
 

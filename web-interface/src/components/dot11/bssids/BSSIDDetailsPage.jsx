@@ -149,7 +149,7 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Average Signal Strength <small>Last 15 minutes</small></h3>
+                    <h3>Average Signal Strength <small>Last 15 minutes, All SSIDs</small></h3>
 
                     <TapBasedSignalStrengthTable strengths={bssid.signal_strength} />
                   </div>

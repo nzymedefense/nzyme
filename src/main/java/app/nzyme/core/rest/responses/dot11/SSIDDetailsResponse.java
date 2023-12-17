@@ -51,10 +51,13 @@ public abstract class SSIDDetailsResponse {
     @JsonProperty("is_wps")
     public abstract List<Boolean> isWps();
 
+    @JsonProperty("signal_strength")
+    public abstract List<TapBasedSignalStrengthResponse> signalStrength();
+
     @JsonProperty("last_seen")
     public abstract DateTime lastSeen();
 
-    public static SSIDDetailsResponse create(Dot11MacAddressResponse bssid, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, DateTime lastSeen) {
+    public static SSIDDetailsResponse create(Dot11MacAddressResponse bssid, String ssid, List<Integer> frequencies, float signalStrengthAverage, long totalFrames, long totalBytes, List<String> securityProtocols, List<String> fingerprints, List<BSSIDClientDetails> accessPointClients, List<Double> rates, List<String> infrastructureTypes, List<SecuritySuitesResponse> securitySuites, List<Boolean> isWps, List<TapBasedSignalStrengthResponse> signalStrength, DateTime lastSeen) {
         return builder()
                 .bssid(bssid)
                 .ssid(ssid)
@@ -69,6 +72,7 @@ public abstract class SSIDDetailsResponse {
                 .infrastructureTypes(infrastructureTypes)
                 .securitySuites(securitySuites)
                 .isWps(isWps)
+                .signalStrength(signalStrength)
                 .lastSeen(lastSeen)
                 .build();
     }
@@ -104,6 +108,8 @@ public abstract class SSIDDetailsResponse {
         public abstract Builder securitySuites(List<SecuritySuitesResponse> securitySuites);
 
         public abstract Builder isWps(List<Boolean> isWps);
+
+        public abstract Builder signalStrength(List<TapBasedSignalStrengthResponse> signalStrength);
 
         public abstract Builder lastSeen(DateTime lastSeen);
 

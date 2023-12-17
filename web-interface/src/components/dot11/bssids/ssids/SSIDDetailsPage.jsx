@@ -20,6 +20,7 @@ import HelpBubble from "../../../misc/HelpBubble";
 import DiscoHistogram from "../../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
+import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -198,13 +199,25 @@ function SSIDDetailsPage() {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body">
+                      <h3>Average Signal Strength <small>Last 15 minutes, All SSIDs</small></h3>
+
+                      <TapBasedSignalStrengthTable strengths={ssid.signal_strength}/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
                       <h3>
                         Active Channels <small>Last 15 minutes</small>
                       </h3>
 
                       <SSIDChannelUsageHistogram bssid={ssid.bssid.address}
                                                  ssid={ssid.ssid}
-                                                 minutes={15} />
+                                                 minutes={15}/>
                     </div>
                   </div>
                 </div>
@@ -221,15 +234,15 @@ function SSIDDetailsPage() {
                       <div className="float-end">
                         <ChannelSelector currentFrequency={selectedFrequency}
                                          setFrequency={setSelectedFrequency}
-                                         frequencies={ssid.frequencies} />
+                                         frequencies={ssid.frequencies}/>
                       </div>
 
-                      <br style={{"clear": "both"}} />
+                      <br style={{clear: "both"}}/>
 
                       <SSIDSignalWaterfallChart bssid={ssid.bssid.address}
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
-                                                minutes={24*60} />
+                                                minutes={24 * 60}/>
                     </div>
                   </div>
                 </div>
