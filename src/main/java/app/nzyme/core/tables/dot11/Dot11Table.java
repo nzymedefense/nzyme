@@ -16,8 +16,10 @@ import app.nzyme.core.taps.Tap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -88,11 +90,14 @@ public class Dot11Table implements DataTable {
                             UUID tenantId) {
         // Collect all monitored SSIDs and their attributes.
         Map<String, PreLoadedMonitoredSSID> monitoredSSIDs = Maps.newHashMap();
+        List<String> monitoredSSIDNames = Lists.newArrayList();
         NzymeNode nzyme = tablesService.getNzyme();;
         for (MonitoredSSID s : nzyme.getDot11().findAllMonitoredSSIDs(tap.organizationId(), tap.tenantId())) {
             if (!s.isEnabled()) {
                 continue;
             }
+
+            monitoredSSIDNames.add(s.ssid());
 
             Map<String, PreLoadedMonitoredBSSID> preLoadedBSSIDs = Maps.newHashMap();
             for (MonitoredBSSID b : nzyme.getDot11().findMonitoredBSSIDsOfMonitoredNetwork(s.id())) {
@@ -124,7 +129,11 @@ public class Dot11Table implements DataTable {
                     s.enabledUnexpectedChannel(),
                     s.enabledUnexpectedSecuritySuites(),
                     s.enabledUnexpectedFingerprint(),
-                    s.enabledUnexpectedSignalTracks()
+                    s.enabledUnexpectedSignalTracks(),
+                    s.enabledSimilarLookingSSID(),
+                    s.enabledSSIDSubstring(),
+                    s.detectionConfigSimilarLookingSSIDThreshold(),
+                    s.detectionConfigSSIDSubstring()
             ));
         }
 
@@ -142,6 +151,8 @@ public class Dot11Table implements DataTable {
                     fingerprints
             ));
         }
+
+        JaroWinkler jaroWinkler = new JaroWinkler();
 
         for (Map.Entry<String, Dot11BSSIDReport> entry : bssids.entrySet()) {
             String bssid = entry.getKey();
@@ -344,9 +355,49 @@ public class Dot11Table implements DataTable {
                         );
                     }
 
+                    /*
+                     * Check if this SSID is similar to any monitored SSIDs or includes a monitored substring. Skip
+                     * actually monitored SSIDs because they would have 100% similarity.
+                     */
+                    for (PreLoadedMonitoredSSID monitoredSSID : monitoredSSIDs.values()) {
+                        if (!monitoredSSIDNames.contains(ssid)) {
+                            if (monitoredSSID.enabledSimilarLookingSSID()
+                                    && monitoredSSID.detectionConfigSimilarLookingSSIDThreshold() != null) {
+                                double similarity = jaroWinkler.similarity(monitoredSSID.ssid(), ssid) * 100.0;
+
+                                if (similarity > (monitoredSSID.detectionConfigSimilarLookingSSIDThreshold())) {
+                                    Map<String, String> attributes = Maps.newHashMap();
+                                    attributes.put("similar_ssid", ssid);
+
+                                    nzyme.getDetectionAlertService().raiseAlert(
+                                            tap.organizationId(),
+                                            tap.tenantId(),
+                                            monitoredSSID.id(),
+                                            tap.uuid(),
+                                            DetectionType.DOT11_MONITOR_SIMILAR_LOOKING_SSID,
+                                            Subsystem.DOT11,
+                                            "SSID \"" + ssid + "\" looking similar to monitored network SSID " +
+                                                    "\"" + monitoredSSID.ssid() + "\"",
+                                            attributes,
+                                            new String[]{"similar_ssid"},
+                                            report.signalStrength().average()
+                                    );
+                                }
+                            }
+                        }
+
+                        if (monitoredSSID.enabledSSIDSubstring()
+                                && !Strings.isNullOrEmpty(monitoredSSID.detectionConfigSSIDSubstring())) {
+                            // TODO check
+                        }
+                    }
+
+
                     // Network Monitoring / Alerting.
                     PreLoadedMonitoredSSID monitoredSSID = monitoredSSIDs.get(ssid);
                     if (monitoredSSID != null) {
+                        // This is a monitored SSID.
+
                         PreLoadedMonitoredBSSID monitoredBSSID = monitoredSSID.bssids().get(bssid);
                         if (monitoredBSSID == null) {
                             if (monitoredSSID.enabledUnexpectedBSSID()) {

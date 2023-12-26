@@ -58,6 +58,7 @@
         <commonsvalidator.version>1.7</commonsvalidator.version>
         <totp.version>1.7.1</totp.version>
         <maxmindmmdb.version>3.0.0</maxmindmmdb.version>
+        <stringsimilarity.version>2.0.0</stringsimilarity.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -370,6 +371,11 @@
             <groupId>com.maxmind.db</groupId>
             <artifactId>maxmind-db</artifactId>
             <version>${maxmindmmdb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>info.debatty</groupId>
+            <artifactId>java-string-similarity</artifactId>
+            <version>${stringsimilarity.version}</version>
         </dependency>
     </dependencies>
 

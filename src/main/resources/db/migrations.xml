@@ -4070,4 +4070,52 @@
         <addUniqueConstraint tableName="context_mac_addresses" columnNames="mac_address" />
     </changeSet>
 
+    <changeSet id="add_similar_sounding_ssid_monitor_switch" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled_similar_sounding_ssid" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_ssid_substring_monitor_switch" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled_ssid_substring" type="boolean" defaultValue="true">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_alert_parameters_20231225" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="dconf_similar_looking_ssid_threshold" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="dconf_ssid_substring_value" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rename_monitored_net_similar_sounding_ssid_switch" author="lennartkoopmann">
+        <renameColumn tableName="dot11_monitored_networks"
+                      oldColumnName="enabled_similar_sounding_ssid"
+                      newColumnName="enabled_similar_looking_ssid" />
+    </changeSet>
+
+    <changeSet id="set_default_value_of_similar_sound_ssids" author="lennartkoopmann">
+        <sql>UPDATE dot11_monitored_networks SET dconf_similar_looking_ssid_threshold = 95</sql>
+    </changeSet>
+
+    <changeSet id="set_default_value_of_ssid_substring_detection" author="lennartkoopmann">
+        <sql>UPDATE dot11_monitored_networks SET dconf_ssid_substring_value = null</sql>
+    </changeSet>
+
+    <changeSet id="disable_ssid_substring_detection_by_default" author="lennartkoopmann">
+        <sql>UPDATE dot11_monitored_networks SET enabled_ssid_substring = false</sql>
+    </changeSet>
+
 </databaseChangeLog>

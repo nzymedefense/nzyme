@@ -2,6 +2,7 @@ package app.nzyme.core.tables.dot11.monitoring;
 
 import com.google.auto.value.AutoValue;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,8 +21,16 @@ public abstract class PreLoadedMonitoredSSID {
     public abstract boolean enabledUnexpectedSecuritySuites();
     public abstract boolean enabledUnexpectedFingerprint();
     public abstract boolean enabledUnexpectedSignalTracks();
+    public abstract boolean enabledSimilarLookingSSID();
+    public abstract boolean enabledSSIDSubstring();
 
-    public static PreLoadedMonitoredSSID create(UUID id, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks) {
+    @Nullable
+    public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
+
+    @Nullable
+    public abstract String detectionConfigSSIDSubstring();
+
+    public static PreLoadedMonitoredSSID create(UUID id, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, Integer detectionConfigSimilarLookingSSIDThreshold, String detectionConfigSSIDSubstring) {
         return builder()
                 .id(id)
                 .ssid(ssid)
@@ -33,13 +42,17 @@ public abstract class PreLoadedMonitoredSSID {
                 .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
                 .enabledUnexpectedFingerprint(enabledUnexpectedFingerprint)
                 .enabledUnexpectedSignalTracks(enabledUnexpectedSignalTracks)
+                .enabledSimilarLookingSSID(enabledSimilarLookingSSID)
+                .enabledSSIDSubstring(enabledSSIDSubstring)
+                .detectionConfigSimilarLookingSSIDThreshold(detectionConfigSimilarLookingSSIDThreshold)
+                .detectionConfigSSIDSubstring(detectionConfigSSIDSubstring)
                 .build();
     }
 
     public static Builder builder() {
         return new AutoValue_PreLoadedMonitoredSSID.Builder();
     }
-    
+
     @AutoValue.Builder
     public abstract static class Builder {
         public abstract Builder id(UUID id);
@@ -61,6 +74,14 @@ public abstract class PreLoadedMonitoredSSID {
         public abstract Builder enabledUnexpectedFingerprint(boolean enabledUnexpectedFingerprint);
 
         public abstract Builder enabledUnexpectedSignalTracks(boolean enabledUnexpectedSignalTracks);
+
+        public abstract Builder enabledSimilarLookingSSID(boolean enabledSimilarLookingSSID);
+
+        public abstract Builder enabledSSIDSubstring(boolean enabledSSIDSubstring);
+
+        public abstract Builder detectionConfigSimilarLookingSSIDThreshold(Integer detectionConfigSimilarLookingSSIDThreshold);
+
+        public abstract Builder detectionConfigSSIDSubstring(String detectionConfigSSIDSubstring);
 
         public abstract PreLoadedMonitoredSSID build();
     }
