@@ -115,6 +115,7 @@ import MacAddressContextPage from "./components/context/macs/MacAddressContextPa
 import CreateMacAddressContextPage from "./components/context/macs/CreateMacAddressContextPage";
 import MacAddressContextDetailsPage from "./components/context/macs/MacAddressContextDetailsPage";
 import EditMacAddressContextPage from "./components/context/macs/EditMacAddressContextPage";
+import SimilarSSIDConfigurationPage from "./components/dot11/monitoring/SimilarSSIDConfigurationPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -364,6 +365,7 @@ function App() {
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.CUSTOM_DETAILS(':id')} element={<CustomBanditDetailsPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.BANDITS.EDIT(':id')} element={<EditCustomBanditPage />} />
                           <Route path={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(':uuid')} element={<ConfigureDiscoDetectionMethodPage />} />
+                          <Route path={ApiRoutes.DOT11.MONITORING.SIMILAR_SSID_CONFIGURATION(':uuid')} element={<SimilarSSIDConfigurationPage />} />
 
                           { /* 802.11/Networks. */}
                           <Route path={ApiRoutes.DOT11.OVERVIEW} element={<Dot11OverviewPage />}/>

@@ -132,6 +132,7 @@ const ApiRoutes = {
       CREATE: '/dot11/monitoring/ssids/create',
       SSID_DETAILS: (uuid) => `/dot11/monitoring/ssids/show/${uuid}`,
       CONFIGURATION_IMPORT: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/import`,
+      SIMILAR_SSID_CONFIGURATION: (uuid) => `/dot11/monitoring/ssids/show/${uuid}/configuration/similarssids`,
       BANDITS: {
         BUILTIN_DETAILS: (id) => `/dot11/monitoring/bandits/builtin/show/${id}`,
         CREATE: (organizationId, tenantId) => `/dot11/monitoring/bandits/custom/organizations/${organizationId}/tenants/${tenantId}/create`,

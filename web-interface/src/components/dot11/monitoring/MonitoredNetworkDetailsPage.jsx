@@ -166,7 +166,7 @@ function MonitoredNetworkDetailsPage() {
               <a className="btn btn-secondary" href={ApiRoutes.DOT11.MONITORING.CONFIGURATION_IMPORT(ssid.uuid)}>
                 Import Configuration
               </a>{' '}
-              <ToggleMonitoringStatusButton ssid={ssid} bumpRevision={bumpRevision} />{' '}
+              <ToggleMonitoringStatusButton ssid={ssid} bumpRevision={bumpRevision}/>{' '}
               <a className="btn btn-danger" href="#" onClick={onDelete}>Delete</a>{' '}
               <a className="btn btn-primary" href={ApiRoutes.DOT11.MONITORING.INDEX}>Back</a>
             </span>
@@ -174,12 +174,12 @@ function MonitoredNetworkDetailsPage() {
 
           <div className="col-md-12">
             <h1>
-              Monitored Network &quot;{ssid.ssid}&quot; {isLoading ? <RefreshGears /> : null}
+              Monitored Network &quot;{ssid.ssid}&quot; {isLoading ? <RefreshGears/> : null}
             </h1>
           </div>
         </div>
 
-        <MonitoringDisabledWarning show={!ssid.is_enabled} />
+        <MonitoringDisabledWarning show={!ssid.is_enabled}/>
 
         <div className="row mt-3">
           <div className="col-md-6">
@@ -192,7 +192,7 @@ function MonitoredNetworkDetailsPage() {
                   alert as resolved on the alert details page if you want to speed this up.
                 </p>
 
-                <MonitoredNetworkAlertStatusTable ssid={ssid} renderControls={true} bumpRevision={bumpRevision} />
+                <MonitoredNetworkAlertStatusTable ssid={ssid} renderControls={true} bumpRevision={bumpRevision}/>
               </div>
             </div>
           </div>
@@ -217,23 +217,25 @@ function MonitoredNetworkDetailsPage() {
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
-                <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears /> : null}</h3>
+                <h3>Monitored BSSIDs / Access Points of Network {isLoading ? <RefreshGears/> : null}</h3>
 
                 <MonitoredBSSIDs bssids={ssid.bssids}
                                  bssidAlertingEnabled={ssid.enabled_unexpected_bssid}
                                  fingerprintAlertingEnabled={ssid.enabled_unexpected_fingerprint}
                                  bumpRevision={bumpRevision}
-                                 parentIsLoading={isLoading} />
+                                 parentIsLoading={isLoading}/>
 
                 <div className="input-group mb-3">
                   <input type="text"
                          className="form-control"
                          placeholder="18:7C:0B:D6:EC:F8"
                          value={newBSSID}
-                         onChange={(e) => setNewBSSID(e.target.value)} />
+                         onChange={(e) => setNewBSSID(e.target.value)}/>
                   <button className="btn btn-secondary"
                           disabled={!addBSSIDFormEnabled()}
-                          onClick={() => { addBSSID(newBSSID) }}>
+                          onClick={() => {
+                            addBSSID(newBSSID)
+                          }}>
                     {bssidFormSubmitting ? "Please wait..." : "Add BSSID"}
                   </button>
                 </div>
@@ -246,22 +248,24 @@ function MonitoredNetworkDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Monitored Channels {isLoading ? <RefreshGears /> : null}</h3>
+                <h3>Monitored Channels {isLoading ? <RefreshGears/> : null}</h3>
 
                 <MonitoredChannelsTable ssid={ssid}
                                         alertingEnabled={ssid.enabled_unexpected_channel}
-                                        bumpRevision={bumpRevision} />
+                                        bumpRevision={bumpRevision}/>
 
                 <div className="input-group mb-3">
                   <input type="number"
                          className="form-control"
                          placeholder="2462"
                          value={newChannel}
-                         onChange={(e) => setNewChannel(e.target.value)} />
+                         onChange={(e) => setNewChannel(e.target.value)}/>
                   <span className="input-group-text">MHz</span>
                   <button className="btn btn-secondary"
                           disabled={!addChannelFormEnabled()}
-                          onClick={() => { addChannel(newChannel) }}>
+                          onClick={() => {
+                            addChannel(newChannel)
+                          }}>
                     {channelFormSubmitting ? "Please wait..." : "Add Frequency "}
                   </button>
                 </div>
@@ -272,21 +276,23 @@ function MonitoredNetworkDetailsPage() {
           <div className="col-md-6">
             <div className="card">
               <div className="card-body">
-                <h3>Monitored Security Suites {isLoading ? <RefreshGears /> : null}</h3>
+                <h3>Monitored Security Suites {isLoading ? <RefreshGears/> : null}</h3>
 
                 <MonitoredSecuritySuitesTable ssid={ssid}
                                               alertingEnabled={ssid.enabled_unexpected_security_suites}
-                                              bumpRevision={bumpRevision} />
+                                              bumpRevision={bumpRevision}/>
 
                 <div className="input-group mb-3">
                   <input type="text"
                          className="form-control"
                          placeholder="CCMP-CCMP/PSK"
                          value={newSecuritySuite}
-                         onChange={(e) => setNewSecuritySuite(e.target.value)} />
+                         onChange={(e) => setNewSecuritySuite(e.target.value)}/>
                   <button className="btn btn-secondary"
                           disabled={!addSecuritySuiteFormEnabled()}
-                          onClick={() => { addSecuritySuite(newSecuritySuite) }}>
+                          onClick={() => {
+                            addSecuritySuite(newSecuritySuite)
+                          }}>
                     {securitySuiteFormSubmitting ? "Please wait..." : "Add Security Suite "}
                   </button>
                 </div>
@@ -302,28 +308,35 @@ function MonitoredNetworkDetailsPage() {
                 <h3>Deauthentication/Disassociation Monitor</h3>
 
                 <div className="mt-3">
-                  <DiscoDetectionDetails monitoredNetwork={ssid} />
+                  <DiscoDetectionDetails monitoredNetwork={ssid}/>
                 </div>
 
-                <InlineTapSelector onTapSelected={(tapUuid) => setDiscoSimulationTapUuid(tapUuid)} />
+                <InlineTapSelector onTapSelected={(tapUuid) => setDiscoSimulationTapUuid(tapUuid)}/>
 
                 <MonitoredNetworkDiscoChart selectedTapUuid={discoSimulationTapUuid}
-                                            monitoredNetwork={ssid} />
+                                            monitoredNetwork={ssid}/>
 
                 <p className="mt-2 mb-0 text-muted">
-                  Anomalies highlighted on chart with red background.
+                  Anomalies highlighted on chart with red background. <strong>You can configure this monitor
+                  from the alert overview at the top of this page.</strong>
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <a className="btn btn-secondary btn-sm mt-3"
-                   href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>
-                  Configure Anomaly Detection Method
-                </a>
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Similar SSID Monitor</h3>
+
               </div>
             </div>
           </div>
         </div>
       </React.Fragment>
-  )
+)
 
 }
 

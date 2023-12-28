@@ -12,6 +12,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
+import app.nzyme.core.rest.responses.dot11.SSIDSimilarityResponse;
 import app.nzyme.core.rest.responses.dot11.monitoring.*;
 import app.nzyme.core.rest.responses.dot11.monitoring.configimport.*;
 import app.nzyme.core.util.Tools;
@@ -19,6 +20,7 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import info.debatty.java.stringsimilarity.JaroWinkler;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -98,6 +100,18 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                         isAlerted = true;
                         break;
                     case DOT11_MONITOR_DISCO_ANOMALIES:
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_SIMILAR_LOOKING_SSID:
+                        if (!ssid.enabledSimilarLookingSSID()) {
+                            continue;
+                        }
+                        isAlerted = true;
+                        break;
+                    case DOT11_MONITOR_SSID_SUBSTRING:
+                        if (!ssid.enabledSSIDSubstring()) {
+                            continue;
+                        }
                         isAlerted = true;
                         break;
                 }
@@ -198,6 +212,8 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         boolean fingerprintAlerted = false;
         boolean signalTracksAlerted = false;
         boolean discoAnomaliesAlerted = false;
+        boolean similarSSIDAlerted = false;
+        boolean restrictedSSIDSubstringAlerted = false;
         for (DetectionAlertEntry alert : nzyme.getDetectionAlertService()
                 .findAllActiveAlertsOfMonitoredNetwork(ssid.uuid())) {
             DetectionType detectionType;
@@ -241,6 +257,19 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     break;
                 case DOT11_MONITOR_DISCO_ANOMALIES:
                     discoAnomaliesAlerted = true;
+                    break;
+                case DOT11_MONITOR_SIMILAR_LOOKING_SSID:
+                    if (!ssid.enabledSimilarLookingSSID()) {
+                        continue;
+                    }
+                    similarSSIDAlerted = true;
+                    break;
+                case DOT11_MONITOR_SSID_SUBSTRING:
+                    if (!ssid.enabledSSIDSubstring()) {
+                        continue;
+                    }
+                    restrictedSSIDSubstringAlerted = true;
+                    break;
             }
 
             isAlerted = true;
@@ -255,6 +284,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 bssids,
                 channels,
                 securitySuites,
+                ssid.detectionConfigSimilarLookingSSIDThreshold(),
                 ssid.createdAt(),
                 ssid.updatedAt(),
                 isAlerted,
@@ -264,11 +294,15 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 fingerprintAlerted,
                 signalTracksAlerted,
                 discoAnomaliesAlerted,
+                similarSSIDAlerted,
+                restrictedSSIDSubstringAlerted,
                 ssid.enabledUnexpectedBSSID(),
                 ssid.enabledUnexpectedChannel(),
                 ssid.enabledUnexpectedSecuritySuites(),
                 ssid.enabledUnexpectedFingerprint(),
-                ssid.enabledUnexpectedSignalTracks()
+                ssid.enabledUnexpectedSignalTracks(),
+                ssid.enabledSimilarLookingSSID(),
+                ssid.enabledSSIDSubstring()
         )).build();
     }
 
@@ -841,6 +875,43 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(Response.Status.CREATED).build();
+    }
+
+    @GET
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/similarssids/simulate")
+    public Response simulateSimilarSSIDs(@Context SecurityContext sc,
+                                         @PathParam("uuid") UUID uuid,
+                                         @QueryParam("threshold") int threshold) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        List<SSIDSimilarityResponse> similarities = Lists.newArrayList();
+        List<String> monitoredSSIDNames = nzyme.getDot11()
+                .findAllMonitoredSSIDs(authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId())
+                .stream().map(MonitoredSSID::ssid)
+                .collect(Collectors.toList());
+
+        JaroWinkler jaroWinkler = new JaroWinkler();
+        for (String ssidName : nzyme.getDot11()
+                .findAllSSIDNames(nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser))) {
+            double similarity = jaroWinkler.similarity(ssid.get().ssid(), ssidName) * 100.0;
+            boolean monitored = monitoredSSIDNames.contains(ssidName);
+            boolean alerted = !monitored && similarity > threshold;
+
+            similarities.add(SSIDSimilarityResponse.create(ssidName, similarity, monitored, alerted));
+        }
+
+        return Response.ok(similarities).build();
     }
 
 }
