@@ -8,6 +8,7 @@ import MonitorSignalTrackAlertDetails from "./dot11/MonitorSignalTrackAlertDetai
 import BanditContactAlertDetails from "./dot11/BanditContactAlertDetails";
 import BanditContactPwnagotchiAlertDetails from "./dot11/BanditContactPwnagotchiAlertDetails";
 import MonitorDiscoAnomalyAlertDetails from "./dot11/MonitorDiscoAnomalyAlertDetails";
+import SimilarLookingSSIDAlertDetails from "./dot11/SimilarLookingSSIDAlertDetails";
 
 function AlertDetails(props) {
 
@@ -32,6 +33,8 @@ function AlertDetails(props) {
       } else {
         return <BanditContactAlertDetails alert={alert} />
       }
+    case "DOT11_MONITOR_SIMILAR_LOOKING_SSID":
+      return <SimilarLookingSSIDAlertDetails alert={alert} />
     default:
       return <GenericAlertDetails alert={alert} />
   }

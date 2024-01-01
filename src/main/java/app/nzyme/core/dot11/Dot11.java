@@ -158,6 +158,22 @@ public class Dot11 {
         );
     }
 
+    public List<String> findAllRecentSSIDNames(List<UUID> taps, int minutes) {
+        if (taps.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DISTINCT(ssid) FROM dot11_ssids " +
+                                "WHERE tap_uuid IN (<taps>) AND created_at > :cutoff " +
+                                "ORDER BY ssid ASC")
+                        .bindList("taps", taps)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(String.class)
+                        .list()
+        );
+    }
+
     public Optional<BSSIDSummary> findBSSID(String bssid, int minutes, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
@@ -1161,6 +1177,17 @@ public class Dot11 {
                         .bind("id", monitoredNetworkId)
                         .define("column", type.getColumnName())
                         .bind("status", status)
+                        .execute()
+        );
+    }
+
+    public void setSimilarSSIDMonitorConfiguration(long monitoredNetworkId, int threshold) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE dot11_monitored_networks " +
+                                "SET dconf_similar_looking_ssid_threshold = :threshold " +
+                                "WHERE id = :id")
+                        .bind("id", monitoredNetworkId)
+                        .bind("threshold", threshold)
                         .execute()
         );
     }

@@ -368,7 +368,9 @@ public class Dot11Table implements DataTable {
                                 if (similarity > monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()) {
                                     Map<String, String> attributes = Maps.newHashMap();
                                     attributes.put("similar_ssid", ssid);
-                                    attributes.put("ssid_similarity", String.valueOf(similarity*100));
+                                    attributes.put("similarity", String.valueOf(similarity));
+                                    attributes.put("similarity_threshold",
+                                            String.valueOf(monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()));
 
                                     nzyme.getDetectionAlertService().raiseAlert(
                                             tap.organizationId(),

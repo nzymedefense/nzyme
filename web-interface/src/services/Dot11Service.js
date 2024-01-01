@@ -343,6 +343,10 @@ class Dot11Service {
     RESTClient.get("/dot11/monitoring/ssids/show/" + monitoredNetworkUUID + "/configuration/similarssids/simulate", {threshold: threshold}, successCallback)
   }
 
+  setSimilarSSIDMonitorConfiguration(monitoredNetworkUUID, threshold, successCallback) {
+    RESTClient.put("/dot11/monitoring/ssids/show/" + monitoredNetworkUUID + "/configuration/similarssids", {threshold: threshold}, successCallback)
+  }
+
 }
 
 export default Dot11Service

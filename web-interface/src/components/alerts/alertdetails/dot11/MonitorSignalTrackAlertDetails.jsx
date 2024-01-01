@@ -4,7 +4,6 @@ import numeral from "numeral";
 
 function MonitorSignalTrackAlertDetails(props) {
 
-
   const alert = props.alert;
 
   return (

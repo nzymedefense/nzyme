@@ -3,7 +3,8 @@ import {Navigate, useParams} from "react-router-dom";
 import Dot11Service from "../../../services/Dot11Service";
 import ApiRoutes from "../../../util/ApiRoutes";
 import LoadingSpinner from "../../misc/LoadingSpinner";
-import SimilarSSIDSimulator from "../disco/SimilarSSIDSimulator";
+import SimilarSSIDSimulator from "./SimilarSSIDSimulator";
+import {notify} from "react-notify-toast";
 
 const dot11Service = new Dot11Service();
 
@@ -27,6 +28,13 @@ function SimilarSSIDConfigurationPage() {
       setThreshold(ssid.similar_looking_ssid_threshold);
     }
   }, [ssid]);
+
+  const onSubmit = () => {
+    dot11Service.setSimilarSSIDMonitorConfiguration(uuid, threshold, () => {
+      notify.show("Configuration updated.", "success");
+      setRedirect(true);
+    })
+  }
 
   if (redirect) {
     return <Navigate to={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(uuid)} />
@@ -90,7 +98,7 @@ function SimilarSSIDConfigurationPage() {
                   Simulate
                 </button>{' '}
 
-                <button className="btn btn-primary" onClick={(e) => {}}>
+                <button className="btn btn-primary" onClick={onSubmit}>
                   Save Configuration
                 </button>
               </div>

@@ -57,6 +57,8 @@ function SimilarSSIDSimulator(props) {
               <div className="card-body">
                 <h3>Simulation Results for {passedThreshold}% Similarity Threshold</h3>
 
+                <p>Based on SSIDs seen in previous 15 minutes.</p>
+
                 <table className="table table-sm table-hover table-striped">
                   <thead>
                   <tr>
@@ -80,6 +82,10 @@ function SimilarSSIDSimulator(props) {
                   })}
                   </tbody>
                 </table>
+
+                {results.length === 0 ? <div className="alert alert-warning mb-0">
+                  No SSIDs found. Make sure you have taps recording WiFi data and that WiFi networks are in range.</div>
+                    : null}
               </div>
             </div>
           </div>

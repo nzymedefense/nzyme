@@ -903,7 +903,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
         JaroWinkler jaroWinkler = new JaroWinkler();
         for (String ssidName : nzyme.getDot11()
-                .findAllSSIDNames(nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser))) {
+                .findAllRecentSSIDNames(nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser), 15)) {
             double similarity = jaroWinkler.similarity(ssid.get().ssid(), ssidName) * 100.0;
             boolean monitored = monitoredSSIDNames.contains(ssidName);
             boolean alerted = !monitored && similarity > threshold;
@@ -912,6 +912,29 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         return Response.ok(similarities).build();
+    }
+
+    @PUT
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/similarssids")
+    public Response setSimilarSSIDConfiguration(@Context SecurityContext sc,
+                                                @PathParam("uuid") UUID uuid,
+                                                @Valid UpdateSimilarSSIDNetworkMonitorConfiguration req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().setSimilarSSIDMonitorConfiguration(ssid.get().id(), (int) req.threshold());
+
+        return Response.ok().build();
     }
 
 }
