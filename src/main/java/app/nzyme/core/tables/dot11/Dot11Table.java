@@ -120,6 +120,7 @@ public class Dot11Table implements DataTable {
             }
 
             monitoredSSIDs.put(s.ssid(), PreLoadedMonitoredSSID.create(
+                    s.id(),
                     s.uuid(),
                     s.ssid(),
                     preLoadedBSSIDs,
@@ -132,8 +133,7 @@ public class Dot11Table implements DataTable {
                     s.enabledUnexpectedSignalTracks(),
                     s.enabledSimilarLookingSSID(),
                     s.enabledSSIDSubstring(),
-                    s.detectionConfigSimilarLookingSSIDThreshold(),
-                    s.detectionConfigSSIDSubstring()
+                    s.detectionConfigSimilarLookingSSIDThreshold()
             ));
         }
 
@@ -357,10 +357,11 @@ public class Dot11Table implements DataTable {
 
                     /*
                      * Check if this SSID is similar to any monitored SSIDs or includes a monitored substring. Skip
-                     * actually monitored SSIDs because they would have 100% similarity.
+                     * other monitored SSIDs because they are considered trusted.
                      */
                     for (PreLoadedMonitoredSSID monitoredSSID : monitoredSSIDs.values()) {
                         if (!monitoredSSIDNames.contains(ssid)) {
+                            // Similar looking SSIDs.
                             if (monitoredSSID.enabledSimilarLookingSSID()
                                     && monitoredSSID.detectionConfigSimilarLookingSSIDThreshold() != null) {
                                 double similarity = jaroWinkler.similarity(monitoredSSID.ssid(), ssid) * 100.0;
@@ -375,7 +376,7 @@ public class Dot11Table implements DataTable {
                                     nzyme.getDetectionAlertService().raiseAlert(
                                             tap.organizationId(),
                                             tap.tenantId(),
-                                            monitoredSSID.id(),
+                                            monitoredSSID.uuid(),
                                             tap.uuid(),
                                             DetectionType.DOT11_MONITOR_SIMILAR_LOOKING_SSID,
                                             Subsystem.DOT11,
@@ -387,11 +388,17 @@ public class Dot11Table implements DataTable {
                                     );
                                 }
                             }
-                        }
 
-                        if (monitoredSSID.enabledSSIDSubstring()
-                                && !Strings.isNullOrEmpty(monitoredSSID.detectionConfigSSIDSubstring())) {
-                            // TODO check
+                            // Restricted substrings.
+                            if (monitoredSSID.enabledSSIDSubstring()) {
+                                // Pull all restricted substrings.
+                                for (RestrictedSSIDSubstring rss :
+                                        nzyme.getDot11().findAllRestrictedSSIDSubstrings(monitoredSSID.id())) {
+                                    if (ssid.contains(rss.substring())) {
+                                        // ALERT
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -411,7 +418,7 @@ public class Dot11Table implements DataTable {
                                 nzyme.getDetectionAlertService().raiseAlert(
                                         tap.organizationId(),
                                         tap.tenantId(),
-                                        monitoredSSID.id(),
+                                        monitoredSSID.uuid(),
                                         tap.uuid(),
                                         DetectionType.DOT11_MONITOR_BSSID,
                                         Subsystem.DOT11,
@@ -435,7 +442,7 @@ public class Dot11Table implements DataTable {
                                         nzyme.getDetectionAlertService().raiseAlert(
                                                 tap.organizationId(),
                                                 tap.tenantId(),
-                                                monitoredSSID.id(),
+                                                monitoredSSID.uuid(),
                                                 tap.uuid(),
                                                 DetectionType.DOT11_MONITOR_FINGERPRINT,
                                                 Subsystem.DOT11,
@@ -460,7 +467,7 @@ public class Dot11Table implements DataTable {
                                     nzyme.getDetectionAlertService().raiseAlert(
                                             tap.organizationId(),
                                             tap.tenantId(),
-                                            monitoredSSID.id(),
+                                            monitoredSSID.uuid(),
                                             tap.uuid(),
                                             DetectionType.DOT11_MONITOR_CHANNEL,
                                             Subsystem.DOT11,
@@ -484,7 +491,7 @@ public class Dot11Table implements DataTable {
                                     nzyme.getDetectionAlertService().raiseAlert(
                                             tap.organizationId(),
                                             tap.tenantId(),
-                                            monitoredSSID.id(),
+                                            monitoredSSID.uuid(),
                                             tap.uuid(),
                                             DetectionType.DOT11_MONITOR_SECURITY_SUITE,
                                             Subsystem.DOT11,

@@ -26,12 +26,10 @@ public abstract class MonitoredSSID {
     public abstract String discoMonitorConfiguration();
     @Nullable
     public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
-    @Nullable
-    public abstract String detectionConfigSSIDSubstring();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, String detectionConfigSSIDSubstring, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -49,7 +47,6 @@ public abstract class MonitoredSSID {
                 .discoMonitorType(discoMonitorType)
                 .discoMonitorConfiguration(discoMonitorConfiguration)
                 .detectionConfigSimilarLookingSSIDThreshold(detectionConfigSimilarLookingSSIDThreshold)
-                .detectionConfigSSIDSubstring(detectionConfigSSIDSubstring)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -92,8 +89,6 @@ public abstract class MonitoredSSID {
         public abstract Builder discoMonitorConfiguration(String discoMonitorConfiguration);
 
         public abstract Builder detectionConfigSimilarLookingSSIDThreshold(Integer detectionConfigSimilarLookingSSIDThreshold);
-
-        public abstract Builder detectionConfigSSIDSubstring(String detectionConfigSSIDSubstring);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -4158,4 +4158,8 @@
         <dropColumn tableName="dot11_monitored_networks_restricted_substrings" columnName="updated_at" />
     </changeSet>
 
+    <changeSet id="remove_singular_detection_config_restricted_substrings" author="lennartkoopmann">
+        <dropColumn tableName="dot11_monitored_networks" columnName="dconf_ssid_substring_value" />
+    </changeSet>
+
 </databaseChangeLog>

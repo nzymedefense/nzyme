@@ -10,7 +10,8 @@ import java.util.UUID;
 @AutoValue
 public abstract class PreLoadedMonitoredSSID {
 
-    public abstract UUID id();
+    public abstract long id();
+    public abstract UUID uuid();
     public abstract String ssid();
     public abstract Map<String, PreLoadedMonitoredBSSID> bssids();
     public abstract List<Integer> channels();
@@ -27,12 +28,10 @@ public abstract class PreLoadedMonitoredSSID {
     @Nullable
     public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
 
-    @Nullable
-    public abstract String detectionConfigSSIDSubstring();
-
-    public static PreLoadedMonitoredSSID create(UUID id, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, Integer detectionConfigSimilarLookingSSIDThreshold, String detectionConfigSSIDSubstring) {
+    public static PreLoadedMonitoredSSID create(long id, UUID uuid, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, Integer detectionConfigSimilarLookingSSIDThreshold) {
         return builder()
                 .id(id)
+                .uuid(uuid)
                 .ssid(ssid)
                 .bssids(bssids)
                 .channels(channels)
@@ -45,7 +44,6 @@ public abstract class PreLoadedMonitoredSSID {
                 .enabledSimilarLookingSSID(enabledSimilarLookingSSID)
                 .enabledSSIDSubstring(enabledSSIDSubstring)
                 .detectionConfigSimilarLookingSSIDThreshold(detectionConfigSimilarLookingSSIDThreshold)
-                .detectionConfigSSIDSubstring(detectionConfigSSIDSubstring)
                 .build();
     }
 
@@ -55,7 +53,9 @@ public abstract class PreLoadedMonitoredSSID {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder id(UUID id);
+        public abstract Builder id(long id);
+
+        public abstract Builder uuid(UUID uuid);
 
         public abstract Builder ssid(String ssid);
 
@@ -80,8 +80,6 @@ public abstract class PreLoadedMonitoredSSID {
         public abstract Builder enabledSSIDSubstring(boolean enabledSSIDSubstring);
 
         public abstract Builder detectionConfigSimilarLookingSSIDThreshold(Integer detectionConfigSimilarLookingSSIDThreshold);
-
-        public abstract Builder detectionConfigSSIDSubstring(String detectionConfigSSIDSubstring);
 
         public abstract PreLoadedMonitoredSSID build();
     }
