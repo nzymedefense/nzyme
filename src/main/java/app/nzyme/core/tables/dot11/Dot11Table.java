@@ -364,7 +364,8 @@ public class Dot11Table implements DataTable {
                             // Similar looking SSIDs.
                             if (monitoredSSID.enabledSimilarLookingSSID()
                                     && monitoredSSID.detectionConfigSimilarLookingSSIDThreshold() != null) {
-                                double similarity = jaroWinkler.similarity(monitoredSSID.ssid(), ssid) * 100.0;
+                                double similarity = jaroWinkler
+                                        .similarity(monitoredSSID.ssid().toLowerCase(), ssid.toLowerCase()) * 100.0;
 
                                 if (similarity > monitoredSSID.detectionConfigSimilarLookingSSIDThreshold()) {
                                     Map<String, String> attributes = Maps.newHashMap();
@@ -394,8 +395,24 @@ public class Dot11Table implements DataTable {
                                 // Pull all restricted substrings.
                                 for (RestrictedSSIDSubstring rss :
                                         nzyme.getDot11().findAllRestrictedSSIDSubstrings(monitoredSSID.id())) {
-                                    if (ssid.contains(rss.substring())) {
-                                        // ALERT
+                                    if (ssid.toLowerCase().contains(rss.substring().toLowerCase())) {
+                                        Map<String, String> attributes = Maps.newHashMap();
+                                        attributes.put("ssid", ssid);
+                                        attributes.put("restricted_substring", rss.substring());
+
+                                        nzyme.getDetectionAlertService().raiseAlert(
+                                                tap.organizationId(),
+                                                tap.tenantId(),
+                                                monitoredSSID.uuid(),
+                                                tap.uuid(),
+                                                DetectionType.DOT11_MONITOR_SSID_SUBSTRING,
+                                                Subsystem.DOT11,
+                                                "SSID \"" + ssid + "\" contains restricted " +
+                                                        "substring \"" + rss.substring() + "\"",
+                                                attributes,
+                                                new String[]{"ssid", "restricted_substring"},
+                                                report.signalStrength().average()
+                                        );
                                     }
                                 }
                             }

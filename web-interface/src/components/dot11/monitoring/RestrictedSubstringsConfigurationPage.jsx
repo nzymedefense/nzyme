@@ -100,7 +100,7 @@ function RestrictedSubstringsConfigurationPage() {
                   considered known and not malicious.
                 </p>
 
-                <label htmlFor="substring" className="form-label">Substring</label>
+                <label htmlFor="substring" className="form-label">Substring (case-insensitive)</label>
                 <div className="input-group mb-3">
                   <input type="text" className="form-control" id="substring"
                          onChange={(e) => setSubstring(e.target.value)}/>

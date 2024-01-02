@@ -79,9 +79,9 @@ function SimilarSSIDConfigurationPage() {
 
                 <p className="mb-3">
                   Note that other monitored networks never trigger a similar SSID alarm because they are considered
-                  known and not malicious.
+                  known and not malicious. Comparison is performed in a case-insensitive way.
                 </p>
-
+                
                 <label htmlFor="threshold" className="form-label">Threshold</label>
                 <div className="input-group mb-3" style={{width: 110}}>
                   <input type="number"

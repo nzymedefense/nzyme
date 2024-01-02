@@ -324,17 +324,6 @@ function MonitoredNetworkDetailsPage() {
             </div>
           </div>
         </div>
-
-        <div className="row mt-3">
-          <div className="col-md-12">
-            <div className="card">
-              <div className="card-body">
-                <h3>Similar SSID Monitor</h3>
-
-              </div>
-            </div>
-          </div>
-        </div>
       </React.Fragment>
 )
 
