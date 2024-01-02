@@ -6,13 +6,14 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 function RestricedSubstringsTable(props) {
 
   const substrings = props.substrings;
+  const onDeleteSubstring = props.onDeleteSubstring;
 
   if (!substrings) {
     return <LoadingSpinner />
   }
 
   if (substrings.length === 0) {
-    return(
+    return (
         <div className="alert alert-info mb-0">
           No restricted substrings configured yet.
         </div>
@@ -34,7 +35,7 @@ function RestricedSubstringsTable(props) {
               <tr key={i}>
                 <td>{rs.substring}</td>
                 <td title={moment(rs.created_at).format()}>{moment(rs.created_at).fromNow()}</td>
-                <td><a href="#">Delete</a></td>
+                <td><a href="#" onClick={(e) => onDeleteSubstring(e, rs.uuid)}>Delete</a></td>
               </tr>
           )
         })}

@@ -1195,7 +1195,7 @@ public class Dot11 {
     public List<RestrictedSSIDSubstring> findAllRestrictedSSIDSubstrings(long monitoredNetworkId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM dot11_monitored_networks_restricted_substrings " +
-                                "WHERE monitored_network_id = :monitored_network_id")
+                                "WHERE monitored_network_id = :monitored_network_id ORDER BY substring")
                         .bind("monitored_network_id", monitoredNetworkId)
                         .mapTo(RestrictedSSIDSubstring.class)
                         .list()

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import ApiRoutes from "../../../util/ApiRoutes";
-import {Navigate, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import {notify} from "react-notify-toast";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import Dot11Service from "../../../services/Dot11Service";
@@ -18,7 +18,6 @@ function RestrictedSubstringsConfigurationPage() {
   const [substring, setSubstring] = useState("");
 
   const [revision, setRevision] = useState(0);
-  const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
     dot11Service.findMonitoredSSID(uuid, setSSID, () => {});
@@ -40,12 +39,23 @@ function RestrictedSubstringsConfigurationPage() {
     })
   }
 
-  const formIsReady = () => {
-    return substring.trim().length > 0;
+  const onDeleteSubstring = (e, substringUUID) => {
+    e.preventDefault();
+
+    if (!confirm("Really delete substring?")) {
+      return;
+    }
+
+    setSubstrings(null);
+
+    dot11Service.deleteRestrictedSSIDSubstring(uuid, substringUUID, () => {
+      setRevision(revision => revision+1)
+      notify.show("Restricted substring deleted.", "success");
+    })
   }
 
-  if (redirect) {
-    return <Navigate to={ApiRoutes.DOT11.MONITORING.SSID_DETAILS(uuid)} />
+  const formIsReady = () => {
+    return substring.trim().length > 0;
   }
 
   if (!ssid) {
@@ -101,7 +111,7 @@ function RestrictedSubstringsConfigurationPage() {
                   </button>
                 </div>
 
-                <RestricedSubstringsTable substrings={substrings} />
+                <RestricedSubstringsTable substrings={substrings} onDeleteSubstring={onDeleteSubstring} />
               </div>
             </div>
           </div>
