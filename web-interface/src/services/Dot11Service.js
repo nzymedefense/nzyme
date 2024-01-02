@@ -347,6 +347,16 @@ class Dot11Service {
     RESTClient.put("/dot11/monitoring/ssids/show/" + monitoredNetworkUUID + "/configuration/similarssids", {threshold: threshold}, successCallback)
   }
 
+  addRestrictedSSIDSubstring(monitoredNetworkUUID, substring, successCallback) {
+    RESTClient.post("/dot11/monitoring/ssids/show/" + monitoredNetworkUUID + "/configuration/restricted-ssid-substrings",
+        {substring: substring}, successCallback)
+  }
+
+  deleteRestrictedSSIDSubstring(monitoredNetworkUUID, substringUUID, successCallback) {
+    RESTClient.delete("/dot11/monitoring/ssids/show/" + monitoredNetworkUUID + "/configuration/restricted-ssid-substrings/show/" + substringUUID,
+        successCallback)
+  }
+
 }
 
 export default Dot11Service

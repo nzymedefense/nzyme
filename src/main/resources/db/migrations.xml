@@ -4117,5 +4117,45 @@
     <changeSet id="disable_ssid_substring_detection_by_default" author="lennartkoopmann">
         <sql>UPDATE dot11_monitored_networks SET enabled_ssid_substring = false</sql>
     </changeSet>
+    
+    <changeSet id="create_dot11_monitored_networks_restricted_substrings" author="lennartkoopmann">
+        <createTable tableName="dot11_monitored_networks_restricted_substrings">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true" />
+            </column>
+
+            <column name="monitored_network_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="substring" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_restrstrings2monitorednets"
+                                 baseTableName="dot11_monitored_networks_restricted_substrings"
+                                 baseColumnNames="monitored_network_id"
+                                 referencedTableName="dot11_monitored_networks"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="remove_restricted_substring_updated_at_column" author="lennartkoopmann">
+        <dropColumn tableName="dot11_monitored_networks_restricted_substrings" columnName="updated_at" />
+    </changeSet>
 
 </databaseChangeLog>

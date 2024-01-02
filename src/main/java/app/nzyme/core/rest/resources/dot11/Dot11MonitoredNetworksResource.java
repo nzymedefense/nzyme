@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Path("/api/dot11/monitoring")
@@ -275,6 +274,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
             isAlerted = true;
         }
 
+        List<RestrictedSSIDSubstringDetailsResponse> restrictedSSIDSubstrings = nzyme.getDot11()
+                .findAllRestrictedSSIDSubstrings(ssid.id())
+                .stream()
+                .map(rss -> RestrictedSSIDSubstringDetailsResponse.create(rss.uuid(), rss.substring(), rss.createdAt()))
+                .collect(Collectors.toList());
+
         return Response.ok(MonitoredSSIDDetailsResponse.create(
                 ssid.uuid(),
                 ssid.isEnabled(),
@@ -285,6 +290,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 channels,
                 securitySuites,
                 ssid.detectionConfigSimilarLookingSSIDThreshold(),
+                restrictedSSIDSubstrings,
                 ssid.createdAt(),
                 ssid.updatedAt(),
                 isAlerted,
@@ -933,6 +939,52 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
         }
 
         nzyme.getDot11().setSimilarSSIDMonitorConfiguration(ssid.get().id(), (int) req.threshold());
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/restricted-ssid-substrings")
+    public Response addRestrictedSSIDSubstring(@Context SecurityContext sc,
+                                               @PathParam("uuid") UUID uuid,
+                                               @Valid CreateDot11MonitoredNetworkRestrictedSSIDSubstringRequest req) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().createRestrictedSSIDSubstring(ssid.get().id(), req.substring());
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
+    @DELETE
+    @RESTSecured(value = PermissionLevel.ANY, featurePermissions = { "dot11_monitoring_manage" })
+    @Path("/ssids/show/{uuid}/configuration/restricted-ssid-substrings/show/{substring_uuid}")
+    public Response deleteRestrictedSSIDSubstring(@Context SecurityContext sc,
+                                                  @PathParam("uuid") UUID uuid,
+                                                  @PathParam("substring_uuid") UUID substringUuid) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        Optional<MonitoredSSID> ssid = nzyme.getDot11().findMonitoredSSID(uuid);
+
+        if (ssid.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (!passedMonitoredNetworkAccessible(authenticatedUser, ssid.get())) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getDot11().deleteRestrictedSSIDSubstring(ssid.get().id(), substringUuid);
 
         return Response.ok().build();
     }

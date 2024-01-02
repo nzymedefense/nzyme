@@ -97,7 +97,7 @@ function MonitoredNetworkAlertStatusTable(props) {
           {renderControls ?
               <td><AlertEnabledTrigger ssid={ssid} parameter="restricted_ssid_substrings" bumpRevision={bumpRevision}/></td> : null}
           <td>
-            <a href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>
+            <a href={ApiRoutes.DOT11.MONITORING.RESTRICTED_SUBSTRINGS_CONFIGURATION(ssid.uuid)}>
               Configure
             </a>
           </td>

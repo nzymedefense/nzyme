@@ -1192,6 +1192,38 @@ public class Dot11 {
         );
     }
 
+    public List<RestrictedSSIDSubstring> findAllRestrictedSSIDSubstrings(long monitoredNetworkId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM dot11_monitored_networks_restricted_substrings " +
+                                "WHERE monitored_network_id = :monitored_network_id")
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .mapTo(RestrictedSSIDSubstring.class)
+                        .list()
+        );
+    }
+
+    public void createRestrictedSSIDSubstring(long monitoredNetworkId, String substring) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO dot11_monitored_networks_restricted_substrings(uuid, " +
+                                "monitored_network_id, substring, created_at) VALUES(:uuid, " +
+                                ":monitored_network_id, :substring, NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .bind("substring", substring)
+                        .execute()
+        );
+    }
+
+    public void deleteRestrictedSSIDSubstring(long monitoredNetworkId, UUID uuid) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM dot11_monitored_networks_restricted_substrings " +
+                                "WHERE monitored_network_id = :monitored_network_id AND uuid = :uuid")
+                        .bind("uuid", uuid)
+                        .bind("monitored_network_id", monitoredNetworkId)
+                        .execute()
+        );
+    }
+
     public long countCustomBandits(UUID organizationId, UUID tenantId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM dot11_bandits " +
