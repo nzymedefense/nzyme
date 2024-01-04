@@ -45,7 +45,7 @@ public class Dot11DiscoMonitor extends Periodical {
 
             for (TenantEntry tenant : tenants.get()) {
                 for (MonitoredSSID monitoredNetwork : nzyme.getDot11().findAllMonitoredSSIDs(org.uuid(), tenant.uuid())) {
-                    if (monitoredNetwork.discoMonitorType() == null) {
+                    if (!monitoredNetwork.enabledDiscoMonitor() || monitoredNetwork.discoMonitorType() == null) {
                         continue;
                     }
 

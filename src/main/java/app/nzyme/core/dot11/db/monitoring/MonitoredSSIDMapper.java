@@ -26,6 +26,7 @@ public class MonitoredSSIDMapper implements RowMapper<MonitoredSSID> {
                 rs.getBoolean("enabled_unexpected_security_suites"),
                 rs.getBoolean("enabled_unexpected_fingerprint"),
                 rs.getBoolean("enabled_unexpected_signal_tracks"),
+                rs.getBoolean("enabled_disco_monitor"),
                 rs.getBoolean("enabled_similar_looking_ssid"),
                 rs.getBoolean("enabled_ssid_substring"),
                 rs.getString("disco_monitor_type"),

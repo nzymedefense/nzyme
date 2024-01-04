@@ -99,6 +99,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                         isAlerted = true;
                         break;
                     case DOT11_MONITOR_DISCO_ANOMALIES:
+                        if (!ssid.enabledDiscoMonitor()) {
+                            continue;
+                        }
                         isAlerted = true;
                         break;
                     case DOT11_MONITOR_SIMILAR_LOOKING_SSID:
@@ -255,6 +258,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                     signalTracksAlerted = true;
                     break;
                 case DOT11_MONITOR_DISCO_ANOMALIES:
+                    if (!ssid.enabledDiscoMonitor()) {
+                        continue;
+                    }
                     discoAnomaliesAlerted = true;
                     break;
                 case DOT11_MONITOR_SIMILAR_LOOKING_SSID:
@@ -307,6 +313,7 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 ssid.enabledUnexpectedSecuritySuites(),
                 ssid.enabledUnexpectedFingerprint(),
                 ssid.enabledUnexpectedSignalTracks(),
+                ssid.enabledDiscoMonitor(),
                 ssid.enabledSimilarLookingSSID(),
                 ssid.enabledSSIDSubstring()
         )).build();

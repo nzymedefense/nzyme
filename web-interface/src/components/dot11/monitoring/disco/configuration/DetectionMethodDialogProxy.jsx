@@ -1,7 +1,4 @@
 import React from "react";
-import NoOpDetectionMethodDialog from "./dialogs/NoOpDetectionMethodDialog";
-import Dot11Service from "../../../../../services/Dot11Service";
-import {notify} from "react-notify-toast";
 import StaticThresholdDetectionMethodDialog from "./dialogs/StaticThresholdDetectionMethodDialog";
 
 function DetectionMethodDialogProxy(props) {
@@ -16,8 +13,6 @@ function DetectionMethodDialogProxy(props) {
   }
 
   switch (type) {
-    case "NOOP":
-      return <NoOpDetectionMethodDialog onSubmit={onSubmit} configuration={configuration} />
     case "STATIC_THRESHOLD":
       return <StaticThresholdDetectionMethodDialog onSubmit={onSubmit}
                                                    monitoredNetworkId={monitoredNetworkId}

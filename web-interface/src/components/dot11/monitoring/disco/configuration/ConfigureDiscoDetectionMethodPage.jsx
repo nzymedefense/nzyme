@@ -69,7 +69,7 @@ function ConfigureDiscoDetectionMethodPage() {
 
         <div className="col-md-12">
           <h1>
-            Deauthentication Detection Method
+            Disconnection Detection Method
           </h1>
         </div>
 
@@ -83,7 +83,6 @@ function ConfigureDiscoDetectionMethodPage() {
                         value={selectedMethod}
                         name="method"
                         onChange={(e) => setSelectedMethod(e.target.value)}>
-                  <option value="NOOP">Disabled Anomaly Detection</option>
                   <option value="STATIC_THRESHOLD">Static Threshold</option>
                 </select>
 

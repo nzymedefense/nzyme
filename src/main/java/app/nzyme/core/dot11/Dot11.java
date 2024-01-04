@@ -66,6 +66,7 @@ public class Dot11 {
         UNEXPECTED_SECURITY_SUITES("enabled_unexpected_security_suites"),
         UNEXPECTED_FINGERPRINT("enabled_unexpected_fingerprint"),
         UNEXPECTED_SIGNAL_TRACKS("enabled_unexpected_signal_tracks"),
+        DISCO_MONITOR("enabled_disco_monitor"),
         SIMILAR_SSIDS("enabled_similar_looking_ssid"),
         RESTRICTED_SSID_SUBSTRINGS("enabled_ssid_substring");
 

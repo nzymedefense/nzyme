@@ -73,11 +73,11 @@ function MonitoredNetworkAlertStatusTable(props) {
         <tr>
         <td>Disconnection Anomalies <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-disco-anomalies"/>
           </td>
-          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="disco_anomalies" skipEnabledCheck={true}/>{' '}
+          <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="disco_monitor" skipEnabledCheck={false}/>{' '}
           </td>
           {renderControls ?
               <React.Fragment>
-                <td><span className="text-muted">n/a</span></td>
+                <td><AlertEnabledTrigger ssid={ssid} parameter="disco_monitor" bumpRevision={bumpRevision}/></td>
                 <td><a href={ApiRoutes.DOT11.MONITORING.DISCO.CONFIGURATION(ssid.uuid)}>Configure</a></td>
               </React.Fragment> : null}
         </tr>

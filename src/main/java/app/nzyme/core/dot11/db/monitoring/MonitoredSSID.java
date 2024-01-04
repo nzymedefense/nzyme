@@ -20,6 +20,7 @@ public abstract class MonitoredSSID {
     public abstract boolean enabledUnexpectedSecuritySuites();
     public abstract boolean enabledUnexpectedFingerprint();
     public abstract boolean enabledUnexpectedSignalTracks();
+    public abstract boolean enabledDiscoMonitor();
     public abstract boolean enabledSimilarLookingSSID();
     public abstract boolean enabledSSIDSubstring();
     public abstract String discoMonitorType();
@@ -29,7 +30,7 @@ public abstract class MonitoredSSID {
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();
 
-    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, DateTime createdAt, DateTime updatedAt) {
+    public static MonitoredSSID create(long id, UUID uuid, boolean isEnabled, String ssid, UUID organizationId, UUID tenantId, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledDiscoMonitor, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, String discoMonitorType, String discoMonitorConfiguration, Integer detectionConfigSimilarLookingSSIDThreshold, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .uuid(uuid)
@@ -42,6 +43,7 @@ public abstract class MonitoredSSID {
                 .enabledUnexpectedSecuritySuites(enabledUnexpectedSecuritySuites)
                 .enabledUnexpectedFingerprint(enabledUnexpectedFingerprint)
                 .enabledUnexpectedSignalTracks(enabledUnexpectedSignalTracks)
+                .enabledDiscoMonitor(enabledDiscoMonitor)
                 .enabledSimilarLookingSSID(enabledSimilarLookingSSID)
                 .enabledSSIDSubstring(enabledSSIDSubstring)
                 .discoMonitorType(discoMonitorType)
@@ -79,6 +81,8 @@ public abstract class MonitoredSSID {
         public abstract Builder enabledUnexpectedFingerprint(boolean enabledUnexpectedFingerprint);
 
         public abstract Builder enabledUnexpectedSignalTracks(boolean enabledUnexpectedSignalTracks);
+
+        public abstract Builder enabledDiscoMonitor(boolean enabledDiscoMonitor);
 
         public abstract Builder enabledSimilarLookingSSID(boolean enabledSimilarLookingSSID);
 

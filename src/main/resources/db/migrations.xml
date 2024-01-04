@@ -4162,4 +4162,32 @@
         <dropColumn tableName="dot11_monitored_networks" columnName="dconf_ssid_substring_value" />
     </changeSet>
 
+    <changeSet id="align_disco_anomaly_alert_enable_disable_method" author="lennartkoopmann">
+        <addColumn tableName="dot11_monitored_networks">
+            <column name="enabled_disco_monitor" type="boolean" defaultValue="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <sql>UPDATE dot11_monitored_networks SET enabled_disco_monitor = true WHERE disco_monitor_type = 'STATIC_THRESHOLD'</sql>
+        <sql>
+            UPDATE dot11_monitored_networks
+            SET
+                enabled_disco_monitor = false,
+                disco_monitor_configuration = '{"threshold":100}',
+                disco_monitor_type = 'STATIC_THRESHOLD'
+            WHERE disco_monitor_type = 'NOOP'
+        </sql>
+    </changeSet>
+
+    <changeSet id="update_disco_monitor_default_values" author="lennartkoopmann">
+        <addDefaultValue tableName="dot11_monitored_networks"
+                         columnName="disco_monitor_type"
+                         defaultValue="STATIC_THRESHOLD" />
+
+        <addDefaultValue tableName="dot11_monitored_networks"
+                         columnName="disco_monitor_configuration"
+                         defaultValue="{&quot;threshold&quot;:100}" />
+    </changeSet>
+
 </databaseChangeLog>
