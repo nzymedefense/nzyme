@@ -18,14 +18,19 @@ public abstract class Dot11SecuritySuiteJson {
     @Nullable
     public abstract String keyManagementModes();
 
+    @Nullable
+    public abstract String pmfMode();
+
     @JsonCreator
     public static Dot11SecuritySuiteJson create(@JsonProperty("pairwise_ciphers") String pairwiseCiphers,
                                                 @JsonProperty("group_cipher") String groupCipher,
-                                                @JsonProperty("key_management_modes") String keyManagementModes) {
+                                                @JsonProperty("key_management_modes") String keyManagementModes,
+                                                @JsonProperty("pmf_mode") String pmfMode) {
         return builder()
                 .pairwiseCiphers(pairwiseCiphers)
                 .groupCipher(groupCipher)
                 .keyManagementModes(keyManagementModes)
+                .pmfMode(pmfMode)
                 .build();
     }
 
@@ -40,6 +45,8 @@ public abstract class Dot11SecuritySuiteJson {
         public abstract Builder groupCipher(String groupCipher);
 
         public abstract Builder keyManagementModes(String keyManagementModes);
+
+        public abstract Builder pmfMode(String pmfMode);
 
         public abstract Dot11SecuritySuiteJson build();
     }

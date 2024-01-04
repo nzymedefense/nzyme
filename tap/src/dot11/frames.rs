@@ -192,7 +192,8 @@ pub enum InfraStructureType {
 #[derive(Debug)]
 pub struct SecurityInformation {
     pub protocols: Vec<EncryptionProtocol>,
-    pub suites: Option<CipherSuites> // Optional in case protocol is WEP
+    pub suites: Option<CipherSuites>, // Optional in case protocol is WEP
+    pub pmf: PmfMode
 }
 
 #[derive(Debug, Display, Copy, Clone)]
@@ -206,6 +207,7 @@ pub enum EncryptionProtocol {
 
 #[derive(Debug)]
 pub struct CipherSuites {
+    pub cursor: usize,
     pub group_cipher: CipherSuite,
     pub pairwise_ciphers: Vec<CipherSuite>,
     pub key_management_modes: Vec<KeyManagementMode>
@@ -239,6 +241,14 @@ pub enum CipherSuite {
     BIPGMAC128,
     BIPGMAC256,
     BIPCMAC256
+}
+
+#[derive(Debug, Display)]
+pub enum PmfMode {
+    Required,
+    Optional,
+    Disabled,
+    Unavailable
 }
 
 #[derive(Debug)]

@@ -362,6 +362,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                         info.pairwiseCiphers(),
                         info.groupCipher(),
                         info.keyManagementModes(),
+                        info.pmfMode(),
                         Dot11.securitySuitesToIdentifier(info)
                 ));
             } catch (JsonProcessingException e) {

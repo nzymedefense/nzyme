@@ -10,8 +10,8 @@ use crate::{
     }, helpers::network::is_mac_address_multicast,
 };
 use crate::alerting::alert_types::Dot11Alert;
-use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, RadiotapHeader, TaggedParameters};
-use crate::link::payloads::{DiscoTransmitterReport, Dot11AlertReport, Dot11DiscoReport};
+use crate::dot11::frames::{Dot11Capabilities, Dot11DeauthenticationFrame, Dot11DisassociationFrame, Dot11ProbeResponseFrame, PmfMode, RadiotapHeader, TaggedParameters};
+use crate::link::payloads::{DiscoTransmitterReport, Dot11AlertReport, Dot11DiscoReport, PmfReport};
 
 #[derive(Debug)]
 pub struct Dot11Table {
@@ -148,7 +148,7 @@ impl Dot11Table {
                                 // Has this BSSID advertised this SSID before?
                                 match bssid.advertised_networks.get_mut(&ssid) {
                                     Some(ssid) => {
-                                        // Update existing SSID.
+                                        // TODO do not overwrite here. Compare and add if it doesn't exist.
                                         ssid.security = security;
                                         ssid.wps = has_wps;
 
@@ -546,110 +546,115 @@ impl Dot11Table {
         let mut bssid_report: HashMap<String, BssidReport> = HashMap::new();
 
         match self.bssids.lock() {
-            Ok(bssids) => {
-                for (bssid, info) in &*bssids {
-                    let mut advertised_networks: HashMap<String, AdvertisedNetworkReport> =
-                        HashMap::new();
-                    for (ssid, netinfo) in &info.advertised_networks {
-                        let mut netsec_report: Vec<SecurityInformationReport> = Vec::new();
+            Ok(bssids) => for (bssid, info) in &*bssids {
+                let mut advertised_networks: HashMap<String, AdvertisedNetworkReport> =
+                    HashMap::new();
+                for (ssid, netinfo) in &info.advertised_networks {
+                    let mut netsec_report: Vec<SecurityInformationReport> = Vec::new();
 
-                        for netsecinfo in &netinfo.security {
-                            let mut protocols: Vec<String> = Vec::new();
-                            for protocol in &netsecinfo.protocols {
-                                protocols.push(protocol.to_string());
-                            }
-
-                            let suites: Dot11CipherSuites = match &netsecinfo.suites {
-                                Some(suite) => {
-                                    let mut pairwise_ciphers: Vec<String> = Vec::new();
-                                    for cipher in &suite.pairwise_ciphers {
-                                        pairwise_ciphers.push(cipher.to_string());
-                                    }
-
-                                    let mut key_management_modes: Vec<String> = Vec::new();
-                                    for mode in &suite.key_management_modes {
-                                        key_management_modes.push(mode.to_string());
-                                    }
-
-                                    Dot11CipherSuites {
-                                        group_cipher: suite.group_cipher.to_string(),
-                                        pairwise_ciphers,
-                                        key_management_modes
-                                    }
-                                },
-                                None => Dot11CipherSuites {
-                                    group_cipher: "".to_string(),
-                                    pairwise_ciphers: Vec::new(),
-                                    key_management_modes: Vec::new(),
-                                },
-                            };
-
-                            netsec_report.push(SecurityInformationReport { protocols, suites });
+                    for netsecinfo in &netinfo.security {
+                        let mut protocols: Vec<String> = Vec::new();
+                        for protocol in &netsecinfo.protocols {
+                            protocols.push(protocol.to_string());
                         }
 
-                        let mut channel_statistics = HashMap::new();
-                        for (frequency, frame_types) in &netinfo.channel_statistics {
-                            let mut frame_type_summary = HashMap::new();
-                            for (frame_type, stats) in frame_types {
-                                frame_type_summary.insert(
-                                    frame_type.to_string().to_lowercase(),
-                                    Dot11ChannelStatisticsReport {
-                                        frames: stats.frames,
-                                        bytes: stats.bytes
-                                    });
-                            }
+                        let suites: Dot11CipherSuites = match &netsecinfo.suites {
+                            Some(suite) => {
+                                let mut pairwise_ciphers: Vec<String> = Vec::new();
+                                for cipher in &suite.pairwise_ciphers {
+                                    pairwise_ciphers.push(cipher.to_string());
+                                }
 
-                            channel_statistics.insert(*frequency, frame_type_summary);
-                        }
+                                let mut key_management_modes: Vec<String> = Vec::new();
+                                for mode in &suite.key_management_modes {
+                                    key_management_modes.push(mode.to_string());
+                                }
 
-                        let mut infrastructure_types: Vec<String> = Vec::new();
-                        for t in &netinfo.infrastructure_types {
-                            infrastructure_types.push(t.to_string());
-                        }
-
-                        advertised_networks.insert(
-                            ssid.clone(),
-                            AdvertisedNetworkReport {
-                                security: netsec_report,
-                                fingerprints: netinfo.fingerprints.clone(),
-                                beacon_advertisements: netinfo.beacon_advertisements,
-                                proberesp_advertisements: netinfo.proberesp_advertisements,
-                                rates: netinfo.rates.clone(),
-                                wps: netinfo.wps,
-                                signal_strength: calculate_signal_strengh_report(
-                                    &netinfo.signal_strengths,
-                                ),
-                                signal_histogram: calculate_signal_histogram(&netinfo.signal_strengths),
-                                infrastructure_types,
-                                channel_statistics
+                                Dot11CipherSuites {
+                                    group_cipher: suite.group_cipher.to_string(),
+                                    pairwise_ciphers,
+                                    key_management_modes
+                                }
                             },
-                        );
+                            None => Dot11CipherSuites {
+                                group_cipher: "".to_string(),
+                                pairwise_ciphers: Vec::new(),
+                                key_management_modes: Vec::new(),
+                            },
+                        };
+
+                        let pmf = match netsecinfo.pmf {
+                            PmfMode::Required => PmfReport::Required,
+                            PmfMode::Optional => PmfReport::Optional,
+                            PmfMode::Disabled => PmfReport::Disabled,
+                            PmfMode::Unavailable => PmfReport::Unavailable
+                        };
+
+                        netsec_report.push(SecurityInformationReport { protocols, suites, pmf });
                     }
 
-                    let mut clients = HashMap::new();
-                    for (sta, stats) in &info.clients {
-                        clients.insert(sta.clone(), Dot11ClientStatisticsReport {
-                            tx_frames: stats.tx_frames,
-                            tx_bytes: stats.tx_bytes,
-                            rx_frames: stats.rx_frames,
-                            rx_bytes: stats.rx_bytes,
-                        });
+                    let mut channel_statistics = HashMap::new();
+                    for (frequency, frame_types) in &netinfo.channel_statistics {
+                        let mut frame_type_summary = HashMap::new();
+                        for (frame_type, stats) in frame_types {
+                            frame_type_summary.insert(
+                                frame_type.to_string().to_lowercase(),
+                                Dot11ChannelStatisticsReport {
+                                    frames: stats.frames,
+                                    bytes: stats.bytes
+                                });
+                        }
+
+                        channel_statistics.insert(*frequency, frame_type_summary);
                     }
 
-                    bssid_report.insert(
-                        bssid.clone(),
-                        BssidReport {
-                            advertised_networks,
-                            clients,
-                            hidden_ssid_frames: info.hidden_ssid_frames,
-                            signal_strength: calculate_1d_signal_strengh_report(
-                                &info.signal_strengths,
+                    let mut infrastructure_types: Vec<String> = Vec::new();
+                    for t in &netinfo.infrastructure_types {
+                        infrastructure_types.push(t.to_string());
+                    }
+
+                    advertised_networks.insert(
+                        ssid.clone(),
+                        AdvertisedNetworkReport {
+                            security: netsec_report,
+                            fingerprints: netinfo.fingerprints.clone(),
+                            beacon_advertisements: netinfo.beacon_advertisements,
+                            proberesp_advertisements: netinfo.proberesp_advertisements,
+                            rates: netinfo.rates.clone(),
+                            wps: netinfo.wps,
+                            signal_strength: calculate_signal_strengh_report(
+                                &netinfo.signal_strengths,
                             ),
-                            fingerprints: info.fingerprints.clone(),
+                            signal_histogram: calculate_signal_histogram(&netinfo.signal_strengths),
+                            infrastructure_types,
+                            channel_statistics
                         },
                     );
                 }
-            }
+
+                let mut clients = HashMap::new();
+                for (sta, stats) in &info.clients {
+                    clients.insert(sta.clone(), Dot11ClientStatisticsReport {
+                        tx_frames: stats.tx_frames,
+                        tx_bytes: stats.tx_bytes,
+                        rx_frames: stats.rx_frames,
+                        rx_bytes: stats.rx_bytes,
+                    });
+                }
+
+                bssid_report.insert(
+                    bssid.clone(),
+                    BssidReport {
+                        advertised_networks,
+                        clients,
+                        hidden_ssid_frames: info.hidden_ssid_frames,
+                        signal_strength: calculate_1d_signal_strengh_report(
+                            &info.signal_strengths,
+                        ),
+                        fingerprints: info.fingerprints.clone(),
+                    },
+                );
+            },
             Err(e) => error!("Could not acquire BSSIDs table mutex: {}", e),
         }
 

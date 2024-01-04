@@ -249,6 +249,7 @@ public class Dot11Table implements DataTable {
                                 Joiner.on(",").join(sec.suites().pairwiseCiphers()));
                         suiteMap.put("key_management_modes",
                                 Joiner.on(",").join(sec.suites().keyManagementModes()));
+                        suiteMap.put("pmf_mode", sec.pmf());
                     }
 
                     String securitySuites;

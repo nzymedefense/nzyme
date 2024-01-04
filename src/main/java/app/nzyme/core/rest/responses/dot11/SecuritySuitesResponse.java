@@ -20,15 +20,20 @@ public abstract class SecuritySuitesResponse {
     @Nullable
     public abstract String keyManagementModes();
 
+    @JsonProperty("pmf_mode")
+    @Nullable
+    public abstract String pmfMode();
+
     @JsonProperty("identifier")
     @Nullable
     public abstract String identifier();
 
-    public static SecuritySuitesResponse create(String pairwiseCiphers, String groupCipher, String keyManagementModes, String identifier) {
+    public static SecuritySuitesResponse create(String pairwiseCiphers, String groupCipher, String keyManagementModes, String pmfMode, String identifier) {
         return builder()
                 .pairwiseCiphers(pairwiseCiphers)
                 .groupCipher(groupCipher)
                 .keyManagementModes(keyManagementModes)
+                .pmfMode(pmfMode)
                 .identifier(identifier)
                 .build();
     }
@@ -44,6 +49,8 @@ public abstract class SecuritySuitesResponse {
         public abstract Builder groupCipher(String groupCipher);
 
         public abstract Builder keyManagementModes(String keyManagementModes);
+
+        public abstract Builder pmfMode(String pmfMode);
 
         public abstract Builder identifier(String identifier);
 

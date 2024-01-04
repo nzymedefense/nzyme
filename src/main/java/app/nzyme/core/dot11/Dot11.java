@@ -1859,7 +1859,15 @@ public class Dot11 {
         if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
             return "NONE";
         }
-        return suite.groupCipher() + "-" + suite.pairwiseCiphers() + "/" + suite.keyManagementModes();
+
+        String id = suite.groupCipher() + "-" + suite.pairwiseCiphers() + "/" + suite.keyManagementModes();
+
+        // Migration. We added PMF later.
+        if (!Strings.isNullOrEmpty(suite.pmfMode()) && !suite.pmfMode().equals("Unavailable")) {
+            id += "+PMF_" + suite.pmfMode().toUpperCase();
+        }
+
+        return id;
     }
 
     public static String securitySuitesToIdentifier(Dot11SecurityInformationReport suite) {
@@ -1869,9 +1877,16 @@ public class Dot11 {
             return "NONE";
         }
 
-        return suite.suites().groupCipher() + "-"
+        String id = suite.suites().groupCipher() + "-"
                 + Joiner.on(",").join(suite.suites().pairwiseCiphers()) + "/"
                 + Joiner.on(",").join(suite.suites().keyManagementModes());
+
+        // Migration. We added PMF later.
+        if (!Strings.isNullOrEmpty(suite.pmf()) && !suite.pmf().equals("Unavailable")) {
+            id += "+PMF_" + suite.pmf().toUpperCase();
+        }
+
+        return id;
     }
 
     private static final Map<Integer, Integer> frequencyChannelMap = Maps.newHashMap();

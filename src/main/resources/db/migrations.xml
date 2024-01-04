@@ -4190,4 +4190,16 @@
                          defaultValue="{&quot;threshold&quot;:100}" />
     </changeSet>
 
+    <changeSet id="add_pmf_mode_to_ssids" author="lennartkoopmann">
+        <addColumn tableName="dot11_ssids">
+            <column name="pmf_mode" type="varchar(16)" defaultValue="UNAVAILABLE">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="drop_ssid_pmf_mode_column" author="lennartkoopmann">
+        <dropColumn tableName="dot11_ssids" columnName="pmf_mode" />
+    </changeSet>
+
 </databaseChangeLog>

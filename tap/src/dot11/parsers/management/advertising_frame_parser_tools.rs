@@ -1,8 +1,8 @@
 use anyhow::{bail, Error};
-use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
+use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::{trace, warn};
+use log::{info, trace, warn};
 use sha2::{Digest, Sha256};
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
@@ -114,7 +114,7 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                     let suites: CipherSuites = match parse_wpa_security(data) {
                         Ok(suites) => suites,
                         Err(e) => {
-                            trace!("Could not parse RSN information: {}", e);
+                            warn!("Could not parse RSN information: {}", e);
                             continue;
                         }
                     };
@@ -126,7 +126,20 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                         vec![EncryptionProtocol::WPA2]
                     };
 
-                    security.push(SecurityInformation {protocols, suites: Option::Some(suites)});
+                    if data.len() < suites.cursor+2 {
+                        warn!("Could not parse PMF information: Payload too short.");
+                        continue;
+                    }
+
+                    let pmf = match parse_pmf_mode(&data[suites.cursor..data.len()]) {
+                        Ok(pmf) => pmf,
+                        Err(e) => {
+                            warn!("Could not parse PMF mode: {}", e);
+                            continue;
+                        }
+                    };
+
+                    security.push(SecurityInformation {protocols, pmf, suites: Option::Some(suites)});
                     security_bytes.extend(data);
                 }
                 50 => {
@@ -163,7 +176,8 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
 
                                     security.push(SecurityInformation {
                                         protocols: vec![EncryptionProtocol::WPA1],
-                                        suites: Option::Some(suites)
+                                        suites: Option::Some(suites),
+                                        pmf: PmfMode::Unavailable
                                     });
                                     security_bytes.extend(data);
                                 }
@@ -318,7 +332,6 @@ fn parse_wpa_security(data: &[u8]) -> Result<CipherSuites, Error> {
         bail!{"RSN doesn't fit key management suite count."};
     }
 
-
     let mut key_management_modes: Vec<KeyManagementMode> = Vec::new();
     let key_management_suite_count = LittleEndian::read_u16(&data[cursor..cursor+2]) as usize;
     cursor+=2;
@@ -331,6 +344,7 @@ fn parse_wpa_security(data: &[u8]) -> Result<CipherSuites, Error> {
     }
 
     Ok (CipherSuites {
+        cursor,
         group_cipher,
         pairwise_ciphers,
         key_management_modes
@@ -354,6 +368,25 @@ fn parse_key_management_suite(data: &[u8]) -> Result<KeyManagementMode, Error> {
         0x08 => Ok(KeyManagementMode::SAE),
         0x09 => Ok(KeyManagementMode::FTSAE),
         _ => Ok(KeyManagementMode::Unknown)
+    }
+}
+
+fn parse_pmf_mode(data: &[u8]) -> Result<PmfMode, Error> {
+    if data.len() != 2 {
+        bail!("Invalid RSN capabilities length: <{}>", data.len())
+    }
+
+    let bmask = data.view_bits::<Lsb0>();
+
+    let required = *bmask.get(6).unwrap();
+    let capable = *bmask.get(7).unwrap();
+
+    if required {
+        Ok(PmfMode::Required)
+    } else if capable {
+        Ok(PmfMode::Optional)
+    } else {
+        Ok(PmfMode::Disabled)
     }
 }
 
@@ -445,7 +478,8 @@ pub fn decide_encryption_protocol(capabilities: &Dot11Capabilities,
         tagged_data.security.push(
             SecurityInformation {
                 protocols: vec![EncryptionProtocol::WEP],
-                suites: Option::None
+                suites: Option::None,
+                pmf: PmfMode::Unavailable
             }
         )
     };

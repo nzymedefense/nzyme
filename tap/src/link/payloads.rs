@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
+use strum_macros::EnumString;
 use crate::alerting::alert_types::{Dot11AlertAttribute, Dot11AlertType};
 
 pub struct StatusReport {
@@ -207,7 +208,8 @@ pub struct SignalStrengthReport {
 #[derive(Serialize)]
 pub struct SecurityInformationReport {
     pub protocols: Vec<String>,
-    pub suites: Dot11CipherSuites
+    pub suites: Dot11CipherSuites,
+    pub pmf: PmfReport
 }
 
 #[derive(Serialize)]
@@ -215,6 +217,14 @@ pub struct Dot11CipherSuites {
     pub group_cipher: String,
     pub pairwise_ciphers: Vec<String>,
     pub key_management_modes: Vec<String>
+}
+
+#[derive(Serialize)]
+pub enum PmfReport {
+    Required,
+    Optional,
+    Disabled,
+    Unavailable
 }
 
 #[derive(Serialize)]
