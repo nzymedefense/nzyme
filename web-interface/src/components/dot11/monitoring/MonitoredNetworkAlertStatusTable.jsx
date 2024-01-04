@@ -71,8 +71,7 @@ function MonitoredNetworkAlertStatusTable(props) {
               </React.Fragment> : null}
         </tr>
         <tr>
-        <td>Disconnection Anomalies <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-disco-anomalies"/>
-          </td>
+          <td>Disconnection Anomalies <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-disco-anomalies"/></td>
           <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="disco_monitor" />{' '}
           </td>
           {renderControls ?
@@ -82,7 +81,7 @@ function MonitoredNetworkAlertStatusTable(props) {
               </React.Fragment> : null}
         </tr>
         <tr>
-          <td>Similar SSIDs</td>
+          <td>Similar SSIDs <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-similar-ssids"/></td>
           <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="similar_ssids" />{' '}
           </td>
           {renderControls ?
@@ -92,7 +91,7 @@ function MonitoredNetworkAlertStatusTable(props) {
               </React.Fragment> : null}
         </tr>
         <tr>
-          <td>Restricted SSID Substrings</td>
+          <td>Restricted SSID Substrings <HelpBubble link="https://go.nzyme.org/wifi-network-monitoring-restricted-substrings"/></td>
           <td><MonitoredNetworkSingleAlertStatus ssid={ssid} parameter="restricted_ssid_substrings" />{' '}
           </td>
           {renderControls ?
