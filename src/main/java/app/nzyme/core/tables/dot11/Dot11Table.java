@@ -13,10 +13,10 @@ import app.nzyme.core.tables.TablesService;
 import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredBSSID;
 import app.nzyme.core.tables.dot11.monitoring.PreLoadedMonitoredSSID;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Tools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import info.debatty.java.stringsimilarity.JaroWinkler;
@@ -236,7 +236,17 @@ public class Dot11Table implements DataTable {
 
             for (Map.Entry<String, Dot11AdvertisedNetworkReport> ssidEntry : report.advertisedNetworks().entrySet()) {
                 try {
-                    String ssid = ssidEntry.getKey();
+                    // Replace all non-printable characters.
+                    String ssid = Tools.sanitizeSSID(ssidEntry.getKey());
+
+                    /*
+                     * If all characters were sanitized away, this is a hidden SSID.
+                     * (some access points build hidden SSIDs this way)
+                     */
+                    if (ssid.isEmpty()) {
+                        continue;
+                    }
+
                     Dot11AdvertisedNetworkReport ssidReport = ssidEntry.getValue();
 
                     List<String> securityProtocols = Lists.newArrayList();

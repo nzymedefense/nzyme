@@ -18,6 +18,7 @@
 package app.nzyme.core.util;
 
 import com.google.common.base.Strings;
+import jakarta.validation.constraints.NotNull;
 import org.joda.time.Duration;
 
 import java.util.regex.Matcher;
@@ -67,6 +68,16 @@ public class Tools {
         }
 
         return duration.getStandardDays() + " days";
+    }
+
+    public static String sanitizeSSID(@NotNull String ssid) {
+        return ssid.replaceAll("\0", "") // NULL bytes
+                .replaceAll("\\p{C}", "") // invisible control characters and unused code points.
+                .replaceAll("\\p{Zl}", "") // line separator character U+2028
+                .replaceAll("\\p{Zp}", "") // paragraph separator character U+2029
+                .replaceAll("\t*", "") // Tabs
+                .replaceAll(" +", " ") // Multiple whitespaces in succession
+                .trim();
     }
 
 }
