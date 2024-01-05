@@ -2,7 +2,7 @@ use anyhow::{bail, Error};
 use crate::dot11::frames::{CipherSuite, CipherSuites, CountryInformation, Dot11Capabilities, EncryptionProtocol, InfraStructureType, KeyManagementMode, PmfMode, PwnagotchiData, RegulatoryEnvironment, SecurityInformation, TaggedParameters};
 use bitvec::{view::BitView, order::Lsb0};
 use byteorder::{ByteOrder, LittleEndian};
-use log::{info, trace, warn};
+use log::{trace, warn};
 use sha2::{Digest, Sha256};
 
 pub fn parse_capabilities(mask: &[u8]) -> Result<Dot11Capabilities, Error> {
@@ -119,13 +119,6 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                         }
                     };
 
-                    let protocols = if suites.key_management_modes.contains(&KeyManagementMode::SAE)
-                            || suites.key_management_modes.contains(&KeyManagementMode::FTSAE) {
-                        vec![EncryptionProtocol::WPA2, EncryptionProtocol::WPA3]
-                    } else {
-                        vec![EncryptionProtocol::WPA2]
-                    };
-
                     if data.len() < suites.cursor+2 {
                         warn!("Could not parse PMF information: Payload too short.");
                         continue;
@@ -138,6 +131,8 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
                             continue;
                         }
                     };
+
+                    let protocols = vec![decide_wpa_identifier(&suites, &pmf).unwrap()];
 
                     security.push(SecurityInformation {protocols, pmf, suites: Option::Some(suites)});
                     security_bytes.extend(data);
@@ -361,22 +356,32 @@ fn parse_key_management_suite(data: &[u8]) -> Result<KeyManagementMode, Error> {
     }
 
     match data[3] {
-        0x01 => Ok(KeyManagementMode::X802_1),
-        0x02 => Ok(KeyManagementMode::PSK),
-        0x03 => Ok(KeyManagementMode::FT802_1X),
-        0x04 => Ok(KeyManagementMode::FTPSK),
-        0x08 => Ok(KeyManagementMode::SAE),
-        0x09 => Ok(KeyManagementMode::FTSAE),
-        _ => Ok(KeyManagementMode::Unknown)
+        1 => Ok(KeyManagementMode::DOT1X),
+        2 => Ok(KeyManagementMode::PSK),
+        3 => Ok(KeyManagementMode::DOT1X_FT),
+        4 => Ok(KeyManagementMode::PSK_FT),
+        5 => Ok(KeyManagementMode::DOT1X_SHA256),
+        6 => Ok(KeyManagementMode::PSK_SHA256),
+        7 => Ok(KeyManagementMode::TDLS),
+        8 => Ok(KeyManagementMode::SAE),
+        9 => Ok(KeyManagementMode::SAE_FT),
+        10 => Ok(KeyManagementMode::AP_PEER),
+        11 => Ok(KeyManagementMode::DOT1X_B_EAP_SHA256),
+        12 => Ok(KeyManagementMode::DOT1X_B_EAP_SHA384), // CNSA
+        13 => Ok(KeyManagementMode::DOT1X_FT_SHA384), // CNSA
+        _ => {
+            warn!("Unknown key management mode: {}", data[3]);
+            Ok(KeyManagementMode::Unknown)
+        }
     }
 }
 
 fn parse_pmf_mode(data: &[u8]) -> Result<PmfMode, Error> {
-    if data.len() != 2 {
-        bail!("Invalid RSN capabilities length: <{}>", data.len())
+    if data.len() < 2 {
+        bail!("Invalid PMF mode length: <{}>", data.len())
     }
 
-    let bmask = data.view_bits::<Lsb0>();
+    let bmask = data[0..2].view_bits::<Lsb0>();
 
     let required = *bmask.get(6).unwrap();
     let capable = *bmask.get(7).unwrap();
@@ -470,6 +475,61 @@ pub fn calculate_fingerprint(caps: &Dot11Capabilities,
     let hash = Sha256::digest(factors);
 
     format!("{:2x}", hash)
+}
+
+pub fn decide_wpa_identifier(suites: &CipherSuites, pmf: &PmfMode) -> Result<EncryptionProtocol, Error> {
+    // WPA3-Enterprise 192?
+    if suites.key_management_modes.len() == 1 && suites.pairwise_ciphers.len() == 1
+        && (*suites.key_management_modes.get(0).unwrap() == KeyManagementMode::DOT1X_B_EAP_SHA384
+        || *suites.key_management_modes.get(0).unwrap() == KeyManagementMode::DOT1X_FT_SHA384)
+        && suites.group_cipher == CipherSuite::GCMP256
+        && *suites.pairwise_ciphers.get(0).unwrap() == CipherSuite::GCMP256
+        && *pmf == PmfMode::Required {
+        return Ok(EncryptionProtocol::WPA3EnterpriseCNSA)
+    }
+
+    // WPA2/3 Transition Mode.
+    if (suites.key_management_modes.contains(&KeyManagementMode::SAE)
+        || suites.key_management_modes.contains(&KeyManagementMode::SAE_FT)
+        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER))
+        && (suites.key_management_modes.contains(&KeyManagementMode::PSK)
+        || suites.key_management_modes.contains(&KeyManagementMode::PSK_FT)
+        || suites.key_management_modes.contains(&KeyManagementMode::PSK_SHA256)
+        || suites.key_management_modes.contains(&KeyManagementMode::TDLS))
+        && *pmf == PmfMode::Optional {
+        return Ok(EncryptionProtocol::WPA3Transition)
+    }
+
+    // WPA3-Enterprise
+    if (suites.key_management_modes.contains(&KeyManagementMode::DOT1X_SHA256)
+        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_B_EAP_SHA256))
+        && *pmf == PmfMode::Required {
+        return Ok(EncryptionProtocol::WPA3Enterprise)
+    }
+
+    // WPA3-Personal
+    if (suites.key_management_modes.contains(&KeyManagementMode::SAE)
+        || suites.key_management_modes.contains(&KeyManagementMode::SAE_FT)
+        || suites.key_management_modes.contains(&KeyManagementMode::AP_PEER))
+        && *pmf == PmfMode::Required {
+        return Ok(EncryptionProtocol::WPA3Personal)
+    }
+
+    // WPA2-Enterprise
+    if suites.key_management_modes.contains(&KeyManagementMode::DOT1X)
+        || suites.key_management_modes.contains(&KeyManagementMode::DOT1X_FT) {
+        return Ok(EncryptionProtocol::WPA2Enterprise)
+    }
+
+    // WPA2-Personal
+    if suites.key_management_modes.contains(&KeyManagementMode::PSK)
+        || suites.key_management_modes.contains(&KeyManagementMode::PSK_FT)
+        || suites.key_management_modes.contains(&KeyManagementMode::PSK_SHA256)
+        || suites.key_management_modes.contains(&KeyManagementMode::TDLS){
+        return Ok(EncryptionProtocol::WPA2Personal)
+    }
+
+    bail!("Unknown WPA identifier for suite and PMF: {:?}, {:?}", suites, pmf);
 }
 
 pub fn decide_encryption_protocol(capabilities: &Dot11Capabilities,

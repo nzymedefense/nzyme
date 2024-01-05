@@ -201,8 +201,12 @@ pub struct SecurityInformation {
 pub enum EncryptionProtocol {
     WEP,
     WPA1,
-    WPA2,
-    WPA3
+    WPA2Personal,
+    WPA2Enterprise,
+    WPA3Transition,
+    WPA3Personal,
+    WPA3Enterprise,
+    WPA3EnterpriseCNSA
 }
 
 #[derive(Debug)]
@@ -213,19 +217,28 @@ pub struct CipherSuites {
     pub key_management_modes: Vec<KeyManagementMode>
 }
 
+
 #[derive(Debug, Display, PartialEq)]
 #[allow(clippy::upper_case_acronyms)]
+#[allow(non_camel_case_types)]
 pub enum KeyManagementMode {
     Unknown,
-    X802_1,
+    DOT1X,
     PSK,
+    DOT1X_FT,
+    PSK_FT,
+    DOT1X_SHA256,
+    PSK_SHA256,
+    TDLS,
     SAE,
-    FT802_1X,
-    FTPSK,
-    FTSAE
+    SAE_FT,
+    AP_PEER,
+    DOT1X_B_EAP_SHA256,
+    DOT1X_B_EAP_SHA384,
+    DOT1X_FT_SHA384
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, PartialEq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum CipherSuite {
     None,
@@ -243,7 +256,7 @@ pub enum CipherSuite {
     BIPCMAC256
 }
 
-#[derive(Debug, Display)]
+#[derive(Debug, Display, PartialEq)]
 pub enum PmfMode {
     Required,
     Optional,

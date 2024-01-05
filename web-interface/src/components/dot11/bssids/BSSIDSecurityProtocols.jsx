@@ -1,4 +1,5 @@
 import React from "react";
+import Dot11SecurityProtocolList from "../shared/Dot11SecurityProtocolList";
 
 function BSSIDSecurityProtocols(props) {
 
@@ -22,7 +23,7 @@ function BSSIDSecurityProtocols(props) {
     return sp !== "None";
   });
 
-  return filtered.join(", ");
+  return <Dot11SecurityProtocolList protocols={filtered} />
 
 }
 

@@ -21,6 +21,7 @@ import DiscoHistogram from "../../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
 import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
+import Dot11SecurityProtocolList from "../../shared/Dot11SecurityProtocolList";
 
 const dot11Service = new Dot11Service();
 const DEFAULT_MINUTES = 15;
@@ -121,7 +122,7 @@ function SSIDDetailsPage() {
 
                   <dl className="mb-0">
                     <dt>Protocol</dt>
-                    <dd>{ssid.security_protocols.length === 0 ? "None" : ssid.security_protocols.join(",")}</dd>
+                    <dd><Dot11SecurityProtocolList protocols={ssid.security_protocols} /></dd>
                     <dt>WPS</dt>
                     <dd><WPSInformation wps={ssid.is_wps} /></dd>
                     <dt>Suite</dt>
