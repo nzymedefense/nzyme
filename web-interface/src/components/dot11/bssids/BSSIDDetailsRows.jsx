@@ -6,6 +6,7 @@ import LoadingSpinner from "../../misc/LoadingSpinner";
 import Channel from "../util/Channel";
 import ApiRoutes from "../../../util/ApiRoutes";
 import InfrastructureTypes from "../util/InfrastructureTypes";
+import Dot11SecurityProtocolList from "../shared/Dot11SecurityProtocolList";
 
 function BSSIDDetailsRows(props) {
 
@@ -85,7 +86,7 @@ function BSSIDDetailsRows(props) {
                     </td>
                     <td>{numeral(ssid.total_frames).format("0,0")} frames / {numeral(ssid.total_bytes).format("0,0b")}</td>
                     <td><SignalStrength strength={ssid.signal_strength_average} /></td>
-                    <td>{ssid.security_protocols.length === 0 || ssid.security_protocols[0] === "" ? "None" : ssid.security_protocols.join(",")}</td>
+                    <td>{ssid.security_protocols.length === 0 || ssid.security_protocols[0] === "" ? "None" : <Dot11SecurityProtocolList protocols={ssid.security_protocols} />}</td>
                     <td>{ssid.is_wps.join(",")}</td>
                     <td title={moment(ssid.last_seen).format()}>
                       {moment(ssid.last_seen).fromNow()}

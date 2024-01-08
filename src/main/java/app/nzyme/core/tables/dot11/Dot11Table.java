@@ -249,42 +249,17 @@ public class Dot11Table implements DataTable {
 
                     Dot11AdvertisedNetworkReport ssidReport = ssidEntry.getValue();
 
-                    List<String> securityProtocols = Lists.newArrayList();
-                    Map<String, String> suiteMap = Maps.newHashMap();
-                    for (Dot11SecurityInformationReport sec : ssidReport.security()) {
-                        securityProtocols.addAll(sec.protocols());
-
-                        suiteMap.put("group_cipher", sec.suites().groupCipher());
-                        suiteMap.put("pairwise_ciphers",
-                                Joiner.on(",").join(sec.suites().pairwiseCiphers()));
-                        suiteMap.put("key_management_modes",
-                                Joiner.on(",").join(sec.suites().keyManagementModes()));
-                        suiteMap.put("pmf_mode", sec.pmf());
-                    }
-
-                    String securitySuites;
-                    try {
-                        securitySuites = this.om.writeValueAsString(suiteMap);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-
                     Long ssidDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
                             handle.createQuery("INSERT INTO dot11_ssids(bssid_id, tap_uuid, ssid, bssid, " +
-                                            "security_protocol, security_suites, is_wps, signal_strength_average, " +
-                                            "signal_strength_max, signal_strength_min, beacon_advertisements, " +
-                                            "proberesp_advertisements, created_at) VALUES(:bssid_id, :tap_uuid, " +
-                                            ":ssid, :bssid, :security_protocol, :security_suites, :is_wps, " +
-                                            ":signal_strength_average, :signal_strength_max, :signal_strength_min, " +
-                                            ":beacon_advertisements, :proberesp_advertisements, :created_at) " +
-                                            "RETURNING *")
+                                            "signal_strength_average, signal_strength_max, signal_strength_min, " +
+                                            "beacon_advertisements, proberesp_advertisements, created_at) " +
+                                            "VALUES(:bssid_id, :tap_uuid, :ssid, :bssid, :signal_strength_average, " +
+                                            ":signal_strength_max, :signal_strength_min, :beacon_advertisements, " +
+                                            ":proberesp_advertisements, :created_at) RETURNING *")
                                     .bind("bssid_id", bssidDatabaseId)
                                     .bind("tap_uuid", tap.uuid())
                                     .bind("ssid", ssid)
                                     .bind("bssid", bssid)
-                                    .bind("security_protocol", Joiner.on("/").join(securityProtocols))
-                                    .bind("security_suites", securitySuites)
-                                    .bind("is_wps", ssidReport.wps())
                                     .bind("signal_strength_average", ssidReport.signalStrength().average())
                                     .bind("signal_strength_max", ssidReport.signalStrength().max())
                                     .bind("signal_strength_min", ssidReport.signalStrength().min())
@@ -294,6 +269,60 @@ public class Dot11Table implements DataTable {
                                     .mapTo(Long.class)
                                     .one()
                     );
+
+                    // WPS settings.
+                    for (boolean hasWps : ssidReport.wps()) {
+                        tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                            handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                            "VALUES(:ssid_id, 'has_wps', :value)")
+                                    .bind("ssid_id", ssidDatabaseId)
+                                    .bind("value", String.valueOf(hasWps))
+                                    .execute();
+                        });
+                    }
+
+                    // Security protocols and suites.
+                    for (Dot11SecurityInformationReport sec : ssidReport.security()) {
+                        if (sec.protocols().isEmpty()) {
+                            // We insert NULL to signal "NONE".
+                            tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                                handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                                "VALUES(:ssid_id, 'security_protocol', NULL")
+                                        .bind("ssid_id", ssidDatabaseId)
+                                        .execute();
+                            });
+                        } else {
+                            for (String protocol : sec.protocols()) {
+                                tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                                    handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                                    "VALUES(:ssid_id, 'security_protocol', :value)")
+                                            .bind("ssid_id", ssidDatabaseId)
+                                            .bind("value", protocol)
+                                            .execute();
+                                });
+                            }
+                        }
+
+                        Map<String, String> suiteMap = Maps.newHashMap();
+                        suiteMap.put("group_cipher", sec.suites().groupCipher());
+                        suiteMap.put("pairwise_ciphers",
+                                Joiner.on(",").join(sec.suites().pairwiseCiphers()));
+                        suiteMap.put("key_management_modes",
+                                Joiner.on(",").join(sec.suites().keyManagementModes()));
+                        suiteMap.put("pmf_mode", sec.pmf());
+
+                        try {
+                            tablesService.getNzyme().getDatabase().useHandle(handle -> {
+                                handle.createUpdate("INSERT INTO dot11_ssid_settings(ssid_id, attribute, value) " +
+                                                "VALUES(:ssid_id, 'security_suite', :value)")
+                                        .bind("ssid_id", ssidDatabaseId)
+                                        .bind("value", this.om.writeValueAsString(suiteMap))
+                                        .execute();
+                            });
+                        } catch(JsonProcessingException e) {
+                            LOG.error("Could not serialize SSID <{}> security suites.", bssidDatabaseId, e);
+                        }
+                    }
 
                     // SSID Fingerprints.
                     for (String fingerprint : ssidReport.fingerprints()) {

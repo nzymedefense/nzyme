@@ -58,7 +58,7 @@ pub struct AdvertisedNetwork {
     pub proberesp_advertisements: u128,
     pub fingerprints: Vec<String>,
     pub rates: Vec<f32>,
-    pub wps: bool,
+    pub wps: Vec<bool>,
     pub signal_strengths: HashMap<u16, Vec<i8>>,
     pub infrastructure_types: Vec<InfraStructureType>,
     pub channel_statistics: HashMap<u16, HashMap<FrameSubType, Dot11ChannelStatistics>>
@@ -148,9 +148,15 @@ impl Dot11Table {
                                 // Has this BSSID advertised this SSID before?
                                 match bssid.advertised_networks.get_mut(&ssid) {
                                     Some(ssid) => {
-                                        // TODO do not overwrite here. Compare and add if it doesn't exist.
-                                        ssid.security = security;
-                                        ssid.wps = has_wps;
+                                        for sec in security {
+                                            if !ssid.security.contains(&sec) {
+                                                ssid.security.push(sec);
+                                            }
+                                        }
+
+                                        if !ssid.wps.contains(&has_wps) {
+                                            ssid.wps.push(has_wps);
+                                        }
 
                                         if !ssid.fingerprints.contains(&fingerprint) {
                                             ssid.fingerprints.push(fingerprint.clone());
@@ -207,7 +213,7 @@ impl Dot11Table {
                                                     &tagged_parameters.supported_rates,
                                                     &tagged_parameters.extended_supported_rates
                                                 ),
-                                                wps: has_wps,
+                                                wps: vec![has_wps],
                                                 signal_strengths: Self::build_initial_signal_strengths(&header.frequency, signal_strength),
                                                 infrastructure_types: vec![capabilities.infrastructure_type],
                                                 channel_statistics: Self::build_initial_channel_statistics(
@@ -252,7 +258,7 @@ impl Dot11Table {
                                             &tagged_parameters.supported_rates,
                                             &tagged_parameters.extended_supported_rates
                                         ),
-                                        wps: has_wps,
+                                        wps: vec![has_wps],
                                         signal_strengths: Self::build_initial_signal_strengths(
                                             &header.frequency, signal_strength
                                         ),
@@ -621,7 +627,7 @@ impl Dot11Table {
                             beacon_advertisements: netinfo.beacon_advertisements,
                             proberesp_advertisements: netinfo.proberesp_advertisements,
                             rates: netinfo.rates.clone(),
-                            wps: netinfo.wps,
+                            wps: netinfo.wps.clone(),
                             signal_strength: calculate_signal_strengh_report(
                                 &netinfo.signal_strengths,
                             ),

@@ -18,12 +18,7 @@ function BSSIDSecurityProtocols(props) {
     }
   }
 
-  // No need to show "none" for the hidden/broadcast announcements. Caught above if purely hidden/broadcast.
-  const filtered = bssid.security_protocols.filter(function (sp) {
-    return sp !== "None";
-  });
-
-  return <Dot11SecurityProtocolList protocols={filtered} />
+  return <Dot11SecurityProtocolList protocols={bssid.security_protocols} />
 
 }
 

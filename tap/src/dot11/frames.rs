@@ -189,16 +189,17 @@ pub enum InfraStructureType {
     AdHoc
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SecurityInformation {
     pub protocols: Vec<EncryptionProtocol>,
     pub suites: Option<CipherSuites>, // Optional in case protocol is WEP
     pub pmf: PmfMode
 }
 
-#[derive(Debug, Display, Copy, Clone)]
+#[derive(Debug, Display, Copy, Clone, PartialEq)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum EncryptionProtocol {
+    None,
     WEP,
     WPA1,
     WPA2Personal,
@@ -209,7 +210,7 @@ pub enum EncryptionProtocol {
     WPA3EnterpriseCNSA
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CipherSuites {
     pub cursor: usize,
     pub group_cipher: CipherSuite,

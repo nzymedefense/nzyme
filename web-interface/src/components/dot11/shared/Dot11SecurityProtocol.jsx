@@ -13,8 +13,6 @@ function Dot11SecurityProtocol(props) {
       return "WEP"
     case "WPA1":
       return "WPA1"
-    case "WPA2Personal/WPA1":
-      return "WPA1/WPA2-Mixed"
     case "WPA2Personal":
       return "WPA2-Personal"
     case "WPA2Enterprise":

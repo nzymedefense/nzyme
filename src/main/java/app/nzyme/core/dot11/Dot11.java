@@ -249,7 +249,7 @@ public class Dot11 {
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
@@ -258,6 +258,8 @@ public class Dot11 {
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
@@ -309,14 +311,18 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, c.frequency, MAX(s.created_at) AS last_seen, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
-                                "ARRAY_AGG(DISTINCT(s.is_wps)) AS is_wps, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
                                 "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
                                 "AVG(s.signal_strength_average) AS signal_strength_average, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels AS c on s.id = c.ssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
+                                "AND ssw.attribute = 'has_wps' " +
                                 "WHERE created_at > :cutoff AND bssid = :bssid AND tap_uuid IN (<taps>) " +
                                 "GROUP BY s.ssid, c.frequency")
                         .bind("bssid", bssid)
@@ -334,12 +340,13 @@ public class Dot11 {
 
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT s.ssid, MAX(s.created_at) AS last_seen, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(sss.value)) AS security_suites, " +
+                                "ARRAY_AGG(DISTINCT(ssw.value)) AS is_wps, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(r.rate)) AS rates, " +
-                                "ARRAY_AGG(DISTINCT(s.is_wps)) AS is_wps, ARRAY_AGG(DISTINCT(i.infrastructure_type)) " +
+                                "ARRAY_AGG(DISTINCT(i.infrastructure_type)) " +
                                 "AS infrastructure_types, AVG(s.signal_strength_average) AS signal_strength_average, " +
-                                "ARRAY_AGG(DISTINCT(s.security_suites)) AS security_suites, " +
                                 "ARRAY_AGG(DISTINCT(cl.client_mac)) AS access_point_clients, " +
                                 "ARRAY_AGG(DISTINCT(c.frequency)) AS frequencies, " +
                                 "SUM(c.stats_bytes) AS total_bytes, SUM(c.stats_frames) AS total_frames " +
@@ -350,6 +357,12 @@ public class Dot11 {
                                 "LEFT JOIN dot11_fingerprints AS f on s.id = f.ssid_id " +
                                 "LEFT JOIN dot11_rates AS r on s.id = r.ssid_id " +
                                 "LEFT JOIN dot11_bssid_clients cl on b.id = cl.bssid_id " +
+                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                "AND ssp.attribute = 'security_protocol' " +
+                                "LEFT JOIN dot11_ssid_settings AS sss on s.id = sss.ssid_id " +
+                                "AND sss.attribute = 'security_suite' " +
+                                "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
+                                "AND ssw.attribute = 'has_wps' " +
                                 "WHERE s.created_at > :cutoff AND s.bssid = :bssid AND s.ssid = :ssid " +
                                 "AND s.tap_uuid IN (<taps>) " +
                                 "GROUP BY ssid")
@@ -1856,7 +1869,7 @@ public class Dot11 {
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
-        if (suite.groupCipher() == null && suite.pairwiseCiphers() == null && suite.keyManagementModes() == null) {
+        if (Strings.isNullOrEmpty(suite.groupCipher()) && Strings.isNullOrEmpty(suite.pairwiseCiphers()) && Strings.isNullOrEmpty(suite.keyManagementModes())) {
             return "NONE";
         }
 
@@ -1865,6 +1878,8 @@ public class Dot11 {
         // Migration. We added PMF later.
         if (!Strings.isNullOrEmpty(suite.pmfMode()) && !suite.pmfMode().equals("Unavailable")) {
             id += "+PMF_" + suite.pmfMode().toUpperCase();
+        } else {
+            id += "+PMF_NA";
         }
 
         return id;

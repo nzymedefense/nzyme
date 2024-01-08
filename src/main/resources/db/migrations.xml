@@ -4202,4 +4202,44 @@
         <dropColumn tableName="dot11_ssids" columnName="pmf_mode" />
     </changeSet>
 
+    <changeSet id="support_multiple_security_settings_per_reported_ssid" author="lennartkoopmann">
+        <dropColumn tableName="dot11_ssids" columnName="is_wps" />
+        <dropColumn tableName="dot11_ssids" columnName="security_protocol" />
+        <dropColumn tableName="dot11_ssids" columnName="security_suites" />
+
+        <createTable tableName="dot11_ssid_settings">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="ssid_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="attribute" type="varchar(24)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="value" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="link_settings2ssids"
+                                 baseTableName="dot11_ssid_settings"
+                                 baseColumnNames="ssid_id"
+                                 referencedTableName="dot11_ssids"
+                                 referencedColumnNames="id"
+                                 onUpdate="NO ACTION"
+                                 onDelete="CASCADE" />
+    </changeSet>
+
+    <changeSet id="make_ssid_settings_value_nullable" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="dot11_ssid_settings" columnName="value" />
+    </changeSet>
+
+    <changeSet id="make_ssid_settings_value_not_nullable_again" author="lennartkoopmann">
+        <addNotNullConstraint tableName="dot11_ssid_settings" columnName="value" />
+    </changeSet>
+    
 </databaseChangeLog>

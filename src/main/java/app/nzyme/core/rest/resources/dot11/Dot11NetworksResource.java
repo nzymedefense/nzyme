@@ -356,6 +356,10 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
         ObjectMapper om = new ObjectMapper();
         List<SecuritySuitesResponse> securitySuites = Lists.newArrayList();
         for (String suite : ssidDetails.securitySuites()) {
+            if (suite == null) {
+                continue;
+            }
+
             try {
                 Dot11SecuritySuiteJson info = om.readValue(suite, Dot11SecuritySuiteJson.class);
                 securitySuites.add(SecuritySuitesResponse.create(
@@ -366,7 +370,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                         Dot11.securitySuitesToIdentifier(info)
                 ));
             } catch (JsonProcessingException e) {
-                LOG.error(e);
+                LOG.error( e);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
         }

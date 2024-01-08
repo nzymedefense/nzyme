@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use serde::{Serialize, ser::SerializeStruct};
 use chrono::{Utc, DateTime};
-use strum_macros::EnumString;
 use crate::alerting::alert_types::{Dot11AlertAttribute, Dot11AlertType};
 
 pub struct StatusReport {
@@ -191,7 +190,7 @@ pub struct AdvertisedNetworkReport {
     pub beacon_advertisements: u128,
     pub proberesp_advertisements: u128,
     pub rates: Vec<f32>,
-    pub wps: bool,
+    pub wps: Vec<bool>,
     pub signal_strength: SignalStrengthReport,
     pub signal_histogram: HashMap<u16, HashMap<i8, u128>>,
     pub infrastructure_types: Vec<String>,

@@ -217,6 +217,15 @@ pub fn parse_tagged_parameters(payload: &[u8]) -> Result<TaggedParameterParserDa
         pwnagotchi_data
     };
 
+    // Mark as open network when no security mechanisms were detected.
+    if security.is_empty() {
+        security.push(SecurityInformation {
+            protocols: vec![EncryptionProtocol::None],
+            suites: Option::None,
+            pmf: PmfMode::Unavailable
+        });
+    }
+
     Ok(TaggedParameterParserData {
         tagged_parameters,
         security,
