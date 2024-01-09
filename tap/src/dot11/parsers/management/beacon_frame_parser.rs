@@ -38,6 +38,7 @@ pub fn parse(frame: &Arc<Dot11Frame>) -> Result<Dot11BeaconFrame, Error> {
     decide_encryption_protocol(&capabilities, &mut tagged_data);
 
     let fingerprint = calculate_fingerprint(
+        &transmitter,
         &capabilities,
         &tagged_data.tagged_parameters,
         &tagged_data.has_wps,

@@ -430,7 +430,8 @@ fn parse_cipher_suite(data: &[u8]) -> Result<CipherSuite, Error> {
     }
 }
 
-pub fn calculate_fingerprint(caps: &Dot11Capabilities,
+pub fn calculate_fingerprint(bssid: &str,
+                             caps: &Dot11Capabilities,
                              tagged_params: &TaggedParameters,
                              has_wps: &bool,
                              security: &Vec<u8>) -> String {
@@ -482,6 +483,8 @@ pub fn calculate_fingerprint(caps: &Dot11Capabilities,
     factors.extend(security);
 
     let hash = Sha256::digest(factors);
+
+    trace!("Fingerprint debug: [{}] Caps: [{:?}] TagParams: [{:?}] WPS: [{}]", bssid, caps, tagged_params, has_wps);
 
     format!("{:2x}", hash)
 }
