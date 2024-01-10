@@ -757,10 +757,12 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
 
             List<FingerprintImportDataResponse> fingerprints = Lists.newArrayList();
             for (String fingerprint : nzyme.getDot11().findFingerprintsOfBSSID(bssid, allAccessibleTapUUIDs)) {
-                fingerprints.add(FingerprintImportDataResponse.create(
-                        fingerprint,
-                        monitoredFingerprints.contains(fingerprint)
-                ));
+                if (fingerprint != null) {
+                    fingerprints.add(FingerprintImportDataResponse.create(
+                            fingerprint,
+                            monitoredFingerprints.contains(fingerprint)
+                    ));
+                }
             }
 
             Optional<MacAddressContextEntry> ctx = nzyme.getContextService().findMacAddressContext(

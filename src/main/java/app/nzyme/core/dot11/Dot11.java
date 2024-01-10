@@ -1862,9 +1862,12 @@ public class Dot11 {
 
     public List<String> findSecuritySuitesOfSSID(String ssid, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT DISTINCT(security_suites) FROM dot11_ssids " +
-                                "WHERE ssid = :ssid AND tap_uuid IN (<taps>) " +
-                                "AND created_at >= (NOW() - INTERVAL '24 hours') " +
+                handle.createQuery("SELECT DISTINCT(sss.value) AS security_suites " +
+                                "FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_ssid_settings AS sss on s.id = sss.ssid_id " +
+                                "AND sss.attribute = 'security_suite' " +
+                                "WHERE s.ssid = :ssid AND s.tap_uuid IN (<taps>) " +
+                                "AND s.created_at >= (NOW() - INTERVAL '24 hours') " +
                                 "ORDER BY security_suites ASC")
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
