@@ -787,15 +787,17 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 .stream().map(MonitoredSecuritySuite::securitySuite).collect(Collectors.toList());
         List<SecuritySuiteImportDataResponse> securitySuitesResponse = Lists.newArrayList();
         for (String ss : nzyme.getDot11().findSecuritySuitesOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
-            try {
-                Dot11SecuritySuiteJson ssj = new ObjectMapper().readValue(ss, Dot11SecuritySuiteJson.class);
-                String ssId = Dot11.securitySuitesToIdentifier(ssj);
-                securitySuitesResponse.add(SecuritySuiteImportDataResponse.create(
-                        ssId, monitoredSuites.contains(ssId)
-                ));
-            } catch(Exception e) {
-                LOG.error("Could not build security suites response.", e);
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            if (ss != null) {
+                try {
+                    Dot11SecuritySuiteJson ssj = new ObjectMapper().readValue(ss, Dot11SecuritySuiteJson.class);
+                    String ssId = Dot11.securitySuitesToIdentifier(ssj);
+                    securitySuitesResponse.add(SecuritySuiteImportDataResponse.create(
+                            ssId, monitoredSuites.contains(ssId)
+                    ));
+                } catch (Exception e) {
+                    LOG.error("Could not build security suites response.", e);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
             }
         }
 
@@ -803,7 +805,9 @@ public class Dot11MonitoredNetworksResource extends TapDataHandlingResource {
                 .stream().map(MonitoredChannel::frequency).collect(Collectors.toList());
         List<ChannelImportDataResponse> channelsResponse = Lists.newArrayList();
         for (Long f : nzyme.getDot11().findChannelsOfSSID(ssid.get().ssid(), allAccessibleTapUUIDs)) {
-            channelsResponse.add(ChannelImportDataResponse.create(f, monitoredChannels.contains(f)));
+            if (f != null) {
+                channelsResponse.add(ChannelImportDataResponse.create(f, monitoredChannels.contains(f)));
+            }
         }
 
         return Response.ok(MonitoredNetworkImportDataResponse.create(
