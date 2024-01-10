@@ -60,11 +60,15 @@ public class Dot11Table implements DataTable {
 
             long clientDatabaseId = tablesService.getNzyme().getDatabase().withHandle(handle ->
                     handle.createQuery("INSERT INTO dot11_clients(tap_uuid, client_mac, wildcard_probe_requests, " +
-                                    "created_at) VALUES(:tap_uuid, :client_mac, :wildcard_probe_requests, " +
-                                    ":created_at) RETURNING id")
+                                    "signal_strength_average, signal_strength_max, signal_strength_min, created_at) " +
+                                    "VALUES(:tap_uuid, :client_mac, :wildcard_probe_requests, :signal_strength_average, " +
+                                    ":signal_strength_max, :signal_strength_min, :created_at) RETURNING id")
                             .bind("tap_uuid", tap.uuid())
                             .bind("client_mac", clientMac)
                             .bind("wildcard_probe_requests", report.wildcardProbeRequests())
+                            .bind("signal_strength_average", report.signalStrength().average())
+                            .bind("signal_strength_min", report.signalStrength().min())
+                            .bind("signal_strength_max", report.signalStrength().max())
                             .bind("created_at", timestamp)
                             .mapTo(Long.class)
                             .one()
@@ -221,14 +225,19 @@ public class Dot11Table implements DataTable {
                 if (!bssid.equals(mac)) { // Don't record BSSID itself.
                     tablesService.getNzyme().getDatabase().useHandle(handle ->
                             handle.createUpdate("INSERT INTO dot11_bssid_clients(bssid_id, client_mac, tx_frames, " +
-                                            "tx_bytes, rx_frames, rx_bytes) VALUES(:bssid_id, :client_mac, " +
-                                            ":tx_frames, :tx_bytes, :rx_frames, :rx_bytes)")
+                                            "tx_bytes, rx_frames, rx_bytes, signal_strength_average, " +
+                                            "signal_strength_min, signal_strength_max) VALUES(:bssid_id, :client_mac, " +
+                                            ":tx_frames, :tx_bytes, :rx_frames, :rx_bytes, :signal_strength_average, " +
+                                            ":signal_strength_min, :signal_strength_max)")
                                     .bind("bssid_id", bssidDatabaseId)
                                     .bind("client_mac", mac)
                                     .bind("tx_frames", stats.txFrames())
                                     .bind("tx_bytes", stats.txBytes())
                                     .bind("rx_frames", stats.rxFrames())
                                     .bind("rx_bytes", stats.rxBytes())
+                                    .bind("signal_strength_average", stats.signalStrength().average())
+                                    .bind("signal_strength_min", stats.signalStrength().average())
+                                    .bind("signal_strength_max", stats.signalStrength().average())
                                     .execute()
                     );
                 }

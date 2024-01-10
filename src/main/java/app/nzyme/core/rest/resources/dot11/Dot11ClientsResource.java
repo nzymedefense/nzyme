@@ -10,6 +10,7 @@ import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
+import app.nzyme.core.rest.responses.dot11.TapBasedSignalStrengthResponse;
 import app.nzyme.core.rest.responses.dot11.clients.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -261,6 +262,22 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
 
         ClientDetails c = client.get();
 
+        // Recent signal strength by tap.
+        List<TapBasedSignalStrengthResponse> connectedSignalStrengthsByTap = Lists.newArrayList();
+        for (TapBasedSignalStrengthResult ssr : nzyme.getDot11()
+                .findBssidClientSignalStrengthPerTap(c.mac(), 15, tapUuids)) {
+            connectedSignalStrengthsByTap.add(TapBasedSignalStrengthResponse.create(
+                    ssr.tapUuid(), ssr.tapName(), ssr.signalStrength()
+            ));
+        }
+        List<TapBasedSignalStrengthResponse> disconnectedSignalStrengthsByTap = Lists.newArrayList();
+        for (TapBasedSignalStrengthResult ssr : nzyme.getDot11()
+                .findDisconnectedClientSignalStrengthPerTap(c.mac(), 15, tapUuids)) {
+            disconnectedSignalStrengthsByTap.add(TapBasedSignalStrengthResponse.create(
+                    ssr.tapUuid(), ssr.tapName(), ssr.signalStrength()
+            ));
+        }
+
         // Disconnection frames.
         List<DiscoHistogramEntry> discos = nzyme.getDot11().getDiscoHistogram(
                 Dot11.DiscoType.DISCONNECTION,
@@ -293,21 +310,21 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             ClientActivityHistogramEntry disconnected = disconnectedHistogram.get(bucket);
             DiscoHistogramEntry disco = discoActivityHistogram.get(bucket);
 
-            Long connectedFrames;
+            long connectedFrames;
             if (connected != null) {
                 connectedFrames = connected.frames();
             } else {
                 connectedFrames = 0L;
             }
 
-            Long disconnectedFrames;
+            long disconnectedFrames;
             if (disconnected != null) {
                 disconnectedFrames = disconnected.frames();
             } else {
                 disconnectedFrames = 0L;
             }
 
-            Long discoActivityFrames;
+            long discoActivityFrames;
             if (disco != null) {
                 discoActivityFrames = disco.frameCount();
             } else {
@@ -351,6 +368,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 c.lastSeen(),
                 c.probeRequests(),
                 activityHistogram,
+                connectedSignalStrengthsByTap,
+                disconnectedSignalStrengthsByTap,
                 dataRetentionDays
         )).build();
     }

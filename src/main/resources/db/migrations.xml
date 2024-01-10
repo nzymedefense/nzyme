@@ -4241,5 +4241,38 @@
     <changeSet id="make_ssid_settings_value_not_nullable_again" author="lennartkoopmann">
         <addNotNullConstraint tableName="dot11_ssid_settings" columnName="value" />
     </changeSet>
-    
+
+    <changeSet id="add_80211_client_signal_strength" author="lennartkoopmann">
+        <addColumn tableName="dot11_clients">
+            <column name="signal_strength_average" type="float" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_min" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_max" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_missing_bssid_80211_client_signal_strength" author="lennartkoopmann">
+        <addColumn tableName="dot11_bssid_clients">
+            <column name="signal_strength_average" type="float" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_min" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="signal_strength_max" type="int" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+
 </databaseChangeLog>

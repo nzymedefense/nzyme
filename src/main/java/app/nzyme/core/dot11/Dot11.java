@@ -180,7 +180,7 @@ public class Dot11 {
                 handle.createQuery("SELECT b.bssid, AVG(b.signal_strength_average) AS signal_strength_average, " +
                                 "MIN(b.created_at) AS first_seen, MAX(b.created_at) AS last_seen, " +
                                 "SUM(b.hidden_ssid_frames) as hidden_ssid_frames, " +
-                                "ARRAY_AGG(DISTINCT(COALESCE(s.security_protocol, 'None'))) AS security_protocols, " +
+                                "ARRAY_AGG(DISTINCT(COALESCE(ssp.value, 'None'))) AS security_protocols, " +
                                 "ARRAY_AGG(DISTINCT(f.fingerprint)) AS fingerprints, " +
                                 "ARRAY_AGG(DISTINCT(s.ssid)) AS ssids, " +
                                 "ARRAY_AGG(DISTINCT(i.infrastructure_type)) AS infrastructure_types, " +
@@ -189,6 +189,8 @@ public class Dot11 {
                                 "LEFT JOIN dot11_ssids AS s ON b.id = s.bssid_id " +
                                 "LEFT JOIN dot11_fingerprints AS f ON b.id = f.bssid_id " +
                                 "LEFT JOIN dot11_infrastructure_types AS i on s.id = i.ssid_id " +
+                                "LEFT JOIN dot11_ssid_settings AS ssp on s.id = ssp.ssid_id " +
+                                "AND ssp.attribute = 'security_protocol' " +
                                 "LEFT JOIN dot11_bssid_clients AS c on b.id = c.bssid_id " +
                                 "WHERE b.bssid = :bssid AND b.created_at > :cutoff AND b.tap_uuid IN (<taps>) " +
                                 "GROUP BY b.bssid")
@@ -956,6 +958,39 @@ public class Dot11 {
                 connectedHistogram,
                 disconnectedHistogram
         ));
+    }
+
+    public List<TapBasedSignalStrengthResult> findDisconnectedClientSignalStrengthPerTap(String clientMac, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT c.tap_uuid AS tap_uuid, t.name AS tap_name, " +
+                                "AVG(c.signal_strength_average) AS signal_strength " +
+                                "FROM dot11_clients AS c " +
+                                "LEFT JOIN taps AS t ON c.tap_uuid = t.uuid " +
+                                "WHERE c.client_mac = :client_mac AND c.tap_uuid IN (<taps>) AND c.created_at > :cutoff " +
+                                "GROUP BY c.tap_uuid, t.name")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(TapBasedSignalStrengthResult.class)
+                        .list()
+        );
+    }
+
+    public List<TapBasedSignalStrengthResult> findBssidClientSignalStrengthPerTap(String clientMac, int minutes, List<UUID> taps) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
+                                "AVG(c.signal_strength_average) AS signal_strength " +
+                                "FROM dot11_bssid_clients AS c " +
+                                "LEFT JOIN dot11_bssids AS b on b.id = c.bssid_id " +
+                                "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid IN (<taps>) AND b.created_at > :cutoff " +
+                                "GROUP BY b.tap_uuid, t.name")
+                        .bind("client_mac", clientMac)
+                        .bindList("taps", taps)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(TapBasedSignalStrengthResult.class)
+                        .list()
+        );
     }
 
     public void createMonitoredSSID(String ssid, UUID organizationId, UUID tenantId) {

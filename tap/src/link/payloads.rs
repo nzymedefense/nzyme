@@ -160,7 +160,8 @@ pub struct BssidReport {
 #[derive(Serialize)]
 pub struct Dot11ClientReport {
     pub probe_request_ssids: HashMap<String, u128>,
-    pub wildcard_probe_requests: u128
+    pub wildcard_probe_requests: u128,
+    pub signal_strength: SignalStrengthReport
 }
 
 #[derive(Serialize)]
@@ -237,7 +238,8 @@ pub struct Dot11ClientStatisticsReport {
     pub tx_frames: u128,
     pub tx_bytes: u128,
     pub rx_frames: u128,
-    pub rx_bytes: u128
+    pub rx_bytes: u128,
+    pub signal_strength: SignalStrengthReport
 }
 
 impl TotalWithAverage {

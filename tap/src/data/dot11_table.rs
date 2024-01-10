@@ -33,8 +33,8 @@ pub struct Bssid {
 #[derive(Debug)]
 pub struct Client {
     pub probe_request_ssids: HashMap<String, u128>,
-    pub wildcard_probe_requests: u128
-    // TODO add signal strength like BSSID
+    pub wildcard_probe_requests: u128,
+    pub signal_strengths: Vec<i8>
 }
 
 #[derive(Debug)]
@@ -48,7 +48,8 @@ pub struct Dot11ClientStatistics {
     tx_frames: u128,
     tx_bytes: u128,
     rx_frames: u128,
-    rx_bytes: u128
+    rx_bytes: u128,
+    signal_strengths: Vec<i8>
 }
 
 #[derive(Debug)]
@@ -291,6 +292,8 @@ impl Dot11Table {
     }
 
     pub fn register_probe_request_frame(&self, frame: Dot11ProbeRequestFrame) {
+        let signal_strength: i8 = frame.header.antenna_signal.unwrap_or(0);
+
         match self.clients.lock() {
             Ok(mut clients) => {
                 match clients.get_mut(&frame.transmitter) {
@@ -315,6 +318,9 @@ impl Dot11Table {
                                 client.wildcard_probe_requests += 1;
                             }
                         }
+
+                        // Update signal strength
+                        client.signal_strengths.push(signal_strength);
                     },
                     None => {
                         // First time we are seeing this client.
@@ -331,7 +337,8 @@ impl Dot11Table {
                             frame.transmitter,
                             Client {
                                 probe_request_ssids,
-                                wildcard_probe_requests
+                                wildcard_probe_requests,
+                                signal_strengths: vec![signal_strength]
                             }
                         );
                     }
@@ -342,6 +349,8 @@ impl Dot11Table {
     }
 
     pub fn register_data_frame(&self, frame: Dot11DataFrame) {
+        let signal_strength: i8 = frame.header.antenna_signal.unwrap_or(0);
+
         let (sta, tx_frames, tx_bytes, rx_frames, rx_bytes) = match frame.ds.direction {
             Dot11DataFrameDirection::Entering => {
                 (frame.ds.destination, 0, 0, 1, frame.length)
@@ -354,7 +363,7 @@ impl Dot11Table {
         };
 
         if frame.ds.direction == Dot11DataFrameDirection::Entering && sta == "FF:FF:FF:FF:FF:FF" {
-            // Ignore entering franes with wildcard destination.
+            // Ignore entering frames with wildcard destination.
             return
         }
 
@@ -373,6 +382,7 @@ impl Dot11Table {
                             client.tx_bytes += tx_bytes as u128;
                             client.rx_frames += rx_frames;
                             client.rx_bytes += rx_bytes as u128;
+                            client.signal_strengths.push(signal_strength);
                         },
                         None => {
                             // First time seeing this client.
@@ -380,7 +390,8 @@ impl Dot11Table {
                                 tx_frames,
                                 tx_bytes: tx_bytes as u128,
                                 rx_frames,
-                                rx_bytes: rx_bytes as u128
+                                rx_bytes: rx_bytes as u128,
+                                signal_strengths: vec![signal_strength]
                             });
                         },
                     }
@@ -645,6 +656,7 @@ impl Dot11Table {
                         tx_bytes: stats.tx_bytes,
                         rx_frames: stats.rx_frames,
                         rx_bytes: stats.rx_bytes,
+                        signal_strength: calculate_1d_signal_strengh_report(&stats.signal_strengths)
                     });
                 }
 
@@ -672,7 +684,10 @@ impl Dot11Table {
                         client.clone(),
                         Dot11ClientReport {
                             probe_request_ssids: info.probe_request_ssids.clone(),
-                            wildcard_probe_requests: info.wildcard_probe_requests
+                            wildcard_probe_requests: info.wildcard_probe_requests,
+                            signal_strength: calculate_1d_signal_strengh_report(
+                                &info.signal_strengths
+                            )
                         }
                     );
                 }

@@ -1,6 +1,7 @@
 package app.nzyme.core.rest.responses.dot11.clients;
 
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
+import app.nzyme.core.rest.responses.dot11.TapBasedSignalStrengthResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
@@ -34,10 +35,16 @@ public abstract class ClientDetailsResponse {
     @JsonProperty("activity_histogram")
     public abstract Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram();
 
+    @JsonProperty("connected_signal_strength")
+    public abstract List<TapBasedSignalStrengthResponse> connectedSignalStrength();
+
+    @JsonProperty("disconnected_signal_strength")
+    public abstract List<TapBasedSignalStrengthResponse> disconnectedSignalStrength();
+
     @JsonProperty("data_retention_days")
     public abstract int dataRetentionDays();
 
-    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, int dataRetentionDays) {
+    public static ClientDetailsResponse create(Dot11MacAddressResponse mac, ConnectedBSSID connectedBSSID, List<ConnectedBSSID> connectedBSSIDHistory, DateTime firstSeen, DateTime lastSeen, List<String> probeRequests, Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram, List<TapBasedSignalStrengthResponse> connectedSignalStrength, List<TapBasedSignalStrengthResponse> disconnectedSignalStrength, int dataRetentionDays) {
         return builder()
                 .mac(mac)
                 .connectedBSSID(connectedBSSID)
@@ -46,6 +53,8 @@ public abstract class ClientDetailsResponse {
                 .lastSeen(lastSeen)
                 .probeRequests(probeRequests)
                 .activityHistogram(activityHistogram)
+                .connectedSignalStrength(connectedSignalStrength)
+                .disconnectedSignalStrength(disconnectedSignalStrength)
                 .dataRetentionDays(dataRetentionDays)
                 .build();
     }
@@ -69,6 +78,10 @@ public abstract class ClientDetailsResponse {
         public abstract Builder probeRequests(List<String> probeRequests);
 
         public abstract Builder activityHistogram(Map<DateTime, ClientActivityHistogramValueResponse> activityHistogram);
+
+        public abstract Builder connectedSignalStrength(List<TapBasedSignalStrengthResponse> connectedSignalStrength);
+
+        public abstract Builder disconnectedSignalStrength(List<TapBasedSignalStrengthResponse> disconnectedSignalStrength);
 
         public abstract Builder dataRetentionDays(int dataRetentionDays);
 
