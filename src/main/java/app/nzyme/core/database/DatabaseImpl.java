@@ -105,7 +105,7 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new BSSIDAndSSIDCountHistogramEntryMapper())
                 .registerRowMapper(new SSIDDetailsMapper())
                 .registerRowMapper(new Dot11AdvertisementHistogramEntryMapper())
-                .registerRowMapper(new ChannelHistogramEntryMapper())
+                .registerRowMapper(new SignalTrackHistogramEntryMapper())
                 .registerRowMapper(new ActiveChannelMapper())
                 .registerRowMapper(new ConnectedClientDetailsMapper())
                 .registerRowMapper(new DisconnectedClientDetailsMapper())

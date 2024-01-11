@@ -15,6 +15,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
+import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 
 const dot11Service = new Dot11Service();
 
@@ -32,7 +33,7 @@ function BSSIDDetailsPage() {
     dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
     dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps,
         (ssids) => setSSIDs(ssids)
-    )
+    );
   }, [bssidParam, selectedTaps]);
 
   useEffect(() => {
@@ -151,7 +152,19 @@ function BSSIDDetailsPage() {
                   <div className="card-body">
                     <h3>Average Signal Strength <small>Last 15 minutes, All SSIDs</small></h3>
 
-                    <TapBasedSignalStrengthTable strengths={bssid.signal_strength} />
+                    <TapBasedSignalStrengthTable strengths={bssid.signal_strength}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Signal Waterfall <small>Last 24 hours maximum</small></h3>
+
+                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} minutes={24 * 60}/>
                   </div>
                 </div>
               </div>

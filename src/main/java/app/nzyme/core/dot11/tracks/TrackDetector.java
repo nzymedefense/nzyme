@@ -1,6 +1,6 @@
 package app.nzyme.core.dot11.tracks;
 
-import app.nzyme.core.dot11.db.ChannelHistogramEntry;
+import app.nzyme.core.dot11.db.SignalTrackHistogramEntry;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
@@ -138,9 +138,9 @@ public class TrackDetector {
         return tracks.build();
     }
 
-    public static TrackDetectorHeatmapData toChartAxisMaps(List<ChannelHistogramEntry> signals) {
+    public static TrackDetectorHeatmapData toChartAxisMaps(List<SignalTrackHistogramEntry> signals) {
         Map<DateTime, Map<Integer, Long>> aggregated = Maps.newTreeMap();
-        for (ChannelHistogramEntry signal : signals) {
+        for (SignalTrackHistogramEntry signal : signals) {
             if (!aggregated.containsKey(signal.bucket())) {
                 aggregated.put(signal.bucket(), Maps.newHashMap());
             }

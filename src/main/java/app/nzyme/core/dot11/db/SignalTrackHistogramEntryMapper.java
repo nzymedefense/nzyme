@@ -7,11 +7,11 @@ import org.joda.time.DateTime;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ChannelHistogramEntryMapper implements RowMapper<ChannelHistogramEntry> {
+public class SignalTrackHistogramEntryMapper implements RowMapper<SignalTrackHistogramEntry> {
 
     @Override
-    public ChannelHistogramEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
-        return ChannelHistogramEntry.create(
+    public SignalTrackHistogramEntry map(ResultSet rs, StatementContext ctx) throws SQLException {
+        return SignalTrackHistogramEntry.create(
                 new DateTime(rs.getTimestamp("bucket")),
                 rs.getInt("signal_strength"),
                 rs.getLong("frame_count")

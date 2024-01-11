@@ -3,7 +3,7 @@ package app.nzyme.core.dot11.monitoring;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.Subsystem;
 import app.nzyme.core.detection.alerts.DetectionType;
-import app.nzyme.core.dot11.db.ChannelHistogramEntry;
+import app.nzyme.core.dot11.db.SignalTrackHistogramEntry;
 import app.nzyme.core.dot11.db.monitoring.MonitoredBSSID;
 import app.nzyme.core.dot11.db.monitoring.MonitoredChannel;
 import app.nzyme.core.dot11.db.monitoring.MonitoredSSID;
@@ -48,7 +48,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                     for (UUID tapId : tapUUIDs) {
                         Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
 
-                        List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+                        List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                                 monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), 8*60, tap.get().uuid());
 
                         TrackDetectorConfig config = nzyme.getDot11()

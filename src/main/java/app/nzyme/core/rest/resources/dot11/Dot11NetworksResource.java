@@ -180,6 +180,40 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
     }
 
     @GET
+    @Path("/bssids/show/{bssid}/signal/waterfall")
+    public Response bssidSignalWaterfall(@Context SecurityContext sc,
+                                         @PathParam("bssid") String bssid,
+                                         @QueryParam("minutes") int minutes,
+                                         @QueryParam("taps") String taps) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, taps);
+
+        if (tapUuids.size() != 1) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        // Track detector config. Pull related org from tap (access was checked above and count is 1)
+        @SuppressWarnings("OptionalGetWithoutIsPresent")
+        Tap tap = nzyme.getTapManager().findTap(tapUuids.get(0)).get();
+
+        List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getBSSIDSignalStrengthWaterfall(
+                bssid, minutes, tap.uuid()
+        );
+
+        TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);
+
+        return Response.ok(
+                SignalWaterfallResponse.create(
+                        heatmap.z(),
+                        DEFAULT_X_VALUES,
+                        heatmap.y(),
+                        null,
+                        null
+                )
+        ).build();
+    }
+
+    @GET
     @Path("/bssids/show/{bssid}/advertisements/histogram")
     public Response bssidAdvertisementHistogram(@Context SecurityContext sc,
                                                       @PathParam("bssid") String bssid,
@@ -523,7 +557,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
                 .findCustomTrackDetectorConfiguration(tap.organizationId(), tap.uuid(), bssid, ssid, frequency)
                 .orElse(TrackDetector.DEFAULT_CONFIG);
 
-        List<ChannelHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
+        List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
                 bssid, ssid, frequency, minutes, tap.uuid());
 
         TrackDetector.TrackDetectorHeatmapData heatmap = TrackDetector.toChartAxisMaps(signals);

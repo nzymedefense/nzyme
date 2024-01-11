@@ -437,11 +437,11 @@ public class Dot11 {
         );
     }
 
-    public List<ChannelHistogramEntry> getSSIDSignalStrengthWaterfall(String bssid,
-                                                                      String ssid,
-                                                                      int frequency,
-                                                                      int minutes,
-                                                                      UUID tapId) {
+    public List<SignalTrackHistogramEntry> getSSIDSignalStrengthWaterfall(String bssid,
+                                                                          String ssid,
+                                                                          int frequency,
+                                                                          int minutes,
+                                                                          UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
                                 "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
@@ -454,7 +454,22 @@ public class Dot11 {
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .bind("frequency", frequency)
-                        .mapTo(ChannelHistogramEntry.class)
+                        .mapTo(SignalTrackHistogramEntry.class)
+                        .list()
+        );
+    }
+
+    public List<SignalTrackHistogramEntry> getBSSIDSignalStrengthWaterfall(String bssid, int minutes, UUID tapId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
+                                "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
+                                "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
+                                "WHERE created_at > :cutoff AND s.tap_uuid = :tap_id AND bssid = :bssid " +
+                                "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tap_id", tapId)
+                        .bind("bssid", bssid)
+                        .mapTo(SignalTrackHistogramEntry.class)
                         .list()
         );
     }

@@ -35,6 +35,15 @@ class Dot11Service {
         })
   }
 
+  getBSSIDSignalWaterfall(bssid, minutes, taps, setWaterfall) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+
+    RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/signal/waterfall",
+        { minutes: minutes, taps: tapsList }, function (response) {
+          setWaterfall(response.data);
+        })
+  }
+
   findAllBSSIDs(minutes, taps, setBSSIDs) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 

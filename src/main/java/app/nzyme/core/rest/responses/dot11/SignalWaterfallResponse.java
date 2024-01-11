@@ -2,6 +2,7 @@ package app.nzyme.core.rest.responses.dot11;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import jakarta.annotation.Nullable;
 import org.joda.time.DateTime;
 
 import java.util.List;
@@ -19,9 +20,11 @@ public abstract class SignalWaterfallResponse {
     public abstract List<DateTime> y();
 
     @JsonProperty("tracks")
+    @Nullable
     public abstract List<SignalWaterfallTrackResponse> tracks();
 
     @JsonProperty("detector_configuration")
+    @Nullable
     public abstract SignalWaterfallConfigurationResponse detectorConfiguration();
 
     public static SignalWaterfallResponse create(List<List<Long>> z, List<Integer> x, List<DateTime> y, List<SignalWaterfallTrackResponse> tracks, SignalWaterfallConfigurationResponse detectorConfiguration) {
