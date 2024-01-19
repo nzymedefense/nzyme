@@ -25,7 +25,6 @@ public abstract class MonitoredSSID {
     public abstract boolean enabledSSIDSubstring();
     public abstract String discoMonitorType();
     public abstract String discoMonitorConfiguration();
-    @Nullable
     public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
     public abstract DateTime createdAt();
     public abstract DateTime updatedAt();

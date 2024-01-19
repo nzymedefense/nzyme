@@ -25,7 +25,6 @@ public abstract class PreLoadedMonitoredSSID {
     public abstract boolean enabledSimilarLookingSSID();
     public abstract boolean enabledSSIDSubstring();
 
-    @Nullable
     public abstract Integer detectionConfigSimilarLookingSSIDThreshold();
 
     public static PreLoadedMonitoredSSID create(long id, UUID uuid, String ssid, Map<String, PreLoadedMonitoredBSSID> bssids, List<Integer> channels, List<String> securitySuites, boolean enabledUnexpectedBSSID, boolean enabledUnexpectedChannel, boolean enabledUnexpectedSecuritySuites, boolean enabledUnexpectedFingerprint, boolean enabledUnexpectedSignalTracks, boolean enabledSimilarLookingSSID, boolean enabledSSIDSubstring, Integer detectionConfigSimilarLookingSSIDThreshold) {

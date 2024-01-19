@@ -411,8 +411,7 @@ public class Dot11Table implements DataTable {
                     for (PreLoadedMonitoredSSID monitoredSSID : monitoredSSIDs.values()) {
                         if (!monitoredSSIDNames.contains(ssid)) {
                             // Similar looking SSIDs.
-                            if (monitoredSSID.enabledSimilarLookingSSID()
-                                    && monitoredSSID.detectionConfigSimilarLookingSSIDThreshold() != null) {
+                            if (monitoredSSID.enabledSimilarLookingSSID()) {
                                 double similarity = jaroWinkler
                                         .similarity(monitoredSSID.ssid().toLowerCase(), ssid.toLowerCase()) * 100.0;
 

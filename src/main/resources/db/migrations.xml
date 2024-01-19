@@ -4274,5 +4274,20 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="fix_default_value_of_similar_sound_ssids" author="lennartkoopmann">
+        <sql>
+            UPDATE dot11_monitored_networks
+            SET dconf_similar_looking_ssid_threshold = 95
+            WHERE dconf_similar_looking_ssid_threshold IS NULL
+        </sql>
+
+        <addNotNullConstraint tableName="dot11_monitored_networks" columnName="dconf_similar_looking_ssid_threshold" />
+    </changeSet>
+
+    <changeSet id="add_similar_sounding_ssid_default_value" author="lennartkoopmann">
+        <addDefaultValue tableName="dot11_monitored_networks"
+                         columnName="dconf_similar_looking_ssid_threshold"
+                         defaultValue="95" />
+    </changeSet>
 
 </databaseChangeLog>
