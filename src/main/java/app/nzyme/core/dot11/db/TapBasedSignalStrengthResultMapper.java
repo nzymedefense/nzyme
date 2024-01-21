@@ -12,8 +12,8 @@ public class TapBasedSignalStrengthResultMapper implements RowMapper<TapBasedSig
     @Override
     public TapBasedSignalStrengthResult map(ResultSet rs, StatementContext ctx) throws SQLException {
         return TapBasedSignalStrengthResult.create(
-                UUID.fromString(rs.getString("tap_uuid"))
-                , rs.getString("tap_name"),
+                UUID.fromString(rs.getString("tap_uuid")),
+                rs.getString("tap_name"),
                 rs.getFloat("signal_strength")
         );
     }

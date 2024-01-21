@@ -14,6 +14,7 @@ import app.nzyme.core.rest.responses.dot11.TapBasedSignalStrengthResponse;
 import app.nzyme.core.rest.responses.dot11.clients.*;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Maps;
@@ -340,6 +341,27 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
             ));
         }
 
+        List<ClientSignalStrengthResponse> connectedSignalStrengthHistogram = Lists.newArrayList();
+        List<ClientSignalStrengthResponse> disconnectedSignalStrengthHistogram = Lists.newArrayList();
+        if (tapUuids.size() == 1) {
+            UUID tapUUID = tapUuids.get(0);
+
+            for (ClientSignalStrengthResult r : nzyme.getDot11()
+                    .findBssidClientSignalStrengthHistogram(clientMac, 24 * 60, tapUUID)) {
+                connectedSignalStrengthHistogram.add(ClientSignalStrengthResponse.create(
+                        r.bucket(), r.signalStrength().longValue()
+                ));
+            }
+
+
+            for (ClientSignalStrengthResult r : nzyme.getDot11()
+                    .findDisconnectedClientSignalStrengthHistogram(clientMac, 24 * 60, tapUUID)) {
+                disconnectedSignalStrengthHistogram.add(ClientSignalStrengthResponse.create(
+                        r.bucket(), r.signalStrength().longValue()
+                ));
+            }
+        }
+
         int dataRetentionDays = Integer.parseInt(nzyme.getDatabaseCoreRegistry()
                 .getValue(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.key())
                 .orElse(Dot11RegistryKeys.DOT11_RETENTION_TIME_DAYS.defaultValue().orElse("MISSING"))
@@ -370,6 +392,8 @@ public class Dot11ClientsResource extends TapDataHandlingResource {
                 activityHistogram,
                 connectedSignalStrengthsByTap,
                 disconnectedSignalStrengthsByTap,
+                connectedSignalStrengthHistogram,
+                disconnectedSignalStrengthHistogram,
                 dataRetentionDays
         )).build();
     }

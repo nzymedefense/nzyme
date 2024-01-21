@@ -975,7 +975,9 @@ public class Dot11 {
         ));
     }
 
-    public List<TapBasedSignalStrengthResult> findDisconnectedClientSignalStrengthPerTap(String clientMac, int minutes, List<UUID> taps) {
+    public List<TapBasedSignalStrengthResult> findDisconnectedClientSignalStrengthPerTap(String clientMac,
+                                                                                         int minutes,
+                                                                                         List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT c.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(c.signal_strength_average) AS signal_strength " +
@@ -991,7 +993,9 @@ public class Dot11 {
         );
     }
 
-    public List<TapBasedSignalStrengthResult> findBssidClientSignalStrengthPerTap(String clientMac, int minutes, List<UUID> taps) {
+    public List<TapBasedSignalStrengthResult> findBssidClientSignalStrengthPerTap(String clientMac,
+                                                                                  int minutes,
+                                                                                  List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(c.signal_strength_average) AS signal_strength " +
@@ -1004,6 +1008,42 @@ public class Dot11 {
                         .bindList("taps", taps)
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
                         .mapTo(TapBasedSignalStrengthResult.class)
+                        .list()
+        );
+    }
+
+    public List<ClientSignalStrengthResult> findDisconnectedClientSignalStrengthHistogram(String clientMac,
+                                                                                            int minutes,
+                                                                                            UUID tap) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(signal_strength_average) AS signal_strength, " +
+                                "DATE_TRUNC('minute', created_at) AS bucket " +
+                                "FROM dot11_clients " +
+                                "WHERE client_mac = :client_mac AND tap_uuid = :tap_uuid AND created_at > :cutoff " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("client_mac", clientMac)
+                        .bind("tap_uuid", tap)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(ClientSignalStrengthResult.class)
+                        .list()
+        );
+    }
+
+    public List<ClientSignalStrengthResult> findBssidClientSignalStrengthHistogram(String clientMac,
+                                                                                     int minutes,
+                                                                                     UUID tap) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT AVG(c.signal_strength_average) AS signal_strength, " +
+                                "DATE_TRUNC('minute', b.created_at) AS bucket " +
+                                "FROM dot11_bssid_clients AS c " +
+                                "LEFT JOIN dot11_bssids AS b ON b.id = c.bssid_id " +
+                                "WHERE c.client_mac = :client_mac AND b.tap_uuid = :tap_uuid " +
+                                "AND b.created_at > :cutoff " +
+                                "GROUP BY bucket ORDER BY bucket DESC")
+                        .bind("client_mac", clientMac)
+                        .bind("tap_uuid", tap)
+                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .mapTo(ClientSignalStrengthResult.class)
                         .list()
         );
     }

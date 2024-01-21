@@ -34,6 +34,8 @@ class SimpleLineChart extends React.Component {
           x: x,
           y: y,
           type: 'scatter',
+          mode: this.props.scattermode ? this.props.scattermode : 'line',
+          marker: { size: 3 },
           line: { width: this.props.lineWidth ? this.props.lineWidth : 2, shape: 'linear', color: '#0d6efd' }
         }
       ]

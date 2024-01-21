@@ -32,7 +32,10 @@
                 "object-curly-spacing": "off",
                 "space-before-function-paren": "off",
                 "eol-last": "off",
-                "react/jsx-no-target-blank": "off"
+                "no-trailing-spaces": "off",
+                "react/jsx-no-target-blank": "off",
+                "multiline-ternary": "off",
+                "dot-notation": "off"
             }
         }
    ],

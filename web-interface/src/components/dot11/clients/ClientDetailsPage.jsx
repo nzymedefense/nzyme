@@ -13,6 +13,7 @@ import {disableTapSelector, enableTapSelector} from "../../misc/TapSelector";
 import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
+import ClientSignalStrengthChart from "./ClientSignalStrengthChart";
 
 const dot11Service = new Dot11Service();
 
@@ -26,6 +27,7 @@ function ClientDetailsPage() {
   const [client, setClient] = useState(null);
 
   useEffect(() => {
+    setClient(null);
     dot11Service.findMergedConnectedOrDisconnectedClient(macParam, selectedTaps, setClient);
   }, [selectedTaps]);
 
@@ -140,19 +142,50 @@ function ClientDetailsPage() {
 
         <div className="row mt-3">
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>Average Data &amp; Control Frames Signal Strength <small>Last 15 minutes</small></h3>
-                <TapBasedSignalStrengthTable strengths={client.connected_signal_strength}/>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Average Data &amp; Control Frames Signal Strengths By Tap <small>Last 15 minutes</small></h3>
+                    <TapBasedSignalStrengthTable strengths={client.connected_signal_strength}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Data &amp; Control Frames Signal Strength</h3>
+
+                    <ClientSignalStrengthChart data={client.connected_signal_strength_histogram} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
-                <h3>Average Probe Request Frame Signal Strength <small>Last 15 minutes</small></h3>
-                <TapBasedSignalStrengthTable strengths={client.disconnected_signal_strength}/>
+            <div className="row">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Average Probe Request Frame Signal Strengths By Tap <small>Last 15 minutes</small></h3>
+                    <TapBasedSignalStrengthTable strengths={client.disconnected_signal_strength}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Probe Request Frames Signal Strength</h3>
+
+                    <ClientSignalStrengthChart data={client.disconnected_signal_strength_histogram} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
