@@ -38,6 +38,7 @@
     "axios": "^0.25.0",
     "bootstrap": "^5.0.2",
     "dompurify": "^3.0.6",
+    "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
     "marked": "^11.0.0",
     "moment": "^2.29.4",

@@ -234,6 +234,11 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
+  createTenantLocation(organizationId, tenantId, name, description, successCallback) {
+    RESTClient.post("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations",
+        {name: name, description: description}, successCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {

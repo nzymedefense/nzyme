@@ -117,6 +117,8 @@ import MacAddressContextDetailsPage from "./components/context/macs/MacAddressCo
 import EditMacAddressContextPage from "./components/context/macs/EditMacAddressContextPage";
 import SimilarSSIDConfigurationPage from "./components/dot11/monitoring/SimilarSSIDConfigurationPage";
 import RestrictedSubstringsConfigurationPage from "./components/dot11/monitoring/RestrictedSubstringsConfigurationPage";
+import FloorDetailsPage from "./components/system/authentication/management/tenants/locations/floors/FloorDetailsPage";
+import CreateLocationPage from "./components/system/authentication/management/tenants/locations/CreateLocationPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -306,6 +308,8 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(':organizationId', ':tenantId')} element={<TenantDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId')} element={<FloorDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>

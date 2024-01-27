@@ -32,6 +32,7 @@ import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -1257,6 +1258,31 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().cycleTapSecret(organizationId, tenantId, tapId, newSecret);
 
         return Response.ok().build();
+    }
+
+    @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations")
+    public Response createTenantLocation(@Context SecurityContext sc,
+                                         @Valid CreateTenantLocationRequest req,
+                                         @PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String description = Strings.isNullOrEmpty(req.description()) ? null : req.description();
+
+        nzyme.getAuthenticationService().createTenantLocation(organizationId, tenantId, req.name(), description);
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @GET

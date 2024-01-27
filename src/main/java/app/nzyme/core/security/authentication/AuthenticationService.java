@@ -2,6 +2,7 @@ package app.nzyme.core.security.authentication;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
+import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
@@ -990,7 +991,8 @@ public class AuthenticationService {
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)
                         .execute()
-        );    }
+        );
+    }
 
     public void cycleTapSecret(UUID organizationId, UUID tenantId, UUID tapId, String newSecret) {
         String encryptedSecret;
@@ -1007,6 +1009,55 @@ public class AuthenticationService {
                         .bind("organization_id", organizationId)
                         .bind("tenant_id", tenantId)
                         .bind("uuid", tapId)
+                        .execute()
+        );
+    }
+
+    public List<TenantLocationEntry> findAllTenantLocations(UUID organizationId, UUID tenantId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM auth_tenants_locations " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "ORDER BY name ASC LIMIT :limit OFFSET :offset")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(TenantLocationEntry.class)
+                        .list()
+        );
+    }
+
+    public void createTenantLocation(UUID organizationId, UUID tenantId, String name, @Nullable String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO auth_tenants_locations(uuid, organization_id, tenant_id, name, " +
+                                "description, created_at, updated_at) VALUES(:uuid, :organization_id, :tenant_id, " +
+                                ":name, :description, NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void updateTenantLocation(long locationId, String name, @Nullable String description) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations SET name = :name, description = :description, " +
+                                "updated_at = NOW() WHERE id = :id")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("id", locationId)
+                        .bind("name", name)
+                        .bind("description", description)
+                        .execute()
+        );
+    }
+
+    public void deleteTenantLocation(long locationId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_tenants_locations WHERE id = :id")
+                        .bind("uuid", UUID.randomUUID())
+                        .bind("id", locationId)
                         .execute()
         );
     }

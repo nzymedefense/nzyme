@@ -892,3 +892,7 @@ div.rendered-markdown pre {
     padding-left: 8px;
     background-color: #dadada;
 }
+
+img.leaflet-marker-draggable {
+    cursor: move;
+}

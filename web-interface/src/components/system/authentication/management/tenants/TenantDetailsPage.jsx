@@ -102,7 +102,7 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Users</h3>
 
-                      <TenantUsersTable organizationId={organization.id} tenantId={tenant.id} />
+                      <TenantUsersTable organizationId={organization.id} tenantId={tenant.id}/>
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(organization.id, tenant.id)}
                          className="btn btn-sm btn-secondary">
@@ -119,11 +119,28 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Taps</h3>
 
-                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id} />
+                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id}/>
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)}
                          className="btn btn-sm btn-secondary">
                         Create Tap
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="row mt-3">
+                <div className="col-md-12">
+                  <div className="card">
+                    <div className="card-body">
+                      <h3>Locations</h3>
+
+                      <p>Physical locations that taps are deployed at. Used for floor plans across the product.</p>
+
+                      <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(organization.id, tenant.id)}
+                         className="btn btn-sm btn-secondary">
+                        Create Location
                       </a>
                     </div>
                   </div>

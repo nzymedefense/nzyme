@@ -4290,4 +4290,117 @@
                          defaultValue="95" />
     </changeSet>
 
+    <changeSet id="add_floorplan_structure" author="lennartkoopmann">
+        <createTable tableName="auth_tenants_locations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints unique="true" nullable="false" />
+            </column>
+
+            <column name="organization_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="tenant_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="description" type="text">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="auth_tenants_locations_floors">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="uuid" type="uuid">
+                <constraints unique="true" nullable="false" />
+            </column>
+
+            <column name="location_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="number" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="name" type="varchar(128)">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="plan" type="blob">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="plan_width" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="plan_height" type="integer">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="updated_at" type="timestamp with time zone">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addColumn tableName="taps">
+            <column name="location_uuid" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="floor_uuid" type="uuid">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="floor_location_x" type="integer">
+                <constraints nullable="true" />
+            </column>
+
+            <column name="floor_location_y" type="integer">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint constraintName="link_locations2tenants"
+                                 baseTableName="auth_tenants_locations"
+                                 baseColumnNames="tenant_id"
+                                 referencedTableName="auth_tenants"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="RESTRICT" />
+
+        <addForeignKeyConstraint constraintName="link_floors2locations"
+                                 baseTableName="auth_tenants_locations_floors"
+                                 baseColumnNames="location_id"
+                                 referencedTableName="auth_tenants_locations"
+                                 referencedColumnNames="uuid"
+                                 onUpdate="NO ACTION"
+                                 onDelete="RESTRICT" />
+
+    </changeSet>
+
 </databaseChangeLog>
