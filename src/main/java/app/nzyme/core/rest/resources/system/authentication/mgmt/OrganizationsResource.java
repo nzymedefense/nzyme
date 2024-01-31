@@ -8,6 +8,7 @@ import app.nzyme.core.events.actions.EventActionUtilities;
 import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
+import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -16,6 +17,8 @@ import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
+import app.nzyme.core.rest.responses.floorplans.TenantLocationDetailsResponse;
+import app.nzyme.core.rest.responses.floorplans.TenantLocationListResponse;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
 import app.nzyme.core.security.authentication.PasswordHasher;
@@ -1259,6 +1262,72 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         return Response.ok().build();
     }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}")
+    public Response findTenantLocation(@Context SecurityContext sc,
+                                       @PathParam("organizationId") UUID organizationId,
+                                       @PathParam("tenantId") UUID tenantId,
+                                       @PathParam("locationId") UUID locationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationEntry> result = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TenantLocationEntry tl = result.get();
+        long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
+        return Response.ok(TenantLocationDetailsResponse.create(
+                tl.uuid(), tl.name(), tl.description(), floorCount, tl.createdAt(), tl.updatedAt()
+        )).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations")
+    public Response findAllTenantLocations(@Context SecurityContext sc,
+                                           @PathParam("organizationId") UUID organizationId,
+                                           @PathParam("tenantId") UUID tenantId,
+                                           @QueryParam("limit") int limit,
+                                           @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long locationCount = nzyme.getAuthenticationService().countAllTenantLocations(organizationId, tenantId);
+
+        List<TenantLocationDetailsResponse> locations = Lists.newArrayList();
+        for (TenantLocationEntry tl :
+                nzyme.getAuthenticationService().findAllTenantLocations(organizationId, tenantId, limit, offset)) {
+            long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
+            locations.add(TenantLocationDetailsResponse.create(
+                    tl.uuid(), tl.name(), tl.description(), floorCount, tl.createdAt(), tl.updatedAt()
+            ));
+        }
+
+        return Response.ok(TenantLocationListResponse.create(locationCount, locations)).build();
+    }
+
 
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)

@@ -234,6 +234,20 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback);
   }
 
+  findAllTenantLocations(organizationId, tenantId, setLocations, limit, offset) {
+    RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations",
+        {limit: limit, offset: offset}, (response) => {
+      setLocations(response.data);
+    })
+  }
+
+  findTenantLocation(locationId, organizationId, tenantId, setLocation) {
+    RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId,
+        {}, (response) => {
+          setLocation(response.data);
+        })
+  }
+
   createTenantLocation(organizationId, tenantId, name, description, successCallback) {
     RESTClient.post("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations",
         {name: name, description: description}, successCallback)

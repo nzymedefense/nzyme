@@ -1027,6 +1027,30 @@ public class AuthenticationService {
         );
     }
 
+    public Optional<TenantLocationEntry> findTenantLocation(UUID locationId, UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM auth_tenants_locations " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
+                                "AND uuid = :location_id")
+                        .bind("location_id", locationId)
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(TenantLocationEntry.class)
+                        .findOne()
+        );
+    }
+
+    public long countAllTenantLocations(UUID organizationId, UUID tenantId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_tenants_locations " +
+                                "WHERE organization_id = :organization_id AND tenant_id = :tenant_id")
+                        .bind("organization_id", organizationId)
+                        .bind("tenant_id", tenantId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public void createTenantLocation(UUID organizationId, UUID tenantId, String name, @Nullable String description) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_tenants_locations(uuid, organization_id, tenant_id, name, " +
@@ -1059,6 +1083,15 @@ public class AuthenticationService {
                         .bind("uuid", UUID.randomUUID())
                         .bind("id", locationId)
                         .execute()
+        );
+    }
+
+    public long countFloorsOfTenantLocation(UUID locationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_tenants_locations_floors WHERE location_id = :id")
+                        .bind("id", locationId)
+                        .mapTo(Long.class)
+                        .one()
         );
     }
 

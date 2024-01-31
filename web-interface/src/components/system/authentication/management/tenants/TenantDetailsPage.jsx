@@ -8,6 +8,7 @@ import {notify} from "react-notify-toast";
 import TenantUsersTable from "../users/TenantUsersTable";
 import TapPermissionsTable from "../taps/TapPermissionsTable";
 import TenantSessions from "../sessions/TenantSessions";
+import LocationsTable from "./locations/LocationsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -119,7 +120,7 @@ function TenantDetailsPage() {
                     <div className="card-body">
                       <h3>Taps</h3>
 
-                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id}/>
+                      <TapPermissionsTable organizationId={organization.id} tenantId={tenant.id} />
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TAPS.CREATE(organization.id, tenant.id)}
                          className="btn btn-sm btn-secondary">
@@ -137,6 +138,8 @@ function TenantDetailsPage() {
                       <h3>Locations</h3>
 
                       <p>Physical locations that taps are deployed at. Used for floor plans across the product.</p>
+
+                      <LocationsTable organizationId={organization.id} tenantId={tenant.id} />
 
                       <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(organization.id, tenant.id)}
                          className="btn btn-sm btn-secondary">

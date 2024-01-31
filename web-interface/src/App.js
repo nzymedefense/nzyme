@@ -119,6 +119,8 @@ import SimilarSSIDConfigurationPage from "./components/dot11/monitoring/SimilarS
 import RestrictedSubstringsConfigurationPage from "./components/dot11/monitoring/RestrictedSubstringsConfigurationPage";
 import FloorDetailsPage from "./components/system/authentication/management/tenants/locations/floors/FloorDetailsPage";
 import CreateLocationPage from "./components/system/authentication/management/tenants/locations/CreateLocationPage";
+import LocationDetailsPage from "./components/system/authentication/management/tenants/locations/LocationDetailsPage";
+import EditLocationPage from "./components/system/authentication/management/tenants/locations/EditLocationPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -309,6 +311,8 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.CREATE(':organizationId')} element={<CreateTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.EDIT(':organizationId', ':tenantId')} element={<EditTenantPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.CREATE(':organizationId', ':tenantId')} element={<CreateLocationPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(':organizationId', ':tenantId', ':locationId')} element={<LocationDetailsPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.EDIT(':organizationId', ':tenantId', ':locationId')} element={<EditLocationPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId')} element={<FloorDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
