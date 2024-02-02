@@ -1354,6 +1354,40 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}")
+    public Response updateTenantLocation(@Context SecurityContext sc,
+                                         @Valid UpdateTenantLocationRequest req,
+                                         @PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId,
+                                         @PathParam("locationId") UUID locationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Check if the location exists.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        String description = Strings.isNullOrEmpty(req.description()) ? null : req.description();
+
+        nzyme.getAuthenticationService().updateTenantLocation(location.get().id(), req.name(), description);
+
+        return Response.status(Response.Status.CREATED).build();
+    }
+
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/events/actions")

@@ -3,6 +3,7 @@ package app.nzyme.core.security.authentication;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.crypto.Crypto;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.integrations.geoip.GeoIpLookupResult;
 import app.nzyme.core.security.authentication.db.OrganizationEntry;
 import app.nzyme.core.security.authentication.db.TapPermissionEntry;
@@ -1092,6 +1093,68 @@ public class AuthenticationService {
                         .bind("id", locationId)
                         .mapTo(Long.class)
                         .one()
+        );
+    }
+
+    public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId, int limit, int offset) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +
+                                "WHERE location_id = :location_id " +
+                                "ORDER BY number ASC LIMIT :limit OFFSET :offset")
+                        .bind("location_id", locationId)
+                        .bind("limit", limit)
+                        .bind("offset", offset)
+                        .mapTo(TenantLocationFloorEntry.class)
+                        .list()
+        );
+    }
+
+    public Optional<TenantLocationFloorEntry> findFloorOfTenantLocation(UUID floorId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +
+                                "WHERE uuid = :uuid")
+                        .bind("uuid", floorId)
+                        .mapTo(TenantLocationFloorEntry.class)
+                        .findOne()
+        );
+    }
+
+
+    public void createFloorOfTenantLocation(UUID locationId, long number, String name) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("INSERT INTO auth_tenants_locations_floors(uuid, location_id, number, name, " +
+                                "created_at, updated_at) VALUES(:uuid, :location_id, :number, :name, NOW(), NOW())")
+                        .bind("location_id", locationId)
+                        .bind("number", number)
+                        .bind("name", name)
+                        .execute()
+        );
+    }
+
+    public long countAllFloorsOfTenantLocation(UUID locationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_tenants_locations_floors " +
+                                "WHERE location_id = :location_id")
+                        .bind("location_id", locationId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
+    public void updateFloorOfTenantLocation(long locationId, long number, String name) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations_floors SET number = :number, name = :name " +
+                                "WHERE id = :id")
+                        .bind("id", locationId)
+                        .execute()
+        );
+    }
+
+    public void deleteFloorOfTenantLocation(long locationId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("DELETE FROM auth_tenants_locations_floors WHERE id = :id")
+                        .bind("id", locationId)
+                        .execute()
         );
     }
 

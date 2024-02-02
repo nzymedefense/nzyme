@@ -4403,4 +4403,10 @@
 
     </changeSet>
 
+    <changeSet id="make_floor_plan_parts_optional" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="plan" />
+        <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="plan_width" />
+        <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="plan_height" />
+    </changeSet>
+
 </databaseChangeLog>

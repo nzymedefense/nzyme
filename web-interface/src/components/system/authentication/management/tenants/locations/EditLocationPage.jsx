@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
-import moment from "moment/moment";
+import {notify} from "react-notify-toast";
+import LocationForm from "./LocationForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -19,16 +19,28 @@ function EditLocationPage() {
 
   const [location, setLocation] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
 
+  const update = (name, description) => {
+    authenticationManagementService.updateTenantLocation(organization.id, tenant.id, location.id, name, description, () => {
+      notify.show('Location updated.', 'success');
+      setRedirect(true);
+    })
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)} />
+  }
+
   if (!organization || !tenant || !location) {
     return <LoadingSpinner />
   }
-
 
   return (
       <div className="row">
@@ -36,7 +48,7 @@ function EditLocationPage() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
               </li>
               <li className="breadcrumb-item">Organizations</li>
               <li className="breadcrumb-item">
@@ -80,7 +92,8 @@ function EditLocationPage() {
               <div className="card-body">
                 <h3>Edit Location</h3>
 
-                FORM
+                <LocationForm name={location.name} description={location.description}
+                              submitText="Update Location" onClick={update} />
               </div>
             </div>
           </div>

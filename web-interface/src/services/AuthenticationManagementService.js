@@ -253,6 +253,11 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback)
   }
 
+  updateTenantLocation(organizationId, tenantId, locationId, name, description, successCallback) {
+    RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId,
+        {name: name, description: description}, successCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {

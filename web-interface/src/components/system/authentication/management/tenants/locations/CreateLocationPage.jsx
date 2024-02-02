@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
 import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import LocationForm from "./LocationForm";
 import {notify} from "react-notify-toast";
@@ -45,7 +44,7 @@ function CreateLocationPage() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
               </li>
               <li className="breadcrumb-item">Organizations</li>
               <li className="breadcrumb-item">
