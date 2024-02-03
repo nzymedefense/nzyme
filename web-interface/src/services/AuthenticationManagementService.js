@@ -258,6 +258,13 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback)
   }
 
+  findAllFloorsOfTenantLocation(organizationId, tenantId, locationId, setFloors, limit, offset) {
+    RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors",
+        {limit: limit, offset: offset}, (response) => {
+          setFloors(response.data);
+        })
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {

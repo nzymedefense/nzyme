@@ -9,6 +9,7 @@ import app.nzyme.core.events.db.EventActionEntry;
 import app.nzyme.core.events.types.SystemEvent;
 import app.nzyme.core.events.types.SystemEventType;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.*;
@@ -18,6 +19,8 @@ import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
 import app.nzyme.core.rest.responses.floorplans.TenantLocationDetailsResponse;
+import app.nzyme.core.rest.responses.floorplans.TenantLocationFloorDetailsResponse;
+import app.nzyme.core.rest.responses.floorplans.TenantLocationFloorListResponse;
 import app.nzyme.core.rest.responses.floorplans.TenantLocationListResponse;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
@@ -1328,7 +1331,6 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok(TenantLocationListResponse.create(locationCount, locations)).build();
     }
 
-
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations")
@@ -1386,6 +1388,51 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().updateTenantLocation(location.get().id(), req.name(), description);
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors")
+    public Response findAllFloorsOfTenantLocation(@Context SecurityContext sc,
+                                                  @PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("tenantId") UUID tenantId,
+                                                  @PathParam("locationId") UUID locationId,
+                                                  @QueryParam("limit") int limit,
+                                                  @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long floorCount = nzyme.getAuthenticationService().countAllFloorsOfTenantLocation(location.get().uuid());
+        List<TenantLocationFloorDetailsResponse> floors = Lists.newArrayList();
+        for (TenantLocationFloorEntry floor : nzyme.getAuthenticationService()
+                .findAllFloorsOfTenantLocation(location.get().uuid(), limit, offset)) {
+            floors.add(TenantLocationFloorDetailsResponse.create(
+                    floor.uuid(),
+                    floor.locationId(),
+                    floor.number(),
+                    floor.name(),
+                    floor.createdAt(),
+                    floor.updatedAt()
+            ));
+        }
+
+        return Response.ok(TenantLocationFloorListResponse.create(floorCount, floors)).build();
     }
 
     @GET

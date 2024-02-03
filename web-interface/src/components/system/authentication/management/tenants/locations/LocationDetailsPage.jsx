@@ -5,6 +5,7 @@ import LoadingSpinner from "../../../../../misc/LoadingSpinner";
 import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
+import FloorsTable from "./floors/FloorsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -93,6 +94,8 @@ function LocationDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <h3>Floors</h3>
+
+                    <FloorsTable organizationId={organizationId} tenantId={tenantId} locationId={locationId} />
                   </div>
                 </div>
               </div>
