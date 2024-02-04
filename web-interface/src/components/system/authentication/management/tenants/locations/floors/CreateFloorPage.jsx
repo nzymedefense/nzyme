@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
-import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import ApiRoutes from "../../../../../../util/ApiRoutes";
+import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import {notify} from "react-notify-toast";
-import LocationForm from "./LocationForm";
+import FloorForm from "./FloorForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
-function EditLocationPage() {
+function CreateFloorPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
@@ -16,9 +16,9 @@ function EditLocationPage() {
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
-
   const [location, setLocation] = useState(null);
 
+  const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
@@ -27,10 +27,13 @@ function EditLocationPage() {
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
 
-  const update = (name, description) => {
-    authenticationManagementService.updateTenantLocation(organization.id, tenant.id, location.id, name, description, () => {
-      notify.show('Location updated.', 'success');
+  const create = (number, name) => {
+    authenticationManagementService.createFloorOfTenantLocation(organization.id, tenant.id, location.id, number, name, () => {
+      notify.show('Floor created.', 'success');
       setRedirect(true);
+    }, (error) => {
+      notify.show('Could not create floor. Unknown error.', 'error');
+      setErrorMessage(error.response.data.message)
     })
   }
 
@@ -68,7 +71,8 @@ function EditLocationPage() {
                   {location.name}
                 </a>
               </li>
-              <li className="breadcrumb-item active" aria-current="page">Edit</li>
+              <li className="breadcrumb-item">Floors</li>
+              <li className="breadcrumb-item active" aria-current="page">Create Floor</li>
             </ol>
           </nav>
         </div>
@@ -83,24 +87,22 @@ function EditLocationPage() {
         </div>
 
         <div className="col-md-12">
-          <h1>Edit Location &quot;{location.name}&quot;</h1>
+          <h1>Create Floor at Location &quot;{location.name}&quot;</h1>
         </div>
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Edit Location</h3>
+                <h3>Create Floor</h3>
 
-                <LocationForm name={location.name} description={location.description}
-                              submitText="Update Location" onSubmit={update} />
+                <FloorForm submitText="Create Floor" onSubmit={create} errorMessage={errorMessage} />
               </div>
             </div>
           </div>
         </div>
       </div>
   )
-
 }
 
-export default EditLocationPage;
+export default CreateFloorPage;

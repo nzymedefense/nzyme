@@ -83,7 +83,7 @@ function CreateLocationPage() {
               <div className="card-body">
                 <h3>Create Location</h3>
 
-                <LocationForm submitText="Create Location" onClick={create} />
+                <LocationForm submitText="Create Location" onSubmit={create} />
               </div>
             </div>
           </div>

@@ -40,7 +40,8 @@ const ApiRoutes = {
             CREATE: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/create`,
             EDIT: (organizationId, tenantId, locationId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/edit`,
             FLOORS: {
-              DETAILS: (organizationId, tenantId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/FOO/floors/show/FOO`,
+              DETAILS: (organizationId, tenantId, locationId, floorId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/floors/show/${floorId}`,
+              CREATE: (organizationId, tenantId, locationId) => `/system/authentication/organizations/show/${organizationId}/tenants/show/${tenantId}/locations/show/${locationId}/floors/create`
             }
           }
         },

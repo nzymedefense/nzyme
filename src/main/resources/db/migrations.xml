@@ -4409,4 +4409,8 @@
         <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="plan_height" />
     </changeSet>
 
+    <changeSet id="make_floor_name_optional" author="lennartkoopmann">
+        <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="name" />
+    </changeSet>
+
 </databaseChangeLog>

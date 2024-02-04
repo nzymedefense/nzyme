@@ -2,7 +2,7 @@ import React, {useState} from "react";
 
 function LocationForm(props) {
 
-  const onClick = props.onClick;
+  const onSubmit = props.onSubmit;
   const submitText = props.submitText;
   const [name, setName] = useState(props.name ? props.name : "");
   const [description, setDescription] = useState(props.description ? props.description : "");
@@ -17,7 +17,7 @@ function LocationForm(props) {
 
   const submit = function(e) {
     e.preventDefault();
-    onClick(name, description);
+    onSubmit(name, description);
   }
 
   return (

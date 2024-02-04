@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
-import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import numeral from "numeral";
 import Paginator from "../../../../../../misc/Paginator";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
@@ -43,18 +42,20 @@ function FloorsTable(props) {
             <th>Number</th>
             <th>Name</th>
             <th>Placed Taps</th>
+            <th>Has Floor Plan?</th>
           </tr>
           </thead>
           <tbody>
           {floors.floors.map(function (key, i) {
             return (
                 <tr key={i}>
+                  <td>{numeral(floors.floors[i].number).format("0,0")}</td>
                   <td>
-                    <td>{numeral(floors.floors[i].number)}</td>
                     <a href="#">
                       {floors.floors[i].name}
                     </a>
                   </td>
+                  <td>TODO</td>
                   <td>TODO</td>
                 </tr>
             )

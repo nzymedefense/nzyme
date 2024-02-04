@@ -1426,13 +1426,52 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     floor.uuid(),
                     floor.locationId(),
                     floor.number(),
-                    floor.name(),
+                    floor.name() == null ? "Floor " + floor.number() : floor.name(),
                     floor.createdAt(),
                     floor.updatedAt()
             ));
         }
 
         return Response.ok(TenantLocationFloorListResponse.create(floorCount, floors)).build();
+    }
+
+    @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors")
+    public Response createFloorOfTenantLocation(@Context SecurityContext sc,
+                                                @Valid CreateFloorOfTenantLocationRequest req,
+                                                @PathParam("organizationId") UUID organizationId,
+                                                @PathParam("tenantId") UUID tenantId,
+                                                @PathParam("locationId") UUID locationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (nzyme.getAuthenticationService().tenantLocationHasFloorWithNumber(location.get().uuid(), req.number())) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("This location already has a floor with that number.")
+            ).build();
+        }
+
+        String name = Strings.isNullOrEmpty(req.name()) ? null : req.name();
+        nzyme.getAuthenticationService().createFloorOfTenantLocation(location.get().uuid(), req.number(), name);
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @GET

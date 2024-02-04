@@ -96,6 +96,10 @@ function LocationDetailsPage() {
                     <h3>Floors</h3>
 
                     <FloorsTable organizationId={organizationId} tenantId={tenantId} locationId={locationId} />
+
+                    <a className="btn btn-sm btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(organization.id, tenant.id, location.id)}>
+                      Create Floor
+                    </a>
                   </div>
                 </div>
               </div>

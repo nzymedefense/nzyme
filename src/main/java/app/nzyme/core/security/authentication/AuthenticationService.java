@@ -1120,10 +1120,11 @@ public class AuthenticationService {
     }
 
 
-    public void createFloorOfTenantLocation(UUID locationId, long number, String name) {
+    public void createFloorOfTenantLocation(UUID locationId, long number, @Nullable String name) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("INSERT INTO auth_tenants_locations_floors(uuid, location_id, number, name, " +
                                 "created_at, updated_at) VALUES(:uuid, :location_id, :number, :name, NOW(), NOW())")
+                        .bind("uuid", UUID.randomUUID())
                         .bind("location_id", locationId)
                         .bind("number", number)
                         .bind("name", name)
@@ -1141,7 +1142,18 @@ public class AuthenticationService {
         );
     }
 
-    public void updateFloorOfTenantLocation(long locationId, long number, String name) {
+    public boolean tenantLocationHasFloorWithNumber(UUID locationId, long number) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM auth_tenants_locations_floors " +
+                                "WHERE location_id = :location_id AND number = :number")
+                        .bind("location_id", locationId)
+                        .bind("number", number)
+                        .mapTo(Long.class)
+                        .one()
+        ) > 0;
+    }
+
+    public void updateFloorOfTenantLocation(long locationId, long number, @Nullable String name) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants_locations_floors SET number = :number, name = :name " +
                                 "WHERE id = :id")

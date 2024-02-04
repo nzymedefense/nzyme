@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
-import Routes from "../../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import Floorplan from "../../../../../../shared/floorplan/Floorplan";
@@ -31,7 +30,7 @@ function FloorDetailsPage() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
               </li>
               <li className="breadcrumb-item">Organizations</li>
               <li className="breadcrumb-item">

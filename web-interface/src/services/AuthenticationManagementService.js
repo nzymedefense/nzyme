@@ -265,6 +265,11 @@ class AuthenticationManagementService {
         })
   }
 
+  createFloorOfTenantLocation(organizationId, tenantId, locationId, number, name, successCallback, errorCallback) {
+    RESTClient.post("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors",
+        {number: number, name: name}, successCallback, errorCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {
