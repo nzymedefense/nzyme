@@ -6,6 +6,7 @@ import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import Floorplan from "../../../../../../shared/floorplan/Floorplan";
 import {notify} from "react-notify-toast";
 import moment from "moment/moment";
+import UploadFloorPlanForm from "./UploadFloorPlanForm";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -135,6 +136,18 @@ function FloorDetailsPage() {
                 <h3>Floor Plan</h3>
 
                 <Floorplan containerHeight={500}/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-12">
+            <div className="card">
+              <div className="card-body">
+                <h3>Upload Floor Plan</h3>
+
+                <UploadFloorPlanForm organizationId={organizationId} tenantId={tenantId} locationId={locationId} floorId={floorId} onSuccess={(e) => {}} submitText="Upload Floor Plan" />
               </div>
             </div>
           </div>

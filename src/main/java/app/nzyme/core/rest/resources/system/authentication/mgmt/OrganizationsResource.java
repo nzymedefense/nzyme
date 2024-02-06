@@ -40,11 +40,13 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.joda.time.DateTime;
 
 import jakarta.inject.Inject;
@@ -53,6 +55,13 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Path("/api/system/authentication/mgmt/organizations")
@@ -1652,6 +1661,86 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().deleteFloorOfTenantLocation(floor.id());
 
         return Response.ok().build();
+    }
+
+    @POST
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan")
+    public Response uploadFloorPlan(@Context SecurityContext sc,
+                                    @FormDataParam("plan") InputStream planFile,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId,
+                                    @PathParam("locationId") UUID locationId,
+                                    @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> result = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        byte[] planBytes;
+        try {
+            /*
+             * Set the limit to 5MB plus 1 byte. If it fills this entirely, a file too large was uploaded.
+             * This will also be handled in the HTTP server itself and this additional method here only adds to it in
+             * case a configuration change is made to the server.
+             */
+            planBytes = ByteStreams.limit(planFile, 5242881).readAllBytes();
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        if (planBytes.length == 0) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Uploaded floor plan file is empty."))
+                    .build();
+        }
+
+        if (planBytes.length == 5242881) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Uploaded floor plan file is too large. Maximum file size is 5MB."))
+                    .build();
+        }
+
+        try {
+            // New input stream because the previous one had been consumed when checking the length.
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(planBytes));
+
+            if (image == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("Could not read image file. Make sure it is a JPG or PNG file."))
+                        .build();
+            }
+
+            // TODO: convert to png, store image blog, height and width in DB.
+        } catch (IOException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Could not process uploaded floor plan file. Make sure it is a JPG or " +
+                            "PNG file."))
+                    .build();
+        }
+
+        return Response.status(Response.Status.CREATED).build();
     }
 
     @GET
