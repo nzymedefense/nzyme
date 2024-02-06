@@ -1156,8 +1156,10 @@ public class AuthenticationService {
 
     public void updateFloorOfTenantLocation(long floorId, long number, @Nullable String name) {
         nzyme.getDatabase().useHandle(handle ->
-                handle.createUpdate("UPDATE auth_tenants_locations_floors SET number = :number, name = :name " +
-                                "WHERE id = :id")
+                handle.createUpdate("UPDATE auth_tenants_locations_floors SET number = :number, name = :name, " +
+                                "updated_at = NOW() WHERE id = :id")
+                        .bind("number", number)
+                        .bind("name", name)
                         .bind("id", floorId)
                         .execute()
         );

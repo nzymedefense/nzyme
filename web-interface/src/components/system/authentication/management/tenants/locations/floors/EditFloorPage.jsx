@@ -1,22 +1,26 @@
 import React, {useEffect, useState} from "react";
 import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
-import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
-import {notify} from "react-notify-toast";
+import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
+import Floorplan from "../../../../../../shared/floorplan/Floorplan";
 import FloorForm from "./FloorForm";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
-function CreateFloorPage() {
+function FloorDetailsPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
   const { locationId } = useParams();
+  const { floorId } = useParams();
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [location, setLocation] = useState(null);
+
+  const [floor, setFloor] = useState(null);
 
   const [errorMessage, setErrorMessage] = useState(null);
   const [redirect, setRedirect] = useState(false);
@@ -24,12 +28,13 @@ function CreateFloorPage() {
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
-    authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
-  }, [organizationId, tenantId, locationId])
+    authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation);
+    authenticationManagementService.findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor);
+  }, [organizationId, tenantId])
 
-  const create = (number, name) => {
-    authenticationManagementService.createFloorOfTenantLocation(organization.id, tenant.id, location.id, number, name, () => {
-      notify.show('Floor created.', 'success');
+  const update = (name, description) => {
+    authenticationManagementService.editFloorOfTenantLocation(organization.id, tenant.id, location.id, floor.id, name, description, () => {
+      notify.show('Floor updated.', 'success');
       setRedirect(true);
     }, (error) => {
       setErrorMessage(error.response.data.message)
@@ -37,10 +42,10 @@ function CreateFloorPage() {
   }
 
   if (redirect) {
-    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)} />
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(organization.id, tenant.id, location.id, floor.id)} />
   }
 
-  if (!organization || !tenant || !location) {
+  if (!organization || !tenant || !location || !floor) {
     return <LoadingSpinner />
   }
 
@@ -71,37 +76,43 @@ function CreateFloorPage() {
                 </a>
               </li>
               <li className="breadcrumb-item">Floors</li>
-              <li className="breadcrumb-item active" aria-current="page">Create Floor</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(organization.id, tenant.id, location.id, floor.id)}>
+                  {floor.name} (#{floor.number})
+                </a>
+              </li>
+              <li className="breadcrumb-item active" aria-current="page">Edit</li>
             </ol>
           </nav>
         </div>
 
         <div className="col-md-3">
           <span className="float-end">
-            <a className="btn btn-secondary"
-               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
+            <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(organization.id, tenant.id, location.id, floor.id)}>
               Back
-            </a>
+            </a>{' '}
           </span>
         </div>
 
         <div className="col-md-12">
-          <h1>Create Floor at Location &quot;{location.name}&quot;</h1>
+          <h1>Edit Floor &quot;{floor.name}&quot; (#{floor.number}) of Location &quot;{location.name}&quot;</h1>
         </div>
 
         <div className="row mt-3">
           <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Create Floor</h3>
+                <h3>Edit Floor</h3>
 
-                <FloorForm submitText="Create Floor" onSubmit={create} errorMessage={errorMessage} />
+                <FloorForm submitText="Update Floor" number={floor.number} name={floor.name}
+                           onSubmit={update} errorMessage={errorMessage} />
               </div>
             </div>
           </div>
         </div>
       </div>
   )
+
 }
 
-export default CreateFloorPage;
+export default FloorDetailsPage;

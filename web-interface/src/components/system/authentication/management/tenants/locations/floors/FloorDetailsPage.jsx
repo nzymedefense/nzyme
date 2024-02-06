@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
 import Floorplan from "../../../../../../shared/floorplan/Floorplan";
+import {notify} from "react-notify-toast";
+import moment from "moment/moment";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -19,12 +21,30 @@ function FloorDetailsPage() {
   const [location, setLocation] = useState(null);
   const [floor, setFloor] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation);
     authenticationManagementService.findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor);
   }, [organizationId, tenantId])
+
+  const deleteFloor = () => {
+    if (!confirm("Really delete floor? This will delete the associated floor plan as well as all tap placements, but " +
+        "not the taps themselves.")) {
+      return;
+    }
+
+    authenticationManagementService.deleteFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, () => {
+      notify.show('Floor deleted.', 'success');
+      setRedirect(true);
+    })
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)} />
+  }
 
   if (!organization || !tenant || !location || !floor) {
     return <LoadingSpinner />
@@ -64,9 +84,14 @@ function FloorDetailsPage() {
 
         <div className="col-md-3">
           <span className="float-end">
-            <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
+            <a className="btn btn-secondary"
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
               Back
             </a>{' '}
+            <a className="btn btn-primary"
+               href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(organization.id, tenant.id, location.id, floor.id)}>
+                Edit Floor
+            </a>
           </span>
         </div>
 
@@ -75,12 +100,41 @@ function FloorDetailsPage() {
         </div>
 
         <div className="row mt-3">
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Metadata</h3>
+
+                <dl className="mb-0">
+                  <dt>Created At</dt>
+                  <dd title={moment(floor.created_at).format()}>{moment(floor.created_at).fromNow()}</dd>
+                  <dt>Updated At</dt>
+                  <dd title={moment(floor.updated_at).format()}>{moment(floor.updated_at).fromNow()}</dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>Delete Floor</h3>
+
+                <button className="btn btn-sm btn-danger" onClick={deleteFloor}>
+                  Delete Floor
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
           <div className="col-md-12">
             <div className="card">
               <div className="card-body">
                 <h3>Floor Plan</h3>
 
-                <Floorplan/>
+                <Floorplan containerHeight={500}/>
               </div>
             </div>
           </div>

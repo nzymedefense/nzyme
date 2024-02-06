@@ -281,6 +281,15 @@ class AuthenticationManagementService {
         {number: number, name: name}, successCallback, errorCallback)
   }
 
+  editFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, number, name, successCallback, errorCallback) {
+    RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId,
+        {number: number, name: name}, successCallback, errorCallback)
+  }
+
+  deleteFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, successCallback) {
+    RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId, successCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {

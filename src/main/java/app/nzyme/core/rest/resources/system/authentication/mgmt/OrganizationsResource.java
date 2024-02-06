@@ -1478,10 +1478,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
     public Response findFloorOfTenantLocation(@Context SecurityContext sc,
-                                                  @PathParam("organizationId") UUID organizationId,
-                                                  @PathParam("tenantId") UUID tenantId,
-                                                  @PathParam("locationId") UUID locationId,
-                                                  @PathParam("floorId") UUID floorId) {
+                                              @PathParam("organizationId") UUID organizationId,
+                                              @PathParam("tenantId") UUID tenantId,
+                                              @PathParam("locationId") UUID locationId,
+                                              @PathParam("floorId") UUID floorId) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
         if (!organizationAndTenantExists(organizationId, tenantId)) {
@@ -1559,6 +1559,99 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         nzyme.getAuthenticationService().createFloorOfTenantLocation(location.get().uuid(), req.number(), name);
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
+    public Response updateFloorOfTenantLocation(@Context SecurityContext sc,
+                                                @Valid UpdateTenantLocationFloorRequest req,
+                                                @PathParam("organizationId") UUID organizationId,
+                                                @PathParam("tenantId") UUID tenantId,
+                                                @PathParam("locationId") UUID locationId,
+                                                @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> result = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TenantLocationFloorEntry floor = result.get();
+
+        // Check if floor number already exists, but only if it's changing in this request.
+        if (floor.number() != req.number()
+                && nzyme.getAuthenticationService()
+                .tenantLocationHasFloorWithNumber(location.get().uuid(), req.number())) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    ErrorResponse.create("This location already has a floor with that number.")
+            ).build();
+        }
+
+        nzyme.getAuthenticationService().updateFloorOfTenantLocation(floor.id(), req.number(), req.name());
+
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
+    public Response deleteFloorOfTenantLocation(@Context SecurityContext sc,
+                                                @Valid UpdateTenantLocationFloorRequest req,
+                                                @PathParam("organizationId") UUID organizationId,
+                                                @PathParam("tenantId") UUID tenantId,
+                                                @PathParam("locationId") UUID locationId,
+                                                @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> result = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TenantLocationFloorEntry floor = result.get();
+
+        nzyme.getAuthenticationService().deleteFloorOfTenantLocation(floor.id());
+
+        return Response.ok().build();
     }
 
     @GET

@@ -122,6 +122,7 @@ import CreateLocationPage from "./components/system/authentication/management/te
 import LocationDetailsPage from "./components/system/authentication/management/tenants/locations/LocationDetailsPage";
 import EditLocationPage from "./components/system/authentication/management/tenants/locations/EditLocationPage";
 import CreateFloorPage from "./components/system/authentication/management/tenants/locations/floors/CreateFloorPage";
+import EditFloorPage from "./components/system/authentication/management/tenants/locations/floors/EditFloorPage";
 
 const pingService = new PingService();
 const pluginsService = new PluginsService();
@@ -316,6 +317,7 @@ function App() {
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.EDIT(':organizationId', ':tenantId', ':locationId')} element={<EditLocationPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.CREATE(':organizationId', ':tenantId', ':locationId')} element={<CreateFloorPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<FloorDetailsPage />}/>
+                          <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.EDIT(':organizationId', ':tenantId', ':locationId', ':floorId')} element={<EditFloorPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.CREATE(':organizationId', ':tenantId')} element={<CreateTenantUserPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.DETAILS(':organizationId', ':tenantId', ':userId')} element={<TenantUserDetailsPage />}/>
                           <Route path={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.USERS.EDIT(':organizationId', ':tenantId', ':userId')} element={<EditTenantUserPage />}/>
