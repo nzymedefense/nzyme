@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import AuthenticationManagementService from "../../../../../../services/AuthenticationManagementService";
-import {useParams} from "react-router-dom";
+import {Navigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../../../misc/LoadingSpinner";
-import Routes from "../../../../../../util/ApiRoutes";
 import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
 import FloorsTable from "./floors/FloorsTable";
+import {notify} from "react-notify-toast";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -20,11 +20,28 @@ function LocationDetailsPage() {
 
   const [location, setLocation] = useState(null);
 
+  const [redirect, setRedirect] = useState(false);
+
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation)
   }, [organizationId, tenantId, locationId])
+
+  const deleteLocation = () => {
+    if (!confirm("Really delete location?")) {
+      return;
+    }
+
+    authenticationManagementService.deleteTenantLocation(locationId, organizationId, tenantId, () => {
+      notify.show('Location deleted.', 'success');
+      setRedirect(true);
+    })
+  }
+
+  if (redirect) {
+    return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)} />
+  }
 
   if (!organization || !tenant || !location) {
     return <LoadingSpinner />
@@ -36,7 +53,7 @@ function LocationDetailsPage() {
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb">
               <li className="breadcrumb-item">
-                <a href={Routes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.INDEX}>Authentication &amp; Authorization</a>
               </li>
               <li className="breadcrumb-item">Organizations</li>
               <li className="breadcrumb-item">
@@ -117,7 +134,7 @@ function LocationDetailsPage() {
                       You can only delete a location if it has no floors.
                     </p>
 
-                    <button className="btn btn-sm btn-danger">
+                    <button className="btn btn-sm btn-danger" onClick={deleteLocation} disabled={location.floor_count !== 0}>
                       Delete Location
                     </button>
                   </div>

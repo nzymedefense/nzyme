@@ -1390,6 +1390,43 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}")
+    public Response deleteTenantLocation(@Context SecurityContext sc,
+                                         @PathParam("organizationId") UUID organizationId,
+                                         @PathParam("tenantId") UUID tenantId,
+                                         @PathParam("locationId") UUID locationId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationEntry> result = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TenantLocationEntry tl = result.get();
+        long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
+
+        if (floorCount > 0) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        nzyme.getAuthenticationService().deleteTenantLocation(tl.id());
+
+        return Response.ok().build();
+    }
+
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors")
@@ -1427,12 +1464,62 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     floor.locationId(),
                     floor.number(),
                     floor.name() == null ? "Floor " + floor.number() : floor.name(),
+                    floor.plan() != null,
+                    9999, // TODO
                     floor.createdAt(),
                     floor.updatedAt()
             ));
         }
 
         return Response.ok(TenantLocationFloorListResponse.create(floorCount, floors)).build();
+    }
+
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}")
+    public Response findFloorOfTenantLocation(@Context SecurityContext sc,
+                                                  @PathParam("organizationId") UUID organizationId,
+                                                  @PathParam("tenantId") UUID tenantId,
+                                                  @PathParam("locationId") UUID locationId,
+                                                  @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> result = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (result.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        TenantLocationFloorEntry floor = result.get();
+
+        return Response.ok(TenantLocationFloorDetailsResponse.create(
+                floor.uuid(),
+                floor.locationId(),
+                floor.number(),
+                floor.name() == null ? "Floor " + floor.number() : floor.name(),
+                floor.plan() != null,
+                9999, // TODO
+                floor.createdAt(),
+                floor.updatedAt()
+        )).build();
     }
 
     @POST

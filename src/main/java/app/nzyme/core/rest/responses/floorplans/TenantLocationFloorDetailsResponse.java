@@ -21,18 +21,26 @@ public abstract class TenantLocationFloorDetailsResponse {
     @JsonProperty("name")
     public abstract String name();
 
+    @JsonProperty("has_floor_plan")
+    public abstract boolean hasFloorPlan();
+
+    @JsonProperty("tap_count")
+    public abstract long tapCount();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, boolean hasFloorPlan, long tapCount, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .locationId(locationId)
                 .number(number)
                 .name(name)
+                .hasFloorPlan(hasFloorPlan)
+                .tapCount(tapCount)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -51,6 +59,10 @@ public abstract class TenantLocationFloorDetailsResponse {
         public abstract Builder number(long number);
 
         public abstract Builder name(String name);
+
+        public abstract Builder hasFloorPlan(boolean hasFloorPlan);
+
+        public abstract Builder tapCount(long tapCount);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from "react";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
-import numeral from "numeral";
 import Paginator from "../../../../../../misc/Paginator";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
+
+import numeral from "numeral";
+import ApiRoutes from "../../../../../../../util/ApiRoutes";
 
 const authenticationMgmtService = new AuthenticationManagementService();
 
@@ -36,27 +38,32 @@ function FloorsTable(props) {
 
   return (
       <React.Fragment>
+        <p className="mb-2">Total floors: {floors.count}</p>
+
         <table className="table table-sm table-hover table-striped">
           <thead>
           <tr>
-            <th>Number</th>
+            <th style={{width: 65}}>Number</th>
             <th>Name</th>
+            <th>Plan Uploaded</th>
             <th>Placed Taps</th>
-            <th>Has Floor Plan?</th>
           </tr>
           </thead>
           <tbody>
           {floors.floors.map(function (key, i) {
             return (
                 <tr key={i}>
-                  <td>{numeral(floors.floors[i].number).format("0,0")}</td>
+                  <td>{floors.floors[i].number}</td>
                   <td>
-                    <a href="#">
+                    <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.FLOORS.DETAILS(organizationId, tenantId, locationId, floors.floors[i].id)}>
                       {floors.floors[i].name}
                     </a>
                   </td>
-                  <td>TODO</td>
-                  <td>TODO</td>
+                  <td>
+                    {floors.floors[i].has_floor_plan ? <i className="fa-solid fa-circle-check text-success"></i>
+                      : <i className="fa-solid fa-triangle-exclamation text-warning"></i>
+                    }</td>
+                  <td>{numeral(floors.floors[i].tap_count).format("0,0")}</td>
                 </tr>
             )
           })}

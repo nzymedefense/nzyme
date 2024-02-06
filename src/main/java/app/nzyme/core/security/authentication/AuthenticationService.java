@@ -1099,7 +1099,7 @@ public class AuthenticationService {
     public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +
-                                "WHERE location_id = :location_id " +
+                                "WHERE location_id = location_id " +
                                 "ORDER BY number ASC LIMIT :limit OFFSET :offset")
                         .bind("location_id", locationId)
                         .bind("limit", limit)
@@ -1109,11 +1109,12 @@ public class AuthenticationService {
         );
     }
 
-    public Optional<TenantLocationFloorEntry> findFloorOfTenantLocation(UUID floorId) {
+    public Optional<TenantLocationFloorEntry> findFloorOfTenantLocation(UUID locationId, UUID floorId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +
-                                "WHERE uuid = :uuid")
+                                "WHERE uuid = :uuid AND location_id = :location_id")
                         .bind("uuid", floorId)
+                        .bind("location_id", locationId)
                         .mapTo(TenantLocationFloorEntry.class)
                         .findOne()
         );
@@ -1153,19 +1154,19 @@ public class AuthenticationService {
         ) > 0;
     }
 
-    public void updateFloorOfTenantLocation(long locationId, long number, @Nullable String name) {
+    public void updateFloorOfTenantLocation(long floorId, long number, @Nullable String name) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE auth_tenants_locations_floors SET number = :number, name = :name " +
                                 "WHERE id = :id")
-                        .bind("id", locationId)
+                        .bind("id", floorId)
                         .execute()
         );
     }
 
-    public void deleteFloorOfTenantLocation(long locationId) {
+    public void deleteFloorOfTenantLocation(long floorId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_tenants_locations_floors WHERE id = :id")
-                        .bind("id", locationId)
+                        .bind("id", floorId)
                         .execute()
         );
     }

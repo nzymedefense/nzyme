@@ -11,16 +11,22 @@ function FloorDetailsPage() {
 
   const { organizationId } = useParams();
   const { tenantId } = useParams();
+  const { locationId } = useParams();
+  const { floorId } = useParams();
 
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [floor, setFloor] = useState(null);
 
   useEffect(() => {
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
+    authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation);
+    authenticationManagementService.findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor);
   }, [organizationId, tenantId])
 
-  if (!organization || !tenant) {
+  if (!organization || !tenant || !location || !floor) {
     return <LoadingSpinner />
   }
 
@@ -39,22 +45,33 @@ function FloorDetailsPage() {
                 </a>
               </li>
               <li className="breadcrumb-item">Tenants</li>
-              <li className="breadcrumb-item" >{tenant.name}</li>
-              <li className="breadcrumb-item active" aria-current="page">TODO</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.DETAILS(organization.id, tenant.id)}>
+                  {tenant.name}
+                </a>
+              </li>
+              <li className="breadcrumb-item">Locations</li>
+              <li className="breadcrumb-item">
+                <a href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
+                  {location.name}
+                </a>
+              </li>
+              <li className="breadcrumb-item">Floors</li>
+              <li className="breadcrumb-item active" aria-current="page">{floor.name} (#{floor.number})</li>
             </ol>
           </nav>
         </div>
 
         <div className="col-md-3">
           <span className="float-end">
-            <a className="btn btn-secondary" href="">
-              Back TODO
+            <a className="btn btn-secondary" href={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)}>
+              Back
             </a>{' '}
           </span>
         </div>
 
         <div className="col-md-12">
-          <h1>Floor &quot;FOO&quot; of Building &quot;BAR&quot;</h1>
+          <h1>Floor &quot;{floor.name}&quot; (#{floor.number}) of Location &quot;{location.name}&quot;</h1>
         </div>
 
         <div className="row mt-3">
@@ -63,7 +80,7 @@ function FloorDetailsPage() {
               <div className="card-body">
                 <h3>Floor Plan</h3>
 
-                <Floorplan />
+                <Floorplan/>
               </div>
             </div>
           </div>

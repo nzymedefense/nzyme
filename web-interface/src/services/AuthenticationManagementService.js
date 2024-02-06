@@ -258,10 +258,21 @@ class AuthenticationManagementService {
         {name: name, description: description}, successCallback)
   }
 
+  deleteTenantLocation(locationId, organizationId, tenantId, successCallback) {
+    RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId, successCallback)
+  }
+
   findAllFloorsOfTenantLocation(organizationId, tenantId, locationId, setFloors, limit, offset) {
     RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors",
         {limit: limit, offset: offset}, (response) => {
           setFloors(response.data);
+        })
+  }
+
+  findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor) {
+    RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId,
+        {}, (response) => {
+          setFloor(response.data);
         })
   }
 
