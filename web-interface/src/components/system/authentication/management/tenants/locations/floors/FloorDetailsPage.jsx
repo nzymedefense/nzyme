@@ -7,6 +7,7 @@ import Floorplan from "../../../../../../shared/floorplan/Floorplan";
 import {notify} from "react-notify-toast";
 import moment from "moment/moment";
 import UploadFloorPlanForm from "./UploadFloorPlanForm";
+import FloorPlanTapsTable from "./FloorPlanTapsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -17,10 +18,14 @@ function FloorDetailsPage() {
   const { locationId } = useParams();
   const { floorId } = useParams();
 
+  const [revision, setRevision] = useState(0);
+  const [placedTap, setPlacedTap] = useState(null);
+
   const [organization, setOrganization] = useState(null);
   const [tenant, setTenant] = useState(null);
   const [location, setLocation] = useState(null);
   const [floor, setFloor] = useState(null);
+  const [plan, setPlan] = useState(null);
 
   const [redirect, setRedirect] = useState(false);
 
@@ -29,7 +34,13 @@ function FloorDetailsPage() {
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation);
     authenticationManagementService.findFloorOfTenantLocation(organizationId, tenantId, locationId, floorId, setFloor);
-  }, [organizationId, tenantId])
+  }, [organizationId, tenantId, revision])
+
+  useEffect(() => {
+    if (floor && floor.has_floor_plan) {
+      authenticationManagementService.findFloorPlan(organizationId, tenantId, locationId, floorId, setPlan)
+    }
+  }, [floor]);
 
   const deleteFloor = () => {
     if (!confirm("Really delete floor? This will delete the associated floor plan as well as all tap placements, but " +
@@ -41,6 +52,14 @@ function FloorDetailsPage() {
       notify.show('Floor deleted.', 'success');
       setRedirect(true);
     })
+  }
+
+  const onTapPlaced = (tap) => {
+    setPlacedTap(tap);
+  }
+
+  const onTapPlacementComplete = () => {
+    setPlacedTap(null);
   }
 
   if (redirect) {
@@ -135,19 +154,43 @@ function FloorDetailsPage() {
               <div className="card-body">
                 <h3>Floor Plan</h3>
 
-                <Floorplan containerHeight={500}/>
+                <Floorplan containerHeight={500}
+                           floorHasPlan={floor.has_floor_plan}
+                           plan={plan}
+                           placedTap={placedTap}
+                           onTapPlacementComplete={onTapPlacementComplete} />
               </div>
             </div>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-md-12">
+          <div className="col-xl-12 col-xxl-6">
             <div className="card">
               <div className="card-body">
-                <h3>Upload Floor Plan</h3>
+                <h3>Place Taps</h3>
 
-                <UploadFloorPlanForm organizationId={organizationId} tenantId={tenantId} locationId={locationId} floorId={floorId} onSuccess={(e) => {}} submitText="Upload Floor Plan" />
+                <FloorPlanTapsTable organizationId={organizationId} tenantId={tenantId} onTapPlaced={onTapPlaced} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-xl-12 col-xxl-6">
+            <div className="card">
+              <div className="card-body">
+                <h3>{floor.has_floor_plan ? "Replace" : "Upload"} Floor Plan</h3>
+
+                <UploadFloorPlanForm organizationId={organizationId}
+                                     tenantId={tenantId}
+                                     locationId={locationId}
+                                     floorId={floorId}
+                                     hasExistingPlan={floor.has_floor_plan}
+                                     onSuccess={() => {
+                                       setRevision(prevRev => prevRev + 1)
+                                     }}
+                                     submitText="Upload Floor Plan"/>
               </div>
             </div>
           </div>

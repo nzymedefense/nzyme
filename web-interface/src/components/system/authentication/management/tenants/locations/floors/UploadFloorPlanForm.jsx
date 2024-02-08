@@ -11,20 +11,32 @@ function UploadFloorPlanForm(props) {
   const locationId  = props.locationId;
   const floorId  = props.floorId;
 
+  const hasExistingPlan = props.hasExistingPlan;
   const submitText = props.submitText;
+
+  const [isUploading, setIsUploading] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState(null);
   const onSuccess = props.onSuccess;
 
-  const [planFiles, setPlanFiles] = useState(null);
+  const [planFiles, setPlanFiles] = useState([]);
 
   const submit = () => {
+    if (hasExistingPlan && !confirm("Replace floor plan? The existing plan for this floor will be replaced.")) {
+      return;
+    }
+
     const formData = new FormData();
     formData.append("plan", planFiles[0]);
 
+    setIsUploading(true);
     authenticationManagementService.uploadFloorPlan(organizationId, tenantId, locationId, floorId, formData,
-        () => onSuccess(),
+        () => {
+          setIsUploading(false);
+          onSuccess();
+        },
         (error) => {
+          setIsUploading(false);
           if (error.response.status === 400) {
             setErrorMessage(error.response.data.message);
           } else {
@@ -43,13 +55,11 @@ function UploadFloorPlanForm(props) {
                  onChange={(e) => setPlanFiles(e.target.files)}/>
         </div>
 
-        <div className="mb-3">
-          <button className="btn btn-sm btn-primary " onClick={submit}>
-            {submitText}
-          </button>
+        <button className="btn btn-sm btn-primary" onClick={submit} disabled={planFiles.length === 0 || isUploading}>
+          {isUploading ? "Please Wait ..." : submitText}
+        </button>
 
-          <FormSubmitErrorMessage message={errorMessage}/>
-        </div>
+        <FormSubmitErrorMessage message={errorMessage} />
       </React.Fragment>
   )
 

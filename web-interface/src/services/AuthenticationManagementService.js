@@ -290,6 +290,11 @@ class AuthenticationManagementService {
     RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId, successCallback)
   }
 
+  findFloorPlan(organizationId, tenantId, locationId, floorId, setPlan) {
+    RESTClient.get("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan",
+        {}, (response) => setPlan(response.data));
+  }
+
   uploadFloorPlan(organizationId, tenantId, locationId, floorId, formData, successCallback, errorCallback) {
     RESTClient.postMultipart("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan",
         formData, false, successCallback, errorCallback);

@@ -18,10 +18,7 @@ import app.nzyme.core.rest.responses.authentication.SessionsListResponse;
 import app.nzyme.core.rest.responses.authentication.mgmt.*;
 import app.nzyme.core.rest.responses.events.EventActionDetailsResponse;
 import app.nzyme.core.rest.responses.events.EventActionsListResponse;
-import app.nzyme.core.rest.responses.floorplans.TenantLocationDetailsResponse;
-import app.nzyme.core.rest.responses.floorplans.TenantLocationFloorDetailsResponse;
-import app.nzyme.core.rest.responses.floorplans.TenantLocationFloorListResponse;
-import app.nzyme.core.rest.responses.floorplans.TenantLocationListResponse;
+import app.nzyme.core.rest.responses.floorplans.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.security.authentication.AuthenticationRegistryKeys;
 import app.nzyme.core.security.authentication.PasswordHasher;
@@ -40,6 +37,7 @@ import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -1660,6 +1658,58 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.ok().build();
     }
 
+    @GET
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan")
+    public Response findFloorPlan(@Context SecurityContext sc,
+                                  @PathParam("organizationId") UUID organizationId,
+                                  @PathParam("tenantId") UUID tenantId,
+                                  @PathParam("locationId") UUID locationId,
+                                  @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (floor.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        if (floor.get().plan() == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        ByteArrayInputStream imageBytes = new ByteArrayInputStream(floor.get().plan());
+
+        try {
+            BufferedImage image = ImageIO.read(imageBytes);
+
+            return Response.ok(FloorPlanResponse.create(
+                    BaseEncoding.base64().encode(floor.get().plan()), image.getWidth(), image.getHeight())
+            ).build();
+        } catch (Exception e) {
+            LOG.error("Could not read floor plan image data from database. Plan: {}", floor.get(), e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @POST
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan")
@@ -1704,6 +1754,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
              */
             planBytes = ByteStreams.limit(planFile, 5242881).readAllBytes();
         } catch (IOException e) {
+            LOG.error(e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
 
