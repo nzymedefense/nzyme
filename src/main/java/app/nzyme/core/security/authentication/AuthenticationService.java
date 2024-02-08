@@ -1099,7 +1099,7 @@ public class AuthenticationService {
     public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +
-                                "WHERE location_id = location_id " +
+                                "WHERE location_id = :location_id " +
                                 "ORDER BY number ASC LIMIT :limit OFFSET :offset")
                         .bind("location_id", locationId)
                         .bind("limit", limit)
@@ -1168,6 +1168,19 @@ public class AuthenticationService {
     public void deleteFloorOfTenantLocation(long floorId) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("DELETE FROM auth_tenants_locations_floors WHERE id = :id")
+                        .bind("id", floorId)
+                        .execute()
+        );
+    }
+
+    public void writeFloorPlan(long floorId, byte[] plan, int width, int height) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations_floors SET plan = :plan, " +
+                                "plan_width = :width, plan_height = :height, updated_at = NOW() " +
+                                "WHERE id = :id")
+                        .bind("plan", plan)
+                        .bind("width", width)
+                        .bind("height", height)
                         .bind("id", floorId)
                         .execute()
         );

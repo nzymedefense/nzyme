@@ -58,10 +58,7 @@ import jakarta.ws.rs.core.SecurityContext;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 @Path("/api/system/authentication/mgmt/organizations")
@@ -1691,10 +1688,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Optional<TenantLocationFloorEntry> result = nzyme.getAuthenticationService()
+        Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
                 .findFloorOfTenantLocation(location.get().uuid(), floorId);
 
-        if (result.isEmpty()) {
+        if (floor.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -1732,8 +1729,13 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                         .build();
             }
 
-            // TODO: convert to png, store image blog, height and width in DB.
-        } catch (IOException e) {
+            ByteArrayOutputStream pngOut = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", pngOut);
+
+            nzyme.getAuthenticationService()
+                    .writeFloorPlan(floor.get().id(), pngOut.toByteArray(), image.getWidth(), image.getHeight());
+        } catch (Exception e) {
+            LOG.warn("Could not process uploaded floor plan file.", e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(ErrorResponse.create("Could not process uploaded floor plan file. Make sure it is a JPG or " +
                             "PNG file."))

@@ -4413,4 +4413,13 @@
         <dropNotNullConstraint tableName="auth_tenants_locations_floors" columnName="name" />
     </changeSet>
 
+    <changeSet id="fix_floorplan_blob_type" author="lennartkoopmann">
+        <dropColumn tableName="auth_tenants_locations_floors" columnName="plan" />
+        <addColumn tableName="auth_tenants_locations_floors">
+            <column name="plan" type="longblob">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
