@@ -268,6 +268,20 @@ public class TapManager {
         );
     }
 
+    public List<Tap> findAllTapsOnFloor(UUID organizationUUID, UUID tenantUUID, UUID locationUUID, UUID floorUUID) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                                "AND tenant_id = :tenant_uuid AND location_uuid = :location_uuid " +
+                                "AND floor_uuid = :floor_uuid")
+                        .bind("organization_uuid", organizationUUID)
+                        .bind("tenant_uuid", tenantUUID)
+                        .bind("location_uuid", locationUUID)
+                        .bind("floor_uuid", floorUUID)
+                        .mapTo(Tap.class)
+                        .list()
+        );
+    }
+
     public List<UUID> allTapUUIDsAccessibleByUser(AuthenticatedUser user) {
         List<UUID> allTaps = nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT uuid FROM taps")

@@ -10,6 +10,7 @@ import UploadFloorPlanForm from "./UploadFloorPlanForm";
 import FloorPlanTapsTable from "./FloorPlanTapsTable";
 
 const authenticationManagementService = new AuthenticationManagementService();
+const authenticationMgmtService = new AuthenticationManagementService();
 
 function FloorDetailsPage() {
 
@@ -30,6 +31,12 @@ function FloorDetailsPage() {
   const [redirect, setRedirect] = useState(false);
 
   useEffect(() => {
+    setOrganization(null);
+    setTenant(null);
+    setLocation(null);
+    setFloor(null);
+    setPlan(null);
+
     authenticationManagementService.findOrganization(organizationId, setOrganization);
     authenticationManagementService.findTenantOfOrganization(organizationId, tenantId, setTenant);
     authenticationManagementService.findTenantLocation(locationId, organizationId, tenantId, setLocation);
@@ -60,6 +67,18 @@ function FloorDetailsPage() {
 
   const onTapPlacementComplete = () => {
     setPlacedTap(null);
+  }
+
+  const onPlanRevisionSaved = (newTapPositions) => {
+    Object.keys(newTapPositions).map((tapId) => {
+      const position = newTapPositions[tapId];
+
+      authenticationManagementService
+          .placeTapOnFloorPlan(organizationId, tenantId, locationId, floorId, tapId, position.x, position.y, () => {
+            notify.show('Tap positions saved.', 'success');
+            setRevision(prevRev => prevRev + 1);
+          })
+    });
   }
 
   if (redirect) {
@@ -157,27 +176,32 @@ function FloorDetailsPage() {
                 <Floorplan containerHeight={500}
                            floorHasPlan={floor.has_floor_plan}
                            plan={plan}
+                           taps={floor.tap_positions}
                            placedTap={placedTap}
-                           onTapPlacementComplete={onTapPlacementComplete} />
+                           onTapPlacementComplete={onTapPlacementComplete}
+                           onRevisionSaved={onPlanRevisionSaved} />
               </div>
             </div>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-xl-12 col-xxl-6">
+          <div className="col-xl-12 col-xxl-8">
             <div className="card">
               <div className="card-body">
                 <h3>Place Taps</h3>
 
-                <FloorPlanTapsTable organizationId={organizationId} tenantId={tenantId} onTapPlaced={onTapPlaced} />
+                <FloorPlanTapsTable organizationId={organizationId}
+                                    tenantId={tenantId}
+                                    floorId={floorId}
+                                    onTapPlaced={onTapPlaced} />
               </div>
             </div>
           </div>
         </div>
 
         <div className="row mt-3">
-          <div className="col-xl-12 col-xxl-6">
+          <div className="col-xl-12 col-xxl-8">
             <div className="card">
               <div className="card-body">
                 <h3>{floor.has_floor_plan ? "Replace" : "Upload"} Floor Plan</h3>

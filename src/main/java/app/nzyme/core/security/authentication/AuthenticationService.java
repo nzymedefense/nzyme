@@ -906,8 +906,7 @@ public class AuthenticationService {
 
     public List<TapPermissionEntry> findAllTapsOfTenant(UUID organizationId, UUID tenantId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
-                                "description, secret, created_at, updated_at, last_report FROM taps " +
+                handle.createQuery("SELECT * FROM taps " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "ORDER BY name ASC LIMIT :limit OFFSET :offset")
                         .bind("organization_id", organizationId)
@@ -921,8 +920,7 @@ public class AuthenticationService {
 
     public Optional<TapPermissionEntry> findTap(UUID organizationId, UUID tenantId, UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, " +
-                                "description, secret, created_at, updated_at, last_report FROM taps " +
+                handle.createQuery("SELECT * FROM taps " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +
                                 "AND uuid = :uuid")
                         .bind("organization_id", organizationId)
@@ -1182,6 +1180,19 @@ public class AuthenticationService {
                         .bind("width", width)
                         .bind("height", height)
                         .bind("id", floorId)
+                        .execute()
+        );
+    }
+
+    public void placeTapOnFloor(long tapId, UUID locationId, UUID floorId, int x, int y) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET location_uuid = :location_id, floor_uuid = :floor_id, " +
+                                "floor_location_x = :x, floor_location_y = :y WHERE id = :tap_id")
+                        .bind("tap_id", tapId)
+                        .bind("location_id", locationId)
+                        .bind("floor_id", floorId)
+                        .bind("x", x)
+                        .bind("y", y)
                         .execute()
         );
     }

@@ -27,6 +27,11 @@ public class TapMapper implements RowMapper<Tap>  {
         UUID tenantId = rs.getString("tenant_id") == null ?
                 null : UUID.fromString(rs.getString("tenant_id"));
 
+        UUID locationId = rs.getString("location_uuid") == null ?
+                null : UUID.fromString(rs.getString("location_uuid"));
+        UUID floorId = rs.getString("floor_uuid") == null ?
+                null : UUID.fromString(rs.getString("floor_uuid"));
+
         return Tap.create(
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
@@ -44,6 +49,10 @@ public class TapMapper implements RowMapper<Tap>  {
                 lastReport,
                 organizationId,
                 tenantId,
+                locationId,
+                floorId,
+                rs.getInt("floor_location_x"),
+                rs.getInt("floor_location_y"),
                 rs.getString("remote_address")
         );
     }

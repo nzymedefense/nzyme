@@ -51,9 +51,21 @@ public abstract class Tap {
     @Nullable
     public abstract UUID tenantId();
 
+    @Nullable
+    public abstract UUID locationId();
+
+    @Nullable
+    public abstract UUID floorId();
+
+    @Nullable
+    public abstract Integer x();
+
+    @Nullable
+    public abstract Integer y();
+
     public abstract String remoteAddress();
 
-    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, String remoteAddress) {
+    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress) {
         return builder()
                 .uuid(uuid)
                 .name(name)
@@ -71,6 +83,10 @@ public abstract class Tap {
                 .lastReport(lastReport)
                 .organizationId(organizationId)
                 .tenantId(tenantId)
+                .locationId(locationId)
+                .floorId(floorId)
+                .x(x)
+                .y(y)
                 .remoteAddress(remoteAddress)
                 .build();
     }
@@ -112,6 +128,14 @@ public abstract class Tap {
         public abstract Builder organizationId(UUID organizationId);
 
         public abstract Builder tenantId(UUID tenantId);
+
+        public abstract Builder locationId(UUID locationId);
+
+        public abstract Builder floorId(UUID floorId);
+
+        public abstract Builder x(Integer x);
+
+        public abstract Builder y(Integer y);
 
         public abstract Builder remoteAddress(String remoteAddress);
 

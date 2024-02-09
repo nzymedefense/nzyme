@@ -16,13 +16,21 @@ public class TapPermissionEntryMapper implements RowMapper<TapPermissionEntry> {
         String organizationId = rs.getString("organization_id");
         String tenantId = rs.getString("tenant_id");
 
+        String locationUuid = rs.getString("location_uuid");
+        String floorUuid = rs.getString("floor_uuid");
+
         return TapPermissionEntry.create(
+                rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
                 organizationId == null ? null : UUID.fromString(organizationId),
                 tenantId == null ? null : UUID.fromString(tenantId),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getString("secret"),
+                locationUuid == null ? null : UUID.fromString(locationUuid),
+                floorUuid == null ? null : UUID.fromString(floorUuid),
+                rs.getInt("floor_location_x"),
+                rs.getInt("floor_location_y"),
                 new DateTime(rs.getTimestamp("created_at")),
                 new DateTime(rs.getTimestamp("updated_at")),
                 rs.getTimestamp("last_report") == null ?

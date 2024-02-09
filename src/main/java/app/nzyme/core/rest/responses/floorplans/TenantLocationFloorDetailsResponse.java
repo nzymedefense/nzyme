@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.util.UUID;
 
 @AutoValue
@@ -27,13 +28,16 @@ public abstract class TenantLocationFloorDetailsResponse {
     @JsonProperty("tap_count")
     public abstract long tapCount();
 
+    @JsonProperty("tap_positions")
+    public abstract List<TapPositionResponse> tapPositions();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, boolean hasFloorPlan, long tapCount, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationFloorDetailsResponse create(UUID id, UUID locationId, long number, String name, boolean hasFloorPlan, long tapCount, List<TapPositionResponse> tapPositions, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .locationId(locationId)
@@ -41,6 +45,7 @@ public abstract class TenantLocationFloorDetailsResponse {
                 .name(name)
                 .hasFloorPlan(hasFloorPlan)
                 .tapCount(tapCount)
+                .tapPositions(tapPositions)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -63,6 +68,8 @@ public abstract class TenantLocationFloorDetailsResponse {
         public abstract Builder hasFloorPlan(boolean hasFloorPlan);
 
         public abstract Builder tapCount(long tapCount);
+
+        public abstract Builder tapPositions(List<TapPositionResponse> tapPositions);
 
         public abstract Builder createdAt(DateTime createdAt);
 

@@ -30,6 +30,7 @@ import app.nzyme.core.security.authentication.roles.Permission;
 import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
+import app.nzyme.core.taps.Tap;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
@@ -1463,13 +1464,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<TenantLocationFloorDetailsResponse> floors = Lists.newArrayList();
         for (TenantLocationFloorEntry floor : nzyme.getAuthenticationService()
                 .findAllFloorsOfTenantLocation(location.get().uuid(), limit, offset)) {
+            List<TapPositionResponse> tapPositions = Lists.newArrayList();
+            for (Tap t : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floor.uuid())) {
+                //noinspection DataFlowIssue
+                tapPositions.add(TapPositionResponse.create(t.uuid(), t.name(), t.x(), t.y()));
+            }
+
             floors.add(TenantLocationFloorDetailsResponse.create(
                     floor.uuid(),
                     floor.locationId(),
                     floor.number(),
                     floor.name() == null ? "Floor " + floor.number() : floor.name(),
                     floor.plan() != null,
-                    9999, // TODO
+                    tapPositions.size(),
+                    tapPositions,
                     floor.createdAt(),
                     floor.updatedAt()
             ));
@@ -1514,13 +1522,20 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         TenantLocationFloorEntry floor = result.get();
 
+        List<TapPositionResponse> tapPositions = Lists.newArrayList();
+        for (Tap t : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floor.uuid())) {
+            //noinspection DataFlowIssue
+            tapPositions.add(TapPositionResponse.create(t.uuid(), t.name(), t.x(), t.y()));
+        }
+
         return Response.ok(TenantLocationFloorDetailsResponse.create(
                 floor.uuid(),
                 floor.locationId(),
                 floor.number(),
                 floor.name() == null ? "Floor " + floor.number() : floor.name(),
                 floor.plan() != null,
-                9999, // TODO
+                tapPositions.size(),
+                tapPositions,
                 floor.createdAt(),
                 floor.updatedAt()
         )).build();
@@ -1794,6 +1809,52 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @PUT
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan/taps/show/{tapId}/coords")
+    public Response uploadFloorPlan(@Context SecurityContext sc,
+                                    @Valid PlaceTapRequest req,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId,
+                                    @PathParam("locationId") UUID locationId,
+                                    @PathParam("floorId") UUID floorId,
+                                    @PathParam("tapId") UUID tapId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (floor.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().placeTapOnFloor(tap.get().id(), locationId, floorId, req.x(), req.y());
+
+        return Response.status(Response.Status.OK).build();
     }
 
     @GET
@@ -2243,6 +2304,11 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tpe.name(),
                 tpe.description(),
                 decryptedSecret,
+                tpe.floorId() != null && tpe.locationId() != null,
+                tpe.locationId(),
+                tpe.floorId(),
+                tpe.floorLocationX(),
+                tpe.floorLocationY(),
                 tpe.createdAt(),
                 tpe.updatedAt(),
                 tpe.lastReport()

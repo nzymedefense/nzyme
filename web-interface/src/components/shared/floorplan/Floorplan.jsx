@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import {sanitizeHtml} from "../../../util/Tools";
 
 const yx = L.latLng;
 
@@ -13,17 +14,35 @@ const xy = function(x, y) {
   return yx(y, x);
 };
 
+const transientTapIcon = L.icon({
+  iconUrl: '/static/leaflet/icon-tap-transient.png',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  tooltipAnchor: [0, 0],
+});
+
+const existingTapIcon = L.icon({
+  iconUrl: '/static/leaflet/icon-tap.png',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  tooltipAnchor: [0, 0],
+});
+
 function Floorplan(props) {
 
+  const containerHeight = props.containerHeight;
   const floorHasPlan = props.floorHasPlan;
   const plan = props.plan;
+  const taps = props.taps;
 
+  // For floor plan management. Can be safely omitted.
   const placedTap = props.placedTap;
   const onTapPlacementComplete = props.onTapPlacementComplete;
+  const onRevisionSaved = props.onRevisionSaved;
 
   const [map, setMap] = useState(null);
-
-  const containerHeight = props.containerHeight;
+  const [localRevision, setLocalRevision] = useState(0);
+  const [newPositions, setNewPositions] = useState({});
 
   useEffect(() => {
     if (plan) {
@@ -55,31 +74,51 @@ function Floorplan(props) {
     }
   }, [map]);
 
+  useEffect(() => {
+    if (taps && map) {
+      taps.map((tap) => {
+        const icon = L.marker(xy(tap.y, tap.x), {
+          icon: existingTapIcon,
+          draggable: true,
+          autoPan: true}
+        ).addTo(map);
+
+        icon.bindTooltip("Tap &quot;" + sanitizeHtml(tap.name) + "&quot;");
+
+        icon.on("dragend", () => {
+          setLocalRevision(prevRev => prevRev + 1)
+          tempMarkTapPosition(tap.uuid, icon.getLatLng().lat, icon.getLatLng().lng)
+        })
+      })
+    }
+  }, [taps, map]);
+
   // New tap placed.
   useEffect(() => {
     if (plan && placedTap) {
-      const tapIcon = L.icon({
-        iconUrl: '/static/leaflet/icon-tap.png',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
-        tooltipAnchor: [0, 0],
-      });
-
       const newTap = L.marker(xy(Math.round(plan.width/2), Math.round(plan.height/2)), {
-        icon: tapIcon,
+        icon: transientTapIcon,
         draggable: true,
         autoPan: true}
       ).addTo(map);
 
-      newTap.bindTooltip(placedTap.name);
+      newTap.bindTooltip("Tap &quot;" + sanitizeHtml(placedTap.name) + "&quot;");
 
       newTap.on("dragend", () => {
-        console.log(newTap.getLatLng());
+        setLocalRevision(prevRev => prevRev + 1)
+        tempMarkTapPosition(placedTap.uuid, newTap.getLatLng().lat, newTap.getLatLng().lng)
       })
 
       onTapPlacementComplete();
     }
   }, [placedTap]);
+
+  const tempMarkTapPosition = (id, x, y) => {
+    setNewPositions(prevPositions => ({
+      ...prevPositions,
+      [id]: {x: x, y: y}
+    }));
+  }
 
   if (!floorHasPlan) {
     return (
@@ -95,7 +134,12 @@ function Floorplan(props) {
 
   return (
       <React.Fragment>
-        <div id="floorplan" style={{height: containerHeight, backgroundColor: "#FFFFFF"}} />
+        <div id="floorplan" style={{height: containerHeight, backgroundColor: "#FFFFFF"}}/>
+
+        <button className="btn btn-sm btn-primary" disabled={localRevision === 0}
+                onClick={(e) => {e.preventDefault(); onRevisionSaved(newPositions); }}>
+          Save Tap Positions
+        </button>
       </React.Fragment>
   )
 

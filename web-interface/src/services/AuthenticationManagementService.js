@@ -300,6 +300,11 @@ class AuthenticationManagementService {
         formData, false, successCallback, errorCallback);
   }
 
+  placeTapOnFloorPlan(organizationId, tenantId, locationId, floorId, tapId, x, y, successCallback) {
+    RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan/taps/show/" + tapId + "/coords",
+        {x: x, y: y}, successCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {
