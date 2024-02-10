@@ -12,6 +12,7 @@ function FloorPlanTapsTable(props) {
   const tenantId = props.tenantId;
   const floorId = props.floorId;
   const onTapPlaced = props.onTapPlaced;
+  const onRemoveTap = props.onRemoveTap;
 
   const perPage = 20;
   const [page, setPage] = useState(1);
@@ -28,7 +29,7 @@ function FloorPlanTapsTable(props) {
       if (tap.floor_id === floorId) {
         return {
           status: <span className="badge bg-success">Placed On This Floor</span>,
-          action: <a href="#">Remove From This Floor</a>
+          action: <a href="#" onClick={(e) => {e.preventDefault(); onRemoveTap(tap.uuid)}}>Remove From This Floor</a>
         }
       } else {
         return {

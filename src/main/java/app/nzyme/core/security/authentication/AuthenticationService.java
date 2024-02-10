@@ -1197,6 +1197,18 @@ public class AuthenticationService {
         );
     }
 
+    public void removeTapFromFloor(long tapId, UUID locationId, UUID floorId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE taps SET location_uuid = NULL, floor_uuid = NULL, " +
+                                "floor_location_x = NULL, floor_location_y = NULL " +
+                                "WHERE location_uuid = :location_id AND floor_uuid = :floor_id AND id = :tap_id")
+                        .bind("tap_id", tapId)
+                        .bind("location_id", locationId)
+                        .bind("floor_id", floorId)
+                        .execute()
+        );
+    }
+
     private void runSessionCleaning() {
         // We are extremely defensive with exception catching here to make sure it always executes the deletion query.
 

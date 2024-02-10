@@ -69,7 +69,21 @@ function FloorDetailsPage() {
     setPlacedTap(null);
   }
 
+  const onRemoveTap = (tapId) => {
+    if (!confirm("Really remove tap position from this floor?")) {
+      return;
+    }
+
+    authenticationMgmtService.removeTapFromFloorPlan(organizationId, tenantId, locationId, floorId, tapId, () => {
+      setRevision(prevRev => prevRev + 1);
+    });
+  }
+
   const onPlanRevisionSaved = (newTapPositions) => {
+    if (!confirm("Really save all tap positions on this floor?")) {
+      return;
+    }
+
     Object.keys(newTapPositions).map((tapId) => {
       const position = newTapPositions[tapId];
 
@@ -194,6 +208,7 @@ function FloorDetailsPage() {
                 <FloorPlanTapsTable organizationId={organizationId}
                                     tenantId={tenantId}
                                     floorId={floorId}
+                                    onRemoveTap={onRemoveTap}
                                     onTapPlaced={onTapPlaced} />
               </div>
             </div>

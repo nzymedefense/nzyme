@@ -1814,7 +1814,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan/taps/show/{tapId}/coords")
-    public Response uploadFloorPlan(@Context SecurityContext sc,
+    public Response placeTapOnFloor(@Context SecurityContext sc,
                                     @Valid PlaceTapRequest req,
                                     @PathParam("organizationId") UUID organizationId,
                                     @PathParam("tenantId") UUID tenantId,
@@ -1856,6 +1856,51 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         return Response.status(Response.Status.OK).build();
     }
+
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan/taps/show/{tapId}")
+    public Response deleteTapFromFloor(@Context SecurityContext sc,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId,
+                                    @PathParam("locationId") UUID locationId,
+                                    @PathParam("floorId") UUID floorId,
+                                    @PathParam("tapId") UUID tapId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (floor.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TapPermissionEntry> tap = nzyme.getAuthenticationService().findTap(organizationId, tenantId, tapId);
+        if (tap.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        nzyme.getAuthenticationService().removeTapFromFloor(tap.get().id(), locationId, floorId);
+        return Response.status(Response.Status.OK).build();
+    }
+
 
     @GET
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)

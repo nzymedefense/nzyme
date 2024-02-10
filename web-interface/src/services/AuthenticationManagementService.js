@@ -305,6 +305,10 @@ class AuthenticationManagementService {
         {x: x, y: y}, successCallback)
   }
 
+  removeTapFromFloorPlan(organizationId, tenantId, locationId, floorId, tapId, successCallback) {
+    RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan/taps/show/" + tapId, successCallback)
+  }
+
   getGlobalAuthenticationConfiguration(setConfiguration) {
     RESTClient.get("/system/authentication/mgmt/organizations/global/configuration", {},
         (response) => {
