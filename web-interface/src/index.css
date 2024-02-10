@@ -21,6 +21,10 @@ small {
     background-color: #EF233C !important;
 }
 
+.text-warning {
+    color: #ff6a00 !important;
+}
+
 .strikethrough {
     text-decoration: line-through;
 }
