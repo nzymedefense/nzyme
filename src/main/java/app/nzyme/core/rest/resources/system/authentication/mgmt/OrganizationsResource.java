@@ -1576,6 +1576,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         String name = Strings.isNullOrEmpty(req.name()) ? null : req.name();
         nzyme.getAuthenticationService().createFloorOfTenantLocation(location.get().uuid(), req.number(), name);
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.status(Response.Status.CREATED).build();
     }
@@ -1627,6 +1628,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().updateFloorOfTenantLocation(floor.id(), req.number(), req.name());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.ok().build();
     }
@@ -1668,7 +1670,14 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         TenantLocationFloorEntry floor = result.get();
 
+        // Remove all taps from floor.
+        for (Tap tap : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floorId)) {
+            nzyme.getAuthenticationService().removeTapFromFloor(tap.id(), locationId, floorId);
+        }
+
         nzyme.getAuthenticationService().deleteFloorOfTenantLocation(floor.id());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTFloor(floor.id());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.ok().build();
     }
@@ -1808,6 +1817,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     .build();
         }
 
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
+
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -1853,6 +1864,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().placeTapOnFloor(tap.get().id(), locationId, floorId, req.x(), req.y());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTFloor(floor.get().id());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
 
         return Response.status(Response.Status.OK).build();
     }
@@ -1898,6 +1911,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         }
 
         nzyme.getAuthenticationService().removeTapFromFloor(tap.get().id(), locationId, floorId);
+        nzyme.getAuthenticationService().updateUpdatedAtOfTFloor(floor.get().id());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
+
         return Response.status(Response.Status.OK).build();
     }
 

@@ -9,6 +9,8 @@ import java.util.UUID;
 @AutoValue
 public abstract class Tap {
 
+    public abstract long id();
+
     public abstract UUID uuid();
 
     public abstract String name();
@@ -65,8 +67,9 @@ public abstract class Tap {
 
     public abstract String remoteAddress();
 
-    public static Tap create(UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress) {
+    public static Tap create(long id, UUID uuid, String name, String description, String version, DateTime clock, TotalWithAverage processedBytes, Long memoryTotal, Long memoryFree, Long memoryUsed, Double cpuLoad, Long clockDriftMs, DateTime createdAt, DateTime updatedAt, DateTime lastReport, UUID organizationId, UUID tenantId, UUID locationId, UUID floorId, Integer x, Integer y, String remoteAddress) {
         return builder()
+                .id(id)
                 .uuid(uuid)
                 .name(name)
                 .description(description)
@@ -97,6 +100,8 @@ public abstract class Tap {
 
     @AutoValue.Builder
     public abstract static class Builder {
+        public abstract Builder id(long id);
+
         public abstract Builder uuid(UUID uuid);
 
         public abstract Builder name(String name);

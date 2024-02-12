@@ -1085,6 +1085,14 @@ public class AuthenticationService {
         );
     }
 
+    public void updateUpdatedAtOfTenantLocation(long locationId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations SET updated_at = NOW() WHERE id = :id")
+                        .bind("id", locationId)
+                        .execute()
+        );
+    }
+
     public long countFloorsOfTenantLocation(UUID locationId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT COUNT(*) FROM auth_tenants_locations_floors WHERE location_id = :id")
@@ -1205,6 +1213,14 @@ public class AuthenticationService {
                         .bind("tap_id", tapId)
                         .bind("location_id", locationId)
                         .bind("floor_id", floorId)
+                        .execute()
+        );
+    }
+
+    public void updateUpdatedAtOfTFloor(long floorId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations_floors SET updated_at = NOW() WHERE id = :id")
+                        .bind("id", floorId)
                         .execute()
         );
     }

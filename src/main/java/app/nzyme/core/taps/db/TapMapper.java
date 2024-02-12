@@ -33,6 +33,7 @@ public class TapMapper implements RowMapper<Tap>  {
                 null : UUID.fromString(rs.getString("floor_uuid"));
 
         return Tap.create(
+                rs.getLong("id"),
                 UUID.fromString(rs.getString("uuid")),
                 rs.getString("name"),
                 rs.getString("description"),
