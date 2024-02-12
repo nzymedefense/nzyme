@@ -31,6 +31,7 @@ import app.nzyme.core.security.authentication.roles.Permissions;
 import app.nzyme.core.security.sessions.db.SessionEntry;
 import app.nzyme.core.security.sessions.db.SessionEntryWithUserDetails;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryConstraintValidator;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryResponse;
 import app.nzyme.plugin.rest.configuration.ConfigurationEntryValueType;
@@ -1467,7 +1468,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
             List<TapPositionResponse> tapPositions = Lists.newArrayList();
             for (Tap t : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floor.uuid())) {
                 //noinspection DataFlowIssue
-                tapPositions.add(TapPositionResponse.create(t.uuid(), t.name(), t.x(), t.y()));
+                tapPositions.add(TapPositionResponse.create(
+                        t.uuid(), t.name(), t.x(), t.y(), t.lastReport(), Tools.isTapActive(t.lastReport())
+                ));
             }
 
             floors.add(TenantLocationFloorDetailsResponse.create(
@@ -1525,7 +1528,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         List<TapPositionResponse> tapPositions = Lists.newArrayList();
         for (Tap t : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floor.uuid())) {
             //noinspection DataFlowIssue
-            tapPositions.add(TapPositionResponse.create(t.uuid(), t.name(), t.x(), t.y()));
+            tapPositions.add(TapPositionResponse.create(
+                    t.uuid(), t.name(), t.x(), t.y(), t.lastReport(), Tools.isTapActive(t.lastReport())
+            ));
         }
 
         return Response.ok(TenantLocationFloorDetailsResponse.create(
@@ -2372,7 +2377,8 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                 tpe.floorLocationY(),
                 tpe.createdAt(),
                 tpe.updatedAt(),
-                tpe.lastReport()
+                tpe.lastReport(),
+                Tools.isTapActive(tpe.lastReport())
         );
     }
 

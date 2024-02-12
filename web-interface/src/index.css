@@ -900,3 +900,12 @@ div.rendered-markdown pre {
 img.leaflet-marker-draggable {
     cursor: move;
 }
+
+span.floorplan-tooltip-title {
+    font-size: 13px;
+    font-weight: bold;
+    display: block;
+    border-bottom: 1px dotted #000;
+    margin-bottom: 8px;
+    padding-bottom: 2px;
+}

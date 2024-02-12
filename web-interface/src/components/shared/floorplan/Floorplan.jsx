@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {sanitizeHtml} from "../../../util/Tools";
+import moment from "moment";
 
 const yx = L.latLng;
 
@@ -16,16 +17,23 @@ const xy = function(x, y) {
 
 const transientTapIcon = L.icon({
   iconUrl: '/static/leaflet/icon-tap-transient.png',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-  tooltipAnchor: [0, 0],
+  iconSize: [24, 24],
+  iconAnchor: [16, 16],
+  tooltipAnchor: [0, 0]
 });
 
-const existingTapIcon = L.icon({
+const onlineTapIcon = L.icon({
   iconUrl: '/static/leaflet/icon-tap.png',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-  tooltipAnchor: [0, 0],
+  iconSize: [24, 24],
+  iconAnchor: [16, 16],
+  tooltipAnchor: [0, 0]
+});
+
+const offlineTapIcon = L.icon({
+  iconUrl: '/static/leaflet/icon-tap-offline.png',
+  iconSize: [24, 24],
+  iconAnchor: [16, 16],
+  tooltipAnchor: [0, 0]
 });
 
 function Floorplan(props) {
@@ -34,6 +42,7 @@ function Floorplan(props) {
   const floorHasPlan = props.floorHasPlan;
   const plan = props.plan;
   const taps = props.taps;
+  const editModeEnabled = props.editModeEnabled;
 
   // For floor plan management. Can be safely omitted.
   const placedTap = props.placedTap;
@@ -55,11 +64,11 @@ function Floorplan(props) {
       }
 
       setMap(L.map("floorplan", {
-          crs: L.CRS.Simple,
-          minZoom: -5,
-          maxBounds: bounds,
-          maxBoundsViscosity: 1.0,
-          scrollWheelZoom: false
+        crs: L.CRS.Simple,
+        minZoom: -5,
+        maxBounds: bounds,
+        maxBoundsViscosity: 1.0,
+        scrollWheelZoom: false
       }));
     }
   }, [plan]);
@@ -76,14 +85,21 @@ function Floorplan(props) {
 
   useEffect(() => {
     if (taps && map) {
-      taps.map((tap) => {
-        const icon = L.marker(xy(tap.y, tap.x), {
-          icon: existingTapIcon,
-          draggable: true,
-          autoPan: true}
-        ).addTo(map);
+      taps.forEach((tap) => {
+        let iconImage;
+        if (tap.active) {
+          iconImage = onlineTapIcon;
+        } else {
+          iconImage = offlineTapIcon;
+        }
 
-        icon.bindTooltip("Tap &quot;" + sanitizeHtml(tap.name) + "&quot;");
+        const icon = L.marker(xy(tap.y, tap.x), {
+          icon: iconImage,
+          draggable: editModeEnabled,
+          autoPan: true
+        }).addTo(map);
+
+        icon.bindTooltip(tapTooltip(tap));
 
         icon.on("dragend", () => {
           setLocalRevision(prevRev => prevRev + 1)
@@ -99,10 +115,10 @@ function Floorplan(props) {
       const newTap = L.marker(xy(Math.round(plan.width/2), Math.round(plan.height/2)), {
         icon: transientTapIcon,
         draggable: true,
-        autoPan: true}
-      ).addTo(map);
+        autoPan: true
+      }).addTo(map);
 
-      newTap.bindTooltip("Tap &quot;" + sanitizeHtml(placedTap.name) + "&quot;");
+      newTap.bindTooltip(tapTooltip(placedTap));
 
       newTap.on("dragend", () => {
         setLocalRevision(prevRev => prevRev + 1)
@@ -112,6 +128,13 @@ function Floorplan(props) {
       onTapPlacementComplete();
     }
   }, [placedTap]);
+
+  const tapTooltip = (tap) => {
+    return "<span class='floorplan-tooltip-title'>Tap</span><strong>&quot;" + sanitizeHtml(tap.name) + "&quot;</strong> " +
+        (tap.active ? "<span class='text-success'>(Online)</span>" : "<span class='text-danger'>(Offline)</span>") +
+        "<br/>Last Report: " + (tap.last_report ? moment(tap.last_report).fromNow() : "Never") +
+        (editModeEnabled ? "<br />DELETE" : "")
+  }
 
   const tempMarkTapPosition = (id, x, y) => {
     setNewPositions(prevPositions => ({

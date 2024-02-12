@@ -3,6 +3,7 @@ package app.nzyme.core.rest.resources.taps;
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.rest.UserAuthenticatedResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -51,7 +52,9 @@ public class TapsResource extends UserAuthenticatedResource {
 
         List<TapHighLevelInformationDetailsResponse> tapsResponse = Lists.newArrayList();
         for (Tap tap : nzyme.getTapManager().findAllTapsByUUIDs(uuids)) {
-            tapsResponse.add(TapHighLevelInformationDetailsResponse.create(tap.uuid(), tap.name(), isTapActive(tap)));
+            tapsResponse.add(TapHighLevelInformationDetailsResponse.create(
+                    tap.uuid(), tap.name(), Tools.isTapActive(tap.lastReport())
+            ));
         }
 
         return Response.ok(TapHighLevelInformationListResponse.create(tapsResponse)).build();
@@ -234,7 +237,7 @@ public class TapsResource extends UserAuthenticatedResource {
                 tap.memoryFree(),
                 tap.memoryUsed(),
                 tap.cpuLoad(),
-                isTapActive(tap),
+                Tools.isTapActive(tap.lastReport()),
                 tap.clockDriftMs(),
                 tap.createdAt(),
                 tap.updatedAt(),
@@ -244,10 +247,6 @@ public class TapsResource extends UserAuthenticatedResource {
                 capturesResponse,
                 tap.remoteAddress()
         );
-    }
-
-    private boolean isTapActive(Tap tap) {
-        return tap.lastReport() != null && tap.lastReport().isAfter(DateTime.now().minusMinutes(2));
     }
 
 }

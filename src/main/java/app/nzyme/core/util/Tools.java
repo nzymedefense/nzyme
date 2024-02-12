@@ -17,8 +17,10 @@
 
 package app.nzyme.core.util;
 
+import app.nzyme.core.taps.Tap;
 import com.google.common.base.Strings;
 import jakarta.validation.constraints.NotNull;
+import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.regex.Matcher;
@@ -78,6 +80,10 @@ public class Tools {
                 .replaceAll("\t*", "") // Tabs
                 .replaceAll(" +", " ") // Multiple whitespaces in succession
                 .trim();
+    }
+
+    public static boolean isTapActive(DateTime lastReport) {
+        return lastReport != null && lastReport.isAfter(DateTime.now().minusMinutes(2));
     }
 
 }

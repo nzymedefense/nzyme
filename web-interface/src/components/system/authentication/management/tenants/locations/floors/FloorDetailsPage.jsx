@@ -173,6 +173,11 @@ function FloorDetailsPage() {
               <div className="card-body">
                 <h3>Delete Floor</h3>
 
+                <p>
+                  Deleting a floor will delete the associated floor plan as well as all tap placements, but never the
+                  taps themselves.
+                </p>
+
                 <button className="btn btn-sm btn-danger" onClick={deleteFloor}>
                   Delete Floor
                 </button>
@@ -192,6 +197,7 @@ function FloorDetailsPage() {
                            plan={plan}
                            taps={floor.tap_positions}
                            placedTap={placedTap}
+                           editModeEnabled={true}
                            onTapPlacementComplete={onTapPlacementComplete}
                            onRevisionSaved={onPlanRevisionSaved} />
               </div>

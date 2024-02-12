@@ -57,7 +57,10 @@ public abstract class TapPermissionDetailsResponse {
     @JsonProperty("last_report")
     public abstract DateTime lastReport();
 
-    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, boolean isPlacedOnMap, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport) {
+    @JsonProperty("active")
+    public abstract boolean active();
+
+    public static TapPermissionDetailsResponse create(UUID uuid, UUID organizationId, UUID tenantId, String name, String description, String secret, boolean isPlacedOnMap, UUID locationId, UUID floorId, Integer floorLocationX, Integer floorLocationY, DateTime createdAt, DateTime updatedAt, DateTime lastReport, boolean active) {
         return builder()
                 .uuid(uuid)
                 .organizationId(organizationId)
@@ -73,6 +76,7 @@ public abstract class TapPermissionDetailsResponse {
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .lastReport(lastReport)
+                .active(active)
                 .build();
     }
 
@@ -109,6 +113,8 @@ public abstract class TapPermissionDetailsResponse {
         public abstract Builder updatedAt(DateTime updatedAt);
 
         public abstract Builder lastReport(DateTime lastReport);
+
+        public abstract Builder active(boolean active);
 
         public abstract TapPermissionDetailsResponse build();
     }
