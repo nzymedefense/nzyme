@@ -37,7 +37,7 @@ function UploadFloorPlanForm(props) {
         },
         (error) => {
           setIsUploading(false);
-          if (error.response.status === 400) {
+          if (error.response && error.response.status === 400) {
             setErrorMessage(error.response.data.message);
           } else {
             setErrorMessage("Unexpected error. Please try again.");
@@ -49,7 +49,7 @@ function UploadFloorPlanForm(props) {
       <React.Fragment>
         <div className="mb-3">
           <label htmlFor="plan" className="form-label">
-            Floor Plan Image File (JPG or PNG)
+            Floor Plan Image File (JPG or PNG, maximum file size 5MB)
           </label>
           <input className="form-control form-control-sm" name="plan" id="plan" type="file"
                  onChange={(e) => setPlanFiles(e.target.files)}/>

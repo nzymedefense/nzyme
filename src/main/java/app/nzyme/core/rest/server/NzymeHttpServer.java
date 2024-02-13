@@ -43,6 +43,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -181,7 +182,8 @@ public class NzymeHttpServer {
                     nzyme.getConfiguration().restListenUri(),
                     resourceConfig,
                     true,
-                    sslEngineConfigurator
+                    sslEngineConfigurator,
+                    false
             );
 
             this.certificateInUse = keyStore.loadedCertificate();
@@ -196,6 +198,9 @@ public class NzymeHttpServer {
         compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
         compressionConfig.setCompressionMinSize(1);
         compressionConfig.setCompressibleMimeTypes();
+
+        final NetworkListener listener = server.getListener("grizzly");
+        server.getServerConfiguration().setMaxPostSize(10485760); // 10 MB.
 
         // Start server.
         try {
