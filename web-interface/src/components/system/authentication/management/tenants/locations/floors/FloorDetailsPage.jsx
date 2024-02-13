@@ -95,6 +95,17 @@ function FloorDetailsPage() {
     });
   }
 
+  const onPlanDeleted = () => {
+    if (!confirm("Really delete floor plan and all tap positions?")) {
+      return;
+    }
+
+    authenticationMgmtService.deleteFloorPlan(organizationId, tenantId, locationId, floorId, () => {
+      notify.show('Plan deleted.', 'success');
+      setRevision(prevRev => prevRev + 1);
+    })
+  }
+
   if (redirect) {
     return <Navigate to={ApiRoutes.SYSTEM.AUTHENTICATION.MANAGEMENT.TENANTS.LOCATIONS.DETAILS(organization.id, tenant.id, location.id)} />
   }
@@ -199,7 +210,8 @@ function FloorDetailsPage() {
                            placedTap={placedTap}
                            editModeEnabled={true}
                            onTapPlacementComplete={onTapPlacementComplete}
-                           onRevisionSaved={onPlanRevisionSaved} />
+                           onRevisionSaved={onPlanRevisionSaved}
+                           onPlanDeleted={onPlanDeleted} />
               </div>
             </div>
           </div>

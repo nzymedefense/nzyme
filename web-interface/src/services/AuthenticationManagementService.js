@@ -300,6 +300,10 @@ class AuthenticationManagementService {
         formData, false, successCallback, errorCallback);
   }
 
+  deleteFloorPlan(organizationId, tenantId, locationId, floorId, successCallback) {
+    RESTClient.delete("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan", successCallback);
+  }
+
   placeTapOnFloorPlan(organizationId, tenantId, locationId, floorId, tapId, x, y, successCallback) {
     RESTClient.put("/system/authentication/mgmt/organizations/show/" + organizationId + "/tenants/show/" + tenantId + "/locations/show/" + locationId + "/floors/show/" + floorId + "/plan/taps/show/" + tapId + "/coords",
         {x: x, y: y}, successCallback)

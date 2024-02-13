@@ -1192,6 +1192,15 @@ public class AuthenticationService {
         );
     }
 
+    public void deleteFloorPlan(long floorId) {
+        nzyme.getDatabase().useHandle(handle ->
+                handle.createUpdate("UPDATE auth_tenants_locations_floors SET plan = NULL, plan_width = NULL, " +
+                                "plan_height = NULL, updated_at = NOW() WHERE id = :id")
+                        .bind("id", floorId)
+                        .execute()
+        );
+    }
+
     public void placeTapOnFloor(long tapId, UUID locationId, UUID floorId, int x, int y) {
         nzyme.getDatabase().useHandle(handle ->
                 handle.createUpdate("UPDATE taps SET location_uuid = :location_id, floor_uuid = :floor_id, " +

@@ -1827,6 +1827,51 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    @DELETE
+    @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
+    @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan")
+    public Response deleteFloorPlan(@Context SecurityContext sc,
+                                    @PathParam("organizationId") UUID organizationId,
+                                    @PathParam("tenantId") UUID tenantId,
+                                    @PathParam("locationId") UUID locationId,
+                                    @PathParam("floorId") UUID floorId) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        if (!organizationAndTenantExists(organizationId, tenantId)) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+
+        // Check if user is org admin for this org.
+        if (!authenticatedUser.isSuperAdministrator() && !authenticatedUser.getOrganizationId().equals(organizationId)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, organizationId, tenantId);
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        Optional<TenantLocationFloorEntry> floor = nzyme.getAuthenticationService()
+                .findFloorOfTenantLocation(location.get().uuid(), floorId);
+
+        if (floor.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        // Remove all taps from floor.
+        for (Tap tap : nzyme.getTapManager().findAllTapsOnFloor(organizationId, tenantId, locationId, floorId)) {
+            nzyme.getAuthenticationService().removeTapFromFloor(tap.id(), locationId, floorId);
+        }
+
+        nzyme.getAuthenticationService().deleteFloorPlan(floor.get().id());
+        nzyme.getAuthenticationService().updateUpdatedAtOfTenantLocation(location.get().id());
+
+        return Response.ok().build();
+    }
+
     @PUT
     @RESTSecured(PermissionLevel.ORGADMINISTRATOR)
     @Path("/show/{organizationId}/tenants/show/{tenantId}/locations/show/{locationId}/floors/show/{floorId}/plan/taps/show/{tapId}/coords")

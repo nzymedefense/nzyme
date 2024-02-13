@@ -48,10 +48,24 @@ function Floorplan(props) {
   const placedTap = props.placedTap;
   const onTapPlacementComplete = props.onTapPlacementComplete;
   const onRevisionSaved = props.onRevisionSaved;
+  const onPlanDeleted = props.onPlanDeleted;
 
   const [map, setMap] = useState(null);
   const [localRevision, setLocalRevision] = useState(0);
   const [newPositions, setNewPositions] = useState({});
+
+  useEffect(() => {
+    const onBeforeUnload = (e) => {
+      if (localRevision !== 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+    };
+  }, [localRevision]);
 
   useEffect(() => {
     if (plan) {
@@ -132,8 +146,7 @@ function Floorplan(props) {
   const tapTooltip = (tap) => {
     return "<span class='floorplan-tooltip-title'>Tap</span><strong>&quot;" + sanitizeHtml(tap.name) + "&quot;</strong> " +
         (tap.active ? "<span class='text-success'>(Online)</span>" : "<span class='text-danger'>(Offline)</span>") +
-        "<br/>Last Report: " + (tap.last_report ? moment(tap.last_report).fromNow() : "Never") +
-        (editModeEnabled ? "<br />DELETE" : "")
+        "<br/>Last Report: " + (tap.last_report ? moment(tap.last_report).fromNow() : "Never")
   }
 
   const tempMarkTapPosition = (id, x, y) => {
@@ -141,6 +154,38 @@ function Floorplan(props) {
       ...prevPositions,
       [id]: {x: x, y: y}
     }));
+  }
+
+  const saveButton = () => {
+    if (!editModeEnabled) {
+      return null;
+    }
+
+    return (
+        <button className="btn btn-sm btn-primary" disabled={localRevision === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onRevisionSaved(newPositions);
+                }}>
+          Save Tap Positions
+        </button>
+    )
+  }
+
+  const deleteButton = () => {
+    if (!editModeEnabled) {
+      return null;
+    }
+
+    return (
+        <button className="btn btn-sm btn-danger"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onPlanDeleted();
+                }}>
+          Delete Floor Plan
+        </button>
+    )
   }
 
   if (!floorHasPlan) {
@@ -152,17 +197,14 @@ function Floorplan(props) {
   }
 
   if (!plan) {
-    return <LoadingSpinner />
+    return <LoadingSpinner/>
   }
 
   return (
       <React.Fragment>
         <div id="floorplan" style={{height: containerHeight, backgroundColor: "#FFFFFF"}}/>
 
-        <button className="btn btn-sm btn-primary" disabled={localRevision === 0}
-                onClick={(e) => {e.preventDefault(); onRevisionSaved(newPositions); }}>
-          Save Tap Positions
-        </button>
+        {saveButton()} {deleteButton()}
       </React.Fragment>
   )
 
