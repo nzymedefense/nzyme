@@ -60,9 +60,9 @@ function FloorsTable(props) {
                     </a>
                   </td>
                   <td>
-                    {floors.floors[i].has_floor_plan ? <i className="fa-solid fa-circle-check text-success"></i>
-                      : <i className="fa-solid fa-triangle-exclamation text-warning"></i>
-                    }</td>
+                    {floors.floors[i].has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i> Yes</span>
+                      : <span><i className="fa-solid fa-triangle-exclamation text-warning"></i> No</span>
+                          }</td>
                   <td>{numeral(floors.floors[i].tap_count).format("0,0")}</td>
                 </tr>
             )

@@ -23,18 +23,22 @@ public abstract class TenantLocationDetailsResponse {
     @JsonProperty("floor_count")
     public abstract long floorCount();
 
+    @JsonProperty("tap_count")
+    public abstract long tapCount();
+
     @JsonProperty("created_at")
     public abstract DateTime createdAt();
 
     @JsonProperty("updated_at")
     public abstract DateTime updatedAt();
 
-    public static TenantLocationDetailsResponse create(UUID id, String name, String description, long floorCount, DateTime createdAt, DateTime updatedAt) {
+    public static TenantLocationDetailsResponse create(UUID id, String name, String description, long floorCount, long tapCount, DateTime createdAt, DateTime updatedAt) {
         return builder()
                 .id(id)
                 .name(name)
                 .description(description)
                 .floorCount(floorCount)
+                .tapCount(tapCount)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .build();
@@ -53,6 +57,8 @@ public abstract class TenantLocationDetailsResponse {
         public abstract Builder description(String description);
 
         public abstract Builder floorCount(long floorCount);
+
+        public abstract Builder tapCount(long tapCount);
 
         public abstract Builder createdAt(DateTime createdAt);
 

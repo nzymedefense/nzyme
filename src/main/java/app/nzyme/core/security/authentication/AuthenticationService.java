@@ -1102,6 +1102,15 @@ public class AuthenticationService {
         );
     }
 
+    public long countTapsOfTenantLocation(UUID locationId) {
+        return nzyme.getDatabase().withHandle(handle ->
+                handle.createQuery("SELECT COUNT(*) FROM taps WHERE location_uuid = :id")
+                        .bind("id", locationId)
+                        .mapTo(Long.class)
+                        .one()
+        );
+    }
+
     public List<TenantLocationFloorEntry> findAllFloorsOfTenantLocation(UUID locationId, int limit, int offset) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations_floors " +

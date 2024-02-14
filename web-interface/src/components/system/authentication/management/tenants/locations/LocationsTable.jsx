@@ -42,6 +42,7 @@ function LocationsTable(props) {
           <tr>
             <th>Name</th>
             <th>Floors</th>
+            <th>Placed Taps</th>
           </tr>
           </thead>
           <tbody>
@@ -54,6 +55,7 @@ function LocationsTable(props) {
                     </a>
                   </td>
                   <td>{numeral(locations.locations[i].floor_count).format("0,0")}</td>
+                  <td>{numeral(locations.locations[i].tap_count).format("0,0")}</td>
                 </tr>
             )
           })}

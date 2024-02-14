@@ -1299,8 +1299,9 @@ public class OrganizationsResource extends UserAuthenticatedResource {
 
         TenantLocationEntry tl = result.get();
         long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
+        long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
         return Response.ok(TenantLocationDetailsResponse.create(
-                tl.uuid(), tl.name(), tl.description(), floorCount, tl.createdAt(), tl.updatedAt()
+                tl.uuid(), tl.name(), tl.description(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
         )).build();
     }
 
@@ -1329,8 +1330,10 @@ public class OrganizationsResource extends UserAuthenticatedResource {
         for (TenantLocationEntry tl :
                 nzyme.getAuthenticationService().findAllTenantLocations(organizationId, tenantId, limit, offset)) {
             long floorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(tl.uuid());
+            long tapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(tl.uuid());
+
             locations.add(TenantLocationDetailsResponse.create(
-                    tl.uuid(), tl.name(), tl.description(), floorCount, tl.createdAt(), tl.updatedAt()
+                    tl.uuid(), tl.name(), tl.description(), floorCount, tapCount, tl.createdAt(), tl.updatedAt()
             ));
         }
 
