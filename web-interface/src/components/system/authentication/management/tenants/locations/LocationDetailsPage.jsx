@@ -6,6 +6,7 @@ import ApiRoutes from "../../../../../../util/ApiRoutes";
 import moment from "moment";
 import FloorsTable from "./floors/FloorsTable";
 import {notify} from "react-notify-toast";
+import numeral from "numeral";
 
 const authenticationManagementService = new AuthenticationManagementService();
 
@@ -98,9 +99,14 @@ function LocationDetailsPage() {
                   <div className="card-body">
                     <h3>Description</h3>
 
-                    <p className="mb-0">
+                    <p>
                       {location.description ? location.description : <em>No Description.</em>}
                     </p>
+
+                    <dl className="mb-0">
+                      <dt>Taps placed at this location</dt>
+                      <dd>{numeral(location.tap_count).format("0,0")}</dd>
+                    </dl>
                   </div>
                 </div>
               </div>
