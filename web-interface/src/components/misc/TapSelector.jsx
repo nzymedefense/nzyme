@@ -2,6 +2,7 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import Store from "../../util/Store";
 import TapsService from "../../services/TapsService";
 import {TapContext} from "../../App";
+import {arraysAreEqual, compareArray} from "../../util/Tools";
 
 export const enableTapSelector = (ctx) => {
   if(ctx) {
@@ -33,6 +34,12 @@ function TapSelector() {
 
   const [buttonText, setButtonText] = useState(null);
 
+  const setSelectedTapsProtected = (taps) => {
+    if (!arraysAreEqual(taps, selectedTaps)) {
+      setSelectedTaps(taps);
+    }
+  }
+
   useEffect(() => {
     tapsService.findAllTapsHighLevel(function (response) {
       setAvailableTaps(response.data.taps);
@@ -48,7 +55,7 @@ function TapSelector() {
     }
 
     if (lsTaps === undefined || lsTaps === null || !Array.isArray(lsTaps)) {
-      setSelectedTaps("*");
+      setSelectedTapsProtected("*");
       setPreSelectedTaps("*");
 
       if (availableTaps && availableTaps.length > 0) {
@@ -57,7 +64,7 @@ function TapSelector() {
         setButtonText("No Taps Configured");
       }
     } else {
-      setSelectedTaps(lsTaps);
+      setSelectedTapsProtected(lsTaps);
       setPreSelectedTaps(lsTaps);
 
       if (lsTaps.length > 1) {
@@ -99,7 +106,7 @@ function TapSelector() {
 
             if (invalidTapFound) {
               Store.set("selected_taps", "*");
-              setSelectedTaps("*");
+              setSelectedTapsProtected("*");
               setPreSelectedTaps("*");
             }
 
@@ -164,7 +171,7 @@ function TapSelector() {
     e.preventDefault();
 
     Store.set("selected_taps", preSelectedTaps);
-    setSelectedTaps(preSelectedTaps);
+    setSelectedTapsProtected(preSelectedTaps);
 
     setShow(false);
   }

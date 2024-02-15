@@ -68,3 +68,16 @@ export function sanitizeHtml(string) {
   const reg = /[&<>"'/]/ig;
   return string.replace(reg, (match) => (map[match]));
 }
+
+export function arraysAreEqual(a, b) {
+  if (a.length !== b.length) return false
+
+  a.sort()
+  b.sort()
+
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
+  }
+
+  return true
+}
