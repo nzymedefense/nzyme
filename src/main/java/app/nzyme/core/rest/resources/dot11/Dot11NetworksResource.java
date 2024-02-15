@@ -8,6 +8,7 @@ import app.nzyme.core.dot11.db.*;
 import app.nzyme.core.dot11.tracks.Track;
 import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
+import app.nzyme.core.dot11.trilateration.LocationSolver;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
