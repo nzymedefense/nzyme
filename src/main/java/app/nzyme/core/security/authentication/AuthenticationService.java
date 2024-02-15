@@ -938,8 +938,7 @@ public class AuthenticationService {
          */
 
         List<TapPermissionEntry> taps = nzyme.getDatabase().withHandle(handle ->
-                handle.createQuery("SELECT uuid, organization_id, tenant_id, name, description, secret, " +
-                                "created_at, updated_at, last_report FROM taps")
+                handle.createQuery("SELECT * FROM taps")
                         .mapTo(TapPermissionEntry.class)
                         .list()
         );
