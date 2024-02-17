@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
-import Floorplan from "../../../../../../shared/floorplan/Floorplan";
+import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
 import {notify} from "react-notify-toast";
 import moment from "moment/moment";
 import UploadFloorPlanForm from "./UploadFloorPlanForm";
@@ -203,7 +203,7 @@ function FloorDetailsPage() {
               <div className="card-body">
                 <h3>Floor Plan</h3>
 
-                <Floorplan containerHeight={500}
+                <FloorPlan containerHeight={500}
                            floorHasPlan={floor.has_floor_plan}
                            plan={plan}
                            taps={floor.tap_positions}

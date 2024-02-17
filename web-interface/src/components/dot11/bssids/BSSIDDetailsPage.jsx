@@ -16,6 +16,9 @@ import Dot11MacAddress from "../../shared/context/macs/Dot11MacAddress";
 import MacAddressContextLine from "../../shared/context/macs/details/MacAddressContextLine";
 import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
+import ReadOnlyTrilaterationResultFloorPlanWrapper
+  from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
+import {tapSelectionValidForTrilateration} from "../../../util/Tools";
 
 const dot11Service = new Dot11Service();
 
@@ -29,11 +32,18 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
+  const [trilaterationResult, setTrilaterationResult] = useState(null);
+  const [trilaterationError, setTrilaterationError] = useState(null);
+
   useEffect(() => {
     dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
     dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps,
         (ssids) => setSSIDs(ssids)
     );
+
+    if (selectedTaps.length >= 3) {
+      dot11Service.findBSSIDLocation(bssidParam, 15, selectedTaps, setTrilaterationResult, setTrilaterationError);
+    }
   }, [bssidParam, selectedTaps]);
 
   useEffect(() => {
@@ -165,6 +175,20 @@ function BSSIDDetailsPage() {
                     <h3>Signal Waterfall <small>Last 24 hours maximum</small></h3>
 
                     <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} minutes={24 * 60}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="row mt-3">
+              <div className="col-md-12">
+                <div className="card">
+                  <div className="card-body">
+                    <h3>Trilateration / Physical Location <small>Last 15 Minutes</small></h3>
+
+                    <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
+                                                                 taps={selectedTaps}
+                                                                 error={trilaterationError}/>
                   </div>
                 </div>
               </div>

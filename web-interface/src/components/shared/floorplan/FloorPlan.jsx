@@ -36,13 +36,17 @@ const offlineTapIcon = L.icon({
   tooltipAnchor: [0, 0]
 });
 
-function Floorplan(props) {
+function FloorPlan(props) {
 
+  // Always required.
   const containerHeight = props.containerHeight;
   const floorHasPlan = props.floorHasPlan;
   const plan = props.plan;
-  const taps = props.taps;
   const editModeEnabled = props.editModeEnabled;
+
+  // Placements.
+  const taps = props.taps;
+  const instantPositions = props.instantPositions;
 
   // For floor plan management. Can be safely omitted.
   const placedTap = props.placedTap;
@@ -143,6 +147,18 @@ function Floorplan(props) {
     }
   }, [placedTap]);
 
+  // Instant positions.
+  useEffect(() => {
+    if (map && instantPositions && instantPositions.length > 0) {
+      instantPositions.forEach((pos) => {
+        L.marker(xy(pos.y, pos.x), {
+          icon: onlineTapIcon,
+          draggable: false
+        }).addTo(map);
+      })
+    }
+  }, [instantPositions])
+
   const tapTooltip = (tap) => {
     return "<span class='floorplan-tooltip-title'>Tap</span><strong>&quot;" + sanitizeHtml(tap.name) + "&quot;</strong> " +
         (tap.active ? "<span class='text-success'>(Online)</span>" : "<span class='text-danger'>(Offline)</span>") +
@@ -210,4 +226,4 @@ function Floorplan(props) {
 
 }
 
-export default Floorplan;
+export default FloorPlan;

@@ -366,6 +366,20 @@ class Dot11Service {
         successCallback)
   }
 
+  findBSSIDLocation(bssid, minutes, taps, setResult, setErrorMessage) {
+    const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
+    RESTClient.get("/dot11/locations/bssid/show/" + bssid + "/instant", { minutes: minutes, taps: tapsList },
+        (response) => {
+          setResult(response.data)
+        }, (error) => {
+          if (error.response && error.response.status === 400 && error.response.data.message) {
+            setErrorMessage(error.response.data.message);
+          } else {
+            setErrorMessage("Unexpected error.");
+          }
+        })
+
+  }
 }
 
 export default Dot11Service

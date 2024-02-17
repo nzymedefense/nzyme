@@ -3,7 +3,7 @@ import {Navigate, useParams} from "react-router-dom";
 import AuthenticationManagementService from "../../../../../../../services/AuthenticationManagementService";
 import ApiRoutes from "../../../../../../../util/ApiRoutes";
 import LoadingSpinner from "../../../../../../misc/LoadingSpinner";
-import Floorplan from "../../../../../../shared/floorplan/Floorplan";
+import FloorPlan from "../../../../../../shared/floorplan/FloorPlan";
 import FloorForm from "./FloorForm";
 import {notify} from "react-notify-toast";
 

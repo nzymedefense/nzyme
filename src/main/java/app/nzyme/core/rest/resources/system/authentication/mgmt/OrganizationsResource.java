@@ -1737,7 +1737,7 @@ public class OrganizationsResource extends UserAuthenticatedResource {
                     BaseEncoding.base64().encode(floor.get().plan()), image.getWidth(), image.getHeight())
             ).build();
         } catch (Exception e) {
-            LOG.error("Could not read floor plan image data from database. Plan: {}", floor.get(), e);
+            LOG.error("Could not read floor plan image data from database. Floor: {}", floor.get(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }

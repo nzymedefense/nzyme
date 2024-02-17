@@ -1,6 +1,9 @@
 package app.nzyme.core.taps;
 
 import app.nzyme.core.NzymeNode;
+import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.floorplans.db.TenantLocationEntry;
+import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -449,4 +452,24 @@ public class TapManager {
         return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
     }
 
+    public TenantLocationFloorEntry guessFloorOfSignalSource(TenantLocationEntry location,
+                                                             List<TapBasedSignalStrengthResult> signalStrengths) {
+        Map<UUID, Integer> floorSummaries = Maps.newHashMap();
+
+        for (TapBasedSignalStrengthResult ss : signalStrengths) {
+            Tap tap = findTap(ss.tapUuid()).orElseThrow();
+            floorSummaries.merge(tap.floorId(), ((int) ss.signalStrength())*-1, Integer::sum);
+        }
+
+        int highest = -1;
+        UUID result = null;
+        for (Map.Entry<UUID, Integer> summary : floorSummaries.entrySet()) {
+            if (summary.getValue() > highest) {
+                highest = summary.getValue();
+                result = summary.getKey();
+            }
+        }
+
+        return nzyme.getAuthenticationService().findFloorOfTenantLocation(location.uuid(), result).orElseThrow();
+    }
 }

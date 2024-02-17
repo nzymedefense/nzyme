@@ -153,6 +153,7 @@ public class NzymeHttpServer {
         resourceConfig.register(BanditsResource.class);
         resourceConfig.register(Dot11DiscoResource.class);
         resourceConfig.register(AssetContextResource.class);
+        resourceConfig.register(Dot11LocationsResource.class);
 
         // Plugin-supplied REST resources.
         for (Object resource : pluginRestResources) {

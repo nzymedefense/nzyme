@@ -59,6 +59,7 @@
         <totp.version>1.7.1</totp.version>
         <maxmindmmdb.version>3.0.0</maxmindmmdb.version>
         <stringsimilarity.version>2.0.0</stringsimilarity.version>
+        <trilateration.version>1.0.2</trilateration.version>
 
         <nodejs.version>v16.13.1</nodejs.version>
         <npm.version>8.3.0</npm.version>
@@ -376,6 +377,11 @@
             <groupId>info.debatty</groupId>
             <artifactId>java-string-similarity</artifactId>
             <version>${stringsimilarity.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lemmingapex.trilateration</groupId>
+            <artifactId>trilateration</artifactId>
+            <version>${trilateration.version}</version>
         </dependency>
     </dependencies>
 
