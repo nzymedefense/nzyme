@@ -143,7 +143,8 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         tapPositions,
                         floor.createdAt(),
                         floor.updatedAt()
-                )
+                ),
+                TrilaterationDebugResponse.create(bssidLocation.tapDistances())
         )).build();
     }
 

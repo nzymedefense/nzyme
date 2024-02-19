@@ -1,7 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, {memo, useEffect, useState} from "react";
 
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
+import "../../../../lib/leaflet-heat"
+import "../../../../lib/HeatLayer"
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {sanitizeHtml} from "../../../util/Tools";
 import moment from "moment";
@@ -44,11 +46,15 @@ function FloorPlan(props) {
   const plan = props.plan;
   const editModeEnabled = props.editModeEnabled;
 
-  // Placements.
+  // Placements, Optional.
   const taps = props.taps;
   const instantPositions = props.instantPositions;
+  const heatmapData = props.heatmapData;
 
-  // For floor plan management. Can be safely omitted.
+  // Debug, Optional.
+  const debug = props.debug;
+
+  // For floor plan management. Optional.
   const placedTap = props.placedTap;
   const onTapPlacementComplete = props.onTapPlacementComplete;
   const onRevisionSaved = props.onRevisionSaved;
@@ -88,6 +94,7 @@ function FloorPlan(props) {
         maxBoundsViscosity: 1.0,
         scrollWheelZoom: false
       }));
+
     }
   }, [plan]);
 
@@ -149,15 +156,31 @@ function FloorPlan(props) {
 
   // Instant positions.
   useEffect(() => {
-    if (map && instantPositions && instantPositions.length > 0) {
-      instantPositions.forEach((pos) => {
-        L.marker(xy(pos.y, pos.x), {
-          icon: onlineTapIcon,
-          draggable: false
-        }).addTo(map);
-      })
+    if (map) {
+      // Remove all previous instant positions.
+      map.eachLayer(function (layer) {
+        if (layer.options.nzymeType === "instant-position-marker"
+            || layer.options.nzymeType === "instant-heatmap-marker") {
+          layer.remove();
+        }
+      });
+
+      if (instantPositions && instantPositions.length > 0) {
+        instantPositions.forEach((pos) => {
+          /*L.marker(xy(pos.y, pos.x), {
+            nzymeType: "instant-position-marker",
+            icon: onlineTapIcon,
+            draggable: false
+          }).addTo(map);*/
+
+          L.heatLayer([[pos.x, pos.y, 0.5]], {
+            nzymeType: "instant-heatmap-marker",
+            radius: 30
+          }).addTo(map);
+        })
+      }
     }
-  }, [instantPositions])
+  }, [instantPositions, map])
 
   const tapTooltip = (tap) => {
     return "<span class='floorplan-tooltip-title'>Tap</span><strong>&quot;" + sanitizeHtml(tap.name) + "&quot;</strong> " +

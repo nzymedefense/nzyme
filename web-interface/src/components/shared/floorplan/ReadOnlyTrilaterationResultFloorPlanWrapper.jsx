@@ -28,6 +28,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                    plan={data.plan}
                    taps={[]}
                    instantPositions={[data.location]}
+                   debug={data.debug}
                    editModeEnabled={false} />
       </React.Fragment>
   )
@@ -35,11 +36,3 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
 }
 
 export default ReadOnlyTrilaterationResultFloorPlanWrapper;
-
-  /*
-    const containerHeight = props.containerHeight;
-  const floorHasPlan = props.floorHasPlan;
-  const plan = props.plan;
-  const taps = props.taps;
-  const editModeEnabled = props.editModeEnabled;
-   */

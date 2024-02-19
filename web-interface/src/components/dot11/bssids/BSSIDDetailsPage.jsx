@@ -37,9 +37,7 @@ function BSSIDDetailsPage() {
 
   useEffect(() => {
     dot11Service.findBSSID(bssidParam, selectedTaps, setBSSID);
-    dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps,
-        (ssids) => setSSIDs(ssids)
-    );
+    dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps, (ssids) => setSSIDs(ssids));
 
     if (selectedTaps.length >= 3) {
       dot11Service.findBSSIDLocation(bssidParam, 15, selectedTaps, setTrilaterationResult, setTrilaterationError);

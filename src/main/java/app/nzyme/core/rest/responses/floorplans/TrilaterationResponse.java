@@ -18,12 +18,16 @@ public abstract class TrilaterationResponse {
     @JsonProperty("tenant_floor")
     public abstract TenantLocationFloorDetailsResponse tenantFloor();
 
-    public static TrilaterationResponse create(TrilaterationLocationResponse location, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor) {
+    @JsonProperty("debug")
+    public abstract TrilaterationDebugResponse debug();
+
+    public static TrilaterationResponse create(TrilaterationLocationResponse location, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor, TrilaterationDebugResponse debug) {
         return builder()
                 .location(location)
                 .plan(plan)
                 .tenantLocation(tenantLocation)
                 .tenantFloor(tenantFloor)
+                .debug(debug)
                 .build();
     }
 
@@ -40,6 +44,8 @@ public abstract class TrilaterationResponse {
         public abstract Builder tenantLocation(TenantLocationDetailsResponse tenantLocation);
 
         public abstract Builder tenantFloor(TenantLocationFloorDetailsResponse tenantFloor);
+
+        public abstract Builder debug(TrilaterationDebugResponse debug);
 
         public abstract TrilaterationResponse build();
     }

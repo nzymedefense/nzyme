@@ -5,6 +5,7 @@ import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.taps.Tap;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Doubles;
 import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
 import com.lemmingapex.trilateration.TrilaterationFunction;
@@ -14,7 +15,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class LocationSolver {
 
@@ -29,6 +32,8 @@ public class LocationSolver {
     public TrilaterationResult solve(List<TapBasedSignalStrengthResult> taps) throws InvalidTapsException {
         List<Double[]> positions = Lists.newArrayList();
         List<Double> distances = Lists.newArrayList();
+
+        Map<UUID, Double> debugTapDistances = Maps.newHashMap();
 
         for (TapBasedSignalStrengthResult s : taps) {
             Optional<Tap> tapResult = nzyme.getTapManager().findTap(s.tapUuid());
@@ -48,6 +53,7 @@ public class LocationSolver {
 
             double distance = Math.pow(10, (double)(-40 - (s.signalStrength())) / (10 * 3));
             distances.add(distance);
+            debugTapDistances.put(tap.uuid(), distance);
         }
 
         double[][] positionsArr = new double[positions.size()][];
@@ -65,7 +71,7 @@ public class LocationSolver {
         LeastSquaresOptimizer.Optimum optimum = solver.solve();
         double[] position = optimum.getPoint().toArray();
 
-        return TrilaterationResult.create((int) position[0], (int) position[1]);
+        return TrilaterationResult.create((int) position[0], (int) position[1], debugTapDistances);
     }
 
     @AutoValue
@@ -74,10 +80,13 @@ public class LocationSolver {
         public abstract int x();
         public abstract int y();
 
-        public static TrilaterationResult create(int x, int y) {
+        public abstract Map<UUID, Double> tapDistances();
+
+        public static TrilaterationResult create(int x, int y, Map<UUID, Double> tapDistances) {
             return builder()
                     .x(x)
                     .y(y)
+                    .tapDistances(tapDistances)
                     .build();
         }
 
@@ -90,6 +99,8 @@ public class LocationSolver {
             public abstract Builder x(int x);
 
             public abstract Builder y(int y);
+
+            public abstract Builder tapDistances(Map<UUID, Double> tapDistances);
 
             public abstract TrilaterationResult build();
         }
