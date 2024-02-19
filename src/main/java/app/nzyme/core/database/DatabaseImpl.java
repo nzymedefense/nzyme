@@ -134,7 +134,8 @@ public class DatabaseImpl implements Database {
                 .registerRowMapper(new RestrictedSSIDSubstringMapper())
                 .registerRowMapper(new ClientSignalStrengthResultMapper())
                 .registerRowMapper(new TenantLocationEntryMapper())
-                .registerRowMapper(new TenantLocationFloorEntryMapper());
+                .registerRowMapper(new TenantLocationFloorEntryMapper())
+                .registerRowMapper(new TapBasedSignalStrengthResultHistogramEntryMapper());
 
         if (configuration.slowQueryLogThreshold().isPresent()) {
             LOG.info("Slow query log enabled with threshold <{}ms>.", configuration.slowQueryLogThreshold().get());

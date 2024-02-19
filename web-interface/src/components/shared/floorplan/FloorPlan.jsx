@@ -159,26 +159,28 @@ function FloorPlan(props) {
     if (map) {
       // Remove all previous instant positions.
       map.eachLayer(function (layer) {
-        if (layer.options.nzymeType === "instant-position-marker"
-            || layer.options.nzymeType === "instant-heatmap-marker") {
+        if (layer.options.nzymeType === "instant-position-marker" ||
+            layer.options.nzymeType === "instant-heatmap-marker") {
           layer.remove();
         }
       });
 
       if (instantPositions && instantPositions.length > 0) {
         instantPositions.forEach((pos) => {
-          /*L.marker(xy(pos.y, pos.x), {
+          L.marker(xy(pos.y, pos.x), {
             nzymeType: "instant-position-marker",
             icon: onlineTapIcon,
             draggable: false
-          }).addTo(map);*/
-
-          L.heatLayer([[pos.x, pos.y, 0.5]], {
-            nzymeType: "instant-heatmap-marker",
-            radius: 30
           }).addTo(map);
         })
       }
+
+      // heatmap for each
+
+      //L.heatLayer([[pos.x, pos.y, 0.5]], {
+      //  nzymeType: "instant-heatmap-marker",
+      //  radius: 30
+      //}).addTo(map);
     }
   }, [instantPositions, map])
 
