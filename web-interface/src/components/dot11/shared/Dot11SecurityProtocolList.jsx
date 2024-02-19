@@ -13,7 +13,7 @@ function Dot11SecurityProtocolList(props) {
       <React.Fragment>
         {protocols.map((p, i) => {
           return (
-              <React.Fragment>
+              <React.Fragment key={i}>
                 <Dot11SecurityProtocol key={i} protocol={p} />{i < protocols.length-1 ? ", " : null}
               </React.Fragment>
           )

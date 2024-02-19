@@ -2,6 +2,7 @@ package app.nzyme.core.rest.resources.dot11;
 
 import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
+import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
 import app.nzyme.core.dot11.trilateration.LocationSolver;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
@@ -14,6 +15,7 @@ import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotEmpty;
@@ -24,11 +26,13 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTime;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,12 +47,13 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
     private NzymeNode nzyme;
 
     @GET
-    @Path("/bssid/show/{bssid}/instant")
+    @Path("/bssid/show/{bssid}")
     public Response bssidInstantLocation(@Context SecurityContext sc,
                                          @PathParam("bssid") @NotEmpty String bssidParam,
                                          @QueryParam("minutes") int minutes,
                                          @QueryParam("taps") String tapsParam) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
         List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, tapsParam);
 
         if (tapUuids.size() < 3) {
@@ -67,19 +72,19 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                             "be located on the same floor of the location.")).build();
         }
 
-        List<TapBasedSignalStrengthResult> signalStrengths = nzyme.getDot11()
+        List<TapBasedSignalStrengthResult> instantSignalStrengths = nzyme.getDot11()
                 .findBSSIDSignalStrengthPerTap(bssidParam, minutes, tapUuids);
 
         // Check that we have at least three taps here, too. It could be that one simply didn't record the BSSID.
-        if (signalStrengths.size() < 3) {
+        if (instantSignalStrengths.size() < 3) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(ErrorResponse.create("A valid tap selection was made, but less than three taps " +
-                            "recorded this BSSID.")).build();
+                            "recorded this BSSID during the selected timeframe.")).build();
         }
 
         // Determine tenant location and guess likely floor.
         TenantLocationEntry location = determineTenantLocation(taps);
-        TenantLocationFloorEntry floor = nzyme.getTapManager().guessFloorOfSignalSource(location, signalStrengths);
+        TenantLocationFloorEntry floor = nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);
 
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());
@@ -93,14 +98,23 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             ));
         }
 
+        // Get location heatmap data.
+        List<TapBasedSignalStrengthResultHistogramEntry> signals = nzyme.getDot11()
+                .getBSSIDSignalStrengthPerTapHistogram(bssidParam, minutes, tapUuids);
+
         // Calculate location.
         LocationSolver solver = new LocationSolver(nzyme);
         LocationSolver.TrilaterationResult bssidLocation;
         try {
-            bssidLocation = solver.solve(signalStrengths);
+            bssidLocation = solver.solve(signals, minutes);
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate BSSID location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+
+        Map<DateTime, TrilaterationLocationResponse> locations = Maps.newTreeMap();
+        for (Map.Entry<DateTime, LocationSolver.TrilaterationLocation> loc : bssidLocation.locations().entrySet()) {
+            locations.put(loc.getKey(), TrilaterationLocationResponse.create(loc.getValue().x(), loc.getValue().y()));
         }
 
         // Get floor plan.
@@ -118,7 +132,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         }
 
         return Response.ok(TrilaterationResponse.create(
-                TrilaterationLocationResponse.create(bssidLocation.x(), bssidLocation.y()),
+                locations,
                 FloorPlanResponse.create(
                         BaseEncoding.base64().encode(floor.plan()),
                         floorPlanImage.getWidth(),
@@ -143,8 +157,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         tapPositions,
                         floor.createdAt(),
                         floor.updatedAt()
-                ),
-                TrilaterationDebugResponse.create(bssidLocation.tapDistances())
+                )
         )).build();
     }
 

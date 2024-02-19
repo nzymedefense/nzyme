@@ -1,11 +1,16 @@
 import React from "react";
 import FloorPlan from "./FloorPlan";
+import LoadingSpinner from "../../misc/LoadingSpinner";
 
 function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
 
   const taps = props.taps;
   const data = props.data;
   const error = props.error;
+
+  if (!taps || !data) {
+    return <LoadingSpinner />
+  }
 
   // Check that there are at least three taps, all from some tenant location.
   if (taps.length < 3) {
@@ -27,7 +32,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                    floorHasPlan={true}
                    plan={data.plan}
                    taps={[]}
-                   instantPositions={[data.location]}
+                   positions={data.locations}
                    debug={data.debug}
                    editModeEnabled={false} />
       </React.Fragment>

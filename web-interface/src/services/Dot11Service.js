@@ -368,7 +368,7 @@ class Dot11Service {
 
   findBSSIDLocation(bssid, minutes, taps, setResult, setErrorMessage) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
-    RESTClient.get("/dot11/locations/bssid/show/" + bssid + "/instant", { minutes: minutes, taps: tapsList },
+    RESTClient.get("/dot11/locations/bssid/show/" + bssid, { minutes: minutes, taps: tapsList },
         (response) => {
           setResult(response.data)
         }, (error) => {

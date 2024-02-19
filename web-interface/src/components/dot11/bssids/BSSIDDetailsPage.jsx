@@ -40,7 +40,7 @@ function BSSIDDetailsPage() {
     dot11Service.findSSIDsOfBSSID(bssidParam, 24*60, selectedTaps, (ssids) => setSSIDs(ssids));
 
     if (selectedTaps.length >= 3) {
-      dot11Service.findBSSIDLocation(bssidParam, 15, selectedTaps, setTrilaterationResult, setTrilaterationError);
+      dot11Service.findBSSIDLocation(bssidParam, 24*60, selectedTaps, setTrilaterationResult, setTrilaterationError);
     }
   }, [bssidParam, selectedTaps]);
 
@@ -182,11 +182,11 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Trilateration / Physical Location <small>Last 15 Minutes</small></h3>
+                    <h3>Physical Location <small>Last XXX Minutes</small></h3>
 
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  taps={selectedTaps}
-                                                                 error={trilaterationError}/>
+                                                                 error={trilaterationError} />
                   </div>
                 </div>
               </div>

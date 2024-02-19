@@ -2,12 +2,15 @@ package app.nzyme.core.rest.responses.floorplans;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
+import org.joda.time.DateTime;
+
+import java.util.Map;
 
 @AutoValue
 public abstract class TrilaterationResponse {
 
-    @JsonProperty("location")
-    public abstract TrilaterationLocationResponse location();
+    @JsonProperty("locations")
+    public abstract Map<DateTime, TrilaterationLocationResponse> locations();
 
     @JsonProperty("plan")
     public abstract FloorPlanResponse plan();
@@ -18,16 +21,12 @@ public abstract class TrilaterationResponse {
     @JsonProperty("tenant_floor")
     public abstract TenantLocationFloorDetailsResponse tenantFloor();
 
-    @JsonProperty("debug")
-    public abstract TrilaterationDebugResponse debug();
-
-    public static TrilaterationResponse create(TrilaterationLocationResponse location, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor, TrilaterationDebugResponse debug) {
+    public static TrilaterationResponse create(Map<DateTime, TrilaterationLocationResponse> locations, FloorPlanResponse plan, TenantLocationDetailsResponse tenantLocation, TenantLocationFloorDetailsResponse tenantFloor) {
         return builder()
-                .location(location)
+                .locations(locations)
                 .plan(plan)
                 .tenantLocation(tenantLocation)
                 .tenantFloor(tenantFloor)
-                .debug(debug)
                 .build();
     }
 
@@ -37,15 +36,13 @@ public abstract class TrilaterationResponse {
 
     @AutoValue.Builder
     public abstract static class Builder {
-        public abstract Builder location(TrilaterationLocationResponse location);
+        public abstract Builder locations(Map<DateTime, TrilaterationLocationResponse> locations);
 
         public abstract Builder plan(FloorPlanResponse plan);
 
         public abstract Builder tenantLocation(TenantLocationDetailsResponse tenantLocation);
 
         public abstract Builder tenantFloor(TenantLocationFloorDetailsResponse tenantFloor);
-
-        public abstract Builder debug(TrilaterationDebugResponse debug);
 
         public abstract TrilaterationResponse build();
     }
