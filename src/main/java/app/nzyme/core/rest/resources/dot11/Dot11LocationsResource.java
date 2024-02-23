@@ -8,6 +8,7 @@ import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import app.nzyme.core.rest.constraints.MacAddress;
 import app.nzyme.core.rest.responses.floorplans.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.taps.Tap;
@@ -17,6 +18,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
+import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
@@ -47,9 +49,59 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
     private NzymeNode nzyme;
 
     @GET
-    @Path("/bssid/show/{bssid}")
+    @Path("/show/{locationId}/floors")
+    public Response findAllFloorsOfLocation(@Context SecurityContext sc,
+                                            @PathParam("locationId") UUID locationId,
+                                            @QueryParam("limit") int limit,
+                                            @QueryParam("offset") int offset) {
+        AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+
+        // Find location.
+        Optional<TenantLocationEntry> location = nzyme.getAuthenticationService()
+                .findTenantLocation(locationId, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId());
+
+        if (location.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        long floorCount = nzyme.getAuthenticationService().countAllFloorsOfTenantLocation(location.get().uuid());
+        List<TenantLocationFloorDetailsResponse> floors = Lists.newArrayList();
+        for (TenantLocationFloorEntry floor : nzyme.getAuthenticationService()
+                .findAllFloorsOfTenantLocation(location.get().uuid(), limit, offset)) {
+            List<TapPositionResponse> tapPositions = Lists.newArrayList();
+            for (Tap t : nzyme.getTapManager()
+                    .findAllTapsOnFloor(
+                            authenticatedUser.getOrganizationId(),
+                            authenticatedUser.getTenantId(),
+                            locationId,
+                            floor.uuid())) {
+                //noinspection DataFlowIssue
+                tapPositions.add(TapPositionResponse.create(
+                        t.uuid(), t.name(), t.x(), t.y(), t.lastReport(), Tools.isTapActive(t.lastReport())
+                ));
+            }
+
+            floors.add(TenantLocationFloorDetailsResponse.create(
+                    floor.uuid(),
+                    floor.locationId(),
+                    floor.number(),
+                    floor.name() == null ? "Floor " + floor.number() : floor.name(),
+                    floor.plan() != null,
+                    tapPositions.size(),
+                    tapPositions,
+                    floor.createdAt(),
+                    floor.updatedAt()
+            ));
+        }
+
+        return Response.ok(TenantLocationFloorListResponse.create(floorCount, floors)).build();
+    }
+
+    @GET
+    @Path("/locate/bssid/show/{bssid}")
     public Response bssidInstantLocation(@Context SecurityContext sc,
-                                         @PathParam("bssid") @NotEmpty String bssidParam,
+                                         @MacAddress @PathParam("bssid") @NotEmpty String bssidParam,
+                                         @QueryParam("floor_uuid") @Nullable UUID floorUuid,
                                          @QueryParam("minutes") int minutes,
                                          @QueryParam("taps") String tapsParam) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
@@ -82,9 +134,24 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                             "recorded this BSSID during the selected timeframe.")).build();
         }
 
-        // Determine tenant location and guess likely floor.
+        // Determine tenant location.
         TenantLocationEntry location = determineTenantLocation(taps);
-        TenantLocationFloorEntry floor = nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);
+
+        // Guess likely floor if no floor was queried.
+        TenantLocationFloorEntry floor;
+        if (floorUuid != null) {
+            Optional<TenantLocationFloorEntry> floorResult = nzyme.getAuthenticationService()
+                    .findFloorOfTenantLocation(location.uuid(), floorUuid);
+
+            if (floorResult.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            floor = floorResult.get();
+        } else {
+            floor =  nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);;
+        }
+
 
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());
@@ -157,7 +224,9 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                         tapPositions,
                         floor.createdAt(),
                         floor.updatedAt()
-                )
+                ),
+                DateTime.now(),
+                "BSSID " + bssidParam
         )).build();
     }
 

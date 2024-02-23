@@ -272,6 +272,31 @@ public class TapManager {
     }
 
     public List<Tap> findAllTapsOnFloor(UUID organizationUUID, UUID tenantUUID, UUID locationUUID, UUID floorUUID) {
+        if (organizationUUID == null && tenantUUID == null) {
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM taps " +
+                                    "WHERE location_uuid = :location_uuid AND floor_uuid = :floor_uuid")
+                            .bind("location_uuid", locationUUID)
+                            .bind("floor_uuid", floorUUID)
+                            .mapTo(Tap.class)
+                            .list()
+            );
+        }
+
+        if (organizationUUID != null && tenantUUID == null) {
+            // Org Admin.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
+                                    "AND location_uuid = :location_uuid AND floor_uuid = :floor_uuid")
+                            .bind("organization_uuid", organizationUUID)
+                            .bind("location_uuid", locationUUID)
+                            .bind("floor_uuid", floorUUID)
+                            .mapTo(Tap.class)
+                            .list()
+            );
+        }
+
+        // Tenant user.
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM taps WHERE organization_id = :organization_uuid " +
                                 "AND tenant_id = :tenant_uuid AND location_uuid = :location_uuid " +

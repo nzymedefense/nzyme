@@ -25,6 +25,10 @@ small {
     color: #ff6a00 !important;
 }
 
+.text-bold {
+    font-weight: 600;
+}
+
 .strikethrough {
     text-decoration: line-through;
 }
@@ -908,4 +912,15 @@ span.floorplan-tooltip-title {
     border-bottom: 1px dotted #000;
     margin-bottom: 8px;
     padding-bottom: 2px;
+}
+
+.leaflet-control-messagebox {
+    border: 1px solid #6c757d !important;
+    color: #6c757d !important;
+    background-color: #fff !important;
+}
+
+div.floorplan-floor-selector {
+    border: 1px dashed #ccc;
+    padding: 12px;
 }

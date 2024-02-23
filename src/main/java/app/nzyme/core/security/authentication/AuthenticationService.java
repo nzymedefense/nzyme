@@ -1026,6 +1026,29 @@ public class AuthenticationService {
     }
 
     public Optional<TenantLocationEntry> findTenantLocation(UUID locationId, UUID organizationId, UUID tenantId) {
+        if (organizationId == null && tenantId == null) {
+            // Super admin.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM auth_tenants_locations WHERE uuid = :location_id")
+                            .bind("location_id", locationId)
+                            .mapTo(TenantLocationEntry.class)
+                            .findOne()
+            );
+        }
+
+        if (organizationId != null && tenantId == null) {
+            // Org Admin.
+            return nzyme.getDatabase().withHandle(handle ->
+                    handle.createQuery("SELECT * FROM auth_tenants_locations " +
+                                    "WHERE organization_id = :organization_id AND uuid = :location_id")
+                            .bind("location_id", locationId)
+                            .bind("organization_id", organizationId)
+                            .mapTo(TenantLocationEntry.class)
+                            .findOne()
+            );
+        }
+
+        // Tenant user.
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT * FROM auth_tenants_locations " +
                                 "WHERE organization_id = :organization_id AND tenant_id = :tenant_id " +

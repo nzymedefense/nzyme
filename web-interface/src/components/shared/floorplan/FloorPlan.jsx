@@ -2,6 +2,10 @@ import React, {useEffect, useState} from "react";
 
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
+import '../../../../lib/Control.FullScreen';
+import '../../../../lib/Control.FullScreen.css';
+import '../../../../lib/leaflet-messagebox';
+import '../../../../lib/leaflet-messagebox.css';
 import "../../../../lib/leaflet-heat"
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {sanitizeHtml} from "../../../util/Tools";
@@ -49,6 +53,9 @@ function FloorPlan(props) {
   const taps = props.taps;
   const positions = props.positions;
 
+  // Additional info. Optional.
+  const contextText = props.contextText;
+
   // For floor plan management. Optional.
   const placedTap = props.placedTap;
   const onTapPlacementComplete = props.onTapPlacementComplete;
@@ -87,7 +94,11 @@ function FloorPlan(props) {
         minZoom: -5,
         maxBounds: bounds,
         maxBoundsViscosity: 1.0,
-        scrollWheelZoom: false
+        scrollWheelZoom: false,
+        fullscreenControl: true,
+        fullscreenControlOptions: {
+          position: 'topleft'
+        }
       }));
     }
   }, [plan]);
@@ -99,6 +110,11 @@ function FloorPlan(props) {
       L.imageOverlay("data:image/png;base64," + plan.image_base64, bounds).addTo(map);
       map.fitBounds(bounds);
       map.attributionControl.setPrefix("");
+
+      if (contextText) {
+        const box = L.control.messagebox({timeout: 2147483647, position: "bottomleft"}).addTo(map);
+        box.show(contextText);
+      }
     }
   }, [map]);
 
@@ -158,20 +174,22 @@ function FloorPlan(props) {
         }
       });
 
-      // locations for each
-      const heatmapData = [];
-      Object.keys(positions).forEach((bucket) => {
-        const position = positions[bucket];
-        heatmapData.push([position.x, position.y, 0.7])
-      })
+      // Heatmap data.
+      if (positions) {
+        const heatmapData = [];
+        Object.keys(positions).forEach((bucket) => {
+          const position = positions[bucket];
+          heatmapData.push([position.x, position.y, 0.7])
+        })
 
-      L.heatLayer(heatmapData, {
-        nzymeType: "instant-heatmap-marker",
-        radius: 20,
-        maxZoom: 0,
-        blur: 15,
-        max: 1.0,
-      }).addTo(map);
+        L.heatLayer(heatmapData, {
+          nzymeType: "instant-heatmap-marker",
+          radius: 20,
+          maxZoom: 0,
+          blur: 15,
+          max: 1.0
+        }).addTo(map);
+      }
     }
   }, [positions, map])
 

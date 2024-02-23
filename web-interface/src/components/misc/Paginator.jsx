@@ -18,7 +18,7 @@ function Paginator(props) {
   return (
       <nav aria-label="Page navigation example">
 
-        <ul className="pagination justify-content-center">
+        <ul className="pagination justify-content-center mb-0">
           <li className={"page-item " + (page === 1 ? "disabled" : "")}>
             <a className="page-link" href="#" onClick={(e) => onPageClick(e, 1)}>
               &laquo; First

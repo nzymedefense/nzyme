@@ -366,9 +366,9 @@ class Dot11Service {
         successCallback)
   }
 
-  findBSSIDLocation(bssid, minutes, taps, setResult, setErrorMessage) {
+  findBSSIDLocation(bssid, floorUuid, minutes, taps, setResult, setErrorMessage) { // Floor UUID is optional.
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
-    RESTClient.get("/dot11/locations/bssid/show/" + bssid, { minutes: minutes, taps: tapsList },
+    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { minutes: minutes, taps: tapsList, floor_uuid: floorUuid},
         (response) => {
           setResult(response.data)
         }, (error) => {
@@ -378,7 +378,13 @@ class Dot11Service {
             setErrorMessage("Unexpected error.");
           }
         })
+  }
 
+  findAllFloorsOfLocation(locationId, setFloors, limit, offset) {
+    RESTClient.get("/dot11/locations/show/" + locationId + "/floors",
+        {limit: limit, offset: offset}, (response) => {
+          setFloors(response.data);
+        })
   }
 }
 

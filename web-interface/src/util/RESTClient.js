@@ -43,6 +43,7 @@ const RESTClient = {
             notify.show('REST call failed. (HTTP ' + error.response.status + ')', 'error')
           }
         } else {
+          console.log("REST call error: " + error);
           notify.show('REST call failed. No response. Is nzyme running?', 'error')
         }
       })
