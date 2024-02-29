@@ -6,6 +6,10 @@ import '../../../../lib/Control.FullScreen';
 import '../../../../lib/Control.FullScreen.css';
 import '../../../../lib/leaflet-messagebox';
 import '../../../../lib/leaflet-messagebox.css';
+import '../../../../lib/leaflet-slider';
+import '../../../../lib/leaflet-slider.css';
+import '../../../../lib/easy-button';
+import '../../../../lib/easy-button.css';
 import "../../../../lib/leaflet-heat"
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import {sanitizeHtml} from "../../../util/Tools";
@@ -66,6 +70,11 @@ function FloorPlan(props) {
   const [localRevision, setLocalRevision] = useState(0);
   const [newPositions, setNewPositions] = useState({});
 
+  const [showTaps, setShowTaps] = useState(false);
+
+  const [heatmapIntensitySlider, setHeatmapIntensitySlider] = useState(null);
+  const [heatmapIntensity, setHeatmapIntensity] = useState(0.7);
+
   useEffect(() => {
     const onBeforeUnload = (e) => {
       if (localRevision !== 0) {
@@ -97,7 +106,7 @@ function FloorPlan(props) {
         scrollWheelZoom: false,
         fullscreenControl: true,
         fullscreenControlOptions: {
-          position: 'topleft'
+          position: "topleft"
         }
       }));
     }
@@ -111,15 +120,64 @@ function FloorPlan(props) {
       map.fitBounds(bounds);
       map.attributionControl.setPrefix("");
 
-      if (contextText) {
-        const box = L.control.messagebox({timeout: 2147483647, position: "bottomleft"}).addTo(map);
-        box.show(contextText);
+      if (!editModeEnabled) {
+        if (contextText) {
+          const box = L.control.messagebox({timeout: 2147483647, position: "bottomleft"}).addTo(map);
+          box.show(contextText);
+        }
+
+        L.easyButton({
+          states: [{
+            stateName: "show-taps",
+            icon: '<i class="fa-solid fa-server"></i>',
+            title: "Show Taps",
+            onClick: function (btn, map) {
+              setShowTaps(true);
+              btn.state("hide-taps");
+            }
+          }, {
+            stateName: "hide-taps",
+            icon: '<i class="fa-solid fa-ban"></i>',
+            title: "Hide Taps",
+            onClick: function (btn, map) {
+              setShowTaps(false);
+              btn.state("show-taps");
+            }
+          }]
+        }).addTo(map);
       }
     }
   }, [map]);
 
   useEffect(() => {
-    if (taps && map) {
+    if (map && !editModeEnabled) {
+      if (heatmapIntensitySlider) {
+        map.removeControl(heatmapIntensitySlider);
+      }
+
+      const slider = L.control.slider(function(value) {
+        setHeatmapIntensity(value);
+      }, {
+        max: 1,
+        min: 0,
+        value: heatmapIntensity,
+        step: 0.1,
+        showValue: false,
+        title: "Heatmap Intensity",
+        size: "250px",
+        orientation: "horizontal",
+        id: "heatmap-intensity-slider",
+        logo: '<i class="fa-solid fa-fill-drip"></i>',
+        position: "topleft"
+      }).addTo(map);
+
+      setHeatmapIntensitySlider(slider);
+    }
+  }, [map, heatmapIntensity]);
+
+  // Render taps.
+  useEffect(() => {
+    if (taps && map && (showTaps || editModeEnabled)) {
       taps.forEach((tap) => {
         let iconImage;
         if (tap.active) {
@@ -129,6 +187,7 @@ function FloorPlan(props) {
         }
 
         const icon = L.marker(xy(tap.y, tap.x), {
+          nzymeType: "tap-marker",
           icon: iconImage,
           draggable: editModeEnabled,
           autoPan: true
@@ -142,7 +201,19 @@ function FloorPlan(props) {
         })
       })
     }
-  }, [taps, map]);
+  }, [taps, map, showTaps]);
+
+  // Remove taps on hide event.
+  useEffect(() => {
+    if (map && !editModeEnabled && !showTaps) {
+      // Remove all previous positions.
+      map.eachLayer(function (layer) {
+        if (layer.options.nzymeType === "tap-marker") {
+          layer.remove();
+        }
+      });
+    }
+  }, [map, showTaps]);
 
   // New tap placed.
   useEffect(() => {
@@ -169,7 +240,7 @@ function FloorPlan(props) {
     if (map) {
       // Remove all previous positions.
       map.eachLayer(function (layer) {
-        if (layer.options.nzymeType === "instant-heatmap-marker") {
+        if (layer.options.nzymeType === "heatmap-marker") {
           layer.remove();
         }
       });
@@ -179,19 +250,20 @@ function FloorPlan(props) {
         const heatmapData = [];
         Object.keys(positions).forEach((bucket) => {
           const position = positions[bucket];
-          heatmapData.push([position.x, position.y, 0.7])
+          heatmapData.push([position.x, position.y, heatmapIntensity])
         })
 
         L.heatLayer(heatmapData, {
-          nzymeType: "instant-heatmap-marker",
+          nzymeType: "heatmap-marker",
           radius: 20,
+          opacity: 1,
           maxZoom: 0,
           blur: 15,
           max: 1.0
         }).addTo(map);
       }
     }
-  }, [positions, map])
+  }, [positions, map, heatmapIntensity])
 
   const tapTooltip = (tap) => {
     return "<span class='floorplan-tooltip-title'>Tap</span><strong>&quot;" + sanitizeHtml(tap.name) + "&quot;</strong> " +
