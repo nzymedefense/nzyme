@@ -366,10 +366,11 @@ class Dot11Service {
         successCallback)
   }
 
-  findBSSIDLocation(bssid, floorUuid, minutes, taps, setResult, setErrorMessage) { // Floor UUID is optional.
+  findBSSIDLocation(bssid, locationUuid, floorUuid, minutes, taps, setResult, setErrorMessage) { // Floor UUID is optional.
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
-    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { minutes: minutes, taps: tapsList, floor_uuid: floorUuid},
+    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { minutes: minutes, taps: tapsList, location_uuid: locationUuid, floor_uuid: floorUuid},
         (response) => {
+          setErrorMessage(null);
           setResult(response.data)
         }, (error) => {
           if (error.response && error.response.status === 400 && error.response.data.message) {

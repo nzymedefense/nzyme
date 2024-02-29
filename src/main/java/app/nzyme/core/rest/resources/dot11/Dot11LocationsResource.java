@@ -15,6 +15,7 @@ import app.nzyme.core.taps.Tap;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/dot11/locations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -102,44 +104,73 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
     public Response bssidInstantLocation(@Context SecurityContext sc,
                                          @MacAddress @PathParam("bssid") @NotEmpty String bssidParam,
                                          @QueryParam("floor_uuid") @Nullable UUID floorUuid,
+                                         @QueryParam("location_uuid") @Nullable UUID locationUuid,
                                          @QueryParam("minutes") int minutes,
-                                         @QueryParam("taps") String tapsParam) {
+                                         @QueryParam("taps") @Nullable String tapsParam) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        List<UUID> tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, tapsParam);
-
-        if (tapUuids.size() < 3) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ErrorResponse.create("Number of selected taps insufficient for triangulation. " +
-                            "Must be at least three.")).build();
-        }
-
-        List<Tap> taps = nzyme.getTapManager().findAllTapsByUUIDs(tapUuids);
-
-        // Validate at least three taps passed, all placed at same tenant location.
-        if (!validateTapsForTrilateration(taps)) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ErrorResponse.create("Tap selection not valid for triangulation. Must be at least " +
-                            "three taps and all taps must be located at the same location. They do not have to " +
-                            "be located on the same floor of the location.")).build();
-        }
-
-        List<TapBasedSignalStrengthResult> instantSignalStrengths = nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(bssidParam, minutes, tapUuids);
-
-        // Check that we have at least three taps here, too. It could be that one simply didn't record the BSSID.
-        if (instantSignalStrengths.size() < 3) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(ErrorResponse.create("A valid tap selection was made, but less than three taps " +
-                            "recorded this BSSID during the selected timeframe.")).build();
-        }
-
-        // Determine tenant location.
-        TenantLocationEntry location = determineTenantLocation(taps);
-
-        // Guess likely floor if no floor was queried.
         TenantLocationFloorEntry floor;
-        if (floorUuid != null) {
+        TenantLocationEntry location;
+        List<UUID> tapUuids;
+        if (!Strings.isNullOrEmpty(tapsParam)) {
+            // Taps were passed. Guess floor based on tap selection.
+
+            if (floorUuid != null) {
+                // No manual floor selection is allowed when taps are passed.
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, tapsParam);
+
+            if (tapUuids.size() < 3) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("Number of selected taps insufficient for triangulation. " +
+                                "Must be at least three.")).build();
+            }
+
+            List<Tap> taps = nzyme.getTapManager().findAllTapsByUUIDs(tapUuids);
+
+            // Validate at least three taps passed, all placed at same tenant location and floor.
+            if (!validateTapsForTrilateration(taps)) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("Tap selection not valid for triangulation. Must be at least " +
+                                "three taps and all taps must be located at the same location and on the same floor."))
+                        .build();
+            }
+
+            List<TapBasedSignalStrengthResult> instantSignalStrengths = nzyme.getDot11()
+                    .findBSSIDSignalStrengthPerTap(bssidParam, minutes, tapUuids);
+
+            // Check that we have at least three taps here, too. It could be that one simply didn't record the BSSID.
+            if (instantSignalStrengths.size() < 3) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("A valid tap selection was made, but less than three taps " +
+                                "recorded this BSSID during the selected timeframe.")).build();
+            }
+
+            // Determine tenant location.
+            location = determineTenantLocation(taps);
+
+            // Guess likely floor was queried.
+            floor = nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);
+        } else {
+            // No taps were passed. Select floor and all taps on that floor.
+
+            // Make sure a floor ID was in fact passed.
+            if (floorUuid == null || locationUuid == null) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            Optional<TenantLocationEntry> locationResult = nzyme.getAuthenticationService().findTenantLocation(
+                    locationUuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
+            );
+
+            if (locationResult.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            location = locationResult.get();
+
             Optional<TenantLocationFloorEntry> floorResult = nzyme.getAuthenticationService()
                     .findFloorOfTenantLocation(location.uuid(), floorUuid);
 
@@ -148,10 +179,23 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             }
 
             floor = floorResult.get();
-        } else {
-            floor =  nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);;
-        }
 
+            // Get all taps of floor.
+            List<Tap> taps = nzyme.getTapManager().findAllTapsOnFloor(
+                    authenticatedUser.getOrganizationId(),
+                    authenticatedUser.getTenantId(),
+                    location.uuid(),
+                    floor.uuid()
+            );
+
+            // Make sure taps are valid.
+            if (!validateTapsForTrilateration(taps)) {
+                // This needs no user error message because the UI pre-selects only valid floors.
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
+        }
 
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());
@@ -258,7 +302,8 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
     }
 
     private TenantLocationEntry determineTenantLocation(List<Tap> taps) {
-        /* We can grab the first tap, because the list of taps has been previously
+        /*
+         * We can grab the first tap, because the list of taps has been previously
          * validated, and they all have to have the same location.
          */
         Tap tap = taps.get(0);

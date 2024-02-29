@@ -32,7 +32,7 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
-  const [trilaterationFloorUuid, setTrilaterationFloorUuid] = useState(null); // algo guesses if null/not selected
+  const [trilaterationFloor, setTrilaterationFloor] = useState(null);
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
 
@@ -45,12 +45,18 @@ function BSSIDDetailsPage() {
 
   useEffect(() => {
     setTrilaterationResult(null);
-    if (selectedTaps.length >= 3) {
+    if (trilaterationFloor == null) {
+      if (selectedTaps.length >= 3) {
+        dot11Service.findBSSIDLocation(
+            bssidParam, null, null, 24 * 60, selectedTaps, setTrilaterationResult, setTrilaterationError
+        );
+      }
+    } else {
       dot11Service.findBSSIDLocation(
-          bssidParam, trilaterationFloorUuid, 24*60, selectedTaps, setTrilaterationResult, setTrilaterationError
+          bssidParam, trilaterationFloor.location, trilaterationFloor.floor, 24*60, null, setTrilaterationResult, setTrilaterationError
       );
     }
-  }, [bssidParam, selectedTaps, trilaterationFloorUuid]);
+  }, [bssidParam, selectedTaps, trilaterationFloor]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -60,8 +66,8 @@ function BSSIDDetailsPage() {
     }
   }, [tapContext]);
 
-  const onFloorSelected = (floorUuid) => {
-    setTrilaterationFloorUuid(floorUuid);
+  const onFloorSelected = (locationUuid, floorUuid) => {
+    setTrilaterationFloor({location: locationUuid, floor: floorUuid});
   }
 
   if (!bssid || ssids == null) {

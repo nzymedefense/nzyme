@@ -46,13 +46,13 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
       return <span className="text-muted" title="This is the currently selected floor.">n/a</span>
     }
 
-    if (floor.has_floor_plan) {
+    if (floor.has_floor_plan && floor.tap_count >= 3) {
       return <a href="#" style={{fontWeight: "bold"}} onClick={(e) => {
         e.preventDefault();
-        onFloorSelected(floor.id);
+        onFloorSelected(data.tenant_location.id, floor.id);
       }}>Select</a>;
     } else {
-      return <span className="text-muted" title="You can only select floors that have a floor plan.">n/a</span>;
+      return <span className="text-muted" title="You can only select floors that have a floor plan and at least 3 placed taps.">n/a</span>;
     }
   }
 
@@ -91,10 +91,15 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                       {floors.floors[i].id === data.tenant_floor.id ? " (Current Floor)" : null}
                     </td>
                     <td>
-                      {floors.floors[i].has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i> Yes</span> :
-                          <span><i className="fa-solid fa-triangle-exclamation text-warning"></i> No</span>
-                      }</td>
-                    <td>{numeral(floors.floors[i].tap_count).format("0,0")}</td>
+                      {floors.floors[i].has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i>&nbsp; Yes</span> :
+                          <span><i className="fa-solid fa-triangle-exclamation text-warning"></i>&nbsp; No</span>
+                      }
+                    </td>
+                    <td>
+                      {floors.floors[i].tap_count >= 3 ? <i className="fa-solid fa-circle-check text-success"></i> :
+                          <i className="fa-solid fa-triangle-exclamation text-warning"></i>
+                      }&nbsp; {numeral(floors.floors[i].tap_count).format("0,0")}
+                    </td>
                     <td>{selectFloorLink(floors.floors[i])}</td>
                   </tr>
               )
@@ -108,22 +113,22 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
     )
   }
 
-  if (!taps || !data) {
-    return <LoadingSpinner />
-  }
-
-  // Check that there are at least three taps, all from some tenant location.
-  if (taps.length < 3) {
+  // Check that there are at least three taps. The API will return an additional error if the selection is of 3, but invalid.
+  if (!taps || taps.length < 3) {
     return (
         <div className="alert alert-info mb-0">
-          The trilateration feature is only available when at least three nzyme taps are selected and when all such
-          taps are placed at the same tenant location. The taps do not have to be located on the same floor.
+          The trilateration feature is only available when at least three nzyme taps are selected and when all selected
+          taps are placed at the same tenant location and on the same floor.
         </div>
     )
   }
 
   if (error) {
     return <div className="alert alert-info mb-0">{error}</div>
+  }
+
+  if (!data) {
+    return <LoadingSpinner />
   }
 
   return (
