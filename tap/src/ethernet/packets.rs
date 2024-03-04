@@ -1,4 +1,6 @@
+use std::net::IpAddr;
 use chrono::{DateTime, Utc};
+use crate::ethernet::tcp_session_key::TcpSessionKey;
 
 use super::types::{HardwareType, EtherType, ARPOpCode, DNSType, DNSClass, DNSDataType};
 
@@ -39,8 +41,8 @@ pub struct IPv4Packet {
     pub source_mac: String,
     pub destination_mac: String,
     pub header_length: u8,
-    pub source_address: String,
-    pub destination_address: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
     pub ttl: u8,
     pub protocol: u8,
     pub payload: Vec<u8>,
@@ -49,24 +51,34 @@ pub struct IPv4Packet {
 }
 
 #[derive(Debug)]
-pub struct TCPPacket {
+pub struct TcpSegment {
     pub source_mac: String,
     pub destination_mac: String,
-    pub source_address: String,
-    pub destination_address: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
     pub source_port: u16,
     pub destination_port: u16,
+    pub session_key: TcpSessionKey,
+    pub flags: TcpFlags,
     pub payload: Vec<u8>,
     pub size: u32,
     pub timestamp: DateTime<Utc>
 }
 
 #[derive(Debug)]
+pub struct TcpFlags {
+    pub ack: bool,
+    pub reset: bool,
+    pub syn: bool,
+    pub fin: bool
+}
+
+#[derive(Debug)]
 pub struct UDPPacket {
     pub source_mac: String,
     pub destination_mac: String,
-    pub source_address: String,
-    pub destination_address: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
     pub source_port: u16,
     pub destination_port: u16,
     pub payload: Vec<u8>,
@@ -79,8 +91,8 @@ pub struct UDPPacket {
 pub struct DNSPacket {
     pub source_mac: String,
     pub destination_mac: String,
-    pub source_address: String,
-    pub destination_address: String,
+    pub source_address: IpAddr,
+    pub destination_address: IpAddr,
     pub source_port: u16,
     pub destination_port: u16,
     pub dns_type: DNSType,

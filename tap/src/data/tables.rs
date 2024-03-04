@@ -3,28 +3,29 @@ use std::{
     sync::{Arc, Mutex}, thread
 };
 
-use log::error;
+use log::{error, info};
 use std::time::Duration;
+use crate::data::tcp_table::TcpTable;
 
 use crate::metrics::Metrics;
 
-use super::{dns_table::DnsTable, l4_table::L4Table, dot11_table::Dot11Table};
+use super::{dns_table::DnsTable, dot11_table::Dot11Table};
 
 pub struct Tables {
     pub arp: Arc<Mutex<HashMap<String, HashMap<String, u128>>>>,
     pub dns: Arc<Mutex<DnsTable>>,
-    pub l4: Arc<Mutex<L4Table>>,
-    pub dot11: Arc<Mutex<Dot11Table>>
+    pub dot11: Arc<Mutex<Dot11Table>>,
+    pub tcp: Arc<Mutex<TcpTable>>
 }
 
 impl Tables {
 
-    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {       
+    pub fn new(metrics: Arc<Mutex<Metrics>>) -> Self {
         Tables {
             arp: Arc::new(Mutex::new(HashMap::new())),
             dns: Arc::new(Mutex::new(DnsTable::new(metrics))),
-            l4:  Arc::new(Mutex::new(L4Table::new())),
-            dot11: Arc::new(Mutex::new(Dot11Table::new()))
+            dot11: Arc::new(Mutex::new(Dot11Table::new())),
+            tcp: Arc::new(Mutex::new(TcpTable::new()))
         }
     }
 
@@ -32,6 +33,17 @@ impl Tables {
         loop {
             self.calculate_metrics();
             thread::sleep(Duration::from_secs(10));
+        }
+    }
+
+    pub fn run_table_jobs(&self) {
+        loop {
+            thread::sleep(Duration::from_secs(60));
+
+            match self.tcp.lock() {
+                Ok(tcp) => tcp.execute_background_jobs(),
+                Err(e) => error!("Could not acquire mutex to execute TCP background jobs: {}", e)
+            }
         }
     }
 
@@ -46,11 +58,6 @@ impl Tables {
         match self.dns.lock() {
             Ok(dns) => dns.clear_ephemeral(),
             Err(e) => error!("Could not acquire mutex to clear DNS table: {}", e)
-        }
-        
-        match self.l4.lock() {
-            Ok(mut l4) => l4.clear_ephemeral(),
-            Err(e) => error!("Could not acquire mutex to clear L4 table: {}", e)
         }
 
         match self.dot11.lock() {

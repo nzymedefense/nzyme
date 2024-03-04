@@ -57,7 +57,6 @@ pub struct TablesReport {
     pub timestamp: DateTime<Utc>,
     pub arp: HashMap<String, HashMap<String, u128>>,
     pub dns: DnsTableReport,
-    pub l4: L4TableReport,
     pub dot11: Dot11TableReport
 }
 
@@ -118,25 +117,6 @@ pub struct DNSRetroResponseLogReport {
     pub destination_mac: String,
     pub response_value: String,
     pub data_type: String,
-    pub timestamp: DateTime<Utc>
-}
-
-#[derive(Serialize)]
-pub struct L4TableReport {
-    pub retro_pairs: Vec<L4RetroPairReport>
-}
-
-#[derive(Serialize, Eq, PartialEq, Hash)]
-pub struct L4RetroPairReport {
-    pub l4_type: String,
-    pub source_mac: String,
-    pub destination_mac: String,
-    pub source_address: String,
-    pub destination_address: String,
-    pub source_port: u16,
-    pub destination_port: u16,
-    pub connection_count: u64,
-    pub size: u64,
     pub timestamp: DateTime<Utc>
 }
 
@@ -276,7 +256,6 @@ impl Serialize for TablesReport {
         state.serialize_field("timestamp", &self.timestamp.to_rfc3339())?;
         state.serialize_field("arp", &self.arp)?;
         state.serialize_field("dns", &self.dns)?;
-        state.serialize_field("l4", &self.l4)?;
         state.serialize_field("dot11", &self.dot11)?;
         state.end()
     }

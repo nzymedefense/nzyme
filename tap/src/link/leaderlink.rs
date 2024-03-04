@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     configuration::Configuration,
-    metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, L4TableReport, Dot11TableReport}
+    metrics::Metrics, data::tables::Tables, messagebus::{channel_names::ChannelName, bus::Bus}, link::payloads::{DnsTableReport, Dot11TableReport}
 };
 use crate::link::payloads::Dot11DiscoReport;
 
@@ -186,16 +186,6 @@ impl Leaderlink {
             }
         };
 
-        let l4 = match self.tables.l4.lock() {
-            Ok(mut l4) => l4.generate_report(),
-            Err(e) => {
-                error!("Could not acquire L4 table mutex. {}", e);
-                L4TableReport {
-                    retro_pairs: Vec::new(),
-                }
-            }
-        };
-
         let dot11 = match self.tables.dot11.lock() {
             Ok(dot11) => dot11.generate_report(),
             Err(e) => {
@@ -216,7 +206,6 @@ impl Leaderlink {
             timestamp: Utc::now(),
             arp,
             dns,
-            l4,
             dot11
         };
 

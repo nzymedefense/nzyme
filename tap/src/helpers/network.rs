@@ -1,3 +1,4 @@
+use std::net::{IpAddr, Ipv4Addr};
 use anyhow::{bail, Error};
 use log::error;
 use serde::Deserialize;
@@ -59,6 +60,11 @@ pub fn to_ipv4_address_string(bytes: &[u8]) -> String {
     format!("{}.{}.{}.{}", bytes[0], bytes[1], bytes[2], bytes[3])
 }
 
+pub fn to_ipv4_address(bytes: &[u8]) -> IpAddr {
+    assert_eq!(bytes.len(), 4);
+
+    return IpAddr::from(Ipv4Addr::new(bytes[0], bytes[1], bytes[2], bytes[3]));
+}
 
 pub fn is_mac_address_multicast(mac: &String) -> bool {
     if mac.len() != 17 {

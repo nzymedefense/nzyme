@@ -3,12 +3,11 @@ use std::{sync::{Arc, Mutex}, thread, process::exit};
 use log::error;
 
 use crate::{messagebus::bus::Bus, exit_code, data::tables::Tables, system_state::SystemState, metrics::Metrics};
+use crate::processors::tcp_processor::TcpProcessor;
 
 use super::{
     arp_processor::ARPProcessor,
     dns_processor::DnsProcessor,
-    udp_processor::UDPProcessor, 
-    tcp_processor::TCPProcessor,
     dot11_frame_processor::Dot11FrameProcessor,
 };
 
@@ -63,10 +62,11 @@ fn spawn_base_arp(bus: Arc<Bus>, tables: Arc<Tables>) {
 }
 
 fn spawn_base_tcp(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let mut processor = TCPProcessor::new(tables.l4.clone());
+    let mut processor = TcpProcessor::new(tables.tcp.clone());
+    
     thread::spawn(move || {
-        for packet in bus.tcp_pipeline.receiver.iter() {
-            processor.process(&packet);
+        for segment in bus.tcp_pipeline.receiver.iter() {
+            processor.process(&segment);
         }
 
         error!("TCP receiver disconnected.");
@@ -75,16 +75,7 @@ fn spawn_base_tcp(bus: Arc<Bus>, tables: &Arc<Tables>) {
 }
 
 fn spawn_base_udp(bus: Arc<Bus>, tables: &Arc<Tables>) {
-    let mut processor = UDPProcessor::new(tables.l4.clone());
-    thread::spawn(move || {
-        for packet in bus.udp_pipeline.receiver.iter() {
-            processor.process(&packet);
-        }
-
-        error!("UDP receiver disconnected.");
-        exit(exit_code::EX_UNAVAILABLE);
-    });
-
+    // TODO
 }
 
 fn spawn_base_dns(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemState>, metrics: Arc<Mutex<Metrics>>) {
@@ -98,5 +89,4 @@ fn spawn_base_dns(bus: Arc<Bus>, tables: &Arc<Tables>, system_state: Arc<SystemS
         error!("DNS receiver disconnected.");
         exit(exit_code::EX_UNAVAILABLE);
     });
-
 }

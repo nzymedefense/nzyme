@@ -1,4 +1,5 @@
 use std::{u128, collections::HashMap, sync::{Mutex, Arc}};
+use std::net::IpAddr;
 
 use crate::{
     ethernet::{
@@ -19,10 +20,10 @@ use chrono::{DateTime, Utc};
 use log::error;
 
 pub struct DnsTable {
-    ips: Mutex<HashMap<String, DnsStatistics>>,
+    ips: Mutex<HashMap<IpAddr, DnsStatistics>>,
     nxdomains: Mutex<Vec<NXDomainLog>>,
     entropy_log: Mutex<Vec<EntropyLog>>,
-    pairs: Mutex<HashMap<String, Mutex<HashMap<String, u128>>>>,
+    pairs: Mutex<HashMap<IpAddr, Mutex<HashMap<IpAddr, u128>>>>,
     metrics: Arc<Mutex<Metrics>>,
     retro_query_log: Mutex<Vec<DNSRetroQueryLog>>,
     retro_response_log: Mutex<Vec<DNSRetroResponseLog>>
@@ -39,8 +40,8 @@ pub struct DnsStatistics {
 
 #[derive(Debug)]
 pub struct NXDomainLog {
-    ip: String,
-    server: String,
+    ip: IpAddr,
+    server: IpAddr,
     query_value: String,
     data_type: String,
     timestamp: DateTime<Utc>
@@ -56,8 +57,8 @@ pub struct EntropyLog {
 }
 
 pub struct DNSRetroQueryLog {
-    ip: String,
-    server: String,
+    ip: IpAddr,
+    server: IpAddr,
     source_mac: String,
     destination_mac: String,
     port: u16,
@@ -67,8 +68,8 @@ pub struct DNSRetroQueryLog {
 }
 
 pub struct DNSRetroResponseLog {
-    ip: String,
-    server: String,
+    ip: IpAddr,
+    server: IpAddr,
     source_mac: String,
     destination_mac: String,
     response_value: String,
@@ -319,8 +320,8 @@ impl DnsTable {
             Ok(x) => {
                 for nxdomain in &*x {
                     nxdomains.push(NXDomainLogReport {
-                        ip: nxdomain.ip.clone(),
-                        server: nxdomain.server.clone(),
+                        ip: nxdomain.ip.to_string(),
+                        server: nxdomain.server.to_string(),
                         query_value: nxdomain.query_value.clone(),
                         data_type: nxdomain.data_type.clone(),
                         timestamp: nxdomain.timestamp
@@ -356,13 +357,13 @@ impl DnsTable {
                     match counter.lock() {
                         Ok(counter) => {
                             for (destination, count) in &*counter {
-                                counter_result.insert(destination.clone(), *count);
+                                counter_result.insert(destination.to_string(), *count);
                             } 
                         },
                         Err(e) => error!("Could not acquire DNS pairs counter table mutex: {}", e)
                     }
 
-                    result.insert(source.clone(), counter_result);
+                    result.insert(source.to_string(), counter_result);
                 }
 
                 result
@@ -379,8 +380,8 @@ impl DnsTable {
 
                 for r in &*retro {
                     result.push(DNSRetroQueryLogReport {
-                        ip: r.ip.clone(),
-                        server: r.server.clone(),
+                        ip: r.ip.to_string(),
+                        server: r.server.to_string(),
                         source_mac: r.source_mac.clone(),
                         destination_mac: r.destination_mac.clone(),
                         port: r.port,
@@ -405,8 +406,8 @@ impl DnsTable {
 
                 for r in &*retro {
                     result.push(DNSRetroResponseLogReport {
-                        ip: r.ip.clone(),
-                        server: r.server.clone(),
+                        ip: r.ip.to_string(),
+                        server: r.server.to_string(),
                         source_mac: r.source_mac.clone(),
                         destination_mac: r.destination_mac.clone(),
                         response_value: r.response_value.clone(),

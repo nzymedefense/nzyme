@@ -1,25 +1,26 @@
-use std::{sync::{Arc, Mutex}};
-
+use std::{sync::{Arc}};
+use std::sync::Mutex;
 use log::error;
 
-use crate::{data::l4_table::L4Table, ethernet::packets::TCPPacket};
+use crate::{ethernet::packets::TcpSegment};
+use crate::data::tcp_table::TcpTable;
 
-pub struct TCPProcessor {
-    l4_table: Arc<Mutex<L4Table>>
+pub struct TcpProcessor {
+    pub tcp_table: Arc<Mutex<TcpTable>>
 }
 
-impl TCPProcessor {
+impl TcpProcessor {
 
-    pub fn new(l4_table: Arc<Mutex<L4Table>>) -> Self {
-        Self {
-            l4_table
-         }
+    pub fn new(tcp_table: Arc<Mutex<TcpTable>>) -> Self {
+        Self{ tcp_table }
     }
 
-    pub fn process(&mut self, packet: &Arc<TCPPacket>) {
-        match self.l4_table.lock() {
-            Ok(mut table) => table.register_tcp_pair(packet),
-            Err(e) => error!("Could not acquire L4 table mutex to register TCP packet: {}", e)
+    pub fn process(&mut self, segment: &Arc<TcpSegment>) {
+        match self.tcp_table.lock() {
+            Ok(mut table) => table.register_segment(segment),
+            Err(e) => {
+                error!("Could not acquire TCP table mutex: {}", e);
+            }
         }
     }
 

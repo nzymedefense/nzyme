@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::{ethernet::packets::{EthernetPacket, IPv4Packet}, helpers::network::to_ipv4_address_string};
 use anyhow::{Result, bail};
+use crate::helpers::network::to_ipv4_address;
 
 pub fn parse(packet: &Arc<EthernetPacket>) -> Result<IPv4Packet> {
     if packet.data.is_empty() {
@@ -16,8 +17,8 @@ pub fn parse(packet: &Arc<EthernetPacket>) -> Result<IPv4Packet> {
    
     let ttl = packet.data[8];
     let protocol = packet.data[9];
-    let source_address = to_ipv4_address_string(&packet.data[12..16]);
-    let destination_address = to_ipv4_address_string(&packet.data[16..20]);
+    let source_address = to_ipv4_address(&packet.data[12..16]);
+    let destination_address = to_ipv4_address(&packet.data[16..20]);
     let payload = packet.data[20..packet.data.len()].to_vec();
     let size = packet.size;
 

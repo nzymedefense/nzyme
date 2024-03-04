@@ -10,7 +10,7 @@ use crate::{
         EthernetData,
         UDPPacket,
         DNSPacket,
-        TCPPacket
+        TcpSegment
     },
     metrics::Metrics, dot11::frames::{Dot11RawFrame, Dot11Frame}
 };
@@ -28,7 +28,7 @@ pub struct Bus {
 
     pub ethernet_pipeline: NzymeChannel<EthernetPacket>,
     pub arp_pipeline: NzymeChannel<ARPPacket>,
-    pub tcp_pipeline: NzymeChannel<TCPPacket>,
+    pub tcp_pipeline: NzymeChannel<TcpSegment>,
     pub udp_pipeline: NzymeChannel<UDPPacket>,
     pub dns_pipeline: NzymeChannel<DNSPacket>
 }
