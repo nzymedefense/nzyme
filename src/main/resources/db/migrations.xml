@@ -4422,4 +4422,14 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="add_ssid_settings_indices" author="lennartkoopmann">
+        <createIndex tableName="dot11_ssid_settings" indexName="ssid_lookup">
+            <column name="ssid_id"></column>
+        </createIndex>
+
+        <createIndex tableName="dot11_ssid_settings" indexName="attribute_lookup">
+            <column name="attribute"></column>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

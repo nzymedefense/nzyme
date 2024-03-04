@@ -11,7 +11,6 @@ const dot11Service = new Dot11Service();
 
 function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
 
-  const taps = props.taps;
   const data = props.data;
   const error = props.error;
   const onFloorSelected = props.onFloorSelected;
@@ -113,16 +112,6 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
     )
   }
 
-  // Check that there are at least three taps. The API will return an additional error if the selection is of 3, but invalid.
-  if (!taps || taps.length < 3) {
-    return (
-        <div className="alert alert-info mb-0">
-          The trilateration feature is only available when at least three nzyme taps are selected and when all selected
-          taps are placed at the same tenant location and on the same floor.
-        </div>
-    )
-  }
-
   if (error) {
     return <div className="alert alert-info mb-0">{error}</div>
   }
@@ -160,6 +149,16 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                        positions={data.locations}
                        contextText={contextText()}
                        editModeEnabled={false}/>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-md-12">
+            <p className="text-muted mt-3 mb-0">
+              The trilateration functionality always uses data recorded by all taps on the selected floor and ignores
+              manual tap selection. It guesses the initial floor it presents based on the strongest recorded signal
+              strengths.
+            </p>
           </div>
         </div>
       </React.Fragment>

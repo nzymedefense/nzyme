@@ -477,24 +477,23 @@ public class TapManager {
         return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
     }
 
-    public TenantLocationFloorEntry guessFloorOfSignalSource(TenantLocationEntry location,
-                                                             List<TapBasedSignalStrengthResult> signalStrengths) {
-        Map<UUID, Integer> floorSummaries = Maps.newHashMap();
+    public TenantLocationFloorEntry guessFloorOfSignalSource(List<TapBasedSignalStrengthResult> signalStrengths) {
+        Map<Tap, Integer> floorSummaries = Maps.newHashMap();
 
         for (TapBasedSignalStrengthResult ss : signalStrengths) {
             Tap tap = findTap(ss.tapUuid()).orElseThrow();
-            floorSummaries.merge(tap.floorId(), ((int) ss.signalStrength())*-1, Integer::sum);
+            floorSummaries.merge(tap, (int) ss.signalStrength(), Integer::sum);
         }
 
-        int highest = -1;
-        UUID result = null;
-        for (Map.Entry<UUID, Integer> summary : floorSummaries.entrySet()) {
+        int highest = -255;
+        Tap result = null;
+        for (Map.Entry<Tap, Integer> summary : floorSummaries.entrySet()) {
             if (summary.getValue() > highest) {
                 highest = summary.getValue();
                 result = summary.getKey();
             }
         }
 
-        return nzyme.getAuthenticationService().findFloorOfTenantLocation(location.uuid(), result).orElseThrow();
+        return nzyme.getAuthenticationService().findFloorOfTenantLocation(result.locationId(), result.floorId()).orElseThrow();
     }
 }

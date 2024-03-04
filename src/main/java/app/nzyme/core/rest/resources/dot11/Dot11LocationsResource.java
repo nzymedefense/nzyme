@@ -105,62 +105,34 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                                          @MacAddress @PathParam("bssid") @NotEmpty String bssidParam,
                                          @QueryParam("floor_uuid") @Nullable UUID floorUuid,
                                          @QueryParam("location_uuid") @Nullable UUID locationUuid,
-                                         @QueryParam("minutes") int minutes,
-                                         @QueryParam("taps") @Nullable String tapsParam) {
+                                         @QueryParam("minutes") int minutes) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
 
-        TenantLocationFloorEntry floor;
         TenantLocationEntry location;
-        List<UUID> tapUuids;
-        if (!Strings.isNullOrEmpty(tapsParam)) {
-            // Taps were passed. Guess floor based on tap selection.
+        TenantLocationFloorEntry floor;
 
-            if (floorUuid != null) {
-                // No manual floor selection is allowed when taps are passed.
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
-            tapUuids = parseAndValidateTapIds(authenticatedUser, nzyme, tapsParam);
-
-            if (tapUuids.size() < 3) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.create("Number of selected taps insufficient for triangulation. " +
-                                "Must be at least three.")).build();
-            }
-
-            List<Tap> taps = nzyme.getTapManager().findAllTapsByUUIDs(tapUuids);
-
-            // Validate at least three taps passed, all placed at same tenant location and floor.
-            if (!validateTapsForTrilateration(taps)) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.create("Tap selection not valid for triangulation. Must be at least " +
-                                "three taps and all taps must be located at the same location and on the same floor."))
-                        .build();
-            }
-
+        // Was a floor/location selected or do we guess?
+        if (floorUuid == null || locationUuid == null) {
+            // We have to guess.
             List<TapBasedSignalStrengthResult> instantSignalStrengths = nzyme.getDot11()
-                    .findBSSIDSignalStrengthPerTap(bssidParam, minutes, tapUuids);
+                    .findBSSIDSignalStrengthPerTap(
+                            bssidParam,
+                            minutes,
+                            nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser)
+                    );
 
-            // Check that we have at least three taps here, too. It could be that one simply didn't record the BSSID.
-            if (instantSignalStrengths.size() < 3) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(ErrorResponse.create("A valid tap selection was made, but less than three taps " +
-                                "recorded this BSSID during the selected timeframe.")).build();
+            floor = nzyme.getTapManager().guessFloorOfSignalSource(instantSignalStrengths);
+            Optional<TenantLocationEntry> locationResult = nzyme.getAuthenticationService().findTenantLocation(
+                    floor.locationId(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
+            );
+
+            if (locationResult.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
 
-            // Determine tenant location.
-            location = determineTenantLocation(taps);
-
-            // Guess likely floor was queried.
-            floor = nzyme.getTapManager().guessFloorOfSignalSource(location, instantSignalStrengths);
+            location = locationResult.get();
         } else {
-            // No taps were passed. Select floor and all taps on that floor.
-
-            // Make sure a floor ID was in fact passed.
-            if (floorUuid == null || locationUuid == null) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
+            // Floor/location was passed.
             Optional<TenantLocationEntry> locationResult = nzyme.getAuthenticationService().findTenantLocation(
                     locationUuid, authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
             );
@@ -179,23 +151,23 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             }
 
             floor = floorResult.get();
-
-            // Get all taps of floor.
-            List<Tap> taps = nzyme.getTapManager().findAllTapsOnFloor(
-                    authenticatedUser.getOrganizationId(),
-                    authenticatedUser.getTenantId(),
-                    location.uuid(),
-                    floor.uuid()
-            );
-
-            // Make sure taps are valid.
-            if (!validateTapsForTrilateration(taps)) {
-                // This needs no user error message because the UI pre-selects only valid floors.
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
-            tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
         }
+
+        // Get all taps of floor.
+        List<Tap> taps = nzyme.getTapManager().findAllTapsOnFloor(
+                authenticatedUser.getOrganizationId(),
+                authenticatedUser.getTenantId(),
+                location.uuid(),
+                floor.uuid()
+        );
+
+        // Make sure taps are valid.
+        if (!validateTapsForTrilateration(taps)) {
+            // This needs no user error message because the UI pre-selects only valid floors.
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        List<UUID> tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
 
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());

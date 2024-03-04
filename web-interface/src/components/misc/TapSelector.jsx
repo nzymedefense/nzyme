@@ -35,6 +35,13 @@ function TapSelector() {
   const [buttonText, setButtonText] = useState(null);
 
   const setSelectedTapsProtected = (taps) => {
+    if (taps === "*") {
+      if (selectedTaps !== "*") {
+        setSelectedTaps("*");
+      }
+      return;
+    }
+
     if (!arraysAreEqual(taps, selectedTaps)) {
       setSelectedTaps(taps);
     }
@@ -47,7 +54,7 @@ function TapSelector() {
   }, [])
 
   useEffect(() => {
-    let lsTaps = Store.get("selected_taps");
+    const lsTaps = Store.get("selected_taps");
 
     // Clean up Store if there are no taps but a previous session still has a Store.
     if (lsTaps && (availableTaps && availableTaps.length === 0)) {

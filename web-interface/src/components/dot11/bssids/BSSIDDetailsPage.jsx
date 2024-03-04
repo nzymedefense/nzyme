@@ -46,14 +46,12 @@ function BSSIDDetailsPage() {
   useEffect(() => {
     setTrilaterationResult(null);
     if (trilaterationFloor == null) {
-      if (selectedTaps.length >= 3) {
-        dot11Service.findBSSIDLocation(
-            bssidParam, null, null, 24 * 60, selectedTaps, setTrilaterationResult, setTrilaterationError
-        );
-      }
+      dot11Service.findBSSIDLocation(
+          bssidParam, null, null, 24 * 60, setTrilaterationResult, setTrilaterationError
+      );
     } else {
       dot11Service.findBSSIDLocation(
-          bssidParam, trilaterationFloor.location, trilaterationFloor.floor, 24*60, null, setTrilaterationResult, setTrilaterationError
+          bssidParam, trilaterationFloor.location, trilaterationFloor.floor, 24*60, setTrilaterationResult, setTrilaterationError
       );
     }
   }, [bssidParam, selectedTaps, trilaterationFloor]);
