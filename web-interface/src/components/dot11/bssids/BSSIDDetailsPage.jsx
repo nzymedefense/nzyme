@@ -35,6 +35,7 @@ function BSSIDDetailsPage() {
   const [trilaterationFloor, setTrilaterationFloor] = useState(null);
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
+  const [trilaterationRevision, setTrilaterationRevision] = useState(0);
 
   useEffect(() => {
     setBSSID(null);
@@ -54,7 +55,7 @@ function BSSIDDetailsPage() {
           bssidParam, trilaterationFloor.location, trilaterationFloor.floor, 24*60, setTrilaterationResult, setTrilaterationError
       );
     }
-  }, [bssidParam, selectedTaps, trilaterationFloor]);
+  }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -66,6 +67,10 @@ function BSSIDDetailsPage() {
 
   const onFloorSelected = (locationUuid, floorUuid) => {
     setTrilaterationFloor({location: locationUuid, floor: floorUuid});
+  }
+
+  const onRefresh = () => {
+    setTrilaterationRevision((prevRev => prevRev + 1));
   }
 
   if (!bssid || ssids == null) {
@@ -203,6 +208,7 @@ function BSSIDDetailsPage() {
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  onFloorSelected={onFloorSelected}
                                                                  taps={selectedTaps}
+                                                                 onRefresh={onRefresh}
                                                                  error={trilaterationError} />
                   </div>
                 </div>

@@ -60,6 +60,9 @@ function FloorPlan(props) {
   // Additional info. Optional.
   const contextText = props.contextText;
 
+  // Reload hook. Optional.
+  const onRefresh = props.onRefresh;
+
   // For floor plan management. Optional.
   const placedTap = props.placedTap;
   const onTapPlacementComplete = props.onTapPlacementComplete;
@@ -124,6 +127,19 @@ function FloorPlan(props) {
         if (contextText) {
           const box = L.control.messagebox({timeout: 2147483647, position: "bottomleft"}).addTo(map);
           box.show(contextText);
+        }
+
+        if (onRefresh) {
+          L.easyButton({
+            states: [{
+              stateName: "refresh",
+              icon: '<i class="fa-solid fa-refresh"></i>',
+              title: "Refresh",
+              onClick: function (btn, map) {
+                onRefresh();
+              }
+            }]
+          }).addTo(map);
         }
 
         L.easyButton({

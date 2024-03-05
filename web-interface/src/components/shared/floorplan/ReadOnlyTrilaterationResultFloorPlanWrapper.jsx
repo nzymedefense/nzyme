@@ -14,6 +14,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
   const data = props.data;
   const error = props.error;
   const onFloorSelected = props.onFloorSelected;
+  const onRefresh = props.onRefresh;
 
   const perPage = 10;
   const [page, setPage] = useState(1);
@@ -160,7 +161,8 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
                        taps={data.tenant_floor.tap_positions}
                        positions={data.locations}
                        contextText={contextText()}
-                       editModeEnabled={false}/>
+                       onRefresh={onRefresh}
+                       editModeEnabled={false} />
           </div>
         </div>
 

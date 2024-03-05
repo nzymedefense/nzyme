@@ -513,12 +513,19 @@ public class TapManager {
                 continue;
             }
 
-            filteredFloorSummaries.put(tc.getKey(), tc.getValue());
+            Integer floorSummary = floorSummaries.get(tc.getKey());
+            if (floorSummary == null) {
+                continue;
+            }
+
+            filteredFloorSummaries.put(tc.getKey(), floorSummary);
         }
 
         if (filteredFloorSummaries.isEmpty()) {
             return Optional.empty();
         }
+
+        LOG.info("FILTERED: {}", filteredFloorSummaries);
 
         int highest = -255;
         TapPositionKey result = null;
