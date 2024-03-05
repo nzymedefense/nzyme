@@ -5,6 +5,7 @@ import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.floorplans.db.TenantLocationEntry;
 import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -477,23 +478,91 @@ public class TapManager {
         return captures == null || captures.isEmpty() ? Optional.empty() : Optional.of(captures);
     }
 
-    public TenantLocationFloorEntry guessFloorOfSignalSource(List<TapBasedSignalStrengthResult> signalStrengths) {
-        Map<Tap, Integer> floorSummaries = Maps.newHashMap();
+    public Optional<TenantLocationFloorEntry> guessFloorOfSignalSource(List<TapBasedSignalStrengthResult> signalStrengths) {
+        Map<TapPositionKey, Integer> floorSummaries = Maps.newHashMap();
+        Map<TapPositionKey, Integer> floorTapCounts = Maps.newHashMap();
 
         for (TapBasedSignalStrengthResult ss : signalStrengths) {
             Tap tap = findTap(ss.tapUuid()).orElseThrow();
-            floorSummaries.merge(tap, (int) ss.signalStrength(), Integer::sum);
+
+            if (tap.locationId() == null || tap.floorId() == null) {
+                continue;
+            }
+
+            TapPositionKey key = TapPositionKey.create(tap.locationId(), tap.floorId());
+
+            Integer signalStrength = floorSummaries.get(key);
+            if (signalStrength != null) {
+                floorSummaries.put(key, (int) (signalStrength+ss.signalStrength()));
+            } else {
+                floorSummaries.put(key, (int) ss.signalStrength());
+            }
+
+            Integer tapCount = floorTapCounts.get(key);
+            if (tapCount != null) {
+                floorTapCounts.put(key, tapCount+1);
+            } else {
+                floorTapCounts.put(key, 1);
+            }
+        }
+
+        // Filter out all floors that have less than three placed taps.
+        Map<TapPositionKey, Integer> filteredFloorSummaries = Maps.newHashMap();
+        for (Map.Entry<TapPositionKey, Integer> tc : floorTapCounts.entrySet()) {
+            if (tc.getValue() < 3) {
+                continue;
+            }
+
+            filteredFloorSummaries.put(tc.getKey(), tc.getValue());
+        }
+
+        if (filteredFloorSummaries.isEmpty()) {
+            return Optional.empty();
         }
 
         int highest = -255;
-        Tap result = null;
-        for (Map.Entry<Tap, Integer> summary : floorSummaries.entrySet()) {
+        TapPositionKey result = null;
+        for (Map.Entry<TapPositionKey, Integer> summary : filteredFloorSummaries.entrySet()) {
             if (summary.getValue() > highest) {
                 highest = summary.getValue();
                 result = summary.getKey();
             }
         }
 
-        return nzyme.getAuthenticationService().findFloorOfTenantLocation(result.locationId(), result.floorId()).orElseThrow();
+        if (result == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+                nzyme.getAuthenticationService()
+                        .findFloorOfTenantLocation(result.locationId(), result.floorId())
+                        .orElseThrow()
+        );
+    }
+
+    @AutoValue
+    public static abstract class TapPositionKey {
+        public abstract UUID locationId();
+        public abstract UUID floorId();
+
+        public static TapPositionKey create(UUID locationId, UUID floorId) {
+            return builder()
+                    .locationId(locationId)
+                    .floorId(floorId)
+                    .build();
+        }
+
+        public static Builder builder() {
+            return new AutoValue_TapManager_TapPositionKey.Builder();
+        }
+
+        @AutoValue.Builder
+        public abstract static class Builder {
+            public abstract Builder locationId(UUID locationId);
+
+            public abstract Builder floorId(UUID floorId);
+
+            public abstract TapPositionKey build();
+        }
     }
 }

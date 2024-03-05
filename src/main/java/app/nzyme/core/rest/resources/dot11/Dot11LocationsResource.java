@@ -18,6 +18,7 @@ import app.nzyme.plugin.rest.security.RESTSecured;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
@@ -34,10 +35,7 @@ import org.joda.time.DateTime;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("/api/dot11/locations")
@@ -121,7 +119,26 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                             nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser)
                     );
 
-            floor = nzyme.getTapManager().guessFloorOfSignalSource(instantSignalStrengths);
+            if (instantSignalStrengths.size() < 3) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("A valid selection was made, but less than three taps recorded this " +
+                                "BSSID during the selected timeframe and trilateration cannot be performed."))
+                        .build();
+            }
+
+            Optional<TenantLocationFloorEntry> guessedFloor = nzyme.getTapManager()
+                    .guessFloorOfSignalSource(instantSignalStrengths);
+
+            if (guessedFloor.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(ErrorResponse.create("A valid selection was made, but nzyme could not determine a floor " +
+                                "with at least three placed taps that have recorded a signal of the BSSID during the " +
+                                "selected timeframe and trilateration cannot be performed."))
+                        .build();
+            }
+
+            floor = guessedFloor.get();
+
             Optional<TenantLocationEntry> locationResult = nzyme.getAuthenticationService().findTenantLocation(
                     floor.locationId(), authenticatedUser.getOrganizationId(), authenticatedUser.getTenantId()
             );
@@ -161,13 +178,25 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                 floor.uuid()
         );
 
+        if (taps.size() < 3) {
+            /*
+             * Selected floor does not have at least three taps. We would not have guessed this one. Was manual
+             * selection, which UI prevents.
+             */
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Selected floor does not have at least three placed taps."))
+                    .build();
+        }
+
         // Make sure taps are valid.
         if (!validateTapsForTrilateration(taps)) {
             // This needs no user error message because the UI pre-selects only valid floors.
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("Tap selection not valid for trilateration. Must be at least " +
+                            "three taps and all taps must be located at the same location and on the same floor."))
+                    .build();
         }
 
-        List<UUID> tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
 
         long locationFloorCount = nzyme.getAuthenticationService().countFloorsOfTenantLocation(location.uuid());
         long locationTapCount = nzyme.getAuthenticationService().countTapsOfTenantLocation(location.uuid());
@@ -182,8 +211,16 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         }
 
         // Get location heatmap data.
+        List<UUID> tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
         List<TapBasedSignalStrengthResultHistogramEntry> signals = nzyme.getDot11()
                 .getBSSIDSignalStrengthPerTapHistogram(bssidParam, minutes, tapUuids);
+
+        if (!validateSignalsForTrilateration(signals)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(ErrorResponse.create("A valid selection was made, but less than three taps recorded this " +
+                            "BSSID during the selected timeframe and trilateration cannot be performed."))
+                    .build();
+        }
 
         // Calculate location.
         LocationSolver solver = new LocationSolver(nzyme);
@@ -247,6 +284,10 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
     }
 
     private boolean validateTapsForTrilateration(List<Tap> taps) {
+        if (taps.size() < 3) {
+            return false;
+        }
+
         // All must be in same tenant location.
         UUID locationUUID = null;
 
@@ -273,23 +314,27 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         return true;
     }
 
-    private TenantLocationEntry determineTenantLocation(List<Tap> taps) {
-        /*
-         * We can grab the first tap, because the list of taps has been previously
-         * validated, and they all have to have the same location.
-         */
-        Tap tap = taps.get(0);
+    private boolean validateSignalsForTrilateration(List<TapBasedSignalStrengthResultHistogramEntry> signals) {
+        Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = Maps.newHashMap();
+        for (TapBasedSignalStrengthResultHistogramEntry signal : signals) {
+            List<TapBasedSignalStrengthResultHistogramEntry> entry = histo.get(signal.bucket());
 
-        Optional<TenantLocationEntry> result = nzyme.getAuthenticationService().findTenantLocation(
-                tap.locationId(), tap.organizationId(), tap.tenantId()
-        );
-
-        if (result.isEmpty()) {
-            // This should never happen because we validated tap list previously.
-            throw new RuntimeException("No tenant location found.");
+            if (entry != null) {
+                entry.add(signal);
+            } else {
+                histo.put(signal.bucket(), new ArrayList<>(){{ add(signal); }});
+            }
         }
 
-        return result.get();
+        int validBuckets = 0;
+
+        for (Map.Entry<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> entry : histo.entrySet()) {
+            if (entry.getValue().size() >= 3) {
+                validBuckets+=1;
+            }
+        }
+
+        return validBuckets > 0;
     }
 
 }

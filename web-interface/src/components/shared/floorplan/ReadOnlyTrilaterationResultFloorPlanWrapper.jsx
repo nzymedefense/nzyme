@@ -113,16 +113,28 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
   }
 
   if (error) {
-    return <div className="alert alert-info mb-0">{error}</div>
+    return (
+        <React.Fragment>
+          <div className="alert alert-info mb-0">
+            {error}
+            <hr />
+            <button className="btn btn-secondary btn-sm" onClick={(e) => {
+              e.preventDefault();
+              onFloorSelected(null, null);
+            }}>Guess Floor
+            </button>
+          </div>
+        </React.Fragment>
+    )
   }
 
   if (!data) {
-    return <LoadingSpinner />
+    return <LoadingSpinner/>
   }
 
   return (
       <React.Fragment>
-        <div className="row">
+      <div className="row">
           <div className="col-md-9">
             <h5>Location: {data.tenant_location.name} / Floor: {data.tenant_floor.name}</h5>
           </div>
@@ -159,10 +171,15 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
               manual tap selection. It guesses the initial floor it presents based on the strongest recorded signal
               strengths.
             </p>
+
+            <p className="text-muted mt-3 mb-0">
+              The likely closest floor will be shown in case of a floor that has not at least three placed taps with a
+              recorded signal within the selected timeframe.
+            </p>
           </div>
         </div>
       </React.Fragment>
-)
+  )
 
 }
 
