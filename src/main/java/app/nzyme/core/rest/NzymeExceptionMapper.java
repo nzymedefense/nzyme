@@ -39,7 +39,7 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if (t instanceof ParamException || t instanceof InvalidParameterException) {
+        if (t instanceof ParamException || t instanceof IllegalArgumentException) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 

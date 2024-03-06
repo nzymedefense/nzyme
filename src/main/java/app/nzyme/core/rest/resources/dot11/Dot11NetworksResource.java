@@ -13,6 +13,7 @@ import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.requests.UpdateTrackDetectorConfigurationRequest;
 import app.nzyme.core.rest.responses.dot11.*;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -167,7 +168,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(bssid.bssid(), 15, tapUuids)) {
+                .findBSSIDSignalStrengthPerTap(bssid.bssid(), TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now()), tapUuids)) {
             signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
         }
 
@@ -433,7 +434,7 @@ public class Dot11NetworksResource extends TapDataHandlingResource {
 
         List<TapBasedSignalStrengthResponse> signalStrength = Lists.newArrayList();
         for (TapBasedSignalStrengthResult ss : nzyme.getDot11()
-                .findBSSIDSignalStrengthPerTap(bssid, 15, tapUuids)) {
+                .findBSSIDSignalStrengthPerTap(bssid, TimeRange.create(DateTime.now().minusMinutes(15), DateTime.now()), tapUuids)) {
             signalStrength.add(TapBasedSignalStrengthResponse.create(ss.tapUuid(), ss.tapName(), ss.signalStrength()));
         }
 

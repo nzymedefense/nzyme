@@ -366,8 +366,8 @@ class Dot11Service {
         successCallback)
   }
 
-  findBSSIDLocation(bssid, locationUuid, floorUuid, minutes, setResult, setErrorMessage) { // Floor UUID is optional.
-    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { minutes: minutes, location_uuid: locationUuid, floor_uuid: floorUuid},
+  findBSSIDLocation(bssid, locationUuid, floorUuid, timeRange, setResult, setErrorMessage) { // Floor UUID is optional.
+    RESTClient.get("/dot11/locations/locate/bssid/show/" + bssid, { time_range: timeRange, location_uuid: locationUuid, floor_uuid: floorUuid},
         (response) => {
           setErrorMessage(null);
           setResult(response.data)

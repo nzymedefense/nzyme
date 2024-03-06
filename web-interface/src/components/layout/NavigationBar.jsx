@@ -3,8 +3,6 @@ import Store from '../../util/Store'
 import DarkModeButton from './DarkModeButton'
 import AuthenticationService from "../../services/AuthenticationService";
 import TapSelector from "../misc/TapSelector";
-import TimeRangeSelector from "../misc/TimeRangeSelector";
-import {Navigate} from "react-router-dom";
 import ApiRoutes from "../../util/ApiRoutes";
 
 const authService = new AuthenticationService();
@@ -41,10 +39,6 @@ function NavigationBar(props) {
 
           <div className="tap-selector">
             <TapSelector />
-          </div>
-
-          <div className="timerange-selector">
-            <TimeRangeSelector />
           </div>
         </div>
 

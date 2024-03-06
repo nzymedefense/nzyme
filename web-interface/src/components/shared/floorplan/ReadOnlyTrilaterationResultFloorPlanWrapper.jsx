@@ -68,46 +68,46 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
     return (
         <React.Fragment>
           <div className="floorplan-floor-selector mb-3 mt-2">
-          <h4>Change Floor</h4>
-          <p className="mb-2">Total floors: {floors.count}</p>
+            <h4>Change Floor</h4>
+            <p className="mb-2">Total floors: {floors.count}</p>
 
-          <table className="table table-sm table-hover table-striped">
-            <thead>
-            <tr>
-              <th style={{width: 65}}>Number</th>
-              <th>Name</th>
-              <th>Plan Uploaded</th>
-              <th>Placed Taps</th>
-              <th>&nbsp;</th>
-            </tr>
-            </thead>
-            <tbody>
-            {floors.floors.map(function (key, i) {
-              return (
-                  <tr key={i}>
-                    <td>{floors.floors[i].number}</td>
-                    <td className={floors.floors[i].id === data.tenant_floor.id ? "text-bold" : null}>
-                      {floors.floors[i].name}
-                      {floors.floors[i].id === data.tenant_floor.id ? " (Current Floor)" : null}
-                    </td>
-                    <td>
-                      {floors.floors[i].has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i>&nbsp; Yes</span> :
-                          <span><i className="fa-solid fa-triangle-exclamation text-warning"></i>&nbsp; No</span>
-                      }
-                    </td>
-                    <td>
-                      {floors.floors[i].tap_count >= 3 ? <i className="fa-solid fa-circle-check text-success"></i> :
-                          <i className="fa-solid fa-triangle-exclamation text-warning"></i>
-                      }&nbsp; {numeral(floors.floors[i].tap_count).format("0,0")}
-                    </td>
-                    <td>{selectFloorLink(floors.floors[i])}</td>
-                  </tr>
-              )
-            })}
-            </tbody>
-          </table>
+            <table className="table table-sm table-hover table-striped">
+              <thead>
+              <tr>
+                <th style={{width: 65}}>Number</th>
+                <th>Name</th>
+                <th>Plan Uploaded</th>
+                <th>Placed Taps</th>
+                <th>&nbsp;</th>
+              </tr>
+              </thead>
+              <tbody>
+              {floors.floors.map(function (key, i) {
+                return (
+                    <tr key={i}>
+                      <td>{floors.floors[i].number}</td>
+                      <td className={floors.floors[i].id === data.tenant_floor.id ? "text-bold" : null}>
+                        {floors.floors[i].name}
+                        {floors.floors[i].id === data.tenant_floor.id ? " (Current Floor)" : null}
+                      </td>
+                      <td>
+                        {floors.floors[i].has_floor_plan ? <span><i className="fa-solid fa-circle-check text-success"></i>&nbsp; Yes</span> :
+                            <span><i className="fa-solid fa-triangle-exclamation text-warning"></i>&nbsp; No</span>
+                        }
+                      </td>
+                      <td>
+                        {floors.floors[i].tap_count >= 3 ? <i className="fa-solid fa-circle-check text-success"></i> :
+                            <i className="fa-solid fa-triangle-exclamation text-warning"></i>
+                        }&nbsp; {numeral(floors.floors[i].tap_count).format("0,0")}
+                      </td>
+                      <td>{selectFloorLink(floors.floors[i])}</td>
+                    </tr>
+                )
+              })}
+              </tbody>
+            </table>
 
-          <Paginator itemCount={floors.count} perPage={perPage} setPage={setPage} page={page} />
+            <Paginator itemCount={floors.count} perPage={perPage} setPage={setPage} page={page} />
           </div>
         </React.Fragment>
     )
@@ -122,7 +122,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
             <button className="btn btn-secondary btn-sm" onClick={(e) => {
               e.preventDefault();
               onFloorSelected(null, null);
-            }}>Guess Floor
+            }}>Reset
             </button>
           </div>
         </React.Fragment>
@@ -141,7 +141,7 @@ function ReadOnlyTrilaterationResultFloorPlanWrapper(props) {
           </div>
 
           <div className="col-md-3">
-            <a href="#" className="btn btn-sm btn-secondary float-end" onClick={onToggleFloorSelector}>
+            <a href="#" className="btn btn-sm btn-outline-secondary float-end" onClick={onToggleFloorSelector}>
               {floorSelectorToggled ? "Hide Floor Selector" : "Change Floor"}
             </a>
           </div>

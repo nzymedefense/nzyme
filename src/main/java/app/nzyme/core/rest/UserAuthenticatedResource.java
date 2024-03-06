@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Optional;
 import java.util.UUID;
 
-public class UserAuthenticatedResource {
+public class UserAuthenticatedResource extends RestResource {
 
     @Inject
     private NzymeNode nzyme;

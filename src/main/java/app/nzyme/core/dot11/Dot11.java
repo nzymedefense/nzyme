@@ -12,6 +12,7 @@ import app.nzyme.core.rest.resources.taps.reports.tables.dot11.Dot11SecurityInfo
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressContextResponse;
 import app.nzyme.core.rest.responses.dot11.Dot11MacAddressResponse;
 import app.nzyme.core.rest.responses.dot11.clients.ConnectedBSSID;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -1945,40 +1946,47 @@ public class Dot11 {
         );
     }
 
-    public List<TapBasedSignalStrengthResult> findBSSIDSignalStrengthPerTap(String bssid, int minutes, List<UUID> taps) {
+    public List<TapBasedSignalStrengthResult> findBSSIDSignalStrengthPerTap(String bssid, TimeRange timeRange, List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(b.signal_strength_average) AS signal_strength " +
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
-                                "WHERE b.bssid = :bssid  AND b.tap_uuid IN (<taps>) AND b.created_at > :cutoff " +
+                                "WHERE b.bssid = :bssid  AND b.tap_uuid IN (<taps>) " +
+                                "AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "GROUP BY b.tap_uuid, t.name ORDER BY signal_strength DESC")
                         .bind("bssid", bssid)
                         .bindList("taps", taps)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .mapTo(TapBasedSignalStrengthResult.class)
                         .list()
         );
     }
 
-    public List<TapBasedSignalStrengthResultHistogramEntry> getBSSIDSignalStrengthPerTapHistogram(String bssid, int minutes, List<UUID> taps) {
+    public List<TapBasedSignalStrengthResultHistogramEntry> getBSSIDSignalStrengthPerTapHistogram(String bssid,
+                                                                                                  TimeRange timeRange,
+                                                                                                  List<UUID> taps) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', b.created_at) AS bucket, " +
                                 "b.tap_uuid AS tap_uuid, t.name AS tap_name, " +
                                 "AVG(b.signal_strength_average) AS signal_strength " +
                                 "FROM dot11_bssids AS b LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
-                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>) AND b.created_at > :cutoff " +
+                                "WHERE b.bssid = :bssid AND b.tap_uuid IN (<taps>) " +
+                                "AND b.created_at >= :tr_from AND b.created_at <= :tr_to " +
                                 "GROUP BY b.tap_uuid, t.name, bucket ORDER BY bucket DESC")
                         .bind("bssid", bssid)
                         .bindList("taps", taps)
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .mapTo(TapBasedSignalStrengthResultHistogramEntry.class)
                         .list()
         );
     }
 
     public static String securitySuitesToIdentifier(Dot11SecuritySuiteJson suite) {
-        if (Strings.isNullOrEmpty(suite.groupCipher()) && Strings.isNullOrEmpty(suite.pairwiseCiphers()) && Strings.isNullOrEmpty(suite.keyManagementModes())) {
+        if (Strings.isNullOrEmpty(suite.groupCipher()) && Strings.isNullOrEmpty(suite.pairwiseCiphers())
+                && Strings.isNullOrEmpty(suite.keyManagementModes())) {
             return "NONE";
         }
 

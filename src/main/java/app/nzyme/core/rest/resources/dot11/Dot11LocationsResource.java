@@ -9,9 +9,11 @@ import app.nzyme.core.floorplans.db.TenantLocationFloorEntry;
 import app.nzyme.core.rest.TapDataHandlingResource;
 import app.nzyme.core.rest.authentication.AuthenticatedUser;
 import app.nzyme.core.rest.constraints.MacAddress;
+import app.nzyme.core.rest.parameters.TimeRangeParameter;
 import app.nzyme.core.rest.responses.floorplans.*;
 import app.nzyme.core.rest.responses.misc.ErrorResponse;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.Tools;
 import app.nzyme.plugin.rest.security.PermissionLevel;
 import app.nzyme.plugin.rest.security.RESTSecured;
@@ -22,6 +24,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import jakarta.annotation.Nullable;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -103,8 +106,9 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
                                          @MacAddress @PathParam("bssid") @NotEmpty String bssidParam,
                                          @QueryParam("floor_uuid") @Nullable UUID floorUuid,
                                          @QueryParam("location_uuid") @Nullable UUID locationUuid,
-                                         @QueryParam("minutes") int minutes) {
+                                         @QueryParam("time_range") @Valid String timeRangeParameter) {
         AuthenticatedUser authenticatedUser = getAuthenticatedUser(sc);
+        TimeRange timeRange = parseTimeRangeQueryParameter(timeRangeParameter);
 
         TenantLocationEntry location;
         TenantLocationFloorEntry floor;
@@ -115,7 +119,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
             List<TapBasedSignalStrengthResult> instantSignalStrengths = nzyme.getDot11()
                     .findBSSIDSignalStrengthPerTap(
                             bssidParam,
-                            minutes,
+                            timeRange,
                             nzyme.getTapManager().allTapUUIDsAccessibleByUser(authenticatedUser)
                     );
 
@@ -213,7 +217,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         // Get location heatmap data.
         List<UUID> tapUuids = taps.stream().map(Tap::uuid).collect(Collectors.toList());
         List<TapBasedSignalStrengthResultHistogramEntry> signals = nzyme.getDot11()
-                .getBSSIDSignalStrengthPerTapHistogram(bssidParam, minutes, tapUuids);
+                .getBSSIDSignalStrengthPerTapHistogram(bssidParam, timeRange, tapUuids);
 
         if (!validateSignalsForTrilateration(signals)) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -226,7 +230,7 @@ public class Dot11LocationsResource extends TapDataHandlingResource {
         LocationSolver solver = new LocationSolver(nzyme);
         LocationSolver.TrilaterationResult bssidLocation;
         try {
-            bssidLocation = solver.solve(signals, minutes);
+            bssidLocation = solver.solve(signals);
         } catch (LocationSolver.InvalidTapsException e) {
             LOG.error("Could not calculate BSSID location.", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

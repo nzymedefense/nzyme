@@ -4,6 +4,7 @@ import app.nzyme.core.NzymeNode;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResult;
 import app.nzyme.core.dot11.db.TapBasedSignalStrengthResultHistogramEntry;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.TimeRange;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -15,6 +16,7 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import java.util.*;
 
@@ -26,9 +28,11 @@ public class LocationSolver {
         this.nzyme = nzyme;
     }
 
-    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals, int minutes) throws InvalidTapsException {
+    public TrilaterationResult solve(List<TapBasedSignalStrengthResultHistogramEntry> signals) throws InvalidTapsException {
         // Sort the signal data into a queryable histogram.
         Map<DateTime, List<TapBasedSignalStrengthResultHistogramEntry>> histo = Maps.newHashMap();
+        DateTime earliest = DateTime.now();
+        DateTime latest = DateTime.now();
         for (TapBasedSignalStrengthResultHistogramEntry signal : signals) {
             List<TapBasedSignalStrengthResultHistogramEntry> entry = histo.get(signal.bucket());
 
@@ -36,6 +40,14 @@ public class LocationSolver {
                 entry.add(signal);
             } else {
                 histo.put(signal.bucket(), new ArrayList<>(){{ add(signal); }});
+            }
+
+            if (signal.bucket().isAfter(latest)) {
+                latest = signal.bucket();
+            }
+
+            if (signal.bucket().isBefore(earliest)) {
+                earliest = signal.bucket();
             }
         }
 
@@ -45,8 +57,9 @@ public class LocationSolver {
             taps.put(tap.uuid(), tap);
         }
 
+        Duration duration = new Duration(earliest, latest);
         Map<DateTime, TrilaterationLocation> result = new TreeMap<>();
-        for (int x = minutes; x != 0; x--) {
+        for (int x = (int) duration.getStandardMinutes(); x != 0; x--) {
             DateTime bucket = DateTime.now().withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(x);
 
             List<TapBasedSignalStrengthResultHistogramEntry> signal = histo.get(bucket);

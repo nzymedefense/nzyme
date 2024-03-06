@@ -18,7 +18,9 @@ import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
-import {tapSelectionValidForTrilateration} from "../../../util/Tools";
+import CardTitleWithSettings from "../../misc/CardTitleWithSettings";
+import {Relative} from "../../shared/timerange/TimeRange";
+import AppliedTimeRange from "../../shared/timerange/AppliedTimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -32,6 +34,7 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
+  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Relative(15))
   const [trilaterationFloor, setTrilaterationFloor] = useState(null);
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
@@ -48,14 +51,14 @@ function BSSIDDetailsPage() {
     setTrilaterationResult(null);
     if (trilaterationFloor == null) {
       dot11Service.findBSSIDLocation(
-          bssidParam, null, null, 24 * 60, setTrilaterationResult, setTrilaterationError
+          bssidParam, null, null, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
       );
     } else {
       dot11Service.findBSSIDLocation(
-          bssidParam, trilaterationFloor.location, trilaterationFloor.floor, 24*60, setTrilaterationResult, setTrilaterationError
+          bssidParam, trilaterationFloor.location, trilaterationFloor.floor, trilaterationTimeRange, setTrilaterationResult, setTrilaterationError
       );
     }
-  }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision]);
+  }, [bssidParam, selectedTaps, trilaterationFloor, trilaterationRevision, trilaterationTimeRange]);
 
   useEffect(() => {
     enableTapSelector(tapContext);
@@ -203,7 +206,18 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <h3>Physical Location <small>Last XXX Minutes</small></h3>
+                    <CardTitleWithSettings title="Physical Location / Trilateration"
+                                           timeRange={{type: "relative", minutes: 15}}
+                                           setTimeRange={setTrilaterationTimeRange} />
+
+                    <AppliedTimeRange timeRange={trilaterationTimeRange} />
+
+                    <p>
+                      It's important to understand that the precision of trilateration is significantly influenced by a
+                      variety of environmental conditions, alongside the calibration of the system and the positioning
+                      of taps. Therefore, any location derived through this method should be regarded as an approximate
+                      estimation rather than a precise pinpoint of a signal source.
+                    </p>
 
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  onFloorSelected={onFloorSelected}
