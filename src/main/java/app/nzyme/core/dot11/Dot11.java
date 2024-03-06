@@ -1952,7 +1952,7 @@ public class Dot11 {
                                 "FROM dot11_bssids AS b " +
                                 "LEFT JOIN taps AS t ON b.tap_uuid = t.uuid " +
                                 "WHERE b.bssid = :bssid  AND b.tap_uuid IN (<taps>) AND b.created_at > :cutoff " +
-                                "GROUP BY b.tap_uuid, t.name")
+                                "GROUP BY b.tap_uuid, t.name ORDER BY signal_strength DESC")
                         .bind("bssid", bssid)
                         .bindList("taps", taps)
                         .bind("cutoff", DateTime.now().minusMinutes(minutes))
