@@ -34,7 +34,7 @@ function BSSIDDetailsPage() {
   const [bssid, setBSSID] = useState(null);
   const [ssids, setSSIDs] = useState(null);
 
-  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Relative(15))
+  const [trilaterationTimeRange, setTrilaterationTimeRange] = useState(Relative(15, "Last 15 Minutes"))
   const [trilaterationFloor, setTrilaterationFloor] = useState(null);
   const [trilaterationResult, setTrilaterationResult] = useState(null);
   const [trilaterationError, setTrilaterationError] = useState(null);
@@ -211,13 +211,6 @@ function BSSIDDetailsPage() {
                                            setTimeRange={setTrilaterationTimeRange} />
 
                     <AppliedTimeRange timeRange={trilaterationTimeRange} />
-
-                    <p>
-                      It's important to understand that the precision of trilateration is significantly influenced by a
-                      variety of environmental conditions, alongside the calibration of the system and the positioning
-                      of taps. Therefore, any location derived through this method should be regarded as an approximate
-                      estimation rather than a precise pinpoint of a signal source.
-                    </p>
 
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  onFloorSelected={onFloorSelected}

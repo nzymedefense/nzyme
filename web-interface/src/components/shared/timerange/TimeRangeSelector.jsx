@@ -9,18 +9,13 @@ function TimeRangeSelector(props) {
 
   const setTimeRange = props.setTimeRange;
 
+  const [relativeUnit, setRelativeUnit] = useState("Minutes");
+  const [relativeValue, setRelativeValue] = useState(5);
+
   const [absoluteStart, setAbsoluteStart] = useState(new Date(new Date().setDate(new Date().getDate() - 1)));
   const [absoluteEnd, setAbsoluteEnd] = useState(new Date());
   const [absoluteErrorMessage, setAbsoluteErrorMessage] = useState(null);
   const [absoluteSubmitEnabled, setAbsoluteSubmitEnabled] = useState(true);
-
-  const AbsoluteInput = forwardRef(({ value, onClick }, ref) => (
-      <input type="text" class="form-control" onClick={onClick} ref={ref} defaultValue={value} />
-  ));
-
-  const relativeOption = (range, name) => {
-    return <a href="#" onClick={(e) => { e.preventDefault(); setTimeRange(range) }}>{name}</a>
-  }
 
   useEffect(() => {
     if (absoluteStart.getTime() < absoluteEnd.getTime()) {
@@ -31,6 +26,36 @@ function TimeRangeSelector(props) {
       setAbsoluteSubmitEnabled(false);
     }
   }, [absoluteStart, absoluteEnd]);
+
+  const AbsoluteInput = forwardRef(({ value, onClick }, ref) => (
+      <input type="text" className="form-control" onClick={onClick} ref={ref} defaultValue={value} />
+  ));
+
+  const updateRelativeValue = (e) => {
+    if (parseInt(e.target.value, 10) > 0) {
+      setRelativeValue(e.target.value);
+    }
+  }
+
+  const presetOption = (range, name) => {
+    return <a href="#" onClick={(e) => { e.preventDefault(); setTimeRange(range) }}>{name}</a>
+  }
+
+  const submitRelative = (e) => {
+    e.preventDefault();
+
+    switch (relativeUnit) {
+      case "Minutes":
+        setTimeRange(Relative(relativeValue, "Last " + relativeValue + " Minutes"));
+        break;
+      case "Hours":
+        setTimeRange(Relative(relativeValue*60, "Last " + relativeValue + " Hours"));
+        break;
+      case "Days":
+        setTimeRange(Relative(relativeValue*60*24, "Last " + relativeValue + " Days"));
+        break;
+    }
+  }
 
   const submitAbsolute = (e) => {
     e.preventDefault();
@@ -65,30 +90,30 @@ function TimeRangeSelector(props) {
                 <div className="col-4">
                   <h3>Relative</h3>
                   <ul>
-                    <li>{relativeOption(Relative(1), "Last 1 Minute")}</li>
-                    <li>{relativeOption(Relative(5), "Last 5 Minutes")}</li>
-                    <li>{relativeOption(Relative(15), "Last 15 Minutes")}</li>
-                    <li>{relativeOption(Relative(30), "Last 30 Minutes")}</li>
-                    <li>{relativeOption(Relative(60), "Last 60 Minutes")}</li>
-                    <li>{relativeOption(Relative(240), "Last 4 Hours")}</li>
-                    <li>{relativeOption(Relative(1440), "Last 24 Hours")}</li>
-                    <li>{relativeOption(Relative(2880), "Last 2 Days")}</li>
-                    <li>{relativeOption(Relative(10080), "Last 7 Days")}</li>
+                    <li>{presetOption(Relative(1, "Last 1 Minute"), "Last 1 Minute")}</li>
+                    <li>{presetOption(Relative(5, "Last 5 Minutes"), "Last 5 Minutes")}</li>
+                    <li>{presetOption(Relative(15, "Last 15 Minutes"), "Last 15 Minutes")}</li>
+                    <li>{presetOption(Relative(30, "Last 30 Minutes"), "Last 30 Minutes")}</li>
+                    <li>{presetOption(Relative(60, "Last 60 Minutes"), "Last 60 Minutes")}</li>
+                    <li>{presetOption(Relative(240, "Last 4 Hours"), "Last 4 Hours")}</li>
+                    <li>{presetOption(Relative(1440, "Last 24 Hours"), "Last 24 Hours")}</li>
+                    <li>{presetOption(Relative(2880, "Last 2 Days"), "Last 2 Days")}</li>
+                    <li>{presetOption(Relative(10080, "Last 7 Days"), "Last 7 Days")}</li>
                   </ul>
                 </div>
                 <div className="col-4">
                   <h3>Quick Selectors</h3>
                   <ul>
-                    <li>{relativeOption(Named("today"), "Today")}</li>
-                    <li>{relativeOption(Named("yesterday"), "Yesterday")}</li>
-                    <li>{relativeOption(Named("week_to_date"), "Week to date")}</li>
-                    <li>{relativeOption(Named("month_to_date"), "Month to date")}</li>
+                    <li>{presetOption(Named("today"), "Today")}</li>
+                    <li>{presetOption(Named("yesterday"), "Yesterday")}</li>
+                    <li>{presetOption(Named("week_to_date"), "Week to date")}</li>
+                    <li>{presetOption(Named("month_to_date"), "Month to date")}</li>
                   </ul>
                 </div>
                 <div className="col-4">
                   <h3>Other</h3>
                   <ul>
-                    <li>{relativeOption(Named("all_time"), "All Time")}</li>
+                    <li>{presetOption(Named("all_time"), "All Time")}</li>
                   </ul>
                 </div>
               </div>
@@ -106,7 +131,36 @@ function TimeRangeSelector(props) {
           <div id="trs-relative-collapse" className="accordion-collapse collapse" aria-labelledby="trs-relative-heading"
                data-bs-parent="#timerange-selector-accordion">
             <div className="accordion-body">
-              <strong>WORK IN PROGRESS.</strong>
+              <div className="row">
+                <div className="col-12">
+                  <label className="form-label">Distance:</label><br/>
+                  <div className="input-group mb-3">
+                    <input type="number" className="form-control" id="relative-minutes" min={1}
+                           value={relativeValue} onChange={updateRelativeValue}/>
+                    <button className="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">{relativeUnit}
+                    </button>
+                    <ul className="dropdown-menu dropdown-menu-end">
+                      <li><a className="dropdown-item" href="#" onClick={(e) => {
+                        e.preventDefault();
+                        setRelativeUnit("Minutes")
+                      }}>Minutes</a></li>
+                      <li><a className="dropdown-item" href="#" onClick={(e) => {
+                        e.preventDefault();
+                        setRelativeUnit("Hours")
+                      }}>Hours</a></li>
+                      <li><a className="dropdown-item" href="#" onClick={(e) => {
+                        e.preventDefault();
+                        setRelativeUnit("Days")
+                      }}>Days</a></li>
+                    </ul>
+                  </div>
+
+                  <button type="button" className="btn btn-sm btn-outline-primary" onClick={submitRelative}>
+                    Apply Relative Time Range
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -123,16 +177,16 @@ function TimeRangeSelector(props) {
             <div className="accordion-body">
               <div className="row">
                 <div className="col-6">
-                  <label htmlFor="exampleFormControlInput1" className="form-label">From Date:</label><br />
+                  <label className="form-label">From Date:</label><br />
                   <DatePicker showTimeSelect={true} dateFormat="YYYY-MM-dd HH:mm:SS" timeFormat="HH:mm:SS"
-                              timeIntervals={1} timeCaption="Time" customInput={<AbsoluteInput/>}
-                              selected={absoluteStart} onChange={(date) => setAbsoluteStart(date)}/>
+                              timeIntervals={1} timeCaption="Time" customInput={<AbsoluteInput />}
+                              selected={absoluteStart} onChange={(date) => setAbsoluteStart(date)} />
                 </div>
                 <div className="col-6">
-                  <label htmlFor="exampleFormControlInput1" className="form-label">To Date:</label><br/>
+                  <label className="form-label">To Date:</label><br/>
                   <DatePicker showTimeSelect={true} dateFormat="YYYY-MM-dd HH:mm:SS" timeFormat="HH:mm:SS"
-                              timeIntervals={1} timeCaption="Time" customInput={<AbsoluteInput/>}
-                              selected={absoluteEnd} onChange={(date) => setAbsoluteEnd(date)}/>
+                              timeIntervals={1} timeCaption="Time" customInput={<AbsoluteInput />}
+                              selected={absoluteEnd} onChange={(date) => setAbsoluteEnd(date)} />
                 </div>
               </div>
 

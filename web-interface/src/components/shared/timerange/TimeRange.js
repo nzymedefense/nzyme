@@ -1,5 +1,5 @@
-export const Relative = (minutes) => {
-  return { type: "relative", minutes: minutes }
+export const Relative = (minutes, name) => {
+  return { type: "relative", minutes: minutes, name: name }
 }
 
 export const Named = (name) => {
