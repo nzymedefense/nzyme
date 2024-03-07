@@ -674,6 +674,9 @@ div.timerange-selector {
 div.timerange-selector div.accordion-item button.accordion-button {
     font-size: 14px;
     font-weight: 600;
+    padding-left: 14px;
+    padding-top: 10px;
+    padding-bottom: 8px;
 }
 
 div.timerange-selector div.accordion-item i.accordion-icon {
@@ -701,6 +704,11 @@ div.timerange-selector ul li {
 
 div.timerange-selector ul li a {
     text-decoration: none;
+}
+
+div.timerange-selector label {
+    font-weight: 800;
+    margin-bottom: 3px;
 }
 
 div.card-alerted {

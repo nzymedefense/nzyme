@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 
 function TimeRangeDescription(props) {
 
@@ -29,7 +30,11 @@ function TimeRangeDescription(props) {
   }
 
   if (range.type === "absolute") {
-    return "From [" + range.from + "] to [" + range.to + "]";
+    return <span>
+      <i>{moment(range.from).format()}</i>&nbsp;&nbsp;
+      <i className="fa-solid fa-arrow-right-long text-muted"></i>&nbsp;&nbsp;
+      <i>{moment(range.to).format()}</i>
+    </span>
   }
 
   return "Unknown time range type: " + JSON.stringify(range);

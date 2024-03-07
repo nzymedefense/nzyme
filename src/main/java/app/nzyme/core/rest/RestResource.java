@@ -5,13 +5,16 @@ import app.nzyme.core.util.TimeRange;
 import app.nzyme.core.util.TimeRangeFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class RestResource {
 
     private final ObjectMapper om;
 
     public RestResource() {
-        this.om = new ObjectMapper();
+        this.om = new ObjectMapper()
+                .registerModule(new JodaModule());
     }
 
     public TimeRange parseTimeRangeQueryParameter(String query) {
@@ -19,7 +22,7 @@ public class RestResource {
         try {
             param = this.om.readValue(query, TimeRangeParameter.class);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Invalid time range parameter provided.");
+            throw new IllegalArgumentException("Invalid time range parameter provided.", e);
         }
 
         return TimeRangeFactory.fromRestQuery(param);

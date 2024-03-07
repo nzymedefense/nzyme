@@ -17,6 +17,12 @@ public class TimeRangeFactory {
                 }
 
                 return TimeRange.create(now.minusMinutes(tr.minutes()), now);
+            case "absolute":
+                if (tr.from() == null || tr.to() == null || tr.from().isAfter(tr.to())) {
+                    throw new IllegalArgumentException("Invalid time range parameters provided.");
+                }
+
+                return TimeRange.create(tr.from().withMillisOfSecond(0), tr.to().withMillisOfSecond(0));
             case "named":
                 if (Strings.isNullOrEmpty(tr.name())) {
                     throw new IllegalArgumentException("Invalid time range parameters provided.");

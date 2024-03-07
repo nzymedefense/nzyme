@@ -40,6 +40,7 @@ public class NzymeExceptionMapper implements ExceptionMapper<Throwable> {
         }
 
         if (t instanceof ParamException || t instanceof IllegalArgumentException) {
+            LOG.debug(t);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
