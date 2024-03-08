@@ -668,6 +668,7 @@ span.main-active-channel {
 }
 
 div.timerange-selector {
+    margin-top: 5px;
     font-size: 13px;
 }
 
@@ -933,7 +934,25 @@ div.floorplan-floor-selector {
     padding: 12px;
 }
 
+div.card-title h3 {
+    margin-bottom: 8px;
+}
+
+div.card-title hr {
+    margin-top: 8px;
+    margin-bottom: 20px;
+    color: #6c757d;
+}
+
 button.card-title-option {
     margin: 0;
     padding: 0;
+}
+
+span.applied-timerange {
+    color: #969fa6;
+}
+
+i.applied-timerange-icon {
+    font-size: 11px;
 }

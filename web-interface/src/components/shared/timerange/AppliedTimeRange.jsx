@@ -6,11 +6,9 @@ function AppliedTimeRange(props) {
   const timeRange = props.timeRange;
 
   return (
-      <div className="row mb-3">
-        <div className="col-12">
-          Time Range: <TimeRangeDescription timeRange={timeRange} />
-        </div>
-      </div>
+      <span className="applied-timerange">
+        <i className="applied-timerange-icon fa-regular fa-clock"></i> <TimeRangeDescription timeRange={timeRange}/>
+      </span>
   )
 
 }

@@ -18,9 +18,8 @@ import TapBasedSignalStrengthTable from "../shared/TapBasedSignalStrengthTable";
 import BSSIDSignalWaterfallChart from "./BSSIDSignalWaterfallChart";
 import ReadOnlyTrilaterationResultFloorPlanWrapper
   from "../../shared/floorplan/ReadOnlyTrilaterationResultFloorPlanWrapper";
-import CardTitleWithSettings from "../../misc/CardTitleWithSettings";
+import CardTitleWithControls from "../../shared/CardTitleWithControls";
 import {Relative} from "../../shared/timerange/TimeRange";
-import AppliedTimeRange from "../../shared/timerange/AppliedTimeRange";
 
 const dot11Service = new Dot11Service();
 
@@ -206,11 +205,9 @@ function BSSIDDetailsPage() {
               <div className="col-md-12">
                 <div className="card">
                   <div className="card-body">
-                    <CardTitleWithSettings title="Physical Location / Trilateration"
-                                           timeRange={{type: "relative", minutes: 15}}
+                    <CardTitleWithControls title="Physical Location / Trilateration"
+                                           timeRange={trilaterationTimeRange}
                                            setTimeRange={setTrilaterationTimeRange} />
-
-                    <AppliedTimeRange timeRange={trilaterationTimeRange} />
 
                     <ReadOnlyTrilaterationResultFloorPlanWrapper data={trilaterationResult}
                                                                  onFloorSelected={onFloorSelected}
