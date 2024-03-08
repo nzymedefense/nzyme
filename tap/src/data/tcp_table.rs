@@ -1,6 +1,7 @@
 
 use std::{sync::{Arc}};
 use std::collections::HashMap;
+use std::net::IpAddr;
 use std::sync::Mutex;
 use chrono::{DateTime, Utc};
 use log::{error, info, trace, warn};
@@ -15,6 +16,10 @@ pub struct TcpTable {
 #[derive(Debug)]
 pub struct TcpSession {
     pub state: TcpSessionState,
+    pub source_address: IpAddr,
+    pub source_port: u16,
+    pub destination_address: IpAddr,
+    pub destination_port: u16,
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
     pub segment_count: u128,
@@ -32,7 +37,6 @@ pub enum TcpSessionState {
     ClosedFin,
     ClosedRst,
     ClosedTimeout,
-
     Refused
 }
 
@@ -44,7 +48,6 @@ impl TcpTable {
         }
     }
 
-    // NEXT store, reassemble segment data
     pub fn register_segment(&mut self, segment: &Arc<TcpSegment>) {
         match self.sessions.lock() {
             Ok(mut sessions) => {
@@ -60,25 +63,32 @@ impl TcpTable {
                             session.end_time = Some(Utc::now());
                         }
 
-                        trace!("Existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                        info!("Existing TCP Session: {:?}, State: {:?}, Flags: {:?}",
                             segment.session_key, session_state, segment.flags);
                     },
                     None => {
                         let session_state = Self::determine_session_state(&segment, None);
 
-                        let new_session = TcpSession {
-                            state: session_state.clone(),
-                            start_time: segment.timestamp,
-                            end_time: None,
-                            segment_count: 1,
-                            bytes_count: segment.size as u128,
-                            content: Vec::new() // TODO
-                        };
+                        // We only record new connections, not mid-connection.
+                        if session_state == SynSent {
+                            let new_session = TcpSession {
+                                state: session_state.clone(),
+                                start_time: segment.timestamp,
+                                end_time: None,
+                                source_address: segment.source_address,
+                                source_port: segment.source_port,
+                                destination_address: segment.destination_address,
+                                destination_port: segment.destination_port,
+                                segment_count: 1,
+                                bytes_count: segment.size as u128,
+                                content: Vec::new() // TODO
+                            };
 
-                        trace!("New      TCP Session: {:?}, State: {:?}, Flags: {:?}",
+                            info!("New TCP Session: {:?}, State: {:?}, Flags: {:?}",
                             segment.session_key, session_state, segment.flags);
 
-                        sessions.insert(segment.session_key.clone(), new_session);
+                            sessions.insert(segment.session_key.clone(), new_session);
+                        }
                     }
                 }
             },
@@ -89,14 +99,9 @@ impl TcpTable {
     }
 
     pub fn execute_background_jobs(&self) {
-        info!("TABLE: {:?}", self.sessions);
+        // Write to disk.
     }
 
-    /*
-     * TODO
-     *   - test this with all combinations
-     *   - Can we improve initial state detection?
-     */
     fn determine_session_state(segment: &TcpSegment, session: Option<&TcpSession>)
         -> TcpSessionState {
         match session {
