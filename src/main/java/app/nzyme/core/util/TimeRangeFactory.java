@@ -70,6 +70,11 @@ public class TimeRangeFactory {
         return TimeRange.create(now.minusMinutes(15), now, false);
     }
 
+    public static TimeRange eightHours() {
+        DateTime now = DateTime.now();
+        return TimeRange.create(now.minusHours(8), now, false);
+    }
+
     public static TimeRange oneDay() {
         DateTime now = DateTime.now();
         return TimeRange.create(now.minusHours(24), now, false);

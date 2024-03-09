@@ -34,7 +34,7 @@ function BSSIDDetailsPage() {
   const [ssids, setSSIDs] = useState(null);
 
   const [ssidsTimeRange, setSsidsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
-  const [signalWaterfallRange, setSignalWaterfallRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [signalWaterfallTimeRange, setSignalWaterfallTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [advertisementsBeaconTimeRange, setAdvertisementsBeaconTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [advertisementsProbeRespTimeRange, setAdvertisementsProbeRespTimeRange] = useState(Presets.RELATIVE_HOURS_24);
   const [activeChannelsTimeRange, setActiveChannelsTimeRange] = useState(Presets.RELATIVE_HOURS_24);
@@ -79,14 +79,14 @@ function BSSIDDetailsPage() {
   }, [tapContext]);
 
   const ssidsTable = () => {
-    if (!ssids) {
+    if (!ssids || !bssid) {
       return <LoadingSpinner />
     }
 
     return (
         <table style={{width: "100%"}}>
           <tbody>
-          <BSSIDDetailsRows bssid={bssid.summary} ssids={ssids} loading={false} hideBSSIDLink={true}/>
+          <BSSIDDetailsRows bssid={bssid.summary.bssid} ssids={ssids} loading={false} hideBSSIDLink={true}/>
           </tbody>
         </table>
     )
@@ -221,10 +221,10 @@ function BSSIDDetailsPage() {
                 <div className="card">
                   <div className="card-body">
                     <CardTitleWithControls title="Signal Waterfall"
-                                           timeRange={signalWaterfallRange}
-                                           setTimeRange={setSignalWaterfallRange} />
+                                           timeRange={signalWaterfallTimeRange}
+                                           setTimeRange={setSignalWaterfallTimeRange} />
 
-                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} timeRange={signalWaterfallRange} />
+                    <BSSIDSignalWaterfallChart bssid={bssid.summary.bssid.address} timeRange={signalWaterfallTimeRange} />
                   </div>
                 </div>
               </div>

@@ -349,7 +349,7 @@ public class Dot11 {
         );
     }
 
-    public Optional<SSIDDetails> findSSIDDetails(int minutes, String bssid, String ssid, List<UUID> taps) {
+    public Optional<SSIDDetails> findSSIDDetails(TimeRange timeRange, String bssid, String ssid, List<UUID> taps) {
         if (taps.isEmpty()) {
             return Optional.empty();
         }
@@ -379,11 +379,12 @@ public class Dot11 {
                                 "AND sss.attribute = 'security_suite' " +
                                 "LEFT JOIN dot11_ssid_settings AS ssw on s.id = ssw.ssid_id " +
                                 "AND ssw.attribute = 'has_wps' " +
-                                "WHERE s.created_at > :cutoff AND s.bssid = :bssid AND s.ssid = :ssid " +
+                                "WHERE s.created_at >= :tr_from AND s.created_at <= :tr_to " +
+                                "AND s.bssid = :bssid AND s.ssid = :ssid " +
                                 "AND s.tap_uuid IN (<taps>) " +
                                 "GROUP BY ssid")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
-                        .bind("bssid", bssid)
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())                        .bind("bssid", bssid)
                         .bind("ssid", ssid)
                         .bindList("taps", taps)
                         .mapTo(SSIDDetails.class)
@@ -415,7 +416,10 @@ public class Dot11 {
         );
     }
 
-    public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+    public List<Dot11AdvertisementHistogramEntry> getSSIDAdvertisementHistogram(String bssid,
+                                                                                String ssid,
+                                                                                TimeRange timeRange,
+                                                                                List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -424,10 +428,12 @@ public class Dot11 {
                 handle.createQuery("SELECT SUM(beacon_advertisements) AS beacons, " +
                                 "SUM(proberesp_advertisements) AS proberesponses, " +
                                 "DATE_TRUNC('minute', created_at) AS bucket FROM dot11_ssids " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) " +
                                 "AND bssid = :bssid AND ssid = :ssid " +
                                 "GROUP BY bucket ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
@@ -436,7 +442,10 @@ public class Dot11 {
         );
     }
 
-    public List<ActiveChannel> getSSIDChannelUsageHistogram(String bssid, String ssid, int minutes, List<UUID> taps) {
+    public List<ActiveChannel> getSSIDChannelUsageHistogram(String bssid,
+                                                            String ssid,
+                                                            TimeRange timeRange,
+                                                            List<UUID> taps) {
         if (taps.isEmpty()) {
             return Collections.emptyList();
         }
@@ -445,9 +454,11 @@ public class Dot11 {
                 handle.createQuery("SELECT c.frequency, sum(c.stats_frames) AS frames, sum(c.stats_bytes) AS bytes " +
                                 "FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channels c on s.id = c.ssid_id " +
-                                "WHERE created_at > :cutoff AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND tap_uuid IN (<taps>) AND s.bssid = :bssid " +
                                 "AND s.ssid = :ssid GROUP BY c.frequency")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bindList("taps", taps)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
@@ -459,16 +470,18 @@ public class Dot11 {
     public List<SignalTrackHistogramEntry> getSSIDSignalStrengthWaterfall(String bssid,
                                                                           String ssid,
                                                                           int frequency,
-                                                                          int minutes,
+                                                                          TimeRange timeRange,
                                                                           UUID tapId) {
         return nzyme.getDatabase().withHandle(handle ->
                 handle.createQuery("SELECT DATE_TRUNC('minute', s.created_at) AS bucket, signal_strength, " +
                                 "SUM(frame_count) AS frame_count FROM dot11_ssids AS s " +
                                 "LEFT JOIN dot11_channel_histograms h on s.id = h.ssid_id " +
-                                "WHERE created_at > :cutoff AND s.tap_uuid = :tap_id AND bssid = :bssid " +
+                                "WHERE created_at >= :tr_from AND created_at <= :tr_to " +
+                                "AND s.tap_uuid = :tap_id AND bssid = :bssid " +
                                 "AND ssid = :ssid AND h.frequency = :frequency " +
                                 "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
-                        .bind("cutoff", DateTime.now().minusMinutes(minutes))
+                        .bind("tr_from", timeRange.from())
+                        .bind("tr_to", timeRange.to())
                         .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .bind("ssid", ssid)
@@ -487,7 +500,8 @@ public class Dot11 {
                                 "AND s.tap_uuid = :tap_id AND bssid = :bssid " +
                                 "GROUP BY bucket, signal_strength ORDER BY bucket DESC")
                         .bind("tr_from", timeRange.from())
-                        .bind("tr_to", timeRange.to())                        .bind("tap_id", tapId)
+                        .bind("tr_to", timeRange.to())
+                        .bind("tap_id", tapId)
                         .bind("bssid", bssid)
                         .mapTo(SignalTrackHistogramEntry.class)
                         .list()

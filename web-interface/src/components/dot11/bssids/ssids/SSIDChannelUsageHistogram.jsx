@@ -11,7 +11,7 @@ function SSIDChannelUsageHistogram(props) {
 
   const bssid = props.bssid;
   const ssid = props.ssid;
-  const minutes = props.minutes;
+  const timeRange = props.timeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -19,8 +19,8 @@ function SSIDChannelUsageHistogram(props) {
   const [histogram, setHistogram] = useState(null);
 
   useEffect(() => {
-    dot11Service.getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, minutes, selectedTaps, setHistogram);
-  }, [bssid, ssid, minutes, selectedTaps])
+    dot11Service.getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, timeRange, selectedTaps, setHistogram);
+  }, [bssid, ssid, timeRange, selectedTaps])
 
   const formatData = function(data) {
     const x = [];

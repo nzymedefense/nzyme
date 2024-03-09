@@ -16,15 +16,15 @@ import numeral from "numeral";
 import {dot11FrequencyToChannel} from "../../../../util/Tools";
 import ChannelSelector from "../../util/ChannelSelector";
 import SSIDMonitoredInformation from "./SSIDMonitoredInformation";
-import HelpBubble from "../../../misc/HelpBubble";
 import DiscoHistogram from "../../disco/DiscoHistogram";
 import {disableTapSelector, enableTapSelector} from "../../../misc/TapSelector";
 import Dot11MacAddress from "../../../shared/context/macs/Dot11MacAddress";
 import TapBasedSignalStrengthTable from "../../shared/TapBasedSignalStrengthTable";
 import Dot11SecurityProtocolList from "../../shared/Dot11SecurityProtocolList";
+import CardTitleWithControls from "../../../shared/CardTitleWithControls";
+import {Presets} from "../../../shared/timerange/TimeRange";
 
 const dot11Service = new Dot11Service();
-const DEFAULT_MINUTES = 15;
 
 function SSIDDetailsPage() {
 
@@ -36,12 +36,19 @@ function SSIDDetailsPage() {
   const selectedTaps = tapContext.taps;
 
   const [selectedFrequency, setSelectedFrequency] = useState(parseInt(frequencyParam, 10));
+  const ssidTimeRange = Presets.RELATIVE_MINUTES_15;
 
   const [ssid, setSSID] = useState(null);
+
   const [advertisementHistogramType, setHistogramAdvertisementType] = useState("beacon_count");
+  const [advertisementHistogramTimeRange, setAdvertisementHistogramTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+  const [channelUsageHistogramTimeRange, setChannelUsageHistogramTimeRange] = useState(Presets.RELATIVE_MINUTES_15);
+  const [signalWaterfallTimeRange, setSignalWaterfallTimeRange] = useState(Presets.RELATIVE_HOURS_24);
+
+  const [discoActivityTimeRange, setDiscoActivityTimeRange] = useState(Presets.RELATIVE_HOURS_24);
 
   useEffect(() => {
-    dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, DEFAULT_MINUTES, selectedTaps, setSSID);
+    dot11Service.findSSIDOfBSSID(bssidParam, ssidParam, ssidTimeRange, selectedTaps, setSSID);
   }, [selectedTaps])
 
   useEffect(() => {
@@ -51,6 +58,15 @@ function SSIDDetailsPage() {
       disableTapSelector(tapContext);
     }
   }, [tapContext]);
+
+  const signalWaterfallTitle = () => {
+    return (
+        <span>
+          Signal Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
+          ({numeral(selectedFrequency).format("0,0")} MHz)
+        </span>
+    );
+  }
 
   if (!ssid) {
     return <LoadingSpinner />
@@ -86,9 +102,9 @@ function SSIDDetailsPage() {
         <div className="col-md-6">
           <div className="card">
             <div className="card-body">
-              <h3>
-                SSID Information <small>Last 15 minutes</small>
-              </h3>
+              <CardTitleWithControls title="SSID Information"
+                                     fixedAppliedTimeRange={ssidTimeRange} />
+
               <dl className="mb-0">
                 <dt>BSSID</dt>
                 <dd>
@@ -116,9 +132,8 @@ function SSIDDetailsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3>
-                    Security / Encryption <small>Last 15 minutes</small>
-                  </h3>
+                  <CardTitleWithControls title="Security & Encryption"
+                                         fixedAppliedTimeRange={ssidTimeRange} />
 
                   <dl className="mb-0">
                     <dt>Protocol</dt>
@@ -136,9 +151,9 @@ function SSIDDetailsPage() {
             <div className="col-md-12">
               <div className="card">
                 <div className="card-body">
-                  <h3>
-                    Fingerprints <small>Last 15 minutes <HelpBubble link="https://go.nzyme.org/wifi-fingerprinting" /></small>
-                  </h3>
+                  <CardTitleWithControls title="Fingerprints"
+                                         helpLink="https://go.nzyme.org/wifi-fingerprinting"
+                                         fixedAppliedTimeRange={ssidTimeRange} />
 
                   <ul className="mb-0">
                   {ssid.fingerprints.map(function (fp) {
@@ -158,18 +173,21 @@ function SSIDDetailsPage() {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3 style={{display: "inline-block"}}>
-                SSID Advertisements
-              </h3>
+              <CardTitleWithControls title="SSID Advertisements"
+                                     timeRange={advertisementHistogramTimeRange}
+                                     setTimeRange={setAdvertisementHistogramTimeRange} />
 
-              <select className="form-select form-select-sm float-end" style={{width: 250}}
+              <select className="form-select form-select-sm" style={{width: 250}}
                       onChange={(e) => { setHistogramAdvertisementType(e.target.value) }}
                       value={advertisementHistogramType}>
                 <option value="beacon_count">Beacon Count</option>
                 <option value="proberesp_count">Probe Response Count</option>
               </select>
 
-              <SSIDAdvertisementHistogram bssid={ssid.bssid.address} ssid={ssid.ssid} parameter={advertisementHistogramType} />
+              <SSIDAdvertisementHistogram bssid={ssid.bssid.address}
+                                          ssid={ssid.ssid}
+                                          timeRange={advertisementHistogramTimeRange}
+                                          parameter={advertisementHistogramType} />
             </div>
           </div>
         </div>
@@ -179,14 +197,16 @@ function SSIDDetailsPage() {
         <div className="col-md-12">
           <div className="card">
             <div className="card-body">
-              <h3>Deauthentication Activity</h3>
-
+              <CardTitleWithControls title="Disconnection Activity"
+                                     smallText="All SSIDs"
+                                     timeRange={discoActivityTimeRange}
+                                     setTimeRange={setDiscoActivityTimeRange} />
               <p className="text-muted">
                 All deauthentication and disassociation frames indicating a disconnection from this access point. This
                 includes disconnections initiated by access point as well as clients.
               </p>
 
-              <DiscoHistogram discoType="disconnection" minutes={24*60} bssids={[ssid.bssid.address]} />
+              <DiscoHistogram discoType="disconnection" timeRange={discoActivityTimeRange} bssids={[ssid.bssid.address]} />
             </div>
           </div>
         </div>
@@ -200,7 +220,9 @@ function SSIDDetailsPage() {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body">
-                      <h3>Average Signal Strength <small>Last 15 minutes, All SSIDs</small></h3>
+                      <CardTitleWithControls title="Average Signal Strength"
+                                             smallText="All SSIDs"
+                                             fixedAppliedTimeRange={ssidTimeRange} />
 
                       <TapBasedSignalStrengthTable strengths={ssid.signal_strength}/>
                     </div>
@@ -212,13 +234,13 @@ function SSIDDetailsPage() {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body">
-                      <h3>
-                        Active Channels <small>Last 15 minutes</small>
-                      </h3>
+                      <CardTitleWithControls title="Active Channels"
+                                             timeRange={channelUsageHistogramTimeRange}
+                                             setTimeRange={setChannelUsageHistogramTimeRange} />
 
                       <SSIDChannelUsageHistogram bssid={ssid.bssid.address}
                                                  ssid={ssid.ssid}
-                                                 minutes={15}/>
+                                                 timeRange={channelUsageHistogramTimeRange}/>
                     </div>
                   </div>
                 </div>
@@ -227,23 +249,18 @@ function SSIDDetailsPage() {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body">
-                      <h3 style={{display: "inline-block"}}>
-                        Signal Waterfall for Channel {dot11FrequencyToChannel(selectedFrequency)}{' '}
-                        ({numeral(selectedFrequency).format("0,0")} MHz) <small>Last 24 hours maximum</small>
-                      </h3>
+                      <CardTitleWithControls title={signalWaterfallTitle()}
+                                             timeRange={signalWaterfallTimeRange}
+                                             setTimeRange={setSignalWaterfallTimeRange} />
 
-                      <div className="float-end">
-                        <ChannelSelector currentFrequency={selectedFrequency}
-                                         setFrequency={setSelectedFrequency}
-                                         frequencies={ssid.frequencies}/>
-                      </div>
-
-                      <br style={{clear: "both"}}/>
+                      <ChannelSelector currentFrequency={selectedFrequency}
+                                       setFrequency={setSelectedFrequency}
+                                       frequencies={ssid.frequencies}/>
 
                       <SSIDSignalWaterfallChart bssid={ssid.bssid.address}
                                                 ssid={ssid.ssid}
                                                 frequency={selectedFrequency}
-                                                minutes={24 * 60}/>
+                                                timeRange={signalWaterfallTimeRange} />
                     </div>
                   </div>
                 </div>
@@ -254,9 +271,9 @@ function SSIDDetailsPage() {
                 <div className="col-md-12">
                   <div className="card">
                     <div className="card-body">
-                      <h3>
-                        Clients connected to BSSID <small>Last 15 minutes</small>
-                      </h3>
+                      <CardTitleWithControls title="Clients connected to BSSID"
+                                             smallText="All SSIDs"
+                                             fixedAppliedTimeRange={ssidTimeRange} />
 
                       <p className="text-muted">
                         Please note that recording clients generally demands closer proximity, as

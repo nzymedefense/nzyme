@@ -12,10 +12,12 @@ import app.nzyme.core.dot11.tracks.TrackDetector;
 import app.nzyme.core.dot11.tracks.db.TrackDetectorConfig;
 import app.nzyme.core.periodicals.Periodical;
 import app.nzyme.core.taps.Tap;
+import app.nzyme.core.util.TimeRangeFactory;
 import com.google.common.collect.Maps;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.sql.Time;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +51,7 @@ public class Dot11SignalTrackMonitor extends Periodical {
                         Optional<Tap> tap = nzyme.getTapManager().findTap(tapId);
 
                         List<SignalTrackHistogramEntry> signals = nzyme.getDot11().getSSIDSignalStrengthWaterfall(
-                                monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), 8*60, tap.get().uuid());
+                                monitoredBSSID.bssid(), monitoredSSID.ssid(), (int) frequency.frequency(), TimeRangeFactory.eightHours(), tap.get().uuid());
 
                         TrackDetectorConfig config = nzyme.getDot11()
                                 .findCustomTrackDetectorConfiguration(

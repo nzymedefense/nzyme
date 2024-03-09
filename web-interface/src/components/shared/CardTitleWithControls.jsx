@@ -9,9 +9,12 @@ function CardTitleWithControls(props) {
   // Optional styling.
   const slim = props.slim;
 
-  // Required for time range selector.
+  // Required if using time range selector.
   const setTimeRange = props.setTimeRange;
   const timeRange = props.timeRange;
+
+  // Required if using help link.
+  const helpLink = props.helpLink;
 
   // Optional.
   const smallTextParam = props.smallText;
@@ -42,6 +45,18 @@ function CardTitleWithControls(props) {
     }
   }
 
+  const helpLinkButton = () => {
+    if (!helpLink) {
+      return null;
+    }
+
+    return (
+        <a href={helpLink} className="card-title-option" title="Help" target="_blank">
+          <i className="fa-solid fa-question"></i>
+        </a>
+    )
+  }
+
   const timeRangeDialog = () => {
     if (!timeRangeDialogOpened) {
       return null;
@@ -49,7 +64,7 @@ function CardTitleWithControls(props) {
 
     return (
         <div className="mb-3">
-          <TimeRangeSelector timeRange={timeRange} setTimeRange={setTimeRange} />
+          <TimeRangeSelector timeRange={timeRange} setTimeRange={setTimeRange}/>
         </div>
     );
   }
@@ -71,11 +86,14 @@ function CardTitleWithControls(props) {
   return (
       <div className="card-title" style={slim ? {marginBottom:0} : {}}>
         <div className="row">
-          <div className="col-11">
+          <div className="col-10">
             <h3>{title} {smallText()}</h3>
           </div>
 
-          <div className="col-1 text-end">{timeRangeButton()}</div>
+          <div className="col-2 text-end">
+            {timeRangeButton()}
+            {helpLinkButton()}
+          </div>
 
           {timeRangeDialog()}
         </div>

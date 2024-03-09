@@ -17,7 +17,7 @@ function SSIDSignalWaterfallChart(props) {
   const bssid = props.bssid;
   const ssid = props.ssid;
   const frequency = props.frequency;
-  const minutes = props.minutes;
+  const timeRange = props.timeRange;
 
   const tapContext = useContext(TapContext);
   const selectedTaps = tapContext.taps;
@@ -131,9 +131,9 @@ function SSIDSignalWaterfallChart(props) {
   useEffect(() => {
     if (singleTapSelected(selectedTaps)) {
       setWaterfall(null);
-      dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, selectedTaps, setWaterfall);
+      dot11Service.getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, timeRange, selectedTaps, setWaterfall);
     }
-  }, [bssid, ssid, frequency, minutes, selectedTaps, revision])
+  }, [bssid, ssid, frequency, timeRange, selectedTaps, revision])
 
   if (!singleTapSelected(selectedTaps)) {
     return (

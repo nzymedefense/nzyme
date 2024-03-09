@@ -945,8 +945,14 @@ div.card-title hr {
 }
 
 button.card-title-option {
-    margin: 0;
     padding: 0;
+    margin: 0 0 0 5px;
+}
+
+a.card-title-option {
+    color: #000;
+    font-size: 15px;
+    margin-left: 5px;
 }
 
 span.applied-timerange {

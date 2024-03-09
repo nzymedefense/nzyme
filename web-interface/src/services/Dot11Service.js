@@ -71,38 +71,38 @@ class Dot11Service {
     })
   }
 
-  findSSIDOfBSSID(bssid, ssid, minutes, taps, setSSID) {
+  findSSIDOfBSSID(bssid, ssid, timeRange, taps, setSSID) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid,
-        { minutes: minutes, taps: tapsList }, function (response) {
+        { time_range: timeRange, taps: tapsList }, function (response) {
           setSSID(response.data);
     })
   }
 
-  getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, minutes, taps, setHistogram) {
+  getSSIDOfBSSIDAdvertisementHistogram(bssid, ssid, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/advertisements/histogram",
-        { minutes: minutes, taps: tapsList }, function (response) {
+        { time_range: timeRange, taps: tapsList }, function (response) {
           setHistogram(response.data);
     })
   }
 
-  getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, minutes, taps, setHistogram) {
+  getSSIDOfBSSIDActiveChannelHistogram(bssid, ssid, timeRange, taps, setHistogram) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/histogram",
-        { minutes: minutes, taps: tapsList }, function (response) {
+        { time_range: timeRange, taps: tapsList }, function (response) {
           setHistogram(response.data);
     })
   }
 
-  getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, minutes, taps, setWaterfall) {
+  getSSIDOfBSSIDSignalWaterfall(bssid, ssid, frequency, timeRange, taps, setWaterfall) {
     const tapsList = Array.isArray(taps) ? taps.join(",") : "*";
 
     RESTClient.get("/dot11/networks/bssids/show/" + bssid + "/ssids/show/" + ssid + "/frequencies/show/" + frequency + "/signal/waterfall",
-        { minutes: minutes, taps: tapsList }, function (response) {
+        { time_range: timeRange, taps: tapsList }, function (response) {
           setWaterfall(response.data);
     })
   }
